@@ -326,7 +326,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
         return false;
 
     // same expressions
-    if (isSameExpression(_tokenizer->isCPP(), cond1,cond2,constFunctions))
+    if (isSameExpression(_tokenizer->isCPP(), true, cond1, cond2, constFunctions))
         return true;
 
     // bitwise overlap for example 'x&7' and 'x==1'
@@ -349,7 +349,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
         if (!num2->isNumber() || MathLib::isNegative(num2->str()))
             return false;
 
-        if (!isSameExpression(_tokenizer->isCPP(), expr1,expr2,constFunctions))
+        if (!isSameExpression(_tokenizer->isCPP(), true, expr1, expr2, constFunctions))
             return false;
 
         const MathLib::bigint value1 = MathLib::toLongNumber(num1->str());
@@ -720,9 +720,9 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (!parseComparison(comp2, &not2, &op2, &value2, &expr2))
                 continue;
 
-            if (isSameExpression(_tokenizer->isCPP(), comp1, comp2, _settings->library.functionpure))
+            if (isSameExpression(_tokenizer->isCPP(), true, comp1, comp2, _settings->library.functionpure))
                 continue; // same expressions => only report that there are same expressions
-            if (!isSameExpression(_tokenizer->isCPP(), expr1, expr2, _settings->library.functionpure))
+            if (!isSameExpression(_tokenizer->isCPP(), true, expr1, expr2, _settings->library.functionpure))
                 continue;
 
             const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
@@ -1049,9 +1049,9 @@ void CheckCondition::checkInvalidTestForOverflow()
                 continue;
 
             const Token *termToken;
-            if (isSameExpression(_tokenizer->isCPP(), exprToken, calcToken->astOperand1(), _settings->library.functionpure))
+            if (isSameExpression(_tokenizer->isCPP(), true, exprToken, calcToken->astOperand1(), _settings->library.functionpure))
                 termToken = calcToken->astOperand2();
-            else if (isSameExpression(_tokenizer->isCPP(), exprToken, calcToken->astOperand2(), _settings->library.functionpure))
+            else if (isSameExpression(_tokenizer->isCPP(), true, exprToken, calcToken->astOperand2(), _settings->library.functionpure))
                 termToken = calcToken->astOperand1();
             else
                 continue;

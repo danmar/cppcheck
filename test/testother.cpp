@@ -6118,6 +6118,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
 
+        // macro, dont bailout (#7233)
+        check((std::string("void f(int x) {\n"
+                           "  return x + ") + Preprocessor::macroChar + "x++;\n"
+               "}").c_str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Expression 'x+x++' depends on order of evaluation of side effects\n", errout.str());
+
+
         // sequence points
         {
             // FP

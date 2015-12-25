@@ -48,7 +48,7 @@ std::string astCanonicalType(const Token *expr);
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
-bool isSameExpression(bool cpp, const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions);
+bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions);
 
 /**
  * Are two conditions opposite
