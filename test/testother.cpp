@@ -6103,26 +6103,26 @@ private:
         check("void f() {\n"
               "  int x = dostuff();\n"
               "  return x + x++;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Expression 'x+x++' depends on order of evaluation of side effects\n", errout.str());
+              "}", "test.c");
+        ASSERT_EQUALS("[test.c:3]: (error) Expression 'x+x++' depends on order of evaluation of side effects\n", errout.str());
 
         // #7226
         check("long int f1(const char *exp) {\n"
               "  return strtol(++exp, (char **)&exp, 10);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Expression '++exp,(char**)&exp' depends on order of evaluation of side effects\n", errout.str());
+              "}", "test.c");
+        ASSERT_EQUALS("[test.c:2]: (error) Expression '++exp,(char**)&exp' depends on order of evaluation of side effects\n", errout.str());
 
         // self assignment
         check("void f() {\n"
               "  int x = x = y + 1;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
+              "}", "test.c");
+        ASSERT_EQUALS("[test.c:2]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
 
         // macro, dont bailout (#7233)
         check((std::string("void f(int x) {\n"
                            "  return x + ") + Preprocessor::macroChar + "x++;\n"
-               "}").c_str());
-        ASSERT_EQUALS("[test.cpp:2]: (error) Expression 'x+x++' depends on order of evaluation of side effects\n", errout.str());
+               "}").c_str(), "test.c");
+        ASSERT_EQUALS("[test.c:2]: (error) Expression 'x+x++' depends on order of evaluation of side effects\n", errout.str());
 
 
         // sequence points
@@ -6130,13 +6130,13 @@ private:
             // FP
             check("void f(int id) {\n"
                   "  id = dostuff(id += 42);\n"
-                  "}");
+                  "}", "test.c");
             ASSERT_EQUALS("", errout.str());
 
             // FN
             check("void f(int id) {\n"
                   "  id = id + dostuff(id += 42);\n"
-                  "}");
+                  "}", "test.c");
             TODO_ASSERT_EQUALS("error", "", errout.str());
         }
     }
