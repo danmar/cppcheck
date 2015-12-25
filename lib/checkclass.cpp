@@ -1052,11 +1052,11 @@ void CheckClass::checkMemset()
                     type = typeTok->type()->classScope;
 
                 if (type) {
-                    std::list<const Scope *> parsedTypes;
+                    std::set<const Scope *> parsedTypes;
                     checkMemsetType(scope, tok, type, false, parsedTypes);
                 }
             } else if (tok->variable() && tok->variable()->typeScope() && Token::Match(tok, "%var% = calloc|malloc|realloc|g_malloc|g_try_malloc|g_realloc|g_try_realloc (")) {
-                std::list<const Scope *> parsedTypes;
+                std::set<const Scope *> parsedTypes;
                 checkMemsetType(scope, tok->tokAt(2), tok->variable()->typeScope(), true, parsedTypes);
 
                 if (tok->variable()->typeScope()->numConstructors > 0 && printWarnings)
@@ -1066,12 +1066,12 @@ void CheckClass::checkMemset()
     }
 }
 
-void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::list<const Scope *> parsedTypes)
+void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::set<const Scope *> parsedTypes)
 {
     // If type has been checked there is no need to check it again
-    if (std::find(parsedTypes.begin(), parsedTypes.end(), type) != parsedTypes.end())
+    if (parsedTypes.find(type) != parsedTypes.end())
         return;
-    parsedTypes.push_back(type);
+    parsedTypes.insert(type);
 
     const bool printPortability = _settings->isEnabled("portability");
 
