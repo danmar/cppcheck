@@ -6111,6 +6111,12 @@ private:
               "  return strtol(++exp, (char **)&exp, 10);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Expression '++exp,(char**)&exp' depends on order of evaluation of side effects\n", errout.str());
+
+        // sequence points
+        check("void f(int id) {\n"
+              "  id = dostuff(id += 42);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

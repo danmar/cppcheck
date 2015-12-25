@@ -2495,6 +2495,7 @@ void CheckOther::checkEvaluationOrder()
             if (!tok->astOperand1())
                 continue;
             for (const Token *tok2 = tok; tok2 && tok2->astParent(); tok2 = tok2->astParent()) {
+                // If ast parent is a sequence point then break
                 const Token * const parent = tok2->astParent();
                 if (Token::Match(parent, "%oror%|&&|?|:|;"))
                     break;
@@ -2505,6 +2506,8 @@ void CheckOther::checkEvaluationOrder()
                     if (!par || par->str() != "(")
                         break;
                 }
+                if (parent->str() == "(" && parent->astOperand2())
+                    break;
 
                 // Is expression used?
                 bool foundError = false;
