@@ -2485,6 +2485,10 @@ void CheckOther::unusedLabelError(const Token* tok)
 
 void CheckOther::checkEvaluationOrder()
 {
+    // This checker is not written according to C++11 sequencing rules
+    if (_settings->standards.cpp == Standards::CPP11)
+        return;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
