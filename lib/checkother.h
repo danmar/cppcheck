@@ -68,6 +68,7 @@ public:
         checkOther.checkCommaSeparatedReturn();
         checkOther.checkRedundantPointerOp();
         checkOther.checkZeroDivision();
+        checkOther.checkNegativeBitwiseShift();
         checkOther.checkInterlockedDecrement();
         checkOther.checkUnusedLabel();
         checkOther.checkEvaluationOrder();
@@ -92,7 +93,6 @@ public:
 
         checkOther.checkInvalidFree();
         checkOther.checkRedundantCopy();
-        checkOther.checkNegativeBitwiseShift();
         checkOther.checkSuspiciousEqualityComparison();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
     }

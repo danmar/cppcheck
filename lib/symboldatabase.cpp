@@ -3782,7 +3782,6 @@ static void setValueType(Token *tok, const ValueType &valuetype)
 
         setValueType(parent, vt);
         return;
-
     }
 }
 
@@ -3868,6 +3867,13 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
             if (!tok->astOperand2() && Token::Match(tok, "( %name%")) {
                 ValueType valuetype;
                 if (Token::simpleMatch(parsedecl(tok->next(), &valuetype), ")"))
+                    ::setValueType(tok, valuetype);
+            }
+
+            // C++ cast
+            if (tok->astOperand2() && Token::Match(tok->astOperand1(), "static_cast|const_cast|dynamic_cast|reinterpret_cast < %name%") && tok->astOperand1()->linkAt(1)) {
+                ValueType valuetype;
+                if (Token::simpleMatch(parsedecl(tok->astOperand1()->tokAt(2), &valuetype), ">"))
                     ::setValueType(tok, valuetype);
             }
 

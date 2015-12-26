@@ -3070,6 +3070,7 @@ private:
         ASSERT_EQUALS("long", typeOf("a = (long int)32;", "("));
         ASSERT_EQUALS("long long", typeOf("a = (long long)32;", "("));
         ASSERT_EQUALS("long double", typeOf("a = (long double)32;", "("));
+        ASSERT_EQUALS("char", typeOf("a = static_cast<char>(32);", "("));
 
         // const..
         ASSERT_EQUALS("const char *", typeOf("a = \"123\";", "\"123\""));
