@@ -6110,7 +6110,12 @@ private:
         check("long int f1(const char *exp) {\n"
               "  return strtol(++exp, (char **)&exp, 10);\n"
               "}", "test.c");
-        ASSERT_EQUALS("[test.c:2]: (error) Expression '++exp,(char**)&exp' depends on order of evaluation of side effects\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        check("long int f1(const char *exp) {\n"
+              "  return dostuff(++exp, exp, 10);\n"
+              "}", "test.c");
+        ASSERT_EQUALS("[test.c:2]: (error) Expression '++exp,exp' depends on order of evaluation of side effects\n", errout.str());
 
         // self assignment
         check("void f() {\n"
@@ -6123,7 +6128,6 @@ private:
                            "  return x + ") + Preprocessor::macroChar + "x++;\n"
                "}").c_str(), "test.c");
         ASSERT_EQUALS("[test.c:2]: (error) Expression 'x+x++' depends on order of evaluation of side effects\n", errout.str());
-
 
         // sequence points
         {
