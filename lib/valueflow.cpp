@@ -1384,6 +1384,8 @@ static bool valueFlowForward(Token * const               startToken,
             tok2 = tok2->next();
         }
 
+        if (!tok2) // invalid code #7236
+            return false;
         if (tok2->varId() == varid) {
             // bailout: assignment
             if (Token::Match(tok2->previous(), "!!* %name% %op%") && tok2->next()->isAssignmentOp()) {

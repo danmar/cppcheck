@@ -981,8 +981,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         compileExpression(tok2, state2);
 
         Token * const semicolon2 = tok2;
-		if (!semicolon2)
-			return nullptr; // invalid code #7235
+        if (!semicolon2)
+            return nullptr; // invalid code #7235
         tok2 = tok2->next();
         AST_state state3(cpp);
         compileExpression(tok2, state3);

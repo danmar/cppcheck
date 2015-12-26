@@ -2618,6 +2618,8 @@ void Tokenizer::setVarIdClassDeclaration(Token * const startToken,
             if (indentlevel > 0 || initList) {
                 if (Token::Match(tok->previous(), "::|.") && tok->strAt(-2) != "this" && !Token::simpleMatch(tok->tokAt(-5), "( * this ) ."))
                     continue;
+                if (!tok->next())
+                    syntaxError(nullptr); // #7237 invalid code
                 if (tok->next()->str() == "::") {
                     if (tok->str() == className)
                         tok = tok->tokAt(2);
