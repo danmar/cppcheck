@@ -96,7 +96,7 @@ void CheckFunctions::invalidFunctionUsage()
                     while (top->astParent() && top->astParent()->str() != "," && top->astParent() != tok->next())
                         top = top->astParent();
                     const Token *var = top;
-                    while (Token::Match(top, ".|::"))
+                    while (Token::Match(var, ".|::"))
                         var = var->astOperand2();
                     if (Token::Match(top, "%comp%|%oror%|&&|!|true|false") ||
                         (var && var->variable() && Token::Match(var->variable()->typeStartToken(), "bool"))) {
