@@ -3025,7 +3025,7 @@ void Tokenizer::setVarId()
                                 vartok->varId(varpos->second);
                             if (vartok->strAt(1) == "<") {
                                 tok3 = vartok->next()->findClosingBracket();
-                                if (tok3 && tok3->next()->link())
+                                if (tok3 && tok3->next() && tok3->next()->link())
                                     tok3 = tok3->next()->link();
                             } else
                                 tok3 = vartok->linkAt(1);
