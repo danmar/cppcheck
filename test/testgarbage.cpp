@@ -213,6 +213,7 @@ private:
         TEST_CASE(garbageCode162); // #7208
         TEST_CASE(garbageCode163); // #7228
 		TEST_CASE(garbageCode164); // #7234
+		TEST_CASE(garbageCode165); // #7235
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1405,6 +1406,10 @@ private:
         ASSERT_THROW(checkCode("class d{k p;}(){d::d():B<()}", false), InternalError);
     }
 
+	void garbageCode165() {
+        //7235
+        checkCode("for(;..)", false);
+    }
 };
 
 REGISTER_TEST(TestGarbage)
