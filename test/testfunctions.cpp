@@ -404,6 +404,15 @@ private:
         check("int f() { memset(a,b,sizeof(a)!=0); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
+        check("int f() { memset(a,b,!c); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
+
+        // Ticket #6990
+        check("int f(bool c) { memset(a,b,c); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
+        check("int f() { memset(a,b,true); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
+
         // Ticket #6588 (c mode)
         check("void record(char* buf, int n) {\n"
               "  memset(buf, 0, n < 255);\n"           /* KO */
