@@ -6143,6 +6143,12 @@ private:
                   "}", "test.c");
             TODO_ASSERT_EQUALS("error", "", errout.str());
         }
+
+        // sizeof
+        check("void f(char *buf) {\n"
+              "  dostuff(buf++, sizeof(*buf));"
+              "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

@@ -2537,6 +2537,8 @@ void CheckOther::checkEvaluationOrder()
                         continue;
                     if (tok3->str() == "&" && !tok3->astOperand2())
                         continue; // don't handle adress-of for now
+                    if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
+                        continue; // don't care about sizeof usage
                     tokens.push(tok3->astOperand1());
                     tokens.push(tok3->astOperand2());
                     if (isSameExpression(_tokenizer->isCPP(), false, tok->astOperand1(), tok3, _settings->library.functionpure)) {
