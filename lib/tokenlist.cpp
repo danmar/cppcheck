@@ -381,6 +381,18 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
     addtoken(CurrentToken, lineno, FileIndex, true);
     if (!CurrentToken.empty())
         _back->isExpandedMacro(expandedMacro);
+
+    // Split up ++ and --..
+    for (Token *tok = _front; tok; tok = tok->next()) {
+        if (!Token::Match(tok, "++|--"))
+            continue;
+        if (Token::Match(tok->previous(), "%num% ++|--") ||
+            Token::Match(tok, "++|-- %num%")) {
+            tok->str(tok->str()[0]);
+            tok->insertToken(tok->str());
+        }
+    }
+
     Token::assignProgressValues(_front);
 
     for (std::size_t i = 1; i < _files.size(); i++)

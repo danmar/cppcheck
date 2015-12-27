@@ -37,6 +37,7 @@ private:
         TEST_CASE(line1); // Ticket #4408
         TEST_CASE(line2); // Ticket #5423
         TEST_CASE(testaddtoken);
+        TEST_CASE(inc);
     }
 
     // inspired by #5895
@@ -102,6 +103,18 @@ private:
         ASSERT_EQUALS(Path::toNativeSeparators("[c:\\a.h:8]"), tokenlist.fileLine(tokenlist.front()));
     }
 
+    void inc() const {
+        const char code[] = "a++1;1++b;";
+
+        errout.str("");
+
+        // tokenize..
+        TokenList tokenlist(&settings);
+        std::istringstream istr(code);
+        tokenlist.createTokens(istr, "a.cpp");
+
+        ASSERT(Token::simpleMatch(tokenlist.front(), "a + + 1 ; 1 + + b ;"));
+    }
 };
 
 REGISTER_TEST(TestTokenList)
