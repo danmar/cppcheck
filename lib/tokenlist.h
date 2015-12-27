@@ -137,6 +137,14 @@ public:
      */
     void validateAst();
 
+    /**
+     * Verify that the given token is an element of the tokenlist.
+     * That method is implemented for debugging purposes.
+     * @param[in] tok token to be checked
+     * \return true if token was found in tokenlist, false else. In case of nullptr true is returned.
+     */
+    bool validateToken(const Token* tok) const;
+
 private:
 
     /** Disable copy constructor, no implementation */

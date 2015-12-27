@@ -1107,3 +1107,14 @@ std::string TokenList::fileLine(const Token *tok) const
 {
     return ErrorLogger::ErrorMessage::FileLocation(tok, this).stringify();
 }
+
+bool TokenList::validateToken(const Token* tok) const
+{
+    if (!tok)
+        return true;
+    for (Token *t = _front; t; t = t->next()) {
+        if (tok==t)
+            return true;
+    }
+    return false;
+}
