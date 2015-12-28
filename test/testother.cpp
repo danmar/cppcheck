@@ -6131,18 +6131,31 @@ private:
 
         // sequence points
         {
-            // FP
+            // function call: FP
             check("void f(int id) {\n"
                   "  id = dostuff(id += 42);\n"
                   "}", "test.c");
             ASSERT_EQUALS("", errout.str());
 
-            // FN
+            // function call: FN
             check("void f(int id) {\n"
                   "  id = id + dostuff(id += 42);\n"
                   "}", "test.c");
             TODO_ASSERT_EQUALS("error", "", errout.str());
         }
+
+        // comma
+        check("int f(void) {\n"
+              "  int t;\n"
+              "  return (unsigned char)(t=1,t^c);\n"
+              "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(void) {\n"
+              "  int t;\n"
+              "  dostuff(t=1,t^c);\n"
+              "}", "test.c");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
 
         // sizeof
         check("void f(char *buf) {\n"

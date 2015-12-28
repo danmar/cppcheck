@@ -2509,7 +2509,8 @@ void CheckOther::checkEvaluationOrder()
                     const Token *par = parent;
                     while (Token::simpleMatch(par,","))
                         par = par->astParent();
-                    if (!par || par->str() != "(")
+                    // not function => break
+                    if (!(par && par->str() == "(" && par->astOperand2()))
                         break;
                 }
                 if (parent->str() == "(" && parent->astOperand2())
