@@ -159,6 +159,11 @@ private:
         TEST_CASE(testUnusedLabel);
 
         TEST_CASE(testEvaluationOrder);
+        TEST_CASE(testEvaluationOrderSelfAssignment);
+        TEST_CASE(testEvaluationOrderMacro);
+        TEST_CASE(testEvaluationOrderSequencePointsFunctionCall);
+        TEST_CASE(testEvaluationOrderSequencePointsComma);
+        TEST_CASE(testEvaluationOrderSizeof);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -6116,35 +6121,39 @@ private:
               "  return dostuff(++exp, exp, 10);\n"
               "}", "test.c");
         ASSERT_EQUALS("[test.c:2]: (error) Expression '++exp,exp' depends on order of evaluation of side effects\n", errout.str());
+    }
 
+    void testEvaluationOrderSelfAssignment() {
         // self assignment
         check("void f() {\n"
               "  int x = x = y + 1;\n"
               "}", "test.c");
         ASSERT_EQUALS("[test.c:2]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
+    }
 
+    void testEvaluationOrderMacro() {
         // macro, dont bailout (#7233)
         check((std::string("void f(int x) {\n"
                            "  return x + ") + Preprocessor::macroChar + "x++;\n"
                "}").c_str(), "test.c");
         ASSERT_EQUALS("[test.c:2]: (error) Expression 'x+x++' depends on order of evaluation of side effects\n", errout.str());
+    }
 
-        // sequence points
-        {
-            // function call: FP
-            check("void f(int id) {\n"
-                  "  id = dostuff(id += 42);\n"
-                  "}", "test.c");
-            ASSERT_EQUALS("", errout.str());
+    void testEvaluationOrderSequencePointsFunctionCall() {
+        // FP
+        check("void f(int id) {\n"
+              "  id = dostuff(id += 42);\n"
+              "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
 
-            // function call: FN
-            check("void f(int id) {\n"
-                  "  id = id + dostuff(id += 42);\n"
-                  "}", "test.c");
-            TODO_ASSERT_EQUALS("error", "", errout.str());
-        }
+        // FN
+        check("void f(int id) {\n"
+              "  id = id + dostuff(id += 42);\n"
+              "}", "test.c");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+    }
 
-        // comma
+    void testEvaluationOrderSequencePointsComma() {
         check("int f(void) {\n"
               "  int t;\n"
               "  return (unsigned char)(t=1,t^c);\n"
@@ -6156,8 +6165,9 @@ private:
               "  dostuff(t=1,t^c);\n"
               "}", "test.c");
         ASSERT_EQUALS("[test.c:3]: (error) Expression 't=1,t^c' depends on order of evaluation of side effects\n", errout.str());
+    }
 
-        // sizeof
+    void testEvaluationOrderSizeof() {
         check("void f(char *buf) {\n"
               "  dostuff(buf++, sizeof(*buf));"
               "}", "test.c");
