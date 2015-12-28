@@ -3417,10 +3417,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // replace 'NULL' and similar '0'-defined macros with '0'
     simplifyNull();
 
-#ifndef CPPCHECK2
     // replace 'sin(0)' to '0' and other similar math expressions
     simplifyMathExpressions();
-#endif
 
     // combine "- %num%"
     concatenateNegativeNumberAndAnyPositive();
@@ -3428,13 +3426,11 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Combine tokens..
     combineOperators();
 
-#ifndef CPPCHECK2
     // simplify simple calculations
     for (Token *tok = list.front() ? list.front()->next() : nullptr; tok; tok = tok->next()) {
         if (tok->isNumber())
             TemplateSimplifier::simplifyNumericCalculations(tok->previous());
     }
-#endif
 
     // remove extern "C" and extern "C" {}
     if (isCPP())
@@ -3517,13 +3513,11 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove unnecessary member qualification..
     removeUnnecessaryQualification();
 
-#ifndef CPPCHECK2
     // convert Microsoft memory functions
     simplifyMicrosoftMemoryFunctions();
 
     // convert Microsoft string functions
     simplifyMicrosoftStringFunctions();
-#endif
 
     if (_settings->terminated())
         return false;
@@ -3629,13 +3623,11 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // operator = => operator=
     simplifyOperatorName();
 
-#ifndef CPPCHECK2
     // Remove redundant parentheses
     simplifyRedundantParentheses();
     for (Token *tok = list.front(); tok; tok = tok->next())
         while (TemplateSimplifier::simplifyNumericCalculations(tok))
             ;
-#endif
 
     // Handle templates..
     simplifyTemplates();
@@ -3690,10 +3682,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Change initialisation of variable to assignment
     simplifyInitVar();
 
-#ifndef CPPCHECK2
     // Convert e.g. atol("0") into 0
     simplifyMathFunctions();
-#endif
 
     simplifyDoublePlusAndDoubleMinus();
 
@@ -3777,7 +3767,6 @@ bool Tokenizer::simplifyTokenList2()
 
     simplifyIfAndWhileAssign();
 
-#ifndef CPPCHECK2
     // replace strlen(str)
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "strlen ( %str% )")) {
@@ -3803,7 +3792,6 @@ bool Tokenizer::simplifyTokenList2()
         modified |= simplifyCalculations();
         validate();
     }
-#endif
 
     // simplify redundant loops
     simplifyWhile0();
