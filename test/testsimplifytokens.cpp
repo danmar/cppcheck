@@ -47,6 +47,9 @@ private:
         // correct order
         TEST_CASE(simplifyTokenList1);
 
+        // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
+        TEST_CASE(simplifyAssignmentInFunctionCall);
+
         TEST_CASE(cast);
         TEST_CASE(iftruefalse);
         TEST_CASE(combine_strings);
@@ -338,6 +341,12 @@ private:
         // #1717 : The simplifyErrNoInWhile needs to be used before simplifyIfAndWhileAssign..
         ASSERT_EQUALS("; x = f ( ) ; while ( x == -1 ) { x = f ( ) ; }",
                       tok(";while((x=f())==-1 && errno==EINTR){}",true));
+    }
+
+
+    void simplifyAssignmentInFunctionCall() {
+        ASSERT_EQUALS("; x = g ( ) ; f ( x ) ;", tok(";f(x=g());"));
+        ASSERT_EQUALS("; hs = ( xyz_t ) { h . centerX , h . centerY , 1 + index } ; putInput ( hs , 1 ) ;", tok(";putInput(hs = (xyz_t) { h->centerX, h->centerY, 1 + index }, 1);"));
     }
 
 

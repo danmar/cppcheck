@@ -363,9 +363,6 @@ private:
 
         TEST_CASE(simplifyCalculations);
 
-        // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
-        TEST_CASE(simplifyAssignmentInFunctionCall);
-
         // "x += .." => "x = x + .."
         TEST_CASE(simplifyCompoundAssignment);
 
@@ -5725,11 +5722,6 @@ private:
 
         // #3469
         ASSERT_EQUALS("; a = a + ( b = 1 ) ;", tokenizeAndStringify("; a += b = 1;"));
-    }
-
-    void simplifyAssignmentInFunctionCall() {
-        ASSERT_EQUALS("; x = g ( ) ; f ( x ) ;", tokenizeAndStringify(";f(x=g());"));
-        ASSERT_EQUALS("; hs = ( xyz_t ) { h . centerX , h . centerY , 1 + index } ; putInput ( hs , 1 ) ;", tokenizeAndStringify(";putInput(hs = (xyz_t) { h->centerX, h->centerY, 1 + index }, 1);"));
     }
 
     void simplifyRoundCurlyParentheses() {

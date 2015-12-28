@@ -3617,9 +3617,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (_settings->terminated())
         return false;
 
-    // f(x=g())   =>   x=g(); f(x)
-    simplifyAssignmentInFunctionCall();
-
     // x = ({ 123; });  =>   { x = 123; }
     simplifyAssignmentBlock();
 
@@ -3729,6 +3726,9 @@ bool Tokenizer::simplifyTokenList2()
     // Clear AST. It will be created again at the end of this function.
     for (Token *tok = list.front(); tok; tok = tok->next())
         tok->clearAst();
+
+    // f(x=g())   =>   x=g(); f(x)
+    simplifyAssignmentInFunctionCall();
 
     simplifyCharAt();
 

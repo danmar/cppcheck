@@ -6155,7 +6155,7 @@ private:
               "  int t;\n"
               "  dostuff(t=1,t^c);\n"
               "}", "test.c");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (error) Expression 't=1,t^c' depends on order of evaluation of side effects\n", errout.str());
 
         // sizeof
         check("void f(char *buf) {\n"
