@@ -813,10 +813,16 @@ void MainWindow::ReCheckSelected(QStringList files, bool all)
     // Clear details, statistics and progress
     mUI.mResults->Clear(false);
     for (int i = 0; i < files.size(); ++i)
-        mUI.mResults->Clear(files[i]);
+        mUI.mResults->ClearRecheckFile(files[i]);
+
+    FileList pathList;
+    pathList.AddPathList(files);
+    if (mProject)
+        pathList.AddExcludeList(mProject->GetProjectFile()->GetExcludedPaths());
+    QStringList fileNames = pathList.GetFileList();
     CheckLockDownUI(); // lock UI while checking
-    mUI.mResults->CheckingStarted(files.size());
-    mThread->SetCheckFiles(files);
+    mUI.mResults->CheckingStarted(fileNames.size());
+    mThread->SetCheckFiles(fileNames);
 
     // Saving last check start time, otherwise unchecked modified files will not be
     // considered in "Modified Files Check"  performed after "Selected Files Check"

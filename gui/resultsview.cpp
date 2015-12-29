@@ -42,7 +42,6 @@
 
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
-    mErrorsFound(false),
     mShowNoErrorsMessage(true),
     mStatistics(new CheckStatistics(this))
 {
@@ -74,7 +73,6 @@ void ResultsView::Clear(bool results)
 {
     if (results) {
         mUI.mTree->Clear();
-        mErrorsFound = false;
     }
 
     mUI.mDetails->setText("");
@@ -90,13 +88,11 @@ void ResultsView::Clear(bool results)
 void ResultsView::Clear(const QString &filename)
 {
     mUI.mTree->Clear(filename);
+}
 
-    /**
-     * @todo Optimize this.. It is inefficient to check this every time.
-     */
-    // If the results list got empty..
-    if (!mUI.mTree->HasResults())
-        mErrorsFound = false;
+void ResultsView::ClearRecheckFile(const QString &filename)
+{
+    mUI.mTree->ClearRecheckFile(filename);
 }
 
 void ResultsView::Progress(int value, const QString& description)
@@ -107,7 +103,6 @@ void ResultsView::Progress(int value, const QString& description)
 
 void ResultsView::Error(const ErrorItem &item)
 {
-    mErrorsFound = true;
     if (mUI.mTree->AddErrorItem(item)) {
         emit GotResults();
         mStatistics->AddItem(ShowTypes::SeverityToShowType(item.severity));
@@ -141,7 +136,7 @@ void ResultsView::FilterResults(const QString& filter)
 
 void ResultsView::Save(const QString &filename, Report::Type type) const
 {
-    if (!mErrorsFound) {
+    if (!HasResults()) {
         QMessageBox msgBox;
         msgBox.setText(tr("No errors found, nothing to save."));
         msgBox.setIcon(QMessageBox::Critical);
@@ -205,7 +200,7 @@ void ResultsView::PrintPreview()
 
 void ResultsView::Print(QPrinter* printer)
 {
-    if (!mErrorsFound) {
+    if (!HasResults()) {
         QMessageBox msgBox;
         msgBox.setText(tr("No errors found, nothing to print."));
         msgBox.setIcon(QMessageBox::Critical);
@@ -251,7 +246,7 @@ void ResultsView::CheckingFinished()
     //Should we inform user of non visible/not found errors?
     if (mShowNoErrorsMessage) {
         //Tell user that we found no errors
-        if (!mErrorsFound) {
+        if (!HasResults()) {
             QMessageBox msg(QMessageBox::Information,
                             tr("Cppcheck"),
                             tr("No errors found."),

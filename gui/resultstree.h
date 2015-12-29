@@ -71,6 +71,11 @@ public:
     void Clear(const QString &filename);
 
     /**
+     * @brief Clear errors of a file selected for recheck
+     */
+    void ClearRecheckFile(const QString &filename);
+
+    /**
     * @brief Function to show/hide certain type of errors
     * Refreshes the tree.
     *

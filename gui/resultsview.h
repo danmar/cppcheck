@@ -69,6 +69,11 @@ public:
     void Clear(const QString &filename);
 
     /**
+     * @brief Remove a recheck file from the results.
+     */
+    void ClearRecheckFile(const QString &filename);
+
+    /**
     * @brief Save results to a file
     *
     * @param filename Filename to save results to
@@ -249,11 +254,6 @@ public slots:
     void PrintPreview();
 
 protected:
-    /**
-    * @brief Have any errors been found
-    */
-    bool mErrorsFound;
-
     /**
     * @brief Should we show a "No errors found dialog" every time no errors were found?
     */

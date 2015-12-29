@@ -46,6 +46,7 @@
 #include "application.h"
 #include "showtypes.h"
 #include "threadhandler.h"
+#include "path.h"
 
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
@@ -333,6 +334,21 @@ void ResultsTree::Clear(const QString &filename)
         QVariantMap data = item->data().toMap();
         if (stripped == data["file"].toString() ||
             filename == data["file0"].toString()) {
+            mModel.removeRow(i);
+            break;
+        }
+    }
+}
+
+void ResultsTree::ClearRecheckFile(const QString &filename)
+{
+    for (int i = 0; i < mModel.rowCount(); ++i) {
+        const QStandardItem *item = mModel.item(i, 0);
+        if (!item)
+            continue;
+
+        QVariantMap data = item->data().toMap();
+        if (filename == data["file"].toString()) {
             mModel.removeRow(i);
             break;
         }
@@ -813,8 +829,16 @@ void ResultsTree::RecheckSelectedFiles()
     QStringList selectedItems;
     foreach (QModelIndex index, selectedRows) {
         QStandardItem *item = mModel.itemFromIndex(index);
+        while (item->parent())
+            item = item->parent();
         QVariantMap data = item->data().toMap();
-        selectedItems<<data["file"].toString();
+        QString currentFile = data["file"].toString();
+        if (Path::isHeader(currentFile.toStdString())) {
+            if (!selectedItems.contains(data["file0"].toString()))
+                selectedItems<<data["file0"].toString();
+        }
+        if (!selectedItems.contains(currentFile))
+            selectedItems<<currentFile;
     }
     emit CheckSelected(selectedItems);
 }
