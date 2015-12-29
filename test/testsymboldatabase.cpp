@@ -3044,6 +3044,7 @@ private:
         ASSERT_EQUALS("const short *", typeOf("L\"hello\" + 1", "+"));
 
         // Variable calculations
+        ASSERT_EQUALS("void *", typeOf("void *p; a = p + 1;", "+"));
         ASSERT_EQUALS("int", typeOf("int x; a = x + 1;", "+"));
         ASSERT_EQUALS("int", typeOf("int x; a = x | 1;", "|"));
         ASSERT_EQUALS("float", typeOf("float x; a = x + 1;", "+"));
@@ -3061,10 +3062,12 @@ private:
         ASSERT_EQUALS("int", typeOf("struct X {int i;}; void f(struct X x) { x.i }", "."));
 
         // array..
+        ASSERT_EQUALS("void * *", typeOf("void * x[10]; a = x + 0;", "+"));
         ASSERT_EQUALS("int *", typeOf("int x[10]; a = x + 1;", "+"));
         ASSERT_EQUALS("int",  typeOf("int x[10]; a = x[0] + 1;", "+"));
 
         // cast..
+        ASSERT_EQUALS("void *", typeOf("a = (void *)0;", "("));
         ASSERT_EQUALS("char", typeOf("a = (char)32;", "("));
         ASSERT_EQUALS("long", typeOf("a = (long)32;", "("));
         ASSERT_EQUALS("long", typeOf("a = (long int)32;", "("));

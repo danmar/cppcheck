@@ -1051,7 +1051,7 @@ private:
 class CPPCHECKLIB ValueType {
 public:
     enum Sign {UNKNOWN_SIGN, SIGNED, UNSIGNED} sign;
-    enum Type {UNKNOWN_TYPE, NONSTD, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, FLOAT, DOUBLE, LONGDOUBLE} type;
+    enum Type {UNKNOWN_TYPE, NONSTD, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, FLOAT, DOUBLE, LONGDOUBLE} type;
     unsigned int pointer; // 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     unsigned int constness;  // bit 0=data, bit 1=*, bit 2=**
     const Scope *typeScope;

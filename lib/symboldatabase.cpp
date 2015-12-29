@@ -3799,6 +3799,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype)
             valuetype->sign = ValueType::Sign::UNSIGNED;
         if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
+        else if (type->str() == "void")
+            valuetype->type = ValueType::Type::VOID;
         else if (type->str() == "bool")
             valuetype->type = ValueType::Type::BOOL;
         else if (type->str() == "char")
@@ -3901,7 +3903,9 @@ std::string ValueType::str() const
     std::string ret;
     if (constness & 1)
         ret = " const";
-    if (isIntegral()) {
+    if (type == VOID)
+        ret += " void";
+    else if (isIntegral()) {
         if (sign == SIGNED)
             ret += " signed";
         else if (sign == UNSIGNED)
