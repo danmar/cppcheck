@@ -2776,11 +2776,14 @@ public:
                         continue;
                     }
                     optcomma = false;
+                    // separate ++ and -- with space
+                    if (!str.empty() && !macrocode.empty() && (str[0] == '+' || str[0] == '-') && str[0] == macrocode[macrocode.size()-1U])
+                        macrocode += ' ';
                     macrocode += str;
                     if (Token::Match(tok, "%name% %name%|%num%") ||
                         Token::Match(tok, "%num% %name%") ||
                         Token::simpleMatch(tok, "> >"))
-                        macrocode += " ";
+                        macrocode += ' ';
                 }
             }
         }

@@ -184,6 +184,7 @@ private:
         TEST_CASE(macro_mismatch);
         TEST_CASE(macro_linenumbers);
         TEST_CASE(macro_nopar);
+        TEST_CASE(macro_incdec);  // separate ++ and -- with space when expanding such macro: '#define M(X)  A-X'
         TEST_CASE(macro_switchCase);
         TEST_CASE(macro_NULL); // skip #define NULL .. it is replaced in the tokenizer
         TEST_CASE(string1);
@@ -1948,6 +1949,13 @@ private:
         const char filedata[] = "#define AAA( ) { NULL }\n"
                                 "AAA()\n";
         ASSERT_EQUALS("\n${ $NULL }\n", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void macro_incdec() const {
+        const char filedata[] = "#define M1(X) 1+X\n"
+                                "#define M2(X) 2-X\n"
+                                "M1(+1) M2(-1)\n";
+        ASSERT_EQUALS("\n\n$1+ +$1 $2- -$1\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_switchCase() const {
