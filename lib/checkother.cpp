@@ -2512,6 +2512,12 @@ void CheckOther::checkEvaluationOrder()
                     // not function => break
                     if (!(par && par->str() == "(" && par->astOperand2()))
                         break;
+                    // sequence point in function argument: dostuff((1,2),3) => break
+                    par = par->next();
+                    while (par && (par->previous() != parent))
+                        par = par->nextArgument();
+                    if (!par)
+                        break;
                 }
                 if (parent->str() == "(" && parent->astOperand2())
                     break;

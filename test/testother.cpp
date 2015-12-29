@@ -6165,6 +6165,12 @@ private:
               "  dostuff(t=1,t^c);\n"
               "}", "test.c");
         ASSERT_EQUALS("[test.c:3]: (error) Expression 't=1,t^c' depends on order of evaluation of side effects\n", errout.str());
+
+        check("void f(void) {\n"
+              "  int t;\n"
+              "  dostuff((t=1,t),2);\n"
+              "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testEvaluationOrderSizeof() {
