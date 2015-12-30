@@ -334,47 +334,30 @@ void CheckSizeof::sizeofVoid()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof ( )")) { // "sizeof(void)" gets simplified to sizeof ( )
             sizeofVoidError(tok);
-        } else if (Token::Match(tok, "sizeof ( * %var% )") && tok->tokAt(3)->variable() &&
-                   (Token::Match(tok->tokAt(3)->variable()->typeStartToken(), "void * !!*")) &&
-                   (!tok->tokAt(3)->variable()->isArray())) { // sizeof(*p) where p is of type "void*"
-            sizeofDereferencedVoidPointerError(tok, tok->strAt(3));
-        } else if (Token::Match(tok, "%name% +|-|++|--") ||
-                   Token::Match(tok, "+|-|++|-- %name%")) { // Arithmetic operations on variable of type "void*"
-            const int index = (tok->isName()) ? 0 : 1;
-            const Variable* var = tok->tokAt(index)->variable();
-            if (var && !var->isArray() && Token::Match(var->typeStartToken(), "void * !!*")) {
-                std::string varname = tok->strAt(index);
-                // In case this 'void *' var is a member then go back to the main object
-                const Token* tok2 = tok->tokAt(index);
-                if (index == 0) {
-                    bool isMember = false;
-                    while (Token::simpleMatch(tok2->previous(), ".")) {
-                        isMember = true;
-                        if (Token::simpleMatch(tok2->tokAt(-2), ")"))
-                            tok2 = tok2->linkAt(-2);
-                        else if (Token::simpleMatch(tok2->tokAt(-2), "]"))
-                            tok2 = tok2->linkAt(-2)->previous();
-                        else
-                            tok2 = tok2->tokAt(-2);
-                    }
-                    if (isMember) {
-                        // Get 'struct.member' complete name (without spaces)
-                        varname = tok2->stringifyList(tok->next());
-                        varname.erase(std::remove_if(varname.begin(), varname.end(),
-                                                     static_cast<int (*)(int)>(std::isspace)), varname.end());
-                    }
-                }
-                // Check for cast on operations with '+|-'
-                if (Token::Match(tok, "%name% +|-")) {
-                    // Check for cast expression
-                    if (Token::simpleMatch(tok2->previous(), ")") && !Token::Match(tok2->previous()->link(), "( const| void *"))
-                        continue;
-                    if (tok2->strAt(-1) == "&") // Check for reference operator
-                        continue;
-                }
-                arithOperationsOnVoidPointerError(tok, varname,
-                                                  var->typeStartToken()->stringifyList(var->typeEndToken()->next()));
-            }
+        } else if (Token::Match(tok, "sizeof (") && tok->next()->astOperand2()) {
+            const ValueType *vt = tok->next()->astOperand2()->valueType();
+            if (vt && vt->type == ValueType::Type::VOID && vt->pointer == 0U)
+                sizeofDereferencedVoidPointerError(tok, tok->strAt(3));
+        } else if (tok->str() == "-") {
+            // only warn for: 'void *' - 'integral'
+            const ValueType *vt1  = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+            const ValueType *vt2  = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+            bool op1IsvoidPointer = (vt1 && vt1->type == ValueType::Type::VOID && vt1->pointer == 1U);
+            bool op2IsIntegral    = (vt2 && vt2->isIntegral() && vt2->pointer == 0U);
+            if (op1IsvoidPointer && op2IsIntegral)
+                arithOperationsOnVoidPointerError(tok, tok->astOperand1()->expressionString(), vt1->str());
+        } else if (Token::Match(tok, "+|++|--|+=|-=")) { // Arithmetic operations on variable of type "void*"
+            const ValueType *vt1 = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+            const ValueType *vt2 = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+
+            bool voidpointer1 = (vt1 && vt1->type == ValueType::Type::VOID && vt1->pointer == 1U);
+            bool voidpointer2 = (vt2 && vt2->type == ValueType::Type::VOID && vt2->pointer == 1U);
+
+            if (voidpointer1)
+                arithOperationsOnVoidPointerError(tok, tok->astOperand1()->expressionString(), vt1->str());
+
+            if (!tok->isAssignmentOp() && voidpointer2)
+                arithOperationsOnVoidPointerError(tok, tok->astOperand2()->expressionString(), vt2->str());
         }
     }
 }

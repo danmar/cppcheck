@@ -659,7 +659,7 @@ private:
                       "[test.cpp:3]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
 
         check("void f(void *data) {\n"
-              "  void* data2 = (void *)data + 1;\n"
+              "  void* data2 = data + 1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (portability) 'data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
 
