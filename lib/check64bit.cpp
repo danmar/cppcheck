@@ -85,6 +85,7 @@ void Check64BitPortability::pointerassignment()
 
             // Assign integer to pointer..
             if (lhstype->pointer >= 1U &&
+                !tok->astOperand2()->isNumber() &&
                 rhstype->pointer == 0U &&
                 rhstype->originalTypeName.empty() &&
                 rhstype->type == ValueType::Type::INT)
