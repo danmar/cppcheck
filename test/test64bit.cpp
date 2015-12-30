@@ -138,7 +138,7 @@ private:
               "    int x = 10;\n"
               "    int *a = x * x;\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an integer to a pointer is not portable.\n", errout.str());
 
         check("void foo(int *start, int *end) {\n"
               "    int len;\n"
