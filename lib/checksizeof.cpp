@@ -334,7 +334,7 @@ void CheckSizeof::sizeofVoid()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof ( )")) { // "sizeof(void)" gets simplified to sizeof ( )
             sizeofVoidError(tok);
-        } else if (Token::Match(tok, "sizeof (") && tok->next()->astOperand2()) {
+        } else if (Token::simpleMatch(tok, "sizeof (") && tok->next()->astOperand2()) {
             const ValueType *vt = tok->next()->astOperand2()->valueType();
             if (vt && vt->type == ValueType::Type::VOID && vt->pointer == 0U)
                 sizeofDereferencedVoidPointerError(tok, tok->strAt(3));
