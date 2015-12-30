@@ -3084,6 +3084,10 @@ private:
         // function call..
         ASSERT_EQUALS("int", typeOf("int a(int); a(5);", "( 5"));
         ASSERT_EQUALS("unsigned long", typeOf("sizeof(x);", "("));
+
+        // struct member..
+        ASSERT_EQUALS("int", typeOf("struct AB { int a; int b; } ab; x = ab.a;", "."));
+        ASSERT_EQUALS("int", typeOf("struct AB { int a; int b; } *ab; x = ab[1].a;", "."));
     }
 };
 

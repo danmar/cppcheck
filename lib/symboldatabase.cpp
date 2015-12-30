@@ -3676,27 +3676,23 @@ static void setValueType(Token *tok, const ValueType &valuetype)
         return;
 
     if (parent->str() == "[" && valuetype.pointer > 0U) {
-        setValueType(parent, ValueType(valuetype.sign,
-                                       valuetype.type,
-                                       valuetype.pointer - 1U,
-                                       valuetype.constness >> 1,
-                                       valuetype.originalTypeName));
+        ValueType vt(valuetype);
+        vt.pointer -= 1U;
+        vt.constness >>= 1;
+        setValueType(parent, vt);
         return;
     }
     if (parent->str() == "*" && !parent->astOperand2() && valuetype.pointer > 0U) {
-        setValueType(parent, ValueType(valuetype.sign,
-                                       valuetype.type,
-                                       valuetype.pointer - 1U,
-                                       valuetype.constness >> 1,
-                                       valuetype.originalTypeName));
+        ValueType vt(valuetype);
+        vt.pointer -= 1U;
+        vt.constness >>= 1;
+        setValueType(parent, vt);
         return;
     }
     if (parent->str() == "&" && !parent->astOperand2()) {
-        setValueType(parent, ValueType(valuetype.sign,
-                                       valuetype.type,
-                                       valuetype.pointer + 1U,
-                                       valuetype.constness,
-                                       valuetype.originalTypeName));
+        ValueType vt(valuetype);
+        vt.pointer += 1U;
+        setValueType(parent, vt);
         return;
     }
 
