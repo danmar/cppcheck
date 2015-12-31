@@ -53,6 +53,12 @@ void Check64BitPortability::pointerassignment()
             continue;
 
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            // skip nested functions
+            if (tok->str() == "{") {
+                if (tok->scope()->type == Scope::ScopeType::eFunction)
+                    tok = tok->link();
+            }
+
             if (tok->str() != "return")
                 continue;
 

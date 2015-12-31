@@ -201,6 +201,14 @@ private:
               "  return mmio + (port_no * 0x80);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7247 : dont check return statements in nested functions..
+        check("int foo() {\n"
+              "  struct {\n"
+              "    const char * name() { return \"abc\"; }\n"
+              "  } table;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
