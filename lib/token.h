@@ -150,19 +150,20 @@ public:
      *
      * Possible patterns
      * - "%any%" any token
-     * - "%name%" any token which is a name, variable or type e.g. "hello" or "int"
-     * - "%type%" Anything that can be a variable type, e.g. "int", but not "delete".
-     * - "%num%" Any numeric token, e.g. "23"
+     * - "%assign%" a assignment operand
      * - "%bool%" true or false
      * - "%char%" Any token enclosed in &apos;-character.
      * - "%comp%" Any token such that isComparisonOp() returns true.
+     * - "%cop%" Any token such that isConstOp() returns true.
+     * - "%name%" any token which is a name, variable or type e.g. "hello" or "int"
+     * - "%num%" Any numeric token, e.g. "23"
+     * - "%op%" Any token such that isOp() returns true.
+     * - "%or%" A bitwise-or operator '|'
+     * - "%oror%" A logical-or operator '||'
+     * - "%type%" Anything that can be a variable type, e.g. "int", but not "delete".
      * - "%str%" Any token starting with &quot;-character (C-string).
      * - "%var%" Match with token with varId > 0
      * - "%varid%" Match with parameter varid
-     * - "%op%" Any token such that isOp() returns true.
-     * - "%cop%" Any token such that isConstOp() returns true.
-     * - "%or%" A bitwise-or operator '|'
-     * - "%oror%" A logical-or operator '||'
      * - "[abc]" Any of the characters 'a' or 'b' or 'c'
      * - "int|void|char" Any of the strings, int, void or char
      * - "int|void|char|" Any of the strings, int, void or char or empty string
@@ -170,15 +171,8 @@ public:
      * - "someRandomText" If token contains "someRandomText".
      *
      * multi-compare patterns such as "int|void|char" can contain %%or%, %%oror% and %%op%
-     * but it is not recommended to put such an %%cmd% as the first pattern.
-     *
-     * It's possible to use multi-compare patterns with all the other %%cmds%,
-     * except for %%varid%, and normal names, but the %%cmds% should be put as
-     * the first patterns in the list, then the normal names.
+     * it is recommended to put such an %%cmd% as the first pattern.
      * For example: "%var%|%num%|)" means yes to a variable, a number or ')'.
-     *
-     * @todo Make it possible to use the %%cmds% and the normal names in the
-     * multicompare list without an order.
      *
      * The patterns can be also combined to compare to multiple tokens at once
      * by separating tokens with a space, e.g.
