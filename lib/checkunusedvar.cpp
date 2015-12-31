@@ -897,8 +897,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
             if (tok && tok->isAssignmentOp() && tok->str() != "=") {
                 variables.use(varid1, tok);
-                if (Token::Match(tok, "%assign% %name%"))
+                if (Token::Match(tok, "%assign% %name%")) {
                     tok = tok->next();
+                    variables.read(tok->varId(), tok);
+                }
             }
 
             if (pre || post)

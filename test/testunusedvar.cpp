@@ -3153,6 +3153,13 @@ private:
                               "  return a;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "  Fred fred;\n"
+                              "  int *a; a = b;\n"
+                              "  fred += a;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarFor() {
