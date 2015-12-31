@@ -255,7 +255,7 @@ void CheckType::checkLongCast()
             if (tok->str() == "return") {
                 if (Token::Match(tok->astOperand1(), "<<|*")) {
                     const ValueType *type = tok->astOperand1()->valueType();
-                    if (type->type == ValueType::Type::INT && type->pointer == 0U && type->originalTypeName.empty())
+                    if (type && type->type == ValueType::Type::INT && type->pointer == 0U && type->originalTypeName.empty())
                         ret = tok;
                 }
                 // All return statements must have problem otherwise no warning
