@@ -3480,9 +3480,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // simplify '[;{}] * & ( %any% ) =' to '%any% ='
     simplifyMulAndParens();
 
-    // ";a+=b;" => ";a=a+b;"
-    simplifyCompoundAssignment();
-
     if (!isC() && !_settings->library.markupFile(FileName)) {
         findComplicatedSyntaxErrorsInTemplates();
     }
@@ -3719,6 +3716,9 @@ bool Tokenizer::simplifyTokenList2()
 
     // f(x=g())   =>   x=g(); f(x)
     simplifyAssignmentInFunctionCall();
+
+    // ";a+=b;" => ";a=a+b;"
+    simplifyCompoundAssignment();
 
     simplifyCharAt();
 

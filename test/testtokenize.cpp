@@ -363,9 +363,6 @@ private:
 
         TEST_CASE(simplifyCalculations);
 
-        // "x += .." => "x = x + .."
-        TEST_CASE(simplifyCompoundAssignment);
-
         // x = ({ 123; });  =>  { x = 123; }
         TEST_CASE(simplifyRoundCurlyParentheses);
 
@@ -3490,7 +3487,7 @@ private:
                                 " n12 = open ( ) ;"
                                 " n13 = open ( ) ;"
                                 " n14 = open ( ) ;"
-                                " n15 = n15 + 10 ; "
+                                " n15 += 10 ; "
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
@@ -5660,68 +5657,6 @@ private:
 
         // ticket #4931
         ASSERT_EQUALS("dostuff ( 1 ) ;", tokenizeAndStringify("dostuff(9&&8);", true));
-    }
-
-    void simplifyCompoundAssignment() {
-        ASSERT_EQUALS("; x = x + y ;", tokenizeAndStringify("; x += y;"));
-        ASSERT_EQUALS("; x = x - y ;", tokenizeAndStringify("; x -= y;"));
-        ASSERT_EQUALS("; x = x * y ;", tokenizeAndStringify("; x *= y;"));
-        ASSERT_EQUALS("; x = x / y ;", tokenizeAndStringify("; x /= y;"));
-        ASSERT_EQUALS("; x = x % y ;", tokenizeAndStringify("; x %= y;"));
-        ASSERT_EQUALS("; x = x & y ;", tokenizeAndStringify("; x &= y;"));
-        ASSERT_EQUALS("; x = x | y ;", tokenizeAndStringify("; x |= y;"));
-        ASSERT_EQUALS("; x = x ^ y ;", tokenizeAndStringify("; x ^= y;"));
-        ASSERT_EQUALS("; x = x << y ;", tokenizeAndStringify("; x <<= y;"));
-        ASSERT_EQUALS("; x = x >> y ;", tokenizeAndStringify("; x >>= y;"));
-
-        ASSERT_EQUALS("{ x = x + y ; }", tokenizeAndStringify("{ x += y;}"));
-        ASSERT_EQUALS("{ x = x - y ; }", tokenizeAndStringify("{ x -= y;}"));
-        ASSERT_EQUALS("{ x = x * y ; }", tokenizeAndStringify("{ x *= y;}"));
-        ASSERT_EQUALS("{ x = x / y ; }", tokenizeAndStringify("{ x /= y;}"));
-        ASSERT_EQUALS("{ x = x % y ; }", tokenizeAndStringify("{ x %= y;}"));
-        ASSERT_EQUALS("{ x = x & y ; }", tokenizeAndStringify("{ x &= y;}"));
-        ASSERT_EQUALS("{ x = x | y ; }", tokenizeAndStringify("{ x |= y;}"));
-        ASSERT_EQUALS("{ x = x ^ y ; }", tokenizeAndStringify("{ x ^= y;}"));
-        ASSERT_EQUALS("{ x = x << y ; }", tokenizeAndStringify("{ x <<= y;}"));
-        ASSERT_EQUALS("{ x = x >> y ; }", tokenizeAndStringify("{ x >>= y;}"));
-
-        ASSERT_EQUALS("; * p = * p + y ;", tokenizeAndStringify("; *p += y;"));
-        ASSERT_EQUALS("; ( * p ) = ( * p ) + y ;", tokenizeAndStringify("; (*p) += y;"));
-        ASSERT_EQUALS("; * ( p [ 0 ] ) = * ( p [ 0 ] ) + y ;", tokenizeAndStringify("; *(p[0]) += y;"));
-        ASSERT_EQUALS("; p [ { 1 , 2 } ] = p [ { 1 , 2 } ] + y ;", tokenizeAndStringify("; p[{1,2}] += y;"));
-
-        ASSERT_EQUALS("void foo ( ) { switch ( n ) { case 0 : ; x = x + y ; break ; } }", tokenizeAndStringify("void foo() { switch (n) { case 0: x += y; break; } }"));
-
-        ASSERT_EQUALS("; x . y = x . y + 1 ;", tokenizeAndStringify("; x.y += 1;"));
-
-        ASSERT_EQUALS("; x [ 0 ] = x [ 0 ] + 1 ;", tokenizeAndStringify("; x[0] += 1;"));
-        ASSERT_EQUALS("; x [ y - 1 ] = x [ y - 1 ] + 1 ;", tokenizeAndStringify("; x[y-1] += 1;"));
-        ASSERT_EQUALS("; x [ y ] = x [ y ++ ] + 1 ;", tokenizeAndStringify("; x[y++] += 1;"));
-        ASSERT_EQUALS("; x [ ++ y ] = x [ y ] + 1 ;", tokenizeAndStringify("; x[++y] += 1;"));
-
-        ASSERT_EQUALS(";", tokenizeAndStringify(";x += 0;"));
-        ASSERT_EQUALS(";", tokenizeAndStringify(";x += '\\0';"));
-        ASSERT_EQUALS(";", tokenizeAndStringify(";x -= 0;"));
-        ASSERT_EQUALS(";", tokenizeAndStringify(";x |= 0;"));
-        ASSERT_EQUALS(";", tokenizeAndStringify(";x *= 1;"));
-        ASSERT_EQUALS(";", tokenizeAndStringify(";x /= 1;"));
-
-        ASSERT_EQUALS("; a . x ( ) = a . x ( ) + 1 ;", tokenizeAndStringify("; a.x() += 1;"));
-        ASSERT_EQUALS("; x ( 1 ) = x ( 1 ) + 1 ;", tokenizeAndStringify("; x(1) += 1;"));
-
-        // #2368
-        ASSERT_EQUALS("if ( false ) { } else { j = j - i ; }", tokenizeAndStringify("if (false) {} else { j -= i; }"));
-
-        // #2714 - wrong simplification of "a += b?c:d;"
-        ASSERT_EQUALS("; a = a + ( b ? c : d ) ;", tokenizeAndStringify("; a+=b?c:d;"));
-        ASSERT_EQUALS("; a = a * ( b + 1 ) ;", tokenizeAndStringify("; a*=b+1;"));
-
-        ASSERT_EQUALS("; a = a + ( b && c ) ;", tokenizeAndStringify("; a+=b&&c;"));
-        ASSERT_EQUALS("; a = a * ( b || c ) ;", tokenizeAndStringify("; a*=b||c;"));
-        ASSERT_EQUALS("; a = a | ( b == c ) ;", tokenizeAndStringify("; a|=b==c;"));
-
-        // #3469
-        ASSERT_EQUALS("; a = a + ( b = 1 ) ;", tokenizeAndStringify("; a += b = 1;"));
     }
 
     void simplifyRoundCurlyParentheses() {

@@ -417,6 +417,9 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
         return tok->tokAt(2);
     }
 
+    if (Token::Match(tok, "%var% %assign%") && tok->strAt(1) != "=")
+        return tok->next();
+
     const Token* const tokOld = tok;
 
     // check for aliased variable
@@ -426,7 +429,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
     if (var1) {
         // jump behind '='
         tok = tok->next();
-        while (tok->str() != "=") {
+        while (!tok->isAssignmentOp()) {
             if (tok->varId())
                 variables.read(tok->varId(), tok);
             tok = tok->next();
@@ -862,8 +865,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.use(tok->tokAt(2)->varId(), tok);
         }
         // assignment
-        else if (Token::Match(tok, "*| ++|--| %name% ++|--| =") ||
-                 Token::Match(tok, "*| ( const| %type% *| ) %name% =")) {
+        else if (Token::Match(tok, "*| ++|--| %name% ++|--| %assign%") ||
+                 Token::Match(tok, "*| ( const| %type% *| ) %name% %assign%")) {
             bool dereference = false;
             bool pre = false;
             bool post = false;
@@ -873,7 +876,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 tok = tok->next();
             }
 
-            if (Token::Match(tok, "( const| %type% *| ) %name% ="))
+            if (Token::Match(tok, "( const| %type% *| ) %name% %assign%"))
                 tok = tok->link()->next();
 
             else if (tok->str() == "(")
@@ -891,6 +894,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             const Token * const start = tok;
 
             tok = doAssignment(variables, tok, dereference, scope);
+
+            if (tok && tok->isAssignmentOp() && tok->str() != "=") {
+                variables.use(varid1, tok);
+                if (Token::Match(tok, "%assign% %name%"))
+                    tok = tok->next();
+            }
 
             if (pre || post)
                 variables.use(varid1, tok);
@@ -939,19 +948,19 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 } else {
                     variables.write(varid1, tok);
                 }
+            }
 
-                Variables::VariableUsage *var2 = variables.find(tok->varId());
-                if (var2) {
-                    if (var2->_type == Variables::reference) {
-                        variables.writeAliases(tok->varId(), tok);
-                        variables.read(tok->varId(), tok);
-                    } else if (tok->varId() != varid1 && Token::Match(tok, "%name% ."))
-                        variables.read(tok->varId(), tok);
-                    else if (tok->varId() != varid1 &&
-                             var2->_type == Variables::standard &&
-                             tok->strAt(-1) != "&")
-                        variables.use(tok->varId(), tok);
-                }
+            Variables::VariableUsage *var2 = variables.find(tok->varId());
+            if (var2) {
+                if (var2->_type == Variables::reference) {
+                    variables.writeAliases(tok->varId(), tok);
+                    variables.read(tok->varId(), tok);
+                } else if (tok->varId() != varid1 && Token::Match(tok, "%name% .|["))
+                    variables.read(tok->varId(), tok);
+                else if (tok->varId() != varid1 &&
+                         var2->_type == Variables::standard &&
+                         tok->strAt(-1) != "&")
+                    variables.use(tok->varId(), tok);
             }
 
             const Token * const equal = skipBracketsAndMembers(tok->next());

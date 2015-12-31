@@ -275,7 +275,7 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() == varid) {
-            if (Token::Match(tok, "%name% =|++|--"))
+            if (Token::Match(tok, "%name% %assign%|++|--"))
                 return true;
 
             if (Token::Match(tok->previous(), "++|-- %name%"))

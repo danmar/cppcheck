@@ -50,6 +50,9 @@ private:
         // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
         TEST_CASE(simplifyAssignmentInFunctionCall);
 
+        // ";a+=b;" => ";a=a+b;"
+        TEST_CASE(simplifyCompoundAssignment);
+
         TEST_CASE(cast);
         TEST_CASE(iftruefalse);
         TEST_CASE(combine_strings);
@@ -343,10 +346,71 @@ private:
                       tok(";while((x=f())==-1 && errno==EINTR){}",true));
     }
 
-
     void simplifyAssignmentInFunctionCall() {
         ASSERT_EQUALS("; x = g ( ) ; f ( x ) ;", tok(";f(x=g());"));
         ASSERT_EQUALS("; hs = ( xyz_t ) { h . centerX , h . centerY , 1 + index } ; putInput ( hs , 1 ) ;", tok(";putInput(hs = (xyz_t) { h->centerX, h->centerY, 1 + index }, 1);"));
+    }
+
+    void simplifyCompoundAssignment() {
+        ASSERT_EQUALS("; x = x + y ;", tok("; x += y;"));
+        ASSERT_EQUALS("; x = x - y ;", tok("; x -= y;"));
+        ASSERT_EQUALS("; x = x * y ;", tok("; x *= y;"));
+        ASSERT_EQUALS("; x = x / y ;", tok("; x /= y;"));
+        ASSERT_EQUALS("; x = x % y ;", tok("; x %= y;"));
+        ASSERT_EQUALS("; x = x & y ;", tok("; x &= y;"));
+        ASSERT_EQUALS("; x = x | y ;", tok("; x |= y;"));
+        ASSERT_EQUALS("; x = x ^ y ;", tok("; x ^= y;"));
+        ASSERT_EQUALS("; x = x << y ;", tok("; x <<= y;"));
+        ASSERT_EQUALS("; x = x >> y ;", tok("; x >>= y;"));
+
+        ASSERT_EQUALS("{ x = x + y ; }", tok("{ x += y;}"));
+        ASSERT_EQUALS("{ x = x - y ; }", tok("{ x -= y;}"));
+        ASSERT_EQUALS("{ x = x * y ; }", tok("{ x *= y;}"));
+        ASSERT_EQUALS("{ x = x / y ; }", tok("{ x /= y;}"));
+        ASSERT_EQUALS("{ x = x % y ; }", tok("{ x %= y;}"));
+        ASSERT_EQUALS("{ x = x & y ; }", tok("{ x &= y;}"));
+        ASSERT_EQUALS("{ x = x | y ; }", tok("{ x |= y;}"));
+        ASSERT_EQUALS("{ x = x ^ y ; }", tok("{ x ^= y;}"));
+        ASSERT_EQUALS("{ x = x << y ; }", tok("{ x <<= y;}"));
+        ASSERT_EQUALS("{ x = x >> y ; }", tok("{ x >>= y;}"));
+
+        ASSERT_EQUALS("; * p = * p + y ;", tok("; *p += y;"));
+        ASSERT_EQUALS("; ( * p ) = ( * p ) + y ;", tok("; (*p) += y;"));
+        ASSERT_EQUALS("; * ( p [ 0 ] ) = * ( p [ 0 ] ) + y ;", tok("; *(p[0]) += y;"));
+        ASSERT_EQUALS("; p [ { 1 , 2 } ] = p [ { 1 , 2 } ] + y ;", tok("; p[{1,2}] += y;"));
+
+        ASSERT_EQUALS("void foo ( ) { switch ( n ) { case 0 : ; x = x + y ; break ; } }", tok("void foo() { switch (n) { case 0: x += y; break; } }"));
+
+        ASSERT_EQUALS("; x . y = x . y + 1 ;", tok("; x.y += 1;"));
+
+        ASSERT_EQUALS("; x [ 0 ] = x [ 0 ] + 1 ;", tok("; x[0] += 1;"));
+        ASSERT_EQUALS("; x [ y - 1 ] = x [ y - 1 ] + 1 ;", tok("; x[y-1] += 1;"));
+        ASSERT_EQUALS("; x [ y ] = x [ y ++ ] + 1 ;", tok("; x[y++] += 1;"));
+        ASSERT_EQUALS("; x [ ++ y ] = x [ y ] + 1 ;", tok("; x[++y] += 1;"));
+
+        ASSERT_EQUALS(";", tok(";x += 0;"));
+        ASSERT_EQUALS(";", tok(";x += '\\0';"));
+        ASSERT_EQUALS(";", tok(";x -= 0;"));
+        ASSERT_EQUALS(";", tok(";x |= 0;"));
+        ASSERT_EQUALS(";", tok(";x *= 1;"));
+        ASSERT_EQUALS(";", tok(";x /= 1;"));
+
+        ASSERT_EQUALS("; a . x ( ) = a . x ( ) + 1 ;", tok("; a.x() += 1;"));
+        ASSERT_EQUALS("; x ( 1 ) = x ( 1 ) + 1 ;", tok("; x(1) += 1;"));
+
+        // #2368
+        ASSERT_EQUALS("{ j = j - i ; }", tok("if (false) {} else { j -= i; }"));
+
+        // #2714 - wrong simplification of "a += b?c:d;"
+        ASSERT_EQUALS("; a = a + ( b ? c : d ) ;", tok("; a+=b?c:d;"));
+        ASSERT_EQUALS("; a = a * ( b + 1 ) ;", tok("; a*=b+1;"));
+
+        ASSERT_EQUALS("; a = a + ( b && c ) ;", tok("; a+=b&&c;"));
+        ASSERT_EQUALS("; a = a * ( b || c ) ;", tok("; a*=b||c;"));
+        ASSERT_EQUALS("; a = a | ( b == c ) ;", tok("; a|=b==c;"));
+
+        // #3469
+        ASSERT_EQUALS("; a = a + ( b = 1 ) ;", tok("; a += b = 1;"));
     }
 
 
@@ -1715,7 +1779,7 @@ private:
     }
 
     void cAlternativeTokens() {
-        ASSERT_EQUALS("void f ( ) { err = err | ( ( r & s ) && ! t ) ; }",
+        ASSERT_EQUALS("void f ( ) { err |= ( ( r & s ) && ! t ) ; }",
                       tok("void f() { err or_eq ((r bitand s) and not t); }", "test.c", false));
         ASSERT_EQUALS("void f ( ) const { r = f ( a [ 4 ] | 15 , ~ c , ! d ) ; }",
                       tok("void f() const { r = f(a[4] bitor 0x0F, compl c, not d) ; }", "test.c", false));

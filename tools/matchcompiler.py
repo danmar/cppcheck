@@ -83,6 +83,8 @@ class MatchCompiler:
     def _compileCmd(self, tok):
         if tok == '%any%':
             return 'true'
+        elif tok == '%assign%':
+			return 'tok->isAssignmentOp()'
         elif tok == '%bool%':
             return 'tok->isBoolean()'
         elif tok == '%char%':

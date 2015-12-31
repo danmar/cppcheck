@@ -540,7 +540,7 @@ void CheckOther::checkRedundantAssignment()
                 }
 
                 std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
-                if (tok->next() && tok->next()->isAssignmentOp() && Token::Match(startToken, "[;{}]")) { // Assignment
+                if (Token::simpleMatch(tok->next(), "=") && Token::Match(startToken, "[;{}]")) { // Assignment
                     if (it != varAssignments.end()) {
                         bool error = true; // Ensure that variable is not used on right side
                         for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
@@ -733,6 +733,32 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             // Bitwise operation. Report an error if it's performed twice before a break. E.g.:
             //    case 3: b |= 1;    // <== redundant
             //    case 4: b |= 1;
+            else if (Token::Match(tok2->previous(), ";|{|}|: %var% %assign% %num% ;") &&
+                     (tok2->strAt(1) == "|=" || tok2->strAt(1) == "&=") &&
+                     Token::Match(tok2->next()->astOperand2(), "%num%")) {
+                std::string bitOp = tok2->strAt(1)[0] + tok2->strAt(2);
+                std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
+
+                // This variable has not had a bit operation performed on it yet, so just make a note of it
+                if (i2 == varsWithBitsSet.end()) {
+                    varsWithBitsSet[tok2->varId()] = tok2;
+                    bitOperations[tok2->varId()] = bitOp;
+                }
+
+                // The same bit operation has been performed on the same variable twice, so report an error
+                else if (bitOperations[tok2->varId()] == bitOp)
+                    redundantBitwiseOperationInSwitchError(i2->second, i2->second->str());
+
+                // A different bit operation was performed on the variable, so clear it
+                else {
+                    varsWithBitsSet.erase(tok2->varId());
+                    bitOperations.erase(tok2->varId());
+                }
+            }
+
+            // Bitwise operation. Report an error if it's performed twice before a break. E.g.:
+            //    case 3: b = b | 1;    // <== redundant
+            //    case 4: b = b | 1;
             else if (Token::Match(tok2->previous(), ";|{|}|: %var% = %name% %or%|& %num% ;") &&
                      tok2->varId() == tok2->tokAt(2)->varId()) {
                 std::string bitOp = tok2->strAt(3) + tok2->strAt(4);
@@ -2186,7 +2212,7 @@ static bool isNegative(const Token *tok, const Settings *settings)
 void CheckOther::checkNegativeBitwiseShift()
 {
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->str() != "<<" && tok->str() != ">>")
+        if (!Token::Match(tok, "<<|>>|<<=|>>="))
             continue;
 
         if (!tok->astOperand1() || !tok->astOperand2())

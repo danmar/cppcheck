@@ -442,13 +442,13 @@ void CheckCondition::oppositeInnerCondition()
                 break;
             else if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
                      (!tok->varId() && nonlocal)) {
-                if (Token::Match(tok, "%name% ++|--|="))
+                if (Token::Match(tok, "%name% %assign%|++|--"))
                     break;
                 if (Token::Match(tok, "%name% [")) {
                     const Token *tok2 = tok->linkAt(1);
                     while (Token::simpleMatch(tok2, "] ["))
                         tok2 = tok2->linkAt(1);
-                    if (Token::simpleMatch(tok2, "] ="))
+                    if (Token::Match(tok2, "] %assign%|++|--"))
                         break;
                 }
                 if (Token::Match(tok->previous(), "++|--|& %name%"))

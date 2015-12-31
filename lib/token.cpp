@@ -362,11 +362,18 @@ static int multiComparePercent(const Token *tok, const char*& haystack, bool emp
     }
     break;
     case 'a':
-        // Accept any token (%any%)
+        // Accept any token (%any%) or assign (%assign%)
     {
-        haystack += 4;
-        return 1;
+        if (haystack[3] == '%') { // %any%
+            haystack += 4;
+            return 1;
+        } else { // %assign%
+            haystack += 7;
+            if (tok->isAssignmentOp())
+                return 1;
+        }
     }
+    break;
     case 'n':
         // Number (%num%) or name (%name%)
     {

@@ -746,7 +746,7 @@ private:
                               "        d += code;\n"
                               "    }\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n", "", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -805,7 +805,7 @@ private:
                               "        d += code;\n"
                               "    } while(code < 20);\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n", "", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1708,9 +1708,7 @@ private:
                               "    C c;\n"
                               "    if (c >>= x) {}\n"
                               "}", "test.c");
-        TODO_ASSERT_EQUALS("[test.c:2]: (style) Variable 'x' is not assigned a value.\n",
-                           "[test.c:2]: (style) Variable 'x' is not assigned a value.\n"
-                           "[test.c:3]: (style) Variable 'c' is not assigned a value.\n", errout.str());
+        ASSERT_EQUALS("[test.c:4]: (style) Variable 'c' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void f(int c) {\n"
                               "    int x;\n"
@@ -3130,6 +3128,29 @@ private:
         functionVariableUsage("void foo() {\n"
                               "    int a = 1;\n"
                               "    (b).x += a;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo() {\n"
+                              "    int a=1, b[10];\n"
+                              "    b[0] = x;\n"
+                              "    a += b[0];\n"
+                              "    return a;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(int *start, int *stop) {\n"
+                              "  int length = *start - *stop;\n"
+                              "  if (length < 10000)\n"
+                              "    length = 10000;\n"
+                              "  *stop -= length;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(int a) {\n"
+                              "  int x = 3;\n"
+                              "  a &= ~x;\n"
+                              "  return a;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
