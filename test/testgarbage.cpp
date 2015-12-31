@@ -216,6 +216,7 @@ private:
         TEST_CASE(garbageCode165); // #7235
         TEST_CASE(garbageCode166); // #7236
         TEST_CASE(garbageCode167); // #7237
+        TEST_CASE(garbageCode168); // #7246
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1422,6 +1423,12 @@ private:
         //7237
         checkCode("class D00i000{:D00i000::}i", false);
     }
+
+    void garbageCode168() {
+        // 7246
+        checkCode("long foo(void) { return *bar; }", false);
+    }
+
 };
 
 REGISTER_TEST(TestGarbage)
