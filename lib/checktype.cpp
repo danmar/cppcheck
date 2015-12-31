@@ -131,19 +131,17 @@ void CheckType::checkTooBigBitwiseShift()
                 continue;
 
             // get number of bits of lhs
-            const Variable *var = tok->astOperand1()->variable();
-            if (!var)
+            const ValueType *lhstype = tok->astOperand1()->valueType();
+            if (!lhstype || !lhstype->isIntegral() || lhstype->pointer >= 1U)
                 continue;
             int lhsbits = 0;
-            for (const Token *type = var->typeStartToken(); type; type = type->next()) {
-                if (Token::Match(type,"char|short|int") && !type->isLong()) {
-                    lhsbits = _settings->sizeof_int * 8;
-                    break;
-                }
-                if (type == var->typeEndToken() || type->str() == "<")
-                    break;
-            }
-            if (lhsbits == 0)
+            if (lhstype->type <= ValueType::Type::INT)
+                lhsbits = 8 * _settings->sizeof_int;
+            else if (lhstype->type == ValueType::Type::LONG)
+                lhsbits = 8 * _settings->sizeof_long;
+            else if (lhstype->type == ValueType::Type::LONGLONG)
+                lhsbits = 8 * _settings->sizeof_long_long;
+            else
                 continue;
 
             // Get biggest rhs value. preferably a value which doesn't have 'condition'.
