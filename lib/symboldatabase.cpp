@@ -3675,6 +3675,11 @@ static void setValueType(Token *tok, const ValueType &valuetype)
     if (!parent->astOperand1() || !parent->astOperand1()->valueType())
         return;
 
+    if (Token::Match(parent, "<<|>>")) {
+        setValueType(parent,valuetype);
+        return;
+    }
+
     if (parent->str() == "[" && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
         vt.pointer -= 1U;

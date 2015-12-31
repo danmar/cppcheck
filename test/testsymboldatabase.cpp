@@ -3061,6 +3061,10 @@ private:
         ASSERT_EQUALS("long double *", typeOf("long double x; dostuff(&x,1);", "& x ,"));
         ASSERT_EQUALS("int", typeOf("struct X {int i;}; void f(struct X x) { x.i }", "."));
 
+        // shift => result has same type as lhs
+        ASSERT_EQUALS("int", typeOf("int x; a = x << 1U;", "<<"));
+        ASSERT_EQUALS("int", typeOf("int x; a = x >> 1U;", ">>"));
+
         // array..
         ASSERT_EQUALS("void * *", typeOf("void * x[10]; a = x + 0;", "+"));
         ASSERT_EQUALS("int *", typeOf("int x[10]; a = x + 1;", "+"));
