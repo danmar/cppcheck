@@ -99,20 +99,21 @@ private:
     void checkIntegerOverflow() {
         Settings settings;
         settings.platform(Settings::Unix32);
+        settings.addEnabled("warning");
 
-        check("int foo(int x) {\n"
+        check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
               "   return x * x;\n"
               "}",&settings);
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Signed integer overflow for expression 'x*x'. See condition at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer overflow for expression 'x*x'.\n", errout.str());
 
-        check("int foo(int x) {\n"
+        check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
               "   return -123456 * x;\n"
               "}",&settings);
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Signed integer overflow for expression '-123456*x'. See condition at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer overflow for expression '-123456*x'.\n", errout.str());
 
-        check("int foo(int x) {\n"
+        check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
               "   return 123456U * x;\n"
               "}",&settings);
