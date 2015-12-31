@@ -204,6 +204,7 @@ void CheckInternal::checkMissingPercentCharacter()
 namespace {
     const std::set<std::string> knownPatterns = make_container< std::set<std::string> > ()
             << "%any%"
+            << "%assign%"
             << "%bool%"
             << "%char%"
             << "%comp%"
