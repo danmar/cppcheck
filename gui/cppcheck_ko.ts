@@ -34,8 +34,8 @@ of the GNU General Public License version 3</source>
         <translation type="obsolete">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team. {2007-2013 ?}</translation>
     </message>
     <message utf8="true">
-        <source>Copyright © 2007-2015 Daniel Marjamäki and cppcheck team.</source>
-        <translation type="unfinished">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team. {2007-2013 ?} {2007-2015 ?}</translation>
+        <source>Copyright © 2007-2016 Daniel Marjamäki and cppcheck team.</source>
+        <translation type="unfinished">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team. {2007-2013 ?} {2007-2016 ?}</translation>
     </message>
 </context>
 <context>
