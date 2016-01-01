@@ -1258,8 +1258,11 @@ std::string Token::astStringVerbose(const unsigned int indent1, const unsigned i
     std::string ret;
 
     if (isExpandedMacro())
-        ret += "$";
-    ret += _str + "\n";
+        ret += '$';
+    ret += _str;
+    if (valuetype)
+        ret += " \'" + valuetype->str() + '\'';
+    ret += '\n';
 
     if (_astOperand1) {
         unsigned int i1 = indent1, i2 = indent2 + 2;
