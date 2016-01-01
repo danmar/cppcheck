@@ -3654,19 +3654,19 @@ bool SymbolDatabase::isReservedName(const std::string& iName) const
         return c_keywords.find(iName) != c_keywords.cend();
 }
 
-static const Token * parsedecl(const Token *type, ValueType * const valuetype);
-static void setValueType(Token *tok, const ValueType &valuetype);
+static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness);
+static void setValueType(Token *tok, const ValueType &valuetype, ValueType::Sign defaultSignedness);
 
-static void setValueType(Token *tok, const Variable &var)
+static void setValueType(Token *tok, const Variable &var, ValueType::Sign defaultSignedness)
 {
     ValueType valuetype;
     valuetype.pointer = var.dimensions().size();
     valuetype.typeScope = var.typeScope();
-    if (parsedecl(var.typeStartToken(), &valuetype))
-        ::setValueType(tok, valuetype);
+    if (parsedecl(var.typeStartToken(), &valuetype, defaultSignedness))
+        setValueType(tok, valuetype, defaultSignedness);
 }
 
-static void setValueType(Token *tok, const ValueType &valuetype)
+static void setValueType(Token *tok, const ValueType &valuetype, ValueType::Sign defaultSignedness)
 {
     tok->setValueType(new ValueType(valuetype));
     Token *parent = const_cast<Token *>(tok->astParent());
@@ -3676,7 +3676,7 @@ static void setValueType(Token *tok, const ValueType &valuetype)
         return;
 
     if (Token::Match(parent, "<<|>>")) {
-        setValueType(parent,valuetype);
+        setValueType(parent,valuetype, defaultSignedness);
         return;
     }
 
@@ -3684,20 +3684,20 @@ static void setValueType(Token *tok, const ValueType &valuetype)
         ValueType vt(valuetype);
         vt.pointer -= 1U;
         vt.constness >>= 1;
-        setValueType(parent, vt);
+        setValueType(parent, vt, defaultSignedness);
         return;
     }
     if (parent->str() == "*" && !parent->astOperand2() && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
         vt.pointer -= 1U;
         vt.constness >>= 1;
-        setValueType(parent, vt);
+        setValueType(parent, vt, defaultSignedness);
         return;
     }
     if (parent->str() == "&" && !parent->astOperand2()) {
         ValueType vt(valuetype);
         vt.pointer += 1U;
-        setValueType(parent, vt);
+        setValueType(parent, vt, defaultSignedness);
         return;
     }
 
@@ -3711,7 +3711,7 @@ static void setValueType(Token *tok, const ValueType &valuetype)
         for (std::list<Variable>::const_iterator it = typeScope->varlist.begin(); it != typeScope->varlist.end(); ++it) {
             const Variable &var = *it;
             if (var.nameToken()->str() == name) {
-                setValueType(parent, var);
+                setValueType(parent, var, defaultSignedness);
                 return;
             }
         }
@@ -3723,30 +3723,30 @@ static void setValueType(Token *tok, const ValueType &valuetype)
     const ValueType *vt2 = parent->astOperand2() ? parent->astOperand2()->valueType() : nullptr;
     if (parent->isArithmeticalOp() && vt2) {
         if (vt1->pointer != 0U && vt2->pointer == 0U) {
-            setValueType(parent, *vt1);
+            setValueType(parent, *vt1, defaultSignedness);
             return;
         }
 
         if (vt1->pointer == 0U && vt2->pointer != 0U) {
-            setValueType(parent, *vt2);
+            setValueType(parent, *vt2, defaultSignedness);
             return;
         }
 
         if (vt1->pointer != 0U) { // result is pointer diff
-            setValueType(parent, ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::INT, 0U, 0U, "ptrdiff_t"));
+            setValueType(parent, ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::INT, 0U, 0U, "ptrdiff_t"), defaultSignedness);
             return;
         }
 
         if (vt1->type == ValueType::Type::LONGDOUBLE || vt2->type == ValueType::Type::LONGDOUBLE) {
-            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::LONGDOUBLE, 0U));
+            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::LONGDOUBLE, 0U), defaultSignedness);
             return;
         }
         if (vt1->type == ValueType::Type::DOUBLE || vt2->type == ValueType::Type::DOUBLE) {
-            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::DOUBLE, 0U));
+            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::DOUBLE, 0U), defaultSignedness);
             return;
         }
         if (vt1->type == ValueType::Type::FLOAT || vt2->type == ValueType::Type::FLOAT) {
-            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 0U));
+            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 0U), defaultSignedness);
             return;
         }
     }
@@ -3781,17 +3781,17 @@ static void setValueType(Token *tok, const ValueType &valuetype)
             vt.originalTypeName.clear();
         }
 
-        setValueType(parent, vt);
+        setValueType(parent, vt, defaultSignedness);
         return;
     }
 }
 
-static const Token * parsedecl(const Token *type, ValueType * const valuetype)
+static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness)
 {
     const unsigned int pointer0 = valuetype->pointer;
     while (Token::Match(type->previous(), "%name%"))
         type = type->previous();
-    valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
+    valuetype->sign = defaultSignedness;
     valuetype->type = ValueType::Type::UNKNOWN_TYPE;
     while (Token::Match(type, "%name%|*|&") && !type->variable()) {
         if (type->isSigned())
@@ -3827,8 +3827,16 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype)
     return (type && valuetype->type != ValueType::Type::UNKNOWN_TYPE) ? type : nullptr;
 }
 
-void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
+void SymbolDatabase::setValueTypeInTokenList(Token *tokens, char defaultSignedness)
 {
+    ValueType::Sign defsign;
+    if (defaultSignedness == 's' || defaultSignedness == 'S')
+        defsign = ValueType::SIGNED;
+    else if (defaultSignedness == 'u' || defaultSignedness == 'U')
+        defsign = ValueType::UNSIGNED;
+    else
+        defsign = ValueType::UNKNOWN_SIGN;
+
     for (Token *tok = tokens; tok; tok = tok->next())
         tok->setValueType(nullptr);
 
@@ -3838,7 +3846,7 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
                 ValueType::Type type = ValueType::Type::DOUBLE;
                 if (tok->str()[tok->str().size() - 1U] == 'f')
                     type = ValueType::Type::FLOAT;
-                ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, type, 0U));
+                ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, type, 0U), defsign);
             } else if (MathLib::isInt(tok->str())) {
                 ValueType::Sign sign = ValueType::Sign::SIGNED;
                 ValueType::Type type = ValueType::Type::INT;
@@ -3852,49 +3860,49 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
                     else
                         type = ValueType::Type::LONG;
                 }
-                ::setValueType(tok, ValueType(sign, type, 0U));
+                ::setValueType(tok, ValueType(sign, type, 0U), defsign);
             }
         } else if (tok->isComparisonOp())
-            ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
+            ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U), defsign);
         else if (tok->tokType() == Token::eChar)
-            ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U));
+            ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U), defsign);
         else if (tok->tokType() == Token::eString) {
             ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U);
             if (tok->isLong()) {
                 valuetype.originalTypeName = "wchar_t";
                 valuetype.type = ValueType::Type::SHORT;
             }
-            ::setValueType(tok, valuetype);
+            ::setValueType(tok, valuetype, defsign);
         } else if (tok->str() == "(") {
             // cast
             if (!tok->astOperand2() && Token::Match(tok, "( %name%")) {
                 ValueType valuetype;
-                if (Token::simpleMatch(parsedecl(tok->next(), &valuetype), ")"))
-                    ::setValueType(tok, valuetype);
+                if (Token::simpleMatch(parsedecl(tok->next(), &valuetype, defsign), ")"))
+                    ::setValueType(tok, valuetype, defsign);
             }
 
             // C++ cast
             if (tok->astOperand2() && Token::Match(tok->astOperand1(), "static_cast|const_cast|dynamic_cast|reinterpret_cast < %name%") && tok->astOperand1()->linkAt(1)) {
                 ValueType valuetype;
-                if (Token::simpleMatch(parsedecl(tok->astOperand1()->tokAt(2), &valuetype), ">"))
-                    ::setValueType(tok, valuetype);
+                if (Token::simpleMatch(parsedecl(tok->astOperand1()->tokAt(2), &valuetype, defsign), ">"))
+                    ::setValueType(tok, valuetype, defsign);
             }
 
             // function
             else if (tok->previous() && tok->previous()->function() && tok->previous()->function()->retDef) {
                 ValueType valuetype;
-                if (Token::simpleMatch(parsedecl(tok->previous()->function()->retDef, &valuetype), "("))
-                    ::setValueType(tok, valuetype);
+                if (Token::simpleMatch(parsedecl(tok->previous()->function()->retDef, &valuetype, defsign), "("))
+                    ::setValueType(tok, valuetype, defsign);
             }
 
             else if (Token::simpleMatch(tok->previous(), "sizeof (")) {
                 // TODO: use specified size_t type
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
                 valuetype.originalTypeName = "size_t";
-                setValueType(tok, valuetype);
+                setValueType(tok, valuetype, defsign);
             }
         } else if (tok->variable()) {
-            setValueType(tok, *tok->variable());
+            setValueType(tok, *tok->variable(), defsign);
         }
     }
 }

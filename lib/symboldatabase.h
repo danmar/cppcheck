@@ -1013,7 +1013,7 @@ public:
     void validate() const;
 
     /** Set valuetype in provided tokenlist */
-    static void setValueTypeInTokenList(Token *tokens);
+    static void setValueTypeInTokenList(Token *tokens, char defaultSignedness);
 
 private:
     friend class Scope;

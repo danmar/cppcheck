@@ -30,6 +30,7 @@ private:
     Settings settings;
 
     void run() {
+        settings.platform(Settings::Unspecified);
         settings.addEnabled("warning");
 
         TEST_CASE(array_index_1);

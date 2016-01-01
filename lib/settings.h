@@ -253,6 +253,8 @@ public:
     unsigned int sizeof_size_t;
     unsigned int sizeof_pointer;
 
+    char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
+
     enum PlatformType {
         Unspecified, // No platform specified
         Native, // whatever system this code was compiled on

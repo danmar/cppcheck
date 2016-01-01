@@ -3000,7 +3000,9 @@ private:
     }
 
     std::string typeOf(const char code[], const char str[]) {
-        Tokenizer tokenizer(&settings, this);
+        Settings s;
+        s.platform(Settings::Unspecified);
+        Tokenizer tokenizer(&s, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         const Token * const tok = Token::findsimplematch(tokenizer.tokens(),str);

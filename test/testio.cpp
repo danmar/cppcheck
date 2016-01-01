@@ -62,7 +62,7 @@ private:
         TEST_CASE(testAstType); // #7014
     }
 
-    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Native) {
+    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
         // Clear the error buffer..
         errout.str("");
 

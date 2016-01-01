@@ -141,17 +141,18 @@ bool Settings::platform(PlatformType type)
     switch (type) {
     case Unspecified:
         platformType = type;
-        sizeof_bool = 1;
-        sizeof_short = 1;
-        sizeof_int = 1;
-        sizeof_long = 1;
-        sizeof_long_long = 1;
-        sizeof_float = 1;
-        sizeof_double = 1;
-        sizeof_long_double = 1;
-        sizeof_wchar_t = 1;
-        sizeof_size_t = 1;
-        sizeof_pointer = 1;
+        sizeof_bool = sizeof(bool);
+        sizeof_short = sizeof(short);
+        sizeof_int = sizeof(int);
+        sizeof_long = sizeof(long);
+        sizeof_long_long = sizeof(long long);
+        sizeof_float = sizeof(float);
+        sizeof_double = sizeof(double);
+        sizeof_long_double = sizeof(long double);
+        sizeof_wchar_t = sizeof(wchar_t);
+        sizeof_size_t = sizeof(std::size_t);
+        sizeof_pointer = sizeof(void *);
+        defaultSign = '\0';
         return true;
     case Native: // same as system this code was compile on
         platformType = type;
@@ -166,6 +167,10 @@ bool Settings::platform(PlatformType type)
         sizeof_wchar_t = sizeof(wchar_t);
         sizeof_size_t = sizeof(std::size_t);
         sizeof_pointer = sizeof(void *);
+        {
+            int x = 2;
+            defaultSign = (-10 / x == -5) ? 's' : 'u';
+        }
         return true;
     case Win32W:
     case Win32A:
@@ -181,6 +186,7 @@ bool Settings::platform(PlatformType type)
         sizeof_wchar_t = 2;
         sizeof_size_t = 4;
         sizeof_pointer = 4;
+        defaultSign = '\0';
         return true;
     case Win64:
         platformType = type;
@@ -195,6 +201,7 @@ bool Settings::platform(PlatformType type)
         sizeof_wchar_t = 2;
         sizeof_size_t = 8;
         sizeof_pointer = 8;
+        defaultSign = '\0';
         return true;
     case Unix32:
         platformType = type;
@@ -209,6 +216,7 @@ bool Settings::platform(PlatformType type)
         sizeof_wchar_t = 4;
         sizeof_size_t = 4;
         sizeof_pointer = 4;
+        defaultSign = '\0';
         return true;
     case Unix64:
         platformType = type;
@@ -223,6 +231,7 @@ bool Settings::platform(PlatformType type)
         sizeof_wchar_t = 4;
         sizeof_size_t = 8;
         sizeof_pointer = 8;
+        defaultSign = '\0';
         return true;
     }
 
