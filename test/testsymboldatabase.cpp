@@ -3008,6 +3008,9 @@ private:
     }
 
     void valuetype() {
+        // stringification
+        ASSERT_EQUALS("", ValueType().str());
+
         // numbers
         ASSERT_EQUALS("signed int", typeOf("1", "1"));
         ASSERT_EQUALS("unsigned int", typeOf("1U", "1U"));

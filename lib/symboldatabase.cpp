@@ -3934,5 +3934,5 @@ std::string ValueType::str() const
         if (constness & (2 << p))
             ret += " const";
     }
-    return ret.substr(1);
+    return ret.empty() ? ret : ret.substr(1);
 }
