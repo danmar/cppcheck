@@ -157,6 +157,7 @@ private:
         TEST_CASE(localvarRangeBasedFor); // #7075
         TEST_CASE(localvarAssignInWhile);
 
+        TEST_CASE(localvarCppInitialization);
         TEST_CASE(localvarCpp11Initialization);
 
         TEST_CASE(chainedAssignment); // #5466
@@ -3828,6 +3829,14 @@ private:
                               " if (i<3)\n"
                               "     goto start;\n"
                               " return i;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarCppInitialization() {
+        functionVariableUsage("void foo() {\n"
+                              "    int buf[6];\n"
+                              "    Data data(buf);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

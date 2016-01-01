@@ -1060,7 +1060,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
 
         else if (tok->varId() && tok->next() && (tok->next()->str() == ")" || tok->next()->isExtendedOp())) {
-            variables.readAll(tok->varId(), tok);
+            if (Token::Match(tok->tokAt(-2), "%name% ( %var% [,)]") &&
+                !(tok->tokAt(-2)->variable() && tok->tokAt(-2)->variable()->isReference()))
+                variables.use(tok->varId(), tok);
+            else
+                variables.readAll(tok->varId(), tok);
         }
 
         else if (Token::Match(tok, "%var% ;") && Token::Match(tok->previous(), "[;{}:]")) {
