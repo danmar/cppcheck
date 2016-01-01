@@ -4260,6 +4260,8 @@ void Tokenizer::simplifyFlowControl()
                        (Token::Match(tok->previous(), "[;{}] %name% (") &&
                         _settings->library.isnoreturn(tok)) ||
                        (isCPP() && tok->str() == "throw")) {
+                if (tok->next() == "}")
+                    syntaxError(tok->next()); // invalid code like in #6731
                 //TODO: ensure that we exclude user-defined 'exit|abort|throw', except for 'noreturn'
                 //catch the first ';'
                 for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
@@ -4270,7 +4272,7 @@ void Tokenizer::simplifyFlowControl()
                         eraseDeadCode(tok, 0);
                         break;
                     } else if (Token::Match(tok2, "[{}]"))
-                        break;  //Wrong code.
+                        break;
                 }
                 //if everything is removed, then remove also the code after an inferior scope
                 //only if the actual scope is not special

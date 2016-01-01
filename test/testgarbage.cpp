@@ -217,6 +217,7 @@ private:
         TEST_CASE(garbageCode166); // #7236
         TEST_CASE(garbageCode167); // #7237
         TEST_CASE(garbageCode168); // #7246
+        TEST_CASE(garbageCode169); // #6731
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -965,11 +966,11 @@ private:
     }
 
     void garbageCode123() {
-        checkCode("namespace pr16989 {\n"
-                  "    class C {\n"
-                  "        C tpl_mem(T *) { return }\n"
-                  "    };\n"
-                  "}");
+        ASSERT_THROW(checkCode("namespace pr16989 {\n"
+                               "    class C {\n"
+                               "        C tpl_mem(T *) { return }\n"
+                               "    };\n"
+                               "}"), InternalError);
     }
 
     void garbageCode124() {
@@ -1427,6 +1428,12 @@ private:
     void garbageCode168() {
         // 7246
         checkCode("long foo(void) { return *bar; }", false);
+    }
+
+    void garbageCode169() {
+        // 6713
+        ASSERT_THROW(checkCode("( ) { ( ) ; { return } switch ( ) i\n"
+                               "set case break ; default: ( ) }", false), InternalError);
     }
 
 };
