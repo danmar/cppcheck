@@ -3791,7 +3791,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     const unsigned int pointer0 = valuetype->pointer;
     while (Token::Match(type->previous(), "%name%"))
         type = type->previous();
-    valuetype->sign = defaultSignedness;
+    valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
     valuetype->type = ValueType::Type::UNKNOWN_TYPE;
     while (Token::Match(type, "%name%|*|&") && !type->variable()) {
         if (type->isSigned())
@@ -3824,6 +3824,13 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->originalTypeName = type->originalName();
         type = type->next();
     }
+
+    // If no signedness is given for char/short/int/long/longlong type, use default signedness
+    if (valuetype->type >= ValueType::Type::CHAR &&
+        valuetype->type <= ValueType::Type::LONGLONG &&
+        valuetype->sign == ValueType::Sign::UNKNOWN_SIGN)
+        valuetype->sign = defaultSignedness;
+
     return (type && valuetype->type != ValueType::Type::UNKNOWN_TYPE) ? type : nullptr;
 }
 
