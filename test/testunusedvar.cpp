@@ -144,7 +144,6 @@ private:
         TEST_CASE(localvarFor);         // for ( ; var; )
         TEST_CASE(localvarForEach);     // #4155 - BOOST_FOREACH, hlist_for_each, etc
         TEST_CASE(localvarShift1);      // 1 >> var
-        TEST_CASE(localvarShift2);      // x = x >> 1
         TEST_CASE(localvarShift3);      // x << y
         TEST_CASE(localvarCast);
         TEST_CASE(localvarClass);
@@ -156,6 +155,7 @@ private:
         TEST_CASE(localvarNULL);     // #4203 - Setting NULL value is not redundant - it is safe
         TEST_CASE(localvarUnusedGoto);    // #4447, #4558 goto
         TEST_CASE(localvarRangeBasedFor); // #7075
+        TEST_CASE(localvarAssignInWhile);
 
         TEST_CASE(localvarCpp11Initialization);
 
@@ -3238,15 +3238,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarShift2() {
-        functionVariableUsage("int foo()\n"
-                              "{\n"
-                              "    int var = 1;\n"
-                              "    while (var = var >> 1) { }\n"
-                              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void localvarShift3() {  // #3509
         functionVariableUsage("int foo()\n"
                               "{\n"
@@ -3855,6 +3846,22 @@ private:
         functionVariableUsage("void reset() {\n"
                               "    for (auto & e : array)\n"
                               "        e = 0;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarAssignInWhile() {
+        functionVariableUsage("void foo() {\n"
+                              "  int a = 0;\n"
+                              "  do {\n"
+                              "    dostuff(a);\n"
+                              "  } while((a + = x) < 30);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n"
+                              "    int var = 1;\n"
+                              "    while (var = var >> 1) { }\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
