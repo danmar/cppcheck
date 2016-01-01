@@ -4260,7 +4260,7 @@ void Tokenizer::simplifyFlowControl()
                        (Token::Match(tok->previous(), "[;{}] %name% (") &&
                         _settings->library.isnoreturn(tok)) ||
                        (isCPP() && tok->str() == "throw")) {
-                if (tok->next() == "}")
+                if (tok->next()->str() == "}")
                     syntaxError(tok->next()); // invalid code like in #6731
                 //TODO: ensure that we exclude user-defined 'exit|abort|throw', except for 'noreturn'
                 //catch the first ';'
