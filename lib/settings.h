@@ -254,7 +254,8 @@ public:
     unsigned int sizeof_pointer;
 
     enum PlatformType {
-        Unspecified, // whatever system this code was compiled on
+        Unspecified, // No platform specified
+        Native, // whatever system this code was compiled on
         Win32A,
         Win32W,
         Win64,

@@ -103,7 +103,7 @@ private:
         TEST_CASE(templateNamePosition);
     }
 
-    std::string tok(const char code[], bool simplify = true, bool debugwarnings = false, Settings::PlatformType type = Settings::Unspecified) {
+    std::string tok(const char code[], bool simplify = true, bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings.debugwarnings = debugwarnings;

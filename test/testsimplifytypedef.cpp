@@ -169,7 +169,7 @@ private:
         TEST_CASE(simplifyTypedefShadow);  // #4445 - shadow variable
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified, bool debugwarnings = true) {
+    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
         errout.str("");
 
         settings0.inconclusive = true;
@@ -494,7 +494,7 @@ private:
                             "};";
 
         // Tokenize and check output..
-        tok(code, true, Settings::Unspecified, false);
+        tok(code, true, Settings::Native, false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1700,7 +1700,7 @@ private:
                             "    Foo b(0);\n"
                             "    return b > Foo(10);\n"
                             "}";
-        const std::string actual(tok(code, true, Settings::Unspecified, false));
+        const std::string actual(tok(code, true, Settings::Native, false));
         ASSERT_EQUALS("int main ( ) { BAR < int > b ( 0 ) ; return b > BAR < int > ( 10 ) ; }", actual);
         ASSERT_EQUALS("", errout.str());
     }
@@ -1856,14 +1856,14 @@ private:
 
     void simplifyTypedef75() { // ticket #2426
         const char code[] = "typedef _Packed struct S { long l; };";
-        ASSERT_EQUALS("", tok(code, true, Settings::Unspecified, false));
+        ASSERT_EQUALS("", tok(code, true, Settings::Native, false));
         ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef76() { // ticket #2453 segmentation fault
         const char code[] = "void f1(typedef int x) {}";
         const char expected[] = "void f1 ( typedef int x ) { }";
-        ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
+        ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2182,7 +2182,7 @@ private:
                                 "public: "
                                 "expression_error :: error_code * f ; "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
+        ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2355,7 +2355,7 @@ private:
                                 "} ; "
                                 "} "
                                 "}";
-        ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
+        ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2704,7 +2704,7 @@ private:
                                     "C * f5 ; " // this gets simplified to a regular pointer
                                     "C * f6 ; " // this gets simplified to a regular pointer
                                     "C * f7 ;"; // this gets simplified to a regular pointer
-            ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
+            ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -2733,7 +2733,7 @@ private:
                                     "const C * f5 ; " // this gets simplified to a regular pointer
                                     "const C * f6 ; " // this gets simplified to a regular pointer
                                     "const C * f7 ;"; // this gets simplified to a regular pointer
-            ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
+            ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -2761,7 +2761,7 @@ private:
                                     "const C * f5 ; " // this gets simplified to a regular pointer
                                     "const C * f6 ; " // this gets simplified to a regular pointer
                                     "const C * f7 ;"; // this gets simplified to a regular pointer
-            ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
+            ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -2789,7 +2789,7 @@ private:
                                     "C * * f5 ; " // this gets simplified to a regular pointer
                                     "C * * f6 ; " // this gets simplified to a regular pointer
                                     "C * * f7 ;"; // this gets simplified to a regular pointer
-            ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
+            ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -2817,7 +2817,7 @@ private:
                                     "const C * * f5 ; " // this gets simplified to a regular pointer
                                     "const C * * f6 ; " // this gets simplified to a regular pointer
                                     "const C * * f7 ;"; // this gets simplified to a regular pointer
-            ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
+            ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -2846,7 +2846,7 @@ private:
                                     "const C * * f5 ; " // this gets simplified to a regular pointer
                                     "const C * * f6 ; " // this gets simplified to a regular pointer
                                     "const C * * f7 ;"; // this gets simplified to a regular pointer
-            ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
+            ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
     }
@@ -2991,7 +2991,7 @@ private:
                                     "B :: C * f2 ; "
                                     "B :: C * f3 ; "
                                     "B :: C * f4 ;";
-            ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
+            ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -3029,7 +3029,7 @@ private:
                                     "A :: B :: C * f2 ; "
                                     "A :: B :: C * f3 ; "
                                     "A :: B :: C * f4 ;";
-            ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
+            ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
             ASSERT_EQUALS("", errout.str());
         }
     }

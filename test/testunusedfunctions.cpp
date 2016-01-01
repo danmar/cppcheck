@@ -60,7 +60,7 @@ private:
         TEST_CASE(ignore_declaration); // ignore declaration
     }
 
-    void check(const char code[], Settings::PlatformType platform = Settings::Unspecified) {
+    void check(const char code[], Settings::PlatformType platform = Settings::Native) {
         // Clear the error buffer..
         errout.str("");
 

@@ -463,7 +463,7 @@ private:
         TEST_CASE(noreturn); // #5783
     }
 
-    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = true) {
+    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
 
         settings1.debugwarnings = true;
@@ -493,7 +493,7 @@ private:
             return "";
     }
 
-    std::string tokenizeAndStringifyWindows(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = true) {
+    std::string tokenizeAndStringifyWindows(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
 
         settings_windows.debugwarnings = true;
@@ -2444,7 +2444,7 @@ private:
                                     "cin >> x ;\n"
                                     "return x ;\n"
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.cpp"));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.cpp"));
         }
 
         {
@@ -2453,7 +2453,7 @@ private:
                                     "cin >> 0 ;\n"
                                     "return 0 ;\n"
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.c"));
         }
     }
 
@@ -2467,7 +2467,7 @@ private:
                                 "int x ; x = 0 ;\n"
                                 "cin >> std :: hex >> x ;\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.cpp"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.cpp"));
     }
 
     void simplifyKnownVariables48() {
@@ -2480,7 +2480,7 @@ private:
                                 "int i ;\n"
                                 "for ( i = 0 ; ( i < sz ) && ( sz > 3 ) ; ++ i ) { }\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.c"));
     }
 
     void simplifyKnownVariables49() { // #3691
@@ -2496,7 +2496,7 @@ private:
                                 "case 2 : ; x = sz ; break ;\n"
                                 "}\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.c"));
     }
 
     void simplifyKnownVariables50() { // #4066
@@ -3445,8 +3445,8 @@ private:
             ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
         }
 
-        ASSERT_EQUALS("( a == nullptr )", tokenizeAndStringify("(a==nullptr)", false, false, Settings::Unspecified, "test.c"));
-        ASSERT_EQUALS("( a == 0 )", tokenizeAndStringify("(a==nullptr)", false, false, Settings::Unspecified, "test.cpp"));
+        ASSERT_EQUALS("( a == nullptr )", tokenizeAndStringify("(a==nullptr)", false, false, Settings::Native, "test.c"));
+        ASSERT_EQUALS("( a == 0 )", tokenizeAndStringify("(a==nullptr)", false, false, Settings::Native, "test.cpp"));
 
         ASSERT_EQUALS("if ( p == 0 )", tokenizeAndStringify("if (p==NULL)"));
         ASSERT_EQUALS("f ( NULL ) ;", tokenizeAndStringify("f(NULL);"));
@@ -3764,7 +3764,7 @@ private:
 
     void vardecl14() {
         const char code[] = "::std::tr1::shared_ptr<int> pNum1, pNum2;\n";
-        ASSERT_EQUALS(":: std :: tr1 :: shared_ptr < int > pNum1 ; :: std :: tr1 :: shared_ptr < int > pNum2 ;", tokenizeAndStringify(code, false, false, Settings::Unspecified, "test.cpp", false));
+        ASSERT_EQUALS(":: std :: tr1 :: shared_ptr < int > pNum1 ; :: std :: tr1 :: shared_ptr < int > pNum2 ;", tokenizeAndStringify(code, false, false, Settings::Native, "test.cpp", false));
     }
 
     void vardecl15() {
@@ -3969,7 +3969,7 @@ private:
     void vardecl26() { // #5907
         const char code[] = "extern int *new, obj, player;";
         const char expected[] = "extern int * new ; extern int obj ; extern int player ;";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Unspecified, "test.c"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Native, "test.c"));
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
@@ -4589,11 +4589,11 @@ private:
         // Pointer to standard type
         ASSERT_EQUALS("char buf [ 100 ] ; readlink ( path , buf , 99 ) ;",
                       tokenizeAndStringify("char buf[100] ; readlink(path, &buf[0], 99);",
-                                           false, true, Settings::Unspecified, "test.c"));
+                                           false, true, Settings::Native, "test.c"));
 
         // Simplification of unknown type - C only
         ASSERT_EQUALS("foo data [ 100 ] ; something ( foo ) ;",
-                      tokenizeAndStringify("foo data[100]; something(&foo[0]);", false, true, Settings::Unspecified, "test.c"));
+                      tokenizeAndStringify("foo data[100]; something(&foo[0]);", false, true, Settings::Native, "test.c"));
 
         // C++: No pointer simplification
         ASSERT_EQUALS("foo data [ 100 ] ; something ( & foo [ 0 ] ) ;",
@@ -5390,12 +5390,12 @@ private:
 
         static const char code9[] = "using namespace std;\n"
                                     "tr1::function <void(int)> f;";
-        ASSERT_EQUALS("tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code9, false, true, Settings::Unspecified, "test.cpp", false));
-        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code9, false, true, Settings::Unspecified, "test.cpp", true));
+        ASSERT_EQUALS("tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code9, false, true, Settings::Native, "test.cpp", false));
+        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code9, false, true, Settings::Native, "test.cpp", true));
 
         static const char code10[] = "std::tr1::function <void(int)> f;";
-        ASSERT_EQUALS("std :: tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code10, false, true, Settings::Unspecified, "test.cpp", false));
-        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code10, false, true, Settings::Unspecified, "test.cpp", true));
+        ASSERT_EQUALS("std :: tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code10, false, true, Settings::Native, "test.cpp", false));
+        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code10, false, true, Settings::Native, "test.cpp", true));
 
         // #4042 (Do not add 'std ::' to variables)
         static const char code11[] = "using namespace std;\n"
@@ -5678,7 +5678,7 @@ private:
                                "operator ( ) ; "
                                "}";
 
-        ASSERT_EQUALS(result, tokenizeAndStringify(code, /*simplify=*/false, /*expand=*/true, /*platform=*/Settings::Unspecified, "test.c"));
+        ASSERT_EQUALS(result, tokenizeAndStringify(code, /*simplify=*/false, /*expand=*/true, /*platform=*/Settings::Native, "test.c"));
     }
 
     void simplifyOperatorName2() {
@@ -7930,13 +7930,13 @@ private:
 
     void simplifyDeprecated() {
         ASSERT_EQUALS("int f ( ) ;",
-                      tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Unspecified, "test.cpp", true));
+                      tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Native, "test.cpp", true));
 
         ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
-                      tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Unspecified, "test.cpp", false));
+                      tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Native, "test.cpp", false));
 
         ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
-                      tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Unspecified, "test.c", true));
+                      tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Native, "test.c", true));
     }
 
     void simplifyCaseRange() {
@@ -8340,7 +8340,7 @@ private:
         ASSERT_EQUALS("class Fred { } ;", tokenizeAndStringify("class DLLEXPORT Fred { } ;"));
         ASSERT_EQUALS("class Fred : Base { } ;", tokenizeAndStringify("class Fred FINAL : Base { } ;"));
         // Regression for C code:
-        ASSERT_EQUALS("struct Fred { } ;", tokenizeAndStringify("struct DLLEXPORT Fred { } ;", false, true, Settings::Unspecified, "test.c"));
+        ASSERT_EQUALS("struct Fred { } ;", tokenizeAndStringify("struct DLLEXPORT Fred { } ;", false, true, Settings::Native, "test.c"));
     }
 
     void sizeofAddParentheses() {

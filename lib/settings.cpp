@@ -55,7 +55,7 @@ Settings::Settings()
 #elif defined(_WIN32)
     platform(Win32A);
 #else
-    platform(Unspecified);
+    platform(Native);
 #endif
 }
 
@@ -139,7 +139,21 @@ const std::string &Settings::append() const
 bool Settings::platform(PlatformType type)
 {
     switch (type) {
-    case Unspecified: // same as system this code was compile on
+    case Unspecified:
+        platformType = type;
+        sizeof_bool = 1;
+        sizeof_short = 1;
+        sizeof_int = 1;
+        sizeof_long = 1;
+        sizeof_long_long = 1;
+        sizeof_float = 1;
+        sizeof_double = 1;
+        sizeof_long_double = 1;
+        sizeof_wchar_t = 1;
+        sizeof_size_t = 1;
+        sizeof_pointer = 1;
+        return true;
+    case Native: // same as system this code was compile on
         platformType = type;
         sizeof_bool = sizeof(bool);
         sizeof_short = sizeof(short);

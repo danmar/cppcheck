@@ -271,7 +271,7 @@ private:
         TEST_CASE(simplifyOverride); // ticket #5069
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
+    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings0.platform(type);
@@ -286,7 +286,7 @@ private:
         return tokenizer.tokens()->stringifyList(0, !simplify);
     }
 
-    std::string tokWithWindows(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
+    std::string tokWithWindows(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings_windows.platform(type);
@@ -975,7 +975,7 @@ private:
     void sizeof7() {
         const char code[] = ";INT32 i[10];\n"
                             "sizeof(i[0]);\n";
-        ASSERT_EQUALS("; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", tok(code, true, Settings::Unspecified));
+        ASSERT_EQUALS("; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", tok(code, true, Settings::Native));
         ASSERT_EQUALS("; int i [ 10 ] ; 4 ;", tokWithWindows(code, true, Settings::Win32A));
     }
 
