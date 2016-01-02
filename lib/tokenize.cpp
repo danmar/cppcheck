@@ -64,7 +64,7 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
             tok = tok->next();
         if (Token::Match(tok, "&|&&"))
             tok = tok->next();
-        if (Token::Match(tok, "= 0|default ;"))
+        if (Token::Match(tok, "= 0|default|delete ;"))
             tok = tok->tokAt(2);
         return (endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
@@ -75,7 +75,7 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         tok = tok->link()->next();
         while (tok && tok->isName())
             tok = tok->next();
-        if (Token::Match(tok, "= 0|default ;"))
+        if (Token::Match(tok, "= 0|default|delete ;"))
             tok = tok->tokAt(2);
         return (tok && endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }

@@ -466,22 +466,12 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                 tok = tok->linkAt(1)->next();
                             }
 
-                            if (Token::Match(tok, "= 0|default ;")) {
+                            if (Token::Match(tok, "= %any% ;")) {
                                 function.isPure(tok->strAt(1) == "0");
+                                function.isDefault(tok->strAt(1) == "default");
+                                function.isDelete(tok->strAt(1) == "delete");
                                 tok = tok->tokAt(2);
                             }
-
-                            scope->addFunction(function);
-                        }
-
-                        // default or delete
-                        else if (Token::Match(end, ") = default|delete ;")) {
-                            if (end->strAt(2) == "default")
-                                function.isDefault(true);
-                            else
-                                function.isDelete(true);
-
-                            tok = end->tokAt(3);
 
                             scope->addFunction(function);
                         }
