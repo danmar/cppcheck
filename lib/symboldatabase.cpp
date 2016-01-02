@@ -443,17 +443,32 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         function.arg = function.argDef;
 
                         // out of line function
-                        if (Token::Match(end, ") const| &|&&| ;")) {
+                        if (_tokenizer->isFunctionHead(end, ";")) {
                             // find the function implementation later
                             tok = end->next();
+
                             if (tok->str() == "const")
                                 tok = tok->next();
+
                             if (tok->str() == "&") {
                                 function.hasLvalRefQualifier(true);
                                 tok = tok->next();
                             } else if (tok->str() == "&&") {
                                 function.hasRvalRefQualifier(true);
                                 tok = tok->next();
+                            } else if (Token::simpleMatch(tok, "noexcept (")) {
+                                function.isNoExcept(tok->strAt(2) != "false");
+                                tok = tok->linkAt(1)->next();
+                            } else if (Token::simpleMatch(tok, "throw (")) {
+                                function.isThrow(true);
+                                if (tok->strAt(2) != ")")
+                                    function.throwArg = end->tokAt(2);
+                                tok = tok->linkAt(1)->next();
+                            }
+
+                            if (Token::Match(tok, "= 0|default ;")) {
+                                function.isPure(tok->strAt(1) == "0");
+                                tok = tok->tokAt(2);
                             }
 
                             scope->addFunction(function);
@@ -487,68 +502,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                 function.isPure(true);
                                 tok = tok->tokAt(2);
                             }
-
-                            scope->addFunction(function);
-                        }
-
-                        // noexcept(...);
-                        // noexcept(...) = 0;
-                        // const noexcept(...);
-                        // const noexcept(...) = 0;
-                        else if (Token::Match(end, ") const| noexcept (") &&
-                                 (end->next()->str() == "const" ? Token::Match(end->linkAt(3), ") ;|=") :
-                                  Token::Match(end->linkAt(2), ") ;|="))) {
-
-                            if (end->next()->str() == "const")
-                                tok = end->tokAt(3);
-                            else
-                                tok = end->tokAt(2);
-
-                            function.isNoExcept(tok->strAt(1) != "false");
-
-                            if (Token::Match(tok->link()->next(), "= %any% ;")) {
-                                function.isPure(true);
-                                tok = tok->tokAt(2);
-                            }
-
-                            scope->addFunction(function);
-                        }
-
-                        // throw();
-                        // throw() = 0;
-                        // const throw();
-                        // const throw() = 0;
-                        else if (Token::Match(end, ") const| throw (") &&
-                                 (end->next()->str() == "const" ? Token::Match(end->linkAt(3), ") ;|=") :
-                                  Token::Match(end->linkAt(2), ") ;|="))) {
-                            function.isThrow(true);
-
-                            if (end->next()->str() == "const") {
-                                if (end->strAt(4) != ")")
-                                    function.throwArg = end->tokAt(4);
-                                tok = end->linkAt(3)->next();
-                            } else {
-                                if (end->strAt(3) != ")")
-                                    function.throwArg = end->tokAt(3);
-                                tok = end->linkAt(2)->next();
-                            }
-
-                            if (Token::Match(tok, "= %any% ;")) {
-                                function.isPure(true);
-                                tok = tok->tokAt(2);
-                            }
-
-                            scope->addFunction(function);
-                        }
-
-                        // pure virtual function
-                        else if (Token::Match(end, ") const| = %any% ;")) {
-                            function.isPure(true);
-
-                            if (end->next()->str() == "const")
-                                tok = end->tokAt(4);
-                            else
-                                tok = end->tokAt(3);
 
                             scope->addFunction(function);
                         }
