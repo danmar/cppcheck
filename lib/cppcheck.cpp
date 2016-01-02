@@ -187,6 +187,22 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
 
             codeWithoutCfg += _settings.append();
 
+            if (_settings.preprocessOnly) {
+                if (codeWithoutCfg.compare(0,5,"#file") == 0)
+                    codeWithoutCfg.insert(0U, "//");
+                std::string::size_type pos = 0;
+                while ((pos = codeWithoutCfg.find("\n#file",pos)) != std::string::npos)
+                    codeWithoutCfg.insert(pos+1U, "//");
+                pos = 0;
+                while ((pos = codeWithoutCfg.find("\n#endfile",pos)) != std::string::npos)
+                    codeWithoutCfg.insert(pos+1U, "//");
+                pos = 0;
+                while ((pos = codeWithoutCfg.find(Preprocessor::macroChar,pos)) != std::string::npos)
+                    codeWithoutCfg[pos] = ' ';
+                reportOut(codeWithoutCfg);
+                continue;
+            }
+
             Tokenizer _tokenizer(&_settings, this);
             if (_settings._showtime != SHOWTIME_NONE)
                 _tokenizer.setTimerResults(&S_timerResults);

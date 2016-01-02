@@ -384,6 +384,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->userUndefs.insert(undef);
             }
 
+            // -E
+            else if (std::strcmp(argv[i], "-E") == 0) {
+                _settings->preprocessOnly = true;
+            }
+
             // Include paths
             else if (std::strncmp(argv[i], "-I", 2) == 0) {
                 std::string path;
@@ -729,11 +734,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
     }
 
-    if (def && !_settings->_force && !maxconfigs)
-        _settings->_maxConfigs = 1U;
-
     if (_settings->_force)
         _settings->_maxConfigs = ~0U;
+
+    else if ((def || _settings->preprocessOnly) && !maxconfigs)
+        _settings->_maxConfigs = 1U;
 
     if (_settings->isEnabled("unusedFunction") && _settings->_jobs > 1) {
         PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
@@ -799,6 +804,8 @@ void CmdLineParser::PrintHelp()
               "    -U<ID>               Undefine preprocessor symbol. Use -U to explicitly\n"
               "                         hide certain #ifdef <ID> code paths from checking.\n"
               "                         Example: '-UDEBUG'\n"
+              "    -E                   Print preprocessor output on stdout and don't do any\n"
+              "                         further processing.\n"
               "    --enable=<id>        Enable additional checks. The available ids are:\n"
               "                          * all\n"
               "                                  Enable all checks. It is recommended to only\n"

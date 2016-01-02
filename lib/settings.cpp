@@ -43,6 +43,7 @@ Settings::Settings()
       _loadAverage(0),
       _exitCode(0),
       _showtime(SHOWTIME_NONE),
+      preprocessOnly(false),
       _maxConfigs(12),
       enforcedLang(None),
       reportProgress(false),

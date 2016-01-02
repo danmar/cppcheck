@@ -138,6 +138,9 @@ public:
     /** @brief show timing information (--showtime=file|summary|top5) */
     SHOWTIME_MODES _showtime;
 
+    /** @brief Using -E for debugging purposes */
+    bool preprocessOnly;
+
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */
     std::list<std::string> _includePaths;
