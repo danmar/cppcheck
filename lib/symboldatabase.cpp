@@ -443,9 +443,18 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         function.arg = function.argDef;
 
                         // out of line function
-                        if (Token::simpleMatch(end, ") ;")) {
+                        if (Token::Match(end, ") const| &|&&| ;")) {
                             // find the function implementation later
                             tok = end->next();
+                            if (tok->str() == "const")
+                                tok = tok->next();
+                            if (tok->str() == "&") {
+                                function.hasLvalRefQualifier(true);
+                                tok = tok->next();
+                            } else if (tok->str() == "&&") {
+                                function.hasRvalRefQualifier(true);
+                                tok = tok->next();
+                            }
 
                             scope->addFunction(function);
                         }
@@ -575,6 +584,16 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                     function.throwArg = end->tokAt(arg);
 
                                 function.isThrow(true);
+                            } else if (Token::Match(end, ") const| &|&&|")) {
+                                int arg = 1;
+
+                                if (end->strAt(arg) == "const")
+                                    arg++;
+
+                                if (end->strAt(arg) == "&")
+                                    function.hasLvalRefQualifier(true);
+                                else if (end->strAt(arg) == "&&")
+                                    function.hasRvalRefQualifier(true);
                             }
 
                             // find start of function '{'
@@ -670,7 +689,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     }
 
                     // has body?
-                    if (Token::Match(scopeBegin, "{|:")) {
+                    if (Token::Match(scopeBegin, "&|&&| {|:")) {
                         tok = funcStart;
 
                         // class function
@@ -1388,6 +1407,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
              (tok2->isUpperCaseName() && Token::Match(tok2, "%name% ;|{")) ||
              (tok2->isUpperCaseName() && Token::Match(tok2, "%name% (") && tok2->next()->link()->strAt(1) == "{") ||
              Token::Match(tok2, ": ::| %name% (|::|<|{") ||
+             Token::Match(tok2, "const| &|&&| ;|{") ||
              Token::Match(tok2, "= delete|default ;") ||
              Token::Match(tok2, "const| noexcept {|:|;|=") ||
              (Token::Match(tok2, "const| noexcept|throw (") &&
@@ -1763,6 +1783,9 @@ Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok,
 void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const Token *argStart)
 {
     const bool destructor((*tok)->previous()->str() == "~");
+    const bool has_const(argStart->link()->strAt(1) == "const");
+    const bool lval(argStart->link()->strAt(has_const ? 2 : 1) == "&");
+    const bool rval(argStart->link()->strAt(has_const ? 2 : 1) == "&&");
     const Token *tok1;
     // skip class/struct name
     if (destructor)
@@ -1888,8 +1911,9 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             // normal function?
                             if ((*tok)->next()->link()) {
                                 const bool hasConstKeyword = (*tok)->next()->link()->next()->str() == "const";
-                                if ((func->isConst() && hasConstKeyword) ||
-                                    (!func->isConst() && !hasConstKeyword)) {
+                                if ((func->isConst() == hasConstKeyword) &&
+                                    (func->hasLvalRefQualifier() == lval) &&
+                                    (func->hasRvalRefQualifier() == rval)) {
                                     func->hasBody(true);
                                 }
                             }
@@ -2303,6 +2327,8 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isNoExcept: " << func->isNoExcept() << std::endl;
             std::cout << "        isThrow: " << func->isThrow() << std::endl;
             std::cout << "        isOperator: " << func->isOperator() << std::endl;
+            std::cout << "        hasLvalRefQual: " << func->hasLvalRefQualifier() << std::endl;
+            std::cout << "        hasRvalRefQual: " << func->hasRvalRefQualifier() << std::endl;
             std::cout << "        attributes:";
             if (func->isAttributeConst())
                 std::cout << " const ";
