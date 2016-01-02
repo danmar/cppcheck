@@ -58,7 +58,7 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         return nullptr;
     if (tok->str() == "(")
         tok = tok->link();
-    if (Token::Match(tok, ") const| [;:{]")) {
+    if (Token::Match(tok, ") const| &|&&| [;:{]")) {
         tok = tok->next();
         if (tok->isName())
             tok = tok->next();

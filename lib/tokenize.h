@@ -525,8 +525,6 @@ public:
      */
     static std::string simplifyString(const std::string &source);
 
-private:
-
     /**
      * is token pointing at function head?
      * @param tok         A '(' or ')' token in a possible function head
@@ -535,6 +533,7 @@ private:
      */
     const Token * isFunctionHead(const Token *tok, const std::string &endsWith) const;
 
+private:
     /**
      * simplify "while (0)"
      */
