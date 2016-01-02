@@ -145,6 +145,11 @@ private:
               "}\n"
               "void f2() { f1(-4); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("size_t foo(size_t x) {\n"
+              " return -2 * x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious code: sign conversion of -2 in calculation because '-2' has a negative value\n", errout.str());
     }
 
     void longCastAssign() {

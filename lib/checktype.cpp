@@ -182,19 +182,21 @@ void CheckType::checkSignConversion()
                 if (!tok1->getValueLE(-1,_settings))
                     continue;
                 if (tok1->valueType() && tok1->valueType()->sign != ValueType::Sign::UNSIGNED)
-                    signConversionError(tok1);
+                    signConversionError(tok1, tok1->isNumber());
             }
         }
     }
 }
 
-void CheckType::signConversionError(const Token *tok)
+void CheckType::signConversionError(const Token *tok, const bool constvalue)
 {
     const std::string varname(tok ? tok->str() : "var");
 
     reportError(tok,
                 Severity::warning,
                 "signConversion",
+                (constvalue) ?
+                "Suspicious code: sign conversion of " + varname + " in calculation because '" + varname + "' has a negative value" :
                 "Suspicious code: sign conversion of " + varname + " in calculation, even though " + varname + " can have a negative value");
 }
 
