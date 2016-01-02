@@ -584,7 +584,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                     function.throwArg = end->tokAt(arg);
 
                                 function.isThrow(true);
-                            } else if (Token::Match(end, ") const| &|&&|")) {
+                            } else if (Token::Match(end, ") const| &|&&| [;{]")) {
                                 int arg = 1;
 
                                 if (end->strAt(arg) == "const")
