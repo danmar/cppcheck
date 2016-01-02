@@ -718,17 +718,24 @@ private:
     bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, const std::set<std::string>& structs) const;
     void duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string & type) const;
 
-    /**
-     * Report error - duplicate declarations
-     */
-    void duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type) const;
-
     void unsupportedTypedef(const Token *tok) const;
 
     void setVarIdClassDeclaration(Token * const startToken,
                                   const std::map<std::string, unsigned int> &variableId,
                                   const unsigned int scopeStartVarId,
                                   std::map<unsigned int, std::map<std::string,unsigned int> >& structMembers);
+
+
+    /**
+     * Simplify e.g. 'return(strncat(temp,"a",1));' into
+     * strncat(temp,"a",1); return temp;
+     */
+    void simplifyReturnStrncat();
+
+    /**
+     * Output list of unknown types.
+     */
+    void printUnknownTypes() const;
 
 public:
 
@@ -767,19 +774,6 @@ public:
     unsigned int varIdCount() const {
         return _varId;
     }
-
-
-    /**
-     * Simplify e.g. 'return(strncat(temp,"a",1));' into
-     * strncat(temp,"a",1); return temp;
-     */
-    void simplifyReturnStrncat();
-
-    /**
-     * Output list of unknown types.
-     */
-    void printUnknownTypes() const;
-
 
     /**
      * Token list: stores all tokens.

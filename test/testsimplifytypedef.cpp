@@ -78,7 +78,6 @@ private:
         TEST_CASE(simplifyTypedef39);
         TEST_CASE(simplifyTypedef40);
         TEST_CASE(simplifyTypedef41); // ticket #1488
-        TEST_CASE(simplifyTypedef42); // ticket #1506
         TEST_CASE(simplifyTypedef43); // ticket #1588
         TEST_CASE(simplifyTypedef44);
         TEST_CASE(simplifyTypedef45); // ticket #1613
@@ -1207,23 +1206,6 @@ private:
                              "    friend class type;\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void simplifyTypedef42() {
-        // ticket #1506
-        checkSimplifyTypedef("typedef struct A { } A;\n"
-                             "struct A;");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The struct 'A' forward declaration is unnecessary. Type struct is already declared earlier.\n", errout.str());
-
-        checkSimplifyTypedef("typedef union A { int i; float f; } A;\n"
-                             "union A;");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The union 'A' forward declaration is unnecessary. Type union is already declared earlier.\n", errout.str());
-
-        const char code [] = "typedef std::map<std::string, int> A;\n"
-                             "class A;";
-        checkSimplifyTypedef(code);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The class 'A' forward declaration is unnecessary. Type class is already declared earlier.\n", errout.str());
-        TODO_ASSERT_EQUALS("class A ;", "class std :: map < std :: string , int > ;", tok(code));
     }
 
     void simplifyTypedef43() {

@@ -209,20 +209,6 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
                 std::string("The " + type + " '" + tok2_str + "' hides a typedef with the same name."), true);
 }
 
-void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type) const
-{
-    if (tok1 && !(_settings->isEnabled("style")))
-        return;
-
-    std::list<const Token*> locationList;
-    locationList.push_back(tok1);
-    locationList.push_back(tok2);
-    const std::string tok2_str = tok2 ? tok2->str() : std::string("name");
-
-    reportError(locationList, Severity::style, "unnecessaryForwardDeclaration",
-                std::string("The " + type + " '" + tok2_str + "' forward declaration is unnecessary. Type " + type + " is already declared earlier."));
-}
-
 // check if this statement is a duplicate definition
 bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, const std::set<std::string>& structs) const
 {
@@ -330,8 +316,6 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 duplicateTypedefError(*tokPtr, name, "struct");
                                 return true;
                             } else {
-                                // forward declaration after declaration
-                                duplicateDeclarationError(*tokPtr, name, "struct");
                                 return false;
                             }
                         } else if (tok->previous()->str() == "union") {
@@ -339,8 +323,6 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 duplicateTypedefError(*tokPtr, name, "union");
                                 return true;
                             } else {
-                                // forward declaration after declaration
-                                duplicateDeclarationError(*tokPtr, name, "union");
                                 return false;
                             }
                         } else if (isCPP() && tok->previous()->str() == "class") {
@@ -348,8 +330,6 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 duplicateTypedefError(*tokPtr, name, "class");
                                 return true;
                             } else {
-                                // forward declaration after declaration
-                                duplicateDeclarationError(*tokPtr, name, "class");
                                 return false;
                             }
                         }
@@ -8746,7 +8726,6 @@ void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *setti
 {
     Tokenizer t(settings, errorLogger);
     t.duplicateTypedefError(0, 0, "variable");
-    t.duplicateDeclarationError(0, 0, "variable");
     t.duplicateEnumError(0, 0, "variable");
 }
 
