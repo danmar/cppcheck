@@ -9396,6 +9396,7 @@ void Tokenizer::simplifyAsm2()
     }
     // When the assembly code has been cleaned up, no @ is allowed
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        assert(list.validateToken(tok)); // see #7185 "crash: Tokenizer::simplifyAsm2 on invalid code"
         if (tok->str() == "(") {
             tok = tok->link();
             if (!tok)
