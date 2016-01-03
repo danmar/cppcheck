@@ -64,14 +64,12 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
             tok = tok->next();
         return (endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
-    if (isCPP() && (Token::Match(tok, ") const| throw|noexcept (") || Token::Match(tok, ") const| &|&&|noexcept| [;:{=]"))) {
+    if (isCPP() && tok->str() == ")") {
         tok = tok->next();
-        while (tok->isName())
+        while (Token::Match(tok, "const|noexcept|override|volatile|&|&& !!("))
             tok = tok->next();
-        if (Token::Match(tok, "&|&&"))
-            tok = tok->next();
-        if (tok->str() == "(")
-            tok = tok->link()->next();
+        if (Token::Match(tok, "throw|noexcept ("))
+            tok = tok->linkAt(1)->next();
         if (Token::Match(tok, "= 0|default|delete ;"))
             tok = tok->tokAt(2);
         return (tok && endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
@@ -2242,7 +2240,7 @@ Token * Tokenizer::startOfFunction(Token * tok) const
 {
     tok = tok->next();
     while (tok && tok->str() != "{") {
-        if (isCPP() && Token::Match(tok, "const|volatile")) {
+        if (isCPP() && Token::Match(tok, "const|volatile|override")) {
             tok = tok->next();
         } else if (isCPP() && tok->str() == "noexcept") {
             tok = tok->next();
@@ -2272,7 +2270,7 @@ const Token * Tokenizer::startOfExecutableScope(const Token * tok)
         bool inInit = false;
         while (tok && tok->str() != "{") {
             if (!inInit) {
-                if (Token::Match(tok, "const|volatile")) {
+                if (Token::Match(tok, "const|override|volatile")) {
                     tok = tok->next();
                 } else if (tok->str() == "noexcept") {
                     tok = tok->next();
@@ -9191,9 +9189,6 @@ void Tokenizer::simplifyKeyword()
             }
             // final:
             // 2) void f() final;  <- function is final
-            // override:
-            // void f() override;
-            //if (Token::Match(tok, ") override [{;]"))
             if (Token::Match(tok, ") const|override|final")) {
                 Token* specifier = tok->tokAt(2);
                 while (specifier && Token::Match(specifier, "const|override|final")) {
@@ -9202,10 +9197,10 @@ void Tokenizer::simplifyKeyword()
                 if (specifier && Token::Match(specifier, "[{;]")) {
                     specifier = tok->next();
                     while (!Token::Match(specifier, "[{;]")) {
-                        if (specifier->str()=="const")
-                            specifier=specifier->next();
-                        else
+                        if (specifier->str()=="final")
                             specifier->deleteThis();
+                        else
+                            specifier=specifier->next();
                     }
                 }
             }

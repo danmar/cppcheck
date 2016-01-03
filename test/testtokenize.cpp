@@ -4011,13 +4011,13 @@ private:
                                 "  virtual int test() final override;"
                                 "};";
             const char out2[] = "class Derived {\n"
-                                "virtual int test ( ) ; } ;";
+                                "virtual int test ( ) override ; } ;";
             ASSERT_EQUALS(out2, tokenizeAndStringify(in2));
             const char in3[] =  "class Derived{\n"
                                 "  virtual int test() final override const;"
                                 "};";
             const char out3[] = "class Derived {\n"
-                                "virtual int test ( ) const ; } ;";
+                                "virtual int test ( ) override const ; } ;";
             ASSERT_EQUALS(out3, tokenizeAndStringify(in3));
 
             const char in4 [] = "struct B final : A { void foo(); };";
@@ -4033,7 +4033,7 @@ private:
                                 "};\n";
             const char out5 [] =
                 "struct ArrayItemsValidator {\n"
-                "SchemaError validate ( ) const {\n"
+                "SchemaError validate ( ) const override {\n"
                 "for ( ; pos < value . size ( ) ; ++ pos ) {\n"
                 "}\n"
                 "return none ;\n"
@@ -8320,6 +8320,7 @@ private:
         ASSERT(isStartOfExecutableScope(3, "void foo() { }"));
         ASSERT(isStartOfExecutableScope(3, "void foo() const { }"));
         ASSERT(isStartOfExecutableScope(3, "void foo() volatile { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() override { }"));
         ASSERT(isStartOfExecutableScope(3, "void foo() noexcept { }"));
         ASSERT(isStartOfExecutableScope(3, "void foo() NOEXCEPT { }"));
         ASSERT(isStartOfExecutableScope(3, "void foo() CONST NOEXCEPT { }"));
