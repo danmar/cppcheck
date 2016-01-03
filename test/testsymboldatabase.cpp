@@ -3098,6 +3098,12 @@ private:
         ASSERT_EQUALS("unsigned long", typeOf("1UL", "1UL"));
         ASSERT_EQUALS("signed long long", typeOf("1LL", "1LL"));
         ASSERT_EQUALS("unsigned long long", typeOf("1ULL", "1ULL"));
+        ASSERT_EQUALS("unsigned int", typeOf("1u", "1u"));
+        ASSERT_EQUALS("signed long", typeOf("1l", "1l"));
+        ASSERT_EQUALS("unsigned long", typeOf("1ul", "1ul"));
+        ASSERT_EQUALS("signed long long", typeOf("1ll", "1ll"));
+        ASSERT_EQUALS("unsigned long long", typeOf("1ull", "1ull"));
+        ASSERT_EQUALS("float", typeOf("1.0F", "1.0F"));
         ASSERT_EQUALS("float", typeOf("1.0f", "1.0f"));
         ASSERT_EQUALS("double", typeOf("1.0", "1.0"));
 

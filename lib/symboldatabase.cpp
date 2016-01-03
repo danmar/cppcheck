@@ -3802,7 +3802,8 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, char defaultSignedne
         if (tok->isNumber()) {
             if (MathLib::isFloat(tok->str())) {
                 ValueType::Type type = ValueType::Type::DOUBLE;
-                if (tok->str()[tok->str().size() - 1U] == 'f')
+                const char suffix = tok->str()[tok->str().size() - 1U];
+                if (suffix == 'f' || suffix == 'F')
                     type = ValueType::Type::FLOAT;
                 ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, type, 0U), defsign);
             } else if (MathLib::isInt(tok->str())) {
@@ -3810,13 +3811,12 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, char defaultSignedne
                 ValueType::Type type = ValueType::Type::INT;
                 if (MathLib::isIntHex(tok->str()))
                     sign = ValueType::Sign::UNSIGNED;
-                else if (tok->str().find_first_of("uU") != std::string::npos)
-                    sign = ValueType::Sign::UNSIGNED;
-                if (tok->str()[tok->str().size() - 1U] == 'L') {
-                    if (tok->str()[tok->str().size() - 2U] == 'L')
-                        type = ValueType::Type::LONGLONG;
-                    else
-                        type = ValueType::Type::LONG;
+                for (unsigned int pos = tok->str().size() - 1U; pos > 0U && std::isalpha(tok->str()[pos]); --pos) {
+                    const char suffix = tok->str()[pos];
+                    if (suffix == 'u' || suffix == 'U')
+                        sign = ValueType::Sign::UNSIGNED;
+                    if (suffix == 'l' || suffix == 'L')
+                        type = (type == ValueType::Type::INT) ? ValueType::Type::LONG : ValueType::Type::LONGLONG;
                 }
                 ::setValueType(tok, ValueType(sign, type, 0U), defsign);
             }
