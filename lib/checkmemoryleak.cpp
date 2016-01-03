@@ -487,26 +487,29 @@ bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, con
     return ((call_func_white_list.find(funcname)!=call_func_white_list.end()) || (settings->library.leakignore.find(funcname) != settings->library.leakignore.end()) || (cpp && funcname == "delete"));
 }
 
+namespace {
+    const std::set<std::string> call_func_keywords = make_container < std::set<std::string> > ()
+            << "asprintf"
+            << "delete"
+            << "fclose"
+            << "for"
+            << "free"
+            << "if"
+            << "realloc"
+            << "return"
+            << "switch"
+            << "while"
+            << "sizeof";
+}
 
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &allocpar, unsigned int sz)
 {
     if (test_white_list(tok->str(), _settings, tokenizer->isCPP())) {
-        if (tok->str() == "asprintf" ||
-            tok->str() == "delete" ||
-            tok->str() == "fclose" ||
-            tok->str() == "for" ||
-            tok->str() == "free" ||
-            tok->str() == "if" ||
-            tok->str() == "realloc" ||
-            tok->str() == "return" ||
-            tok->str() == "switch" ||
-            tok->str() == "while" ||
-            tok->str() == "sizeof") {
+        if (call_func_keywords.find(tok->str())!=call_func_keywords.end())
             return 0;
-        }
 
         // is the varid a parameter?
-        for (const Token *tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
+        for (const Token *tok2 = tok->tokAt(2); tok2 && tok2 != tok->linkAt(1); tok2 = tok2->next()) {
             if (tok2->str() == "(") {
                 tok2 = tok2->nextArgument();
                 if (!tok2)
@@ -628,7 +631,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
         }
         if (Token::Match(tok, "& %varid% [,()]", varid)) {
             const Function *func = functok->function();
-            if (func == 0)
+            if (func == nullptr)
                 continue;
             AllocType a;
             const char *ret = functionArgAlloc(func, par, a);

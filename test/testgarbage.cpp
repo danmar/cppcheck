@@ -218,6 +218,7 @@ private:
         TEST_CASE(garbageCode167); // #7237
         TEST_CASE(garbageCode168); // #7246
         TEST_CASE(garbageCode169); // #6731
+        TEST_CASE(garbageCode170);
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1434,6 +1435,11 @@ private:
         // 6713
         ASSERT_THROW(checkCode("( ) { ( ) ; { return } switch ( ) i\n"
                                "set case break ; default: ( ) }", false), InternalError);
+    }
+
+    void garbageCode170() {
+        // 7255
+        checkCode("d i(){{f*s=typeid(()0,)}}", false);
     }
 
 };
