@@ -2236,33 +2236,6 @@ static Token *skipTernaryOp(Token *tok)
     return tok;
 }
 
-Token * Tokenizer::startOfFunction(Token * tok) const
-{
-    tok = tok->next();
-    while (tok && tok->str() != "{") {
-        if (isCPP() && Token::Match(tok, "const|volatile|override")) {
-            tok = tok->next();
-        } else if (isCPP() && tok->str() == "noexcept") {
-            tok = tok->next();
-            if (tok && tok->str() == "(") {
-                tok = tok->link()->next();
-            }
-        } else if (isCPP() && tok->str() == "throw" && tok->next() && tok->next()->str() == "(") {
-            tok = tok->next()->link()->next();
-        }
-        // unknown macros ") MACRO {" and ") MACRO(...) {"
-        else if (tok->isUpperCaseName()) {
-            tok = tok->next();
-            if (tok && tok->str() == "(") {
-                tok = tok->link()->next();
-            }
-        } else
-            return nullptr;
-    }
-
-    return tok;
-}
-
 const Token * Tokenizer::startOfExecutableScope(const Token * tok)
 {
     if (tok && tok->str() == ")") {
@@ -2990,7 +2963,7 @@ void Tokenizer::setVarId()
                         tok2 = tok2->linkAt(1);
 
                     // If this is a function implementation.. add it to funclist
-                    Token * start = startOfFunction(tok2);
+                    Token * start = const_cast<Token *>(isFunctionHead(tok2, "{"));
                     if (start) {
                         setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &_varId);
                     }
