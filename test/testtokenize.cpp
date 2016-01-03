@@ -8242,6 +8242,8 @@ private:
         ASSERT_EQUALS("a(3==", testAst("a<int>()==3"));
         ASSERT_EQUALS("ab(== f(", testAst("a == b<c>(); f();"));
         ASSERT_EQUALS("static_casta(i[", testAst("; static_cast<char*>(a)[i];")); // #6203
+		ASSERT_EQUALS("reinterpret_castreinterpret_castptr(123&(",
+		              testAst(";reinterpret_cast<void*>(reinterpret_cast<unsigned>(ptr) & 123);")); // #7253
 
         // This two unit tests were added to avoid a crash. The actual correct AST result for non-executable code has not been determined so far.
         ASSERT_EQUALS("Cpublica::b:::", testAst("class C : public ::a::b<bool> { };"));
