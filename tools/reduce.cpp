@@ -674,7 +674,7 @@ int main(int argc, char *argv[])
                 if (path[path.length()-1] != '/')
                     path += '/';
 
-                settings._includePaths.push_back(path);
+                settings.includePaths.push_back(path);
             }
         } else if (strncmp(argv[i], "--maxtime=", 10) == 0)
             settings.maxtime = std::atoi(argv[i] + 10);
@@ -702,7 +702,7 @@ int main(int argc, char *argv[])
         } else if (std::strcmp(argv[i], "--debug-warnings") == 0)
             settings.debugwarnings = true;
         else if (std::strcmp(argv[i], "-f") == 0 || std::strcmp(argv[i], "--force") == 0)
-            settings._force = true;
+            settings.force = true;
         else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
             std::string errmsg = settings.addEnabled(argv[i] + 9);
             if (!errmsg.empty()) {
@@ -719,15 +719,15 @@ int main(int argc, char *argv[])
         } else if (std::strcmp(argv[i], "--inconclusive") == 0)
             settings.inconclusive = true;
         else if (std::strncmp(argv[i], "--max-configs=", 14) == 0) {
-            settings._force = false;
+            settings.force = false;
 
             std::istringstream iss(14+argv[i]);
-            if (!(iss >> settings._maxConfigs)) {
+            if (!(iss >> settings.maxConfigs)) {
                 std::cerr << "argument to '--max-configs=' is not a number." << std::endl;
                 return false;
             }
 
-            if (settings._maxConfigs < 1) {
+            if (settings.maxConfigs < 1) {
                 std::cerr << "argument to '--max-configs=' must be greater than 0." << std::endl;
                 return false;
             }
@@ -743,11 +743,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (def && !settings._force && !maxconfigs)
-        settings._maxConfigs = 1U;
+    if (def && !settings.force && !maxconfigs)
+        settings.maxConfigs = 1U;
 
-    if (settings._force)
-        settings._maxConfigs = ~0U;
+    if (settings.force)
+        settings.maxConfigs = ~0U;
 
     if ((!settings.hang && settings.linenr == 0U) || settings.filename == nullptr) {
         std::cerr << "Syntax:" << std::endl
