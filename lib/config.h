@@ -19,9 +19,6 @@
 #  include <crtdbg.h>
 #endif
 
-#ifndef __GNUC__
-#define __attribute__(A)
-#endif
 #include <string>
 static const std::string emptyString;
 
