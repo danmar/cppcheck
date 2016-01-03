@@ -396,7 +396,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
     Token::assignProgressValues(_front);
 
     for (std::size_t i = 1; i < _files.size(); i++)
-        _files[i] = Path::getRelativePath(_files[i], _settings->_basePaths);
+        _files[i] = Path::getRelativePath(_files[i], _settings->basePaths);
 
     return true;
 }

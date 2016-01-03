@@ -235,7 +235,7 @@ private:
         std::list<std::string> configurations;
         std::string filedata = "";
         std::istringstream fin(precode);
-        preprocessor.preprocess(fin, filedata, configurations, filename, settings._includePaths);
+        preprocessor.preprocess(fin, filedata, configurations, filename, settings.includePaths);
         const std::string code = preprocessor.getcode(filedata, "", filename);
 
         // Tokenize..

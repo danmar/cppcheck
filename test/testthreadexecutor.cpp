@@ -53,7 +53,7 @@ private:
             filemap[oss.str()] = 1;
         }
 
-        settings._jobs = jobs;
+        settings.jobs = jobs;
         ThreadExecutor executor(filemap, settings, *this);
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.begin(); i != filemap.end(); ++i)
             executor.addFileContent(i->first, data);

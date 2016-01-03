@@ -8302,7 +8302,7 @@ private:
         std::list<std::string> configurations;
         std::string filedata = "";
         std::istringstream fin(raw_code);
-        preprocessor.preprocess(fin, filedata, configurations, emptyString, settings0._includePaths);
+        preprocessor.preprocess(fin, filedata, configurations, emptyString, settings0.includePaths);
         const std::string code = preprocessor.getcode(filedata, emptyString, emptyString);
 
         tokenizeAndStringify(code.c_str()); // just survive...

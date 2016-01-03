@@ -119,7 +119,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
 
         if (!_settings.nomsg.isSuppressed(msg._id, file, line)) {
             // Alert only about unique errors
-            std::string errmsg = msg.toString(_settings._verbose);
+            std::string errmsg = msg.toString(_settings.verbose);
             if (std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end()) {
                 _errorList.push_back(errmsg);
                 if (type == REPORT_ERROR)
@@ -146,7 +146,7 @@ bool ThreadExecutor::checkLoadAverage(size_t nchildren)
 #if defined(__CYGWIN__) || defined(__QNX__)  // getloadavg() is unsupported on Cygwin, Qnx.
     return true;
 #else
-    if (!nchildren || !_settings._loadAverage) {
+    if (!nchildren || !_settings.loadAverage) {
         return true;
     }
 
@@ -154,7 +154,7 @@ bool ThreadExecutor::checkLoadAverage(size_t nchildren)
     if (getloadavg(&sample, 1) != 1) {
         // disable load average checking on getloadavg error
         return true;
-    } else if (sample < _settings._loadAverage) {
+    } else if (sample < _settings.loadAverage) {
         return true;
     }
     return false;
@@ -179,7 +179,7 @@ unsigned int ThreadExecutor::check()
     for (;;) {
         // Start a new child
         size_t nchildren = rpipes.size();
-        if (i != _files.end() && nchildren < _settings._jobs && checkLoadAverage(nchildren)) {
+        if (i != _files.end() && nchildren < _settings.jobs && checkLoadAverage(nchildren)) {
             int pipes[2];
             if (pipe(pipes) == -1) {
                 std::cerr << "pipe() failed: "<< std::strerror(errno) << std::endl;
@@ -348,7 +348,7 @@ void ThreadExecutor::addFileContent(const std::string &path, const std::string &
 
 unsigned int ThreadExecutor::check()
 {
-    HANDLE *threadHandles = new HANDLE[_settings._jobs];
+    HANDLE *threadHandles = new HANDLE[_settings.jobs];
 
     _itNextFile = _files.begin();
 
@@ -364,7 +364,7 @@ unsigned int ThreadExecutor::check()
     InitializeCriticalSection(&_errorSync);
     InitializeCriticalSection(&_reportSync);
 
-    for (unsigned int i = 0; i < _settings._jobs; ++i) {
+    for (unsigned int i = 0; i < _settings.jobs; ++i) {
         threadHandles[i] = (HANDLE)_beginthreadex(nullptr, 0, threadProc, this, 0, nullptr);
         if (!threadHandles[i]) {
             std::cerr << "#### .\nThreadExecutor::check error, errno :" << errno << std::endl;
@@ -372,7 +372,7 @@ unsigned int ThreadExecutor::check()
         }
     }
 
-    DWORD waitResult = WaitForMultipleObjects(_settings._jobs, threadHandles, TRUE, INFINITE);
+    DWORD waitResult = WaitForMultipleObjects(_settings.jobs, threadHandles, TRUE, INFINITE);
     if (waitResult != WAIT_OBJECT_0) {
         if (waitResult == WAIT_FAILED) {
             std::cerr << "#### .\nThreadExecutor::check wait failed, result: " << waitResult << " error: " << GetLastError() << std::endl;
@@ -384,7 +384,7 @@ unsigned int ThreadExecutor::check()
     }
 
     unsigned int result = 0;
-    for (unsigned int i = 0; i < _settings._jobs; ++i) {
+    for (unsigned int i = 0; i < _settings.jobs; ++i) {
         DWORD exitCode;
 
         if (!GetExitCodeThread(threadHandles[i], &exitCode)) {
@@ -488,7 +488,7 @@ void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType ms
 
     // Alert only about unique errors
     bool reportError = false;
-    std::string errmsg = msg.toString(_settings._verbose);
+    std::string errmsg = msg.toString(_settings.verbose);
 
     EnterCriticalSection(&_errorSync);
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end()) {

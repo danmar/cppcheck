@@ -145,7 +145,7 @@ private:
 
         CppCheck cppCheck(*this, true);
         Settings& settings = cppCheck.settings();
-        settings._inlineSuppressions = true;
+        settings.inlineSuppressions = true;
         settings.addEnabled("information");
         settings.jointSuppressionReport = true;
         if (!suppression.empty()) {
@@ -169,8 +169,8 @@ private:
         files["test.cpp"] = 1;
 
         Settings settings;
-        settings._jobs = 1;
-        settings._inlineSuppressions = true;
+        settings.jobs = 1;
+        settings.inlineSuppressions = true;
         settings.addEnabled("information");
         if (!suppression.empty()) {
             ASSERT_EQUALS("", settings.nomsg.addSuppressionLine(suppression));
@@ -372,9 +372,9 @@ private:
         CppCheck cppCheck(*this, true);
         Settings& settings = cppCheck.settings();
         settings.addEnabled("style");
-        settings._inlineSuppressions = true;
-        settings._relativePaths = true;
-        settings._basePaths.push_back("/somewhere");
+        settings.inlineSuppressions = true;
+        settings.relativePaths = true;
+        settings.basePaths.push_back("/somewhere");
         const char code[] =
             "struct Point\n"
             "{\n"

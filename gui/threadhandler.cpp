@@ -67,13 +67,13 @@ void ThreadHandler::SetCheckFiles(QStringList files)
 
 void ThreadHandler::Check(const Settings &settings, bool all)
 {
-    if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs == 0) {
+    if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings.jobs == 0) {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
         emit Done();
         return;
     }
 
-    SetThreadCount(settings._jobs);
+    SetThreadCount(settings.jobs);
 
     mRunningThreadCount = mThreads.size();
 

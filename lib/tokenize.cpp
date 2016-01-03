@@ -1698,7 +1698,7 @@ bool Tokenizer::createTokens(std::istream &code,
     // make sure settings specified
     assert(_settings);
 
-    return list.createTokens(code, Path::getRelativePath(Path::simplifyPath(FileName), _settings->_basePaths));
+    return list.createTokens(code, Path::getRelativePath(Path::simplifyPath(FileName), _settings->basePaths));
 }
 
 bool Tokenizer::simplifyTokens1(const std::string &configuration,
@@ -3523,7 +3523,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // typedef..
     if (m_timerResults) {
-        Timer t("Tokenizer::tokenize::simplifyTypedef", _settings->_showtime, m_timerResults);
+        Timer t("Tokenizer::tokenize::simplifyTypedef", _settings->showtime, m_timerResults);
         simplifyTypedef();
     } else {
         simplifyTypedef();
@@ -3638,7 +3638,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     validate(); // #6772 "segmentation fault (invalid code) in Tokenizer::setVarId"
 
     if (m_timerResults) {
-        Timer t("Tokenizer::tokenize::setVarId", _settings->_showtime, m_timerResults);
+        Timer t("Tokenizer::tokenize::setVarId", _settings->showtime, m_timerResults);
         setVarId();
     } else {
         setVarId();
@@ -3846,22 +3846,22 @@ void Tokenizer::printDebugOutput(unsigned int simplification) const
     if (debug && list.front()) {
         list.front()->printOut(0, list.getFiles());
 
-        if (_settings->_xml)
+        if (_settings->xml)
             std::cout << "<debug>" << std::endl;
 
         if (_symbolDatabase) {
-            if (_settings->_xml)
+            if (_settings->xml)
                 _symbolDatabase->printXml(std::cout);
-            else if (_settings->_verbose)
+            else if (_settings->verbose)
                 _symbolDatabase->printOut("Symbol database");
         }
 
-        if (_settings->_verbose)
-            list.front()->printAst(_settings->_verbose, _settings->_xml, std::cout);
+        if (_settings->verbose)
+            list.front()->printAst(_settings->verbose, _settings->xml, std::cout);
 
-        list.front()->printValueFlow(_settings->_xml, std::cout);
+        list.front()->printValueFlow(_settings->xml, std::cout);
 
-        if (_settings->_xml)
+        if (_settings->xml)
             std::cout << "</debug>" << std::endl;
     }
 

@@ -259,7 +259,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
 
 Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    if (settings->isEnabled("unusedFunction") && settings->_jobs == 1)
+    if (settings->isEnabled("unusedFunction") && settings->jobs == 1)
         instance.parseTokens(*tokenizer, tokenizer->list.getFiles().front().c_str(), settings);
     return nullptr;
 

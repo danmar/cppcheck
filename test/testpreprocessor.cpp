@@ -746,7 +746,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        settings._maxConfigs = 1;
+        settings.maxConfigs = 1;
         settings.userDefines = "X";
         Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c"); // <- don't crash
@@ -831,7 +831,7 @@ private:
         errout.str("");
         Settings settings;
         settings.userDefines = "FOO";
-        settings._force = true; // No message if --force is given
+        settings.force = true; // No message if --force is given
         Preprocessor preprocessor(settings, this);
         const std::string code("#error hello world!\n");
         preprocessor.getcode(code, "X", "test.c");
@@ -2922,7 +2922,7 @@ private:
     void inline_suppression_for_missing_include() {
         Preprocessor::missingIncludeFlag = false;
         Settings settings;
-        settings._inlineSuppressions = true;
+        settings.inlineSuppressions = true;
         settings.addEnabled("all");
         Preprocessor preprocessor(settings, this);
 

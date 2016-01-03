@@ -546,7 +546,7 @@ void MainWindow::AddIncludeDirs(const QStringList &includeDirs, Settings &result
         // include paths must end with '/'
         if (!incdir.endsWith("/"))
             incdir += "/";
-        result._includePaths.push_back(incdir.toStdString());
+        result.includePaths.push_back(incdir.toStdString());
     }
 }
 
@@ -667,7 +667,7 @@ Settings MainWindow::GetCppcheckSettings()
 
         // Only check the given -D configuration
         if (!defines.isEmpty())
-            result._maxConfigs = 1;
+            result.maxConfigs = 1;
     }
 
     // Include directories (and files) are searched in listed order.
@@ -688,11 +688,11 @@ Settings MainWindow::GetCppcheckSettings()
     result.debug = false;
     result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
     result.quiet = false;
-    result._verbose = true;
-    result._force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
-    result._xml = false;
-    result._jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
-    result._inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
+    result.verbose = true;
+    result.force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
+    result.xml = false;
+    result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
+    result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
     result.platformType = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
     result.standards.cpp = mSettings->value(SETTINGS_STD_CPP11, true).toBool() ? Standards::CPP11 : Standards::CPP03;
@@ -711,8 +711,8 @@ Settings MainWindow::GetCppcheckSettings()
     if (!std || !posix || !windows)
         QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located.").arg(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg"));
 
-    if (result._jobs <= 1) {
-        result._jobs = 1;
+    if (result.jobs <= 1) {
+        result.jobs = 1;
     }
 
     return result;

@@ -51,7 +51,7 @@ CppCheck::~CppCheck()
         delete fileInfo.back();
         fileInfo.pop_back();
     }
-    S_timerResults.ShowResults(_settings._showtime);
+    S_timerResults.ShowResults(_settings.showtime);
 }
 
 const char * CppCheck::version()
@@ -100,8 +100,8 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
         std::string filedata;
 
         {
-            Timer t("Preprocessor::preprocess", _settings._showtime, &S_timerResults);
-            preprocessor.preprocess(fileStream, filedata, configurations, filename, _settings._includePaths);
+            Timer t("Preprocessor::preprocess", _settings.showtime, &S_timerResults);
+            preprocessor.preprocess(fileStream, filedata, configurations, filename, _settings.includePaths);
         }
 
         if (_settings.checkConfiguration) {
@@ -130,12 +130,12 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
             }
         }
 
-        if (!_settings.userDefines.empty() && _settings._maxConfigs==1U) {
+        if (!_settings.userDefines.empty() && _settings.maxConfigs==1U) {
             configurations.clear();
             configurations.push_back(_settings.userDefines);
         }
 
-        if (!_settings._force && configurations.size() > _settings._maxConfigs) {
+        if (!_settings.force && configurations.size() > _settings.maxConfigs) {
             if (_settings.isEnabled("information")) {
                 tooManyConfigsError(Path::toNativeSeparators(filename),configurations.size());
             } else {
@@ -163,7 +163,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
 
             // Check only a few configurations (default 12), after that bail out, unless --force
             // was used.
-            if (!_settings._force && ++checkCount > _settings._maxConfigs)
+            if (!_settings.force && ++checkCount > _settings.maxConfigs)
                 break;
 
             cfg = *it;
@@ -181,7 +181,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                 cfg = _settings.userDefines + cfg;
             }
 
-            Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
+            Timer t("Preprocessor::getcode", _settings.showtime, &S_timerResults);
             std::string codeWithoutCfg = preprocessor.getcode(filedata, cfg, filename);
             t.Stop();
 
@@ -204,13 +204,13 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
             }
 
             Tokenizer _tokenizer(&_settings, this);
-            if (_settings._showtime != SHOWTIME_NONE)
+            if (_settings.showtime != SHOWTIME_NONE)
                 _tokenizer.setTimerResults(&S_timerResults);
 
             try {
                 // Create tokens, skip rest of iteration if failed
                 std::istringstream istr(codeWithoutCfg);
-                Timer timer("Tokenizer::createTokens", _settings._showtime, &S_timerResults);
+                Timer timer("Tokenizer::createTokens", _settings.showtime, &S_timerResults);
                 bool result = _tokenizer.createTokens(istr, filename.c_str());
                 timer.Stop();
                 if (!result)
@@ -224,7 +224,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                 checkRawTokens(_tokenizer);
 
                 // Simplify tokens into normal form, skip rest of iteration if failed
-                Timer timer2("Tokenizer::simplifyTokens1", _settings._showtime, &S_timerResults);
+                Timer timer2("Tokenizer::simplifyTokens1", _settings.showtime, &S_timerResults);
                 result = _tokenizer.simplifyTokens1(cfg);
                 timer2.Stop();
                 if (!result)
@@ -238,7 +238,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                 }
 
                 // Skip if we already met the same simplified token list
-                if (_settings._force || _settings._maxConfigs > 1) {
+                if (_settings.force || _settings.maxConfigs > 1) {
                     const unsigned long long checksum = _tokenizer.list.calculateChecksum();
                     if (checksums.find(checksum) != checksums.end())
                         continue;
@@ -251,7 +251,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                 // simplify more if required, skip rest of iteration if failed
                 if (_simplify) {
                     // if further simplification fails then skip rest of iteration
-                    Timer timer3("Tokenizer::simplifyTokenList2", _settings._showtime, &S_timerResults);
+                    Timer timer3("Tokenizer::simplifyTokenList2", _settings.showtime, &S_timerResults);
                     result = _tokenizer.simplifyTokenList2();
                     timer3.Stop();
                     if (!result)
@@ -262,7 +262,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                 }
 
             } catch (const InternalError &e) {
-                if (_settings.isEnabled("information") && (_settings.debug || _settings._verbose))
+                if (_settings.isEnabled("information") && (_settings.debug || _settings.verbose))
                     purgedConfigurationMessage(filename, cfg);
                 internalErrorFound=true;
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
@@ -356,7 +356,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         if (_settings.terminated())
             return;
 
-        Timer timerRunChecks((*it)->name() + "::runChecks", _settings._showtime, &S_timerResults);
+        Timer timerRunChecks((*it)->name() + "::runChecks", _settings.showtime, &S_timerResults);
         (*it)->runChecks(&tokenizer, &_settings, this);
     }
 
@@ -381,7 +381,7 @@ void CppCheck::checkSimplifiedTokens(const Tokenizer &tokenizer)
         if (_settings.terminated())
             return;
 
-        Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings._showtime, &S_timerResults);
+        Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings.showtime, &S_timerResults);
         (*it)->runSimplifiedChecks(&tokenizer, &_settings, this);
         timerSimpleChecks.Stop();
     }
@@ -500,8 +500,8 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
     }
 
     std::ostringstream msg;
-    msg << "Too many #ifdef configurations - cppcheck only checks " << _settings._maxConfigs;
-    if (numberOfConfigurations > _settings._maxConfigs)
+    msg << "Too many #ifdef configurations - cppcheck only checks " << _settings.maxConfigs;
+    if (numberOfConfigurations > _settings.maxConfigs)
         msg << " of " << numberOfConfigurations << " configurations. Use --force to check all configurations.\n";
     if (file.empty())
         msg << " configurations. Use --force to check all configurations. For more details, use --enable=information.\n";
@@ -553,7 +553,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     if (!_settings.library.reportErrors(msg.file0))
         return;
 
-    const std::string errmsg = msg.toString(_settings._verbose);
+    const std::string errmsg = msg.toString(_settings.verbose);
     if (errmsg.empty())
         return;
 
@@ -648,5 +648,5 @@ void CppCheck::analyseWholeProgram()
 
 bool CppCheck::unusedFunctionCheckIsEnabled() const
 {
-    return (_settings._jobs == 1 && _settings.isEnabled("unusedFunction"));
+    return (_settings.jobs == 1 && _settings.isEnabled("unusedFunction"));
 }
