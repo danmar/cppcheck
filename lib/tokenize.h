@@ -534,6 +534,16 @@ public:
     const Token * isFunctionHead(const Token *tok, const std::string &endsWith) const;
 
 private:
+
+    /**
+     * is token pointing at function head?
+     * @param tok         A '(' or ')' token in a possible function head
+     * @param endsWith    string after function head
+     * @param cpp         c++ code
+     * @return token matching with endsWith if syntax seems to be a function head else nullptr
+     */
+    static const Token * isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp);
+
     /**
      * simplify "while (0)"
      */
@@ -817,7 +827,7 @@ public:
     /**
     * Helper function to check for start of function execution scope.
     * Do not use this in checks.  Use the symbol database.
-    * @param tok --> pointer to end parentheses of parameter list
+    * @param tok pointer to end parentheses of parameter list
     * @return pointer to start brace of function scope or nullptr if not start.
     */
     static const Token * startOfExecutableScope(const Token * tok);
@@ -828,10 +838,6 @@ private:
 
     /** Disable assignment operator, no implementation */
     Tokenizer &operator=(const Tokenizer &);
-
-    static Token * startOfExecutableScope(Token * tok) {
-        return const_cast<Token*>(startOfExecutableScope(const_cast<const Token *>(tok)));
-    }
 
     Token *processFunc(Token *tok2, bool inOperator) const;
 

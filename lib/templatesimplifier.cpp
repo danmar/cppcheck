@@ -369,7 +369,7 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
         // don't remove constructor
         if (tok2->str() == "explicit" ||
             (countgt == 1 && Token::Match(tok2->previous(), "> %type% (") &&
-             Tokenizer::startOfExecutableScope(const_cast<const Token *>(tok2->next()->link())))) {
+             Tokenizer::startOfExecutableScope(tok2->linkAt(1)))) {
             Token::eraseTokens(tok, tok2);
             tok->deleteThis();
             return true;

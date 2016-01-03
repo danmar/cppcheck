@@ -54,21 +54,29 @@ namespace {
 
 const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith) const
 {
+    return Tokenizer::isFunctionHead(tok, endsWith, isCPP());
+}
+
+const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp)
+{
     if (!tok)
         return nullptr;
     if (tok->str() == "(")
         tok = tok->link();
-    if (Token::Match(tok, ") const| [;{]")) {
+    if (Token::Match(tok, ") [;{]")) {
         tok = tok->next();
         if (tok->isName())
             tok = tok->next();
         return (endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
-    if (isCPP() && tok->str() == ")") {
+    if (cpp && tok->str() == ")") {
         tok = tok->next();
-        while (Token::Match(tok, "const|noexcept|override|volatile|&|&& !!("))
+        while (Token::Match(tok, "const|noexcept|override|volatile|&|&& !!(") ||
+               (Token::Match(tok, "%name% !!(") && tok->isUpperCaseName()))
             tok = tok->next();
         if (Token::Match(tok, "throw|noexcept ("))
+            tok = tok->linkAt(1)->next();
+        if (Token::Match(tok, "%name% (") && tok->isUpperCaseName())
             tok = tok->linkAt(1)->next();
         if (Token::Match(tok, "= 0|default|delete ;"))
             tok = tok->tokAt(2);
@@ -2238,47 +2246,17 @@ static Token *skipTernaryOp(Token *tok)
 
 const Token * Tokenizer::startOfExecutableScope(const Token * tok)
 {
-    if (tok && tok->str() == ")") {
-        tok = tok->next();
-        bool inInit = false;
-        while (tok && tok->str() != "{") {
-            if (!inInit) {
-                if (Token::Match(tok, "const|override|volatile")) {
-                    tok = tok->next();
-                } else if (tok->str() == "noexcept") {
-                    tok = tok->next();
-                    if (tok && tok->str() == "(") {
-                        tok = tok->link()->next();
-                    }
-                } else if (tok->str() == "throw" && tok->next() && tok->next()->str() == "(") {
-                    tok = tok->next()->link()->next();
-                } else if (tok->str() == ":") {
-                    inInit = true;
-                    tok = tok->next();
-                }
-                // unknown macros ") MACRO {" and ") MACRO(...) {"
-                else if (tok->isUpperCaseName()) {
-                    tok = tok->next();
-                    if (tok && tok->str() == "(") {
-                        tok = tok->link()->next();
-                    }
-                } else
-                    return nullptr;
-            } else {
-                if (tok->isName() && tok->next() && (tok->next()->str() == "(" ||
-                                                     (inInit && tok->next()->str() == "{"))) {
-                    tok = tok->next()->link()->next();
-                } else if (tok->str() == ",") {
-                    tok = tok->next();
-                } else
-                    return nullptr;
-            }
-        }
+    if (tok->str() != ")")
+        return nullptr;
 
-        return tok;
+    tok = isFunctionHead(tok, ":{", true);
+
+    if (Token::Match(tok, ": %name% [({]")) {
+        while (Token::Match(tok, "[:,] %name% [({]"))
+            tok = tok->linkAt(2)->next();
     }
 
-    return nullptr;
+    return (tok && tok->str() == "{") ? tok : nullptr;
 }
 
 
@@ -2290,7 +2268,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
     unsigned int indentlevel = 0;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // Simplify labels in the executable scope..
-        Token *start = startOfExecutableScope(tok);
+        Token *start = const_cast<Token *>(startOfExecutableScope(tok));
         if (start) {
             tok = start;
             executablescope = true;
@@ -4038,7 +4016,7 @@ void Tokenizer::removeRedundantAssignment()
         if (tok->str() == "{")
             tok = tok->link();
 
-        Token * start = startOfExecutableScope(tok);
+        Token * start = const_cast<Token *>(startOfExecutableScope(tok));
         if (start) {
             tok = start->previous();
             // parse in this function..
@@ -6211,7 +6189,7 @@ bool Tokenizer::simplifyKnownVariables()
     // auto variables..
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // Search for a block of code
-        Token *start = startOfExecutableScope(tok);
+        Token *start = const_cast<Token *>(startOfExecutableScope(tok));
         if (!start)
             continue;
 
@@ -7038,7 +7016,7 @@ void Tokenizer::simplifyReference()
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // starting executable scope..
-        Token *start = startOfExecutableScope(tok);
+        Token *start = const_cast<Token *>(startOfExecutableScope(tok));
         if (start) {
             tok = start;
             // replace references in this scope..

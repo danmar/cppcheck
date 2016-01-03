@@ -559,7 +559,7 @@ private:
     }
 
     void garbageCode33() { // #6613
-        ASSERT_THROW(checkCode("main(()B{});"), InternalError);
+        checkCode("main(()B{});");
 
         checkCode("f::y:y : <x::");
 
