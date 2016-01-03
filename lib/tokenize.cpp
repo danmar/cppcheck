@@ -64,7 +64,7 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
             tok = tok->next();
         return (endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
-    if (isCPP() && (Token::Match(tok, ") const| throw|noexcept (") || Token::Match(tok, ") const| &|&&| [;:{=]"))) {
+    if (isCPP() && (Token::Match(tok, ") const| throw|noexcept (") || Token::Match(tok, ") const| &|&&|noexcept| [;:{=]"))) {
         tok = tok->next();
         while (tok->isName())
             tok = tok->next();

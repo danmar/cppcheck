@@ -456,9 +456,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             } else if (tok->str() == "&&") {
                                 function.hasRvalRefQualifier(true);
                                 tok = tok->next();
-                            } else if (Token::simpleMatch(tok, "noexcept (")) {
-                                function.isNoExcept(tok->strAt(2) != "false");
-                                tok = tok->linkAt(1)->next();
+                            } else if (tok->str() == "noexcept") {
+                                function.isNoExcept(!Token::simpleMatch(tok->next(), "( false )"));
+                                tok = tok->next();
+                                if (tok->str() == "(")
+                                    tok = tok->link()->next();
                             } else if (Token::simpleMatch(tok, "throw (")) {
                                 function.isThrow(true);
                                 if (tok->strAt(2) != ")")
@@ -470,26 +472,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                 function.isPure(tok->strAt(1) == "0");
                                 function.isDefault(tok->strAt(1) == "default");
                                 function.isDelete(tok->strAt(1) == "delete");
-                                tok = tok->tokAt(2);
-                            }
-
-                            scope->addFunction(function);
-                        }
-
-                        // noexcept;
-                        // noexcept = 0;
-                        // const noexcept;
-                        // const noexcept = 0;
-                        else if (Token::Match(end, ") const| noexcept ;|=")) {
-                            function.isNoExcept(true);
-
-                            if (end->next()->str() == "const")
-                                tok = end->tokAt(3);
-                            else
-                                tok = end->tokAt(2);
-
-                            if (Token::Match(tok, "= !!default ;")) {
-                                function.isPure(true);
                                 tok = tok->tokAt(2);
                             }
 
