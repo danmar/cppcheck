@@ -572,12 +572,6 @@ private:
     void simplifyFunctionPointers();
 
     /**
-     * Remove exception specifications.
-     */
-    void removeExceptionSpecifications();
-
-
-    /**
      * Send error message to error logger about internal bug.
      * @param tok the token that this bug concerns.
      */
