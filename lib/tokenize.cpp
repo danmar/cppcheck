@@ -9305,42 +9305,36 @@ void Tokenizer::simplifyAsm2()
 
         if (Token::simpleMatch(tok, "^ {") || Token::simpleMatch(tok->linkAt(1), ") {")) {
             Token * start = tok;
-            while (start && !Token::Match(start, "[;{}=]")) {
+            while (start && !Token::Match(start, "[,(;{}=]")) {
                 if (start->link() && Token::Match(start, ")|]|>"))
                     start = start->link();
                 start = start->previous();
             }
-            if (start)
-                start = start->next();
+
             const Token *last = tok->next()->link();
             if (Token::simpleMatch(last, ") {"))
                 last = last->linkAt(1);
-            if (start != tok) {
+            last = last->next();
+            while (last && !Token::Match(last, "%cop%|,|;|{|}|)")) {
+                if (Token::Match(last, "(|["))
+                    last = last->link();
                 last = last->next();
-                while (last && !Token::Match(last, "[;{})]")) {
-                    last = last->next();
-                    if (last && last->link() && last->str() == "(")
-                        last = last->link()->next();
-                }
-                if (last)
-                    last = last->next();
             }
+
             if (start && last) {
-                std::string asmcode(start->str());
+                std::string asmcode;
                 while (start->next() != last) {
                     asmcode += start->next()->str();
                     start->deleteNext();
                 }
-                asmcode += last->str();
-                start->deleteNext();
-                start->insertToken(";");
+                if (last->str() == "}")
+                    start->insertToken(";");
                 start->insertToken(")");
                 start->insertToken("\"" + asmcode + "\"");
                 start->insertToken("(");
-                start->str("asm");
-                start->link(nullptr);
-                start->next()->link(start->tokAt(3));
-                start->tokAt(3)->link(start->next());
+                start->insertToken("asm");
+                start->tokAt(2)->link(start->tokAt(4));
+                start->tokAt(4)->link(start->tokAt(2));
                 tok = start->tokAt(4);
             }
         }
