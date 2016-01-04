@@ -2414,16 +2414,15 @@ static void skipstring(const std::string &line, std::string::size_type &pos)
 
 /**
  * Remove heading and trailing whitespaces from the input parameter.
+ * If string is all spaces/tabs, return empty string.
  * @param s The string to trim.
  */
 static std::string trim(const std::string& s)
 {
     const std::string::size_type beg = s.find_first_not_of(" \t");
     if (beg == std::string::npos)
-        return s;
+        return "";
     const std::string::size_type end = s.find_last_not_of(" \t");
-    if (end == std::string::npos)
-        return s.substr(beg);
     return s.substr(beg, end - beg + 1);
 }
 
