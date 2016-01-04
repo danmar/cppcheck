@@ -30,6 +30,7 @@
 #include <climits>
 #include <iostream>
 #include <iomanip>
+#include <cctype>
 
 //---------------------------------------------------------------------------
 
