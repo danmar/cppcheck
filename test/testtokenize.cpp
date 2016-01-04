@@ -1020,8 +1020,8 @@ private:
                                            "    return test;\n"
                                            "};"));
 
-        ASSERT_EQUALS("; asm ( \"returnf([=]().int^{});\" ) ;",
-                      tokenizeAndStringify("; return f([=]() -> int^{});")); // #7185 - garbage
+        ASSERT_EQUALS("; asm ( \"returnf(a[b=c],^{});\" ) ;",
+                      tokenizeAndStringify("; return f(a[b=c],^{});")); // #7185
         ASSERT_EQUALS("; asm ( \"returnf(^(void){somecode});\" ) ;",
                       tokenizeAndStringify("; return f(^(void){somecode});"));
     }
