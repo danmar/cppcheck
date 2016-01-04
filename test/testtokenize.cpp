@@ -63,7 +63,6 @@ private:
         TEST_CASE(tokenize25);  // #4239 (segmentation fault)
         TEST_CASE(tokenize26);  // #4245 (segmentation fault)
         TEST_CASE(tokenize27);  // #4525 (segmentation fault)
-        TEST_CASE(tokenize28);  // #4725 (writing asm() around "^{}")
         TEST_CASE(tokenize31);  // #3503 (Wrong handling of member function taking function pointer as argument)
         TEST_CASE(tokenize32);  // #5884 (fsanitize=undefined: left shift of negative value -10000 in lib/templatesimplifier.cpp:852:46)
         TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
@@ -97,6 +96,7 @@ private:
         TEST_CASE(removeCast17); // #6110 - don't remove any parentheses in 'a(b)(c)'
 
         TEST_CASE(inlineasm);
+        TEST_CASE(simplifyAsm2);  // #4725 (writing asm() around "^{}")
 
         TEST_CASE(ifAddBraces1);
         TEST_CASE(ifAddBraces2);
@@ -769,31 +769,6 @@ private:
         tokenizeAndStringify("static unsigned int re_string_context_at (const re_string_t *input, int idx, int eflags) internal_function __attribute__ ((pure));");
     }
 
-    // #4725 - ^{}
-    void tokenize28() {
-        ASSERT_EQUALS("void f ( ) { asm ( \"^{}\" ) ; }", tokenizeAndStringify("void f() { ^{} }"));
-        ASSERT_EQUALS("void f ( ) { asm ( \"x(^{});\" ) ; }", tokenizeAndStringify("void f() { x(^{}); }"));
-        ASSERT_EQUALS("void f ( ) { asm ( \"foo(A(),^{bar();});\" ) ; }", tokenizeAndStringify("void f() { foo(A(), ^{ bar(); }); }"));
-        ASSERT_EQUALS("int f0 ( Args args ) {\n"
-                      "asm ( \"return^{returnsizeof...(Args);}()+\" ) ;\n"
-                      "\n"
-                      "asm ( \"^{returnsizeof...(args);}\" ) ;\n"
-                      "\n"
-                      "\n"
-                      "} ;", tokenizeAndStringify("int f0(Args args) {\n"
-                              "    return ^{\n"
-                              "        return sizeof...(Args);\n"
-                              "    }() + ^ {\n"
-                              "        return sizeof...(args);\n"
-                              "    }();\n"
-                              "};"));
-        ASSERT_EQUALS("int ( ^ block ) ( void ) = asm ( \"^{staticinttest=0;returntest;}\" ) ;",
-                      tokenizeAndStringify("int(^block)(void) = ^{\n"
-                                           "    static int test = 0;\n"
-                                           "    return test;\n"
-                                           "};"));
-    }
-
     // #3503 - don't "simplify" SetFunction member function to a variable
     void tokenize31() {
         ASSERT_EQUALS("struct TTestClass { TTestClass ( ) { }\n"
@@ -1019,6 +994,36 @@ private:
 
         // 'asm ( ) ;' should be in the same line
         ASSERT_EQUALS(";\n\nasm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify(";\n\n__asm__ volatile ( \"mov ax,bx\" );", true));
+    }
+
+    // #4725 - ^{}
+    void simplifyAsm2() {
+        ASSERT_EQUALS("void f ( ) { asm ( \"^{}\" ) ; }", tokenizeAndStringify("void f() { ^{} }"));
+        ASSERT_EQUALS("void f ( ) { asm ( \"x(^{});\" ) ; }", tokenizeAndStringify("void f() { x(^{}); }"));
+        ASSERT_EQUALS("void f ( ) { asm ( \"foo(A(),^{bar();});\" ) ; }", tokenizeAndStringify("void f() { foo(A(), ^{ bar(); }); }"));
+        ASSERT_EQUALS("int f0 ( Args args ) {\n"
+                      "asm ( \"return^{returnsizeof...(Args);}()+\" ) ;\n"
+                      "\n"
+                      "asm ( \"^{returnsizeof...(args);}\" ) ;\n"
+                      "\n"
+                      "\n"
+                      "} ;", tokenizeAndStringify("int f0(Args args) {\n"
+                              "    return ^{\n"
+                              "        return sizeof...(Args);\n"
+                              "    }() + ^ {\n"
+                              "        return sizeof...(args);\n"
+                              "    }();\n"
+                              "};"));
+        ASSERT_EQUALS("int ( ^ block ) ( void ) = asm ( \"^{staticinttest=0;returntest;}\" ) ;",
+                      tokenizeAndStringify("int(^block)(void) = ^{\n"
+                                           "    static int test = 0;\n"
+                                           "    return test;\n"
+                                           "};"));
+
+        ASSERT_EQUALS("; asm ( \"returnf([=]().int^{});\" ) ;",
+                      tokenizeAndStringify("; return f([=]() -> int^{});")); // #7185 - garbage
+        ASSERT_EQUALS("; asm ( \"returnf(^(void){somecode});\" ) ;",
+                      tokenizeAndStringify("; return f(^(void){somecode});"));
     }
 
     void ifAddBraces1() {

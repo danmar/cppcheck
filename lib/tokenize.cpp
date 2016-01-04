@@ -9295,18 +9295,26 @@ void Tokenizer::simplifyAsm()
 
 void Tokenizer::simplifyAsm2()
 {
+    // Block declarations: ^{}
+    // A C extension used to create lambda like closures.
+
     // Put ^{} statements in asm()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "^ {")) {
+        if (tok->str() != "^")
+            continue;
+
+        if (Token::simpleMatch(tok, "^ {") || Token::simpleMatch(tok->linkAt(1), ") {")) {
             Token * start = tok;
             while (start && !Token::Match(start, "[;{}=]")) {
-                if (start->link() && start->str() == ")")
+                if (start->link() && Token::Match(start, ")|]|>"))
                     start = start->link();
                 start = start->previous();
             }
             if (start)
                 start = start->next();
             const Token *last = tok->next()->link();
+            if (Token::simpleMatch(last, ") {"))
+                last = last->linkAt(1);
             if (start != tok) {
                 last = last->next();
                 while (last && !Token::Match(last, "[;{})]")) {
@@ -9337,9 +9345,9 @@ void Tokenizer::simplifyAsm2()
             }
         }
     }
+
     // When the assembly code has been cleaned up, no @ is allowed
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        assert(list.validateToken(tok)); // see #7185 "crash: Tokenizer::simplifyAsm2 on invalid code"
         if (tok->str() == "(") {
             tok = tok->link();
             if (!tok)
