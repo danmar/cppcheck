@@ -89,14 +89,14 @@ def removeAllExceptResults():
                     shutil.rmtree(filename, onerror=handleRemoveReadonly)
                 elif filename != 'results.txt':
                     os.remove(filename)
-        except WindowsError, err:
+        except WindowsError as err:
             time.sleep(30)
             if count == 0:
                 print('Failed to cleanup files/folders')
                 print(err)
                 sys.exit(1)
             continue
-        except OSError, err:
+        except OSError as err:
             time.sleep(30)
             if count == 0:
                 print('Failed to cleanup files/folders')

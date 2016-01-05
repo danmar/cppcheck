@@ -84,7 +84,7 @@ class MatchCompiler:
         if tok == '%any%':
             return 'true'
         elif tok == '%assign%':
-			return 'tok->isAssignmentOp()'
+            return 'tok->isAssignmentOp()'
         elif tok == '%bool%':
             return 'tok->isBoolean()'
         elif tok == '%char%':
