@@ -290,7 +290,7 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
 
 void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname) const
 {
-    reportErr(tok, Severity::error, "memleak", "Memory leak: " + varname, 771U);
+    reportErr(tok, Severity::error, "memleak", "Memory leak: " + varname, 401U);
 }
 
 void CheckMemoryLeak::memleakUponReallocFailureError(const Token *tok, const std::string &varname) const
