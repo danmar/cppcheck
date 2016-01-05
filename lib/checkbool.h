@@ -114,6 +114,7 @@ private:
         CheckBool c(0, settings, errorLogger);
 
         c.assignBoolToPointerError(0);
+        c.assignBoolToFloatError(0);
         c.comparisonOfFuncReturningBoolError(0, "func_name");
         c.comparisonOfTwoFuncsReturningBoolError(0, "func_name1", "func_name2");
         c.comparisonOfBoolWithBoolError(0, "var_name");
