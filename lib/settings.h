@@ -243,6 +243,12 @@ public:
     /** Struct contains standards settings */
     Standards standards;
 
+    unsigned int char_bit;       /// bits in char
+    unsigned int short_bit;      /// bits in short
+    unsigned int int_bit;        /// bits in int
+    unsigned int long_bit;       /// bits in long
+    unsigned int long_long_bit;  /// bits in long long
+
     /** size of standard types */
     unsigned int sizeof_bool;
     unsigned int sizeof_short;

@@ -154,6 +154,11 @@ bool Settings::platform(PlatformType type)
         sizeof_size_t = sizeof(std::size_t);
         sizeof_pointer = sizeof(void *);
         defaultSign = '\0';
+        char_bit = 8;
+        short_bit = char_bit * sizeof_short;
+        int_bit = char_bit * sizeof_int;
+        long_bit = char_bit * sizeof_long;
+        long_long_bit = char_bit * sizeof_long_long;
         return true;
     case Native: // same as system this code was compile on
         platformType = type;
@@ -172,6 +177,11 @@ bool Settings::platform(PlatformType type)
             int x = 2;
             defaultSign = (-10 / x == -5) ? 's' : 'u';
         }
+        char_bit = 8;
+        short_bit = char_bit * sizeof_short;
+        int_bit = char_bit * sizeof_int;
+        long_bit = char_bit * sizeof_long;
+        long_long_bit = char_bit * sizeof_long_long;
         return true;
     case Win32W:
     case Win32A:
@@ -188,6 +198,11 @@ bool Settings::platform(PlatformType type)
         sizeof_size_t = 4;
         sizeof_pointer = 4;
         defaultSign = '\0';
+        char_bit = 8;
+        short_bit = char_bit * sizeof_short;
+        int_bit = char_bit * sizeof_int;
+        long_bit = char_bit * sizeof_long;
+        long_long_bit = char_bit * sizeof_long_long;
         return true;
     case Win64:
         platformType = type;
@@ -203,6 +218,11 @@ bool Settings::platform(PlatformType type)
         sizeof_size_t = 8;
         sizeof_pointer = 8;
         defaultSign = '\0';
+        char_bit = 8;
+        short_bit = char_bit * sizeof_short;
+        int_bit = char_bit * sizeof_int;
+        long_bit = char_bit * sizeof_long;
+        long_long_bit = char_bit * sizeof_long_long;
         return true;
     case Unix32:
         platformType = type;
@@ -218,6 +238,11 @@ bool Settings::platform(PlatformType type)
         sizeof_size_t = 4;
         sizeof_pointer = 4;
         defaultSign = '\0';
+        char_bit = 8;
+        short_bit = char_bit * sizeof_short;
+        int_bit = char_bit * sizeof_int;
+        long_bit = char_bit * sizeof_long;
+        long_long_bit = char_bit * sizeof_long_long;
         return true;
     case Unix64:
         platformType = type;
@@ -233,6 +258,11 @@ bool Settings::platform(PlatformType type)
         sizeof_size_t = 8;
         sizeof_pointer = 8;
         defaultSign = '\0';
+        char_bit = 8;
+        short_bit = char_bit * sizeof_short;
+        int_bit = char_bit * sizeof_int;
+        long_bit = char_bit * sizeof_long;
+        long_long_bit = char_bit * sizeof_long_long;
         return true;
     }
 

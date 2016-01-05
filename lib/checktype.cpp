@@ -60,11 +60,11 @@ void CheckType::checkTooBigBitwiseShift()
                 continue;
             int lhsbits = 0;
             if (lhstype->type <= ValueType::Type::INT)
-                lhsbits = 8 * _settings->sizeof_int;
+                lhsbits = _settings->int_bit;
             else if (lhstype->type == ValueType::Type::LONG)
-                lhsbits = 8 * _settings->sizeof_long;
+                lhsbits = _settings->long_bit;
             else if (lhstype->type == ValueType::Type::LONGLONG)
-                lhsbits = 8 * _settings->sizeof_long_long;
+                lhsbits = _settings->long_long_bit;
             else
                 continue;
 
@@ -105,7 +105,7 @@ void CheckType::checkIntegerOverflow()
         return;
 
     // max int value according to platform settings.
-    const MathLib::bigint maxint = (1LL << (8 * _settings->sizeof_int - 1)) - 1;
+    const MathLib::bigint maxint = (1LL << (_settings->int_bit - 1)) - 1;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
