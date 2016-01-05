@@ -59,14 +59,12 @@ def daca2(foldernum):
     # run cppcheck addons
     subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/' + folder)])
     subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2-addons.py'), folder, '--rev=' + rev])
-    upload(os.path.expanduser('~/daca2/'+folder+'/results.txt'), 'evidente/addons-'+folder+'.txt')
+    upload(os.path.expanduser('~/daca2/' + folder + '/results.txt'), 'evidente/addons-' + folder + '.txt')
     subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/lib' + folder)])
     subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2-addons.py'), 'lib' + folder, '--rev=' + rev])
-    upload(os.path.expanduser('~/daca2/lib'+folder+'/results.txt'), 'evidente/addons-lib'+folder+'.txt')
+    upload(os.path.expanduser('~/daca2/lib' + folder + '/results.txt'), 'evidente/addons-lib' + folder + '.txt')
 
 foldernum = 0
 while True:
     daca2(foldernum)
     foldernum = foldernum + 1
-
-
