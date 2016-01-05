@@ -3084,7 +3084,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         const Token * const tok = Token::findsimplematch(tokenizer.tokens(),str);
-        return tok->valueType()->str();
+        return tok->valueType() ? tok->valueType()->str() : std::string();
     }
 
     void valuetype() {
@@ -3167,6 +3167,7 @@ private:
         ASSERT_EQUALS("long long", typeOf("a = (long long)32;", "("));
         ASSERT_EQUALS("long double", typeOf("a = (long double)32;", "("));
         ASSERT_EQUALS("char", typeOf("a = static_cast<char>(32);", "("));
+        ASSERT_EQUALS("", typeOf("a = (unsigned x)0;", "("));
 
         // const..
         ASSERT_EQUALS("const char *", typeOf("a = \"123\";", "\"123\""));

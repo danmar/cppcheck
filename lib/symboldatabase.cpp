@@ -3770,6 +3770,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = type->isLong() ? ValueType::Type::LONGDOUBLE : ValueType::Type::DOUBLE;
         else if (type->str() == "struct")
             valuetype->type = ValueType::Type::NONSTD;
+        else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
+            return nullptr;
         else if (type->str() == "*")
             valuetype->pointer++;
         if (!type->originalName().empty())
