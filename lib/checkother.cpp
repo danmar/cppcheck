@@ -1470,8 +1470,7 @@ void CheckOther::checkCharVariable()
                 const Token *index = tok->next()->astOperand2();
                 if (astIsSignedChar(index) && index->getValueGE(0x80, _settings))
                     charArrayIndexError(tok);
-            }
-            if (Token::Match(tok, "[&|^]") && tok->astOperand2() && tok->astOperand1()) {
+            } else if (Token::Match(tok, "[&|^]") && tok->astOperand2() && tok->astOperand1()) {
                 bool warn = false;
                 if (astIsSignedChar(tok->astOperand1())) {
                     const ValueFlow::Value *v1 = tok->astOperand1()->getValueLE(-1, _settings);
@@ -1480,8 +1479,7 @@ void CheckOther::checkCharVariable()
                         v1 = tok->astOperand1()->getValueGE(0x80, _settings);
                     if (v1 && !(tok->str() == "&" && v2 && v2->isKnown() && v2->intvalue >= 0 && v2->intvalue < 0x100))
                         warn = true;
-                }
-                if (!warn && astIsSignedChar(tok->astOperand2())) {
+                } else if (!warn && astIsSignedChar(tok->astOperand2())) {
                     const ValueFlow::Value *v1 = tok->astOperand2()->getValueLE(-1, _settings);
                     const ValueFlow::Value *v2 = tok->astOperand1()->getMaxValue(false);
                     if (!v1)
@@ -1489,11 +1487,9 @@ void CheckOther::checkCharVariable()
                     if (v1 && !(tok->str() == "&" && v2 && v2->isKnown() && v2->intvalue >= 0 && v2->intvalue < 0x100))
                         warn = true;
                 }
-                if (!warn)
-                    continue;
 
                 // is the result stored in a short|int|long?
-                if (Token::simpleMatch(tok->astParent(), "=")) {
+                if (warn && Token::simpleMatch(tok->astParent(), "=")) {
                     const Token *lhs = tok->astParent()->astOperand1();
                     if (lhs && lhs->valueType() && lhs->valueType()->type >= ValueType::Type::SHORT)
                         charBitOpError(tok); // This is an error..
