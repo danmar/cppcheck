@@ -19,6 +19,7 @@
 #include "settings.h"
 #include "preprocessor.h"       // Preprocessor
 #include "utils.h"
+#include "tinyxml2.h"
 
 #include <fstream>
 #include <set>
@@ -272,8 +273,40 @@ bool Settings::platform(PlatformType type)
 
 bool Settings::platformFile(const std::string &filename)
 {
-    (void)filename;
-    /** @todo TBD */
+    // open file..
+    tinyxml2::XMLDocument doc;
+    if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_NO_ERROR)
+        return false;
 
-    return false;
+    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
+
+    if (!rootnode || std::strcmp(rootnode->Name(),"platform") != 0)
+        return false;
+
+    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+        if (std::strcmp(node->Name(), "defaultSign") == 0)
+            defaultSign = *node->GetText();
+        else if (std::strcmp(node->Name(), "char_bit") == 0)
+            char_bit = std::atoi(node->GetText());
+        else if (std::strcmp(node->Name(), "sizeof") == 0) {
+            for (const tinyxml2::XMLElement *sz = node->FirstChildElement(); sz; sz = sz->NextSiblingElement()) {
+                if (std::strcmp(node->Name(), "short") == 0)
+                    sizeof_short = std::atoi(node->GetText());
+                if (std::strcmp(node->Name(), "int") == 0)
+                    sizeof_int = std::atoi(node->GetText());
+                if (std::strcmp(node->Name(), "long") == 0)
+                    sizeof_long = std::atoi(node->GetText());
+                if (std::strcmp(node->Name(), "long-long") == 0)
+                    sizeof_long_long = std::atoi(node->GetText());
+                if (std::strcmp(node->Name(), "float") == 0)
+                    sizeof_float = std::atoi(node->GetText());
+                if (std::strcmp(node->Name(), "double") == 0)
+                    sizeof_double = std::atoi(node->GetText());
+                if (std::strcmp(node->Name(), "pointer") == 0)
+                    sizeof_pointer = std::atoi(node->GetText());
+            }
+        }
+    }
+
+    return true;
 }

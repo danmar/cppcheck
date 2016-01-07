@@ -683,7 +683,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                     _settings->platform(Settings::Unix64);
                 else if (platform == "native")
                     _settings->platform(Settings::Unspecified);
-                else {
+                else if (!_settings->platformFile(platform)) {
                     std::string message("cppcheck: error: unrecognized platform: \"");
                     message += platform;
                     message += "\".";
@@ -898,8 +898,9 @@ void CmdLineParser::PrintHelp()
               "                         before skipping it. Default is '12'. If used together\n"
               "                         with '--force', the last option is the one that is\n"
               "                         effective.\n"
-              "    --platform=<type>    Specifies platform specific types and sizes. The\n"
-              "                         available platforms are:\n"
+              "    --platform=<type>, --platform=<file>\n"
+              "                         Specifies platform specific types and sizes. The\n"
+              "                         available builtin platforms are:\n"
               "                          * unix32\n"
               "                                 32 bit unix variant\n"
               "                          * unix64\n"
