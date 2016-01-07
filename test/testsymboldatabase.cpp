@@ -3077,14 +3077,14 @@ private:
               "}");
     }
 
-    std::string typeOf(const char code[], const char str[]) {
+    std::string typeOf(const char code[], const char str[], const char filename[] = "test.cpp") {
         Settings s;
         s.platform(Settings::Unspecified);
         Tokenizer tokenizer(&s, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
         const Token * const tok = Token::findsimplematch(tokenizer.tokens(),str);
-        return tok->valueType()->str();
+        return tok->valueType() ? tok->valueType()->str() : std::string();
     }
 
     void valuetype() {
@@ -3153,6 +3153,10 @@ private:
         // shift => result has same type as lhs
         ASSERT_EQUALS("int", typeOf("int x; a = x << 1U;", "<<"));
         ASSERT_EQUALS("int", typeOf("int x; a = x >> 1U;", ">>"));
+        ASSERT_EQUALS("",           typeOf("a = 12 >> x;", ">>", "test.cpp")); // >> might be overloaded
+        ASSERT_EQUALS("signed int", typeOf("a = 12 >> x;", ">>", "test.c"));
+        ASSERT_EQUALS("",           typeOf("a = 12 << x;", "<<", "test.cpp")); // << might be overloaded
+        ASSERT_EQUALS("signed int", typeOf("a = 12 << x;", "<<", "test.c"));
 
         // array..
         ASSERT_EQUALS("void * *", typeOf("void * x[10]; a = x + 0;", "+"));
@@ -3167,6 +3171,7 @@ private:
         ASSERT_EQUALS("long long", typeOf("a = (long long)32;", "("));
         ASSERT_EQUALS("long double", typeOf("a = (long double)32;", "("));
         ASSERT_EQUALS("char", typeOf("a = static_cast<char>(32);", "("));
+        ASSERT_EQUALS("", typeOf("a = (unsigned x)0;", "("));
 
         // const..
         ASSERT_EQUALS("const char *", typeOf("a = \"123\";", "\"123\""));

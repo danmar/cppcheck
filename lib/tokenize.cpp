@@ -1735,7 +1735,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration,
             list.createAst();
             list.validateAst();
 
-            SymbolDatabase::setValueTypeInTokenList(list.front(), _settings->defaultSign);
+            SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings->defaultSign);
             ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
         }
 
@@ -2700,7 +2700,9 @@ void Tokenizer::setVarId()
         }
 
         if (tok == list.front() || Token::Match(tok, "[;{}]") ||
-            (Token::Match(tok, "[(,]") && (!scopeStack.top().isExecutable || Token::simpleMatch(tok->link(), ") {"))) ||
+            (tok->str() == "(" && isFunctionHead(tok,"{")) ||
+            (tok->str() == "(" && !scopeStack.top().isExecutable && isFunctionHead(tok,";:")) ||
+            (tok->str() == "," && !scopeStack.top().isExecutable) ||
             (tok->isName() && tok->str().at(tok->str().length()-1U) == ':')) {
 
             // No variable declarations in sizeof

@@ -89,6 +89,7 @@ private:
         TEST_CASE(varid57); // #6636: new scope by {}
         TEST_CASE(varid58); // #6638: for loop in for condition
         TEST_CASE(varid59); // #6696
+        TEST_CASE(varid60); // #7267 cast '(unsigned x)10'
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -923,7 +924,7 @@ private:
         const char code[] ="int X::f(int b) const { return(a*b); }";
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: int X :: f ( int b@1 ) const { return ( a * b@1 ) ; }\n",
-                      tokenize(code, false, "test.c"));
+                      tokenize(code, false));
     }
 
     void varid49() {  // #3799 - void f(std::vector<int>)
@@ -1090,6 +1091,12 @@ private:
                               "3: ~ B ( ) { }\n"
                               "4: } ;\n";;
         TODO_ASSERT_EQUALS(wanted, expected, tokenize(code, false, "test.cpp"));
+    }
+
+    void varid60() { // #7267 - cast
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: a = ( x y ) 10 ;\n",
+                      tokenize("a=(x y)10;", false));
     }
 
     void varid_cpp_keywords_in_c_code() {

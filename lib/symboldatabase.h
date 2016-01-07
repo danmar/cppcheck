@@ -1027,7 +1027,7 @@ public:
     void validate() const;
 
     /** Set valuetype in provided tokenlist */
-    static void setValueTypeInTokenList(Token *tokens, char defaultSignedness);
+    static void setValueTypeInTokenList(Token *tokens, bool cpp, char defaultSignedness);
 
 private:
     friend class Scope;
