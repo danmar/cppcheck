@@ -3077,12 +3077,12 @@ private:
               "}");
     }
 
-    std::string typeOf(const char code[], const char str[]) {
+    std::string typeOf(const char code[], const char str[], const char filename[] = "test.cpp") {
         Settings s;
         s.platform(Settings::Unspecified);
         Tokenizer tokenizer(&s, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
         const Token * const tok = Token::findsimplematch(tokenizer.tokens(),str);
         return tok->valueType() ? tok->valueType()->str() : std::string();
     }
@@ -3153,6 +3153,10 @@ private:
         // shift => result has same type as lhs
         ASSERT_EQUALS("int", typeOf("int x; a = x << 1U;", "<<"));
         ASSERT_EQUALS("int", typeOf("int x; a = x >> 1U;", ">>"));
+        ASSERT_EQUALS("",           typeOf("a = 12 >> x;", ">>", "test.cpp")); // >> might be overloaded
+        ASSERT_EQUALS("signed int", typeOf("a = 12 >> x;", ">>", "test.c"));
+        ASSERT_EQUALS("",           typeOf("a = 12 << x;", "<<", "test.cpp")); // << might be overloaded
+        ASSERT_EQUALS("signed int", typeOf("a = 12 << x;", "<<", "test.c"));
 
         // array..
         ASSERT_EQUALS("void * *", typeOf("void * x[10]; a = x + 0;", "+"));

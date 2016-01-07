@@ -1735,7 +1735,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration,
             list.createAst();
             list.validateAst();
 
-            SymbolDatabase::setValueTypeInTokenList(list.front(), _settings->defaultSign);
+            SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings->defaultSign);
             ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
         }
 
