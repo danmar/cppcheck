@@ -284,7 +284,7 @@ bool Settings::platformFile(const std::string &filename)
         return false;
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
-        if (std::strcmp(node->Name(), "defaultSign") == 0)
+        if (std::strcmp(node->Name(), "default-sign") == 0)
             defaultSign = *node->GetText();
         else if (std::strcmp(node->Name(), "char_bit") == 0)
             char_bit = std::atoi(node->GetText());
@@ -292,18 +292,24 @@ bool Settings::platformFile(const std::string &filename)
             for (const tinyxml2::XMLElement *sz = node->FirstChildElement(); sz; sz = sz->NextSiblingElement()) {
                 if (std::strcmp(node->Name(), "short") == 0)
                     sizeof_short = std::atoi(node->GetText());
-                if (std::strcmp(node->Name(), "int") == 0)
+                else if (std::strcmp(node->Name(), "int") == 0)
                     sizeof_int = std::atoi(node->GetText());
-                if (std::strcmp(node->Name(), "long") == 0)
+                else if (std::strcmp(node->Name(), "long") == 0)
                     sizeof_long = std::atoi(node->GetText());
-                if (std::strcmp(node->Name(), "long-long") == 0)
+                else if (std::strcmp(node->Name(), "long-long") == 0)
                     sizeof_long_long = std::atoi(node->GetText());
-                if (std::strcmp(node->Name(), "float") == 0)
+                else if (std::strcmp(node->Name(), "float") == 0)
                     sizeof_float = std::atoi(node->GetText());
-                if (std::strcmp(node->Name(), "double") == 0)
+                else if (std::strcmp(node->Name(), "double") == 0)
                     sizeof_double = std::atoi(node->GetText());
-                if (std::strcmp(node->Name(), "pointer") == 0)
+                else if (std::strcmp(node->Name(), "long-double") == 0)
+                    sizeof_long_double = std::atoi(node->GetText());
+                else if (std::strcmp(node->Name(), "pointer") == 0)
                     sizeof_pointer = std::atoi(node->GetText());
+                else if (std::strcmp(node->Name(), "size_t") == 0)
+                    sizeof_size_t = std::atoi(node->GetText());
+                else if (std::strcmp(node->Name(), "wchar_t") == 0)
+                    sizeof_wchar_t = std::atoi(node->GetText());
             }
         }
     }
