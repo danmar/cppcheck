@@ -55,6 +55,16 @@ gui/Makefile
 gui/Makefile.debug
 gui/Makefile.release
 gui/qrc_gui.cpp
+gui/test/Makefile
+gui/test/*/Makefile
+gui/test/*/*/Makefile
+gui/test/benchmark/simple/benchmark-simple
+gui/test/filelist/test-filelist
+gui/test/projectfile/test-projectfile
+gui/test/translationhandler/test-translationhandler
+gui/test/xmlreport/test-xmlreport
+gui/test/xmlreportv1/test-xmlreportv1
+gui/test/xmlreportv2/test-xmlreportv2
 
 # Doxygen output folder
 doxyoutput/
