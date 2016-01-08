@@ -2309,8 +2309,8 @@ void Tokenizer::simplifyLabelsCaseDefault()
                 break;
             if (tok->str() != "case" && tok->next() && tok->next()->str() == ":") {
                 tok = tok->next();
-				if (!tok->next())
-					syntaxError(tok); // #7270 invalid code
+                if (!tok->next())
+                    syntaxError(tok); // #7270 invalid code
                 if (tok->next()->str() != ";" && tok->next()->str() != "case")
                     tok->insertToken(";");
                 else
