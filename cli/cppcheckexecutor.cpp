@@ -118,7 +118,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
                 ++iter;
             else {
                 // If the include path is not found, warn user and remove the non-existing path from the list.
-                std::cout << "cppcheck: warning: Couldn't find path given by -I '" << path << '\'' << std::endl;
+                if (settings.isEnabled("information"))
+                    std::cerr << "(information) Couldn't find path given by -I '" << path << '\'' << std::endl;
                 iter = settings.includePaths.erase(iter);
             }
         }
