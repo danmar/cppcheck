@@ -75,6 +75,12 @@
               <File Id='windows.cfg' Name='windows.cfg' Source='$(var.CfgsDir)\windows.cfg' />
             </Component>
           </Directory>
+          <Directory Id='PtfsFolder' Name='platforms'>
+            <Component Id='OptionalPtfs' Guid='$(var.optionalPtfsGUID)'>
+              <File Id='unix32unsigned.xml' Name='unix32-unsigned.xml' Source='$(var.PtfsDir)\unix32-unsigned.xml' />
+              <File Id='unix64unsigned.xml' Name='unix64-unsigned.xml' Source='$(var.PtfsDir)\unix64-unsigned.xml' />
+            </Component>
+          </Directory>
           <Directory Id='AddonsFolder' Name='addons'>
             <Component Id='Addons' Guid='$(var.addonsGUID)'>
               <File Id='cppcheckdata.py' Name='cppcheckdata.py' Source='$(var.AddonsDir)\cppcheckdata.py' />
@@ -116,8 +122,8 @@
             <RemoveFile Id='qtgui4dll' On='install' Name='qtgui4.dll' />
           </Component>
         </Directory>
+        <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />
       </Directory>
-      <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />
 
       <Directory Id='ProgramMenuFolder' Name='Programs' >
         <Directory Id='ProgramMenuDir' Name='$(var.ProductName)'>
@@ -153,6 +159,9 @@
       </Feature>
       <Feature Id='ConfigFiles' Title='Additional configurations' AllowAdvertise='no' Description='Provide additional configuration files, for example for WinAPI, GTK and SDL' Level='1'>
         <ComponentRef Id='OptionalCfgs' />
+      </Feature>
+      <Feature Id='PlatformFiles' Title='Additional platforms' AllowAdvertise='no' Description='Provide additional platform files, for example unix platforms with unsigned types as default' Level='1'>
+        <ComponentRef Id='OptionalPtfs' />
       </Feature>
       <Feature Id='PythonAddons' Title='Python addons' AllowAdvertise='no'  Description='Contains several addons requiring python' Level='2'>
         <ComponentRef Id='Addons' />
