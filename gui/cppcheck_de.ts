@@ -197,7 +197,7 @@ Parameter: -l(line) (file)
     <message>
         <location filename="librarydialog.ui" line="204"/>
         <source>noreturn</source>
-        <translation>Nicht zurückkehrend</translation>
+        <translation>Zurückkehrend</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="212"/>
