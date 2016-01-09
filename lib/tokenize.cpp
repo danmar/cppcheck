@@ -2954,20 +2954,28 @@ void Tokenizer::setVarId()
                         tok2 = tok2->linkAt(2);
 
                     // constructor with initializer list
-                    if (Token::Match(tok2, ") : %name% (|{|<")) {
+                    if (Token::Match(tok2, ") : %name%")) {
                         Token *tok3 = tok2;
-                        do {
-                            Token *vartok = tok3->tokAt(2);
-                            std::map<std::string, unsigned int>::const_iterator varpos = thisClassVars.find(vartok->str());
+                        while (Token::Match(tok3, "[)}] [,:]")) {
+                            tok3 = tok3->tokAt(2);
+                            while (Token::Match(tok3, "%name% :: %name%"))
+                                tok3 = tok3->tokAt(2);
+                            if (!Token::Match(tok3, "%name% (|{|<"))
+                                break;
+
+                            // set varid
+                            std::map<std::string, unsigned int>::const_iterator varpos = thisClassVars.find(tok3->str());
                             if (varpos != thisClassVars.end())
-                                vartok->varId(varpos->second);
-                            if (vartok->strAt(1) == "<") {
-                                tok3 = vartok->next()->findClosingBracket();
+                                tok3->varId(varpos->second);
+
+                            // goto end of var
+                            if (tok3->strAt(1) == "<") {
+                                tok3 = tok3->next()->findClosingBracket();
                                 if (tok3 && tok3->next() && tok3->next()->link())
                                     tok3 = tok3->next()->link();
                             } else
-                                tok3 = vartok->linkAt(1);
-                        } while (Token::Match(tok3, ")|} [:,] %name% (|{|<"));
+                                tok3 = tok3->linkAt(1);
+                        }
                         if (Token::Match(tok3, ")|} {")) {
                             setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &_varId);
                         }
