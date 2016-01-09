@@ -314,5 +314,10 @@ bool Settings::platformFile(const std::string &filename)
         }
     }
 
+    short_bit = char_bit * sizeof_short;
+    int_bit = char_bit * sizeof_int;
+    long_bit = char_bit * sizeof_long;
+    long_long_bit = char_bit * sizeof_long_long;
+
     return true;
 }
