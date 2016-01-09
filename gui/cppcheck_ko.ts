@@ -35,7 +35,11 @@ of the GNU General Public License version 3</source>
     </message>
     <message utf8="true">
         <source>Copyright © 2007-2016 Daniel Marjamäki and cppcheck team.</source>
-        <translation type="unfinished">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team. {2007-2013 ?} {2007-2016 ?}</translation>
+        <translation type="obsolete">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team. {2007-2013 ?} {2007-2016 ?}</translation>
+    </message>
+    <message utf8="true">
+        <source>Copyright © 2007-2016 Cppcheck team.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -207,6 +211,26 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>Comments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cppcheck</source>
+        <translation type="unfinished">Cppcheck</translation>
+    </message>
+    <message>
+        <source>Can not open file %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not save file %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save the library as</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -907,6 +931,14 @@ Options:
         <source>C/C++ Source (%1)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Unknown element</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown issue</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -932,7 +964,11 @@ Options:
     </message>
     <message>
         <source>Built-in</source>
-        <translation>내장 방식</translation>
+        <translation type="obsolete">내장 방식</translation>
+    </message>
+    <message>
+        <source>Native</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1243,6 +1279,10 @@ Please select the directory where file is located.</source>
         <source>Inconclusive</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Recheck</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>
@@ -1448,6 +1488,10 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <source>Select include directory</source>
         <translation>Include 디렉토리 선택</translation>
+    </message>
+    <message>
+        <source> [Default]</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

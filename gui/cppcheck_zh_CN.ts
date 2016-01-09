@@ -20,8 +20,8 @@
     </message>
     <message utf8="true">
         <location filename="about.ui" line="81"/>
-        <source>Copyright © 2007-2016 Daniel Marjamäki and cppcheck team.</source>
-        <oldsource>Copyright © 2007-2013 Daniel Marjamäki and cppcheck team.</oldsource>
+        <source>Copyright © 2007-2016 Cppcheck team.</source>
+        <oldsource>Copyright © 2007-2016 Daniel Marjamäki and cppcheck team.</oldsource>
         <translation type="unfinished">版权所有 © 2007-2012 Daniel Marjamäki 与 Cppcheck 团队。</translation>
     </message>
     <message>
@@ -164,78 +164,105 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="55"/>
+        <location filename="librarydialog.ui" line="36"/>
+        <source>Save as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="librarydialog.ui" line="62"/>
         <source>Functions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="64"/>
+        <location filename="librarydialog.ui" line="71"/>
         <source>Sort</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="104"/>
+        <location filename="librarydialog.ui" line="111"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="124"/>
+        <location filename="librarydialog.ui" line="131"/>
         <source>Filter:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="157"/>
+        <location filename="librarydialog.ui" line="164"/>
         <source>Comments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="197"/>
+        <location filename="librarydialog.ui" line="204"/>
         <source>noreturn</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="205"/>
+        <location filename="librarydialog.ui" line="212"/>
         <source>False</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="210"/>
+        <location filename="librarydialog.ui" line="217"/>
         <source>True</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="215"/>
+        <location filename="librarydialog.ui" line="222"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="225"/>
+        <location filename="librarydialog.ui" line="232"/>
         <source>return value must be used</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="232"/>
+        <location filename="librarydialog.ui" line="239"/>
         <source>ignore function in leaks checking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="239"/>
+        <location filename="librarydialog.ui" line="246"/>
         <source>Arguments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.ui" line="251"/>
+        <location filename="librarydialog.ui" line="258"/>
         <source>Edit</source>
         <translation type="unfinished">编辑</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="79"/>
+        <location filename="librarydialog.cpp" line="82"/>
+        <location filename="librarydialog.cpp" line="140"/>
         <source>Library files (*.cfg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="81"/>
+        <location filename="librarydialog.cpp" line="84"/>
         <source>Open library file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="librarydialog.cpp" line="110"/>
+        <location filename="librarydialog.cpp" line="130"/>
+        <source>Cppcheck</source>
+        <translation type="unfinished">Cppcheck</translation>
+    </message>
+    <message>
+        <location filename="librarydialog.cpp" line="111"/>
+        <source>Can not open file %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="librarydialog.cpp" line="131"/>
+        <source>Can not save file %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="librarydialog.cpp" line="143"/>
+        <source>Save the library as</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -392,16 +419,16 @@ Parameters: -l(line) (file)</source>
     <name>MainWindow</name>
     <message>
         <location filename="main.ui" line="26"/>
-        <location filename="mainwindow.cpp" line="300"/>
-        <location filename="mainwindow.cpp" line="368"/>
-        <location filename="mainwindow.cpp" line="424"/>
-        <location filename="mainwindow.cpp" line="489"/>
-        <location filename="mainwindow.cpp" line="511"/>
-        <location filename="mainwindow.cpp" line="829"/>
-        <location filename="mainwindow.cpp" line="936"/>
-        <location filename="mainwindow.cpp" line="1056"/>
-        <location filename="mainwindow.cpp" line="1226"/>
-        <location filename="mainwindow.cpp" line="1313"/>
+        <location filename="mainwindow.cpp" line="305"/>
+        <location filename="mainwindow.cpp" line="373"/>
+        <location filename="mainwindow.cpp" line="430"/>
+        <location filename="mainwindow.cpp" line="495"/>
+        <location filename="mainwindow.cpp" line="517"/>
+        <location filename="mainwindow.cpp" line="871"/>
+        <location filename="mainwindow.cpp" line="978"/>
+        <location filename="mainwindow.cpp" line="1103"/>
+        <location filename="mainwindow.cpp" line="1273"/>
+        <location filename="mainwindow.cpp" line="1360"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -586,8 +613,8 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="main.ui" line="560"/>
-        <location filename="mainwindow.cpp" line="587"/>
-        <location filename="mainwindow.cpp" line="619"/>
+        <location filename="mainwindow.cpp" line="593"/>
+        <location filename="mainwindow.cpp" line="631"/>
         <source>Information</source>
         <translation>信息</translation>
     </message>
@@ -859,7 +886,7 @@ Parameters: -l(line) (file)</source>
         <translation>日志视图</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="295"/>
+        <location filename="mainwindow.cpp" line="300"/>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
@@ -868,37 +895,37 @@ This is probably because the settings were changed between the Cppcheck versions
 这可能是因为 Cppcheck 不同版本间的设置有所不同。请检查(并修复)编辑器应用程序设置，否则编辑器程序可能不会正确启动。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="369"/>
+        <location filename="mainwindow.cpp" line="374"/>
         <source>No suitable files found to check!</source>
         <translation>未发现适合检查的文件！</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="425"/>
+        <location filename="mainwindow.cpp" line="431"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>在选择新的文件或目录之前，你必须先关闭此项目文件！</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="452"/>
+        <location filename="mainwindow.cpp" line="458"/>
         <source>Select directory to check</source>
         <translation>选择目录来检查</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="77"/>
+        <location filename="mainwindow.cpp" line="76"/>
         <source>Quick Filter:</source>
         <translation>快速滤器:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="440"/>
+        <location filename="mainwindow.cpp" line="446"/>
         <source>Select files to check</source>
         <translation type="unfinished">选择要检查的文件</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="442"/>
+        <location filename="mainwindow.cpp" line="448"/>
         <source>C/C++ Source (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="490"/>
+        <location filename="mainwindow.cpp" line="496"/>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
@@ -907,7 +934,7 @@ Do you want to load this project file instead?</source>
 你是否想加载该项目文件？</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="512"/>
+        <location filename="mainwindow.cpp" line="518"/>
         <source>Found project files from the directory.
 
 Do you want to proceed checking without using any of these project files?</source>
@@ -916,64 +943,74 @@ Do you want to proceed checking without using any of these project files?</sourc
 你是否想在不使用这些项目文件的情况下，执行检查？</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="587"/>
+        <location filename="mainwindow.cpp" line="593"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="596"/>
+        <location filename="mainwindow.cpp" line="602"/>
         <source>File not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="599"/>
+        <location filename="mainwindow.cpp" line="605"/>
         <source>Bad XML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="602"/>
+        <location filename="mainwindow.cpp" line="608"/>
         <source>Missing attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="605"/>
+        <location filename="mainwindow.cpp" line="611"/>
         <source>Bad attribute value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="608"/>
+        <location filename="mainwindow.cpp" line="614"/>
         <source>Unsupported format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="611"/>
+        <location filename="mainwindow.cpp" line="617"/>
         <source>Duplicate platform type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="614"/>
+        <location filename="mainwindow.cpp" line="620"/>
         <source>Platform type redefined</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="619"/>
+        <location filename="mainwindow.cpp" line="623"/>
+        <source>Unknown element</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="626"/>
+        <source>Unknown issue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="631"/>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="700"/>
+        <location filename="mainwindow.cpp" line="712"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="700"/>
+        <location filename="mainwindow.cpp" line="712"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="830"/>
+        <location filename="mainwindow.cpp" line="872"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
@@ -982,17 +1019,17 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
 打开一个新的 XML 文件将会清空当前结果。你要继续吗？</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="845"/>
+        <location filename="mainwindow.cpp" line="887"/>
         <source>XML files (*.xml)</source>
         <translation>XML 文件(*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="847"/>
+        <location filename="mainwindow.cpp" line="889"/>
         <source>Open the report file</source>
         <translation>打开报告文件</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="932"/>
+        <location filename="mainwindow.cpp" line="974"/>
         <source>Checking is running.
 
 Do you want to stop the checking and exit Cppcheck?</source>
@@ -1001,48 +1038,48 @@ Do you want to stop the checking and exit Cppcheck?</source>
 你是否需要停止检查并退出 Cppcheck？</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="978"/>
+        <location filename="mainwindow.cpp" line="1020"/>
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="985"/>
+        <location filename="mainwindow.cpp" line="1027"/>
         <source>Authors</source>
         <translation>作者</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="993"/>
+        <location filename="mainwindow.cpp" line="1040"/>
         <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <oldsource>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</oldsource>
         <translation>XML 文件版本 2 (*.xml);;XML 文件版本 1 (*.xml);; 文本文件(*.txt);; CSV 文件(*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="995"/>
+        <location filename="mainwindow.cpp" line="1042"/>
         <source>Save the report file</source>
         <translation>保存报告文件</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1002"/>
+        <location filename="mainwindow.cpp" line="1049"/>
         <source>XML files version 1 (*.xml)</source>
         <translation>XML 文件版本 1 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1006"/>
+        <location filename="mainwindow.cpp" line="1053"/>
         <source>XML files version 2 (*.xml)</source>
         <translation>XML 文件版本 2 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1010"/>
+        <location filename="mainwindow.cpp" line="1057"/>
         <source>Text files (*.txt)</source>
         <translation>文本文件(*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1014"/>
+        <location filename="mainwindow.cpp" line="1061"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV 文件(*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1058"/>
+        <location filename="mainwindow.cpp" line="1105"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
@@ -1059,34 +1096,34 @@ The user interface language has been reset to English. Open the Preferences-dial
 用户界面语言已被重置为英语。打开“首选项”对话框，选择任何可用的语言。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1103"/>
-        <location filename="mainwindow.cpp" line="1188"/>
+        <location filename="mainwindow.cpp" line="1150"/>
+        <location filename="mainwindow.cpp" line="1235"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>项目文件(*.cppcheck);;所有文件(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1105"/>
+        <location filename="mainwindow.cpp" line="1152"/>
         <source>Select Project File</source>
         <translation>选择项目文件</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1133"/>
-        <location filename="mainwindow.cpp" line="1202"/>
+        <location filename="mainwindow.cpp" line="1180"/>
+        <location filename="mainwindow.cpp" line="1249"/>
         <source>Project:</source>
         <translation>项目:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1190"/>
+        <location filename="mainwindow.cpp" line="1237"/>
         <source>Select Project Filename</source>
         <translation>选择项目文件名</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1227"/>
+        <location filename="mainwindow.cpp" line="1274"/>
         <source>No project file loaded</source>
         <translation>项目文件未加载</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1308"/>
+        <location filename="mainwindow.cpp" line="1355"/>
         <source>The project file
 
 %1
@@ -1127,9 +1164,13 @@ Options:
 <context>
     <name>Platforms</name>
     <message>
-        <location filename="platforms.cpp" line="37"/>
         <source>Built-in</source>
-        <translation>内置</translation>
+        <translation type="obsolete">内置</translation>
+    </message>
+    <message>
+        <location filename="platforms.cpp" line="37"/>
+        <source>Native</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="platforms.cpp" line="38"/>
@@ -1318,22 +1359,22 @@ Options:
 <context>
     <name>QDialogButtonBox</name>
     <message>
-        <location filename="translationhandler.cpp" line="32"/>
+        <location filename="translationhandler.cpp" line="33"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="33"/>
+        <location filename="translationhandler.cpp" line="34"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="35"/>
         <source>Close</source>
         <translation type="unfinished">关闭</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="36"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1341,17 +1382,17 @@ Options:
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="99"/>
+        <location filename="translationhandler.cpp" line="100"/>
         <source>Unknown language specified!</source>
         <translation>指定了未知语言！</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="129"/>
+        <location filename="translationhandler.cpp" line="130"/>
         <source>Language file %1 not found!</source>
         <translation>语言文件 %1 不存在！</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="135"/>
+        <location filename="translationhandler.cpp" line="136"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>无法从文件 %2 中为语言 %1 加载翻译文件</translation>
     </message>
@@ -1359,22 +1400,22 @@ Options:
 <context>
     <name>QPlatformTheme</name>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="38"/>
+        <location filename="translationhandler.cpp" line="39"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="39"/>
+        <location filename="translationhandler.cpp" line="40"/>
         <source>Close</source>
         <translation type="unfinished">关闭</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="40"/>
+        <location filename="translationhandler.cpp" line="41"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1382,83 +1423,88 @@ Options:
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1081"/>
+        <location filename="resultstree.cpp" line="1138"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1081"/>
+        <location filename="resultstree.cpp" line="1138"/>
         <source>Severity</source>
         <translation>严重性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1081"/>
+        <location filename="resultstree.cpp" line="1138"/>
         <source>Line</source>
         <translation>行</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1081"/>
+        <location filename="resultstree.cpp" line="1138"/>
         <source>Summary</source>
         <translation>概要</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="113"/>
+        <location filename="resultstree.cpp" line="124"/>
         <source>Undefined file</source>
         <translation>未定义文件</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="745"/>
+        <location filename="resultstree.cpp" line="780"/>
         <source>[Inconclusive]</source>
         <translation>[不确定的]</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="285"/>
+        <location filename="resultstree.cpp" line="296"/>
         <source>debug</source>
         <translation>调试</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="547"/>
+        <location filename="resultstree.cpp" line="573"/>
+        <source>Recheck</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultstree.cpp" line="574"/>
         <source>Copy filename</source>
         <translation>复制文件名</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="548"/>
+        <location filename="resultstree.cpp" line="575"/>
         <source>Copy full path</source>
         <translation>复制完整路径</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="549"/>
+        <location filename="resultstree.cpp" line="576"/>
         <source>Copy message</source>
         <translation>复制消息</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="550"/>
+        <location filename="resultstree.cpp" line="577"/>
         <source>Copy message id</source>
         <translation>复制消息 ID</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="551"/>
+        <location filename="resultstree.cpp" line="578"/>
         <source>Hide</source>
         <translation>隐藏</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="552"/>
+        <location filename="resultstree.cpp" line="579"/>
         <source>Hide all with id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="553"/>
+        <location filename="resultstree.cpp" line="580"/>
         <source>Open containing folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="605"/>
-        <location filename="resultstree.cpp" line="619"/>
+        <location filename="resultstree.cpp" line="640"/>
+        <location filename="resultstree.cpp" line="654"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="606"/>
+        <location filename="resultstree.cpp" line="641"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -1468,7 +1514,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 在“首先项 / 应用程序”中为 Cppcheck 配置编辑应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="620"/>
+        <location filename="resultstree.cpp" line="655"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -1477,12 +1523,12 @@ Please select the default editor application in preferences/Applications.</sourc
 请在“首先项 / 应用程序”中选择默认应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="649"/>
+        <location filename="resultstree.cpp" line="684"/>
         <source>Could not find the file!</source>
         <translation>找不到文件！</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="695"/>
+        <location filename="resultstree.cpp" line="730"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -1491,7 +1537,7 @@ Please check the application path and parameters are correct.</source>
 请检查此应用程序的路径与参数是否正确。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="709"/>
+        <location filename="resultstree.cpp" line="744"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
@@ -1500,47 +1546,47 @@ Please select the directory where file is located.</source>
 请选择文件所在目录。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="716"/>
+        <location filename="resultstree.cpp" line="751"/>
         <source>Select Directory</source>
         <translation>选择目录</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1081"/>
+        <location filename="resultstree.cpp" line="1138"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1081"/>
+        <location filename="resultstree.cpp" line="1138"/>
         <source>Inconclusive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="267"/>
+        <location filename="resultstree.cpp" line="278"/>
         <source>style</source>
         <translation>风格</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="270"/>
+        <location filename="resultstree.cpp" line="281"/>
         <source>error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="273"/>
+        <location filename="resultstree.cpp" line="284"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="276"/>
+        <location filename="resultstree.cpp" line="287"/>
         <source>performance</source>
         <translation>性能</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="279"/>
+        <location filename="resultstree.cpp" line="290"/>
         <source>portability</source>
         <translation>移植可能性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="282"/>
+        <location filename="resultstree.cpp" line="293"/>
         <source>information</source>
         <translation>信息</translation>
     </message>
@@ -1553,73 +1599,73 @@ Please select the directory where file is located.</source>
         <translation>结果</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="145"/>
+        <location filename="resultsview.cpp" line="141"/>
         <source>No errors found, nothing to save.</source>
         <translation>未发现错误，没有结果可保存。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="172"/>
-        <location filename="resultsview.cpp" line="180"/>
+        <location filename="resultsview.cpp" line="168"/>
+        <location filename="resultsview.cpp" line="176"/>
         <source>Failed to save the report.</source>
         <translation>保存报告失败。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="190"/>
+        <location filename="resultsview.cpp" line="186"/>
         <source>Print Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="209"/>
+        <location filename="resultsview.cpp" line="205"/>
         <source>No errors found, nothing to print.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="242"/>
+        <location filename="resultsview.cpp" line="238"/>
         <source>%p% (%1 of %2 files checked)</source>
         <translation>%p% (%2 个文件已检查 %1 个)</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="255"/>
-        <location filename="resultsview.cpp" line="266"/>
+        <location filename="resultsview.cpp" line="251"/>
+        <location filename="resultsview.cpp" line="262"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="256"/>
+        <location filename="resultsview.cpp" line="252"/>
         <source>No errors found.</source>
         <translation>未发现错误。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="263"/>
+        <location filename="resultsview.cpp" line="259"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>发现错误，但它们被设为隐藏。
 打开“查看”菜单，切换需要显示的错误。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="309"/>
-        <location filename="resultsview.cpp" line="327"/>
-        <location filename="resultsview.cpp" line="335"/>
+        <location filename="resultsview.cpp" line="305"/>
+        <location filename="resultsview.cpp" line="323"/>
+        <location filename="resultsview.cpp" line="331"/>
         <source>Failed to read the report.</source>
         <translation>读取报告失败。</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="372"/>
+        <location filename="resultsview.cpp" line="368"/>
         <source>Summary</source>
         <translation>概要</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="373"/>
+        <location filename="resultsview.cpp" line="369"/>
         <source>Message</source>
         <translation>消息</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="377"/>
+        <location filename="resultsview.cpp" line="373"/>
         <source>First included by</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="380"/>
+        <location filename="resultsview.cpp" line="376"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
@@ -1793,12 +1839,17 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation>修改一个应用程序</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="263"/>
+        <location filename="settingsdialog.cpp" line="241"/>
+        <source> [Default]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settingsdialog.cpp" line="266"/>
         <source>[Default]</source>
         <translation>[默认]</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="319"/>
+        <location filename="settingsdialog.cpp" line="322"/>
         <source>Select include directory</source>
         <translation>选择包含目录</translation>
     </message>
@@ -2021,7 +2072,7 @@ To toggle what kind of errors are shown, open view menu.</source>
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="141"/>
+        <location filename="translationhandler.cpp" line="142"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -2034,7 +2085,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 用户界面语言已被重置为英语。打开“首选项”对话框，选择任何可用的语言。</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="147"/>
+        <location filename="translationhandler.cpp" line="148"/>
         <source>Cppcheck</source>
         <translation type="unfinished">Cppcheck</translation>
     </message>
