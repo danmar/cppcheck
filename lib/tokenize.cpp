@@ -2852,22 +2852,27 @@ void Tokenizer::setVarId()
     std::list<Token *> allMemberVars;
     if (!isC()) {
         for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
-            if (Token::Match(tok2, "%name% :: ~| %name%")) {
-                const Token* tok3 = tok2->next();
-                do {
+            const Token* tok3 = nullptr;
+            if (Token::Match(tok2, "%name% :: ~| %name%"))
+                tok3 = tok2->next();
+            else if (Token::Match(tok2, "%name% <") && Token::Match(tok2->next()->findClosingBracket(),"> :: ~| %name%"))
+                tok3 = tok2->next()->findClosingBracket()->next();
+            else
+                continue;
+
+            while (Token::Match(tok3, ":: ~| %name%")) {
+                tok3 = tok3->next();
+                if (tok3->str() == "~")
                     tok3 = tok3->next();
-                    if (tok3->str() == "~")
-                        tok3 = tok3->next();
-                    tok3 = tok3->next();
-                } while (Token::Match(tok3, ":: ~| %name%"));
-                if (!tok3)
-                    syntaxError(tok2);
-                const std::string& str3 = tok3->str();
-                if (str3 == "(")
-                    allMemberFunctions.push_back(tok2);
-                else if (str3 != "::" && tok2->strAt(-1) != "::") // Support only one depth
-                    allMemberVars.push_back(tok2);
+                tok3 = tok3->next();
             }
+            if (!tok3)
+                syntaxError(tok2);
+            const std::string& str3 = tok3->str();
+            if (str3 == "(")
+                allMemberFunctions.push_back(tok2);
+            else if (str3 != "::" && tok2->strAt(-1) != "::") // Support only one depth
+                allMemberVars.push_back(tok2);
         }
     }
 
@@ -2935,50 +2940,57 @@ void Tokenizer::setVarId()
             for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
                 Token *tok2 = *func;
 
+                if (!Token::Match(tok2, classname.c_str()))
+                    continue;
+
+                if (Token::Match(tok2, "%name% <"))
+                    tok2 = tok2->next()->findClosingBracket();
+
                 // Found a class function..
-                if (Token::Match(tok2, funcpattern.c_str())) {
-                    // Goto the end parentheses..
-                    tok2 = tok2->tokAt(nestedCount*2);
-                    if (tok2->str() == "~")
-                        tok2 = tok2->linkAt(2);
-                    else
-                        tok2 = tok2->linkAt(1);
+                if (!Token::Match(tok2, "%any% :: ~| %name%"))
+                    continue;
 
-                    // If this is a function implementation.. add it to funclist
-                    Token * start = const_cast<Token *>(isFunctionHead(tok2, "{"));
-                    if (start) {
-                        setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &_varId);
-                    }
+                // Goto the end parentheses..
+                tok2 = tok2->tokAt(nestedCount*2);
+                if (tok2->str() == "~")
+                    tok2 = tok2->linkAt(2);
+                else
+                    tok2 = tok2->linkAt(1);
 
-                    if (Token::Match(tok2, ") %name% ("))
-                        tok2 = tok2->linkAt(2);
+                // If this is a function implementation.. add it to funclist
+                Token * start = const_cast<Token *>(isFunctionHead(tok2, "{"));
+                if (start) {
+                    setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &_varId);
+                }
 
-                    // constructor with initializer list
-                    if (Token::Match(tok2, ") : %name%")) {
-                        Token *tok3 = tok2;
-                        while (Token::Match(tok3, "[)}] [,:]")) {
+                if (Token::Match(tok2, ") %name% ("))
+                    tok2 = tok2->linkAt(2);
+
+                // constructor with initializer list
+                if (Token::Match(tok2, ") : %name%")) {
+                    Token *tok3 = tok2;
+                    while (Token::Match(tok3, "[)}] [,:]")) {
+                        tok3 = tok3->tokAt(2);
+                        while (Token::Match(tok3, "%name% :: %name%"))
                             tok3 = tok3->tokAt(2);
-                            while (Token::Match(tok3, "%name% :: %name%"))
-                                tok3 = tok3->tokAt(2);
-                            if (!Token::Match(tok3, "%name% (|{|<"))
-                                break;
+                        if (!Token::Match(tok3, "%name% (|{|<"))
+                            break;
 
-                            // set varid
-                            std::map<std::string, unsigned int>::const_iterator varpos = thisClassVars.find(tok3->str());
-                            if (varpos != thisClassVars.end())
-                                tok3->varId(varpos->second);
+                        // set varid
+                        std::map<std::string, unsigned int>::const_iterator varpos = thisClassVars.find(tok3->str());
+                        if (varpos != thisClassVars.end())
+                            tok3->varId(varpos->second);
 
-                            // goto end of var
-                            if (tok3->strAt(1) == "<") {
-                                tok3 = tok3->next()->findClosingBracket();
-                                if (tok3 && tok3->next() && tok3->next()->link())
-                                    tok3 = tok3->next()->link();
-                            } else
-                                tok3 = tok3->linkAt(1);
-                        }
-                        if (Token::Match(tok3, ")|} {")) {
-                            setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &_varId);
-                        }
+                        // goto end of var
+                        if (tok3->strAt(1) == "<") {
+                            tok3 = tok3->next()->findClosingBracket();
+                            if (tok3 && tok3->next() && tok3->next()->link())
+                                tok3 = tok3->next()->link();
+                        } else
+                            tok3 = tok3->linkAt(1);
+                    }
+                    if (Token::Match(tok3, ")|} {")) {
+                        setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &_varId);
                     }
                 }
             }

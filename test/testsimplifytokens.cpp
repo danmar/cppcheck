@@ -255,7 +255,6 @@ private:
         TEST_CASE(removeVoidFromFunction);
 
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
-        TEST_CASE(simplifyVarDecl2); // ticket # 2834 segmentation fault
         TEST_CASE(return_strncat); // ticket # 2860 Returning value of strncat() reported as memory leak
 
         // #3069 : for loop with 1 iteration
@@ -3947,12 +3946,6 @@ private:
 
     void simplifyVarDecl1() { // ticket # 2682 segmentation fault
         const char code[] = "x a[0] =";
-        tok(code, false);
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void simplifyVarDecl2() { // ticket # 2834 segmentation fault
-        const char code[] = "std::vector<int>::iterator";
         tok(code, false);
         ASSERT_EQUALS("", errout.str());
     }

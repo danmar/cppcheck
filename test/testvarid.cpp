@@ -121,6 +121,7 @@ private:
         TEST_CASE(varid_in_class17);    // #6056 - no varid for member functions
         TEST_CASE(varid_in_class18);    // #7127
         TEST_CASE(varid_in_class19);
+        TEST_CASE(varid_in_class20);    // #7267
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_initListWithScope);
@@ -1803,6 +1804,27 @@ private:
                       "5: Fred :: ~ Fred ( ) {\n"
                       "6: free ( str1@1 ) ;\n"
                       "7: }\n", tokenize(code, false, "test.cpp"));
+    }
+
+    void varid_in_class20() {
+        const char code[] = "template<class C> class cacheEntry {\n"
+                            "protected:\n"
+                            "    int m_key;\n"
+                            "public:\n"
+                            "    cacheEntry();\n"
+                            "};\n"
+                            "\n"
+                            "template<class C> cacheEntry<C>::cacheEntry() : m_key() {}";
+
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: template < class C > class cacheEntry {\n"
+                      "2: protected:\n"
+                      "3: int m_key@1 ;\n"
+                      "4: public:\n"
+                      "5: cacheEntry ( ) ;\n"
+                      "6: } ;\n"
+                      "7:\n"
+                      "8: template < class C > cacheEntry < C > :: cacheEntry ( ) : m_key@1 ( ) { }\n", tokenize(code, false, "test.cpp"));
     }
 
     void varid_initList() {
