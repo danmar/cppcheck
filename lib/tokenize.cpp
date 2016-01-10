@@ -7675,6 +7675,8 @@ void Tokenizer::simplifyEnum()
 
                     if (simplify) {
                         if (ev->value) {
+                            if (tok2->originalName().empty())
+                                tok2->originalName(tok2->str());
                             tok2->str(ev->value->str());
                             while (tok2->strAt(1) == "::")
                                 tok2->deleteNext(2);

@@ -3771,7 +3771,7 @@ private:
               "    enum { Four = 4 };\n"
               "    if (Four == 4) {}"
               "}", nullptr, false, true, false);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    enum { Four = 4 };\n"
@@ -3790,7 +3790,7 @@ private:
               "    enum { FourInEnumTwo = 4 };\n"
               "    if (FourInEnumOne == FourInEnumTwo) {}\n"
               "}", nullptr, false, true, false);
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    enum { FourInEnumOne = 4 };\n"

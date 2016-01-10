@@ -206,6 +206,7 @@ private:
         TEST_CASE(enum43); // lhs in assignment
         TEST_CASE(enum44);
         TEST_CASE(enumscope1); // ticket #3949
+        TEST_CASE(enumOriginalName)
         TEST_CASE(duplicateDefinition); // ticket #3565
 
         // remove "std::" on some standard functions
@@ -3418,6 +3419,15 @@ private:
         const char code[] = "void foo() { enum { A = 0, B = 1 }; }\n"
                             "void bar() { int a = A; }";
         ASSERT_EQUALS("void foo ( ) { } void bar ( ) { int a ; a = A ; }", checkSimplifyEnum(code));
+    }
+
+    void enumOriginalName() {
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr("enum {X,Y}; x=X;");
+        tokenizer.tokenize(istr, "test.c");
+        Token *x_token = Token::findsimplematch(tokenizer.list.front(),"x");
+        ASSERT_EQUALS("0", x_token->strAt(2));
+        ASSERT_EQUALS("X", x_token->tokAt(2)->originalName());
     }
 
     void duplicateDefinition() { // #3565 - wrongly detects duplicate definition
