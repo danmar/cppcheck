@@ -48,8 +48,8 @@ void CheckType::checkTooBigBitwiseShift()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-           // C++ and macro: OUT(x<<y)
-            if (_tokenizer->isCPP() && Token::Match(tok, "[;{}] %name% (") && Token::Match(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
+            // C++ and macro: OUT(x<<y)
+            if (_tokenizer->isCPP() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
                 tok = tok->linkAt(2);
 
             if (!Token::Match(tok, "<<|>>|<<=|>>="))
