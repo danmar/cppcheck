@@ -2936,7 +2936,6 @@ void Tokenizer::setVarId()
                 continue;
 
             // Set variable ids in member functions for this class..
-            const std::string funcpattern(classname + " :: ~| %name% (");
             for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
                 Token *tok2 = *func;
 
