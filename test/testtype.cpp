@@ -94,6 +94,12 @@ private:
               "const int h = hoo<100>(1);", &settings);
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n"
                       "[test.cpp:1]: (error) Shifting 32-bit value by 100 bits is undefined behaviour\n", errout.str());
+
+        // #7266: C++, shift in macro
+        check("void f(int x) {\n"
+              "    UINFO(x << 1234);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkIntegerOverflow() {
