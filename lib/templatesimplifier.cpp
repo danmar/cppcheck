@@ -430,7 +430,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
                     ostr << " ";
                 ostr << tok3->str();
             }
-            if (!Token::Match(tok3, "> (|{"))
+            if (!Token::Match(tok3, "> (|{|:"))
                 continue;
             s = ostr.str();
         }
