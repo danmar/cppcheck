@@ -1486,7 +1486,7 @@ void CheckClass::virtualDestructor()
     // * base class has virtual members but doesn't have virtual destructor
     const bool printInconclusive = _settings->inconclusive;
 
-    std::list<const Function *> inconclusive_errors;
+    std::list<const Function *> inconclusiveErrors;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
@@ -1500,7 +1500,7 @@ void CheckClass::virtualDestructor()
                     std::list<Function>::const_iterator func;
                     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
                         if (func->isVirtual()) {
-                            inconclusive_errors.push_back(destructor);
+                            inconclusiveErrors.push_back(destructor);
                             break;
                         }
                     }
@@ -1539,12 +1539,12 @@ void CheckClass::virtualDestructor()
                 // If this pattern is not seen then bailout the checking of these base/derived classes
                 {
                     // pointer variables of type 'Base *'
-                    std::set<unsigned int> basepointer;
+                    std::set<unsigned int> baseClassPointers;
 
                     for (std::size_t k = 1; k < symbolDatabase->getVariableListSize(); k++) {
                         const Variable* var = symbolDatabase->getVariableFromVarId(k);
                         if (var && var->isPointer() && var->type() == derivedFrom)
-                            basepointer.insert(var->declarationId());
+                            baseClassPointers.insert(var->declarationId());
                     }
 
                     // pointer variables of type 'Base *' that should not be deleted
@@ -1555,7 +1555,7 @@ void CheckClass::virtualDestructor()
 
                     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
                         if (Token::Match(tok, "[;{}] %var% =") &&
-                            basepointer.find(tok->next()->varId()) != basepointer.end()) {
+                            baseClassPointers.find(tok->next()->varId()) != baseClassPointers.end()) {
                             // new derived class..
                             if (Token::simpleMatch(tok->tokAt(3), ("new " + derivedClass->str()).c_str())) {
                                 dontDelete.insert(tok->next()->varId());
@@ -1576,21 +1576,14 @@ void CheckClass::virtualDestructor()
                 }
 
                 // Find the destructor declaration for the base class.
-                const Function *base_destructor = derivedFromScope->getDestructor();
-                const Token *base = nullptr;
-                if (base_destructor)
-                    base = base_destructor->token;
+                const Function *baseDestructor = derivedFromScope->getDestructor();
 
                 // Check that there is a destructor..
-                if (!base_destructor) {
+                if (!baseDestructor) {
                     if (derivedFrom->derivedFrom.empty()) {
                         virtualDestructorError(derivedFrom->classDef, derivedFrom->name(), derivedClass->str(), false);
-                        // check for duplicate error and remove if if found
-                        std::list<const Function *>::iterator found = find(inconclusive_errors.begin(), inconclusive_errors.end(), base_destructor);
-                        if (found != inconclusive_errors.end())
-                            inconclusive_errors.erase(found);
                     }
-                } else if (!base_destructor->isVirtual()) {
+                } else if (!baseDestructor->isVirtual()) {
                     // TODO: This is just a temporary fix, better solution is needed.
                     // Skip situations where base class has base classes of its own, because
                     // some of the base classes might have virtual destructor.
@@ -1601,12 +1594,12 @@ void CheckClass::virtualDestructor()
                         // Make sure that the destructor is public (protected or private
                         // would not compile if inheritance is used in a way that would
                         // cause the bug we are trying to find here.)
-                        if (base_destructor->access == Public) {
-                            virtualDestructorError(base, derivedFrom->name(), derivedClass->str(), false);
-                            // check for duplicate error and remove if if found
-                            std::list<const Function *>::iterator found = find(inconclusive_errors.begin(), inconclusive_errors.end(), base_destructor);
-                            if (found != inconclusive_errors.end())
-                                inconclusive_errors.erase(found);
+                        if (baseDestructor->access == Public) {
+                            virtualDestructorError(baseDestructor->token, derivedFrom->name(), derivedClass->str(), false);
+                            // check for duplicate error and remove it if found
+                            std::list<const Function *>::iterator found = find(inconclusiveErrors.begin(), inconclusiveErrors.end(), baseDestructor);
+                            if (found != inconclusiveErrors.end())
+                                inconclusiveErrors.erase(found);
                         }
                     }
                 }
@@ -1614,7 +1607,7 @@ void CheckClass::virtualDestructor()
         }
     }
 
-    for (std::list<const Function *>::const_iterator i = inconclusive_errors.begin(); i != inconclusive_errors.end(); ++i)
+    for (std::list<const Function *>::const_iterator i = inconclusiveErrors.begin(); i != inconclusiveErrors.end(); ++i)
         virtualDestructorError((*i)->tokenDef, (*i)->name(), "", true);
 }
 
