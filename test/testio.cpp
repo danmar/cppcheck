@@ -947,6 +947,36 @@ private:
 
 
 
+#define TEST_SCANF_I64U_ERR(TYPE)                         \
+  ((TYPE != std::string("unsigned long long"))            \
+   ? TEST_SCANF_ERR("%I64u", "unsigned __int64", TYPE)    \
+   : "")
+#define TEST_SCANF_I64U(TYPE)                                                         \
+            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix32);      \
+            ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());                   \
+            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix64);      \
+            ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());                   \
+            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win32A);      \
+            ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());                   \
+            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win64);       \
+            ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());
+
+#define TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE)                          \
+  ((AKATYPE != std::string("unsigned long long"))                      \
+   ? TEST_SCANF_ERR_AKA("%I64u", "unsigned __int64", TYPE, AKATYPE)    \
+   : "")
+#define TEST_SCANF_I64U_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                              \
+            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix32);       \
+            ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE), errout.str());        \
+            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix64);       \
+            ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE), errout.str());        \
+            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win32A);       \
+            ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE), errout.str());        \
+            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win64);        \
+            ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
+
+
+
 
 
     void testScanfArgument() {
@@ -1283,63 +1313,35 @@ private:
         TEST_SCANF_TU_AKA("std::intptr_t", "long", "long long");
         TEST_SCANF_TU_AKA("std::uintptr_t", "unsigned long", "unsigned long long");
 
-        check("void foo() {\n"
-              "    bool b;\n"
-              "    char c;\n"
-              "    signed char sc;\n"
-              "    unsigned char uc;\n"
-              "    short s;\n"
-              "    unsigned short us;\n"
-              "    int i;\n"
-              "    unsigned int ui;\n"
-              "    long l;\n"
-              "    unsigned long ul;\n"
-              "    long long ll;\n"
-              "    unsigned long long ull;\n"
-              "    float f;\n"
-              "    double d;\n"
-              "    long double ld;\n"
-              "    size_t st;\n"
-              "    ssize_t sst;\n"
-              "    ptrdiff_t pt;\n"
-              "    intmax_t it;\n"
-              "    uintmax_t ut;\n"
-              "    void * vp;\n"
-              "    std::size_t stdst;\n"
-              "    std::ssize_t stdsst;\n"
-              "    std::ptrdiff_t stdpt;\n"
-              "    std::intptr_t stdipt;\n"
-              "    std::uintptr_t stduipt;\n"
-              "    scanf(\"%I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u\",\n"
-              "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-              "          &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-              "}\n", false, false, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:28]: (warning) %I64u in format string (no. 1) requires 'unsigned __int64 *' but the argument type is 'bool *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is 'char *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 3) requires 'unsigned __int64 *' but the argument type is 'signed char *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 4) requires 'unsigned __int64 *' but the argument type is 'unsigned char *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 5) requires 'unsigned __int64 *' but the argument type is 'short *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 6) requires 'unsigned __int64 *' but the argument type is 'unsigned short *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 7) requires 'unsigned __int64 *' but the argument type is 'int *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 8) requires 'unsigned __int64 *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 9) requires 'unsigned __int64 *' but the argument type is 'long *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 10) requires 'unsigned __int64 *' but the argument type is 'unsigned long *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 11) requires 'unsigned __int64 *' but the argument type is 'long long *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 13) requires 'unsigned __int64 *' but the argument type is 'float *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 14) requires 'unsigned __int64 *' but the argument type is 'double *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 15) requires 'unsigned __int64 *' but the argument type is 'long double *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 16) requires 'unsigned __int64 *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 17) requires 'unsigned __int64 *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 18) requires 'unsigned __int64 *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 19) requires 'unsigned __int64 *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 20) requires 'unsigned __int64 *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 21) requires 'unsigned __int64 *' but the argument type is 'void * *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 22) requires 'unsigned __int64 *' but the argument type is 'void *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 25) requires 'unsigned __int64 *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 26) requires 'unsigned __int64 *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 27) requires 'unsigned __int64 *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 28) requires 'unsigned __int64 *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 29) requires 'unsigned __int64 *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n", errout.str());
+        TEST_SCANF_I64U("bool");
+        TEST_SCANF_I64U("char");
+        TEST_SCANF_I64U("signed char");
+        TEST_SCANF_I64U("unsigned char");
+        TEST_SCANF_I64U("short");
+        TEST_SCANF_I64U("signed short");
+        TEST_SCANF_I64U("unsigned short");
+        TEST_SCANF_I64U("int");
+        TEST_SCANF_I64U("signed int");
+        TEST_SCANF_I64U("long");
+        TEST_SCANF_I64U("signed long");
+        TEST_SCANF_I64U("unsigned long");
+        TEST_SCANF_I64U("long long");
+        TEST_SCANF_I64U("signed long long");
+        TEST_SCANF_I64U("unsigned long long");
+        TEST_SCANF_I64U("float");
+        TEST_SCANF_I64U("double");
+        TEST_SCANF_I64U("long double");
+        TEST_SCANF_I64U_AKA("size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_I64U_AKA("ssize_t", "long", "long long");
+        TEST_SCANF_I64U_AKA("ptrdiff_t", "long", "long long");
+        TEST_SCANF_I64U_AKA("intmax_t", "long", "long long");
+        TEST_SCANF_I64U_AKA("uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_I64U("void *");
+        TEST_SCANF_I64U_AKA("std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_I64U_AKA("std::ssize_t", "long", "long long");
+        TEST_SCANF_I64U_AKA("std::ptrdiff_t", "long", "long long");
+        TEST_SCANF_I64U_AKA("std::intptr_t", "long", "long long");
+        TEST_SCANF_I64U_AKA("std::uintptr_t", "unsigned long", "unsigned long long");
 
         {
             const char * code = "const int * foo() { }\n"
