@@ -720,6 +720,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Width 70 given in format string (no. 1) is larger than destination buffer 'str[8]', use %7s to prevent overflowing it.\n", errout.str());
     }
 
+
+
 #define TEST_SCANF_CODE(FORMAT,TYPE)   "void f() { " TYPE " x; scanf(\"" FORMAT "\", &x); }"
 #define TEST_SCANF_ERR(FORMAT,FORMATSTR,TYPE)     \
    ((std::string(FORMATSTR) != std::string(TYPE)) \
@@ -730,252 +732,74 @@ private:
     ?  "[test.cpp:1]: (warning) " FORMAT " in format string (no. 1) requires '" FORMATSTR " *' but the argument type is '" TYPE " * {aka " AKATYPE " *}'.\n" \
     : "")
 
+#define TEST_SCANF(FORMAT,FORMATSTR,TYPE)                                  \
+    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Unix32);    \
+    ASSERT_EQUALS(TEST_SCANF_ERR(FORMAT,FORMATSTR,TYPE), errout.str());    \
+    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Unix64);    \
+    ASSERT_EQUALS(TEST_SCANF_ERR(FORMAT,FORMATSTR,TYPE), errout.str());    \
+    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Win32A);    \
+    ASSERT_EQUALS(TEST_SCANF_ERR(FORMAT,FORMATSTR,TYPE), errout.str());    \
+    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Win64);     \
+    ASSERT_EQUALS(TEST_SCANF_ERR(FORMAT,FORMATSTR,TYPE), errout.str());
 
-#define TEST_SCANF_U_ERR(TYPE)    TEST_SCANF_ERR("%u", "unsigned int", TYPE)
-#define TEST_SCANF_U(TYPE)                                                  \
-            check(TEST_SCANF_CODE("%u",TYPE), true, false, Settings::Unix32);    \
-            ASSERT_EQUALS(TEST_SCANF_U_ERR(TYPE), errout.str());            \
-            check(TEST_SCANF_CODE("%u",TYPE), true, false, Settings::Unix64);    \
-            ASSERT_EQUALS(TEST_SCANF_U_ERR(TYPE), errout.str());            \
-            check(TEST_SCANF_CODE("%u",TYPE), true, false, Settings::Win32A);    \
-            ASSERT_EQUALS(TEST_SCANF_U_ERR(TYPE), errout.str());            \
-            check(TEST_SCANF_CODE("%u",TYPE), true, false, Settings::Win64);     \
-            ASSERT_EQUALS(TEST_SCANF_U_ERR(TYPE), errout.str());
-
-#define TEST_SCANF_U_ERR_AKA(TYPE,AKATYPE)  TEST_SCANF_ERR_AKA("%u", "unsigned int", TYPE, AKATYPE)
-#define TEST_SCANF_U_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                       \
-            check(TEST_SCANF_CODE("%u",TYPE), true, false, Settings::Unix32);     \
-            ASSERT_EQUALS(TEST_SCANF_U_ERR_AKA(TYPE,AKATYPE), errout.str()); \
-            check(TEST_SCANF_CODE("%u",TYPE), true, false, Settings::Unix64);     \
-            ASSERT_EQUALS(TEST_SCANF_U_ERR_AKA(TYPE,AKATYPE), errout.str()); \
-            check(TEST_SCANF_CODE("%u",TYPE), true, false, Settings::Win32A);     \
-            ASSERT_EQUALS(TEST_SCANF_U_ERR_AKA(TYPE,AKATYPE), errout.str()); \
-            check(TEST_SCANF_CODE("%u",TYPE), true, false, Settings::Win64);      \
-            ASSERT_EQUALS(TEST_SCANF_U_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
-
-
-#define TEST_SCANF_LU_ERR(TYPE)    TEST_SCANF_ERR("%lu", "unsigned long", TYPE)
-#define TEST_SCANF_LU(TYPE)                                                  \
-            check(TEST_SCANF_CODE("%lu",TYPE), true, false, Settings::Unix32);     \
-            ASSERT_EQUALS(TEST_SCANF_LU_ERR(TYPE), errout.str());            \
-            check(TEST_SCANF_CODE("%lu",TYPE), true, false, Settings::Unix64);     \
-            ASSERT_EQUALS(TEST_SCANF_LU_ERR(TYPE), errout.str());            \
-            check(TEST_SCANF_CODE("%lu",TYPE), true, false, Settings::Win32A);     \
-            ASSERT_EQUALS(TEST_SCANF_LU_ERR(TYPE), errout.str());            \
-            check(TEST_SCANF_CODE("%lu",TYPE), true, false, Settings::Win64);      \
-            ASSERT_EQUALS(TEST_SCANF_LU_ERR(TYPE), errout.str());
-
-#define TEST_SCANF_LU_ERR_AKA(TYPE,AKATYPE)  TEST_SCANF_ERR_AKA("%lu", "unsigned long", TYPE, AKATYPE)
-#define TEST_SCANF_LU_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                       \
-            check(TEST_SCANF_CODE("%lu",TYPE), true, false, Settings::Unix32);      \
-            ASSERT_EQUALS(TEST_SCANF_LU_ERR_AKA(TYPE,AKATYPE), errout.str()); \
-            check(TEST_SCANF_CODE("%lu",TYPE), true, false, Settings::Unix64);      \
-            ASSERT_EQUALS(TEST_SCANF_LU_ERR_AKA(TYPE,AKATYPE), errout.str()); \
-            check(TEST_SCANF_CODE("%lu",TYPE), true, false, Settings::Win32A);      \
-            ASSERT_EQUALS(TEST_SCANF_LU_ERR_AKA(TYPE,AKATYPE), errout.str()); \
-            check(TEST_SCANF_CODE("%lu",TYPE), true, false, Settings::Win64);       \
-            ASSERT_EQUALS(TEST_SCANF_LU_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
+#define TEST_SCANF_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE, AKATYPE_WIN64)             \
+    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Unix32);             \
+    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE), errout.str()); \
+    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Unix64);             \
+    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE), errout.str()); \
+    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Win32A);             \
+    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE), errout.str()); \
+    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Win64);              \
+    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE_WIN64), errout.str());
 
 
 
-#define TEST_SCANF_LLU_ERR(TYPE)    TEST_SCANF_ERR("%llu", "unsigned long long", TYPE)
-#define TEST_SCANF_LLU(TYPE)                                                  \
-            check(TEST_SCANF_CODE("%llu",TYPE), true, false, Settings::Unix32);      \
-            ASSERT_EQUALS(TEST_SCANF_LLU_ERR(TYPE), errout.str());            \
-            check(TEST_SCANF_CODE("%llu",TYPE), true, false, Settings::Unix64);      \
-            ASSERT_EQUALS(TEST_SCANF_LLU_ERR(TYPE), errout.str());            \
-            check(TEST_SCANF_CODE("%llu",TYPE), true, false, Settings::Win32A);      \
-            ASSERT_EQUALS(TEST_SCANF_LLU_ERR(TYPE), errout.str());            \
-            check(TEST_SCANF_CODE("%llu",TYPE), true, false, Settings::Win64);       \
-            ASSERT_EQUALS(TEST_SCANF_LLU_ERR(TYPE), errout.str());
-
-#define TEST_SCANF_LLU_ERR_AKA(TYPE,AKATYPE)  TEST_SCANF_ERR_AKA("%llu", "unsigned long long", TYPE, AKATYPE)
-#define TEST_SCANF_LLU_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                       \
-            check(TEST_SCANF_CODE("%llu",TYPE), true, false, Settings::Unix32);       \
-            ASSERT_EQUALS(TEST_SCANF_LLU_ERR_AKA(TYPE,AKATYPE), errout.str()); \
-            check(TEST_SCANF_CODE("%llu",TYPE), true, false, Settings::Unix64);       \
-            ASSERT_EQUALS(TEST_SCANF_LLU_ERR_AKA(TYPE,AKATYPE), errout.str()); \
-            check(TEST_SCANF_CODE("%llu",TYPE), true, false, Settings::Win32A);       \
-            ASSERT_EQUALS(TEST_SCANF_LLU_ERR_AKA(TYPE,AKATYPE), errout.str()); \
-            check(TEST_SCANF_CODE("%llu",TYPE), true, false, Settings::Win64);        \
-            ASSERT_EQUALS(TEST_SCANF_LLU_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
-
-
-
-
-#define TEST_SCANF_HU_ERR(TYPE)    TEST_SCANF_ERR("%hu", "unsigned short", TYPE)
-#define TEST_SCANF_HU(TYPE)                                                         \
-            check(TEST_SCANF_CODE("%hu",TYPE), true, false, Settings::Unix32);      \
-            ASSERT_EQUALS(TEST_SCANF_HU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%hu",TYPE), true, false, Settings::Unix64);      \
-            ASSERT_EQUALS(TEST_SCANF_HU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%hu",TYPE), true, false, Settings::Win32A);      \
-            ASSERT_EQUALS(TEST_SCANF_HU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%hu",TYPE), true, false, Settings::Win64);       \
-            ASSERT_EQUALS(TEST_SCANF_HU_ERR(TYPE), errout.str());
-
-#define TEST_SCANF_HU_ERR_AKA(TYPE,AKATYPE)  TEST_SCANF_ERR_AKA("%hu", "unsigned short", TYPE, AKATYPE)
-#define TEST_SCANF_HU_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                              \
-            check(TEST_SCANF_CODE("%hu",TYPE), true, false, Settings::Unix32);       \
-            ASSERT_EQUALS(TEST_SCANF_HU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%hu",TYPE), true, false, Settings::Unix64);       \
-            ASSERT_EQUALS(TEST_SCANF_HU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%hu",TYPE), true, false, Settings::Win32A);       \
-            ASSERT_EQUALS(TEST_SCANF_HU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%hu",TYPE), true, false, Settings::Win64);        \
-            ASSERT_EQUALS(TEST_SCANF_HU_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
-
-
-
-#define TEST_SCANF_HHU_ERR(TYPE)    TEST_SCANF_ERR("%hhu", "unsigned char", TYPE)
-#define TEST_SCANF_HHU(TYPE)                                                         \
-            check(TEST_SCANF_CODE("%hhu",TYPE), true, false, Settings::Unix32);      \
-            ASSERT_EQUALS(TEST_SCANF_HHU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%hhu",TYPE), true, false, Settings::Unix64);      \
-            ASSERT_EQUALS(TEST_SCANF_HHU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%hhu",TYPE), true, false, Settings::Win32A);      \
-            ASSERT_EQUALS(TEST_SCANF_HHU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%hhu",TYPE), true, false, Settings::Win64);       \
-            ASSERT_EQUALS(TEST_SCANF_HHU_ERR(TYPE), errout.str());
-
-#define TEST_SCANF_HHU_ERR_AKA(TYPE,AKATYPE)  TEST_SCANF_ERR_AKA("%hhu", "unsigned char", TYPE, AKATYPE)
-#define TEST_SCANF_HHU_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                              \
-            check(TEST_SCANF_CODE("%hhu",TYPE), true, false, Settings::Unix32);       \
-            ASSERT_EQUALS(TEST_SCANF_HHU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%hhu",TYPE), true, false, Settings::Unix64);       \
-            ASSERT_EQUALS(TEST_SCANF_HHU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%hhu",TYPE), true, false, Settings::Win32A);       \
-            ASSERT_EQUALS(TEST_SCANF_HHU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%hhu",TYPE), true, false, Settings::Win64);        \
-            ASSERT_EQUALS(TEST_SCANF_HHU_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
-
-
-
-#define TEST_SCANF_Lu_ERR(TYPE)    TEST_SCANF_ERR("%Lu", "unsigned long long", TYPE)
-#define TEST_SCANF_Lu(TYPE)                                                         \
-            check(TEST_SCANF_CODE("%Lu",TYPE), true, false, Settings::Unix32);      \
-            ASSERT_EQUALS(TEST_SCANF_Lu_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%Lu",TYPE), true, false, Settings::Unix64);      \
-            ASSERT_EQUALS(TEST_SCANF_Lu_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%Lu",TYPE), true, false, Settings::Win32A);      \
-            ASSERT_EQUALS(TEST_SCANF_Lu_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%Lu",TYPE), true, false, Settings::Win64);       \
-            ASSERT_EQUALS(TEST_SCANF_Lu_ERR(TYPE), errout.str());
-
-#define TEST_SCANF_Lu_ERR_AKA(TYPE,AKATYPE)  TEST_SCANF_ERR_AKA("%Lu", "unsigned long long", TYPE, AKATYPE)
-#define TEST_SCANF_Lu_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                              \
-            check(TEST_SCANF_CODE("%Lu",TYPE), true, false, Settings::Unix32);       \
-            ASSERT_EQUALS(TEST_SCANF_Lu_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%Lu",TYPE), true, false, Settings::Unix64);       \
-            ASSERT_EQUALS(TEST_SCANF_Lu_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%Lu",TYPE), true, false, Settings::Win32A);       \
-            ASSERT_EQUALS(TEST_SCANF_Lu_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%Lu",TYPE), true, false, Settings::Win64);        \
-            ASSERT_EQUALS(TEST_SCANF_Lu_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
-
-
-
-#define TEST_SCANF_JU_ERR(TYPE)    TEST_SCANF_ERR("%ju", "uintmax_t", TYPE)
-#define TEST_SCANF_JU(TYPE)                                                         \
-            check(TEST_SCANF_CODE("%ju",TYPE), true, false, Settings::Unix32);      \
-            ASSERT_EQUALS(TEST_SCANF_JU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%ju",TYPE), true, false, Settings::Unix64);      \
-            ASSERT_EQUALS(TEST_SCANF_JU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%ju",TYPE), true, false, Settings::Win32A);      \
-            ASSERT_EQUALS(TEST_SCANF_JU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%ju",TYPE), true, false, Settings::Win64);       \
-            ASSERT_EQUALS(TEST_SCANF_JU_ERR(TYPE), errout.str());
-
-#define TEST_SCANF_JU_ERR_AKA(TYPE,AKATYPE)  TEST_SCANF_ERR_AKA("%ju", "uintmax_t", TYPE, AKATYPE)
-#define TEST_SCANF_JU_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                              \
-            check(TEST_SCANF_CODE("%ju",TYPE), true, false, Settings::Unix32);       \
-            ASSERT_EQUALS(TEST_SCANF_JU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%ju",TYPE), true, false, Settings::Unix64);       \
-            ASSERT_EQUALS(TEST_SCANF_JU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%ju",TYPE), true, false, Settings::Win32A);       \
-            ASSERT_EQUALS(TEST_SCANF_JU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%ju",TYPE), true, false, Settings::Win64);        \
-            ASSERT_EQUALS(TEST_SCANF_JU_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
-
-
-
-
-#define TEST_SCANF_ZU_ERR(TYPE)    TEST_SCANF_ERR("%zu", "size_t", TYPE)
-#define TEST_SCANF_ZU(TYPE)                                                         \
-            check(TEST_SCANF_CODE("%zu",TYPE), true, false, Settings::Unix32);      \
-            ASSERT_EQUALS(TEST_SCANF_ZU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%zu",TYPE), true, false, Settings::Unix64);      \
-            ASSERT_EQUALS(TEST_SCANF_ZU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%zu",TYPE), true, false, Settings::Win32A);      \
-            ASSERT_EQUALS(TEST_SCANF_ZU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%zu",TYPE), true, false, Settings::Win64);       \
-            ASSERT_EQUALS(TEST_SCANF_ZU_ERR(TYPE), errout.str());
-
-#define TEST_SCANF_ZU_ERR_AKA(TYPE,AKATYPE)  TEST_SCANF_ERR_AKA("%zu", "size_t", TYPE, AKATYPE)
-#define TEST_SCANF_ZU_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                              \
-            check(TEST_SCANF_CODE("%zu",TYPE), true, false, Settings::Unix32);       \
-            ASSERT_EQUALS(TEST_SCANF_ZU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%zu",TYPE), true, false, Settings::Unix64);       \
-            ASSERT_EQUALS(TEST_SCANF_ZU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%zu",TYPE), true, false, Settings::Win32A);       \
-            ASSERT_EQUALS(TEST_SCANF_ZU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%zu",TYPE), true, false, Settings::Win64);        \
-            ASSERT_EQUALS(TEST_SCANF_ZU_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
-
-
-#define TEST_SCANF_TU_ERR(TYPE)    TEST_SCANF_ERR("%tu", "unsigned ptrdiff_t", TYPE)
-#define TEST_SCANF_TU(TYPE)                                                         \
-            check(TEST_SCANF_CODE("%tu",TYPE), true, false, Settings::Unix32);      \
-            ASSERT_EQUALS(TEST_SCANF_TU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%tu",TYPE), true, false, Settings::Unix64);      \
-            ASSERT_EQUALS(TEST_SCANF_TU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%tu",TYPE), true, false, Settings::Win32A);      \
-            ASSERT_EQUALS(TEST_SCANF_TU_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%tu",TYPE), true, false, Settings::Win64);       \
-            ASSERT_EQUALS(TEST_SCANF_TU_ERR(TYPE), errout.str());
-
-#define TEST_SCANF_TU_ERR_AKA(TYPE,AKATYPE)  TEST_SCANF_ERR_AKA("%tu", "unsigned ptrdiff_t", TYPE, AKATYPE)
-#define TEST_SCANF_TU_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                              \
-            check(TEST_SCANF_CODE("%tu",TYPE), true, false, Settings::Unix32);       \
-            ASSERT_EQUALS(TEST_SCANF_TU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%tu",TYPE), true, false, Settings::Unix64);       \
-            ASSERT_EQUALS(TEST_SCANF_TU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%tu",TYPE), true, false, Settings::Win32A);       \
-            ASSERT_EQUALS(TEST_SCANF_TU_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%tu",TYPE), true, false, Settings::Win64);        \
-            ASSERT_EQUALS(TEST_SCANF_TU_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
-
-
+#define TEST_SCANF_U(TYPE)  TEST_SCANF("%u", "unsigned int", TYPE)
+#define TEST_SCANF_U_AKA(TYPE,AKATYPE,AKATYPE_WIN64)  TEST_SCANF_AKA("%u", "unsigned int", TYPE, AKATYPE, AKATYPE_WIN64)
+#define TEST_SCANF_LU(TYPE)  TEST_SCANF("%lu", "unsigned long", TYPE)
+#define TEST_SCANF_LU_AKA(TYPE,AKATYPE,AKATYPE_WIN64)  TEST_SCANF_AKA("%lu", "unsigned long", TYPE, AKATYPE, AKATYPE_WIN64)
+#define TEST_SCANF_LLU(TYPE)  TEST_SCANF("%llu", "unsigned long long", TYPE)
+#define TEST_SCANF_LLU_AKA(TYPE,AKATYPE,AKATYPE_WIN64)  TEST_SCANF_AKA("%llu", "unsigned long long", TYPE, AKATYPE, AKATYPE_WIN64)
+#define TEST_SCANF_HU(TYPE)  TEST_SCANF("%hu", "unsigned short", TYPE)
+#define TEST_SCANF_HU_AKA(TYPE,AKATYPE,AKATYPE_WIN64)  TEST_SCANF_AKA("%hu", "unsigned short", TYPE, AKATYPE, AKATYPE_WIN64)
+#define TEST_SCANF_HHU(TYPE)  TEST_SCANF("%hhu", "unsigned char", TYPE)
+#define TEST_SCANF_HHU_AKA(TYPE,AKATYPE,AKATYPE_WIN64)  TEST_SCANF_AKA("%hhu", "unsigned char", TYPE, AKATYPE, AKATYPE_WIN64)
+#define TEST_SCANF_Lu(TYPE)  TEST_SCANF("%Lu", "unsigned long long", TYPE)
+#define TEST_SCANF_Lu_AKA(TYPE,AKATYPE,AKATYPE_WIN64)  TEST_SCANF_AKA("%Lu", "unsigned long long", TYPE, AKATYPE, AKATYPE_WIN64)
+#define TEST_SCANF_JU(TYPE)  TEST_SCANF("%ju", "uintmax_t", TYPE)
+#define TEST_SCANF_JU_AKA(TYPE,AKATYPE,AKATYPE_WIN64)  TEST_SCANF_AKA("%ju", "uintmax_t", TYPE, AKATYPE, AKATYPE_WIN64)
+#define TEST_SCANF_ZU(TYPE)  TEST_SCANF("%zu", "size_t", TYPE)
+#define TEST_SCANF_ZU_AKA(TYPE,AKATYPE,AKATYPE_WIN64)  TEST_SCANF_AKA("%zu", "size_t", TYPE, AKATYPE, AKATYPE_WIN64)
+#define TEST_SCANF_TU(TYPE)  TEST_SCANF("%tu", "unsigned ptrdiff_t", TYPE)
+#define TEST_SCANF_TU_AKA(TYPE,AKATYPE,AKATYPE_WIN64)  TEST_SCANF_AKA("%tu", "unsigned ptrdiff_t", TYPE, AKATYPE, AKATYPE_WIN64)
 
 #define TEST_SCANF_I64U_ERR(TYPE)                         \
   ((TYPE != std::string("unsigned long long"))            \
    ? TEST_SCANF_ERR("%I64u", "unsigned __int64", TYPE)    \
    : "")
-#define TEST_SCANF_I64U(TYPE)                                                         \
-            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix32);      \
-            ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix64);      \
-            ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win32A);      \
-            ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());                   \
-            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win64);       \
-            ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());
+#define TEST_SCANF_I64U(TYPE)                                                 \
+    check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix32);      \
+    ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());                   \
+    check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix64);      \
+    ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());                   \
+    check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win32A);      \
+    ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());                   \
+    check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win64);       \
+    ASSERT_EQUALS(TEST_SCANF_I64U_ERR(TYPE), errout.str());
 
 #define TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE)                          \
   ((AKATYPE != std::string("unsigned long long"))                      \
    ? TEST_SCANF_ERR_AKA("%I64u", "unsigned __int64", TYPE, AKATYPE)    \
    : "")
-#define TEST_SCANF_I64U_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                              \
-            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix32);       \
-            ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix64);       \
-            ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win32A);       \
-            ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE), errout.str());        \
-            check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win64);        \
-            ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
-
-
+#define TEST_SCANF_I64U_AKA(TYPE, AKATYPE, AKATYPE_WIN64)                     \
+    check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix32);      \
+    ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE), errout.str());       \
+    check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Unix64);      \
+    ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE), errout.str());       \
+    check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win32A);      \
+    ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE), errout.str());       \
+    check(TEST_SCANF_CODE("%I64u",TYPE), true, false, Settings::Win64);       \
+    ASSERT_EQUALS(TEST_SCANF_I64U_ERR_AKA(TYPE,AKATYPE_WIN64), errout.str());
 
 
 
