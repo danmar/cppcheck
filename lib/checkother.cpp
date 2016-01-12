@@ -1107,13 +1107,13 @@ void CheckOther::checkMemsetZeroBytes()
             if (Token::simpleMatch(tok, "memset (") && (numberOfArguments(tok)==3)) {
                 const Token* lastParamTok = tok->next()->link()->previous();
                 if (lastParamTok->str() == "0")
-                    memsetZeroBytesError(tok, tok->strAt(2));
+                    memsetZeroBytesError(tok);
             }
         }
     }
 }
 
-void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varname)
+void CheckOther::memsetZeroBytesError(const Token *tok)
 {
     const std::string summary("memset() called to fill 0 bytes.");
     const std::string verbose(summary + " The second and third arguments might be inverted."
