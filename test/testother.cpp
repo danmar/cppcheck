@@ -3265,12 +3265,12 @@ private:
         check("void f() {\n"
               "    memset(p, 10, 0x0);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes of 'p'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes.\n", errout.str());
 
         check("void f() {\n"
               "    memset(p, sizeof(p), 0);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes of 'p'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes.\n", errout.str());
 
         check("void f() {\n"
               "    memset(p, sizeof(p), i);\n"
@@ -3285,6 +3285,12 @@ private:
               "  }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        // #7285
+        check("void f() {\n"
+              "    memset(&tm, sizeof(tm), 0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes.\n", errout.str());
 
     }
 

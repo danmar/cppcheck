@@ -1115,7 +1115,7 @@ void CheckOther::checkMemsetZeroBytes()
 
 void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varname)
 {
-    const std::string summary("memset() called to fill 0 bytes of '" + varname + "'.");
+    const std::string summary("memset() called to fill 0 bytes.");
     const std::string verbose(summary + " The second and third arguments might be inverted."
                               " The function memset ( void * ptr, int value, size_t num ) sets the"
                               " first num bytes of the block of memory pointed by ptr to the specified value.");
