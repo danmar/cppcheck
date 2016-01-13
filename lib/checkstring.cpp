@@ -85,7 +85,8 @@ void CheckString::checkAlwaysTrueOrFalseStringCompare()
             if (Token::Match(tok->tokAt(2), "%str% , %str% ,|)")) {
                 const std::string &str1 = tok->strAt(2);
                 const std::string &str2 = tok->strAt(4);
-                alwaysTrueFalseStringCompareError(tok, str1, str2);
+                if (!tok->isExpandedMacro() && !tok->tokAt(2)->isExpandedMacro() && !tok->tokAt(4)->isExpandedMacro())
+                    alwaysTrueFalseStringCompareError(tok, str1, str2);
                 tok = tok->tokAt(5);
             } else if (Token::Match(tok->tokAt(2), "%name% , %name% ,|)")) {
                 const std::string &str1 = tok->strAt(2);
