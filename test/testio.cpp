@@ -19,7 +19,7 @@
 #include "checkio.h"
 #include "testsuite.h"
 #include "tokenize.h"
-
+#include <cstring>
 
 class TestIO : public TestFixture {
 public:
@@ -728,7 +728,7 @@ private:
     ?  "[test.cpp:1]: (warning) " FORMAT " in format string (no. 1) requires '" FORMATSTR " *' but the argument type is '" TYPE " *'.\n" \
     : "")
 #define TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE)     \
-   ((std::string(FORMATSTR) != std::string(TYPE) && std::string("std::" FORMATSTR) != std::string(TYPE)) \
+   ((std::strcmp(FORMATSTR,TYPE)!=0 && std::strcmp("std::" FORMATSTR,TYPE)!=0) \
     ?  "[test.cpp:1]: (warning) " FORMAT " in format string (no. 1) requires '" FORMATSTR " *' but the argument type is '" TYPE " * {aka " AKATYPE " *}'.\n" \
     : "")
 
