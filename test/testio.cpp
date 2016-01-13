@@ -727,8 +727,8 @@ private:
    ((std::string(FORMATSTR) != std::string(TYPE) &&                  \
      std::string("signed " FORMATSTR) != std::string(TYPE) &&        \
      std::string("unsigned " FORMATSTR) != std::string(TYPE) &&      \
-     std::string(FORMATSTR) != std::string("signed " TYPE) /* &&     \
-     std::string(FORMATSTR) != std::string("unsigned " TYPE)  */ )   \
+     std::string(FORMATSTR) != std::string("signed " TYPE) /* && */  \
+  /* std::string(FORMATSTR) != std::string("unsigned " TYPE) */ )    \
     ?  "[test.cpp:1]: (warning) " FORMAT " in format string (no. 1) requires '" FORMATSTR " *' but the argument type is '" TYPE " *'.\n" \
     : "")
 #define TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE)     \
