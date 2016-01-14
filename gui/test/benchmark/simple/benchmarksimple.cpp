@@ -57,7 +57,7 @@ void BenchmarkSimple::simplify()
     std::istringstream istr(data.constData());
     tokenizer.tokenize(istr, "test.cpp");
     QBENCHMARK {
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
     }
 }
 
@@ -74,7 +74,7 @@ void BenchmarkSimple::tokenizeAndSimplify()
     std::istringstream istr(data.constData());
     QBENCHMARK {
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+        tokenizer.simplifyTokenList2();
     }
 }
 

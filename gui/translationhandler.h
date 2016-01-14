@@ -23,9 +23,7 @@
 #include <QTranslator>
 #include <QObject>
 #include <QList>
-#ifndef __GNUC__
-#define __attribute__(A)
-#endif
+
 /// @addtogroup GUI
 /// @{
 

@@ -3265,12 +3265,12 @@ private:
         check("void f() {\n"
               "    memset(p, 10, 0x0);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes of 'p'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes.\n", errout.str());
 
         check("void f() {\n"
               "    memset(p, sizeof(p), 0);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes of 'p'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes.\n", errout.str());
 
         check("void f() {\n"
               "    memset(p, sizeof(p), i);\n"
@@ -3285,6 +3285,12 @@ private:
               "  }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        // #7285
+        check("void f() {\n"
+              "    memset(&tm, sizeof(tm), 0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes.\n", errout.str());
 
     }
 
@@ -3771,7 +3777,7 @@ private:
               "    enum { Four = 4 };\n"
               "    if (Four == 4) {}"
               "}", nullptr, false, true, false);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    enum { Four = 4 };\n"
@@ -3790,7 +3796,7 @@ private:
               "    enum { FourInEnumTwo = 4 };\n"
               "    if (FourInEnumOne == FourInEnumTwo) {}\n"
               "}", nullptr, false, true, false);
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    enum { FourInEnumOne = 4 };\n"

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
-  <?define ProductName = "Cppcheck $(var.Platform) 1.72 dev" ?>
+  <?define ProductName = "Cppcheck $(var.Platform) 1.73 dev" ?>
   <?define ProductNameShort = "Cppcheck" ?>
-  <?define ProductVersion = "1.71.99" ?>
+  <?define ProductVersion = "1.72.99" ?>
 
   <?define ProductManufacturer = "The Cppcheck team" ?>
   <?define ProductDescription = "Cppcheck is a tool for static analysis of C/C++ code" ?>
@@ -16,6 +16,7 @@
   <?define guiTranslationsGUID = "24738151-890D-4fcc-824C-DA7FF63E0D7F" ?>
   <?define mandatoryCfgsGUID = "EE95621C-25E7-491A-8DE9-EA6E6967C176" ?>
   <?define optionalCfgsGUID = "3A8AE067-5F41-4D29-A35C-CC0FAB648608" ?>
+  <?define optionalPtfsGUID = "F9EB9DB1-C0F1-4548-A5B0-27B51CD43A34" ?>
   <?define basedocsGUID = "9F62B23C-CD2B-4826-A567-6AB6F75A2AEA" ?>
   <?define registrykeysGUID = "8CB515B1-6EF6-4A2A-97A0-F8A13E3A505E" ?>
 </Include>

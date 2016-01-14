@@ -162,8 +162,6 @@ contains(QMAKE_CC, gcc) {
     QMAKE_CXXFLAGS += -std=c++0x -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare
 }
 
-macx {
-    contains(QMAKE_CXX, clang++) {
-        QMAKE_CXXFLAGS += -std=c++11
-    }
+contains(QMAKE_CXX, clang++) {
+    QMAKE_CXXFLAGS += -std=c++11
 }

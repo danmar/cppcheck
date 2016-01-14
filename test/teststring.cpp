@@ -155,6 +155,16 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
+        check("void f() {\n"
+              "  if (strcmp($\"00FF00\", \"00FF00\") == 0) {}"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  if ($strcmp(\"00FF00\", \"00FF00\") == 0) {}"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("int main()\n"
               "{\n"
               "  if (stricmp(\"hotdog\",\"HOTdog\") == 0)"

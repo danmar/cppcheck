@@ -26,7 +26,7 @@ General Public License version 3</translation>
         <translation>Visitez le site Cppcheck : %1</translation>
     </message>
     <message utf8="true">
-        <source>Copyright © 2007-2016 Daniel Marjamäki and cppcheck team.</source>
+        <source>Copyright © 2007-2016 Cppcheck team.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -185,6 +185,26 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Comments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cppcheck</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not open file %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not save file %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save the library as</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -859,6 +879,14 @@ Options:
         <source>C/C++ Source (%1)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Unknown element</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown issue</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -883,7 +911,7 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Built-in</source>
+        <source>Native</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1189,6 +1217,10 @@ Please select the default editor application in preferences/Applications.</sourc
         <source>Inconclusive</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Recheck</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>
@@ -1381,6 +1413,10 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>[Default]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> [Default]</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

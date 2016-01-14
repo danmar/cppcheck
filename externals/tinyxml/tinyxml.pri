@@ -1,2 +1,2 @@
-HEADERS += $${BASEPATH}tinyxml2.h
-SOURCES += $${BASEPATH}tinyxml2.cpp
+HEADERS += $${PWD}/tinyxml2.h
+SOURCES += $${PWD}/tinyxml2.cpp

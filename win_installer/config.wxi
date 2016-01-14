@@ -4,6 +4,7 @@
   <?define GuiBuildDir = "..\bin" ?>
   <?define TranslationsDir = "..\gui" ?>
   <?define CfgsDir = "..\cfg" ?>
+  <?define PtfsDir = "..\platforms" ?>
   <?define AddonsDir = "..\addons" ?>
   <?define QtDllDir = "..\bin" ?>
 

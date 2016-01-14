@@ -31,10 +31,6 @@
 #include <list>
 #include <ctime>
 
-#ifndef __GNUC__
-#define __attribute__(A)
-#endif
-
 class Settings;
 class SymbolDatabase;
 class TimerResults;
@@ -576,16 +572,10 @@ private:
     void simplifyFunctionPointers();
 
     /**
-     * Remove exception specifications.
-     */
-    void removeExceptionSpecifications();
-
-
-    /**
      * Send error message to error logger about internal bug.
      * @param tok the token that this bug concerns.
      */
-    void cppcheckError(const Token *tok) const __attribute__((noreturn));
+    void cppcheckError(const Token *tok) const;
 
     /**
      * Setup links for tokens so that one can call Token::link().
@@ -600,10 +590,10 @@ private:
 public:
 
     /** Syntax error */
-    void syntaxError(const Token *tok) const __attribute__((noreturn));
+    void syntaxError(const Token *tok) const;
 
     /** Syntax error. Example: invalid number of ')' */
-    void syntaxError(const Token *tok, char c) const __attribute__((noreturn));
+    void syntaxError(const Token *tok, char c) const;
 
 private:
 

@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.72 dev</title>
+    <title>Cppcheck 1.73 dev</title>
 
     <date>2015-09-09</date>
   </bookinfo>
@@ -12,9 +12,9 @@
     <title>Introduction</title>
 
     <para>Cppcheck is an analysis tool for C/C++ code. Unlike C/C++ compilers
-    and many other analysis tools, it doesn't detect syntax errors. Instead, Cppcheck
-    detects the types of bugs that the compilers normally fail to detect.
-    The goal is no false positives.</para>
+    and many other analysis tools, it doesn't detect syntax errors. Instead,
+    Cppcheck detects the types of bugs that the compilers normally fail to
+    detect. The goal is no false positives.</para>
 
     <para>Supported code and platforms:</para>
 
@@ -80,8 +80,8 @@
 
       <programlisting>cppcheck path</programlisting>
 
-      <para>If "path" is a folder then cppcheck will recursively check all source files in
-      this folder.</para>
+      <para>If "path" is a folder then cppcheck will recursively check all
+      source files in this folder.</para>
 
       <programlisting>Checking path/file1.cpp...
 1/2 files checked 50% done
@@ -92,8 +92,8 @@ Checking path/file2.cpp...
     <section>
       <title>Excluding a file or folder from checking</title>
 
-      <para>To exclude a file or folder, there are two options. The first option
-      is to only provide the paths and files you want to check.</para>
+      <para>To exclude a file or folder, there are two options. The first
+      option is to only provide the paths and files you want to check.</para>
 
       <programlisting>cppcheck src/a src/b</programlisting>
 
@@ -111,18 +111,22 @@ Checking path/file2.cpp...
     <section>
       <title>Include paths</title>
 
-      <para>To add an include path, use <parameter class="command">-I</parameter>, followed by the path.</para>
+      <para>To add an include path, use <parameter
+      class="command">-I</parameter>, followed by the path.</para>
 
-      <para>Cppcheck's preprocessor basically handles includes like any other preprocessor.
-      However, while other preprocessors stop working when they encounter a missing header,
-      cppcheck will just print an information message and continues parsing the code.</para>
+      <para>Cppcheck's preprocessor basically handles includes like any other
+      preprocessor. However, while other preprocessors stop working when they
+      encounter a missing header, cppcheck will just print an information
+      message and continues parsing the code.</para>
 
-      <para>The purpose of this behaviour is that cppcheck is meant to work without
-      necessarily seeing the entire code. Actually, it is recommended to not give all include
-      paths. While it is useful for cppcheck to see the declaration of a class when checking the
-      implementation of its members, passing standard library headers is highly discouraged because
-      it will result in worse results and longer checking time. For such cases, .cfg files (see below) are the
-      better way to provide information about the implementation of functions and types to cppcheck.</para>
+      <para>The purpose of this behaviour is that cppcheck is meant to work
+      without necessarily seeing the entire code. Actually, it is recommended
+      to not give all include paths. While it is useful for cppcheck to see
+      the declaration of a class when checking the implementation of its
+      members, passing standard library headers is highly discouraged because
+      it will result in worse results and longer checking time. For such
+      cases, .cfg files (see below) are the better way to provide information
+      about the implementation of functions and types to cppcheck.</para>
     </section>
 
     <section>
@@ -256,13 +260,48 @@ cppcheck --enable=all</programlisting>
     <section>
       <title>Multithreaded checking</title>
 
-      <para>The option -j is used to specify the number of threads you want to
-      use. For example, to use 4 threads to check the files in a
-      folder:</para>
+      <para>The option <literal>-j</literal> is used to specify the number of
+      threads you want to use. For example, to use 4 threads to check the
+      files in a folder:</para>
 
       <programlisting>cppcheck -j 4 path</programlisting>
 
       <para>Please note that this will disable unusedFunction checking.</para>
+    </section>
+
+    <section>
+      <title>Platform</title>
+
+      <para>You should use a platform configuration that match your
+      target.</para>
+
+      <para>By default Cppcheck uses native platform configuration that works
+      well if your code is compiled and executed locally.</para>
+
+      <para>Cppcheck has builtin configurations for <literal>unix</literal>
+      and <literal>windows</literal> targets. You can easily use these with
+      the <literal>--platform</literal> command line flag.</para>
+
+      <para>You can also create your own custom platform configuration in a
+      xml file. Here is an example:</para>
+
+      <programlisting>&lt;?xml version="1"?&gt;
+&lt;platform&gt;
+  &lt;char_bit&gt;8&lt;/char_bit&gt;
+  &lt;default-sign&gt;signed&lt;/default-sign&gt;
+  &lt;sizeof&gt;
+    &lt;short&gt;2&lt;/short&gt;
+    &lt;int&gt;4&lt;/int&gt;
+    &lt;long&gt;4&lt;/long&gt;
+    &lt;long-long&gt;8&lt;/long-long&gt;
+    &lt;float&gt;4&lt;/float&gt;
+    &lt;double&gt;8&lt;/double&gt;
+    &lt;long-double&gt;12&lt;/long-double&gt;
+    &lt;pointer&gt;4&lt;/pointer&gt;
+    &lt;size_t&gt;4&lt;/size_t&gt;
+    &lt;wchar_t&gt;2&lt;/wchar_t&gt;
+  &lt;/sizeof&gt;
+&lt;/platform&gt;</programlisting>
     </section>
   </chapter>
 
@@ -299,8 +338,8 @@ cppcheck -DA --force file.c</programlisting>
   <chapter>
     <title>XML output</title>
 
-    <para>Cppcheck can generate output in <literal>XML</literal> format.
-    There is an old <literal>XML</literal> format (version 1) and a new
+    <para>Cppcheck can generate output in <literal>XML</literal> format. There
+    is an old <literal>XML</literal> format (version 1) and a new
     <literal>XML</literal> format (version 2). Please use the new version if
     you can.</para>
 

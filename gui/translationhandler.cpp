@@ -26,7 +26,6 @@
 #include "translationhandler.h"
 
 
-static void unused() __attribute__((unused));
 // Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"
 static void unused()
 {

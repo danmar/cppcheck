@@ -2309,6 +2309,8 @@ void Tokenizer::simplifyLabelsCaseDefault()
                 break;
             if (tok->str() != "case" && tok->next() && tok->next()->str() == ":") {
                 tok = tok->next();
+                if (!tok->next())
+                    syntaxError(tok); // #7270 invalid code
                 if (tok->next()->str() != ";" && tok->next()->str() != "case")
                     tok->insertToken(";");
                 else
@@ -2850,22 +2852,27 @@ void Tokenizer::setVarId()
     std::list<Token *> allMemberVars;
     if (!isC()) {
         for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
-            if (Token::Match(tok2, "%name% :: ~| %name%")) {
-                const Token* tok3 = tok2->next();
-                do {
+            const Token* tok3 = nullptr;
+            if (Token::Match(tok2, "%name% :: ~| %name%"))
+                tok3 = tok2->next();
+            else if (Token::Match(tok2, "%name% <") && Token::Match(tok2->next()->findClosingBracket(),"> :: ~| %name%"))
+                tok3 = tok2->next()->findClosingBracket()->next();
+            else
+                continue;
+
+            while (Token::Match(tok3, ":: ~| %name%")) {
+                tok3 = tok3->next();
+                if (tok3->str() == "~")
                     tok3 = tok3->next();
-                    if (tok3->str() == "~")
-                        tok3 = tok3->next();
-                    tok3 = tok3->next();
-                } while (Token::Match(tok3, ":: ~| %name%"));
-                if (!tok3)
-                    syntaxError(tok2);
-                const std::string& str3 = tok3->str();
-                if (str3 == "(")
-                    allMemberFunctions.push_back(tok2);
-                else if (str3 != "::" && tok2->strAt(-1) != "::") // Support only one depth
-                    allMemberVars.push_back(tok2);
+                tok3 = tok3->next();
             }
+            if (!tok3)
+                syntaxError(tok2);
+            const std::string& str3 = tok3->str();
+            if (str3 == "(")
+                allMemberFunctions.push_back(tok2);
+            else if (str3 != "::" && tok2->strAt(-1) != "::") // Support only one depth
+                allMemberVars.push_back(tok2);
         }
     }
 
@@ -2929,46 +2936,60 @@ void Tokenizer::setVarId()
                 continue;
 
             // Set variable ids in member functions for this class..
-            const std::string funcpattern(classname + " :: ~| %name% (");
             for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
                 Token *tok2 = *func;
 
+                if (!Token::Match(tok2, classname.c_str()))
+                    continue;
+
+                if (Token::Match(tok2, "%name% <"))
+                    tok2 = tok2->next()->findClosingBracket();
+
                 // Found a class function..
-                if (Token::Match(tok2, funcpattern.c_str())) {
-                    // Goto the end parentheses..
-                    tok2 = tok2->tokAt(nestedCount*2);
-                    if (tok2->str() == "~")
-                        tok2 = tok2->linkAt(2);
-                    else
-                        tok2 = tok2->linkAt(1);
+                if (!Token::Match(tok2, "%any% :: ~| %name%"))
+                    continue;
 
-                    // If this is a function implementation.. add it to funclist
-                    Token * start = const_cast<Token *>(isFunctionHead(tok2, "{"));
-                    if (start) {
-                        setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &_varId);
+                // Goto the end parentheses..
+                tok2 = tok2->tokAt(nestedCount*2);
+                if (tok2->str() == "~")
+                    tok2 = tok2->linkAt(2);
+                else
+                    tok2 = tok2->linkAt(1);
+
+                // If this is a function implementation.. add it to funclist
+                Token * start = const_cast<Token *>(isFunctionHead(tok2, "{"));
+                if (start) {
+                    setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &_varId);
+                }
+
+                if (Token::Match(tok2, ") %name% ("))
+                    tok2 = tok2->linkAt(2);
+
+                // constructor with initializer list
+                if (Token::Match(tok2, ") : %name%")) {
+                    Token *tok3 = tok2;
+                    while (Token::Match(tok3, "[)}] [,:]")) {
+                        tok3 = tok3->tokAt(2);
+                        while (Token::Match(tok3, "%name% :: %name%"))
+                            tok3 = tok3->tokAt(2);
+                        if (!Token::Match(tok3, "%name% (|{|<"))
+                            break;
+
+                        // set varid
+                        std::map<std::string, unsigned int>::const_iterator varpos = thisClassVars.find(tok3->str());
+                        if (varpos != thisClassVars.end())
+                            tok3->varId(varpos->second);
+
+                        // goto end of var
+                        if (tok3->strAt(1) == "<") {
+                            tok3 = tok3->next()->findClosingBracket();
+                            if (tok3 && tok3->next() && tok3->next()->link())
+                                tok3 = tok3->next()->link();
+                        } else
+                            tok3 = tok3->linkAt(1);
                     }
-
-                    if (Token::Match(tok2, ") %name% ("))
-                        tok2 = tok2->linkAt(2);
-
-                    // constructor with initializer list
-                    if (Token::Match(tok2, ") : %name% (|{|<")) {
-                        Token *tok3 = tok2;
-                        do {
-                            Token *vartok = tok3->tokAt(2);
-                            std::map<std::string, unsigned int>::const_iterator varpos = thisClassVars.find(vartok->str());
-                            if (varpos != thisClassVars.end())
-                                vartok->varId(varpos->second);
-                            if (vartok->strAt(1) == "<") {
-                                tok3 = vartok->next()->findClosingBracket();
-                                if (tok3 && tok3->next() && tok3->next()->link())
-                                    tok3 = tok3->next()->link();
-                            } else
-                                tok3 = vartok->linkAt(1);
-                        } while (Token::Match(tok3, ")|} [:,] %name% (|{|<"));
-                        if (Token::Match(tok3, ")|} {")) {
-                            setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &_varId);
-                        }
+                    if (Token::Match(tok3, ")|} {")) {
+                        setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &_varId);
                     }
                 }
             }
@@ -5588,51 +5609,46 @@ void Tokenizer::simplifyPlatformTypes()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        // pre-check to reduce unneeded match calls
+        if (!Token::Match(tok, "std| ::| %type%"))
+            continue;
+        bool isUnsigned;
+        if (Token::Match(tok, "std| ::| size_t|uintptr_t|uintmax_t"))
+            isUnsigned = true;
+        else if (Token::Match(tok, "std| ::| ssize_t|ptrdiff_t|intptr_t|intmax_t"))
+            isUnsigned = false;
+        else
+            continue;
+
         bool inStd = false;
-        if (Token::Match(tok, "std :: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t")) {
+        if (tok->str() == "::") {
+            tok->deleteThis();
+        } else if (tok->str() == "std") {
+            if (tok->next()->str() != "::")
+                continue;
             inStd = true;
             tok->deleteNext();
             tok->deleteThis();
-        } else if (Token::Match(tok, ":: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t")) {
-            tok->deleteThis();
         }
 
-        if (Token::Match(tok, "size_t|uintptr_t|uintmax_t")) {
-            if (inStd)
-                tok->originalName("std::" + tok->str());
-            else
-                tok->originalName(tok->str());
+        if (inStd)
+            tok->originalName("std::" + tok->str());
+        else
+            tok->originalName(tok->str());
+        if (isUnsigned)
             tok->isUnsigned(true);
 
-            switch (type) {
-            case isLongLong:
-                tok->isLong(true);
-                tok->str("long");
-                break;
-            case isLong :
-                tok->str("long");
-                break;
-            case isInt:
-                tok->str("int");
-                break;
-            }
-        } else if (Token::Match(tok, "ssize_t|ptrdiff_t|intptr_t|intmax_t")) {
-            if (inStd)
-                tok->originalName("std::" + tok->str());
-            else
-                tok->originalName(tok->str());
-            switch (type) {
-            case isLongLong:
-                tok->isLong(true);
-                tok->str("long");
-                break;
-            case isLong :
-                tok->str("long");
-                break;
-            case isInt:
-                tok->str("int");
-                break;
-            }
+        switch (type) {
+        case isLongLong:
+            tok->isLong(true);
+            tok->str("long");
+            break;
+        case isLong:
+            tok->str("long");
+            break;
+        case isInt:
+            tok->str("int");
+            break;
         }
     }
 
@@ -7665,6 +7681,8 @@ void Tokenizer::simplifyEnum()
 
                     if (simplify) {
                         if (ev->value) {
+                            if (tok2->originalName().empty())
+                                tok2->originalName(tok2->str());
                             tok2->str(ev->value->str());
                             while (tok2->strAt(1) == "::")
                                 tok2->deleteNext(2);

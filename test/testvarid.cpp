@@ -121,8 +121,10 @@ private:
         TEST_CASE(varid_in_class17);    // #6056 - no varid for member functions
         TEST_CASE(varid_in_class18);    // #7127
         TEST_CASE(varid_in_class19);
+        TEST_CASE(varid_in_class20);    // #7267
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
+        TEST_CASE(varid_initListWithScope);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
         TEST_CASE(varid_unknown_macro);     // #2638 - unknown macro is not type
@@ -1804,6 +1806,27 @@ private:
                       "7: }\n", tokenize(code, false, "test.cpp"));
     }
 
+    void varid_in_class20() {
+        const char code[] = "template<class C> class cacheEntry {\n"
+                            "protected:\n"
+                            "    int m_key;\n"
+                            "public:\n"
+                            "    cacheEntry();\n"
+                            "};\n"
+                            "\n"
+                            "template<class C> cacheEntry<C>::cacheEntry() : m_key() {}";
+
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: template < class C > class cacheEntry {\n"
+                      "2: protected:\n"
+                      "3: int m_key@1 ;\n"
+                      "4: public:\n"
+                      "5: cacheEntry ( ) ;\n"
+                      "6: } ;\n"
+                      "7:\n"
+                      "8: template < class C > cacheEntry < C > :: cacheEntry ( ) : m_key@1 ( ) { }\n", tokenize(code, false, "test.cpp"));
+    }
+
     void varid_initList() {
         const char code1[] = "class A {\n"
                              "  A() : x(0) {}\n"
@@ -1975,6 +1998,19 @@ private:
                       "6: member@1 = 0 ;\n"
                       "7: }\n",
                       tokenize(code5));
+    }
+
+    void varid_initListWithScope() {
+        const char code1[] = "class A : public B::C {\n"
+                             "  A() : B::C(), x(0) {}\n"
+                             "  int x;\n"
+                             "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A : public B :: C {\n"
+                      "2: A ( ) : B :: C ( ) , x@1 ( 0 ) { }\n"
+                      "3: int x@1 ;\n"
+                      "4: } ;\n",
+                      tokenize(code1));
     }
 
     void varid_operator() {

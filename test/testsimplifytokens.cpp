@@ -206,6 +206,7 @@ private:
         TEST_CASE(enum43); // lhs in assignment
         TEST_CASE(enum44);
         TEST_CASE(enumscope1); // ticket #3949
+        TEST_CASE(enumOriginalName)
         TEST_CASE(duplicateDefinition); // ticket #3565
 
         // remove "std::" on some standard functions
@@ -254,7 +255,6 @@ private:
         TEST_CASE(removeVoidFromFunction);
 
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
-        TEST_CASE(simplifyVarDecl2); // ticket # 2834 segmentation fault
         TEST_CASE(return_strncat); // ticket # 2860 Returning value of strncat() reported as memory leak
 
         // #3069 : for loop with 1 iteration
@@ -3420,6 +3420,15 @@ private:
         ASSERT_EQUALS("void foo ( ) { } void bar ( ) { int a ; a = A ; }", checkSimplifyEnum(code));
     }
 
+    void enumOriginalName() {
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr("enum {X,Y}; x=X;");
+        tokenizer.tokenize(istr, "test.c");
+        Token *x_token = Token::findsimplematch(tokenizer.list.front(),"x");
+        ASSERT_EQUALS("0", x_token->strAt(2));
+        ASSERT_EQUALS("X", x_token->tokAt(2)->originalName());
+    }
+
     void duplicateDefinition() { // #3565 - wrongly detects duplicate definition
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr("x ; return a not_eq x;");
@@ -3937,12 +3946,6 @@ private:
 
     void simplifyVarDecl1() { // ticket # 2682 segmentation fault
         const char code[] = "x a[0] =";
-        tok(code, false);
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void simplifyVarDecl2() { // ticket # 2834 segmentation fault
-        const char code[] = "std::vector<int>::iterator";
         tok(code, false);
         ASSERT_EQUALS("", errout.str());
     }

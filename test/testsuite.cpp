@@ -20,6 +20,7 @@
 #include "options.h"
 #include "redirect.h"
 
+#include <cstdio>
 #include <iostream>
 #include <list>
 

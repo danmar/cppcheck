@@ -2,22 +2,16 @@
 #
 # A script for creating release packages. The release packages are create in the home directory.
 #
-# Test cppcheck on itself.
-#   cppcheck -q -j2 --inconclusive --enable=all lib
-#
 # Update translations
 #   lupdate gui.pro
 #
 # Make sure "cppcheck --errorlist" works. For example with:
 # make test
-# cppcheck --errorlist > errlist.xml
-# xmllint --noout errlist.xml
-# cppcheck --xml-version=2 --errorlist > errlist.xml
-# xmllint --noout errlist.xml
+# ./cppcheck --errorlist > errlist.xml && xmllint --noout errlist.xml
+# ./cppcheck --xml-version=2 --errorlist > errlist.xml && xmllint --noout errlist.xml
 #
 # Update AUTHORS using output from:
-#   git log --format='%aN' | sort -u > AUTHORS2
-#   diff -y AUTHORS AUTHORS2 | less
+# git log --format='%aN' 1.72..HEAD | sort -u > AUTHORS2 && diff -y AUTHORS AUTHORS2 | less
 #
 # Update version numbers in:
 # sed -i "s/1.[0-9][0-9].99/1.62/" cli/main.cpp
@@ -26,13 +20,11 @@
 # sed -i "s/1.[0-9][0-9] dev/1.62/" win_installer/productInfo.wxi
 # sed -i "s/1.[0-9][0-9].99/1.62/" win_installer/productInfo.wxi
 # Verify:
-# grep '\.99' */*.[ch]*
-# grep '[0-9][0-9] dev' */*.[ch]*
+# grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
 # git commit -a -m "1.43: Set versions"
 #
 # Update the Makefile:
-# make dmake
-# ./dmake --release
+# make dmake && ./dmake --release
 # git commit -a -m "1.43: Updated Makefile"
 #
 # Build and test the windows installer

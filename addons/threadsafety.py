@@ -16,7 +16,7 @@ def reportError(token, severity, msg):
 def checkstatic(data):
     for var in data.variables:
         if var.isStatic == True and var.isLocal == True and var.isClass == True:
-            reportError(var.typeStartToken, 'warning', 'Local static object')
+            reportError(var.typeStartToken, 'warning', ('Local static object: ' + var.nameToken.str) )
 
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')

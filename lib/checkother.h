@@ -234,7 +234,7 @@ private:
     void suspiciousEqualityComparisonError(const Token* tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
-    void memsetZeroBytesError(const Token *tok, const std::string &varname);
+    void memsetZeroBytesError(const Token *tok);
     void memsetFloatError(const Token *tok, const std::string &var_value);
     void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
@@ -289,7 +289,7 @@ private:
         c.suspiciousCaseInSwitchError(0, "||");
         c.suspiciousEqualityComparisonError(0);
         c.selfAssignmentError(0, "varname");
-        c.memsetZeroBytesError(0, "varname");
+        c.memsetZeroBytesError(0);
         c.memsetFloatError(0, "varname");
         c.memsetValueOutOfRangeError(0, "varname");
         c.clarifyCalculationError(0, "+");

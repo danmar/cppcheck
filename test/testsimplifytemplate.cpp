@@ -101,6 +101,8 @@ private:
         TEST_CASE(templateParameters);
 
         TEST_CASE(templateNamePosition);
+
+        TEST_CASE(expandSpecialized);
     }
 
     std::string tok(const char code[], bool simplify = true, bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -1317,6 +1319,11 @@ private:
         // Template class member
         TODO_ASSERT_EQUALS(7, -1, templateNamePositionHelper("template<class T> class A { unsigned foo(); }; "
                            "template<class T> unsigned A<T>::foo() { return 0; }", 19));
+    }
+
+    void expandSpecialized() {
+        ASSERT_EQUALS("class A<int> { } ;", tok("template<> class A<int> {};"));
+        ASSERT_EQUALS("class A<int> : public B { } ;", tok("template<> class A<int> : public B {};"));
     }
 };
 
