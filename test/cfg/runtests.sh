@@ -35,5 +35,5 @@ ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.cpp
 
 # windows.cpp
 #${CXX} -fsyntax-only ${DIR}windows.cpp
-${CPPCHECK} --check-library --enable=information --enable=style --error-exitcode=1 --inline-suppr --library=windows ${DIR}windows.cpp
+${CPPCHECK} --check-library --enable=information --enable=style --error-exitcode=1 --inline-suppr --library=windows.cfg ${DIR}windows.cpp
 
