@@ -303,7 +303,7 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
                     "Dangerous assignment - the function parameter is assigned the address of a local "
                     "auto-variable. Local auto-variables are reserved from the stack which "
                     "is freed when the function ends. So the pointer to a local variable "
-                    "is invalid after the function ends.");
+                    "is invalid after the function ends.", 562U, false);
     } else {
         reportError(tok, Severity::error, "autoVariables",
                     "Address of local auto-variable assigned to a function parameter.\n"
@@ -311,8 +311,8 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
                     "Local auto-variables are reserved from the stack which is freed when "
                     "the function ends. The address is invalid after the function ends and it "
                     "might 'leak' from the function through the parameter.",
-                    0U,
-                    true);
+                    562U,
+                    false);
     }
 }
 

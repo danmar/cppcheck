@@ -706,8 +706,8 @@ private:
     /**
      * report error message
      */
-    void reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
-    void reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
+    void reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, unsigned int cwe = 0U, bool inconclusive = false) const;
+    void reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, unsigned int cwe = 0U, bool inconclusive = false) const;
 
     /**
      * duplicate enum definition error
