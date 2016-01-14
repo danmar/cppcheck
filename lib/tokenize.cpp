@@ -5609,51 +5609,46 @@ void Tokenizer::simplifyPlatformTypes()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        // pre-check to reduce unneeded match calls
+        if (!Token::Match(tok, "std| ::| %type%"))
+            continue;
+        bool isUnsigned;
+        if (Token::Match(tok, "std| ::| size_t|uintptr_t|uintmax_t"))
+            isUnsigned = true;
+        else if (Token::Match(tok, "std| ::| ssize_t|ptrdiff_t|intptr_t|intmax_t"))
+            isUnsigned = false;
+        else
+            continue;
+
         bool inStd = false;
-        if (Token::Match(tok, "std :: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t")) {
+        if (tok->str() == "::") {
+            tok->deleteThis();
+        } else if (tok->str() == "std") {
+            if (tok->next()->str() != "::")
+                continue;
             inStd = true;
             tok->deleteNext();
             tok->deleteThis();
-        } else if (Token::Match(tok, ":: size_t|ssize_t|ptrdiff_t|intptr_t|uintptr_t")) {
-            tok->deleteThis();
         }
 
-        if (Token::Match(tok, "size_t|uintptr_t|uintmax_t")) {
-            if (inStd)
-                tok->originalName("std::" + tok->str());
-            else
-                tok->originalName(tok->str());
+        if (inStd)
+            tok->originalName("std::" + tok->str());
+        else
+            tok->originalName(tok->str());
+        if (isUnsigned)
             tok->isUnsigned(true);
 
-            switch (type) {
-            case isLongLong:
-                tok->isLong(true);
-                tok->str("long");
-                break;
-            case isLong :
-                tok->str("long");
-                break;
-            case isInt:
-                tok->str("int");
-                break;
-            }
-        } else if (Token::Match(tok, "ssize_t|ptrdiff_t|intptr_t|intmax_t")) {
-            if (inStd)
-                tok->originalName("std::" + tok->str());
-            else
-                tok->originalName(tok->str());
-            switch (type) {
-            case isLongLong:
-                tok->isLong(true);
-                tok->str("long");
-                break;
-            case isLong :
-                tok->str("long");
-                break;
-            case isInt:
-                tok->str("int");
-                break;
-            }
+        switch (type) {
+        case isLongLong:
+            tok->isLong(true);
+            tok->str("long");
+            break;
+        case isLong:
+            tok->str("long");
+            break;
+        case isInt:
+            tok->str("int");
+            break;
         }
     }
 
