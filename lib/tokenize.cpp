@@ -10187,17 +10187,15 @@ void Tokenizer::prepareTernaryOpForAST()
     }
 }
 
-void Tokenizer::reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive, unsigned int cwe) const
+void Tokenizer::reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
     const std::list<const Token*> callstack(1, tok);
-    reportError(callstack, severity, id, msg, inconclusive, cwe);
+    reportError(callstack, severity, id, msg, inconclusive);
 }
 
-void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive, unsigned int cwe) const
+void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
-    ErrorLogger::ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
-    errmsg._cwe = cwe;
-
+    const ErrorLogger::ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
     else
