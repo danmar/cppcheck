@@ -651,11 +651,11 @@ void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, 
 {
     const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
     if (inconclusive)
-        reportError(callstack, Severity::performance, "redundantAssignment",
+        reportError(callstack, Severity::style, "redundantAssignment",
                     "Variable '" + var + "' is reassigned a value before the old one has been used if variable is no semaphore variable.\n"
                     "Variable '" + var + "' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", 0U, true);
     else
-        reportError(callstack, Severity::performance, "redundantAssignment",
+        reportError(callstack, Severity::style, "redundantAssignment",
                     "Variable '" + var + "' is reassigned a value before the old one has been used.");
 }
 

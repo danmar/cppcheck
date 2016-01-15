@@ -4857,7 +4857,7 @@ private:
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         {
             // non-local variable => only show warning when inconclusive is used
@@ -4869,7 +4869,7 @@ private:
             check(code, "test.cpp", false, false); // inconclusive = false
             ASSERT_EQUALS("", errout.str());
             check(code, "test.cpp", false, true); // inconclusive = true
-            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance, inconclusive) Variable 'i' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style, inconclusive) Variable 'i' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
         }
 
         check("void f() {\n"
@@ -4877,14 +4877,14 @@ private:
               "    i = 1;\n"
               "    i = 1;\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void f() {\n"
               "    static int i;\n"
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance, inconclusive) Variable 'i' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style, inconclusive) Variable 'i' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
 
         // Testing different types
         check("void f() {\n"
@@ -4898,7 +4898,7 @@ private:
               "    bar = x;\n"
               "    bar = y;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance, inconclusive) Variable 'bar' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style, inconclusive) Variable 'bar' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
 
         check("void f() {\n"
               "    Foo& bar = foo();\n" // #4425. bar might refer to something global, etc.
@@ -4914,7 +4914,7 @@ private:
               "    bar();\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("int i;\n"
               "void f() {\n"
@@ -4938,7 +4938,7 @@ private:
               "    bar();\n"
               "    i = 1;\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void bar(int i) {}\n"
               "void f(int i) {\n"
@@ -4969,7 +4969,7 @@ private:
               "    i = 1;\n"
               "    i = 2;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         // #4513
         check("int x;\n"
@@ -4989,7 +4989,7 @@ private:
               "    x = 2;\n"
               "    x = g();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (style) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void f() {\n"
               "    Foo& bar = foo();\n"
@@ -5020,7 +5020,7 @@ private:
               "    x = 2;\n"
               "    x = z.g();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (performance, inconclusive) Variable 'x' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (style, inconclusive) Variable 'x' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
 
         // from #3103 (avoid a false negative)
         check("int foo(){\n"
@@ -5029,7 +5029,7 @@ private:
               "    x = 1;\n"
               "    return x + 1;\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
 
         // from #3103 (avoid a false positive)
         check("int foo(){\n"
@@ -5051,13 +5051,13 @@ private:
               "    int i = 54;\n"
               "    i = 0;\n"
               "}", 0, false, false, false);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void f() {\n"
               "    int i = 54;\n"
               "    i = 1;\n"
               "}", 0, false, false, false);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("int foo() {\n" // #4420
               "    int x;\n"
@@ -5076,7 +5076,7 @@ private:
               "    ab.a = 2;\n"
               "    return ab.a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (performance, inconclusive) Variable 'a' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (style, inconclusive) Variable 'a' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
 
         check("struct AB { int a; int b; };\n"
               "\n"
@@ -5188,7 +5188,7 @@ private:
               "        barney(x);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (performance) Variable 'p' is reassigned a value before the old one has been used.\n"
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Variable 'p' is reassigned a value before the old one has been used.\n"
                       "[test.cpp:2]: (style) The scope of the variable 'p' can be reduced.\n", errout.str());
 
         check("void foo() {\n"
@@ -5213,7 +5213,7 @@ private:
               "    if (memptr)\n"
               "        memptr = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'memptr' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'memptr' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
     void redundantVarAssignment_7133() {
@@ -5237,7 +5237,7 @@ private:
               "   }\n"
               "}", "test.cpp", false, true);
         TODO_ASSERT_EQUALS("",
-                           "[test.cpp:6] -> [test.cpp:9]: (performance) Variable 'Name' is reassigned a value before the old one has been used.\n",
+                           "[test.cpp:6] -> [test.cpp:9]: (style) Variable 'Name' is reassigned a value before the old one has been used.\n",
                            errout.str());
 
         check("void ConvertBitmapData(sal_uInt16 nDestBits) {\n"
@@ -5247,7 +5247,7 @@ private:
               "    aSrcBuf.mnBitCount = nDestBits;\n"
               "    bConverted = ::ImplFastBitmapConversion( aDstBuf, aSrcBuf, aTwoRects );\n"
               "}", "test.c");
-        ASSERT_EQUALS("[test.c:3] -> [test.c:5]: (performance) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.c:3] -> [test.c:5]: (style) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n", errout.str());
         check("void ConvertBitmapData(sal_uInt16 nDestBits) {\n"
               "BitmapBuffer aSrcBuf;\n"
               "    aSrcBuf.mnBitCount = nSrcBits;\n"
@@ -5255,8 +5255,8 @@ private:
               "    aSrcBuf.mnBitCount = nDestBits;\n"
               "    bConverted = ::ImplFastBitmapConversion( aDstBuf, aSrcBuf, aTwoRects );\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance, inconclusive) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n",
-                           "[test.cpp:3] -> [test.cpp:5]: (performance) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n",
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style, inconclusive) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n",
+                           "[test.cpp:3] -> [test.cpp:5]: (style) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n",
                            errout.str());
 
     }
