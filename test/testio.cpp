@@ -1186,8 +1186,8 @@ private:
         TEST_SCANF("%x", "unsigned int", "short");
         TEST_SCANF("%x", "unsigned int", "signed short");
         TEST_SCANF("%x", "unsigned int", "unsigned short");
-        // TEST_SCANF("%x", "unsigned int", "int");
-        // TODO TEST_SCANF("%x", "unsigned int", "signed int");
+        TEST_SCANF("%x", "unsigned int", "int");
+        TEST_SCANF("%x", "unsigned int", "signed int");
         TEST_SCANF("%x", "unsigned int", "long");
         TEST_SCANF("%x", "unsigned int", "signed long");
         TEST_SCANF("%x", "unsigned int", "unsigned long");
