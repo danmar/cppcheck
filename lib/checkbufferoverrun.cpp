@@ -133,13 +133,13 @@ static std::string bufferOverrunMessage(std::string varnames)
 
 void CheckBufferOverrun::bufferOverrunError(const Token *tok, const std::string &varnames)
 {
-    reportError(tok, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames));
+    reportError(tok, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames), 788U, false);
 }
 
 
 void CheckBufferOverrun::bufferOverrunError(const std::list<const Token *> &callstack, const std::string &varnames)
 {
-    reportError(callstack, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames), 0U, false);
+    reportError(callstack, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames));
 }
 
 void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat)
