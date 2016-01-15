@@ -2761,10 +2761,10 @@ public:
                         if (tok->strAt(-1) != "##") {
                             const std::map<std::string, PreprocessorMacro *>::const_iterator it = macros.find(str);
                             if (it != macros.end() && it->second->_macro.find('(') == std::string::npos) {
-                                str = it->second->_macro;
-                                const std::string::size_type whitespacePos = str.find(' ');
+                                const std::string& macro = it->second->_macro;
+                                const std::string::size_type whitespacePos = macro.find(' ');
                                 if (whitespacePos != std::string::npos)
-                                    str.erase(0, whitespacePos);
+                                    str = macro.substr(whitespacePos);
                                 else
                                     str = "";
                             }
