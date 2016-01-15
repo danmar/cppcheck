@@ -13,7 +13,7 @@ static void unencode(const char *src, char *dest)
         if (*src == '+')
             *dest = ' ';
         else if (*src == '%') {
-            int code;
+            unsigned int code;
             if (sscanf(src+1, "%2x", &code) != 1)
                 code = '?';
             *dest = code;
