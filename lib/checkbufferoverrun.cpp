@@ -61,7 +61,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
 {
     std::ostringstream oss;
     makeArrayIndexOutOfBoundsError(oss, arrayInfo, index);
-    reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str());
+    reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str(), 788U, false);
 }
 
 void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index)
@@ -115,7 +115,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const std::list<const Token 
 {
     std::ostringstream oss;
     makeArrayIndexOutOfBoundsError(oss, arrayInfo, index);
-    reportError(callstack, Severity::error, "arrayIndexOutOfBounds", oss.str(), 0U, false);
+    reportError(callstack, Severity::error, "arrayIndexOutOfBounds", oss.str());
 }
 
 static std::string bufferOverrunMessage(std::string varnames)
