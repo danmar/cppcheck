@@ -175,11 +175,11 @@ public:
     /**
      * Helper function for checkFunctionCall - check a function parameter
      * \param tok token for the function name
-     * \param par on what parameter is the array used
+     * \param paramIndex on what parameter is the array used
      * \param arrayInfo the array information
      * \param callstack call stack. This is used to prevent recursion and to provide better error messages. Pass a empty list from checkScope etc.
      */
-    void checkFunctionParameter(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack);
+    void checkFunctionParameter(const Token &tok, const unsigned int paramIndex, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack);
 
     /**
      * Helper function that checks if the array is used and if so calls the checkFunctionCall
