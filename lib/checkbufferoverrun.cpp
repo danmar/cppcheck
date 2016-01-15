@@ -61,7 +61,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
 {
     std::ostringstream oss;
     makeArrayIndexOutOfBoundsError(oss, arrayInfo, index);
-    reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str());
+    reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str(), 788U, false);
 }
 
 void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index)
@@ -115,7 +115,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const std::list<const Token 
 {
     std::ostringstream oss;
     makeArrayIndexOutOfBoundsError(oss, arrayInfo, index);
-    reportError(callstack, Severity::error, "arrayIndexOutOfBounds", oss.str(), 0U, false);
+    reportError(callstack, Severity::error, "arrayIndexOutOfBounds", oss.str());
 }
 
 static std::string bufferOverrunMessage(std::string varnames)
@@ -133,13 +133,13 @@ static std::string bufferOverrunMessage(std::string varnames)
 
 void CheckBufferOverrun::bufferOverrunError(const Token *tok, const std::string &varnames)
 {
-    reportError(tok, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames));
+    reportError(tok, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames), 788U, false);
 }
 
 
 void CheckBufferOverrun::bufferOverrunError(const std::list<const Token *> &callstack, const std::string &varnames)
 {
-    reportError(callstack, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames), 0U, false);
+    reportError(callstack, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames));
 }
 
 void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat)
@@ -177,7 +177,7 @@ void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &w
     if (show_size_info)
         oss << ": Supplied size " << supplied_size << " is larger than actual size " << actual_size;
     oss << '.';
-    reportError(tok, Severity::error, "outOfBounds", oss.str());
+    reportError(tok, Severity::error, "outOfBounds", oss.str(), 788U, false);
 }
 
 void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const Token *index, const MathLib::bigint indexvalue)
