@@ -371,15 +371,14 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
     return error;
 }
 
-void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int par, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack)
+void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int paramIndex, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack)
 {
-    const std::list<Library::ArgumentChecks::MinSize> * const minsizes = _settings->library.argminsizes(&ftok,par);
+    const std::list<Library::ArgumentChecks::MinSize> * const minsizes = _settings->library.argminsizes(&ftok, paramIndex);
 
     if (minsizes && (!(Token::simpleMatch(ftok.previous(), ".") || Token::Match(ftok.tokAt(-2), "!!std ::")))) {
-        if (arrayInfo.element_size() == 0)
-            return;
-
         MathLib::bigint arraySize = arrayInfo.element_size();
+        if (arraySize == 0)
+            return;
         for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
             arraySize *= arrayInfo.num(i);
 
@@ -401,7 +400,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
 
         if (func && func->hasBody()) {
             // Get corresponding parameter..
-            const Variable* const parameter = func->getArgumentVar(par-1);
+            const Variable* const parameter = func->getArgumentVar(paramIndex-1);
 
             // Ensure that it has a compatible size..
             if (!parameter || _tokenizer->sizeOfType(parameter->typeStartToken()) != arrayInfo.element_size())
@@ -471,7 +470,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
 
         // If argument is '%type% a[num]' then check bounds against num
         if (func) {
-            const Variable* const argument = func->getArgumentVar(par-1);
+            const Variable* const argument = func->getArgumentVar(paramIndex-1);
             const Token *nameToken;
             if (argument && Token::Match(argument->typeStartToken(), "%type% %var% [ %num% ] [,)[]")
                 && (nameToken = argument->nameToken()) != nullptr) {
