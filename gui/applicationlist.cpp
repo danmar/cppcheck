@@ -66,6 +66,8 @@ bool ApplicationList::LoadSettings()
             AddApplication(app);
             defapp = 0;
         }
+        CheckAndAddApplication("/usr/bin/geany","geany","+(line) (file)");
+        CheckAndAddApplication("/usr/bin/qtcreator","Qt Creator","-client (file):(line)");
         // use as default for kde environments
         if (QFileInfo("/usr/bin/kate").isExecutable()) {
             Application app;
@@ -219,5 +221,12 @@ bool ApplicationList::FindDefaultWindowsEditor()
     if (CheckAndAddApplication(windowsPath + "\\system32\\notepad.exe", "Notepad", "(file)"))
         foundOne = true;
 
+    QString regPath = "HKEY_CLASSES_ROOT\\Applications\\QtProject.QtCreator.pro\\shell\\Open\\command";
+    QSettings registry(regPath, QSettings::NativeFormat);
+    QString qtCreatorRegistry = registry.value("Default", QString()).toString();
+    QString qtCreatorPath = qtCreatorRegistry.left(qtCreatorRegistry.indexOf(".exe") + 4);
+    if (!qtCreatorRegistry.isEmpty() && CheckAndAddApplication(qtCreatorPath, "Qt Creator", "-client (file):(line)")) {
+        foundOne = true;
+    }
     return foundOne;
 }
