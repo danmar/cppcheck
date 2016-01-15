@@ -322,7 +322,7 @@ void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok,
                 "Address of function parameter '" + varname + "' returned.\n"
                 "Address of the function parameter '" + varname + "' becomes invalid after the function exits because "
                 "function parameters are stored on the stack which is freed when the function exits. Thus the returned "
-                "value is invalid.");
+                "value is invalid.", 562U, false);
 }
 
 void CheckAutoVariables::errorUselessAssignmentArg(const Token *tok)
