@@ -171,7 +171,7 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
     data["line"]  = item.lines[0];
     data["id"]  = item.errorId;
     data["inconclusive"] = item.inconclusive;
-    data["file0"] = item.file0;
+    data["file0"] = StripPath(item.file0, true);
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
@@ -347,8 +347,11 @@ void ResultsTree::ClearRecheckFile(const QString &filename)
         if (!item)
             continue;
 
+        QString actualfile((!mCheckPath.isEmpty() && filename.startsWith(mCheckPath)) ? filename.mid(mCheckPath.length() + 1) : filename);
         QVariantMap data = item->data().toMap();
-        if (filename == data["file"].toString()) {
+        QString storedfile = data["file"].toString();
+        storedfile = ((!mCheckPath.isEmpty() && storedfile.startsWith(mCheckPath)) ? storedfile.mid(mCheckPath.length() + 1) : storedfile);
+        if (actualfile == storedfile) {
             mModel.removeRow(i);
             break;
         }
@@ -833,12 +836,27 @@ void ResultsTree::RecheckSelectedFiles()
             item = item->parent();
         QVariantMap data = item->data().toMap();
         QString currentFile = data["file"].toString();
-        if (Path::isHeader(currentFile.toStdString())) {
-            if (!selectedItems.contains(data["file0"].toString()))
-                selectedItems<<data["file0"].toString();
+        if (!currentFile.isEmpty()) {
+            QString fileNameWithCheckPath;
+            QFileInfo curfileInfo(currentFile);
+            if (!curfileInfo.exists() && !mCheckPath.isEmpty() && currentFile.indexOf(mCheckPath) != 0)
+                fileNameWithCheckPath = mCheckPath + "/" + currentFile;
+            else
+                fileNameWithCheckPath = currentFile;
+            const QFileInfo fileInfo(fileNameWithCheckPath);
+            if (!fileInfo.exists()) {
+                AskFileDir(currentFile);
+                return;
+            }
+            if (Path::isHeader(currentFile.toStdString())) {
+                if (!data["file0"].toString().isEmpty() && !selectedItems.contains(data["file0"].toString())) {
+                    selectedItems<<((!mCheckPath.isEmpty() && (data["file0"].toString().indexOf(mCheckPath) != 0)) ? (mCheckPath + "/" + data["file0"].toString()) : data["file0"].toString());
+                    if (!selectedItems.contains(fileNameWithCheckPath))
+                        selectedItems<<fileNameWithCheckPath;
+                }
+            } else if (!selectedItems.contains(fileNameWithCheckPath))
+                selectedItems<<fileNameWithCheckPath;
         }
-        if (!selectedItems.contains(currentFile))
-            selectedItems<<currentFile;
     }
     emit CheckSelected(selectedItems);
 }
@@ -1041,6 +1059,12 @@ void ResultsTree::UpdateSettings(bool showFullPath,
 void ResultsTree::SetCheckDirectory(const QString &dir)
 {
     mCheckPath = dir;
+}
+
+
+QString ResultsTree::GetCheckDirectory(void)
+{
+    return mCheckPath;
 }
 
 QString ResultsTree::StripPath(const QString &path, bool saving) const

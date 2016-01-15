@@ -107,6 +107,14 @@ public:
     void SetCheckDirectory(const QString &dir);
 
     /**
+    * @brief Get the directory we are checking
+    *
+    * @return Directory containing source files
+    */
+
+    QString GetCheckDirectory(void);
+
+    /**
     * @brief Inform the view that checking has started
     *
     * @param count Count of files to be checked.

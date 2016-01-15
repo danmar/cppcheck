@@ -84,6 +84,7 @@ Q_DECLARE_METATYPE(ErrorItem);
 class ErrorLine {
 public:
     QString file;
+    QString file0;
     unsigned int line;
     QString errorId;
     bool inconclusive;

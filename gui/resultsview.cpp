@@ -230,6 +230,11 @@ void ResultsView::SetCheckDirectory(const QString &dir)
     mUI.mTree->SetCheckDirectory(dir);
 }
 
+QString ResultsView::GetCheckDirectory(void)
+{
+    return mUI.mTree->GetCheckDirectory();
+}
+
 void ResultsView::CheckingStarted(int count)
 {
     mUI.mProgress->setVisible(true);

@@ -123,6 +123,14 @@ public:
     void SetCheckDirectory(const QString &dir);
 
     /**
+    * @brief Get the directory we are checking
+    *
+    * @return Directory containing source files
+    */
+
+    QString GetCheckDirectory(void);
+
+    /**
     * @brief Check if there are any visible results in view.
     * @return true if there is at least one visible warning/error.
     */

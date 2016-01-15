@@ -221,8 +221,6 @@ void MainWindow::HandleCLIParams(const QStringList &params)
             LoadProjectFile(params[index + 1]);
     } else if ((index = params.indexOf(QRegExp(".*\\.cppcheck$", Qt::CaseInsensitive), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
         LoadProjectFile(params[index]);
-    } else if ((index = params.indexOf(QRegExp(".*\\.xml$", Qt::CaseInsensitive), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
-        LoadResults(params[index]);
     } else if (params.contains("-l")) {
         QString logFile;
         index = params.indexOf("-l");
@@ -239,6 +237,8 @@ void MainWindow::HandleCLIParams(const QStringList &params)
         } else {
             LoadResults(logFile);
         }
+    } else if ((index = params.indexOf(QRegExp(".*\\.xml$", Qt::CaseInsensitive), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
+        LoadResults(params[index],QDir::currentPath());
     } else
         DoCheckFiles(params);
 }
@@ -815,6 +815,7 @@ void MainWindow::ReCheckSelected(QStringList files, bool all)
     for (int i = 0; i < files.size(); ++i)
         mUI.mResults->ClearRecheckFile(files[i]);
 
+    mCurrentDirectory = mUI.mResults->GetCheckDirectory();
     FileList pathList;
     pathList.AddPathList(files);
     if (mProject)
