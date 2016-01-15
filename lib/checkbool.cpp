@@ -473,7 +473,7 @@ void CheckBool::pointerArithBoolError(const Token *tok)
                 Severity::error,
                 "pointerArithBool",
                 "Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n"
-                "Converting pointer arithmetic result to bool. The boolean result is always true unless there is pointer arithmetic overflow, and overflow is undefined behaviour. Probably a dereference is forgotten.");
+                "Converting pointer arithmetic result to bool. The boolean result is always true unless there is pointer arithmetic overflow, and overflow is undefined behaviour. Probably a dereference is forgotten.", 571U, false);
 }
 
 void CheckBool::checkAssignBoolToFloat()
