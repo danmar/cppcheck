@@ -507,5 +507,5 @@ void CheckAutoVariables::errorInvalidDeallocation(const Token *tok)
                 "autovarInvalidDeallocation",
                 "Deallocation of an auto-variable results in undefined behaviour.\n"
                 "The deallocation of an auto-variable results in undefined behaviour. You should only free memory "
-                "that has been allocated dynamically.");
+                "that has been allocated dynamically.", 590U, false);
 }
