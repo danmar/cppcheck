@@ -352,7 +352,7 @@ void CheckBool::checkAssignBoolToPointer()
 void CheckBool::assignBoolToPointerError(const Token *tok)
 {
     reportError(tok, Severity::error, "assignBoolToPointer",
-                "Boolean value assigned to pointer.");
+                "Boolean value assigned to pointer.", 587U, false);
 }
 
 //-----------------------------------------------------------------------------
