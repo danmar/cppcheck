@@ -497,7 +497,7 @@ void CheckAutoVariables::errorReturnReference(const Token *tok)
 
 void CheckAutoVariables::errorReturnTempReference(const Token *tok)
 {
-    reportError(tok, Severity::error, "returnTempReference", "Reference to temporary returned.");
+    reportError(tok, Severity::error, "returnTempReference", "Reference to temporary returned.", 562U, false);
 }
 
 void CheckAutoVariables::errorInvalidDeallocation(const Token *tok)
