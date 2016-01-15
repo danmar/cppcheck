@@ -292,7 +292,7 @@ void CheckAutoVariables::errorReturnAddressToAutoVariable(const Token *tok)
 
 void CheckAutoVariables::errorReturnPointerToLocalArray(const Token *tok)
 {
-    reportError(tok, Severity::error, "returnLocalVariable", "Pointer to local array variable returned.");
+    reportError(tok, Severity::error, "returnLocalVariable", "Pointer to local array variable returned.", 562U, false);
 }
 
 void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inconclusive)
