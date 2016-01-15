@@ -492,7 +492,7 @@ void CheckAutoVariables::returnReference()
 
 void CheckAutoVariables::errorReturnReference(const Token *tok)
 {
-    reportError(tok, Severity::error, "returnReference", "Reference to auto variable returned.");
+    reportError(tok, Severity::error, "returnReference", "Reference to auto variable returned.", 562U, false);
 }
 
 void CheckAutoVariables::errorReturnTempReference(const Token *tok)
