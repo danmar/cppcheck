@@ -17,7 +17,9 @@
  */
 
 #include "astutils.h"
-#include "tokenizer.h"
+#include "token.h"
+#include "settings.h"
+#include "tokenize.h"
 #include "testsuite.h"
 
 
@@ -32,16 +34,16 @@ private:
         TEST_CASE(isReturnScope);
     }
 
-    Tokenizer tokenize(const char code[], const char filename[]) {
-        Tokenizer tokenizer(&settings0, this);
+    bool isReturnScope(const char code[], const char filename[]="test.cpp") {
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        return tokenizer;
+        tokenizer.tokenize(istr, filename);
+        return ::isReturnScope(Token::findsimplematch(tokenizer.tokens(),"}"));
     }
 
-    void isReturnScope() const {
-        const Tokenizer &t1 = tokenize("void f() { if (a) { return; } }");
-        ASSERT_EQUALS(true, ::isReturnScope(Token::findsimplematch(t1.tokens(),"} }")));
+    void isReturnScope() {
+        ASSERT_EQUALS(true, isReturnScope("void f() { if (a) { return; } }"));
 
     }
 };

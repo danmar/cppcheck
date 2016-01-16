@@ -5,6 +5,7 @@ INCLUDEPATH += ../externals/tinyxml
 
 SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testassert.cpp \
+           $${BASEPATH}/testastutils.cpp \
            $${BASEPATH}/testautovariables.cpp \
            $${BASEPATH}/testbool.cpp \
            $${BASEPATH}/testboost.cpp \
