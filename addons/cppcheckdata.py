@@ -6,6 +6,35 @@
 #
 
 import xml.etree.ElementTree as ET
+import argparse
+
+## Directive class. Contains information about each preprocessor directive in the source code.
+#
+# file and linenr denote the location where the directive is defined.
+#
+# To iterate through all directives use such code:
+# @code
+# data = cppcheckdata.parsedump(...)
+# for cfg in data.configurations:
+#   for directive in cfg.directives:
+#     print(directive.str)
+# @endcode
+#
+
+
+class Directive:
+    ## The directive line, with all C or C++ comments removed
+    str = None
+    ## name of (possibly included) file where directive is defined
+    file = None
+    ## line number in (possibly included) file where directive is defined
+    linenr = None
+
+    def __init__(self, element):
+        self.str = element.get('str')
+        self.file = element.get('file')
+        self.linenr = element.get('linenr')
+
 
 ## Token class. Contains information about each token in the source code.
 #
@@ -16,10 +45,11 @@ import xml.etree.ElementTree as ET
 # To iterate through all tokens use such code:
 # @code
 # data = cppcheckdata.parsedump(...)
-# code = ''
-# for token in data.tokenlist:
-#   code = code + token.str + ' '
-# print(code)
+# for cfg in data.configurations:
+#   code = ''
+#   for token in cfg.tokenlist:
+#     code = code + token.str + ' '
+#   print(code)
 # @endcode
 #
 
@@ -380,13 +410,15 @@ class ValueFlow:
             self.values.append(ValueFlow.Value(value))
 
 ## Configuration class
-# This class contains the tokens, scopes, functions, variables and
-# value flows for one configuration.
+# This class contains the directives, tokens, scopes, functions,
+# variables and value flows for one configuration.
 
 
 class Configuration:
     ## Name of the configuration, "" for default
     name = ''
+    ## List of Directive items
+    directives = []
     ## List of Token items
     tokenlist = []
     ## List of Scope items
@@ -400,6 +432,7 @@ class Configuration:
 
     def __init__(self, confignode):
         self.name = confignode.get('cfg')
+        self.directives = []
         self.tokenlist = []
         self.scopes = []
         self.functions = []
@@ -407,6 +440,10 @@ class Configuration:
         self.valueflow = []
 
         for element in confignode:
+            if element.tag == 'directivelist':
+                for directive in element:
+                    self.directives.append(Directive(directive))
+
             if element.tag == 'tokenlist':
                 for token in element:
                     self.tokenlist.append(Token(token))
@@ -534,3 +571,57 @@ def astIsFloat(token):
     if typeToken.str == 'float' or typeToken.str == 'double':
         return True
     return False
+
+# Create a cppcheck parser
+
+class CppCheckFormatter(argparse.HelpFormatter):
+    '''
+        Properly formats multiline argument helps
+    '''
+    def _split_lines(self, text, width):
+        # this is the RawTextHelpFormatter._split_lines
+        if text.startswith('R|'):
+            return text[2:].splitlines()  
+        return argparse.HelpFormatter._split_lines(self, text, width)
+
+def ArgumentParser():
+    '''
+        Returns an argparse argument parser with an already-added
+        argument definition for -t/--template
+    '''
+    parser = argparse.ArgumentParser(formatter_class=CppCheckFormatter)
+    parser.add_argument('-t', '--template', metavar='<text>',
+        default='{callstack}: ({severity}) {message}',
+        help="R|Format the error messages. E.g.\n" \
+             "'{file}:{line},{severity},{id},{message}' or\n" \
+             "'{file}({line}):({severity}) {message}' or\n" \
+             "'{callstack} {message}'\n" \
+             "Pre-defined templates: gcc, vs, edit")
+    return parser
+
+# Format an error message.
+ 
+def reportError(template, callstack=[], severity='', message='', id=''):
+    '''
+        Format an error message according to the template.
+        
+        :param template: format string, or 'gcc', 'vs' or 'edit'.
+        :param callstack: e.g. [['file1.cpp',10],['file2.h','20'], ... ]
+        :param severity: e.g. 'error', 'warning' ...
+        :param id: message ID.
+        :param message: message text.
+    '''
+    # expand predefined templates
+    if template == 'gcc':
+        template = '{file}:{line}: {severity}: {message}'
+    elif template == 'vs':
+        template = '{file}({line}): {severity}: {message}'
+    elif template == 'edit':
+        template = '{file} +{line}: {severity}: {message}'
+    # compute 'callstack}, {file} and {line} replacements
+    stack = ' -> '.join(['['+f+':'+str(l)+']' for (f,l) in callstack])
+    file = callstack[-1][0]
+    line = str(callstack[-1][1])
+    # format message
+    return template.format(callstack=stack, file=file, line=line,
+        severity=severity, message=message, id=id)
