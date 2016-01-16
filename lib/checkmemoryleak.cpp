@@ -213,7 +213,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         }
     }
 
-    if (tok && tok->str() == "::")
+    if (tok->str() == "::")
         tok = tok->next();
 
     if (Token::Match(tok, "%name% (")) {
