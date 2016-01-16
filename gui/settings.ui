@@ -151,6 +151,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="mShowStatistics">
+         <property name="text">
+          <string>Show statistics on check completion</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -372,6 +379,7 @@
   <tabstop>mSaveFullPath</tabstop>
   <tabstop>mListLanguages</tabstop>
   <tabstop>mEnableInconclusive</tabstop>
+  <tabstop>mShowStatistics</tabstop>
   <tabstop>mShowDebugWarnings</tabstop>
   <tabstop>mButtons</tabstop>
  </tabstops>

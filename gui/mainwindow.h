@@ -571,7 +571,7 @@ private:
     bool mExiting;
 
     /**
-    * @brief Set in case of loading project file.
+    * @brief Set to true in case of loading log file.
     */
     bool mIsLogfileLoaded;
 
