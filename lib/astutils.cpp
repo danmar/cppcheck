@@ -269,6 +269,36 @@ bool isWithoutSideEffects(bool cpp, const Token* tok)
     return true;
 }
 
+bool isReturnScope(const Token * const endToken)
+{
+    if (!endToken || endToken->str() != "}")
+        return false;
+
+    const Token *prev = endToken->previous();
+    if (prev && Token::simpleMatch(prev->previous(), "} ;"))
+        prev = prev->previous();
+
+    if (Token::simpleMatch(prev, "}")) {
+        if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {"))
+            return isReturnScope(prev) && isReturnScope(prev->link()->tokAt(-2));
+        if (Token::simpleMatch(prev->link()->previous(), ") {") &&
+            Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
+            !Token::findsimplematch(prev->link(), "break", prev)) {
+            return true;
+        }
+    } else if (Token::simpleMatch(prev, ";")) {
+        // noreturn function
+        if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% ("))
+            return true;
+        // return/goto statement
+        prev = prev->previous();
+        while (prev && !Token::Match(prev, ";|{|}|return|goto|throw|continue|break"))
+            prev = prev->previous();
+        return prev && prev->isName();
+    }
+    return false;
+}
+
 bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {

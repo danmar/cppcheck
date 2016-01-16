@@ -292,36 +292,6 @@ static bool bailoutSelfAssignment(const Token * const tok)
     return false;
 }
 
-static bool isReturn(const Token *tok)
-{
-    if (!tok)
-        return false;
-
-    const Token *prev = tok->previous();
-    if (prev && Token::simpleMatch(prev->previous(), "} ;"))
-        prev = prev->previous();
-
-    if (Token::simpleMatch(prev, "}")) {
-        if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {"))
-            return isReturn(prev) && isReturn(prev->link()->tokAt(-2));
-        if (Token::simpleMatch(prev->link()->previous(), ") {") &&
-            Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
-            !Token::findsimplematch(prev->link(), "break", prev)) {
-            return true;
-        }
-    } else if (Token::simpleMatch(prev, ";")) {
-        // noreturn function
-        if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% ("))
-            return true;
-        // return/goto statement
-        prev = prev->previous();
-        while (prev && !Token::Match(prev, ";|{|}|return|goto|throw|continue|break"))
-            prev = prev->previous();
-        return prev && prev->isName();
-    }
-    return false;
-}
-
 /** Add token value. Return true if value is added. */
 static bool addValue(Token *tok, const ValueFlow::Value &value)
 {
@@ -1052,7 +1022,7 @@ static bool valueFlowForward(Token * const               startToken,
             ++indentlevel;
         else if (indentlevel >= 0 && tok2->str() == "}") {
             --indentlevel;
-            if (indentlevel <= 0 && isReturn(tok2) && Token::Match(tok2->link()->previous(), "else|) {")) {
+            if (indentlevel <= 0 && isReturnScope(tok2) && Token::Match(tok2->link()->previous(), "else|) {")) {
                 const Token *condition = tok2->link();
                 const bool iselse = Token::simpleMatch(condition->tokAt(-2), "} else {");
                 if (iselse)
@@ -1173,7 +1143,7 @@ static bool valueFlowForward(Token * const               startToken,
                 // goto '}'
                 tok2 = startToken1->link();
 
-                if (condAlwaysTrue && isReturn(tok2))
+                if (condAlwaysTrue && isReturnScope(tok2))
                     return false;
 
                 continue;
@@ -1229,8 +1199,8 @@ static bool valueFlowForward(Token * const               startToken,
                 }
             }
 
-            // stop after conditional noreturn scopes that are executed
-            if (isReturn(end)) {
+            // stop after conditional return scopes that are executed
+            if (isReturnScope(end)) {
                 std::list<ValueFlow::Value>::iterator it;
                 for (it = values.begin(); it != values.end();) {
                     if (conditionIsTrue(tok2->next()->astOperand2(), getProgramMemory(tok2, varid, *it)))
@@ -1697,7 +1667,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         continue;
                     }
 
-                    bool isreturn = (codeblock == 1 && isReturn(after));
+                    bool isreturn = (codeblock == 1 && isReturnScope(after));
 
                     if (Token::simpleMatch(after, "} else {")) {
                         after = after->linkAt(2);
@@ -1706,7 +1676,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                                 bailout(tokenlist, errorLogger, after, "possible noreturn scope");
                             continue;
                         }
-                        isreturn |= (codeblock == 2 && isReturn(after));
+                        isreturn |= (codeblock == 2 && isReturnScope(after));
                     }
 
                     if (!isreturn) {

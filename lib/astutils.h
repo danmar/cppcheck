@@ -64,6 +64,9 @@ bool isConstExpression(const Token *tok, const std::set<std::string> &constFunct
 
 bool isWithoutSideEffects(bool cpp, const Token* tok);
 
+/** Is scope a return scope (scope will unconditionally return) */
+bool isReturnScope(const Token *endToken);
+
 /** Is variable changed in block of code? */
 bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid);
 
