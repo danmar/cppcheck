@@ -541,26 +541,26 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         QSignalMapper *signalMapper = new QSignalMapper(this);
 
         if (mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent()) {
-            //Go through all applications and add them to the context menu
-            for (int i = 0; i < mApplications->GetApplicationCount(); i++) {
-                //Create an action for the application
-                const Application& app = mApplications->GetApplication(i);
-                QAction *start = new QAction(app.getName(), &menu);
-                if (multipleSelection)
-                    start->setDisabled(true);
+            //Create an action for the application
+            int defaultApplicationIndex = mApplications->GetDefaultApplication();
+            if (defaultApplicationIndex < 0)
+                defaultApplicationIndex = 0;
+            const Application& app = mApplications->GetApplication(defaultApplicationIndex);
+            QAction *start = new QAction(app.getName(), &menu);
+            if (multipleSelection)
+                start->setDisabled(true);
 
-                //Add it to our list so we can disconnect later on
-                actions << start;
+            //Add it to our list so we can disconnect later on
+            actions << start;
 
-                //Add it to context menu
-                menu.addAction(start);
+            //Add it to context menu
+            menu.addAction(start);
 
-                //Connect the signal to signal mapper
-                connect(start, SIGNAL(triggered()), signalMapper, SLOT(map()));
+            //Connect the signal to signal mapper
+            connect(start, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
-                //Add a new mapping
-                signalMapper->setMapping(start, i);
-            }
+            //Add a new mapping
+            signalMapper->setMapping(start, defaultApplicationIndex);
 
             connect(signalMapper, SIGNAL(mapped(int)),
                     this, SLOT(Context(int)));
