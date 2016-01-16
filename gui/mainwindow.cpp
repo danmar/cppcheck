@@ -59,7 +59,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mCStandardActions(new QActionGroup(this)),
     mCppStandardActions(new QActionGroup(this)),
     mSelectLanguageActions(new QActionGroup(this)),
-    mExiting(false)
+    mExiting(false),
+    mIsLogfileLoaded(false)
 {
     mUI.setupUi(this);
     mThread = new ThreadHandler(this);
@@ -359,10 +360,14 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     }
     ClearResults();
 
+    mIsLogfileLoaded = false;
     FileList pathList;
     pathList.AddPathList(files);
-    if (mProject)
+    if (mProject) {
         pathList.AddExcludeList(mProject->GetProjectFile()->GetExcludedPaths());
+    } else {
+        EnableProjectActions(false);
+    }
     QStringList fileNames = pathList.GetFileList();
 
     mUI.mResults->Clear(true);
@@ -729,7 +734,12 @@ void MainWindow::CheckDone()
     EnableCheckButtons(true);
     mUI.mActionSettings->setEnabled(true);
     mUI.mActionOpenXML->setEnabled(true);
-    EnableProjectActions(true);
+    if (mProject) {
+        EnableProjectActions(true);
+    } else if (mIsLogfileLoaded) {
+        mUI.mActionRecheckModified->setEnabled(false);
+        mUI.mActionRecheckAll->setEnabled(false);
+    }
     EnableProjectOpenActions(true);
     mPlatformActions->setEnabled(true);
     mCStandardActions->setEnabled(true);
@@ -900,7 +910,12 @@ void MainWindow::OpenResults()
 void MainWindow::LoadResults(const QString selectedFile)
 {
     if (!selectedFile.isEmpty()) {
+        if (mProject)
+            CloseProjectFile();
+        mIsLogfileLoaded = true;
         mUI.mResults->Clear(true);
+        mUI.mActionRecheckModified->setEnabled(false);
+        mUI.mActionRecheckAll->setEnabled(false);
         mUI.mResults->ReadErrorsXml(selectedFile);
         SetPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
     }
@@ -1181,6 +1196,7 @@ void MainWindow::LoadProjectFile(const QString &filePath)
     FormatAndSetTitle(tr("Project:") + QString(" ") + filename);
     AddProjectMRU(filePath);
 
+    mIsLogfileLoaded = false;
     mUI.mActionCloseProjectFile->setEnabled(true);
     mUI.mActionEditProjectFile->setEnabled(true);
     delete mProject;
