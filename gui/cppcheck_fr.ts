@@ -356,11 +356,11 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>&amp;License...</source>
-        <translation type="unfinished">&amp;License...</translation>
+        <translation type="unfinished">&amp;Licence...</translation>
     </message>
     <message>
         <source>A&amp;uthors...</source>
-        <translation type="unfinished">A&amp;uteur...</translation>
+        <translation type="unfinished">A&amp;uteurs...</translation>
     </message>
     <message>
         <source>&amp;About...</source>
@@ -460,7 +460,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Authors</source>
-        <translation type="unfinished">Auteur</translation>
+        <translation type="unfinished">Auteurs</translation>
     </message>
     <message>
         <source>Save the report file</source>
@@ -468,15 +468,15 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>XML files (*.xml)</source>
-        <translation type="unfinished">Fichier XML (*.xml)</translation>
+        <translation type="unfinished">Fichiers XML (*.xml)</translation>
     </message>
     <message>
         <source>Text files (*.txt)</source>
-        <translation type="unfinished">Fichier Texte  (*.txt)</translation>
+        <translation type="unfinished">Fichiers Texte (*.txt)</translation>
     </message>
     <message>
         <source>CSV files (*.csv)</source>
-        <translation type="unfinished">Fichier CSV (*.csv)</translation>
+        <translation type="unfinished">Fichiers CSV (*.csv)</translation>
     </message>
     <message>
         <source>Cppcheck - %1</source>
