@@ -799,7 +799,7 @@ Options:
     </message>
     <message>
         <source>File not found</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fichier introuvable</translation>
     </message>
     <message>
         <source>Bad XML</source>
@@ -807,25 +807,27 @@ Options:
     </message>
     <message>
         <source>Missing attribute</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Attribut manquant</translation>
     </message>
     <message>
         <source>Bad attribute value</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mauvaise valeur d'attribut</translation>
     </message>
     <message>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Echec lors du chargement de la bibliothèque &apos;%1&apos;.
+%2</translation>
     </message>
     <message>
         <source>Unsupported format</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Format non supporté</translation>
     </message>
     <message>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">La bibliothèque &apos;%1&apos; contient des éléments inconnus:
+%2</translation>
     </message>
     <message>
         <source>Duplicate platform type</source>
@@ -837,15 +839,15 @@ Options:
     </message>
     <message>
         <source>&amp;Print...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished"> &amp;Imprimer...</translation>
     </message>
     <message>
         <source>Print the Current Report</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Imprimer le rapport</translation>
     </message>
     <message>
         <source>Print Pre&amp;view...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Apercu d'impression</translation>
     </message>
     <message>
         <source>Open a Print Preview Dialog for the Current Results</source>
@@ -861,7 +863,7 @@ Options:
     </message>
     <message>
         <source>Auto-detect language</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Auto-detection du langage</translation>
     </message>
     <message>
         <source>Enforce C++</source>
@@ -873,11 +875,11 @@ Options:
     </message>
     <message>
         <source>&amp;Recheck modified files</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">amp;Revérifier les fichiers modifiés</translation>
     </message>
     <message>
         <source>&amp;Recheck all files</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">amp;Revérifier tous les fichiers</translation>
     </message>
     <message>
         <source>C/C++ Source (%1)</source>
@@ -938,11 +940,11 @@ Options:
     <name>ProjectFile</name>
     <message>
         <source>Project File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fichier Projet</translation>
     </message>
     <message>
         <source>Paths:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Chemins</translation>
     </message>
     <message>
         <source>Defines:</source>
@@ -950,47 +952,47 @@ Options:
     </message>
     <message>
         <source>Project</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Projet</translation>
     </message>
     <message>
         <source>Add...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ajouter...</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Editer</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Supprimer</translation>
     </message>
     <message>
         <source>Includes</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Inclusions</translation>
     </message>
     <message>
         <source>Include directories:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Inclure les répertoires</translation>
     </message>
     <message>
         <source>Root:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Répertoire racine</translation>
     </message>
     <message>
         <source>Up</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Monter</translation>
     </message>
     <message>
         <source>Down</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Descendre</translation>
     </message>
     <message>
         <source>Exclude</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Exclure</translation>
     </message>
     <message>
         <source>Libraries:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Bibliothèques</translation>
     </message>
     <message>
         <source>Suppressions</source>
@@ -998,11 +1000,11 @@ Options:
     </message>
     <message>
         <source>Suppression list:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Liste de suppressions</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ajouter</translation>
     </message>
     <message>
         <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
@@ -1021,15 +1023,15 @@ Options:
     </message>
     <message>
         <source>Select include directory</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Selectionner un répertoire à inclure</translation>
     </message>
     <message>
         <source>Select directory to ignore</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Selectionner un répertoire à ignorer</translation>
     </message>
     <message>
         <source>Select a directory to check</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Selectionner un répertoire à vérifier</translation>
     </message>
     <message>
         <source>Add Suppression</source>
@@ -1044,19 +1046,19 @@ Options:
     <name>QDialogButtonBox</name>
     <message>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OK</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Annuler</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fermer</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sauvegarder</translation>
     </message>
 </context>
 <context>
@@ -1113,7 +1115,7 @@ Options:
     </message>
     <message>
         <source>Copy filename</source>
-        <translation type="unfinished">Copier nom du fichier</translation>
+        <translation type="unfinished">Copier le nom du fichier</translation>
     </message>
     <message>
         <source>Copy full path</source>
@@ -1145,29 +1147,31 @@ Merci de vérifier que le chemin de l&apos;application et que les paramètres so
     </message>
     <message>
         <source>Summary</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Résumé</translation>
     </message>
     <message>
         <source>Hide</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cacher</translation>
     </message>
     <message>
         <source>Could not find the file!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fichier introuvable !</translation>
     </message>
     <message>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fichier introuvable:
+%1
+Veuillez sélectionner le répertoire où est situé le fichier.</translation>
     </message>
     <message>
         <source>Select Directory</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Selectionner dossier</translation>
     </message>
     <message>
         <source>warning</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">avertissement</translation>
     </message>
     <message>
         <source>performance</source>
@@ -1175,7 +1179,7 @@ Please select the directory where file is located.</source>
     </message>
     <message>
         <source>portability</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">portabilité</translation>
     </message>
     <message>
         <source>information</source>
@@ -1183,7 +1187,7 @@ Please select the directory where file is located.</source>
     </message>
     <message>
         <source>debug</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">debogage</translation>
     </message>
     <message>
         <source>[Inconclusive]</source>
@@ -1207,7 +1211,7 @@ Please select the default editor application in preferences/Applications.</sourc
     </message>
     <message>
         <source>Copy message id</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Copier l'identifiant du message</translation>
     </message>
     <message>
         <source>Hide all with id</source>
@@ -1215,7 +1219,7 @@ Please select the default editor application in preferences/Applications.</sourc
     </message>
     <message>
         <source>Open containing folder</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ouvrir l'emplacement du fichier</translation>
     </message>
     <message>
         <source>Inconclusive</source>
@@ -1223,7 +1227,7 @@ Please select the default editor application in preferences/Applications.</sourc
     </message>
     <message>
         <source>Recheck</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Revérifier</translation>
     </message>
 </context>
 <context>
@@ -1256,11 +1260,11 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Failed to read the report.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Erreur lors de la lecture du rapport</translation>
     </message>
     <message>
         <source>Summary</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Résumé</translation>
     </message>
     <message>
         <source>Message</source>
@@ -1276,7 +1280,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Print Report</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Imprimer le rapport</translation>
     </message>
     <message>
         <source>No errors found, nothing to print.</source>
@@ -1346,7 +1350,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Add...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ajouter...</translation>
     </message>
     <message>
         <source>Ideal count:</source>
@@ -1362,23 +1366,23 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Langue</translation>
     </message>
     <message>
         <source>Paths</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Chemins</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Editer</translation>
     </message>
     <message>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Supprimer</translation>
     </message>
     <message>
         <source>Edit...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Editer...</translation>
     </message>
     <message>
         <source>Set as default</source>
@@ -1386,7 +1390,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Display error Id in column &quot;Id&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Afficher l'identifiant d'erreur Id dans la colonne &quot;Id&quot;</translation>
     </message>
     <message>
         <source>Check for inconclusive errors also</source>
@@ -1394,7 +1398,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Show internal warnings in log</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Montrer les avertissements internes dans le journal</translation>
     </message>
 </context>
 <context>
@@ -1428,23 +1432,23 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     <name>StatsDialog</name>
     <message>
         <source>Statistics</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Statistiques</translation>
     </message>
     <message>
         <source>Project</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Projet</translation>
     </message>
     <message>
         <source>Project:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Projet :</translation>
     </message>
     <message>
         <source>Paths:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Chemins :</translation>
     </message>
     <message>
         <source>Include paths:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Inclure les chemins :</translation>
     </message>
     <message>
         <source>Defines:</source>
@@ -1452,19 +1456,19 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Previous Scan</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Analyse précédente</translation>
     </message>
     <message>
         <source>Path Selected:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Chemin sélectionné :</translation>
     </message>
     <message>
         <source>Number of Files Scanned:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nombre de fichiers analysés :</translation>
     </message>
     <message>
         <source>Scan Duration:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Durée de l'analyse :</translation>
     </message>
     <message>
         <source>Errors:</source>
