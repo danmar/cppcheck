@@ -484,39 +484,39 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>&amp;Toolbars</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Boite à outils</translation>
     </message>
     <message>
         <source>Categories</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Catégories</translation>
     </message>
     <message>
         <source>Check files</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vérifier les fichiers</translation>
     </message>
     <message>
         <source>Check directory</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vérifier un répertoire</translation>
     </message>
     <message>
         <source>Stop checking</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Arrêter la vérification</translation>
     </message>
     <message>
         <source>Style warnings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Avertissement sur le style</translation>
     </message>
     <message>
         <source>Show style warnings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Afficher les avertissements sur le style</translation>
     </message>
     <message>
         <source>Errors</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Erreurs</translation>
     </message>
     <message>
         <source>Show errors</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Afficher les erreurs</translation>
     </message>
     <message>
         <source>&amp;Standard</source>
@@ -540,51 +540,51 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>&amp;Open XML...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Ouvrir un fichier XML</translation>
     </message>
     <message>
         <source>Open P&amp;roject File...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ouvrir un P&amp;rojet...</translation>
     </message>
     <message>
         <source>&amp;New Project File...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Nouveau Projet...</translation>
     </message>
     <message>
         <source>&amp;Log View</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Journal</translation>
     </message>
     <message>
         <source>Log View</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Journal</translation>
     </message>
     <message>
         <source>C&amp;lose Project File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">F&amp;ermer le projet</translation>
     </message>
     <message>
         <source>&amp;Edit Project File...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Editer le projet</translation>
     </message>
     <message>
         <source>&amp;Statistics</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Statistiques</translation>
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Avertissements</translation>
     </message>
     <message>
         <source>Show warnings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Afficher les avertissements</translation>
     </message>
     <message>
         <source>Performance warnings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Avertissements sur la performance</translation>
     </message>
     <message>
         <source>Show performance warnings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Afficher les avertissements sur la performance</translation>
     </message>
     <message>
         <source>Show &amp;hidden</source>
@@ -596,29 +596,31 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Show information messages</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Afficher les informations</translation>
     </message>
     <message>
         <source>Portability</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Portabilité</translation>
     </message>
     <message>
         <source>Show portability warnings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Afficher les problèmes de portabilité</translation>
     </message>
     <message>
         <source>You must close the project file before selecting new files or directories!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vous devez d'abord fermer le projet avant de choisir des fichiers/répertoires</translation>
     </message>
     <message>
         <source>Open the report file</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ouvrir le rapport</translation>
     </message>
     <message>
         <source>Checking is running.
 
 Do you want to stop the checking and exit Cppcheck?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vérification en cours.
+		
+Voulez-vous arrêter la vérification and quitter CppCheck ?</translation>
     </message>
     <message>
         <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
@@ -664,7 +666,7 @@ This is probably because the settings were changed between the Cppcheck versions
     </message>
     <message>
         <source>Quick Filter:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Filtre rapide</translation>
     </message>
     <message>
         <source>Found project file: %1
@@ -736,7 +738,9 @@ Do you want to remove the file from the recently used projects -list?</source>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Les résultats courant seront effacés.
+		
+L'ouverture d'un nouveau fichier XML effacera les resultats. Voulez-vous confirmar l'opération ?</translation>
     </message>
     <message>
         <source>Show S&amp;cratchpad...</source>
@@ -772,7 +776,7 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
     </message>
     <message>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Erreur</translation>
     </message>
     <message>
         <source>Cppcheck GUI.
