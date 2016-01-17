@@ -275,6 +275,8 @@ bool isReturnScope(const Token * const endToken)
         return false;
 
     const Token *prev = endToken->previous();
+    while (prev && Token::simpleMatch(prev->previous(), "; ;"))
+        prev = prev->previous();
     if (prev && Token::simpleMatch(prev->previous(), "} ;"))
         prev = prev->previous();
 
@@ -284,6 +286,10 @@ bool isReturnScope(const Token * const endToken)
         if (Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
+            return true;
+        }
+        if (Token::simpleMatch(prev->link()->previous(), ") {") &&
+            Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "return (")) {
             return true;
         }
     } else if (Token::simpleMatch(prev, ";")) {

@@ -34,17 +34,21 @@ private:
         TEST_CASE(isReturnScope);
     }
 
-    bool isReturnScope(const char code[], const char filename[]="test.cpp") {
+    bool isReturnScope(const char code[], int offset) {
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
-        return ::isReturnScope(Token::findsimplematch(tokenizer.tokens(),"}"));
+        tokenizer.tokenize(istr, "test.cpp");
+        const Token * const tok = (offset < 0)
+                                  ? tokenizer.list.back()->tokAt(1+offset)
+                                  : tokenizer.tokens()->tokAt(offset);
+        return ::isReturnScope(tok);
     }
 
     void isReturnScope() {
-        ASSERT_EQUALS(true, isReturnScope("void f() { if (a) { return; } }"));
-
+        ASSERT_EQUALS(true, isReturnScope("void f() { if (a) { return; } }", -2));
+        ASSERT_EQUALS(true, isReturnScope("void f() { if (a) { return (ab){0}; } }", -2)); // #7103
+        ASSERT_EQUALS(false, isReturnScope("void f() { if (a) { return (ab){0}; } }", -4)); // #7103
     }
 };
 
