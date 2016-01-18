@@ -83,7 +83,7 @@ Flags:
 3.  `HAVE_RULES=yes`  
     Enable rules (PCRE is required if this is used)
 
-4.  `CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare"`
+4.  `CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"`
     Enables most compiler optimizations, disables cppcheck-internal debugging code and enables basic compiler warnings.
 
 ### g++ (for experts)
