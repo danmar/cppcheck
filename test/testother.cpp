@@ -6127,6 +6127,12 @@ private:
               "  return dostuff(++exp, exp, 10);\n"
               "}", "test.c");
         ASSERT_EQUALS("[test.c:2]: (error) Expression '++exp,exp' depends on order of evaluation of side effects\n", errout.str());
+
+        check("void f() {\n"
+              "  int a;\n"
+              "  while (a=x(), a==123) {}\n"
+              "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testEvaluationOrderSelfAssignment() {

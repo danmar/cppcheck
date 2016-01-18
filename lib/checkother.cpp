@@ -2534,6 +2534,9 @@ void CheckOther::checkEvaluationOrder()
                     // not function => break
                     if (!(par && par->str() == "(" && par->astOperand2()))
                         break;
+                    // control flow (if|while|etc) => break
+                    if (Token::simpleMatch(par->link(),") {"))
+                        break;
                     // sequence point in function argument: dostuff((1,2),3) => break
                     par = par->next();
                     while (par && (par->previous() != parent))
