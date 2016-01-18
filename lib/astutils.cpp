@@ -292,6 +292,8 @@ bool isReturnScope(const Token * const endToken)
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "return (")) {
             return true;
         }
+        if (Token::Match(prev->link()->previous(), "[;{}] {"))
+            return isReturnScope(prev);
     } else if (Token::simpleMatch(prev, ";")) {
         // noreturn function
         if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% ("))

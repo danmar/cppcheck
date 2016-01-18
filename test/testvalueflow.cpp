@@ -1222,6 +1222,12 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
+        code = "void f(int x) {\n"
+               "    if (!x) { { throw new string(); }; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
         // if (var)
         code = "void f(int x) {\n"
                "    if (x) { a = x; }\n"  // <- x is not 0
