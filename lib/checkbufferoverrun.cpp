@@ -550,7 +550,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     for (std::size_t i = 0; i < varname.size(); ++i)
         varnames += (i == 0 ? "" : " . ") + varname[i];
 
-    const unsigned char varcount = static_cast<unsigned char>(varname.empty() ? 0U : (varname.size() - 1) * 2U);
+    const int varcount = varname.empty() ? 0 : static_cast<int>((varname.size() - 1) * 2U);
 
     // ValueFlow array index..
     if ((declarationId > 0 && Token::Match(tok, "%varid% [", declarationId)) ||
