@@ -60,7 +60,7 @@ http://software-download.name/pcre-library-windows/
 
 ### GNU make
 
-Simple build (no dependencies):
+Simple, unoptimized build (no dependencies):
 
 ```shell
 make
@@ -69,7 +69,7 @@ make
 The recommended release build is:
 
 ```shell
-make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
+make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
 ```
 
 Flags:
@@ -82,6 +82,9 @@ Flags:
 
 3.  `HAVE_RULES=yes`  
     Enable rules (PCRE is required if this is used)
+
+4.  `CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare"`
+    Enables most compiler optimizations, disables cppcheck-internal debugging code and enables basic compiler warnings.
 
 ### g++ (for experts)
 
