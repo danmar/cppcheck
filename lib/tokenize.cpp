@@ -5393,12 +5393,15 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
             if (tok2->strAt(1) == "*")
                 break;
 
+            if (Token::Match(tok2->next(), "& %name% ,"))
+                break;
+
             tok2 = tok2->next();
             ++typelen;
         }
 
         // strange looking variable declaration => don't split up.
-        if (Token::Match(tok2, "%type% *| %name% , %type% *| %name%"))
+        if (Token::Match(tok2, "%type% *|&| %name% , %type% *|&| %name%"))
             continue;
 
         if (Token::Match(tok2, "struct|union|class %type%")) {
@@ -5470,9 +5473,9 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
             else
                 --typelen;
             //skip all the pointer part
-            bool ispointer = false;
-            while (varName && varName->str() == "*") {
-                ispointer = true;
+            bool isPointerOrRef = false;
+            while (Token::simpleMatch(varName, "*") || Token::Match(varName, "& %name% ,")) {
+                isPointerOrRef = true;
                 varName = varName->next();
             }
 
@@ -5487,7 +5490,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                 if (varName->str() != "operator") {
                     tok2 = varName->next(); // The ',' or '=' token
 
-                    if (tok2->str() == "=" && (isstatic || (isconst && !ispointer))) {
+                    if (tok2->str() == "=" && (isstatic || (isconst && !isPointerOrRef))) {
                         //do not split const non-pointer variables..
                         while (tok2 && tok2->str() != "," && tok2->str() != ";") {
                             if (Token::Match(tok2, "{|(|["))

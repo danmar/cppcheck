@@ -288,6 +288,7 @@ private:
         TEST_CASE(vardecl_par);     // #2743 - set links if variable type contains parentheses
         TEST_CASE(vardecl_par2);    // #3912 - set correct links
         TEST_CASE(vardecl_par3);    // #6556 - Fred x1(a), x2(b);
+        TEST_CASE(vardecl_class_ref);
         TEST_CASE(volatile_variables);
 
         // unsigned i; => unsigned int i;
@@ -3628,6 +3629,11 @@ private:
         // ticket #6556- Fred x1(a), x2(b);
         const char code[] = "Fred x1(a), x2(b);";
         ASSERT_EQUALS("Fred x1 ( a ) ; Fred x2 ( b ) ;", tokenizeAndStringify(code));
+    }
+
+    void vardecl_class_ref() {
+        const char code[] = "class A { B &b1,&b2; };";
+        ASSERT_EQUALS("class A { B & b1 ; B & b2 ; } ;", tokenizeAndStringify(code));
     }
 
     void vardec_static() {
