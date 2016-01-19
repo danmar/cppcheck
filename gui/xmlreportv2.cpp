@@ -27,7 +27,6 @@
 #include "xmlreport.h"
 #include "xmlreportv2.h"
 #include "cppcheck.h"
-#include "path.h"
 
 static const char ResultElementName[] = "results";
 static const char CppcheckElementName[] = "cppcheck";
@@ -122,7 +121,7 @@ void XmlReportV2::WriteError(const ErrorItem &error)
         mXmlWriter->writeStartElement(LocationElementName);
 
         QString file = QDir::toNativeSeparators(error.files[i]);
-        if (Path::isHeader(file.toStdString()) && !error.file0.isEmpty()) {
+        if (!error.file0.isEmpty() && file != error.file0) {
             mXmlWriter->writeAttribute(IncludedFromFilenameAttribute, quoteMessage(error.file0));
         }
         file = XmlReport::quoteMessage(file);

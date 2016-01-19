@@ -287,7 +287,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
 
         for (std::list<FileLocation>::const_reverse_iterator it = _callStack.rbegin(); it != _callStack.rend(); ++it) {
             printer.OpenElement("location", false);
-            if (Path::isHeader((*it).getfile()) && !file0.empty())
+            if (!file0.empty() && (*it).getfile() != file0)
                 printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
             printer.PushAttribute("file", (*it).getfile().c_str());
             printer.PushAttribute("line", (*it).line);
