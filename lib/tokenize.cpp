@@ -2679,8 +2679,11 @@ void Tokenizer::setVarId()
             // parse anonymous unions/structs as part of the current scope
             if (!(Token::simpleMatch(tok, "} ;") && tok->link() && Token::Match(tok->link()->previous(), "union|struct {")) &&
                 !(initlist && Token::Match(tok, "} ,|{") && Token::Match(tok->link()->previous(), "%name%|>|>> {"))) {
+                bool isNamespace = false;
+                for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous())
+                    isNamespace |= (tok1->str() == "namespace");
                 // Set variable ids in class declaration..
-                if (!initlist && !isC() && !scopeStack.top().isExecutable && tok->link()) {
+                if (!initlist && !isC() && !scopeStack.top().isExecutable && tok->link() && !isNamespace) {
                     setVarIdClassDeclaration(tok->link(),
                                              variableId,
                                              scopeStack.top().startVarid,

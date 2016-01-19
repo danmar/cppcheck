@@ -122,6 +122,7 @@ private:
         TEST_CASE(varid_in_class18);    // #7127
         TEST_CASE(varid_in_class19);
         TEST_CASE(varid_in_class20);    // #7267
+        TEST_CASE(varid_namespace);     // #7272
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_initListWithScope);
@@ -1825,6 +1826,24 @@ private:
                       "6: } ;\n"
                       "7:\n"
                       "8: template < class C > cacheEntry < C > :: cacheEntry ( ) : m_key@1 ( ) { }\n", tokenize(code, false, "test.cpp"));
+    }
+
+    void varid_namespace() { // #7272
+        const char code[] = "namespace Blah {\n"
+                            "  struct foo { int x;};\n"
+                            "  struct bar {\n"
+                            "    int x;\n"
+                            "    union { char y; };\n"
+                            "  };\n"
+                            "}";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: namespace Blah {\n"
+                      "2: struct foo { int x@1 ; } ;\n"
+                      "3: struct bar {\n"
+                      "4: int x@2 ;\n"
+                      "5: union { char y@3 ; } ;\n"
+                      "6: } ;\n"
+                      "7: }\n", tokenize(code, false, "test.cpp"));
     }
 
     void varid_initList() {
