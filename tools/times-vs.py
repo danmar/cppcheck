@@ -1,4 +1,20 @@
 
+# Times script using Visual Studio compiler in Windows
+#
+# This script assumes that you have:
+# Python 3
+# Visual Studio (script assumes VS2013, manipulate the sed command otherwise)
+# Cygwin64 for the sed command
+# Command line svn. TortoiseSVN with that feature selected works.
+#
+# Usage:
+# Open VS command prompt.
+# cd c:\users\...
+# svn checkout https://github.com/danmar/cppcheck/trunk cppcheck-svn
+# cd cppcheck-svn
+# c:\python34\python.exe times-vs.py rev1:rev2
+
+
 import subprocess
 import glob
 import re
