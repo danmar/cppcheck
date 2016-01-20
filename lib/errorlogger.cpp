@@ -181,9 +181,13 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
             temp.append(1, c);
         }
 
+        const std::string::size_type colonPos = temp.find(':');
+        if (colonPos == std::string::npos)
+            throw InternalError(0, "Internal Error: No colon found in <filename:line> pattern");
+
         ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile(temp.substr(temp.find(':') + 1));
-        temp = temp.substr(0, temp.find(':'));
+        loc.setfile(temp.substr(colonPos + 1));
+        temp = temp.substr(0, colonPos);
         std::istringstream fiss(temp);
         fiss >> loc.line;
 
