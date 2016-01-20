@@ -198,7 +198,7 @@ static void addFiles2(std::map<std::string, std::size_t> &files,
 
                 new_path = path + '/' + dir_result->d_name;
 
-                if (dir_result->d_type == DT_DIR) {
+                if (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && FileLister::isDirectory(new_path))) {
                     if (recursive && !ignored.Match(new_path)) {
                         addFiles2(files, new_path, extra, recursive, ignored);
                     }
