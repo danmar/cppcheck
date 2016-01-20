@@ -160,7 +160,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     const Token* parent = tok->astParent();
     if (!parent)
         return false;
-    bool firstOperand = parent->astOperand1() == tok;
+    const bool firstOperand = parent->astOperand1() == tok;
     while (parent->str() == "(" && (parent->astOperand2() == nullptr && parent->strAt(1) != ")")) { // Skip over casts
         parent = parent->astParent();
         if (!parent)
@@ -172,7 +172,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         return true;
 
     // array access
-    if (parent->str() == "[" && (!parent->astParent() || parent->astParent()->str() != "&"))
+    if (firstOperand && parent->str() == "[" && (!parent->astParent() || parent->astParent()->str() != "&"))
         return true;
 
     // address of member variable / array element
