@@ -4515,6 +4515,28 @@ private:
         }
 
         {
+            const char code[] = "template < f = b || c > struct S;";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+            ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(7));
+            ASSERT_EQUALS(true, tok->tokAt(1) == tok->linkAt(7));
+        }
+
+        {
+            const char code[] = "struct A : B<c&&d> {};";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+            ASSERT_EQUALS(true, tok->linkAt(4) == tok->tokAt(8));
+            ASSERT_EQUALS(true, tok->tokAt(4) == tok->linkAt(8));
+        }
+
+        {
             // #6601
             const char code[] = "template<class R> struct FuncType<R(&)()> : FuncType<R()> { };";
             errout.str("");

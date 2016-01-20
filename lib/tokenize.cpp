@@ -3059,8 +3059,16 @@ void Tokenizer::createLinks2()
     if (isC())
         return;
 
+    const Token * templateToken = nullptr;
+    bool isStruct = false;
+
     std::stack<Token*> type;
     for (Token *token = list.front(); token; token = token->next()) {
+        if (Token::Match(token, "struct|class %name% :"))
+            isStruct = true;
+        else if (Token::Match(token, "[;{}]"))
+            isStruct = false;
+
         if (token->link()) {
             if (Token::Match(token, "{|[|("))
                 type.push(token);
@@ -3068,16 +3076,17 @@ void Tokenizer::createLinks2()
                 while (type.top()->str() == "<")
                     type.pop();
                 type.pop();
+                templateToken = nullptr;
             } else
                 token->link(0);
-        }
-
-        else if (Token::Match(token, "%oror%|&&|;"))
+        } else if (!templateToken && !isStruct && Token::Match(token, "%oror%|&&|;")) {
             while (!type.empty() && type.top()->str() == "<")
                 type.pop();
-        else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId())
+        } else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId()) {
             type.push(token);
-        else if (token->str() == ">") {
+            if (!templateToken && (token->previous()->str() == "template"))
+                templateToken = token;
+        } else if (token->str() == ">") {
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
             if (token->next() && !Token::Match(token->next(), "%name%|>|&|*|::|,|(|)|{|;|[|:"))
@@ -3096,6 +3105,9 @@ void Tokenizer::createLinks2()
 
             Token* top = type.top();
             type.pop();
+
+            if (top == templateToken)
+                templateToken = nullptr;
 
             Token::createMutualLinks(top, token);
         }
