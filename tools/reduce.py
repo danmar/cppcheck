@@ -104,11 +104,42 @@ def checkpar(line):
 def combinelines(filedata):
   if len(filedata) < 3:
     return
+
+  lines = []
+
   for i in range(len(filedata)-1):
     fd1 = filedata[i].rstrip()
     if fd1.endswith(','):
       fd2 = filedata[i+1].lstrip()
-      replaceandrun2('combine lines', filedata, i, fd1+fd2, '')
+      if fd2 != '':
+        lines.append(i)
+
+  chunksize = len(lines)
+  while chunksize > 10:
+    i = 0
+    while i < len(lines):
+      i1 = i
+      i2 = i + chunksize
+      i = i2
+      if i2 > len(lines):
+        i2 = len(lines)
+
+      filedata2 = list(filedata)
+      for line in lines[i1:i2]:
+        filedata2[line] = filedata2[line].rstrip() + filedata2[line+1].lstrip()
+        filedata2[line+1] = ''
+
+      if replaceandrun('combine lines', filedata2, lines[i1]+1, ''):
+        filedata = filedata2
+        lines[i1:i2] = []
+        i = i1
+
+    chunksize = chunksize / 2
+
+  for line in lines:
+    fd1 = filedata[line].rstrip()
+    fd2 = filedata[line+1].lstrip()
+    replaceandrun2('combine lines', filedata, line, fd1+fd2, '')
 
 def removeline(filedata):
   stmt = True
