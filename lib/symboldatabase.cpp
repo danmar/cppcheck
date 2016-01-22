@@ -1334,6 +1334,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
              (tok2->isUpperCaseName() && Token::Match(tok2, "%name% (") && tok2->next()->link()->strAt(1) == "{") ||
              Token::Match(tok2, ": ::| %name% (|::|<|{") ||
              Token::Match(tok2, "const| &|&&| ;|{") ||
+             Token::Match(tok2, "const| override ;|{") ||
              Token::Match(tok2, "= delete|default ;") ||
              Token::Match(tok2, "const| noexcept {|:|;|=") ||
              (Token::Match(tok2, "const| noexcept|throw (") &&

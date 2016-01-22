@@ -236,6 +236,7 @@ private:
         TEST_CASE(symboldatabase51); // #6538
         TEST_CASE(symboldatabase52); // #6581
         TEST_CASE(symboldatabase53); // #7124 (library podtype)
+        TEST_CASE(symboldatabase54); // #7257
 
         TEST_CASE(isImplicitlyVirtual);
         TEST_CASE(isPure);
@@ -2204,6 +2205,20 @@ private:
             ASSERT(db->getVariableFromVarId(2) != nullptr);
             ASSERT_EQUALS(false, db->getVariableFromVarId(1)->isClass());
             ASSERT_EQUALS(false, db->getVariableFromVarId(2)->isClass());
+        }
+    }
+
+    void symboldatabase54() { // #7343
+        GET_SYMBOL_DB("class A {\n"
+                      "  void getReg() const override {\n"
+                      "    assert(Kind == k_ShiftExtend);\n"
+                      "  }\n"
+                      "};");
+
+        ASSERT(db != nullptr);
+        if (db) {
+            ASSERT_EQUALS(1U, db->functionScopes.size());
+            ASSERT_EQUALS("getReg", db->functionScopes.front()->className);
         }
     }
 
