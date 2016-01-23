@@ -117,6 +117,7 @@ private:
         TEST_CASE(ifAddBraces18); // #3424 - if if { } else else
         TEST_CASE(ifAddBraces19); // #3928 - if for if else
         TEST_CASE(ifAddBraces20); // #5012 - syntax error 'else }'
+        TEST_CASE(ifAddBraces21); // #5332 - if (x) label: {} ..
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -1245,6 +1246,11 @@ private:
     void ifAddBraces20() { // #5012 - syntax error 'else }'
         const char code[] = "void f() { if(x) {} else }";
         ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
+    }
+
+    void ifAddBraces21() { // #5332 - if (x) label: {} ...
+        const char code[] = "void f() { if(x) label: {} a=1; }";
+        ASSERT_EQUALS("void f ( ) { if ( x ) { label : ; { } } a = 1 ; }", tokenizeAndStringify(code, false));
     }
 
     void whileAddBraces() {

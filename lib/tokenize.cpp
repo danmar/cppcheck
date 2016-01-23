@@ -4521,6 +4521,11 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
 
         Token::createMutualLinks(tokOpenBrace, tokCloseBrace);
         tokBracesEnd = tokCloseBrace;
+    } else if (Token::Match(tokAfterCondition, "%name% : {")) {
+        tokAfterCondition->previous()->insertToken("{");
+        tokAfterCondition->linkAt(2)->insertToken("}");
+        tokBracesEnd = tokAfterCondition->linkAt(2)->next();
+        Token::createMutualLinks(tokAfterCondition->previous(), tokBracesEnd);
     } else {
         Token * tokEnd = simplifyAddBracesToCommand(tokAfterCondition);
         if (!tokEnd) // Ticket #4887
