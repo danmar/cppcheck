@@ -2556,7 +2556,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                         if (hasBody())
                             symbolDatabase->debugMessage(nameTok, "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
                     } else
-                        endTok = startTok;
+                        endTok = typeTok;
                 } else
                     endTok = tok->previous();
             }

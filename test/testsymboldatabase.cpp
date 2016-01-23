@@ -171,6 +171,7 @@ private:
 
         TEST_CASE(checkTypeStartEndToken1);
         TEST_CASE(checkTypeStartEndToken2); // handling for unknown macro: 'void f() MACRO {..'
+        TEST_CASE(checkTypeStartEndToken3); // no variable name: void f(const char){}
 
         TEST_CASE(functionArgs1);
         TEST_CASE(functionArgs2);
@@ -1355,6 +1356,19 @@ private:
                       "  }\n"
                       "};");
         ASSERT_EQUALS("DiagnosticsEngine", db->getVariableFromVarId(1)->typeStartToken()->str());
+    }
+
+    void checkTypeStartEndToken3() {
+        GET_SYMBOL_DB("void f(const char) {}");
+
+        ASSERT(db && db->functionScopes.size()==1U);
+        if (db && db->functionScopes.size()==1U) {
+            const Function * const f = db->functionScopes.front()->function;
+            ASSERT_EQUALS(1U, f->argCount());
+            const Variable * const arg1 = f->getArgumentVar(0);
+            ASSERT_EQUALS("char", arg1->typeStartToken()->str());
+            ASSERT_EQUALS("char", arg1->typeEndToken()->str());
+        }
     }
 
     void check(const char code[], bool debug = true) {
