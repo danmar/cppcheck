@@ -2969,10 +2969,12 @@ void Tokenizer::setVarId()
                     tok2 = tok2->linkAt(2);
 
                 // constructor with initializer list
-                if (Token::Match(tok2, ") : %name%")) {
+                if (Token::Match(tok2, ") : ::| %name%")) {
                     Token *tok3 = tok2;
                     while (Token::Match(tok3, "[)}] [,:]")) {
                         tok3 = tok3->tokAt(2);
+                        if (Token::Match(tok3, ":: %name%"))
+                            tok3 = tok3->next();
                         while (Token::Match(tok3, "%name% :: %name%"))
                             tok3 = tok3->tokAt(2);
                         if (!Token::Match(tok3, "%name% (|{|<"))
