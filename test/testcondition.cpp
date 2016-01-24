@@ -581,6 +581,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(unsigned a, unsigned b) {\n"
+              "  unsigned cmd1 = b & 0x0F;\n"
+              "  if (cmd1 | a) {\n"
+              "    if (b == 0x0C) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
