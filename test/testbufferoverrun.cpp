@@ -3801,6 +3801,11 @@ private:
               "    }\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Array index 'i' is used before limits check.\n", "", errout.str());
+
+        check("void f(int i) {\n" // sizeof
+              "  sizeof(a)/sizeof(a[i]) && i < 10;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void bufferNotZeroTerminated() {
