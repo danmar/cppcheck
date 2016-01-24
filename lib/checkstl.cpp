@@ -31,12 +31,12 @@ namespace {
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)
 {
-    reportError(tok, Severity::error, "invalidIterator1", "Invalid iterator: " + iteratorName);
+    reportError(tok, Severity::error, "invalidIterator1", "Invalid iterator: " + iteratorName, 664U, false);
 }
 
 void CheckStl::iteratorsError(const Token *tok, const std::string &container1, const std::string &container2)
 {
-    reportError(tok, Severity::error, "iterators", "Same iterator is used with different containers '" + container1 + "' and '" + container2 + "'.");
+    reportError(tok, Severity::error, "iterators", "Same iterator is used with different containers '" + container1 + "' and '" + container2 + "'.", 664U, false);
 }
 
 // Error message used when dereferencing an iterator that has been erased..
@@ -49,12 +49,12 @@ void CheckStl::dereferenceErasedError(const Token *erased, const Token* deref, c
         reportError(callstack, Severity::error, "eraseDereference",
                     "Iterator '" + itername + "' used after element has been erased.\n"
                     "The iterator '" + itername + "' is invalid after the element it pointed to has been erased. "
-                    "Dereferencing or comparing it with another iterator is invalid operation.");
+                    "Dereferencing or comparing it with another iterator is invalid operation.", 664U, false);
     } else {
         reportError(deref, Severity::error, "eraseDereference",
                     "Invalid iterator '" + itername + "' used.\n"
                     "The iterator '" + itername + "' is invalid before being assigned. "
-                    "Dereferencing or comparing it with another iterator is invalid operation.");
+                    "Dereferencing or comparing it with another iterator is invalid operation.", 664U, false);
     }
 }
 
@@ -235,7 +235,7 @@ void CheckStl::iterators()
 // Error message for bad iterator usage..
 void CheckStl::mismatchingContainersError(const Token *tok)
 {
-    reportError(tok, Severity::error, "mismatchingContainers", "Iterators of different containers are used together.");
+    reportError(tok, Severity::error, "mismatchingContainers", "Iterators of different containers are used together.", 664U, false);
 }
 
 namespace {
@@ -376,9 +376,9 @@ void CheckStl::stlOutOfBounds()
 void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var, bool at)
 {
     if (at)
-        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + ".at(" + num + ") is out of bounds.");
+        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + ".at(" + num + ") is out of bounds.", 788U, false);
     else
-        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + "[" + num + "] is out of bounds.");
+        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + "[" + num + "] is out of bounds.", 788U, false);
 }
 
 void CheckStl::erase()
@@ -581,14 +581,14 @@ void CheckStl::pushback()
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name)
 {
-    reportError(tok, Severity::error, "invalidIterator2", "After " + func + "(), the iterator '" + iterator_name + "' may be invalid.");
+    reportError(tok, Severity::error, "invalidIterator2", "After " + func + "(), the iterator '" + iterator_name + "' may be invalid.", 664U, false);
 }
 
 
 // Error message for bad iterator usage..
 void CheckStl::invalidPointerError(const Token *tok, const std::string &func, const std::string &pointer_name)
 {
-    reportError(tok, Severity::error, "invalidPointer", "Invalid pointer '" + pointer_name + "' after " + func + "().");
+    reportError(tok, Severity::error, "invalidPointer", "Invalid pointer '" + pointer_name + "' after " + func + "().", 664U, false);
 }
 
 

@@ -1144,7 +1144,7 @@ void CheckClass::mallocOnClassError(const Token* tok, const std::string &memfunc
     reportError(toks, Severity::error, "mallocOnClassError",
                 "Memory for class instance allocated with " + memfunc + "(), but class contains a " + classname + ".\n"
                 "Memory for class instance allocated with " + memfunc + "(), but class a " + classname + ". This is unsafe, "
-                "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.", 0U, false);
+                "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.", 665U, false);
 }
 
 void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
@@ -1153,12 +1153,12 @@ void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const
                 "Using '" + memfunc + "' on " + type + " that contains a " + classname + ".\n"
                 "Using '" + memfunc + "' on " + type + " that contains a " + classname + " is unsafe, because constructor, destructor "
                 "and copy operator calls are omitted. These are necessary for this non-POD type to ensure that a valid object "
-                "is created.");
+                "is created.", 762U, false);
 }
 
 void CheckClass::memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type)
 {
-    reportError(tok, Severity::error, "memsetClassReference", "Using '" + memfunc + "' on " + type + " that contains a reference.");
+    reportError(tok, Severity::error, "memsetClassReference", "Using '" + memfunc + "' on " + type + " that contains a reference.", 665U, false);
 }
 
 void CheckClass::memsetErrorFloat(const Token *tok, const std::string &type)
@@ -1614,7 +1614,7 @@ void CheckClass::virtualDestructor()
 void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive)
 {
     if (inconclusive)
-        reportError(tok, Severity::warning, "virtualDestructor", "Class '" + Base + "' which has virtual members does not have a virtual destructor.", 0U, true);
+        reportError(tok, Severity::warning, "virtualDestructor", "Class '" + Base + "' which has virtual members does not have a virtual destructor.", 404U, true);
     else
         reportError(tok, Severity::error, "virtualDestructor", "Class '" + Base + "' which is inherited by class '" + Derived + "' does not have a virtual destructor.\n"
                     "Class '" + Base + "' which is inherited by class '" + Derived + "' does not have a virtual destructor. "
@@ -2113,7 +2113,7 @@ void CheckClass::checkSelfInitialization()
 
 void CheckClass::selfInitializationError(const Token* tok, const std::string& varname)
 {
-    reportError(tok, Severity::error, "selfInitialization", "Member variable '" + varname + "' is initialized by itself.");
+    reportError(tok, Severity::error, "selfInitialization", "Member variable '" + varname + "' is initialized by itself.", 665U, false);
 }
 
 

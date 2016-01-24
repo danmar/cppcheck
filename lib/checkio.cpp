@@ -335,26 +335,26 @@ void CheckIO::fflushOnInputStreamError(const Token *tok, const std::string &varn
 void CheckIO::ioWithoutPositioningError(const Token *tok)
 {
     reportError(tok, Severity::error,
-                "IOWithoutPositioning", "Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.");
+                "IOWithoutPositioning", "Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.", 664U, false);
 }
 
 void CheckIO::readWriteOnlyFileError(const Token *tok)
 {
 
     reportError(tok, Severity::error,
-                "readWriteOnlyFile", "Read operation on a file that was opened only for writing.");
+                "readWriteOnlyFile", "Read operation on a file that was opened only for writing.", 664U, false);
 }
 
 void CheckIO::writeReadOnlyFileError(const Token *tok)
 {
     reportError(tok, Severity::error,
-                "writeReadOnlyFile", "Write operation on a file that was opened only for reading.");
+                "writeReadOnlyFile", "Write operation on a file that was opened only for reading.", 664U, false);
 }
 
 void CheckIO::useClosedFileError(const Token *tok)
 {
     reportError(tok, Severity::error,
-                "useClosedFile", "Used file that is not opened.");
+                "useClosedFile", "Used file that is not opened.", 910U, false);
 }
 
 void CheckIO::seekOnAppendedFileError(const Token *tok)
@@ -1715,7 +1715,7 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
            << (numFunction != 1 ? " are" : " is")
            << " given.";
 
-    reportError(tok, severity, "wrongPrintfScanfArgNum", errmsg.str());
+    reportError(tok, severity, "wrongPrintfScanfArgNum", errmsg.str(), 685U, false);
 }
 
 void CheckIO::wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
@@ -2002,6 +2002,6 @@ void CheckIO::invalidScanfFormatWidthError(const Token* tok, unsigned int numFor
     } else {
         errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is larger than destination buffer '"
                << varname << "[" << arrlen << "]', use %" << (arrlen - 1) << "s to prevent overflowing it.";
-        reportError(tok, Severity::error, "invalidScanfFormatWidth", errmsg.str(), 0U, false);
+        reportError(tok, Severity::error, "invalidScanfFormatWidth", errmsg.str(), 687U, false);
     }
 }

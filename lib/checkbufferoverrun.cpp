@@ -226,7 +226,7 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::stri
 
 void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
 {
-    reportError(tok, Severity::error, "insecureCmdLineArgs", "Buffer overrun possible for long command line arguments.");
+    reportError(tok, Severity::error, "insecureCmdLineArgs", "Buffer overrun possible for long command line arguments.", 119U, false);
 }
 
 void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function)
@@ -248,7 +248,7 @@ void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
     reportError(tok, Severity::error, "negativeMemoryAllocationSize",
                 "Memory allocation size is negative.\n"
                 "Memory allocation size is negative."
-                "Negative allocation size has no specified behaviour.");
+                "Negative allocation size has no specified behaviour.", 131U, false);
 }
 
 //---------------------------------------------------------------------------
