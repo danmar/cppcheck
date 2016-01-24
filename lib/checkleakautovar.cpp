@@ -85,7 +85,7 @@ void CheckLeakAutoVar::deallocUseError(const Token *tok, const std::string &varn
 
 void CheckLeakAutoVar::deallocReturnError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "deallocret", "Returning/dereferencing '" + varname + "' after it is deallocated / released");
+    reportError(tok, Severity::error, "deallocret", "Returning/dereferencing '" + varname + "' after it is deallocated / released", 672U, false);
 }
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
@@ -101,9 +101,9 @@ void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &fu
 void CheckLeakAutoVar::doubleFreeError(const Token *tok, const std::string &varname, int type)
 {
     if (_settings->library.isresource(type))
-        reportError(tok, Severity::error, "doubleFree", "Resource handle '" + varname + "' freed twice.");
+        reportError(tok, Severity::error, "doubleFree", "Resource handle '" + varname + "' freed twice.", 415U, false);
     else
-        reportError(tok, Severity::error, "doubleFree", "Memory pointed to by '" + varname + "' is freed twice.");
+        reportError(tok, Severity::error, "doubleFree", "Memory pointed to by '" + varname + "' is freed twice.", 415U, false);
 }
 
 

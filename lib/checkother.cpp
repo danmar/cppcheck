@@ -423,7 +423,7 @@ void CheckOther::checkPipeParameterSizeError(const Token *tok, const std::string
     reportError(tok, Severity::error,
                 "wrongPipeParameterSize", "Buffer '" + strVarName + "' must have size of 2 integers if used as parameter of pipe().\n"
                 "The pipe()/pipe2() system command takes an argument, which is an array of exactly two integers.\n"
-                "The variable '" + strVarName + "' is an array of size " + strDim + ", which does not match.");
+                "The variable '" + strVarName + "' is an array of size " + strDim + ", which does not match.", 686U, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1634,7 +1634,7 @@ void CheckOther::checkZeroDivision()
 
 void CheckOther::zerodivError(const Token *tok, bool inconclusive)
 {
-    reportError(tok, Severity::error, "zerodiv", "Division by zero.", 0U, inconclusive);
+    reportError(tok, Severity::error, "zerodiv", "Division by zero.", 369U, inconclusive);
 }
 
 void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv, bool inconclusive)
@@ -1705,7 +1705,7 @@ void CheckOther::checkMisusedScopedObject()
 void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::style,
-                "unusedScopedObject", "Instance of '" + varname + "' object is destroyed immediately.");
+                "unusedScopedObject", "Instance of '" + varname + "' object is destroyed immediately.", 563U, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -2251,9 +2251,9 @@ void CheckOther::checkNegativeBitwiseShift()
 void CheckOther::negativeBitwiseShiftError(const Token *tok, int op)
 {
     if (op == 1) // LHS
-        reportError(tok, Severity::error, "shiftNegative", "Shifting a negative value is undefined behaviour");
+        reportError(tok, Severity::error, "shiftNegative", "Shifting a negative value is undefined behaviour", 758U, false);
     else // RHS
-        reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value is undefined behaviour");
+        reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value is undefined behaviour", 758U, false);
 }
 
 //---------------------------------------------------------------------------

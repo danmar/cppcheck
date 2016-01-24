@@ -2701,12 +2701,12 @@ void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
 
 void CheckMemoryLeakNoVar::functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall)
 {
-    reportError(loc, Severity::error, "leakNoVarFunctionCall", "Allocation with " + alloc + ", " + functionCall + " doesn't release it.");
+    reportError(loc, Severity::error, "leakNoVarFunctionCall", "Allocation with " + alloc + ", " + functionCall + " doesn't release it.", 772U, false);
 }
 
 void CheckMemoryLeakNoVar::returnValueNotUsedError(const Token *tok, const std::string &alloc)
 {
-    reportError(tok, Severity::error, "leakReturnValNotUsed", "Return value of allocation function '" + alloc + "' is not stored.");
+    reportError(tok, Severity::error, "leakReturnValNotUsed", "Return value of allocation function '" + alloc + "' is not stored.", 771U, false);
 }
 
 void CheckMemoryLeakNoVar::unsafeArgAllocError(const Token *tok, const std::string &funcName, const std::string &ptrType, const std::string& objType)

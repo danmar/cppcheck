@@ -127,14 +127,14 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
         errmsg << ". The value is " << tok->str() << " but the valid values are '" << validstr << "'.";
     else if (tok->isComparisonOp())
         errmsg << ". The value is 0 or 1 (comparison result) but the valid values are '" << validstr << "'.";
-    reportError(tok, Severity::error, "invalidFunctionArg", errmsg.str());
+    reportError(tok, Severity::error, "invalidFunctionArg", errmsg.str(), 628U, false);
 }
 
 void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr)
 {
     std::ostringstream errmsg;
     errmsg << "Invalid " << functionName << "() argument nr " << argnr << ". A non-boolean value is required.";
-    reportError(tok, Severity::error, "invalidFunctionArgBool", errmsg.str());
+    reportError(tok, Severity::error, "invalidFunctionArgBool", errmsg.str(), 628U, false);
 }
 
 //---------------------------------------------------------------------------
