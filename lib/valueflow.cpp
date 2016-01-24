@@ -1089,6 +1089,13 @@ static bool valueFlowForward(Token * const               startToken,
             const Token *end   = start->link();
             if (Token::simpleMatch(end, "} while ("))
                 end = end->linkAt(2);
+
+            if (isVariableChanged(start, end, varid)) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in do-while");
+                return false;
+            }
+
             handleKnownValuesInLoop(start, end, &values, varid);
         }
 

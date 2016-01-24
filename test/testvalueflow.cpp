@@ -1065,6 +1065,15 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 87));
 
+        code = "void f() {\n"
+               "  int first=-1, x=0;\n"
+               "  do {\n"
+               "    if (first >= 0) { a = x; }\n" // <- x is not 0
+               "    first++; x=3;\n"
+               "  } while (1);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
         // pointer/reference to x
         code = "int f(void) {\n"
                "  int x = 2;\n"
@@ -1709,14 +1718,11 @@ private:
 
     bool isNotKnownValues(const char code[], const char str[]) {
         const std::list<ValueFlow::Value> values = tokenValues(code, str);
-        bool possible = false;
         for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
             if (it->isKnown())
                 return false;
-            if (it->isPossible())
-                possible = true;
         }
-        return possible;
+        return true;
     }
 
     void knownValue() {
@@ -1828,16 +1834,6 @@ private:
                "  return x + 1;\n" // <- possible value
                "}\n";
         value = valueOfTok(code, "+");
-        ASSERT_EQUALS(1, value.intvalue);
-        ASSERT(value.isPossible());
-
-        code = "void f() {\n"
-               "  int x = 0;\n"
-               "  do {\n"
-               "    if (!x) { x = y; }\n" // <- possible value
-               "  } while (count < 10);\n"
-               "}";
-        value = valueOfTok(code, "!");
         ASSERT_EQUALS(1, value.intvalue);
         ASSERT(value.isPossible());
 
