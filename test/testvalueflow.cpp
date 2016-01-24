@@ -1600,6 +1600,19 @@ private:
                "    n = (int)(i < 10 || abs(negWander) < abs(negTravel));\n"
                "}";
         testValueOfX(code,0,0); // <- dont hang
+
+        // conditional code in loop
+        code = "void f(int mask) {\n" // #6000
+               "  for (int x = 10; x < 14; x++) {\n"
+               "    int bit = mask & (1 << i);\n"
+               "    if (bit) {\n"
+               "      if (bit == (1 << 10)) {}\n"
+               "      else { a = x; }\n" // <- x is not 10
+               "    }\n"
+               "  }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 10));
+
     }
 
     void valueFlowSubFunction() {

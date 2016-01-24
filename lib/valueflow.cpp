@@ -2017,6 +2017,14 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
                 tok2 = tok2->linkAt(2);
             }
         }
+
+        else if (Token::simpleMatch(tok2, ") {")) {
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok2, "For loop skipping {} code");
+            tok2 = tok2->linkAt(1);
+            if (Token::simpleMatch(tok2, "} else {"))
+                tok2 = tok2->linkAt(2);
+        }
     }
 }
 
