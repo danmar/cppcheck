@@ -318,6 +318,7 @@ while True:
     while i < len(filedata1):
       if filedata[i] != filedata1[i]:
         break
+      i = i + 1
     if i == len(filedata1):
       break
 
