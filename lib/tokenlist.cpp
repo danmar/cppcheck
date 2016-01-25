@@ -440,7 +440,7 @@ struct AST_state {
 
 static bool iscast(const Token *tok)
 {
-    if (!Token::Match(tok, "( %name%"))
+    if (!Token::Match(tok, "( ::| %name%"))
         return false;
 
     if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return")

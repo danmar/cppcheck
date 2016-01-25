@@ -8300,6 +8300,7 @@ private:
         ASSERT_EQUALS("c(40<<return", testAst("return (long long)c << 40;"));
         ASSERT_EQUALS("ab-(=", testAst("a = ((int)-b)")); // Multiple subsequent unary operators (cast and -)
         ASSERT_EQUALS("xdouble123(i*(=", testAst("x = (int)(double(123)*i);"));
+        ASSERT_EQUALS("ac(=", testAst("a = (::b)c;"));
 
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
