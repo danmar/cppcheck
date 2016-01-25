@@ -28,6 +28,8 @@ namespace {
     CheckBool instance;
 }
 
+static const CWE CWE571(571);
+static const CWE CWE587(587);
 
 static bool astIsBool(const Token *expr)
 {
@@ -106,7 +108,7 @@ void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &varna
 {
     reportError(tok, Severity::style, "bitwiseOnBoolean",
                 "Boolean variable '" + varname + "' is used in bitwise operation. Did you mean '" + op + "'?",
-                0U,
+                CWE(0),
                 true);
 }
 
@@ -352,7 +354,7 @@ void CheckBool::checkAssignBoolToPointer()
 void CheckBool::assignBoolToPointerError(const Token *tok)
 {
     reportError(tok, Severity::error, "assignBoolToPointer",
-                "Boolean value assigned to pointer.", 587U, false);
+                "Boolean value assigned to pointer.", CWE587, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -473,7 +475,7 @@ void CheckBool::pointerArithBoolError(const Token *tok)
                 Severity::error,
                 "pointerArithBool",
                 "Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n"
-                "Converting pointer arithmetic result to bool. The boolean result is always true unless there is pointer arithmetic overflow, and overflow is undefined behaviour. Probably a dereference is forgotten.", 571U, false);
+                "Converting pointer arithmetic result to bool. The boolean result is always true unless there is pointer arithmetic overflow, and overflow is undefined behaviour. Probably a dereference is forgotten.", CWE571, false);
 }
 
 void CheckBool::checkAssignBoolToFloat()

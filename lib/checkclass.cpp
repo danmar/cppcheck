@@ -33,31 +33,35 @@
 // Register CheckClass..
 namespace {
     CheckClass instance;
+}
 
-    const char * getFunctionTypeName(
-        Function::Type type)
-    {
-        switch (type) {
-        case Function::eConstructor:
-            return "constructor";
-        case Function::eCopyConstructor:
-            return "copy constructor";
-        case Function::eMoveConstructor:
-            return "move constructor";
-        case Function::eDestructor:
-            return "destructor";
-        case Function::eFunction:
-            return "function";
-        case Function::eOperatorEqual:
-            return "operator=";
-        }
-        return "";
-    }
+static const CWE CWE404(404U);
+static const CWE CWE665(665U);
+static const CWE CWE762(762U);
 
-    inline bool isPureWithoutBody(Function const & func)
-    {
-        return func.isPure() && !func.hasBody();
+static    const char * getFunctionTypeName(
+    Function::Type type)
+{
+    switch (type) {
+    case Function::eConstructor:
+        return "constructor";
+    case Function::eCopyConstructor:
+        return "copy constructor";
+    case Function::eMoveConstructor:
+        return "move constructor";
+    case Function::eDestructor:
+        return "destructor";
+    case Function::eFunction:
+        return "function";
+    case Function::eOperatorEqual:
+        return "operator=";
     }
+    return "";
+}
+
+static bool isPureWithoutBody(Function const & func)
+{
+    return func.isPure() && !func.hasBody();
 }
 
 //---------------------------------------------------------------------------
@@ -788,12 +792,12 @@ void CheckClass::noExplicitConstructorError(const Token *tok, const std::string 
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
 {
-    reportError(tok, Severity::warning, "uninitMemberVar", "Member variable '" + classname + "::" + varname + "' is not initialized in the constructor.", 0U, inconclusive);
+    reportError(tok, Severity::warning, "uninitMemberVar", "Member variable '" + classname + "::" + varname + "' is not initialized in the constructor.", CWE(0U), inconclusive);
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
 {
-    reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator='.", 0U, inconclusive);
+    reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator='.", CWE(0U), inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -1133,7 +1137,7 @@ void CheckClass::mallocOnClassWarning(const Token* tok, const std::string &memfu
     reportError(toks, Severity::warning, "mallocOnClassWarning",
                 "Memory for class instance allocated with " + memfunc + "(), but class provides constructors.\n"
                 "Memory for class instance allocated with " + memfunc + "(), but class provides constructors. This is unsafe, "
-                "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.", 0U, false);
+                "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.", CWE(0U), false);
 }
 
 void CheckClass::mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname)
@@ -1144,7 +1148,7 @@ void CheckClass::mallocOnClassError(const Token* tok, const std::string &memfunc
     reportError(toks, Severity::error, "mallocOnClassError",
                 "Memory for class instance allocated with " + memfunc + "(), but class contains a " + classname + ".\n"
                 "Memory for class instance allocated with " + memfunc + "(), but class a " + classname + ". This is unsafe, "
-                "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.", 665U, false);
+                "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.", CWE665, false);
 }
 
 void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
@@ -1153,12 +1157,12 @@ void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const
                 "Using '" + memfunc + "' on " + type + " that contains a " + classname + ".\n"
                 "Using '" + memfunc + "' on " + type + " that contains a " + classname + " is unsafe, because constructor, destructor "
                 "and copy operator calls are omitted. These are necessary for this non-POD type to ensure that a valid object "
-                "is created.", 762U, false);
+                "is created.", CWE762, false);
 }
 
 void CheckClass::memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type)
 {
-    reportError(tok, Severity::error, "memsetClassReference", "Using '" + memfunc + "' on " + type + " that contains a reference.", 665U, false);
+    reportError(tok, Severity::error, "memsetClassReference", "Using '" + memfunc + "' on " + type + " that contains a reference.", CWE665, false);
 }
 
 void CheckClass::memsetErrorFloat(const Token *tok, const std::string &type)
@@ -1614,7 +1618,7 @@ void CheckClass::virtualDestructor()
 void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive)
 {
     if (inconclusive)
-        reportError(tok, Severity::warning, "virtualDestructor", "Class '" + Base + "' which has virtual members does not have a virtual destructor.", 404U, true);
+        reportError(tok, Severity::warning, "virtualDestructor", "Class '" + Base + "' which has virtual members does not have a virtual destructor.", CWE404, true);
     else
         reportError(tok, Severity::error, "virtualDestructor", "Class '" + Base + "' which is inherited by class '" + Derived + "' does not have a virtual destructor.\n"
                     "Class '" + Base + "' which is inherited by class '" + Derived + "' does not have a virtual destructor. "
@@ -1988,7 +1992,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
                     "function. Making this function 'const' should not cause compiler errors. "
                     "Even though the function can be made const function technically it may not make "
                     "sense conceptually. Think about your design and the task of the function first - is "
-                    "it a function that must not change object internal state?", 0U, true);
+                    "it a function that must not change object internal state?", CWE(0U), true);
     else
         reportError(toks, Severity::performance, "functionStatic",
                     "Technically the member function '" + classname + "::" + funcname + "' can be static.\n"
@@ -1996,7 +2000,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
                     "function. Making a function static can bring a performance benefit since no 'this' instance is "
                     "passed to the function. This change should not cause compiler errors but it does not "
                     "necessarily make sense conceptually. Think about your design and the task of the function first - "
-                    "is it a function that must not access members of class instances?", 0U, true);
+                    "is it a function that must not access members of class instances?", CWE(0U), true);
 }
 
 //---------------------------------------------------------------------------
@@ -2083,7 +2087,7 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
                 "Members are initialized in the order they are declared, not in the "
                 "order they are in the initializer list.  Keeping the initializer list "
                 "in the same order that the members were declared prevents order dependent "
-                "initialization errors.", 0U, true);
+                "initialization errors.", CWE(0U), true);
 }
 
 
@@ -2113,7 +2117,7 @@ void CheckClass::checkSelfInitialization()
 
 void CheckClass::selfInitializationError(const Token* tok, const std::string& varname)
 {
-    reportError(tok, Severity::error, "selfInitialization", "Member variable '" + varname + "' is initialized by itself.", 665U, false);
+    reportError(tok, Severity::error, "selfInitialization", "Member variable '" + varname + "' is initialized by itself.", CWE665, false);
 }
 
 
@@ -2235,7 +2239,7 @@ void CheckClass::callsPureVirtualFunctionError(
 {
     const char * scopeFunctionTypeName = getFunctionTypeName(scopeFunction.type);
     reportError(tokStack, Severity::warning, "pureVirtualCall", "Call of pure virtual function '" + purefuncname + "' in " + scopeFunctionTypeName + ".\n"
-                "Call of pure virtual function '" + purefuncname + "' in " + scopeFunctionTypeName + ". The call will fail during runtime.", 0U, false);
+                "Call of pure virtual function '" + purefuncname + "' in " + scopeFunctionTypeName + ". The call will fail during runtime.", CWE(0U), false);
 }
 
 
@@ -2289,5 +2293,5 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
     const std::string message = "The " + std::string(derivedIsStruct ? "struct" : "class") + " '" + derivedname +
                                 "' defines member variable with name '" + variablename + "' also defined in its parent " +
                                 std::string(baseIsStruct ? "struct" : "class") + " '" + basename + "'.";
-    reportError(toks, Severity::warning, "duplInheritedMember", message, 0U, false);
+    reportError(toks, Severity::warning, "duplInheritedMember", message, CWE(0U), false);
 }

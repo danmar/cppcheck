@@ -33,6 +33,11 @@
 /// @addtogroup Core
 /// @{
 
+struct CWE {
+    explicit CWE(unsigned short ID) : id(ID) {}
+    unsigned short id;
+};
+
 /**
  * @brief Interface class that cppcheck uses to communicate with the checks.
  * All checking classes must inherit from this class
@@ -111,12 +116,12 @@ protected:
     /** report an error */
     template<typename T, typename U>
     void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg) {
-        reportError(tok, severity, id, msg, 0U, false);
+        reportError(tok, severity, id, msg, CWE(0U), false);
     }
 
     /** report an error */
     template<typename T, typename U>
-    void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg, unsigned int cwe, bool inconclusive) {
+    void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
         std::list<const Token *> callstack(1, tok);
         reportError(callstack, severity, id, msg, cwe, inconclusive);
     }
@@ -124,14 +129,14 @@ protected:
     /** report an error */
     template<typename T, typename U>
     void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg) {
-        reportError(callstack, severity, id, msg, 0U, false);
+        reportError(callstack, severity, id, msg, CWE(0U), false);
     }
 
     /** report an error */
     template<typename T, typename U>
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, unsigned int cwe, bool inconclusive) {
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
         ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer?&_tokenizer->list:0, severity, id, msg, inconclusive);
-        errmsg._cwe = cwe;
+        errmsg._cwe = cwe.id;
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
         else

@@ -122,7 +122,7 @@ private:
         reportError(locationList, Severity::style, "unhandledExceptionSpecification",
                     "Unhandled exception specification when calling function " + str1 + "().\n"
                     "Unhandled exception specification when calling function " + str1 + "(). "
-                    "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.", 0U, true);
+                    "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.", CWE(0U), true);
     }
 
     /** Generate all possible errors (for --errorlist) */

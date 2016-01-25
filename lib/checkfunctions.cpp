@@ -32,6 +32,8 @@ namespace {
     CheckFunctions instance;
 }
 
+static const CWE CWE628(628U);
+
 void CheckFunctions::checkProhibitedFunctions()
 {
     const bool checkAlloca = _settings->isEnabled("warning") && ((_settings->standards.c >= Standards::C99 && _tokenizer->isC()) || _settings->standards.cpp >= Standards::CPP11);
@@ -127,14 +129,14 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
         errmsg << ". The value is " << tok->str() << " but the valid values are '" << validstr << "'.";
     else if (tok->isComparisonOp())
         errmsg << ". The value is 0 or 1 (comparison result) but the valid values are '" << validstr << "'.";
-    reportError(tok, Severity::error, "invalidFunctionArg", errmsg.str(), 628U, false);
+    reportError(tok, Severity::error, "invalidFunctionArg", errmsg.str(), CWE628, false);
 }
 
 void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr)
 {
     std::ostringstream errmsg;
     errmsg << "Invalid " << functionName << "() argument nr " << argnr << ". A non-boolean value is required.";
-    reportError(tok, Severity::error, "invalidFunctionArgBool", errmsg.str(), 628U, false);
+    reportError(tok, Severity::error, "invalidFunctionArgBool", errmsg.str(), CWE628, false);
 }
 
 //---------------------------------------------------------------------------
@@ -173,7 +175,7 @@ void CheckFunctions::checkIgnoredReturnValue()
 void CheckFunctions::ignoredReturnValueError(const Token* tok, const std::string& function)
 {
     reportError(tok, Severity::warning, "ignoredReturnValue",
-                "Return value of function " + function + "() is not used.", 0U, false);
+                "Return value of function " + function + "() is not used.", CWE(0U), false);
 }
 
 

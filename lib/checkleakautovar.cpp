@@ -35,6 +35,8 @@ namespace {
     CheckLeakAutoVar instance;
 }
 
+static const CWE CWE672(672U);
+static const CWE CWE415(415U);
 //---------------------------------------------------------------------------
 
 void VarInfo::print()
@@ -85,7 +87,7 @@ void CheckLeakAutoVar::deallocUseError(const Token *tok, const std::string &varn
 
 void CheckLeakAutoVar::deallocReturnError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "deallocret", "Returning/dereferencing '" + varname + "' after it is deallocated / released", 672U, false);
+    reportError(tok, Severity::error, "deallocret", "Returning/dereferencing '" + varname + "' after it is deallocated / released", CWE672, false);
 }
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
@@ -101,9 +103,9 @@ void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &fu
 void CheckLeakAutoVar::doubleFreeError(const Token *tok, const std::string &varname, int type)
 {
     if (_settings->library.isresource(type))
-        reportError(tok, Severity::error, "doubleFree", "Resource handle '" + varname + "' freed twice.", 415U, false);
+        reportError(tok, Severity::error, "doubleFree", "Resource handle '" + varname + "' freed twice.", CWE415, false);
     else
-        reportError(tok, Severity::error, "doubleFree", "Memory pointed to by '" + varname + "' is freed twice.", 415U, false);
+        reportError(tok, Severity::error, "doubleFree", "Memory pointed to by '" + varname + "' is freed twice.", CWE415, false);
 }
 
 

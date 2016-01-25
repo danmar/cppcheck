@@ -287,7 +287,7 @@ void CheckSizeof::sizeofCalculation()
 void CheckSizeof::sizeofCalculationError(const Token *tok, bool inconclusive)
 {
     reportError(tok, Severity::warning,
-                "sizeofCalculation", "Found calculation inside sizeof().", 0U, inconclusive);
+                "sizeofCalculation", "Found calculation inside sizeof().", CWE(0U), inconclusive);
 }
 
 //-----------------------------------------------------------------------------
@@ -315,7 +315,7 @@ void CheckSizeof::suspiciousSizeofCalculation()
 void CheckSizeof::multiplySizeofError(const Token *tok)
 {
     reportError(tok, Severity::warning,
-                "multiplySizeof", "Multiplying sizeof() with sizeof() indicates a logic error.", 0U, true);
+                "multiplySizeof", "Multiplying sizeof() with sizeof() indicates a logic error.", CWE(0U), true);
 }
 
 void CheckSizeof::divideSizeofError(const Token *tok)
@@ -323,7 +323,7 @@ void CheckSizeof::divideSizeofError(const Token *tok)
     reportError(tok, Severity::warning,
                 "divideSizeof", "Division of result of sizeof() on pointer type.\n"
                 "Division of result of sizeof() on pointer type. sizeof() returns the size of the pointer, "
-                "not the size of the memory area it points to.", 0U, true);
+                "not the size of the memory area it points to.", CWE(0U), true);
 }
 
 void CheckSizeof::sizeofVoid()

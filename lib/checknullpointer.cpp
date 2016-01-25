@@ -30,6 +30,8 @@ namespace {
     CheckNullPointer instance;
 }
 
+static const CWE CWE476(476U);
+
 //---------------------------------------------------------------------------
 
 static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsigned int arg)
@@ -466,16 +468,16 @@ void CheckNullPointer::nullConstantDereference()
 
 void CheckNullPointer::nullPointerError(const Token *tok)
 {
-    reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", 476U, false);
+    reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE476, false);
 }
 
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, bool inconclusive, bool defaultArg)
 {
     if (defaultArg) {
         if (_settings->isEnabled("warning"))
-            reportError(tok, Severity::warning, "nullPointerDefaultArg", "Possible null pointer dereference if the default parameter value is used: " + varname, 0U, inconclusive);
+            reportError(tok, Severity::warning, "nullPointerDefaultArg", "Possible null pointer dereference if the default parameter value is used: " + varname, CWE(0U), inconclusive);
     } else
-        reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname, 476U, inconclusive);
+        reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname, CWE476, inconclusive);
 }
 
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const Token* nullCheck, bool inconclusive)
@@ -484,5 +486,5 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     callstack.push_back(tok);
     callstack.push_back(nullCheck);
     const std::string errmsg(ValueFlow::eitherTheConditionIsRedundant(nullCheck) + " or there is possible null pointer dereference: " + varname + ".");
-    reportError(callstack, Severity::warning, "nullPointerRedundantCheck", errmsg, 0U, inconclusive);
+    reportError(callstack, Severity::warning, "nullPointerRedundantCheck", errmsg, CWE(0U), inconclusive);
 }
