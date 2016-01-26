@@ -51,6 +51,7 @@ public:
         checkCondition.oppositeInnerCondition();
         checkCondition.checkIncorrectLogicOperator();
         checkCondition.checkInvalidTestForOverflow();
+        checkCondition.alwaysTrueFalse();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -60,7 +61,6 @@ public:
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
         checkCondition.checkModuloAlwaysTrueFalse();
-        checkCondition.alwaysTrueFalse();
     }
 
     /** mismatching assignment / comparison */

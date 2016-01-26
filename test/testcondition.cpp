@@ -1596,7 +1596,9 @@ private:
               "  A(x++ == 1);\n"
               "  A(x++ == 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'x++==2' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'x++==1' is always false\n"
+                      "[test.cpp:4]: (style) Condition 'x++==2' is always false\n",
+                      errout.str());
 
         // Avoid FP when condition comes from macro
         check("void f() {\n"
