@@ -220,6 +220,7 @@ private:
         TEST_CASE(garbageCode169); // #6731
         TEST_CASE(garbageCode170);
         TEST_CASE(garbageCode171);
+        TEST_CASE(garbageCode172);
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -228,10 +229,10 @@ private:
 
     std::string checkCode(const char code[], bool cpp = true) {
         // double the tests - run each example as C as well as C++
-        const char* filename = cpp ? "test.cpp" : "test.c";
-        const char* alternatefilename = cpp ? "test.c" : "test.cpp";
+        const char* const filename = cpp ? "test.cpp" : "test.c";
+        const char* const alternatefilename = cpp ? "test.c" : "test.cpp";
 
-        // run alternate check first. It should only ensure stability
+        // run alternate check first. It should only ensure stability - so we catch exceptions here.
         try {
             checkCodeInternal(code, alternatefilename);
         } catch (InternalError&) {
@@ -1446,6 +1447,11 @@ private:
     void garbageCode171() {
         // 7270
         ASSERT_THROW(checkCode("(){case()?():}:", false), InternalError);
+    }
+
+    void garbageCode172() {
+        // #7357
+        ASSERT_THROW(checkCode("p<e T=l[<]<>>,"), InternalError);
     }
 
 };
