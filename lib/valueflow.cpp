@@ -398,6 +398,13 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                              parent->astOperand1()->values.front().isKnown()) ||
                             (parent->astOperand2()->values.size() == 1U &&
                              parent->astOperand2()->values.front().isKnown()));
+
+        // known result when a operand is 0.
+        if (Token::Match(parent, "[&*]") && value.isKnown() && value.tokvalue==nullptr && value.intvalue==0) {
+            setTokenValue(parent, value);
+            return;
+        }
+
         std::list<ValueFlow::Value>::const_iterator value1, value2;
         for (value1 = parent->astOperand1()->values.begin(); value1 != parent->astOperand1()->values.end(); ++value1) {
             if (value1->tokvalue && (!parent->isComparisonOp() || value1->tokvalue->tokType() != Token::eString))

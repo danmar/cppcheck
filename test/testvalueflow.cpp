@@ -1883,6 +1883,12 @@ private:
                "}";
         ASSERT_EQUALS(true,  testValueOfX(code, 3U, 1)); // value of x can be 1
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 2)); // value of x can't be 2
+
+        // calculation with known result
+        code = "int f(int x) { a = x & 0; }"; // <- & is 0
+        value = valueOfTok(code, "&");
+        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT(value.isKnown());
     }
 };
 
