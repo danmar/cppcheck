@@ -1754,6 +1754,14 @@ private:
         ASSERT(value.isKnown());
 
         code = "void f() {\n"
+               "  int x = 15;\n"
+               "  if (x == 15) { x += 7; }\n" // <- condition is true
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT(value.isKnown());
+
+        code = "void f() {\n"
                "  int x;\n"
                "  if (ab) { x = 7; }\n"
                "  return x + 2;\n" // <- possible value

@@ -1116,7 +1116,8 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             // if known variable is changed in loop body, change it to a possible value..
-            handleKnownValuesInLoop(tok2, tok2->linkAt(1)->linkAt(1), &values, varid);
+            if (Token::Match(tok2, "for|while"))
+                handleKnownValuesInLoop(tok2, tok2->linkAt(1)->linkAt(1), &values, varid);
 
             // Set values in condition
             for (Token* tok3 = tok2->tokAt(2); tok3 != tok2->next()->link(); tok3 = tok3->next()) {
