@@ -438,6 +438,26 @@ struct AST_state {
     explicit AST_state(bool cpp_) : depth(0), inArrayAssignment(0), cpp(cpp_), assign(0U) {}
 };
 
+static Token * skipDecl(Token *tok)
+{
+    if (!Token::Match(tok->previous(), "( %name%"))
+        return tok;
+
+    Token *vartok = tok;
+    while (Token::Match(vartok, "%name%|*|&|::|<")) {
+        if (vartok->str() == "<") {
+            if (vartok->link())
+                vartok = vartok->link();
+            else
+                return tok;
+        } else if (Token::Match(vartok, "%name% [:=]")) {
+            return vartok;
+        }
+        vartok = vartok->next();
+    }
+    return tok;
+}
+
 static bool iscast(const Token *tok)
 {
     if (!Token::Match(tok, "( ::| %name%"))
@@ -577,6 +597,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             if (tok->str() == "<")
                 tok = tok->link()->next();
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
+            tok = skipDecl(tok);
             while (tok->next() && tok->next()->isName())
                 tok = tok->next();
             state.op.push(tok);
@@ -960,7 +981,7 @@ static void compileExpression(Token *&tok, AST_state& state)
 static Token * createAstAtToken(Token *tok, bool cpp)
 {
     if (Token::simpleMatch(tok, "for (")) {
-        Token *tok2 = tok->tokAt(2);
+        Token *tok2 = skipDecl(tok->tokAt(2));
         Token *init1 = nullptr;
         Token * const endPar = tok->next()->link();
         while (tok2 && tok2 != endPar && tok2->str() != ";") {
