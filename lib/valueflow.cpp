@@ -584,6 +584,12 @@ static void valueFlowNumber(TokenList *tokenlist)
                 ValueFlow::Value value(tok->str() == "true");
                 value.setKnown();
                 setTokenValue(tok, value);
+            } else if (Token::Match(tok, "[(,] NULL [,)]")) {
+                // NULL function parameters are not simplified in the
+                // normal tokenlist
+                ValueFlow::Value value(0);
+                value.setKnown();
+                setTokenValue(tok->next(), value);
             }
         }
     }
