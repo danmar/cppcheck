@@ -178,15 +178,17 @@ def removeblocks(filedata):
 
     i2 = i1
     indent = 0
-    while i2 < len(filedata):
+    while i2 < len(filedata) and indent>=0:
       for c in filedata[i2]:
         if c == '}':
           indent = indent - 1
-          if indent <= 0:
-            break
+          if indent == 0:
+            indent = -100
         elif c == '{':
           indent = indent + 1
       i2 = i2 + 1
+    if indent == -100:
+      indent = 0
     if i2 == i1 or i2 >= len(filedata):
       continue
     if filedata[i2].strip() != '}' and filedata[i2].strip() != '};':
