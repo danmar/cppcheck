@@ -1754,13 +1754,25 @@ private:
         ASSERT_EQUALS(3, value.intvalue);
         ASSERT(value.isKnown());
 
-        code = "void f() {\n"
-               "  int x = 15;\n"
-               "  if (x == 15) { x += 7; }\n" // <- condition is true
-               "}";
-        value = valueOfTok(code, "==");
-        ASSERT_EQUALS(1, value.intvalue);
-        ASSERT(value.isKnown());
+        {
+            code = "void f() {\n"
+                   "  int x = 15;\n"
+                   "  if (x == 15) { x += 7; }\n" // <- condition is true
+                   "}";
+            value = valueOfTok(code, "==");
+            ASSERT_EQUALS(1, value.intvalue);
+            ASSERT(value.isKnown());
+
+            code = "int f() {\n"
+                   "    int a = 0, x = 0;\n"
+                   "    a = index();\n"
+                   "    if (a != 0)\n"
+                   "        x = next();\n"
+                   "    return x + 1;\n"
+                   "}\n";
+            value = valueOfTok(code, "+");
+            ASSERT(value.isPossible());
+        }
 
         code = "void f() {\n"
                "  int x;\n"

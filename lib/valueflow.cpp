@@ -1158,8 +1158,13 @@ static bool valueFlowForward(Token * const               startToken,
                                  errorLogger,
                                  settings);
 
-                if (isVariableChanged(startToken1, startToken1->link(), varid))
+                if (isVariableChanged(startToken1, startToken1->link(), varid)) {
                     removeValues(values, truevalues);
+
+                    std::list<ValueFlow::Value>::iterator it;
+                    for (it = values.begin(); it != values.end(); ++it)
+                        it->changeKnownToPossible();
+                }
 
                 // goto '}'
                 tok2 = startToken1->link();
