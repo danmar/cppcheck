@@ -156,48 +156,10 @@ def combinelines(filedata):
     fd2 = filedata[line+1].lstrip()
     replaceandrun2('combine lines', filedata, line, fd1+fd2, '')
 
-def removeline(filedata):
-  stmt = True
+def removedirectives(filedata):
   for i in range(len(filedata)):
-    line = filedata[i]
-    strippedline = line.strip()
-
-    if len(strippedline) == 0:
-      continue
-
-    if stmt and strippedline[-1]==';' and checkpar(line) and line.find('{')<0 and line.find('}')<0:
-      replaceandrun('remove line', filedata, i, '')
-
-    elif stmt and strippedline.find('{') > 0 and strippedline.find('}') == len(strippedline) - 1:
-      replaceandrun('remove line', filedata, i, '')
-
-    if ';{}'.find(strippedline[-1]) >= 0:
-      stmt = True
-    else:
-      stmt = False
-
-
-def removeincludes(filedata):
-  for i in range(len(filedata)):
-    if filedata[i].startswith('#include '):
-      replaceandrun('remove #include', filedata, i, '')
-
-def removeemptyblocks(filedata):
-  if len(filedata) < 3:
-    return
-
-  i = 0
-  while i < len(filedata):
-    if filedata[i].strip() == '':
-      filedata.pop(i)
-    else:
-      i = i + 1
-
-  for i in range(len(filedata)-1):
-    fd1 = filedata[i].rstrip()
-    fd2 = filedata[i+1].strip()
-    if checkpar(fd1) and fd1.endswith('{') and fd2 == '}':
-      replaceandrun2('remove block', filedata, i, '', '')
+    if filedata[i].lstrip().startswith('#'):
+      replaceandrun('remove preprocessor directive', filedata, i, '')
 
 def removeblocks(filedata):
   if len(filedata) < 3:
@@ -235,13 +197,8 @@ def removeblocks(filedata):
 
   return filedata
 
-
-def removenamespaces(filedata):
-  if len(filedata) < 3:
-    return filedata
-
+def removeline(filedata):
   stmt = True
-
   for i in range(len(filedata)):
     line = filedata[i]
     strippedline = line.strip()
@@ -249,32 +206,17 @@ def removenamespaces(filedata):
     if len(strippedline) == 0:
       continue
 
-    stmt1 = stmt
+    if stmt and strippedline[-1]==';' and checkpar(line) and line.find('{')<0 and line.find('}')<0:
+      replaceandrun('remove line', filedata, i, '')
+
+    elif stmt and strippedline.find('{') > 0 and strippedline.find('}') == len(strippedline) - 1:
+      replaceandrun('remove line', filedata, i, '')
+
     if ';{}'.find(strippedline[-1]) >= 0:
       stmt = True
     else:
       stmt = False
 
-    if stmt1 == False:
-      continue
-
-    if strippedline.find('}') < 0 and strippedline.find('{') == len(strippedline)-1:
-      i2 = i + 1
-      indent = 1
-      while i2 < len(filedata) and indent > 0:
-        #print(str(i2)+':'+str(level)+':'+filedata[i2])
-        for c in filedata[i2]:
-          if c == '}':
-            indent = indent - 1
-            if indent <= 0:
-              break
-          elif c == '{':
-            indent = indent + 1
-        i2 = i2 + 1
-      if indent == 0 and (filedata[i2-1].strip().endswith('}') or filedata[i2-1].strip().endswith('};')):
-        #print(str(i)+';'+str(i2))
-        filedata = clearandrun('remove codeblock', filedata, i, i2-1)
-  return filedata
 
 # reduce..
 print('Make sure error can be reproduced...')
@@ -294,20 +236,14 @@ while True:
   print('remove comments...')
   removecomments(filedata)
 
-  print('remove includes...')
-  removeincludes(filedata)
-
-  print('remove empty blocks...')
-  removeemptyblocks(filedata)
+  print('remove preprocessor directives...')
+  removedirectives(filedata)
 
   print('remove blocks...')
   filedata = removeblocks(filedata)
 
   print('combine lines..')
   combinelines(filedata)
-
-  print('remove namespaces...')
-  filedata = removenamespaces(filedata)
 
   print('remove line...')
   removeline(filedata)
