@@ -169,7 +169,7 @@ def removeblocks(filedata):
     strippedline = filedata[i].strip()
     if len(strippedline)==0:
       continue
-    if strippedline[-1] != '}' and strippedline[-1] != ';':
+    if ';{}'.find(strippedline[-1]) < 0:
       continue
 
     i1 = i + 1
