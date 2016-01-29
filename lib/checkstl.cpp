@@ -700,7 +700,7 @@ void CheckStl::if_find()
 
                 if (printWarning && container->getYield(funcTok->str()) == Library::Container::ITERATOR)
                     if_findError(tok, false);
-                else if (printPerformance && container->stdStringLike)
+                else if (printPerformance && container->stdStringLike && funcTok->str() == "find")
                     if_findError(tok, true);
             } else if (printWarning && Token::Match(tok, "std :: find|find_if (")) {
                 // check that result is checked properly

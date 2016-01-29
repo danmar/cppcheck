@@ -1726,6 +1726,12 @@ private:
               "    if (foo(s.find(\"abc\"))) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7349 - std::string::find_first_of
+        check("void f(const std::string &s) {\n"
+              "    if (s.find_first_of(\"abc\")==0) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
