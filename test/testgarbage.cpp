@@ -221,6 +221,7 @@ private:
         TEST_CASE(garbageCode170);
         TEST_CASE(garbageCode171);
         TEST_CASE(garbageCode172);
+        TEST_CASE(garbageCode173); // #6781
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1452,6 +1453,11 @@ private:
     void garbageCode172() {
         // #7357
         ASSERT_THROW(checkCode("p<e T=l[<]<>>,"), InternalError);
+    }
+
+    void garbageCode173() {
+        // #6781  heap corruption ;  TemplateSimplifier::simplifyTemplateInstantiations
+        ASSERT_THROW(checkCode(" template < Types > struct S : >( S < ...Types... > S <) > { ( ) { } } ( ) { return S < void > ( ) }"), InternalError);
     }
 
 };
