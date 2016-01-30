@@ -48,7 +48,7 @@ private:
         TEST_CASE(template12);
         TEST_CASE(template13);
         TEST_CASE(template14);
-        TEST_CASE(template15);
+        TEST_CASE(template15);  // recursive templates
         TEST_CASE(template16);
         TEST_CASE(template17);
         TEST_CASE(template18);
@@ -416,7 +416,7 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template15() {
+    void template15() { // recursive templates  #3130 etc
         const char code[] = "template <unsigned int i> void a()\n"
                             "{\n"
                             "    a<i-1>();\n"
@@ -436,9 +436,24 @@ private:
                                 "int main ( ) "
                                 "{ a<2> ( ) ; return 0 ; } "
                                 "void a<2> ( ) { a<1> ( ) ; } "
-                                "void a<1> ( ) { a < 0 > ( ) ; }";
+                                "void a<1> ( ) { a<0> ( ) ; }";
 
         ASSERT_EQUALS(expected, tok(code));
+
+        // #3130
+        const char code2[] = "template <int n> struct vec {\n"
+                             "  vec() {}\n"
+                             "  vec(const vec<n-1>& v) {}\n" // <- never used dont instantiate
+                             "};\n"
+                             "\n"
+                             "vec<4> v;";
+        const char expected2[] = "vec<4> v ; "
+                                 "struct vec<4> { "
+                                 "vec<4> ( ) { } "
+                                 "vec<4> ( const vec < 4 - 1 > & v ) { } "
+                                 "} ;";
+
+        ASSERT_EQUALS(expected2, tok(code2));
     }
 
     void template16() {
@@ -1022,7 +1037,7 @@ private:
                              "{\n"
                              "    enum {value = !type_equal<T, typename Unconst<T>::type>::value  };\n"
                              "};";
-        const char expected1[]="template < class T > struct type_equal<T,T> { } ; template < class T > struct template_is_const { } ; struct type_equal<T,T> { } ; struct Unconst<constT*const> { } ; struct Unconst<constT&*const> { } ; struct Unconst<constT&><};template<T> { } ; struct Unconst<constT><};template<T> { } ; struct Unconst<T*const> { } ; struct Unconst<constT*const> { } ; struct Unconst<constT&*const> { } ;";
+        const char expected1[]="template < class T > struct Unconst { } ; template < class T > struct type_equal<T,T> { } ; template < class T > struct template_is_const { } ; struct type_equal<T,T> { } ; struct Unconst<constT*const> { } ; struct Unconst<constT&*const> { } ; struct Unconst<T*const*const> { } ; struct Unconst<T*const> { } ; struct Unconst<T*const> { } ; struct Unconst<T*const> { } ; struct Unconst<constT&><};template<T> { } ; struct Unconst<constT><};template<T> { } ;";
         ASSERT_EQUALS(expected1, tok(code1));
     }
 

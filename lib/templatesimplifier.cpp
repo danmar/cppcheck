@@ -815,9 +815,7 @@ void TemplateSimplifier::expandTemplate(
 
             // copy
             tokenlist.addtoken(tok3, tok3->linenr(), tok3->fileIndex());
-            if (Token::Match(tok3, "%type% <")) {
-                //if (!Token::simpleMatch(tok3, (name + " <").c_str()))
-                //done = false;
+            if (Token::Match(tok3, "%type% <") && Token::Match(tok3->next()->findClosingBracket(), ">|>> !!&")) {
                 templateInstantiations.push_back(tokenlist.back());
             }
 
@@ -1268,7 +1266,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             amountOftemplateInstantiations = templateInstantiations.size();
             simplifyCalculations(tokenlist.front());
             ++recursiveCount;
-            if (recursiveCount > 1) {
+            if (recursiveCount > 100) {
                 // bail out..
                 break;
             }

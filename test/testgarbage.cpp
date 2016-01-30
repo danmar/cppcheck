@@ -875,7 +875,7 @@ private:
     }
 
     void garbageCode104() { // #6847
-        ASSERT_THROW(checkCode("template < Types > struct S {> ( S < ) S >} { ( ) { } } ( ) { return S < void > ( ) } { ( )> >} { ( ) { } } ( ) { ( ) }"), InternalError);
+        checkCode("template < Types > struct S {> ( S < ) S >} { ( ) { } } ( ) { return S < void > ( ) } { ( )> >} { ( ) { } } ( ) { ( ) }");
     }
 
     void garbageCode105() { // #6859
