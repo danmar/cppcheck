@@ -291,7 +291,7 @@ void CheckNullPointer::nullPointerLinkedList()
                         // for statement.
                         for (const Token *tok4 = scope->classStart; tok4; tok4 = tok4->next()) {
                             if (tok4 == i->classEnd) {
-                                nullPointerError(tok1, var->name(), scope->classDef);
+                                nullPointerError(tok1, var->name(), scope->classDef, false);
                                 break;
                             }
 
@@ -345,7 +345,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             parseFunctionCall(*ftok->previous(), varlist, &_settings->library, 0);
             if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
                 if (value->condition == nullptr)
-                    nullPointerError(tok, tok->str(), false, value->defaultArg);
+                    nullPointerError(tok, tok->str(), false, value->defaultArg, !value->isKnown());
                 else if (printWarnings)
                     nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
             }
@@ -357,7 +357,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         if (!isPointerDeRef(tok,unknown)) {
             if (printInconclusive && unknown) {
                 if (value->condition == nullptr)
-                    nullPointerError(tok, tok->str(), true, value->defaultArg);
+                    nullPointerError(tok, tok->str(), true, value->defaultArg, !value->isKnown());
                 else
                     nullPointerError(tok, tok->str(), value->condition, true);
             }
@@ -365,7 +365,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         }
 
         if (value->condition == nullptr)
-            nullPointerError(tok, tok->str(), value->inconclusive, value->defaultArg);
+            nullPointerError(tok, tok->str(), value->inconclusive, value->defaultArg, !value->isKnown());
         else if (printWarnings)
             nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
     }
@@ -471,13 +471,16 @@ void CheckNullPointer::nullPointerError(const Token *tok)
     reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE476, false);
 }
 
-void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, bool inconclusive, bool defaultArg)
+void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, bool inconclusive, bool defaultArg, bool possible)
 {
     if (defaultArg) {
         if (_settings->isEnabled("warning"))
             reportError(tok, Severity::warning, "nullPointerDefaultArg", "Possible null pointer dereference if the default parameter value is used: " + varname, CWE(0U), inconclusive);
+    } else if (possible) {
+        if (_settings->isEnabled("warning"))
+            reportError(tok, Severity::warning, "nullPointer", "Possible null pointer dereference: " + varname, CWE476, inconclusive);
     } else
-        reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname, CWE476, inconclusive);
+        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference: " + varname, CWE476, inconclusive);
 }
 
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const Token* nullCheck, bool inconclusive)

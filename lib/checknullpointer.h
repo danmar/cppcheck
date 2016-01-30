@@ -86,16 +86,16 @@ public:
     void nullConstantDereference();
 
     void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
-    void nullPointerError(const Token *tok, const std::string &varname, bool inconclusive = false, bool defaultArg = false);
-    void nullPointerError(const Token *tok, const std::string &varname, const Token* nullcheck, bool inconclusive = false);
+    void nullPointerError(const Token *tok, const std::string &varname, bool inconclusive, bool defaultArg, bool possible);
+    void nullPointerError(const Token *tok, const std::string &varname, const Token* nullcheck, bool inconclusive);
 private:
 
     /** Get error messages. Used by --errorlist */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckNullPointer c(0, settings, errorLogger);
         c.nullPointerError(0);
-        c.nullPointerError(0, "pointer", false, true);
-        c.nullPointerError(0, "pointer", nullptr);
+        c.nullPointerError(0, "pointer", false, true, true);
+        c.nullPointerError(0, "pointer", nullptr, false);
     }
 
     /** Name of check */
