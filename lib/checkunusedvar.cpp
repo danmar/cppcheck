@@ -769,6 +769,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.clear();
             break;
         }
+        if (tok->isName() && tok->str().back() == '>') {
+            variables.clear();
+            break;
+        }
 
         // bailout when for_each is used
         if (Token::Match(tok, "%name% (") && Token::simpleMatch(tok->linkAt(1), ") {") && !Token::Match(tok, "if|for|while|switch")) {
