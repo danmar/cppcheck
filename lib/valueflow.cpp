@@ -713,6 +713,36 @@ static void valueFlowBitAnd(TokenList *tokenlist)
     }
 }
 
+static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Settings *settings)
+{
+    for (std::list<Scope>::iterator scope = symboldatabase->scopeList.begin(); scope != symboldatabase->scopeList.end(); ++scope) {
+        if (scope->type != Scope::eIf)
+            continue;
+        Token *tok = const_cast<Token *>(scope->classDef);
+        if (!Token::Match(tok, "if ("))
+            continue;
+        const Token *cond1 = tok->next()->astOperand2();
+        if (!cond1 || !cond1->isComparisonOp())
+            continue;
+        const bool cpp = symboldatabase->isCPP();
+        Token *tok2 = tok->linkAt(1);
+        while (Token::simpleMatch(tok2, ") {")) {
+            tok2 = tok2->linkAt(1);
+            if (!Token::simpleMatch(tok2, "} else { if ("))
+                break;
+            const Token *cond2 = tok2->tokAt(4)->astOperand2();
+            if (!cond2 || !cond2->isComparisonOp())
+                continue;
+            if (isOppositeCond(false, cpp, cond1, cond2, settings->library.functionpure)) {
+                ValueFlow::Value value(1);
+                value.setKnown();
+                setTokenValue(const_cast<Token*>(cond2), value);
+            }
+            tok2 = tok2->linkAt(4);
+        }
+    }
+}
+
 static void valueFlowReverse(TokenList *tokenlist,
                              Token *tok,
                              const Token * const varToken,
@@ -2341,6 +2371,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowPointerAlias(tokenlist);
     valueFlowFunctionReturn(tokenlist, errorLogger, settings);
     valueFlowBitAnd(tokenlist);
+    valueFlowOppositeCondition(symboldatabase, settings);
     valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);

@@ -1889,6 +1889,14 @@ private:
         ASSERT_EQUALS(5, value.intvalue);
         ASSERT(value.isPossible());
 
+        code = "int f(int x) {\n"
+               "  if (x < 2) {}\n"
+               "  else if (x >= 2) {}\n" // <- known value
+               "}";
+        value = valueOfTok(code, ">=");
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT(value.isKnown());
+
         // function
         code = "int f(int x) { return x + 1; }\n" // <- possible value
                "void a() { f(12); }\b";
