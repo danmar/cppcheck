@@ -636,6 +636,16 @@ private:
               "    return str;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Pointer to local array variable returned.\n", errout.str());
+
+        check("char * format_reg(char *outbuffer_start) {\n"
+              "    return outbuffer_start;\n"
+              "}\n"
+              "void print_with_operands() {\n"
+              "    char temp[42];\n"
+              "    char *tp = temp;\n"
+              "    tp = format_reg(tp);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnLocalVariable2() {

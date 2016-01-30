@@ -117,7 +117,7 @@ bool CheckAutoVariables::isAutoVarArray(const Token *tok)
         return true;
 
     // ValueFlow
-    if (var->isPointer()) {
+    if (var->isPointer() && !var->isArgument()) {
         for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it) {
             const ValueFlow::Value &val = *it;
             if (val.tokvalue && isAutoVarArray(val.tokvalue))
