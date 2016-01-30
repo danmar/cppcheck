@@ -181,6 +181,7 @@ private:
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
         TEST_CASE(namespaces3);  // #3854 - unknown macro
+        TEST_CASE(namespaces4);
 
         TEST_CASE(tryCatch1);
 
@@ -1535,6 +1536,16 @@ private:
         ASSERT_EQUALS(2U, db->scopeList.size());
         ASSERT_EQUALS(Scope::eGlobal, db->scopeList.front().type);
         ASSERT_EQUALS(Scope::eNamespace, db->scopeList.back().type);
+    }
+
+    void namespaces4() { // #4698 - type lookup
+        GET_SYMBOL_DB("struct A { int a; };\n"
+                      "namespace fred { struct A {}; }\n"
+                      "fred::A fredA;");
+        const Variable *fredA = db->getVariableFromVarId(2U);
+        ASSERT_EQUALS("fredA", fredA->name());
+        const Type *fredAType = fredA->type();
+        ASSERT_EQUALS(2U, fredAType->classDef->linenr());
     }
 
     void tryCatch1() {

@@ -2959,7 +2959,7 @@ static const Token* skipPointers(const Token* tok)
     return tok;
 }
 
-bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const
+bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const
 {
     if (check && check->_tokenizer->isCPP() && Token::Match(tok, "throw|new"))
         return false;
@@ -3023,31 +3023,48 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
 
     for (type = typeList.begin(); type != typeList.end(); ++type) {
         // do the names match?
-        if (type->name() == typeTok->str()) {
-            // check if type does not have a namespace
-            if (typeTok->strAt(-1) != "::") {
-                const Scope *parent = start;
+        if (type->name() != typeTok->str())
+            continue;
 
-                // check if in same namespace
-                while (parent) {
-                    // out of line class function belongs to class
-                    if (parent->type == Scope::eFunction && parent->functionOf)
-                        parent = parent->functionOf;
-                    else if (parent != type->enclosingScope)
-                        parent = parent->nestedIn;
-                    else
-                        break;
-                }
+        // check if type does not have a namespace
+        if (typeTok->strAt(-1) != "::") {
+            const Scope *parent = start;
 
-                if (type->enclosingScope == parent)
-                    return &(*type);
+            // check if in same namespace
+            while (parent) {
+                // out of line class function belongs to class
+                if (parent->type == Scope::eFunction && parent->functionOf)
+                    parent = parent->functionOf;
+                else if (parent != type->enclosingScope)
+                    parent = parent->nestedIn;
+                else
+                    break;
             }
 
-            // type has a namespace
-            else {
-                // FIXME check if namespace path matches supplied path
+            if (type->enclosingScope == parent)
                 return &(*type);
+        }
+
+        // type has a namespace
+        else {
+            bool match = true;
+            const Scope *scope = type->enclosingScope;
+            const Token *typeTok2 = typeTok->tokAt(-2);
+            while (match && scope && Token::Match(typeTok2, "%any% ::")) {
+                // A::B..
+                if (typeTok2->isName() && typeTok2->str().find(":") == std::string::npos) {
+                    match &= bool(scope->className == typeTok2->str());
+                    typeTok2 = typeTok2->tokAt(-2);
+                    scope = scope->nestedIn;
+                } else {
+                    // ::A..
+                    match &= bool(scope->type == Scope::eGlobal);
+                    break;
+                }
             }
+
+            if (match)
+                return &(*type);
         }
     }
 
