@@ -157,6 +157,7 @@ private:
         TEST_CASE(localvarRangeBasedFor); // #7075
         TEST_CASE(localvarAssignInWhile);
         TEST_CASE(localvarTemplate); // #4955 - variable is used as template parameter
+        TEST_CASE(localvarFuncPtr); // #7194
 
         TEST_CASE(localvarCppInitialization);
         TEST_CASE(localvarCpp11Initialization);
@@ -3881,6 +3882,30 @@ private:
                               "void foo() {\n"
                               "  const int x = 0;\n"
                               "  f<x>();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarFuncPtr() {
+        functionVariableUsage("int main() {\n"
+                              "    void(*funcPtr)(void)(x);\n"
+                              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'funcPtr' is assigned a value never used.\n", "", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    void(*funcPtr)(void);\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: funcPtr\n", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    void(*funcPtr)(void)(x);\n"
+                              "    funcPtr();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    void(*funcPtr)(void) = x;\n"
+                              "    funcPtr();\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
