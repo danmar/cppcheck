@@ -205,6 +205,14 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<unsigned
     }
 
     else if (tok->isComparisonOp()) {
+        if (tok->values.size() == 1U && tok->values.front().isKnown()) {
+            if (tok->values.front().intvalue)
+                *alwaysTrue = true;
+            else
+                *alwaysFalse = true;
+            return;
+        }
+
         const Token *vartok, *numtok;
         if (tok->astOperand2() && tok->astOperand2()->isNumber()) {
             vartok = tok->astOperand1();
@@ -404,7 +412,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     return true;
                 }
 
-                if (alwaysTrue && noreturnIf)
+                if (alwaysTrue && (initif || noreturnIf))
                     return true;
 
                 std::map<unsigned int, VariableValue> varValueIf;

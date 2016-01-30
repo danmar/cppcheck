@@ -778,6 +778,17 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int foo(int x)\n" // #5503
+                       "{\n"
+                       "    int i;\n"
+                       "    if (x < 2)\n"
+                       "        i = 22;\n"
+                       "    else if (x >= 2)\n" // condition is always true
+                       "        i = 33;\n"
+                       "    return i;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("int foo()\n"
                        "{\n"
                        "    int i;\n"
