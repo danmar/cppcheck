@@ -106,6 +106,8 @@ private:
 
         TEST_CASE(initvar_alias); // #6921
 
+        TEST_CASE(initvar_templateMember); // #7205
+
         TEST_CASE(operatorEqSTL);
 
         TEST_CASE(uninitVar1);
@@ -1437,6 +1439,25 @@ private:
               "    }\n"
               "};");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'S::a' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void initvar_templateMember() {
+        check("template<int n_>\n"
+              "struct Wrapper {\n"
+              "    static void foo(int * x) {\n"
+              "        for (int i(0); i <= n_; ++i)\n"
+              "            x[i] = 5;\n"
+              "    }\n"
+              "};\n"
+              "class A {\n"
+              "public:\n"
+              "    static constexpr int dim = 5;\n"
+              "    int x[dim + 1];\n"
+              "    A() {\n"
+              "        Wrapper<dim>::foo(x);\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void operatorEqSTL() {
