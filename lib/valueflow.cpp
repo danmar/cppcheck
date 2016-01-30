@@ -733,7 +733,7 @@ static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Set
             const Token *cond2 = tok2->tokAt(4)->astOperand2();
             if (!cond2 || !cond2->isComparisonOp())
                 continue;
-            if (isOppositeCond(false, cpp, cond1, cond2, settings->library.functionpure)) {
+            if (isOppositeCond(true, cpp, cond1, cond2, settings->library.functionpure)) {
                 ValueFlow::Value value(1);
                 value.setKnown();
                 setTokenValue(const_cast<Token*>(cond2), value);

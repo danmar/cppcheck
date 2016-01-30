@@ -1897,6 +1897,12 @@ private:
         ASSERT_EQUALS(1, value.intvalue);
         ASSERT(value.isKnown());
 
+        code = "int f(int x) {\n"
+               "  if (x < 2) {}\n"
+               "  else if (x > 2) {}\n" // <- possible value
+               "}";
+        ASSERT(isNotKnownValues(code, ">"));
+
         // function
         code = "int f(int x) { return x + 1; }\n" // <- possible value
                "void a() { f(12); }\b";
