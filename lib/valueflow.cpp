@@ -719,7 +719,7 @@ static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Set
         if (scope->type != Scope::eIf)
             continue;
         Token *tok = const_cast<Token *>(scope->classDef);
-        if (!Token::Match(tok, "if ("))
+        if (!Token::simpleMatch(tok, "if ("))
             continue;
         const Token *cond1 = tok->next()->astOperand2();
         if (!cond1 || !cond1->isComparisonOp())
