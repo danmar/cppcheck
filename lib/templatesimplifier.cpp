@@ -1268,7 +1268,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             amountOftemplateInstantiations = templateInstantiations.size();
             simplifyCalculations(tokenlist.front());
             ++recursiveCount;
-            if (recursiveCount > 100) {
+            if (recursiveCount > 1) {
                 // bail out..
                 break;
             }

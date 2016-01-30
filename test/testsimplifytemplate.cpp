@@ -436,7 +436,7 @@ private:
                                 "int main ( ) "
                                 "{ a<2> ( ) ; return 0 ; } "
                                 "void a<2> ( ) { a<1> ( ) ; } "
-                                "void a<1> ( ) { a<0> ( ) ; }";
+                                "void a<1> ( ) { a < 0 > ( ) ; }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -1022,7 +1022,7 @@ private:
                              "{\n"
                              "    enum {value = !type_equal<T, typename Unconst<T>::type>::value  };\n"
                              "};";
-        const char expected1[]="template < class T > struct Unconst { } ; template < class T > struct type_equal<T,T> { } ; template < class T > struct template_is_const { } ; struct type_equal<T,T> { } ; struct Unconst<constT*const> { } ; struct Unconst<constT&*const> { } ; struct Unconst<T*const*const> { } ; struct Unconst<T*const> { } ; struct Unconst<T*const> { } ; struct Unconst<T*const> { } ; struct Unconst<constT&><};template<T> { } ; struct Unconst<constT><};template<T> { } ;";
+        const char expected1[]="template < class T > struct type_equal<T,T> { } ; template < class T > struct template_is_const { } ; struct type_equal<T,T> { } ; struct Unconst<constT*const> { } ; struct Unconst<constT&*const> { } ; struct Unconst<constT&><};template<T> { } ; struct Unconst<constT><};template<T> { } ; struct Unconst<T*const> { } ; struct Unconst<constT*const> { } ; struct Unconst<constT&*const> { } ;";
         ASSERT_EQUALS(expected1, tok(code1));
     }
 
