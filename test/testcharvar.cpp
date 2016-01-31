@@ -78,6 +78,14 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (warning) Signed 'char' type used as array index.\n", errout.str());
 
         check("int buf[256];\n"
+              "void foo()\n"
+              "{\n"
+              "    signed char ch = 0;\n"
+              "    buf[ch] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int buf[256];\n"
               "void foo(signed char ch)\n"
               "{\n"
               "    buf[ch] = 0;\n"
