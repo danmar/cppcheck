@@ -222,6 +222,7 @@ private:
         TEST_CASE(garbageCode171);
         TEST_CASE(garbageCode172);
         TEST_CASE(garbageCode173); // #6781
+        TEST_CASE(garbageCode174); // #7356
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1460,6 +1461,9 @@ private:
         ASSERT_THROW(checkCode(" template < Types > struct S : >( S < ...Types... > S <) > { ( ) { } } ( ) { return S < void > ( ) }"), InternalError);
     }
 
+    void garbageCode174() { // #7356
+        checkCode("{r e() { w*constD = (())D = cast< }}");
+    }
 };
 
 REGISTER_TEST(TestGarbage)

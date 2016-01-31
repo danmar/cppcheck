@@ -490,6 +490,8 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                     tok = tok->next();
 
                 tok = tok->tokAt(2);
+                if (!tok)
+                    return tokOld;
                 if (tok->str() == "&") {
                     addressOf = true;
                     tok = tok->next();
