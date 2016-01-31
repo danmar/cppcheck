@@ -2788,6 +2788,20 @@ void Tokenizer::setVarId()
 
                 if (decl) {
                     variableId[prev2->str()] = ++_varId;
+
+                    // set varid for template parameters..
+                    tok = tok->next();
+                    while (Token::Match(tok, "%name%|::"))
+                        tok = tok->next();
+                    if (tok && tok->str() == "<") {
+                        const Token *end = tok->findClosingBracket();
+                        while (tok != end) {
+                            if (tok->isName() && variableId.find(tok->str()) != variableId.end())
+                                tok->varId(variableId[tok->str()]);
+                            tok = tok->next();
+                        }
+                    }
+
                     tok = tok2->previous();
                 }
             }

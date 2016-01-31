@@ -135,6 +135,7 @@ private:
         TEST_CASE(varid_templatePtr); // #4319
         TEST_CASE(varid_templateNamespaceFuncPtr); // #4172
         TEST_CASE(varid_templateArray);
+        TEST_CASE(varid_templateParameter); // #7046 set varid for "X":  std::array<int,X> Y;
         TEST_CASE(varid_cppcast); // #6190
         TEST_CASE(varid_variadicFunc);
         TEST_CASE(varid_typename); // #4644
@@ -2133,6 +2134,16 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: VertexArrayIterator < float [ 2 ] > attrPos@1 ; attrPos@1 = m_AttributePos . GetIterator < float [ 2 ] > ( ) ;\n",
                       tokenize("VertexArrayIterator<float[2]> attrPos = m_AttributePos.GetIterator<float[2]>();"));
+    }
+
+    void varid_templateParameter() { // #7046 set varid for "X":  std::array<int,X> Y;
+        const char code[] = "const int X = 0;\n"
+                            "std::array<int,X> Y;\n";
+
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: const int X@1 = 0 ;\n"
+                      "2: std :: array < int , X@1 > Y@2 ;\n",
+                      tokenize(code));
     }
 
     void varid_cppcast() {
