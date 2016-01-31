@@ -3884,6 +3884,12 @@ private:
                               "  f<x>();\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "  constexpr std::size_t ArraySize(5);\n"
+                              "  std::array<int, ArraySize> X; X.dostuff();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarFuncPtr() {

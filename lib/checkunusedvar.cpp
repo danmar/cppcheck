@@ -773,6 +773,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.clear();
             break;
         }
+
+        // templates
         if (tok->isName() && tok->str().back() == '>') {
             // TODO: This is a quick fix to handle when constants are used
             // as template parameters. Try to handle this better, perhaps
@@ -823,19 +825,30 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         else if (Token::Match(tok->previous(), "[;{}]")) {
             for (const Token* tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->varId()) {
+                    // Is this a variable declaration?
                     const Variable *var = tok2->variable();
-                    if (var && var->nameToken() == tok2) { // Declaration: Skip
-                        tok = tok2->next();
-                        if (Token::Match(tok, "( %name% )")) // Simple initialization through copy ctor
-                            tok = tok->next();
-                        else if (Token::Match(tok, "= %var% ;")) { // Simple initialization
-                            tok = tok->next();
-                            if (!var->isReference())
-                                variables.read(tok->varId(), tok);
-                        } else if (var->typeEndToken()->str() == ">") // Be careful with types like std::vector
-                            tok = tok->previous();
-                        break;
+                    if (!var || var->nameToken() != tok2)
+                        continue;
+
+                    // Mark template parameters used in declaration as use..
+                    if (tok2->strAt(-1) == ">") {
+                        for (const Token *tok3 = tok; tok3 != tok2; tok3 = tok3->next()) {
+                            if (tok3->varId() > 0U)
+                                variables.use(tok3->varId(), tok3);
+                        }
                     }
+
+                    // Skip variable declaration..
+                    tok = tok2->next();
+                    if (Token::Match(tok, "( %name% )")) // Simple initialization through copy ctor
+                        tok = tok->next();
+                    else if (Token::Match(tok, "= %var% ;")) { // Simple initialization
+                        tok = tok->next();
+                        if (!var->isReference())
+                            variables.read(tok->varId(), tok);
+                    } else if (var->typeEndToken()->str() == ">") // Be careful with types like std::vector
+                        tok = tok->previous();
+                    break;
                 } else if (Token::Match(tok2, "[;({=]"))
                     break;
             }
