@@ -480,6 +480,18 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void chdcd_parse_nero(FILE *infile) {\n"
+              "    switch (mode) {\n"
+              "        case 0x0300:\n"
+              "            fclose(infile);\n"
+              "            exit(0);\n"
+              "        case 0x0500:\n"
+              "            fclose(infile);\n"
+              "            return;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #4649
         check("void foo() {\n"
               "    struct {FILE *f1; FILE *f2;} a;\n"

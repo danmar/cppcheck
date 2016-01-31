@@ -148,7 +148,7 @@ void CheckIO::checkFileUsage()
                         i->second.lastOperation = Filepointer::UNKNOWN_OP;
                     }
                 }
-            } else if (tok->str() == "return" || tok->str() == "continue" || tok->str() == "break") { // Reset upon return, continue or break
+            } else if (tok->str() == "return" || tok->str() == "continue" || tok->str() == "break" || _settings->library.isnoreturn(tok)) { // Reset upon return, continue or break
                 for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
                     i->second.mode_indent = 0;
                     i->second.mode = UNKNOWN_OM;
