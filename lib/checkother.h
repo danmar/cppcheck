@@ -254,7 +254,7 @@ private:
     void commaSeparatedReturnError(const Token *tok);
     void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
     void raceAfterInterlockedDecrementError(const Token* tok);
-    void unusedLabelError(const Token* tok);
+    void unusedLabelError(const Token* tok, bool inSwitch);
     void unknownEvaluationOrder(const Token* tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -309,7 +309,8 @@ private:
         c.nanInArithmeticExpressionError(0);
         c.commaSeparatedReturnError(0);
         c.redundantPointerOpError(0, "varname", false);
-        c.unusedLabelError(0);
+        c.unusedLabelError(0, true);
+        c.unusedLabelError(0, false);
         c.unknownEvaluationOrder(0);
     }
 

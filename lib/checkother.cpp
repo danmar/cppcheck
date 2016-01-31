@@ -2481,7 +2481,7 @@ void CheckOther::raceAfterInterlockedDecrementError(const Token* tok)
 
 void CheckOther::checkUnusedLabel()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled("style") && !_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -2495,16 +2495,23 @@ void CheckOther::checkUnusedLabel()
 
             if (Token::Match(tok, "{|}|; %name% :") && tok->strAt(1) != "default") {
                 if (!Token::findsimplematch(scope->classStart->next(), ("goto " + tok->strAt(1)).c_str(), scope->classEnd->previous()))
-                    unusedLabelError(tok->next());
+                    unusedLabelError(tok->next(), tok->scope()->type == Scope::eSwitch);
             }
         }
     }
 }
 
-void CheckOther::unusedLabelError(const Token* tok)
+void CheckOther::unusedLabelError(const Token* tok, bool inSwitch)
 {
-    reportError(tok, Severity::style, "unusedLabel",
-                "Label '" + (tok?tok->str():emptyString) + "' is not used.");
+    if (inSwitch) {
+        if (!tok || _settings->isEnabled("warning"))
+            reportError(tok, Severity::warning, "unusedLabelSwitch",
+                        "Label '" + (tok ? tok->str() : emptyString) + "' is not used. Should this be a 'case' of the enclosing switch()?");
+    } else {
+        if (!tok || _settings->isEnabled("style"))
+            reportError(tok, Severity::style, "unusedLabel",
+                        "Label '" + (tok ? tok->str() : emptyString) + "' is not used.");
+    }
 }
 
 
