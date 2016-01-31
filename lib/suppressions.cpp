@@ -222,11 +222,6 @@ std::string Suppressions::addSuppression(const std::string &errorId, const std::
         return "Failed to add suppression. No id.";
     }
     if (errorId != "*") {
-        // Support "stlBoundries", as that was the name of the errorId until v1.59.
-        if (errorId == "stlBoundries") {
-            return _suppressions["stlBoundaries"].addFile(file, line);
-        }
-
         for (std::string::size_type pos = 0; pos < errorId.length(); ++pos) {
             if (errorId[pos] < 0 || (!std::isalnum(errorId[pos]) && errorId[pos] != '_')) {
                 return "Failed to add suppression. Invalid id \"" + errorId + "\"";
