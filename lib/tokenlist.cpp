@@ -1098,7 +1098,7 @@ void TokenList::createAst()
 
 void TokenList::validateAst()
 {
-    std::set < const Token* > astTokens;
+    std::set < const Token* > safeAstTokens;
     // Verify that ast looks ok
     for (const Token *tok = _front; tok; tok = tok->next()) {
         // Syntax error if binary operator only has 1 operand
@@ -1111,14 +1111,15 @@ void TokenList::validateAst()
 
         // check for endless recursion
         const Token* parent=tok;
+        std::set < const Token* > astTokens;
         while ((parent = parent->astParent()) != nullptr) {
-            if (parent==tok)
-                throw InternalError(tok, "AST broken: endless recursion from '" + tok->str() + "'", InternalError::SYNTAX);
-            if (astTokens.find(parent)!= astTokens.end()) {
+            if (safeAstTokens.find(parent)!= safeAstTokens.end())
                 break;
-            }
+            if (astTokens.find(parent)!= astTokens.end())
+                throw InternalError(tok, "AST broken: endless recursion from '" + tok->str() + "'", InternalError::SYNTAX);
             astTokens.insert(parent);
         }
+        safeAstTokens.insert(astTokens.begin(), astTokens.end());
     }
 }
 
@@ -1136,7 +1137,7 @@ bool TokenList::validateToken(const Token* tok) const
 {
     if (!tok)
         return true;
-    for (Token *t = _front; t; t = t->next()) {
+    for (const Token *t = _front; t; t = t->next()) {
         if (tok==t)
             return true;
     }
