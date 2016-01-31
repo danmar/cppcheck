@@ -3798,11 +3798,13 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         type = type->next();
     }
 
-    // If no signedness is given for char/short/int/long/longlong type, use default signedness
-    if (valuetype->type >= ValueType::Type::CHAR &&
-        valuetype->type <= ValueType::Type::LONGLONG &&
-        valuetype->sign == ValueType::Sign::UNKNOWN_SIGN)
-        valuetype->sign = defaultSignedness;
+    // Set signedness for integral types..
+    if (valuetype->isIntegral() && valuetype->sign == ValueType::Sign::UNKNOWN_SIGN) {
+        if (valuetype->type == ValueType::Type::CHAR)
+            valuetype->sign = defaultSignedness;
+        else if (valuetype->type >= ValueType::Type::SHORT)
+            valuetype->sign = ValueType::Sign::SIGNED;
+    }
 
     return (type && valuetype->type != ValueType::Type::UNKNOWN_TYPE) ? type : nullptr;
 }

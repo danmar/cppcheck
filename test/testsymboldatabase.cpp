@@ -3174,8 +3174,8 @@ private:
 
         // Variable calculations
         ASSERT_EQUALS("void *", typeOf("void *p; a = p + 1;", "+"));
-        ASSERT_EQUALS("int", typeOf("int x; a = x + 1;", "+"));
-        ASSERT_EQUALS("int", typeOf("int x; a = x | 1;", "|"));
+        ASSERT_EQUALS("signed int", typeOf("int x; a = x + 1;", "+"));
+        ASSERT_EQUALS("signed int", typeOf("int x; a = x | 1;", "|"));
         ASSERT_EQUALS("float", typeOf("float x; a = x + 1;", "+"));
         ASSERT_EQUALS("signed int", typeOf("signed x; a = x + 1;", "x +"));
         ASSERT_EQUALS("unsigned int", typeOf("unsigned x; a = x + 1;", "x +"));
@@ -3184,15 +3184,15 @@ private:
         ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 + u2;", "u1 +"));
         ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 * 2;",  "u1 *"));
         ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 * u2;", "u1 *"));
-        ASSERT_EQUALS("int *", typeOf("int x; a = &x;", "&"));
-        ASSERT_EQUALS("int *", typeOf("int x; a = &x;", "&"));
+        ASSERT_EQUALS("signed int *", typeOf("int x; a = &x;", "&"));
+        ASSERT_EQUALS("signed int *", typeOf("int x; a = &x;", "&"));
         ASSERT_EQUALS("long double", typeOf("long double x; dostuff(x,1);", "x ,"));
         ASSERT_EQUALS("long double *", typeOf("long double x; dostuff(&x,1);", "& x ,"));
-        ASSERT_EQUALS("int", typeOf("struct X {int i;}; void f(struct X x) { x.i }", "."));
+        ASSERT_EQUALS("signed int", typeOf("struct X {int i;}; void f(struct X x) { x.i }", "."));
 
         // shift => result has same type as lhs
-        ASSERT_EQUALS("int", typeOf("int x; a = x << 1U;", "<<"));
-        ASSERT_EQUALS("int", typeOf("int x; a = x >> 1U;", ">>"));
+        ASSERT_EQUALS("signed int", typeOf("int x; a = x << 1U;", "<<"));
+        ASSERT_EQUALS("signed int", typeOf("int x; a = x >> 1U;", ">>"));
         ASSERT_EQUALS("",           typeOf("a = 12 >> x;", ">>", "test.cpp")); // >> might be overloaded
         ASSERT_EQUALS("signed int", typeOf("a = 12 >> x;", ">>", "test.c"));
         ASSERT_EQUALS("",           typeOf("a = 12 << x;", "<<", "test.cpp")); // << might be overloaded
@@ -3200,32 +3200,32 @@ private:
 
         // array..
         ASSERT_EQUALS("void * *", typeOf("void * x[10]; a = x + 0;", "+"));
-        ASSERT_EQUALS("int *", typeOf("int x[10]; a = x + 1;", "+"));
-        ASSERT_EQUALS("int",  typeOf("int x[10]; a = x[0] + 1;", "+"));
+        ASSERT_EQUALS("signed int *", typeOf("int x[10]; a = x + 1;", "+"));
+        ASSERT_EQUALS("signed int",  typeOf("int x[10]; a = x[0] + 1;", "+"));
 
         // cast..
         ASSERT_EQUALS("void *", typeOf("a = (void *)0;", "("));
         ASSERT_EQUALS("char", typeOf("a = (char)32;", "("));
-        ASSERT_EQUALS("long", typeOf("a = (long)32;", "("));
-        ASSERT_EQUALS("long", typeOf("a = (long int)32;", "("));
-        ASSERT_EQUALS("long long", typeOf("a = (long long)32;", "("));
+        ASSERT_EQUALS("signed long", typeOf("a = (long)32;", "("));
+        ASSERT_EQUALS("signed long", typeOf("a = (long int)32;", "("));
+        ASSERT_EQUALS("signed long long", typeOf("a = (long long)32;", "("));
         ASSERT_EQUALS("long double", typeOf("a = (long double)32;", "("));
         ASSERT_EQUALS("char", typeOf("a = static_cast<char>(32);", "("));
         ASSERT_EQUALS("", typeOf("a = (unsigned x)0;", "("));
 
         // const..
         ASSERT_EQUALS("const char *", typeOf("a = \"123\";", "\"123\""));
-        ASSERT_EQUALS("const int *", typeOf("const int *a; x = a + 1;", "a +"));
-        ASSERT_EQUALS("int * const", typeOf("int * const a; x = a + 1;", "+"));
-        ASSERT_EQUALS("const int *", typeOf("const int a[20]; x = a + 1;", "+"));
+        ASSERT_EQUALS("const signed int *", typeOf("const int *a; x = a + 1;", "a +"));
+        ASSERT_EQUALS("signed int * const", typeOf("int * const a; x = a + 1;", "+"));
+        ASSERT_EQUALS("const signed int *", typeOf("const int a[20]; x = a + 1;", "+"));
 
         // function call..
-        ASSERT_EQUALS("int", typeOf("int a(int); a(5);", "( 5"));
+        ASSERT_EQUALS("signed int", typeOf("int a(int); a(5);", "( 5"));
         ASSERT_EQUALS("unsigned long", typeOf("sizeof(x);", "("));
 
         // struct member..
-        ASSERT_EQUALS("int", typeOf("struct AB { int a; int b; } ab; x = ab.a;", "."));
-        ASSERT_EQUALS("int", typeOf("struct AB { int a; int b; } *ab; x = ab[1].a;", "."));
+        ASSERT_EQUALS("signed int", typeOf("struct AB { int a; int b; } ab; x = ab.a;", "."));
+        ASSERT_EQUALS("signed int", typeOf("struct AB { int a; int b; } *ab; x = ab[1].a;", "."));
     }
 };
 

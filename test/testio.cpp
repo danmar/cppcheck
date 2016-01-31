@@ -860,15 +860,12 @@ private:
         TEST_SCANF_WARN("%u", "unsigned int", "char");
         TEST_SCANF_WARN("%u", "unsigned int", "signed char");
         TEST_SCANF_WARN("%u", "unsigned int", "unsigned char");
-        TEST_SCANF_WARN("%u", "unsigned int", "short");
         TEST_SCANF_WARN("%u", "unsigned int", "signed short");
         TEST_SCANF_WARN("%u", "unsigned int", "unsigned short");
-        TEST_SCANF_WARN("%u", "unsigned int", "int");
         TEST_SCANF_WARN("%u", "unsigned int", "signed int");
-        TEST_SCANF_WARN("%u", "unsigned int", "long");
+        TEST_SCANF_NOWARN("%u", "unsigned int", "unsigned int");
         TEST_SCANF_WARN("%u", "unsigned int", "signed long");
         TEST_SCANF_WARN("%u", "unsigned int", "unsigned long");
-        TEST_SCANF_WARN("%u", "unsigned int", "long long");
         TEST_SCANF_WARN("%u", "unsigned int", "signed long long");
         TEST_SCANF_WARN("%u", "unsigned int", "unsigned long long");
         TEST_SCANF_WARN("%u", "unsigned int", "float");
@@ -876,29 +873,26 @@ private:
         TEST_SCANF_WARN("%u", "unsigned int", "long double");
         TEST_SCANF_WARN("%u", "unsigned int", "void *");
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%u", "unsigned int", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%u", "unsigned int", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%u", "unsigned int", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%lu","unsigned long","bool");
         TEST_SCANF_WARN("%lu","unsigned long","char");
         TEST_SCANF_WARN("%lu","unsigned long","signed char");
         TEST_SCANF_WARN("%lu","unsigned long","unsigned char");
-        TEST_SCANF_WARN("%lu","unsigned long","short");
         TEST_SCANF_WARN("%lu","unsigned long","signed short");
         TEST_SCANF_WARN("%lu","unsigned long","unsigned short");
-        TEST_SCANF_WARN("%lu","unsigned long","int");
         TEST_SCANF_WARN("%lu","unsigned long","signed int");
-        TEST_SCANF_WARN("%lu","unsigned long","long");
+        TEST_SCANF_WARN("%lu","unsigned long","unsigned int");
         TEST_SCANF_WARN("%lu","unsigned long","signed long");
         TEST_SCANF_NOWARN("%lu","unsigned long","unsigned long");
-        TEST_SCANF_WARN("%lu","unsigned long","long long");
         TEST_SCANF_WARN("%lu","unsigned long","signed long long");
         TEST_SCANF_WARN("%lu","unsigned long","unsigned long long");
         TEST_SCANF_WARN("%lu","unsigned long","float");
@@ -906,29 +900,26 @@ private:
         TEST_SCANF_WARN("%lu","unsigned long","long double");
         TEST_SCANF_WARN("%lu","unsigned long","void *");
         TEST_SCANF_WARN_AKA("%lu","unsigned long","size_t","unsigned long","unsigned long long");
-        TEST_SCANF_WARN_AKA("%lu","unsigned long","ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%lu","unsigned long","ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%lu","unsigned long","intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%lu","unsigned long","uintmax_t","unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%lu","unsigned long","std::size_t","unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%lu","unsigned long","std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%lu","unsigned long","std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%lu","unsigned long","std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA_WIN64("%lu","unsigned long","std::uintptr_t", "unsigned long long");
 
         TEST_SCANF_WARN("%llu","unsigned long long","bool");
         TEST_SCANF_WARN("%llu","unsigned long long","char");
         TEST_SCANF_WARN("%llu","unsigned long long","signed char");
         TEST_SCANF_WARN("%llu","unsigned long long","unsigned char");
-        TEST_SCANF_WARN("%llu","unsigned long long","short");
         TEST_SCANF_WARN("%llu","unsigned long long","signed short");
         TEST_SCANF_WARN("%llu","unsigned long long","unsigned short");
-        TEST_SCANF_WARN("%llu","unsigned long long","int");
         TEST_SCANF_WARN("%llu","unsigned long long","signed int");
-        TEST_SCANF_WARN("%llu","unsigned long long","long");
+        TEST_SCANF_WARN("%llu","unsigned long long","unsigned int");
         TEST_SCANF_WARN("%llu","unsigned long long","signed long");
         TEST_SCANF_WARN("%llu","unsigned long long","unsigned long");
-        TEST_SCANF_WARN("%llu","unsigned long long","long long");
         TEST_SCANF_WARN("%llu","unsigned long long","signed long long");
         TEST_SCANF_NOWARN("%llu","unsigned long long","unsigned long long");
         TEST_SCANF_WARN("%llu","unsigned long long","float");
@@ -936,29 +927,26 @@ private:
         TEST_SCANF_WARN("%llu","unsigned long long","long double");
         TEST_SCANF_WARN("%llu","unsigned long long","void *");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%llu","unsigned long long","ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%llu","unsigned long long","ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%llu","unsigned long long","intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::intptr_t", "signed long", "signed long long");
         //TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::uintptr_t", "unsigned long long");
 
         TEST_SCANF_WARN("%hu", "unsigned short", "bool");
         TEST_SCANF_WARN("%hu", "unsigned short", "char");
         TEST_SCANF_WARN("%hu", "unsigned short", "signed char");
         TEST_SCANF_WARN("%hu", "unsigned short", "unsigned char");
-        TEST_SCANF_WARN("%hu", "unsigned short", "short");
         TEST_SCANF_WARN("%hu", "unsigned short", "signed short");
         TEST_SCANF_NOWARN("%hu", "unsigned short", "unsigned short");
-        TEST_SCANF_WARN("%hu", "unsigned short", "int");
         TEST_SCANF_WARN("%hu", "unsigned short", "signed int");
-        TEST_SCANF_WARN("%hu", "unsigned short", "long");
+        TEST_SCANF_WARN("%hu", "unsigned short", "unsigned int");
         TEST_SCANF_WARN("%hu", "unsigned short", "signed long");
         TEST_SCANF_WARN("%hu", "unsigned short", "unsigned long");
-        TEST_SCANF_WARN("%hu", "unsigned short", "long long");
         TEST_SCANF_WARN("%hu", "unsigned short", "signed long long");
         TEST_SCANF_WARN("%hu", "unsigned short", "unsigned long long");
         TEST_SCANF_WARN("%hu", "unsigned short", "float");
@@ -966,29 +954,26 @@ private:
         TEST_SCANF_WARN("%hu", "unsigned short", "long double");
         TEST_SCANF_WARN("%hu", "unsigned short", "void *");
         TEST_SCANF_WARN_AKA("%hu", "unsigned short", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%hu", "unsigned short", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%hhu", "unsigned char", "bool");
         TEST_SCANF_WARN("%hhu", "unsigned char", "char");
         TEST_SCANF_WARN("%hhu", "unsigned char", "signed char");
         TEST_SCANF_NOWARN("%hhu", "unsigned char", "unsigned char");
-        TEST_SCANF_WARN("%hhu", "unsigned char", "short");
         TEST_SCANF_WARN("%hhu", "unsigned char", "signed short");
         TEST_SCANF_WARN("%hhu", "unsigned char", "unsigned short");
-        TEST_SCANF_WARN("%hhu", "unsigned char", "int");
         TEST_SCANF_WARN("%hhu", "unsigned char", "signed int");
-        TEST_SCANF_WARN("%hhu", "unsigned char", "long");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "unsigned int");
         TEST_SCANF_WARN("%hhu", "unsigned char", "signed long");
         TEST_SCANF_WARN("%hhu", "unsigned char", "unsigned long");
-        TEST_SCANF_WARN("%hhu", "unsigned char", "long long");
         TEST_SCANF_WARN("%hhu", "unsigned char", "signed long long");
         TEST_SCANF_WARN("%hhu", "unsigned char", "unsigned long long");
         TEST_SCANF_WARN("%hhu", "unsigned char", "float");
@@ -996,29 +981,26 @@ private:
         TEST_SCANF_WARN("%hhu", "unsigned char", "long double");
         TEST_SCANF_WARN("%hhu", "unsigned char", "void *");
         TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%Lu", "unsigned long long", "bool");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "char");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "signed char");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "unsigned char");
-        TEST_SCANF_WARN("%Lu", "unsigned long long", "short");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "signed short");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "unsigned short");
-        TEST_SCANF_WARN("%Lu", "unsigned long long", "int");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "signed int");
-        TEST_SCANF_WARN("%Lu", "unsigned long long", "long");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "unsigned int");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "signed long");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "unsigned long");
-        TEST_SCANF_WARN("%Lu", "unsigned long long", "long long");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "signed long long");
         TEST_SCANF_NOWARN("%Lu", "unsigned long long", "unsigned long long");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "float");
@@ -1026,29 +1008,26 @@ private:
         TEST_SCANF_WARN("%Lu", "unsigned long long", "long double");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "void *");
         TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::intptr_t", "signed long", "signed long long");
         // TODO TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%ju", "uintmax_t", "bool");
         TEST_SCANF_WARN("%ju", "uintmax_t", "char");
         TEST_SCANF_WARN("%ju", "uintmax_t", "signed char");
         TEST_SCANF_WARN("%ju", "uintmax_t", "unsigned char");
-        TEST_SCANF_WARN("%ju", "uintmax_t", "short");
         TEST_SCANF_WARN("%ju", "uintmax_t", "signed short");
         TEST_SCANF_WARN("%ju", "uintmax_t", "unsigned short");
-        TEST_SCANF_WARN("%ju", "uintmax_t", "int");
         TEST_SCANF_WARN("%ju", "uintmax_t", "signed int");
-        TEST_SCANF_WARN("%ju", "uintmax_t", "long");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "unsigned int");
         TEST_SCANF_WARN("%ju", "uintmax_t", "signed long");
         TEST_SCANF_WARN("%ju", "uintmax_t", "unsigned long");
-        TEST_SCANF_WARN("%ju", "uintmax_t", "long long");
         TEST_SCANF_WARN("%ju", "uintmax_t", "signed long long");
         TEST_SCANF_WARN("%ju", "uintmax_t", "unsigned long long");
         TEST_SCANF_WARN("%ju", "uintmax_t", "float");
@@ -1056,29 +1035,26 @@ private:
         TEST_SCANF_WARN("%ju", "uintmax_t", "long double");
         TEST_SCANF_WARN("%ju", "uintmax_t", "void *");
         TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_NOWARN("%ju", "uintmax_t", "uintmax_t");
         TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%zu", "size_t", "bool");
         TEST_SCANF_WARN("%zu", "size_t", "char");
         TEST_SCANF_WARN("%zu", "size_t", "signed char");
         TEST_SCANF_WARN("%zu", "size_t", "unsigned char");
-        TEST_SCANF_WARN("%zu", "size_t", "short");
         TEST_SCANF_WARN("%zu", "size_t", "signed short");
         TEST_SCANF_WARN("%zu", "size_t", "unsigned short");
-        TEST_SCANF_WARN("%zu", "size_t", "int");
         TEST_SCANF_WARN("%zu", "size_t", "signed int");
-        TEST_SCANF_WARN("%zu", "size_t", "long");
+        TEST_SCANF_WARN("%zu", "size_t", "unsigned int");
         TEST_SCANF_WARN("%zu", "size_t", "signed long");
         TEST_SCANF_WARN("%zu", "size_t", "unsigned long");
-        TEST_SCANF_WARN("%zu", "size_t", "long long");
         TEST_SCANF_WARN("%zu", "size_t", "signed long long");
         TEST_SCANF_WARN("%zu", "size_t", "unsigned long long");
         TEST_SCANF_WARN("%zu", "size_t", "float");
@@ -1086,29 +1062,26 @@ private:
         TEST_SCANF_WARN("%zu", "size_t", "long double");
         TEST_SCANF_WARN("%zu", "size_t", "void *");
         TEST_SCANF_NOWARN("%zu", "size_t", "size_t");
-        TEST_SCANF_WARN_AKA("%zu", "size_t", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%zu", "size_t", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%zu", "size_t", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%zu", "size_t", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_NOWARN("%zu", "size_t", "std::size_t");
-        TEST_SCANF_WARN_AKA("%zu", "size_t", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%zu", "size_t", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%zu", "size_t", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%zu", "size_t", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "bool");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "char");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "signed char");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "unsigned char");
-        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "short");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "signed short");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "unsigned short");
-        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "int");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "signed int");
-        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "long");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "unsigned int");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "signed long");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "unsigned long");
-        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "long long");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "signed long long");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "unsigned long long");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "float");
@@ -1116,58 +1089,52 @@ private:
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "long double");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "void *");
         TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "bool");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "char");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "signed char");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "unsigned char");
-        TEST_SCANF_WARN("%I64u", "unsigned __int64", "short");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "signed short");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "unsigned short");
-        TEST_SCANF_WARN("%I64u", "unsigned __int64", "int");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "signed int");
-        TEST_SCANF_WARN("%I64u", "unsigned __int64", "long");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "unsigned int");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "signed long");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "unsigned long");
-        TEST_SCANF_WARN("%I64u", "unsigned __int64", "long long");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "signed long long");
         TEST_SCANF_NOWARN("%I64u", "unsigned __int64", "unsigned long long");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "float");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "double");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "long double");
         TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "size_t", "unsigned long");
-        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "uintmax_t", "unsigned long");
         TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "std::size_t", "unsigned long");
-        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "std::uintptr_t", "unsigned long");
 
         TEST_SCANF_WARN("%d", "int", "bool");
         TEST_SCANF_WARN("%d", "int", "char");
         TEST_SCANF_WARN("%d", "int", "signed char");
         TEST_SCANF_WARN("%d", "int", "unsigned char");
-        TEST_SCANF_WARN("%d", "int", "short");
         TEST_SCANF_WARN("%d", "int", "signed short");
         TEST_SCANF_WARN("%d", "int", "unsigned short");
-        TEST_SCANF_NOWARN("%d", "int", "int");
         TEST_SCANF_NOWARN("%d", "int", "signed int");
-        TEST_SCANF_WARN("%d", "int", "long");
+        TEST_SCANF_WARN("%d", "int", "unsigned int");
         TEST_SCANF_WARN("%d", "int", "signed long");
         TEST_SCANF_WARN("%d", "int", "unsigned long");
-        TEST_SCANF_WARN("%d", "int", "long long");
         TEST_SCANF_WARN("%d", "int", "signed long long");
         TEST_SCANF_WARN("%d", "int", "unsigned long long");
         TEST_SCANF_WARN("%d", "int", "float");
@@ -1175,29 +1142,26 @@ private:
         TEST_SCANF_WARN("%d", "int", "long double");
         TEST_SCANF_WARN("%d", "int", "void *");
         TEST_SCANF_WARN_AKA("%d", "int", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%d", "int", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%d", "int", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%d", "int", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%d", "int", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%d", "int", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%d", "int", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%d", "int", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%d", "int", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%d", "int", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%x", "unsigned int", "bool");
         TEST_SCANF_WARN("%x", "unsigned int", "char");
         TEST_SCANF_WARN("%x", "unsigned int", "signed char");
         TEST_SCANF_WARN("%x", "unsigned int", "unsigned char");
-        TEST_SCANF_WARN("%x", "unsigned int", "short");
         TEST_SCANF_WARN("%x", "unsigned int", "signed short");
         TEST_SCANF_WARN("%x", "unsigned int", "unsigned short");
-        TEST_SCANF_WARN("%x", "unsigned int", "int");
         TEST_SCANF_WARN("%x", "unsigned int", "signed int");
-        TEST_SCANF_WARN("%x", "unsigned int", "long");
+        TEST_SCANF_NOWARN("%x", "unsigned int", "unsigned int");
         TEST_SCANF_WARN("%x", "unsigned int", "signed long");
         TEST_SCANF_WARN("%x", "unsigned int", "unsigned long");
-        TEST_SCANF_WARN("%x", "unsigned int", "long long");
         TEST_SCANF_WARN("%x", "unsigned int", "signed long long");
         TEST_SCANF_WARN("%x", "unsigned int", "unsigned long long");
         TEST_SCANF_WARN("%x", "unsigned int", "float");
@@ -1205,29 +1169,26 @@ private:
         TEST_SCANF_WARN("%x", "unsigned int", "long double");
         TEST_SCANF_WARN("%x", "unsigned int", "void *");
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%x", "unsigned int", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%x", "unsigned int", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%x", "unsigned int", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%f", "float", "bool");
         TEST_SCANF_WARN("%f", "float", "char");
         TEST_SCANF_WARN("%f", "float", "signed char");
         TEST_SCANF_WARN("%f", "float", "unsigned char");
-        TEST_SCANF_WARN("%f", "float", "short");
         TEST_SCANF_WARN("%f", "float", "signed short");
         TEST_SCANF_WARN("%f", "float", "unsigned short");
-        TEST_SCANF_WARN("%f", "float", "int");
         TEST_SCANF_WARN("%f", "float", "signed int");
-        TEST_SCANF_WARN("%f", "float", "long");
+        TEST_SCANF_WARN("%f", "float", "unsigned int");
         TEST_SCANF_WARN("%f", "float", "signed long");
         TEST_SCANF_WARN("%f", "float", "unsigned long");
-        TEST_SCANF_WARN("%f", "float", "long long");
         TEST_SCANF_WARN("%f", "float", "signed long long");
         TEST_SCANF_WARN("%f", "float", "unsigned long long");
         TEST_SCANF_NOWARN("%f", "float", "float");
@@ -1235,29 +1196,26 @@ private:
         TEST_SCANF_WARN("%f", "float", "long double");
         TEST_SCANF_WARN("%f", "float", "void *");
         TEST_SCANF_WARN_AKA("%f", "float", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%f", "float", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%f", "float", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%f", "float", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%f", "float", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%f", "float", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%f", "float", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%f", "float", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%f", "float", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%f", "float", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%lf", "double", "bool");
         TEST_SCANF_WARN("%lf", "double", "char");
         TEST_SCANF_WARN("%lf", "double", "signed char");
         TEST_SCANF_WARN("%lf", "double", "unsigned char");
-        TEST_SCANF_WARN("%lf", "double", "short");
         TEST_SCANF_WARN("%lf", "double", "signed short");
         TEST_SCANF_WARN("%lf", "double", "unsigned short");
-        TEST_SCANF_WARN("%lf", "double", "int");
         TEST_SCANF_WARN("%lf", "double", "signed int");
-        TEST_SCANF_WARN("%lf", "double", "long");
+        TEST_SCANF_WARN("%lf", "double", "unsigned int");
         TEST_SCANF_WARN("%lf", "double", "signed long");
         TEST_SCANF_WARN("%lf", "double", "unsigned long");
-        TEST_SCANF_WARN("%lf", "double", "long long");
         TEST_SCANF_WARN("%lf", "double", "signed long long");
         TEST_SCANF_WARN("%lf", "double", "unsigned long long");
         TEST_SCANF_WARN("%lf", "double", "float");
@@ -1265,29 +1223,26 @@ private:
         TEST_SCANF_WARN("%lf", "double", "long double");
         TEST_SCANF_WARN("%lf", "double", "void *");
         TEST_SCANF_WARN_AKA("%lf", "double", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%lf", "double", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%lf", "double", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%lf", "double", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%lf", "double", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%lf", "double", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%lf", "double", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%lf", "double", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%lf", "double", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%lf", "double", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%Lf", "long double", "bool");
         TEST_SCANF_WARN("%Lf", "long double", "char");
         TEST_SCANF_WARN("%Lf", "long double", "signed char");
         TEST_SCANF_WARN("%Lf", "long double", "unsigned char");
-        TEST_SCANF_WARN("%Lf", "long double", "short");
         TEST_SCANF_WARN("%Lf", "long double", "signed short");
         TEST_SCANF_WARN("%Lf", "long double", "unsigned short");
-        TEST_SCANF_WARN("%Lf", "long double", "int");
         TEST_SCANF_WARN("%Lf", "long double", "signed int");
-        TEST_SCANF_WARN("%Lf", "long double", "long");
+        TEST_SCANF_WARN("%Lf", "long double", "unsigned int");
         TEST_SCANF_WARN("%Lf", "long double", "signed long");
         TEST_SCANF_WARN("%Lf", "long double", "unsigned long");
-        TEST_SCANF_WARN("%Lf", "long double", "long long");
         TEST_SCANF_WARN("%Lf", "long double", "signed long long");
         TEST_SCANF_WARN("%Lf", "long double", "unsigned long long");
         TEST_SCANF_WARN("%Lf", "long double", "float");
@@ -1295,29 +1250,26 @@ private:
         TEST_SCANF_NOWARN("%Lf", "long double", "long double");
         TEST_SCANF_WARN("%Lf", "long double", "void *");
         TEST_SCANF_WARN_AKA("%Lf", "long double", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%Lf", "long double", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%Lf", "long double", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%Lf", "long double", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%Lf", "long double", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%Lf", "long double", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%Lf", "long double", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%Lf", "long double", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%Lf", "long double", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%Lf", "long double", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%n", "int", "bool");
         TEST_SCANF_WARN("%n", "int", "char");
         TEST_SCANF_WARN("%n", "int", "signed char");
         TEST_SCANF_WARN("%n", "int", "unsigned char");
-        TEST_SCANF_WARN("%n", "int", "short");
         TEST_SCANF_WARN("%n", "int", "signed short");
         TEST_SCANF_WARN("%n", "int", "unsigned short");
-        TEST_SCANF_NOWARN("%n", "int", "int");
         TEST_SCANF_NOWARN("%n", "int", "signed int");
-        TEST_SCANF_WARN("%n", "int", "long");
+        TEST_SCANF_WARN("%n", "int", "unsigned int");
         TEST_SCANF_WARN("%n", "int", "signed long");
         TEST_SCANF_WARN("%n", "int", "unsigned long");
-        TEST_SCANF_WARN("%n", "int", "long long");
         TEST_SCANF_WARN("%n", "int", "signed long long");
         TEST_SCANF_WARN("%n", "int", "unsigned long long");
         TEST_SCANF_WARN("%n", "int", "float");
@@ -1325,14 +1277,14 @@ private:
         TEST_SCANF_WARN("%n", "int", "long double");
         TEST_SCANF_WARN("%n", "int", "void *");
         TEST_SCANF_WARN_AKA("%n", "int", "size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%n", "int", "ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%n", "int", "ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%n", "int", "intmax_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%n", "int", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%n", "int", "std::size_t", "unsigned long", "unsigned long long");
-        TEST_SCANF_WARN_AKA("%n", "int", "std::ssize_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%n", "int", "std::ptrdiff_t", "long", "long long");
-        TEST_SCANF_WARN_AKA("%n", "int", "std::intptr_t", "long", "long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%n", "int", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         check("void g() {\n" // #5104
@@ -1697,7 +1649,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:13]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'double'.\n"
                       "[test.cpp:13]: (warning) %f in format string (no. 2) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:13]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'int'.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'signed int'.\n"
                       "[test.cpp:13]: (warning) %d in format string (no. 4) requires 'int' but the argument type is 'double'.\n"
                       "[test.cpp:13]: (warning) %f in format string (no. 5) requires 'double' but the argument type is 'int'.\n"
                       "[test.cpp:13]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'int'.\n", errout.str());
@@ -1822,11 +1774,11 @@ private:
 
         check("struct Fred { int i; } f;\n"
               "void foo() { printf(\"%d %u %lu %f %Lf %p\", f.i, f.i, f.i, f.i, f.i, f.i); }");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Fred { unsigned int u; } f;\n"
               "void foo() { printf(\"%u %d %ld %f %Lf %p\", f.u, f.u, f.u, f.u, f.u, f.u); }");
@@ -1849,7 +1801,7 @@ private:
               "    printf(\"%s\", newline ? a : str + len);\n"
               "    printf(\"%s\", newline + newline);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Fred { int i; } f;\n"
               "struct Fred & bar() { };\n"
@@ -2158,10 +2110,10 @@ private:
               "    long * l;\n"
               "    printf(\"%d %x %u %f\", l[i], l[i], l[i], l[i]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'long'.\n"
-                      "[test.cpp:3]: (warning) %x in format string (no. 2) requires 'unsigned int' but the argument type is 'long'.\n"
-                      "[test.cpp:3]: (warning) %u in format string (no. 3) requires 'unsigned int' but the argument type is 'long'.\n"
-                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'long'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'signed long'.\n"
+                      "[test.cpp:3]: (warning) %x in format string (no. 2) requires 'unsigned int' but the argument type is 'signed long'.\n"
+                      "[test.cpp:3]: (warning) %u in format string (no. 3) requires 'unsigned int' but the argument type is 'signed long'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'signed long'.\n", errout.str());
 
         check("void f() {\n" // #5104
               "    myvector<unsigned short> v1(1,0);\n"
@@ -2366,10 +2318,10 @@ private:
               "    scanf(\"%I64d %I64u %I64x\", &u64, &u64, &u64);\n"
               "}", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:8]: (warning) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                      "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka int *}'.\n"
+                      "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long *}'.\n"
+                      "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
                       "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
-                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka long long *}'.\n"
+                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
                       "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout.str());
 
         check("void foo() {\n"
@@ -2387,10 +2339,10 @@ private:
               "    scanf(\"%I64d %I64u %I64x\", &u64, &u64, &u64);\n"
               "}", false, false, Settings::Win64);
         ASSERT_EQUALS("[test.cpp:8]: (warning) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                      "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                      "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka int *}'.\n"
+                      "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long long *}'.\n"
+                      "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
                       "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
-                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka long long *}'.\n"
+                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
                       "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout.str());
 
         check("void foo() {\n"
@@ -2658,7 +2610,7 @@ private:
               "    _tscanf_s(_T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) _tscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2668,7 +2620,7 @@ private:
               "    _tscanf_s(_T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) _tscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2678,7 +2630,7 @@ private:
               "    scanf_s(\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) scanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2688,7 +2640,7 @@ private:
               "    wscanf_s(L\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) wscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2699,7 +2651,7 @@ private:
               "    _stscanf_s(txt, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:6]: (warning) _stscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2710,7 +2662,7 @@ private:
               "    _stscanf_s(txt, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:6]: (warning) _stscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2721,7 +2673,7 @@ private:
               "    sscanf_s(txt, \"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:6]: (warning) sscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2732,7 +2684,7 @@ private:
               "    swscanf_s(txt, L\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:6]: (warning) swscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -2742,7 +2694,7 @@ private:
               "    _ftscanf_s(fp, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) _ftscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -2752,7 +2704,7 @@ private:
               "    _ftscanf_s(fp, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) _ftscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -2762,7 +2714,7 @@ private:
               "    fscanf_s(fp, \"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) fscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -2772,7 +2724,7 @@ private:
               "    fwscanf_s(fp, L\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) fwscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2811,7 +2763,7 @@ private:
         check("void test() {\n"
               "    printf(\"%i\", (short *)x);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %i in format string (no. 1) requires 'int' but the argument type is 'short *'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %i in format string (no. 1) requires 'int' but the argument type is 'signed short *'.\n", errout.str());
     }
 };
 
