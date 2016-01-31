@@ -772,8 +772,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             break;
         }
         if (tok->isName() && tok->str().back() == '>') {
+            // TODO: This is a quick fix to handle when constants are used
+            // as template parameters. Try to handle this better, perhaps
+            // only remove constants.
             variables.clear();
-            break;
         }
 
         // bailout when for_each is used
