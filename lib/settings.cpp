@@ -175,8 +175,8 @@ bool Settings::platform(PlatformType type)
         sizeof_size_t = sizeof(std::size_t);
         sizeof_pointer = sizeof(void *);
         {
-            int x = 2;
-            defaultSign = (-10 / x == -5) ? 's' : 'u';
+            char x = -1;
+            defaultSign = (x < 0) ? 's' : 'u';
         }
         char_bit = 8;
         short_bit = char_bit * sizeof_short;
