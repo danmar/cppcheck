@@ -152,10 +152,12 @@ SOURCES += aboutdialog.cpp \
     libraryeditargdialog.cpp
 
 win32 {
-    DEFINES += _CRT_SECURE_NO_WARNINGS
     RC_FILE = cppcheck-gui.rc
     HEADERS += ../lib/version.h
-    LIBS += -lshlwapi
+    contains(LINKCORE, [yY][eE][sS]) {
+    } else {
+        LIBS += -lshlwapi
+    }
 }
 
 contains(QMAKE_CC, gcc) {

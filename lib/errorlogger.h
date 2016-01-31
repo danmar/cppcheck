@@ -192,9 +192,9 @@ public:
             std::string stringify() const;
 
             unsigned int line;
+
         private:
             std::string _file;
-
         };
 
         ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
