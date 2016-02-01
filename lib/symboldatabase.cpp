@@ -1393,11 +1393,6 @@ void SymbolDatabase::validate() const
     }
 }
 
-void SymbolDatabase::cppcheckError(const Token *tok) const
-{
-    throw InternalError(tok, "Analysis failed. If the code is valid then please report this failure.", InternalError::INTERNAL);
-}
-
 bool Variable::isPointerArray() const
 {
     return isArray() && nameToken() && nameToken()->previous() && (nameToken()->previous()->str() == "*");
