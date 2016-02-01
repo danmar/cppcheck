@@ -554,7 +554,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>severity</term>
 
         <listitem>
-          <para>severity</para>
+		<para>a type/rank of message</para>
         </listitem>
       </varlistentry>
     </variablelist>
