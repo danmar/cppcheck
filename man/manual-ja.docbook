@@ -94,13 +94,13 @@ Checking path/file2.cpp...
 
       <para>Cppcheckのプリプロセッサは基本的に他のプリプロセッサと同様にインクルードを扱います。しかし、その他のプリプロセッサはヘッダファイルが見つからない場合に停止するのとは違って、cppcheckはただ単に、メッセージ情報を表示してソースコードの解析を続けます。</para>
 
-      <para>cppcheckは常にソースコード全体を確認する必要のないので、このような仕様になっています。実際に、全てのインクルードパスを与えないことを推奨しています。もちろん、クラスのメンバーの実装を確認した上でクラスの宣言をCppcheckでチェックするのは有用ではありますが、標準ライブラリのヘッダーをCppcheckに確認させるのは有用ではありません。というのは、チェックにかかる時間が長くなり、あまりよくない結果が表示されるからです。そのような場合、.cfg ファイル (後述します)によってcppcheckに関数や型の実装の情報を提供する方がよいでしょう。</para>
+      <para>cppcheckは常にソースコード全体を確認する必要がないので、このような仕様になっています。実際に、全てのインクルードパスを与えないことを推奨しています。もちろん、クラスのメンバーの実装を確認した上でクラスの宣言をCppcheckでチェックするのは有用ではありますが、標準ライブラリのヘッダーをCppcheckに確認させるのは有用ではありません。というのは、チェックにかかる時間が長くなり、あまりよくない結果が表示されるからです。そのような場合、.cfg ファイル (後述します)によってcppcheckに関数や型の実装の情報を提供する方がよいでしょう。</para>
     </section>
 
     <section>
       <title>Severities(厳格度)</title>
 
-      <para>メッセージの厳格度severitiesには次のものがあります。:</para>
+      <para>メッセージのseverities(厳格度)には次のものがあります。:</para>
 
       <variablelist>
         <varlistentry>
@@ -139,7 +139,7 @@ Checking path/file2.cpp...
           <term>portability</term>
 
           <listitem>
-            <para>移植性についての警告64-bit の移植性または、コンパイラを変更してもコードが動作するかどうかについての警告。など。</para>
+            <para>移植性についての警告。64 bit CPUへの移植性。コンパイラ依存(独自拡張)ソースコードについての警告など。</para>
           </listitem>
         </varlistentry>
 
@@ -205,7 +205,7 @@ cppcheck --enable=all</programlisting>
     <section>
       <title>マルチスレッドチェック</title>
 
-      <para>オプションの -j を使用してスレッド数を指定することができます。例えば、4スレッドを使ってフォルダ以下の全てのファイルをチェックする場合は次のように実行します。</para>
+      <para>オプションの <literal>-j</literal> を使用してスレッド数を指定することができます。例えば、4スレッドを使ってフォルダ以下の全てのファイルをチェックする場合は次のように実行します。</para>
 
       <programlisting>cppcheck -j 4 path</programlisting>
 
@@ -275,7 +275,7 @@ cppcheck -DA --force file.c</programlisting>
         </varlistentry>
 
         <varlistentry>
-          <term><sgmltag class="attribute">厳格度(severity)</sgmltag></term>
+          <term><sgmltag class="attribute">severity</sgmltag></term>
 
           <listitem>
             <para>以下のいずれかです: <literal>error</literal>, <literal>warning</literal>, <literal>style</literal>, <literal>performance</literal>, <literal>portability</literal>, <literal>information</literal></para>
@@ -430,10 +430,10 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
       </varlistentry>
 
       <varlistentry>
-        <term>厳格度(severity)</term>
+        <term>severity</term>
 
         <listitem>
-          <para>厳格度(severity)</para>
+          <para>severity</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -651,16 +651,16 @@ Checking uninit.c...
     </section>
 
     <section>
-      <title>関数引数: ヌルポインター</title>
+      <title>関数引数: ヌルポインタ</title>
 
-      <para>Cppcheckは、関数にヌルポインターを渡してもよいと仮定しています。ここにサンプルのプログラムがあります。:</para>
+      <para>Cppcheckは、関数にヌルポインタを渡してもよいと仮定しています。ここにサンプルのプログラムがあります。:</para>
 
       <programlisting>void test()
 {
     CopyMemory(NULL, NULL, 1024);
 }</programlisting>
 
-      <para>MSDNの文書はこれが問題あるかないかを明らかにしていません。しかし、ここでは問題ありと仮定します。Cppcheck は関数にヌルポインターを渡してもよいと仮定していますので、エラーを出力しません。:</para>
+      <para>MSDNの文書はこれが問題あるかないかを明らかにしていません。しかし、ここでは問題ありと仮定します。Cppcheck は関数にヌルポインタを渡してもよいと仮定していますので、エラーを出力しません。:</para>
 
       <programlisting># cppcheck null.c 
 Checking null.c...</programlisting>
@@ -957,7 +957,7 @@ Checking unusedvar.cpp...
     <section>
       <title>container</title>
 
-      <para>C++ ライブラリの多くや STL 自身は、非常によく似た機能性をもつコンテナを提供する。ライブラリによってその動作をcppcheckに伝えることができる。それぞれのコンテナの設定にはユニークなIDが必要とします。コンテナの設定には、startPatternを加えることができます(オプション)。この startPatternはToken::Match パターンとendPattern に有効でなけばなりません。また、このendPatternはリンクしているトークンと比較されるものです。オブション属性の&quot;inherits&quot;は事前に定義されたコンテン containerのIDをとります。</para>
+      <para>C++ ライブラリの多くや STL 自身は、非常によく似た機能性をもつコンテナを提供する。ライブラリによってその動作をcppcheckに伝えることができる。それぞれのコンテナの設定にはユニークなIDが必要とします。コンテナの設定には、startPatternを加えることができます(オプション)。この startPatternはToken::Match パターンとendPattern に有効でなけばなりません。また、このendPatternはリンクしているトークンと比較されるものです。オブション属性の&quot;inherits&quot;は事前に定義されたコンテナのIDをとります。</para>
 
       <para>&lt;container&gt;タグの内部で、&lt;size&gt;、&lt;access&gt;、&lt;other&gt;を選択して使用して関数を定義できます。これらのタグはそれぞれ、&quot;resize&quot; やその結果を与えるような動作を指定することができます。その例 &quot;end-iterator&quot;を示します。</para>
 
@@ -1001,9 +1001,9 @@ Checking unusedvar.cpp...
 
       <para>この<literal>&lt;noreturn&gt;</literal> は、この関数が、返り値を返すかどうかをCppchecに伝えます。</para>
 
-      <para>この関数は第一引数にポインターを取ります。しかしこのポインタは、ヌルポインターであってはなりません。というのは<literal>&lt;not-null&gt;</literal>が使用されているからです。</para>
+      <para>この関数は第一引数にポインタを取ります。しかしこのポインタは、ヌルポインタであってはなりません。というのは<literal>&lt;not-null&gt;</literal>が使用されているからです。</para>
 
-      <para>この関数は第二引数にポインターを取ります。このポインタはヌルポインタであってはなりません。また、このポインタは初期化されたデータを指していなければなりません。<literal>&lt;not-null&gt;</literal> と <literal>&lt;not-uninit&gt;</literal> は正しく使用されています。さらにいえば、このポインタは0終端文字列(zero-terminated string)でなければなりません。そのため&lt;strz&gt;が使用されています。</para>
+      <para>この関数は第二引数にポインタを取ります。このポインタはヌルポインタであってはなりません。また、このポインタは初期化されたデータを指していなければなりません。<literal>&lt;not-null&gt;</literal> と <literal>&lt;not-uninit&gt;</literal> は正しく使用されています。さらにいえば、このポインタは0終端文字列(zero-terminated string)でなければなりません。そのため&lt;strz&gt;が使用されています。</para>
     </section>
 
     <section>
