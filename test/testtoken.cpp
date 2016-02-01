@@ -138,8 +138,6 @@ private:
         // Test for empty string found
         Token notfound(0);
         notfound.str("notfound");
-        ASSERT_EQUALS(0, Token::multiCompare(&notfound, "|one|two", 0));
-        ASSERT_EQUALS(0, Token::multiCompare(&notfound, "one||two", 0));
         ASSERT_EQUALS(0, Token::multiCompare(&notfound, "one|two|", 0));
 
         // Test for not found

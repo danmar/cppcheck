@@ -324,7 +324,7 @@ const std::string &Token::strAt(int index) const
     return tok ? tok->_str : emptyString;
 }
 
-static int multiComparePercent(const Token *tok, const char*& haystack, bool emptyStringFound, unsigned int varid)
+static int multiComparePercent(const Token *tok, const char*& haystack, unsigned int varid)
 {
     ++haystack;
     // Compare only the first character of the string for optimization reasons
@@ -458,8 +458,6 @@ static int multiComparePercent(const Token *tok, const char*& haystack, bool emp
 
     if (*haystack == '|')
         haystack += 1;
-    else if (*haystack == ' ' || *haystack == '\0')
-        return emptyStringFound ? 0 : -1;
     else
         return -1;
 
@@ -468,22 +466,17 @@ static int multiComparePercent(const Token *tok, const char*& haystack, bool emp
 
 int Token::multiCompare(const Token *tok, const char *haystack, unsigned int varid)
 {
-    bool emptyStringFound = false;
     const char *needle = tok->str().c_str();
     const char *needlePointer = needle;
     for (;;) {
         if (needlePointer == needle && haystack[0] == '%' && haystack[1] != '|' && haystack[1] != '\0' && haystack[1] != ' ') {
-            int ret = multiComparePercent(tok, haystack, emptyStringFound, varid);
+            int ret = multiComparePercent(tok, haystack, varid);
             if (ret < 2)
                 return ret;
         } else if (*haystack == '|') {
             if (*needlePointer == 0) {
                 // If needle is at the end, we have a match.
                 return 1;
-            } else if (needlePointer == needle) {
-                // If needlePointer was not increased at all, we had a empty
-                // string in the haystack
-                emptyStringFound = true;
             }
 
             needlePointer = needle;
@@ -508,7 +501,7 @@ int Token::multiCompare(const Token *tok, const char *haystack, unsigned int var
             } while (*haystack != ' ' && *haystack != '|' && *haystack);
 
             if (*haystack == ' ' || *haystack == '\0') {
-                return emptyStringFound ? 0 : -1;
+                return -1;
             }
 
             ++haystack;
@@ -517,10 +510,6 @@ int Token::multiCompare(const Token *tok, const char *haystack, unsigned int var
 
     if (*needlePointer == '\0')
         return 1;
-
-    // If empty string was found earlier from the haystack
-    if (emptyStringFound)
-        return 0;
 
     return -1;
 }
