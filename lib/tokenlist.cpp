@@ -1098,8 +1098,8 @@ void TokenList::createAst()
 
 void TokenList::validateAst()
 {
-    std::set < const Token* > safeAstTokens;
-    // Verify that ast looks ok
+    // Check for some known issues in AST to avoid crash/hang later on
+    std::set < const Token* > safeAstTokens; // list of "safe" AST tokens without endless recursion
     for (const Token *tok = _front; tok; tok = tok->next()) {
         // Syntax error if binary operator only has 1 operand
         if ((tok->isAssignmentOp() || tok->isComparisonOp() || Token::Match(tok,"[|^/%]")) && tok->astOperand1() && !tok->astOperand2())
@@ -1109,17 +1109,21 @@ void TokenList::validateAst()
         if (tok->astOperand2() && tok->str() == "?" && tok->astOperand2()->str() != ":")
             throw InternalError(tok, "Syntax Error: AST broken, ternary operator lacks ':'.", InternalError::SYNTAX);
 
-        // check for endless recursion
-        const Token* parent=tok;
-        std::set < const Token* > astTokens;
-        while ((parent = parent->astParent()) != nullptr) {
-            if (safeAstTokens.find(parent)!= safeAstTokens.end())
-                break;
-            if (astTokens.find(parent)!= astTokens.end())
-                throw InternalError(tok, "AST broken: endless recursion from '" + tok->str() + "'", InternalError::SYNTAX);
-            astTokens.insert(parent);
-        }
-        safeAstTokens.insert(astTokens.begin(), astTokens.end());
+        // Check for endless recursion
+        const Token* parent=tok->astParent();
+        if (parent) {
+            std::set < const Token* > astTokens; // list of anchestors
+            astTokens.insert(tok);
+            do {
+                if (safeAstTokens.find(parent) != safeAstTokens.end())
+                    break;
+                if (astTokens.find(parent) != astTokens.end())
+                    throw InternalError(tok, "AST broken: endless recursion from '" + tok->str() + "'", InternalError::SYNTAX);
+                astTokens.insert(parent);
+            } while ((parent = parent->astParent()) != nullptr);
+            safeAstTokens.insert(astTokens.begin(), astTokens.end());
+        } else
+            safeAstTokens.insert(tok);
     }
 }
 
