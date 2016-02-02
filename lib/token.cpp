@@ -196,11 +196,13 @@ void Token::swapWithNext()
         std::swap(_flags, _next->_flags);
         std::swap(_varId, _next->_varId);
         std::swap(_fileIndex, _next->_fileIndex);
+        std::swap(_linenr, _next->_linenr);
         std::swap(_link, _next->_link);
         std::swap(_scope, _next->_scope);
         std::swap(_function, _next->_function);
         std::swap(_originalName, _next->_originalName);
         std::swap(values, _next->values);
+        std::swap(valuetype, _next->valuetype);
         std::swap(_progressValue, _next->_progressValue);
     }
 }
@@ -225,6 +227,11 @@ void Token::deleteThis()
             _next->_originalName = nullptr;
         }
         values = _next->values;
+        if (_next->valuetype) {
+            delete valuetype;
+            valuetype = _next->valuetype;
+            _next->valuetype = nullptr;
+        }
         if (_link)
             _link->link(this);
 
@@ -247,6 +254,11 @@ void Token::deleteThis()
             _previous->_originalName = nullptr;
         }
         values = _previous->values;
+        if (_previous->valuetype) {
+            delete valuetype;
+            valuetype = _previous->valuetype;
+            _previous->valuetype = nullptr;
+        }
         if (_link)
             _link->link(this);
 
