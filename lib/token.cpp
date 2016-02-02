@@ -197,6 +197,10 @@ void Token::swapWithNext()
         std::swap(_varId, _next->_varId);
         std::swap(_fileIndex, _next->_fileIndex);
         std::swap(_linenr, _next->_linenr);
+        if (_next->_link)
+            _next->_link->_link = this;
+        if (this->_link)
+            this->_link->_link = _next;
         std::swap(_link, _next->_link);
         std::swap(_scope, _next->_scope);
         std::swap(_function, _next->_function);
