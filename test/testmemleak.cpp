@@ -5312,7 +5312,7 @@ private:
               "    struct s f2;\n"
               "    f2.a = malloc(100);\n"
               "    *f1 = f2;\n"
-              "}", "test.c");
+              "}", false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5356,7 +5356,7 @@ private:
               "  A a = { 0 };\n"
               "  a.foo = (char *) malloc(10);\n"
               "  assign(&a);\n"
-              "}", "test.c");
+              "}", false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5366,7 +5366,7 @@ private:
               "  struct ABC *abc = malloc(100);\n"
               "  abc.a = (char *) malloc(10);\n"
               "  list_add_tail(&abc->list, head);\n"
-              "}", "test.c");
+              "}", false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5377,7 +5377,7 @@ private:
               "  struct ABC abc;\n"
               "  abc.a = (char *) malloc(10);\n"
               "  a(abc.a);\n"
-              "}", "test.c");
+              "}", false);
         ASSERT_EQUALS("", errout.str());
     }
 
