@@ -10,7 +10,7 @@ platform:
 - Win32
 
 build_script:
-- msbuild "cppcheck.sln" /m /verbosity:minimal /p:PlatformToolset=v140
+- msbuild "cppcheck.sln" /m /verbosity:minimal /p:PlatformToolset=v140 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 test_script:
 - if "%CONFIGURATION%" == "Release" bin\testrunner.exe
