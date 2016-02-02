@@ -3720,7 +3720,7 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
     if (vt2 &&
         vt1->isIntegral() && vt1->pointer == 0U &&
         vt2->isIntegral() && vt2->pointer == 0U &&
-        (parent->isArithmeticalOp() ||parent->tokType() == Token::eBitOp)) {
+        (parent->isArithmeticalOp() || parent->tokType() == Token::eBitOp || parent->isAssignmentOp())) {
 
         ValueType vt;
         if (vt1->type == vt2->type) {

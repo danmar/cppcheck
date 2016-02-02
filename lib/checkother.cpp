@@ -1609,7 +1609,9 @@ void CheckOther::checkZeroDivision()
     const bool printInconclusive = _settings->inconclusive;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "[/%]") || !tok->astOperand1() || !tok->astOperand2())
+        if (!tok->astOperand2() || !tok->astOperand1())
+            continue;
+        if (tok->str() != "%" && tok->str() != "/" && tok->str() != "%=" && tok->str() != "/=")
             continue;
         if (!tok->valueType() || !tok->valueType()->isIntegral())
             continue;
@@ -1619,9 +1621,9 @@ void CheckOther::checkZeroDivision()
         } else if (tok->astOperand1()->isName()) {
             if (tok->astOperand1()->variable() && !tok->astOperand1()->variable()->isIntegralType())
                 continue;
-        } else if (!tok->astOperand1()->isArithmeticalOp()) {
+        } else if (!tok->astOperand1()->isArithmeticalOp())
             continue;
-        }
+
         // Value flow..
         const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
         if (!value)

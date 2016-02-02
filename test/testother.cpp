@@ -36,6 +36,7 @@ private:
 
         TEST_CASE(zeroDiv1);
         TEST_CASE(zeroDiv2);
+        TEST_CASE(zeroDiv3);
         TEST_CASE(zeroDiv4);
         TEST_CASE(zeroDiv5);
         TEST_CASE(zeroDiv6);
@@ -291,6 +292,28 @@ private:
               "    cout<<b/sum;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void zeroDiv3() {
+        check("int foo(int i) {\n"
+              "    return i / 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout.str());
+
+        check("int foo(int i) {\n"
+              "    return i % 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout.str());
+
+        check("void foo(int& i) {\n"
+              "    i /= 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout.str());
+
+        check("void foo(int& i) {\n"
+              "    i %= 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDiv4() {
