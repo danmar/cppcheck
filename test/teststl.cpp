@@ -2498,17 +2498,36 @@ private:
               "    s1.swap(s2);\n"
               "    s2.swap(s2);\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::string s1, s2;\n"
+              "    s1.swap(s2);\n"
+              "    s2.swap(s2);\n"
+              "};");
         ASSERT_EQUALS("[test.cpp:5]: (performance) It is inefficient to swap a object with itself by calling 's2.swap(s2)'\n", errout.str());
 
         check("void f()\n"
               "{\n"
-              "    string s1, s2;\n"
+              "    std::string s1, s2;\n"
               "    s1.compare(s2);\n"
               "    s2.compare(s2);\n"
               "    s1.compare(s2.c_str());\n"
               "    s1.compare(0, s1.size(), s1);\n"
               "};");
         ASSERT_EQUALS("[test.cpp:5]: (warning) It is inefficient to call 's2.compare(s2)' as it always returns 0.\n", errout.str());
+
+        // #7370 False positive uselessCallsCompare on unknown type
+        check("class ReplayIteratorImpl{\n"
+              "  int Compare(ReplayIteratorImpl* other) {\n"
+              "    int cmp;\n"
+              "    int ret = cursor_->compare(cursor_, other->cursor_, &cmp);\n"
+              "    return (cmp);\n"
+              "  }\n"
+              "  WT_CURSOR *cursor_;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -2566,6 +2585,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
+              "    std::vector<int> a;\n"
               "    std::remove(a.begin(), a.end(), val);\n"
               "    std::remove_if(a.begin(), a.end(), val);\n"
               "    std::unique(a.begin(), a.end(), val);\n"
@@ -2573,9 +2593,9 @@ private:
               "    a.erase(std::remove(a.begin(), a.end(), val));\n"
               "    std::remove(\"foo.txt\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of std::remove() ignored. Elements remain in container.\n"
-                      "[test.cpp:3]: (warning) Return value of std::remove_if() ignored. Elements remain in container.\n"
-                      "[test.cpp:4]: (warning) Return value of std::unique() ignored. Elements remain in container.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of std::remove() ignored. Elements remain in container.\n"
+                      "[test.cpp:4]: (warning) Return value of std::remove_if() ignored. Elements remain in container.\n"
+                      "[test.cpp:5]: (warning) Return value of std::unique() ignored. Elements remain in container.\n", errout.str());
 
         // #4431 - fp
         check("bool f() {\n"

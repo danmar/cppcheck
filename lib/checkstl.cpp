@@ -1253,15 +1253,24 @@ void CheckStl::uselessCalls()
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (printWarning && Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %name% [,)]") &&
                 tok->varId() == tok->tokAt(4)->varId()) {
+                const Variable* var = tok->variable();
+                if (!var || !var->isStlType())
+                    continue;
                 uselessCallsReturnValueError(tok->tokAt(4), tok->str(), tok->strAt(2));
             } else if (printPerformance && Token::Match(tok, "%var% . swap ( %name% )") &&
                        tok->varId() == tok->tokAt(4)->varId()) {
+                const Variable* var = tok->variable();
+                if (!var || !var->isStlType())
+                    continue;
                 uselessCallsSwapError(tok, tok->str());
             } else if (printPerformance && Token::Match(tok, "%var% . substr (") &&
                        tok->variable() && tok->variable()->isStlStringType()) {
-                if (Token::Match(tok->tokAt(4), "0| )"))
+                if (Token::Match(tok->tokAt(4), "0| )")) {
+                    const Variable* var = tok->variable();
+                    if (!var || !var->isStlType())
+                        continue;
                     uselessCallsSubstrError(tok, false);
-                else if (tok->strAt(4) == "0" && tok->linkAt(3)->strAt(-1) == "npos") {
+                } else if (tok->strAt(4) == "0" && tok->linkAt(3)->strAt(-1) == "npos") {
                     if (!tok->linkAt(3)->previous()->variable()) // Make sure that its no variable
                         uselessCallsSubstrError(tok, false);
                 } else if (Token::simpleMatch(tok->linkAt(3)->tokAt(-2), ", 0 )"))
