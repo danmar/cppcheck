@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.72 dev</title>
+    <title>Cppcheck 1.73 dev</title>
 
     <date>2015-09-09</date>
   </bookinfo>
@@ -203,13 +203,43 @@ cppcheck --enable=all</programlisting>
     </section>
 
     <section>
-      <title>マルチスレッドチェック</title>
+      <title>マルチスレッドチェック</title> 
 
-      <para>オプションの <literal>-j</literal> を使用してスレッド数を指定することができます。例えば、4スレッドを使ってフォルダ以下の全てのファイルをチェックする場合は次のように実行します。</para>
+      <para>オプションの<literal>-j</literal> を使用してスレッド数を指定することができます。例えば、4スレッドを使ってフォルダ以下の全てのファイルをチェックする場合は次のように実行します。</para>
 
       <programlisting>cppcheck -j 4 path</programlisting>
 
       <para>このチェックでは未使用関数の検出(unusedFunction checking)は無効になることに注意してください。</para>
+    </section>
+
+    <section>
+      <title>プラットフォーム</title>
+
+      <para>あなたがターゲットとするプラットフォームの設定を使用すべきです。</para>
+
+      <para>デフォルトで、Cppcheckはネイティブのプラットフォームの設定を使用しますので、あなたのソースコードがローカルの環境でコンパイルし実行する場合には正常に動作するでしょう。</para>
+
+      <para>Cppcheck にはビルトインのプラットフォーム設定として、<literal>unix</literal>と<literal>windows</literal>をターゲットにしたものがあります。コマンドラインオプションの<literal>--platform</literal>を使ってプラットフォーム設定を指定できます。</para>
+
+      <para>XMLファイルで自身のプラットフォームにあった設定ファイルを作成することもできます。ここに例をあげます。:</para>
+
+      <programlisting>&lt;?xml version=&quot;1&quot;?&gt;
+&lt;platform&gt;
+  &lt;char_bit&gt;8&lt;/char_bit&gt;
+  &lt;default-sign&gt;signed&lt;/default-sign&gt;
+  &lt;sizeof&gt;
+    &lt;short&gt;2&lt;/short&gt;
+    &lt;int&gt;4&lt;/int&gt;
+    &lt;long&gt;4&lt;/long&gt;
+    &lt;long-long&gt;8&lt;/long-long&gt;
+    &lt;float&gt;4&lt;/float&gt;
+    &lt;double&gt;8&lt;/double&gt;
+    &lt;long-double&gt;12&lt;/long-double&gt;
+    &lt;pointer&gt;4&lt;/pointer&gt;
+    &lt;size_t&gt;4&lt;/size_t&gt;
+    &lt;wchar_t&gt;2&lt;/wchar_t&gt;
+  &lt;/sizeof&gt;
+&lt;/platform&gt;</programlisting>
     </section>
   </chapter>
 
@@ -433,7 +463,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>severity</term>
 
         <listitem>
-          <para>severity</para>
+		<para>メッセージの種類、レベル</para>
         </listitem>
       </varlistentry>
     </variablelist>
