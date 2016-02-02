@@ -116,7 +116,7 @@ def removeLargeFiles(path):
             removeLargeFiles(g + '/')
         elif os.path.isfile(g) and g[-4:] != '.txt':
             statinfo = os.stat(g)
-            if path.find('/clang/INPUTS/') > 0 or statinfo.st_size > 10000000:
+            if path.find('/clang/INPUTS/') > 0 or statinfo.st_size > 1000000:
                 os.remove(g)
 
 
