@@ -224,6 +224,7 @@ private:
         TEST_CASE(garbageCode173); // #6781
         TEST_CASE(garbageCode174); // #7356
         TEST_CASE(garbageCode175);
+        TEST_CASE(garbageCode176);
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1473,6 +1474,10 @@ private:
                                "    for ( j = 0 ; j < = j++ )\n"
                                "        return t1 ,\n"
                                "}"), InternalError);
+    }
+
+    void garbageCode176() { // #7527
+        checkCode("class t { { struct } enum class f : unsigned { q } b ; operator= ( T ) { switch ( b ) { case f::q: } } { assert ( b ) ; } } { ; & ( t ) ( f::t ) ; } ;");
     }
 };
 

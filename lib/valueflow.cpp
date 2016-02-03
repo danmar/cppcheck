@@ -2206,7 +2206,8 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                                      errorLogger,
                                      settings);
                 }
-                valueFlowForward(tok, vartok->variable()->scope()->classEnd, vartok->variable(), vartok->varId(), values, false, tokenlist, errorLogger, settings);
+                if (vartok->variable()->scope()) // #7257
+                    valueFlowForward(tok, vartok->variable()->scope()->classEnd, vartok->variable(), vartok->varId(), values, false, tokenlist, errorLogger, settings);
             }
         }
     }

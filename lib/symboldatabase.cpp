@@ -1390,11 +1390,36 @@ void SymbolDatabase::validateExecutableScopes() const
     }
 }
 
+namespace {
+    const Function* getFunctionForArgumentvariable(const Variable * const var, const std::vector<const Scope *>& functionScopes)
+    {
+        const std::size_t functions = functionScopes.size();
+        for (std::size_t i = 0; i < functions; ++i) {
+            const Scope* const scope = functionScopes[i];
+            const Function* const function = scope->function;
+            if (function) {
+                for (std::size_t arg=0; arg < function->argCount(); ++arg) {
+                    if (var==function->getArgumentVar(arg))
+                        return function;
+                }
+            }
+        }
+        return nullptr;
+    }
+}
+
 void SymbolDatabase::validateVariables() const
 {
     for (std::vector<const Variable *>::const_iterator iter = _variableList.begin(); iter!=_variableList.end(); ++iter) {
-        if (*iter && !(*iter)->scope()) {
-            throw InternalError((*iter)->nameToken(), "Analysis failed (variable without scope). If the code is valid then please report this failure.", InternalError::INTERNAL);
+        if (*iter) {
+            const Variable * const var = *iter;
+            if (!var->scope()) {
+                const Function* function = getFunctionForArgumentvariable(var, functionScopes);
+                if (!var->isArgument() || (function && function->hasBody())) {
+                    throw InternalError(var->nameToken(), "Analysis failed (variable without scope). If the code is valid then please report this failure.", InternalError::INTERNAL);
+                    //std::cout << "!!!Variable found without scope: " << var->nameToken()->str() << std::endl;
+                }
+            }
         }
     }
 }
