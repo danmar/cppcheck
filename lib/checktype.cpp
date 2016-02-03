@@ -33,6 +33,12 @@ namespace {
 //---------------------------------------------------------------------------
 // Checking for shift by too many bits
 //---------------------------------------------------------------------------
+//
+
+// CWE ids used:
+static const struct CWE CWE758(758U);
+static const struct CWE CWE190(190U);
+
 
 void CheckType::checkTooBigBitwiseShift()
 {
@@ -95,7 +101,7 @@ void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Val
     errmsg << "Shifting " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is undefined behaviour";
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
-    reportError(callstack, rhsbits.condition ? Severity::warning : Severity::error, "shiftTooManyBits", errmsg.str(), CWE(0U), rhsbits.inconclusive);
+    reportError(callstack, rhsbits.condition ? Severity::warning : Severity::error, "shiftTooManyBits", errmsg.str(), CWE758, rhsbits.inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -149,7 +155,7 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
                 value.condition ? Severity::warning : Severity::error,
                 "integerOverflow",
                 msg,
-                CWE(0U),
+                CWE190,
                 value.inconclusive);
 }
 

@@ -35,6 +35,12 @@ namespace {
 
 //---------------------------------------------------------------------------
 
+// CWE ids used:
+static const struct CWE CWE676(676U);
+static const struct CWE CWE908(908U);
+static const struct CWE CWE825(825U);
+    
+
 void CheckUninitVar::check()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -1134,17 +1140,17 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
 
 void CheckUninitVar::uninitstringError(const Token *tok, const std::string &varname, bool strncpy_)
 {
-    reportError(tok, Severity::error, "uninitstring", "Dangerous usage of '" + varname + "'" + (strncpy_ ? " (strncpy doesn't always null-terminate it)." : " (not null-terminated)."));
+    reportError(tok, Severity::error, "uninitstring", "Dangerous usage of '" + varname + "'" + (strncpy_ ? " (strncpy doesn't always null-terminate it)." : " (not null-terminated)."), CWE676, false);
 }
 
 void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "uninitdata", "Memory is allocated but not initialized: " + varname);
+    reportError(tok, Severity::error, "uninitdata", "Memory is allocated but not initialized: " + varname, CWE908, false);
 }
 
 void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "uninitvar", "Uninitialized variable: " + varname);
+    reportError(tok, Severity::error, "uninitvar", "Uninitialized variable: " + varname, CWE908, false);
 }
 
 void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
@@ -1152,7 +1158,7 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
     reportError(tok,
                 Severity::error,
                 "uninitStructMember",
-                "Uninitialized struct member: " + membername);
+                "Uninitialized struct member: " + membername, CWE908, false);
 }
 
 void CheckUninitVar::deadPointer()
@@ -1186,5 +1192,5 @@ void CheckUninitVar::deadPointerError(const Token *pointer, const Token *alias)
     reportError(pointer,
                 Severity::error,
                 "deadpointer",
-                "Dead pointer usage. Pointer '" + strpointer + "' is dead if it has been assigned '" + stralias + "' at line " + MathLib::toString(alias ? alias->linenr() : 0U) + ".");
+                "Dead pointer usage. Pointer '" + strpointer + "' is dead if it has been assigned '" + stralias + "' at line " + MathLib::toString(alias ? alias->linenr() : 0U) + ".", CWE825, false);
 }

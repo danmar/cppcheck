@@ -31,7 +31,6 @@ namespace {
 static const struct CWE CWE664(664U);
 static const struct CWE CWE788(788U);
 
-
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)
 {
@@ -625,7 +624,7 @@ void CheckStl::stlBoundariesError(const Token *tok)
     reportError(tok, Severity::error, "stlBoundaries",
                 "Dangerous comparison using operator< on iterator.\n"
                 "Iterator compared with operator<. This is dangerous since the order of items in the "
-                "container is not guaranteed. One should use operator!= instead to compare iterators.");
+                "container is not guaranteed. One should use operator!= instead to compare iterators.", CWE664, false);
 }
 
 static bool if_findCompare(const Token * const tokBack)
@@ -1079,7 +1078,7 @@ void CheckStl::string_c_strThrowError(const Token* tok)
 void CheckStl::string_c_strError(const Token* tok)
 {
     reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n"
-                "Dangerous usage of c_str(). The c_str() return value is only valid until its string is deleted.");
+                "Dangerous usage of c_str(). The c_str() return value is only valid until its string is deleted.", CWE664, false);
 }
 
 void CheckStl::string_c_strReturn(const Token* tok)
@@ -1210,7 +1209,7 @@ void CheckStl::autoPointerContainerError(const Token *tok)
 {
     reportError(tok, Severity::error, "useAutoPointerContainer",
                 "You can randomly lose access to pointers if you store 'auto_ptr' pointers in an STL container.\n"
-                "An element of container must be able to be copied but 'auto_ptr' does not fulfill this requirement. You should consider to use 'shared_ptr' or 'unique_ptr'. It is suitable for use in containers, because they no longer copy their values, they move them."
+                "An element of container must be able to be copied but 'auto_ptr' does not fulfill this requirement. You should consider to use 'shared_ptr' or 'unique_ptr'. It is suitable for use in containers, because they no longer copy their values, they move them.", CWE664, false
                );
 }
 
@@ -1218,7 +1217,7 @@ void CheckStl::autoPointerArrayError(const Token *tok)
 {
     reportError(tok, Severity::error, "useAutoPointerArray",
                 "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n"
-                "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. This means that you should only use 'auto_ptr' for pointers obtained with operator 'new'. This excludes arrays, which are allocated by operator 'new[]' and must be deallocated by operator 'delete[]'."
+                "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. This means that you should only use 'auto_ptr' for pointers obtained with operator 'new'. This excludes arrays, which are allocated by operator 'new[]' and must be deallocated by operator 'delete[]'.", CWE664, false
                );
 }
 
