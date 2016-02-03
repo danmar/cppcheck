@@ -39,7 +39,7 @@ namespace {
 static const struct CWE CWE676(676U);
 static const struct CWE CWE908(908U);
 static const struct CWE CWE825(825U);
-    
+
 
 void CheckUninitVar::check()
 {
