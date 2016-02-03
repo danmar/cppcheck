@@ -1266,9 +1266,6 @@ void CheckStl::uselessCalls()
             } else if (printPerformance && Token::Match(tok, "%var% . substr (") &&
                        tok->variable() && tok->variable()->isStlStringType()) {
                 if (Token::Match(tok->tokAt(4), "0| )")) {
-                    const Variable* var = tok->variable();
-                    if (!var || !var->isStlType())
-                        continue;
                     uselessCallsSubstrError(tok, false);
                 } else if (tok->strAt(4) == "0" && tok->linkAt(3)->strAt(-1) == "npos") {
                     if (!tok->linkAt(3)->previous()->variable()) // Make sure that its no variable
@@ -1414,7 +1411,7 @@ void CheckStl::readingEmptyStlContainer_parseUsage(const Token* tok, const Libra
         } else if (!noerror)
             readingEmptyStlContainerError(tok);
     } else if (Token::Match(tok, "%name% . %type% (")) {
-        Library::Container::Yield yield = container->getYield(tok->strAt(2));
+        const Library::Container::Yield yield = container->getYield(tok->strAt(2));
         const Token* parent = tok->tokAt(3)->astParent();
         // Member function call
         if (yield != Library::Container::NO_YIELD &&
@@ -1424,7 +1421,7 @@ void CheckStl::readingEmptyStlContainer_parseUsage(const Token* tok, const Libra
             if (!noerror)
                 readingEmptyStlContainerError(tok);
         } else {
-            Library::Container::Action action = container->getAction(tok->strAt(2));
+            const Library::Container::Action action = container->getAction(tok->strAt(2));
             if (action == Library::Container::FIND || action == Library::Container::ERASE || action == Library::Container::POP || action == Library::Container::CLEAR) {
                 if (!noerror)
                     readingEmptyStlContainerError(tok);
@@ -1467,7 +1464,7 @@ void CheckStl::readingEmptyStlContainer()
                     if (!tok2->varId())
                         continue;
 
-                    std::map<unsigned int, const Library::Container*>::const_iterator container = emptyContainer.find(tok2->varId());
+                    const std::map<unsigned int, const Library::Container*>::const_iterator container = emptyContainer.find(tok2->varId());
                     if (container == emptyContainer.end())
                         continue;
 
@@ -1498,7 +1495,7 @@ void CheckStl::readingEmptyStlContainer()
                 }
             }
 
-            std::map<unsigned int, const Library::Container*>::const_iterator container = emptyContainer.find(tok->varId());
+            const std::map<unsigned int, const Library::Container*>::const_iterator container = emptyContainer.find(tok->varId());
             if (container == emptyContainer.end())
                 continue;
 
