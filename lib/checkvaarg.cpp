@@ -31,6 +31,10 @@ namespace {
 // Ensure that correct parameter is passed to va_start()
 //---------------------------------------------------------------------------
 
+// CWE ids used:
+static const struct CWE CWE664(664U);
+static const struct CWE CWE758(758U);
+
 void CheckVaarg::va_start_argument()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -72,7 +76,7 @@ void CheckVaarg::wrongParameterTo_va_start_error(const Token *tok, const std::st
 void CheckVaarg::referenceAs_va_start_error(const Token *tok, const std::string& paramName)
 {
     reportError(tok, Severity::error,
-                "va_start_referencePassed", "Using reference '" + paramName + "' as parameter for va_start() results in undefined behaviour.");
+                "va_start_referencePassed", "Using reference '" + paramName + "' as parameter for va_start() results in undefined behaviour.", CWE758, false);
 }
 
 //---------------------------------------------------------------------------
@@ -136,17 +140,17 @@ void CheckVaarg::va_list_usage()
 void CheckVaarg::va_end_missingError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
-                "va_end_missing", "va_list '" + varname + "' was opened but not closed by va_end().");
+                "va_end_missing", "va_list '" + varname + "' was opened but not closed by va_end().", CWE664, false);
 }
 
 void CheckVaarg::va_list_usedBeforeStartedError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
-                "va_list_usedBeforeStarted", "va_list '" + varname + "' used before va_start() was called.");
+                "va_list_usedBeforeStarted", "va_list '" + varname + "' used before va_start() was called.", CWE664, false);
 }
 
 void CheckVaarg::va_start_subsequentCallsError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
-                "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() in between.");
+                "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() in between.", CWE664, false);
 }
