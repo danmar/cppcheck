@@ -1372,25 +1372,39 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     return false;
 }
 
+void SymbolDatabase::validateExecutableScopes() const
+{
+    const std::size_t functions = functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope* const scope = functionScopes[i];
+        const Function* const function = scope->function;
+        if (scope->isExecutable() && !function) {
+            const std::list<const Token*> callstack(1, scope->classDef);
+            const std::string msg = std::string("Executable scope '") + scope->classDef->str() + "' with unknown function.";
+            const ErrorLogger::ErrorMessage errmsg(callstack, &_tokenizer->list, Severity::debug,
+                                                   "symbolDatabaseWarning",
+                                                   msg,
+                                                   false);
+            _errorLogger->reportErr(errmsg);
+        }
+    }
+}
+
+void SymbolDatabase::validateVariables() const
+{
+    for (std::vector<const Variable *>::const_iterator iter = _variableList.begin(); iter!=_variableList.end(); ++iter) {
+        if (*iter && !(*iter)->scope()) {
+            throw InternalError((*iter)->nameToken(), "Analysis failed (variable without scope). If the code is valid then please report this failure.", InternalError::INTERNAL);
+        }
+    }
+}
+
 void SymbolDatabase::validate() const
 {
     if (_settings->debugwarnings) {
-        const std::size_t functions = functionScopes.size();
-        for (std::size_t i = 0; i < functions; ++i) {
-            const Scope* scope = functionScopes[i];
-            const Function* function = scope->function;
-            if (scope->isExecutable() && !function) {
-                const std::list<const Token*> callstack(1, scope->classDef);
-                const std::string msg = std::string("Executable scope '") + scope->classDef->str() + "' with unknown function.";
-                const ErrorLogger::ErrorMessage errmsg(callstack, &_tokenizer->list, Severity::debug,
-                                                       "symbolDatabaseWarning",
-                                                       msg,
-                                                       false);
-                _errorLogger->reportErr(errmsg);
-            }
-
-        }
+        validateExecutableScopes();
     }
+    //validateVariables();
 }
 
 bool Variable::isPointerArray() const

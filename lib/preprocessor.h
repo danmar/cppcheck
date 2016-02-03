@@ -33,8 +33,8 @@ class Settings;
 
 /**
  * @brief A preprocessor directive
- * Each preprocessor directive (#include, #define, #undef,#if, #ifdef,
- * #else, #endif) will be recorded as an instance of this class.
+ * Each preprocessor directive (\#include, \#define, \#undef, \#if, \#ifdef, \#else, \#endif)
+ * will be recorded as an instance of this class.
  *
  * file and linenr denote the location where where the directive is defined.
  *
