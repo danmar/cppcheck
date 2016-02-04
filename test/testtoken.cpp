@@ -927,7 +927,7 @@ private:
         ASSERT(t != nullptr && t->str() == ">");
 
         t = var.tokens()->tokAt(4)->findClosingBracket();
-        ASSERT(t != nullptr && t->str() == ")");
+        ASSERT(t == nullptr);
     }
 };
 
