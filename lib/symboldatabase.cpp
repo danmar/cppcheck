@@ -3734,13 +3734,13 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
     if (parent->astOperand2() && !vt2)
         return;
 
-    if (parent->isArithmeticalOp() && vt2) {
-        if (vt1->pointer != 0U && vt2->pointer == 0U) {
+    if (parent->isArithmeticalOp()) {
+        if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
             setValueType(parent, *vt1, cpp, defaultSignedness);
             return;
         }
 
-        if (vt1->pointer == 0U && vt2->pointer != 0U) {
+        if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
             setValueType(parent, *vt2, cpp, defaultSignedness);
             return;
         }
@@ -3750,27 +3750,30 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
             return;
         }
 
-        if (vt1->type == ValueType::Type::LONGDOUBLE || vt2->type == ValueType::Type::LONGDOUBLE) {
+        if (vt1->type == ValueType::Type::LONGDOUBLE || (vt2 && vt2->type == ValueType::Type::LONGDOUBLE)) {
             setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::LONGDOUBLE, 0U), cpp, defaultSignedness);
             return;
         }
-        if (vt1->type == ValueType::Type::DOUBLE || vt2->type == ValueType::Type::DOUBLE) {
+        if (vt1->type == ValueType::Type::DOUBLE || (vt2 && vt2->type == ValueType::Type::DOUBLE)) {
             setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::DOUBLE, 0U), cpp, defaultSignedness);
             return;
         }
-        if (vt1->type == ValueType::Type::FLOAT || vt2->type == ValueType::Type::FLOAT) {
+        if (vt1->type == ValueType::Type::FLOAT || (vt2 && vt2->type == ValueType::Type::FLOAT)) {
             setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 0U), cpp, defaultSignedness);
             return;
         }
     }
 
-    if (vt2 &&
-        vt1->isIntegral() && vt1->pointer == 0U &&
-        vt2->isIntegral() && vt2->pointer == 0U &&
+    if (vt1->isIntegral() && vt1->pointer == 0U &&
+        (!vt2 || (vt2->isIntegral() && vt2->pointer == 0U)) &&
         (parent->isArithmeticalOp() || parent->tokType() == Token::eBitOp || parent->isAssignmentOp())) {
 
         ValueType vt;
-        if (vt1->type == vt2->type) {
+        if (!vt2 || vt1->type > vt2->type) {
+            vt.type = vt1->type;
+            vt.sign = vt1->sign;
+            vt.originalTypeName = vt1->originalTypeName;
+        } else if (vt1->type == vt2->type) {
             vt.type = vt1->type;
             if (vt1->sign == ValueType::Sign::UNSIGNED || vt2->sign == ValueType::Sign::UNSIGNED)
                 vt.sign = ValueType::Sign::UNSIGNED;
@@ -3779,10 +3782,6 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
             else
                 vt.sign = ValueType::Sign::SIGNED;
             vt.originalTypeName = (vt1->originalTypeName.empty() ? vt2 : vt1)->originalTypeName;
-        } else if (vt1->type > vt2->type) {
-            vt.type = vt1->type;
-            vt.sign = vt1->sign;
-            vt.originalTypeName = vt1->originalTypeName;
         } else {
             vt.type = vt2->type;
             vt.sign = vt2->sign;

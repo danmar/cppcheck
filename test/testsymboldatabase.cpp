@@ -3190,6 +3190,11 @@ private:
         ASSERT_EQUALS("long double *", typeOf("long double x; dostuff(&x,1);", "& x ,"));
         ASSERT_EQUALS("signed int", typeOf("struct X {int i;}; void f(struct X x) { x.i }", "."));
 
+        // Unary arithmetic/bit operators
+        ASSERT_EQUALS("signed int", typeOf("int x; a = -x;", "-"));
+        ASSERT_EQUALS("signed int", typeOf("int x; a = ~x;", "~"));
+        ASSERT_EQUALS("double", typeOf("double x; a = -x;", "-"));
+
         // shift => result has same type as lhs
         ASSERT_EQUALS("signed int", typeOf("int x; a = x << 1U;", "<<"));
         ASSERT_EQUALS("signed int", typeOf("int x; a = x >> 1U;", ">>"));
