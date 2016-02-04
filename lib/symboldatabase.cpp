@@ -3676,12 +3676,15 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
     Token *parent = const_cast<Token *>(tok->astParent());
     if (!parent || parent->valueType())
         return;
-    if (!parent->astOperand1() || !parent->astOperand1()->valueType())
+    if (!parent->astOperand1())
         return;
 
-    if (Token::Match(parent, "<<|>>")) {
-        if (!cpp || (parent->astOperand2() && parent->astOperand2()->valueType() && parent->astOperand2()->valueType()->isIntegral()))
-            setValueType(parent, *parent->astOperand1()->valueType(), cpp, defaultSignedness);
+    const ValueType *vt1 = parent->astOperand1() ? parent->astOperand1()->valueType() : nullptr;
+    const ValueType *vt2 = parent->astOperand2() ? parent->astOperand2()->valueType() : nullptr;
+
+    if (vt1 && Token::Match(parent, "<<|>>")) {
+        if (!cpp || (vt2 && vt2->isIntegral()))
+            setValueType(parent, *vt1, cpp, defaultSignedness);
         return;
     }
 
@@ -3706,26 +3709,31 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
         return;
     }
 
-    if (parent->str() == "." &&
-        valuetype.typeScope &&
-        parent->astOperand2() && parent->astOperand2()->isName() && !parent->astOperand2()->valueType()) {
-        const std::string &name = parent->astOperand2()->str();
-        const Scope *typeScope = parent->astOperand1()->valueType()->typeScope;
-        if (!typeScope)
-            return;
-        for (std::list<Variable>::const_iterator it = typeScope->varlist.begin(); it != typeScope->varlist.end(); ++it) {
-            const Variable &var = *it;
-            if (var.nameToken()->str() == name) {
-                setValueType(parent, var, cpp, defaultSignedness);
+    if ((parent->str() == "." || parent->str() == "::") &&
+        parent->astOperand2() && parent->astOperand2()->isName()) {
+        const Variable* var = parent->astOperand2()->variable();
+        if (!var && valuetype.typeScope && vt1) {
+            const std::string &name = parent->astOperand2()->str();
+            const Scope *typeScope = vt1->typeScope;
+            if (!typeScope)
                 return;
+            for (std::list<Variable>::const_iterator it = typeScope->varlist.begin(); it != typeScope->varlist.end(); ++it) {
+                if (it->nameToken()->str() == name) {
+                    var = &*it;
+                    break;
+                }
             }
         }
+        if (var)
+            setValueType(parent, *var, cpp, defaultSignedness);
+        return;
     }
 
-    if (parent->astOperand2() && !parent->astOperand2()->valueType())
+    if (!vt1)
         return;
-    const ValueType *vt1 = parent->astOperand1()->valueType();
-    const ValueType *vt2 = parent->astOperand2() ? parent->astOperand2()->valueType() : nullptr;
+    if (parent->astOperand2() && !vt2)
+        return;
+
     if (parent->isArithmeticalOp() && vt2) {
         if (vt1->pointer != 0U && vt2->pointer == 0U) {
             setValueType(parent, *vt1, cpp, defaultSignedness);

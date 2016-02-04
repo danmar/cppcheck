@@ -1648,11 +1648,11 @@ private:
               "        f[0].d, f[0].baz.i, f[0].bar[0].i);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:13]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'double'.\n"
-                      "[test.cpp:13]: (warning) %f in format string (no. 2) requires 'double' but the argument type is 'int'.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 2) requires 'double' but the argument type is 'signed int'.\n"
                       "[test.cpp:13]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'signed int'.\n"
                       "[test.cpp:13]: (warning) %d in format string (no. 4) requires 'int' but the argument type is 'double'.\n"
-                      "[test.cpp:13]: (warning) %f in format string (no. 5) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:13]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'int'.\n", errout.str());
+                      "[test.cpp:13]: (warning) %f in format string (no. 5) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'signed int'.\n", errout.str());
 
         check("short f() { return 0; }\n"
               "void foo() { printf(\"%d %u %lu %I64u %I64d %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");

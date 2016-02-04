@@ -49,6 +49,7 @@ private:
     const Token* t;
     bool found;
     Settings settings;
+    Settings settings2;
 
     void reset() {
         vartok = nullptr;
@@ -96,6 +97,7 @@ private:
 
     void run() {
         LOAD_LIB_2(settings.library, "std.cfg");
+        settings2.platform(Settings::Unspecified);
 
         TEST_CASE(array);
         TEST_CASE(stlarray);
@@ -3118,12 +3120,10 @@ private:
     }
 
     std::string typeOf(const char code[], const char str[], const char filename[] = "test.cpp") {
-        Settings s;
-        s.platform(Settings::Unspecified);
-        Tokenizer tokenizer(&s, this);
+        Tokenizer tokenizer(&settings2, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        const Token * const tok = Token::findsimplematch(tokenizer.tokens(),str);
+        const Token * const tok = Token::findsimplematch(tokenizer.tokens(), str);
         return tok->valueType() ? tok->valueType()->str() : std::string();
     }
 
@@ -3226,6 +3226,9 @@ private:
         // struct member..
         ASSERT_EQUALS("signed int", typeOf("struct AB { int a; int b; } ab; x = ab.a;", "."));
         ASSERT_EQUALS("signed int", typeOf("struct AB { int a; int b; } *ab; x = ab[1].a;", "."));
+
+        // Static members
+        ASSERT_EQUALS("signed int", typeOf("struct AB { static int a; }; x = AB::a;", "::"));
     }
 };
 
