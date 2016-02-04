@@ -44,7 +44,6 @@ private:
         TEST_CASE(strPlusChar1);     // "/usr" + '/'
         TEST_CASE(strPlusChar2);     // "/usr" + ch
         TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
-        TEST_CASE(strPlusChar4);     // ast
 
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
@@ -482,11 +481,6 @@ private:
               "    std::string path = temp + '/' + \"sub\" + '/';\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void strPlusChar4() {
-        // don't crash
-        check("int test() { int +; }");
     }
 
 

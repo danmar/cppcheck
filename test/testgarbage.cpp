@@ -224,8 +224,12 @@ private:
         TEST_CASE(garbageCode173); // #6781
         TEST_CASE(garbageCode174); // #7356
         TEST_CASE(garbageCode175);
-        TEST_CASE(garbageCode176);
-        TEST_CASE(garbageCode177);
+        TEST_CASE(garbageCode176); // #7527
+        TEST_CASE(garbageCode177); // #7321
+        TEST_CASE(garbageCode178); // #3441
+        TEST_CASE(garbageCode179); // #3533
+        TEST_CASE(garbageCode180);
+        TEST_CASE(garbageCode181);
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1483,6 +1487,27 @@ private:
 
     void garbageCode177() { // #7321
         checkCode("{(){(())}}r&const");
+    }
+
+    void garbageCode178() { // #3441
+        checkCode("%: return ; ()");
+    }
+
+    void garbageCode179() { // #3533
+        checkCode("<class T>\n"
+                  "{\n"
+                  "    struct {\n"
+                  "        typename D4:typename Base<T*>\n"
+                  "    };\n"
+                  "};");
+    }
+
+    void garbageCode180() {
+        checkCode("int");
+    }
+
+    void garbageCode181() {
+        checkCode("int test() { int +; }");
     }
 };
 

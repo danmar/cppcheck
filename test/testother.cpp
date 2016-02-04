@@ -2694,8 +2694,6 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str()); // #3457
 
-        check("%: return ; ()"); // Don't crash. #3441.
-
         // #3383. TODO: Use preprocessor
         check("int foo() {\n"
               "\n" // #ifdef A

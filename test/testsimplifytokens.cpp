@@ -232,7 +232,6 @@ private:
         TEST_CASE(simplifyStructDecl2); // ticket #2579
         TEST_CASE(simplifyStructDecl3);
         TEST_CASE(simplifyStructDecl4);
-        TEST_CASE(simplifyStructDecl5); // ticket #3533 (segmentation fault)
         TEST_CASE(simplifyStructDecl6); // ticket #3732
         TEST_CASE(simplifyStructDecl7); // ticket #476 (static anonymous struct array)
 
@@ -3819,17 +3818,6 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyStructDecl5() {
-        const char code[] = "<class T>\n"
-                            "{\n"
-                            "    struct {\n"
-                            "        typename D4:typename Base<T*>\n"
-                            "    };\n"
-                            "};\n";
-        //don't crash
-        tok(code, false);
-    }
-
     void simplifyStructDecl6() {
         ASSERT_EQUALS("struct A { "
                       "char integers [ X ] ; "
@@ -4058,9 +4046,6 @@ private:
                       " int a [ 10 ] ;"
                       " memset ( a + 4 , 0 , 80 ) ;"
                       " }", tok(code, true));
-
-        // Don't crash
-        tok("int", true);
     }
 
     void simplifyCharAt() { // ticket #4481
