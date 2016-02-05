@@ -3199,6 +3199,8 @@ private:
         ASSERT_EQUALS("signed int", typeOf("int x; a = (b ? x : x)", "?"));
         ASSERT_EQUALS("", typeOf("int x; a = (b ? x : y)", "?"));
         ASSERT_EQUALS("double", typeOf("int x; double y; a = (b ? x : y)", "?"));
+        ASSERT_EQUALS("const char *", typeOf("int x; double y; a = (b ? \"a\" : \"b\")", "?"));
+        ASSERT_EQUALS("", typeOf("int x; double y; a = (b ? \"a\" : std::string(\"b\"))", "?"));
 
         // shift => result has same type as lhs
         ASSERT_EQUALS("signed int", typeOf("int x; a = x << 1U;", "<<"));

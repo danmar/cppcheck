@@ -3749,8 +3749,11 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
             return;
         }
 
-        if (vt1->pointer != 0U) { // result is pointer diff
-            setValueType(parent, ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::INT, 0U, 0U, "ptrdiff_t"), cpp, defaultSignedness);
+        if (vt1->pointer != 0U) {
+            if (ternary) // result is pointer
+                setValueType(parent, *vt1, cpp, defaultSignedness);
+            else // result is pointer diff
+                setValueType(parent, ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::INT, 0U, 0U, "ptrdiff_t"), cpp, defaultSignedness);
             return;
         }
 
