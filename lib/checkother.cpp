@@ -291,21 +291,6 @@ void CheckOther::cstyleCastError(const Token *tok)
 // float* f; double* d = (double*)f; <-- Pointer cast to a type with an incompatible binary data representation
 //---------------------------------------------------------------------------
 
-static std::string analyzeType(const Token* tok)
-{
-    if (tok->str() == "double") {
-        if (tok->isLong())
-            return "long double";
-        else
-            return "double";
-    }
-    if (tok->str() == "float")
-        return "float";
-    if (Token::Match(tok, "int|long|short|char|size_t"))
-        return "integer";
-    return "";
-}
-
 void CheckOther::invalidPointerCast()
 {
     if (!_settings->isEnabled("portability"))
@@ -318,60 +303,35 @@ void CheckOther::invalidPointerCast()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             const Token* toTok = nullptr;
-            const Token* nextTok = nullptr;
+            const Token* fromTok = nullptr;
             // Find cast
             if (Token::Match(tok, "( const| %type% %type%| const| * )")) {
-                toTok = tok->next();
-                nextTok = tok->link()->next();
-                if (nextTok && nextTok->str() == "(")
-                    nextTok = nextTok->next();
-            } else if (Token::Match(tok, "reinterpret_cast < const| %type% %type%| const| * > (")) {
-                nextTok = tok->tokAt(5);
-                while (nextTok->str() != "(")
-                    nextTok = nextTok->next();
-                nextTok = nextTok->next();
-                toTok = tok->tokAt(2);
+                toTok = tok;
+                fromTok = tok->astOperand1();
+            } else if (Token::Match(tok, "reinterpret_cast <") && tok->linkAt(1)) {
+                toTok = tok->linkAt(1)->next();
+                fromTok = toTok->astOperand2();
             }
-            if (!nextTok)
-                continue;
-            if (toTok && toTok->str() == "const")
-                toTok = toTok->next();
-
-            if (!toTok || !toTok->isStandardType())
+            if (!fromTok)
                 continue;
 
-            // Find casted variable
-            const Variable *var = nullptr;
-            bool allocation = false;
-            bool ref = false;
-            if (_tokenizer->isCPP() && Token::Match(nextTok, "new %type%"))
-                allocation = true;
-            else if (Token::Match(nextTok, "%var% !!["))
-                var = nextTok->variable();
-            else if (Token::Match(nextTok, "& %var%") && !Token::Match(nextTok->tokAt(2), "(|[")) {
-                var = nextTok->next()->variable();
-                ref = true;
-            }
+            const ValueType* fromType = fromTok->valueType();
+            const ValueType* toType = toTok->valueType();
+            if (!fromType || !toType || !fromType->pointer || !toType->pointer)
+                continue;
 
-            const Token* fromTok = nullptr;
-
-            if (allocation) {
-                fromTok = nextTok->next();
-            } else {
-                if (!var || (!ref && !var->isPointer() && !var->isArray()) || (ref && (var->isPointer() || var->isArray())))
+            if (fromType->type != toType->type && fromType->type >= ValueType::Type::BOOL && toType->type >= ValueType::Type::BOOL && (toType->type != ValueType::Type::CHAR || printInconclusive)) {
+                if (toType->isIntegral() && fromType->isIntegral())
                     continue;
-                fromTok = var->typeStartToken();
+                std::string toStr = toType->isIntegral() ? "integer *" : toType->str();
+                toStr.pop_back();
+                toStr.pop_back();
+                std::string fromStr = fromType->isIntegral() ? "integer *" : fromType->str();
+                fromStr.pop_back();
+                fromStr.pop_back();
+
+                invalidPointerCastError(tok, fromStr, toStr, toType->type == ValueType::Type::CHAR);
             }
-
-            while (Token::Match(fromTok, "static|const"))
-                fromTok = fromTok->next();
-            if (!fromTok->isStandardType())
-                continue;
-
-            std::string fromType = analyzeType(fromTok);
-            std::string toType = analyzeType(toTok);
-            if (fromType != toType && !fromType.empty() && !toType.empty() && (toTok->str() != "char" || printInconclusive))
-                invalidPointerCastError(tok, fromType, toType, toTok->str() == "char");
         }
     }
 }
