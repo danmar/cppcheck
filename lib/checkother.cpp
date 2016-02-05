@@ -324,11 +324,9 @@ void CheckOther::invalidPointerCast()
                 if (toType->isIntegral() && fromType->isIntegral())
                     continue;
                 std::string toStr = toType->isIntegral() ? "integer *" : toType->str();
-                toStr.pop_back();
-                toStr.pop_back();
+                toStr = toStr.substr(0, toStr.size()-2);
                 std::string fromStr = fromType->isIntegral() ? "integer *" : fromType->str();
-                fromStr.pop_back();
-                fromStr.pop_back();
+                fromStr = fromStr.substr(0, fromStr.size() - 2);
 
                 invalidPointerCastError(tok, fromStr, toStr, toType->type == ValueType::Type::CHAR);
             }
@@ -2012,39 +2010,33 @@ void CheckOther::checkSignOfUnsignedVariable()
         const Scope * scope = symbolDatabase->functionScopes[i];
         // check all the code in the function
         for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            // Quick check to see if any of the matches below have any chances
-            if (!tok->varId() && tok->str() != "0")
+            if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
                 continue;
-            if (Token::Match(tok, "%name% <|<= 0") && tok->varId() && !Token::Match(tok->tokAt(3), "+|-")) {
-                // TODO: handle a[10].b , a::b , (unsigned int)x , etc
-                const Token *prev = tok->previous();
-                while (prev && (prev->isName() || prev->str() == "."))
-                    prev = prev->previous();
-                if (!Token::Match(prev, "(|&&|%oror%"))
-                    continue;
-                const Variable *var = tok->variable();
-                if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZeroError(tok, var->name(), inconclusive);
-                else if (var && (var->isPointer() || var->isArray()))
+
+            if (Token::Match(tok, "<|<= 0") && tok->next() == tok->astOperand2()) {
+                const ValueType* vt = tok->astOperand1()->valueType();
+                if (vt && vt->pointer)
                     pointerLessThanZeroError(tok, inconclusive);
-            } else if (Token::Match(tok, "0 >|>= %name%") && tok->tokAt(2)->varId() && !Token::Match(tok->tokAt(3), "+|-|*|/") && !Token::Match(tok->previous(), "+|-|<<|>>|~")) {
-                const Variable *var = tok->tokAt(2)->variable();
-                if (var && var->typeEndToken()->isUnsigned())
-                    unsignedLessThanZeroError(tok, var->name(), inconclusive);
-                else if (var && var->isPointer() && !Token::Match(tok->tokAt(3), "[.[(]"))
+                if (vt && vt->sign == ValueType::UNSIGNED)
+                    unsignedLessThanZeroError(tok, tok->astOperand1()->str(), inconclusive);
+            } else if (Token::Match(tok->previous(), "0 >|>=") && tok->previous() == tok->astOperand1()) {
+                const ValueType* vt = tok->astOperand2()->valueType();
+                if (vt && vt->pointer)
                     pointerLessThanZeroError(tok, inconclusive);
-            } else if (Token::Match(tok, "0 <= %name%") && tok->tokAt(2)->varId() && !Token::Match(tok->tokAt(3), "+|-|*|/") && !Token::Match(tok->previous(), "+|-|<<|>>|~")) {
-                const Variable *var = tok->tokAt(2)->variable();
-                if (var && var->typeEndToken()->isUnsigned())
-                    unsignedPositiveError(tok, var->name(), inconclusive);
-                else if (var && var->isPointer() && !Token::Match(tok->tokAt(3), "[.[]"))
+                if (vt && vt->sign == ValueType::UNSIGNED)
+                    unsignedLessThanZeroError(tok, tok->astOperand2()->str(), inconclusive);
+            } else if (Token::simpleMatch(tok, ">= 0") && tok->next() == tok->astOperand2()) {
+                const ValueType* vt = tok->astOperand1()->valueType();
+                if (vt && vt->pointer)
                     pointerPositiveError(tok, inconclusive);
-            } else if (Token::Match(tok, "%name% >= 0") && tok->varId() && !Token::Match(tok->previous(), "++|--|)|+|-|*|/|~|<<|>>") && !Token::Match(tok->tokAt(3), "+|-")) {
-                const Variable *var = tok->variable();
-                if (var && var->typeEndToken()->isUnsigned())
-                    unsignedPositiveError(tok, var->name(), inconclusive);
-                else if (var && var->isPointer() && tok->strAt(-1) != "*")
+                if (vt && vt->sign == ValueType::UNSIGNED)
+                    unsignedPositiveError(tok, tok->astOperand1()->str(), inconclusive);
+            } else if (Token::simpleMatch(tok->previous(), "0 <=") && tok->previous() == tok->astOperand1()) {
+                const ValueType* vt = tok->astOperand2()->valueType();
+                if (vt && vt->pointer)
                     pointerPositiveError(tok, inconclusive);
+                if (vt && vt->sign == ValueType::UNSIGNED)
+                    unsignedPositiveError(tok, tok->astOperand2()->str(), inconclusive);
             }
         }
     }
@@ -2173,10 +2165,10 @@ static bool isNegative(const Token *tok, const Settings *settings)
 void CheckOther::checkNegativeBitwiseShift()
 {
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "<<|>>|<<=|>>="))
+        if (!tok->astOperand1() || !tok->astOperand2())
             continue;
 
-        if (!tok->astOperand1() || !tok->astOperand2())
+        if (!Token::Match(tok, "<<|>>|<<=|>>="))
             continue;
 
         // don't warn if lhs is a class. this is an overloaded operator then
