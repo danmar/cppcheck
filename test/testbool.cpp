@@ -84,7 +84,6 @@ private:
 
 
     void assignBoolToPointer() {
-
         check("void foo(bool *p) {\n"
               "    p = false;\n"
               "}");
@@ -164,6 +163,13 @@ private:
               "      : (compare(a, c) < 0 ? a : (compare(b, c) < 0 ? c : b));\n"
               "}", /*experimental=*/false, "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        // #7381
+        check("void foo(bool *p, bool b) {\n"
+              "    p = b;\n"
+              "    p = &b;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Boolean value assigned to pointer.\n", errout.str());
     }
 
     void assignBoolToFloat() {

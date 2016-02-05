@@ -3751,7 +3751,7 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
             if (ternary || parent->tokType() == Token::eIncDecOp) // result is pointer
                 setValueType(parent, *vt1, cpp, defaultSignedness);
             else // result is pointer diff
-                setValueType(parent, ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::INT, 0U, 0U, "ptrdiff_t"), cpp, defaultSignedness);
+                setValueType(parent, ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0U, 0U, "ptrdiff_t"), cpp, defaultSignedness);
             return;
         }
 
@@ -3852,7 +3852,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->sign = ValueType::Sign::SIGNED;
     }
 
-    return (type && valuetype->type != ValueType::Type::UNKNOWN_TYPE) ? type : nullptr;
+    return (type && (valuetype->type != ValueType::Type::UNKNOWN_TYPE || valuetype->pointer > 0)) ? type : nullptr;
 }
 
 void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, char defaultSignedness)

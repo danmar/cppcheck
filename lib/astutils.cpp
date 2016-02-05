@@ -47,7 +47,7 @@ bool astIsFloat(const Token *tok, bool unknown)
 
 bool astIsBool(const Token *tok)
 {
-    return tok && (tok->isBoolean() || tok->valueType() && tok->valueType()->type == ValueType::Type::BOOL);
+    return tok && (tok->isBoolean() || (tok->valueType() && tok->valueType()->type == ValueType::Type::BOOL && !tok->valueType()->pointer));
 }
 
 std::string astCanonicalType(const Token *expr)

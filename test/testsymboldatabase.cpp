@@ -3254,6 +3254,9 @@ private:
 
         // Static members
         ASSERT_EQUALS("signed int", typeOf("struct AB { static int a; }; x = AB::a;", "::"));
+
+        // Pointer to unknown type
+        ASSERT_EQUALS("*", typeOf("Bar* b;", "b"));
     }
 };
 
