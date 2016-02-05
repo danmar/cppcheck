@@ -3691,14 +3691,12 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
     if (parent->str() == "[" && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
         vt.pointer -= 1U;
-        vt.constness >>= 1;
         setValueType(parent, vt, cpp, defaultSignedness);
         return;
     }
     if (parent->str() == "*" && !parent->astOperand2() && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
         vt.pointer -= 1U;
-        vt.constness >>= 1;
         setValueType(parent, vt, cpp, defaultSignedness);
         return;
     }

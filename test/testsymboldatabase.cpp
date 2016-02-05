@@ -3119,11 +3119,14 @@ private:
               "}");
     }
 
-    std::string typeOf(const char code[], const char str[], const char filename[] = "test.cpp") {
+    std::string typeOf(const char code[], const char pattern[], const char filename[] = "test.cpp") {
         Tokenizer tokenizer(&settings2, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        const Token * const tok = Token::findsimplematch(tokenizer.tokens(), str);
+        const Token* tok;
+        for (tok = tokenizer.list.back(); tok; tok = tok->previous())
+            if (Token::simpleMatch(tok, pattern))
+                break;
         return tok->valueType() ? tok->valueType()->str() : std::string();
     }
 
@@ -3168,8 +3171,8 @@ private:
 
         // char *
         ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1", "+"));
-        ASSERT_EQUALS("char",  typeOf("\"hello\"[1]", "["));
-        ASSERT_EQUALS("char",  typeOf("*\"hello\"", "*"));
+        ASSERT_EQUALS("const char",  typeOf("\"hello\"[1]", "["));
+        ASSERT_EQUALS("const char",  typeOf("*\"hello\"", "*"));
         ASSERT_EQUALS("const short *", typeOf("L\"hello\" + 1", "+"));
 
         // Variable calculations
@@ -3232,6 +3235,9 @@ private:
         ASSERT_EQUALS("const signed int *", typeOf("const int *a; x = a + 1;", "a +"));
         ASSERT_EQUALS("signed int * const", typeOf("int * const a; x = a + 1;", "+"));
         ASSERT_EQUALS("const signed int *", typeOf("const int a[20]; x = a + 1;", "+"));
+        ASSERT_EQUALS("const signed int *", typeOf("const int x; a = &x;", "&"));
+        ASSERT_EQUALS("signed int", typeOf("int * const a; x = *a;", "*"));
+        ASSERT_EQUALS("const signed int", typeOf("const int * const a; x = *a;", "*"));
 
         // function call..
         ASSERT_EQUALS("signed int", typeOf("int a(int); a(5);", "( 5"));
