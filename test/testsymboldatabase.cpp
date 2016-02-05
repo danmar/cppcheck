@@ -3189,6 +3189,8 @@ private:
         ASSERT_EQUALS("long double", typeOf("long double x; dostuff(x,1);", "x ,"));
         ASSERT_EQUALS("long double *", typeOf("long double x; dostuff(&x,1);", "& x ,"));
         ASSERT_EQUALS("signed int", typeOf("struct X {int i;}; void f(struct X x) { x.i }", "."));
+        ASSERT_EQUALS("signed int *", typeOf("int *p; a = p++;", "++"));
+        ASSERT_EQUALS("signed int", typeOf("int x; a = x++;", "++"));
 
         // Unary arithmetic/bit operators
         ASSERT_EQUALS("signed int", typeOf("int x; a = -x;", "-"));

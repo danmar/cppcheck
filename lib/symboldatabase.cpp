@@ -3738,7 +3738,7 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
     if (ternary)
         parent = const_cast<Token*>(parent->astParent());
 
-    if (ternary || parent->isArithmeticalOp()) {
+    if (ternary || parent->isArithmeticalOp() || parent->tokType() == Token::eIncDecOp) {
         if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
             setValueType(parent, *vt1, cpp, defaultSignedness);
             return;
@@ -3750,7 +3750,7 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
         }
 
         if (vt1->pointer != 0U) {
-            if (ternary) // result is pointer
+            if (ternary || parent->tokType() == Token::eIncDecOp) // result is pointer
                 setValueType(parent, *vt1, cpp, defaultSignedness);
             else // result is pointer diff
                 setValueType(parent, ValueType(ValueType::Sign::UNSIGNED, ValueType::Type::INT, 0U, 0U, "ptrdiff_t"), cpp, defaultSignedness);
@@ -3773,7 +3773,7 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
 
     if (vt1->isIntegral() && vt1->pointer == 0U &&
         (!vt2 || (vt2->isIntegral() && vt2->pointer == 0U)) &&
-        (ternary || parent->isArithmeticalOp() || parent->tokType() == Token::eBitOp || parent->isAssignmentOp())) {
+        (ternary || parent->isArithmeticalOp() || parent->tokType() == Token::eBitOp || parent->tokType() == Token::eIncDecOp || parent->isAssignmentOp())) {
 
         ValueType vt;
         if (!vt2 || vt1->type > vt2->type) {
