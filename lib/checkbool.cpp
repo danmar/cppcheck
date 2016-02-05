@@ -21,6 +21,7 @@
 #include "checkbool.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
+#include "astutils.h"
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -30,11 +31,6 @@ namespace {
 
 static const CWE CWE571(571);
 static const CWE CWE587(587);
-
-static bool astIsBool(const Token *expr)
-{
-    return Token::Match(expr, "%comp%|%bool%|%oror%|&&|!") && !expr->link();
-}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -137,58 +133,18 @@ void CheckBool::checkComparisonOfBoolWithInt()
             const Token* const left = tok->astOperand1();
             const Token* const right = tok->astOperand2();
             if (left && right && tok->isComparisonOp()) {
-                if ((left->varId() && right->isNumber()) || (left->isNumber() && right->varId())) { // Comparing variable with number
-                    const Token* varTok = left;
-                    const Token* numTok = right;
-                    if (left->isNumber() && right->varId()) // num with var
-                        std::swap(varTok, numTok);
-                    if (isBool(varTok->variable()) && // Variable has to be a boolean
-                        ((tok->str() != "==" && tok->str() != "!=") ||
-                         (MathLib::toLongNumber(numTok->str()) != 0 && MathLib::toLongNumber(numTok->str()) != 1))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
-                        comparisonOfBoolWithIntError(varTok, numTok->str(), tok->str() == "==" || tok->str() == "!=");
-                    }
-                } else if (left->isBoolean() && right->varId()) { // Comparing boolean constant with variable
-                    if (isNonBoolStdType(right->variable())) { // Variable has to be of non-boolean standard type
-                        comparisonOfBoolWithIntError(right, left->str(), false);
-                    } else if (tok->str() != "==" && tok->str() != "!=") {
+                if (left->isBoolean() && right->varId()) { // Comparing boolean constant with variable
+                    if (tok->str() != "==" && tok->str() != "!=") {
                         comparisonOfBoolWithInvalidComparator(right, left->str());
                     }
                 } else if (left->varId() && right->isBoolean()) { // Comparing variable with boolean constant
-                    if (isNonBoolStdType(left->variable())) { // Variable has to be of non-boolean standard type
-                        comparisonOfBoolWithIntError(left, right->str(), false);
-                    } else if (tok->str() != "==" && tok->str() != "!=") {
+                    if (tok->str() != "==" && tok->str() != "!=") {
                         comparisonOfBoolWithInvalidComparator(right, left->str());
                     }
-                } else if (left->isNumber() && right->isBoolean()) { // number constant with boolean constant
-                    comparisonOfBoolWithIntError(left, right->str(), false);
-                } else if (left->isBoolean() && right->isNumber()) { // number constant with boolean constant
-                    comparisonOfBoolWithIntError(left, left->str(), false);
-                } else if (left->varId() && right->varId()) { // Comparing two variables, one of them boolean, one of them integer
-                    const Variable* var1 = right->variable();
-                    const Variable* var2 = left->variable();
-                    if (isBool(var1) && isNonBoolStdType(var2)) // Comparing boolean with non-bool standard type
-                        comparisonOfBoolWithIntError(left, var1->name(), false);
-                    else if (isNonBoolStdType(var1) && isBool(var2)) // Comparing non-bool standard type with boolean
-                        comparisonOfBoolWithIntError(left, var2->name(), false);
                 }
             }
         }
     }
-}
-
-void CheckBool::comparisonOfBoolWithIntError(const Token *tok, const std::string &expression, bool n0o1)
-{
-    if (n0o1)
-        reportError(tok, Severity::warning, "comparisonOfBoolWithInt",
-                    "Comparison of a boolean with an integer that is neither 1 nor 0.\n"
-                    "The expression '" + expression + "' is of type 'bool' "
-                    "and it is compared against an integer value that is "
-                    "neither 1 nor 0.");
-    else
-        reportError(tok, Severity::warning, "comparisonOfBoolWithInt",
-                    "Comparison of a boolean with an integer.\n"
-                    "The expression '" + expression + "' is of type 'bool' "
-                    "and it is compared against an integer value.");
 }
 
 void CheckBool::comparisonOfBoolWithInvalidComparator(const Token *tok, const std::string &expression)
@@ -391,10 +347,6 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
             if (!numTok || !boolExpr)
                 continue;
 
-            if (Token::Match(boolExpr,"%bool%"))
-                // The CheckBool::checkComparisonOfBoolWithInt warns about this.
-                continue;
-
             if (boolExpr->isOp() && numTok->isName() && Token::Match(tok, "==|!="))
                 // there is weird code such as:  ((a<b)==c)
                 // but it is probably written this way by design.
@@ -410,7 +362,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                      : Token::Match(tok, ">|==|!=")))
                     continue;
                 comparisonOfBoolExpressionWithIntError(tok, true);
-            } else if (isNonBoolStdType(numTok->variable()))
+            } else if (isNonBoolStdType(numTok->variable()) && _tokenizer->isCPP())
                 comparisonOfBoolExpressionWithIntError(tok, false);
         }
     }

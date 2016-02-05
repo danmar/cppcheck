@@ -102,7 +102,6 @@ private:
     void comparisonOfTwoFuncsReturningBoolError(const Token *tok, const std::string &expression1, const std::string &expression2);
     void comparisonOfBoolWithBoolError(const Token *tok, const std::string &expression);
     void incrementBooleanError(const Token *tok);
-    void comparisonOfBoolWithIntError(const Token *tok, const std::string &expression, bool n0o1);
     void comparisonOfBoolWithInvalidComparator(const Token *tok, const std::string &expression);
     void assignBoolToPointerError(const Token *tok);
     void assignBoolToFloatError(const Token *tok);
@@ -119,7 +118,6 @@ private:
         c.comparisonOfTwoFuncsReturningBoolError(0, "func_name1", "func_name2");
         c.comparisonOfBoolWithBoolError(0, "var_name");
         c.incrementBooleanError(0);
-        c.comparisonOfBoolWithIntError(0, "varname", true);
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0, true);
         c.pointerArithBoolError(0);
@@ -132,7 +130,6 @@ private:
     std::string classInfo() const {
         return "Boolean type checks\n"
                "- using increment on boolean\n"
-               "- comparison of a boolean with a non-zero integer\n"
                "- comparison of a boolean expression with an integer other than 0 or 1\n"
                "- comparison of a function returning boolean value using relational operator\n"
                "- comparison of a boolean value with boolean value using relational operator\n"

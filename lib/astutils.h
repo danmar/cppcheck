@@ -33,6 +33,8 @@ bool astIsSignedChar(const Token *tok);
 bool astIsIntegral(const Token *tok, bool unknown);
 /** Is expression of floating point type? */
 bool astIsFloat(const Token *tok, bool unknown);
+/** Is expression of boolean type? */
+bool astIsBool(const Token *tok);
 
 /**
  * Get canonical type of expression. const/static/etc are not included and neither *&.
