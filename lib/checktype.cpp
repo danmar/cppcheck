@@ -58,10 +58,10 @@ void CheckType::checkTooBigBitwiseShift()
             if (_tokenizer->isCPP() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
                 tok = tok->linkAt(2);
 
-            if (!Token::Match(tok, "<<|>>|<<=|>>="))
+            if (!tok->astOperand1() || !tok->astOperand2())
                 continue;
 
-            if (!tok->astOperand1() || !tok->astOperand2())
+            if (!Token::Match(tok, "<<|>>|<<=|>>="))
                 continue;
 
             // get number of bits of lhs
@@ -125,16 +125,16 @@ void CheckType::checkIntegerOverflow()
             if (!tok->isArithmeticalOp())
                 continue;
 
+            // is result signed integer?
+            const ValueType *vt = tok->valueType();
+            if (!vt || vt->type != ValueType::Type::INT || vt->sign != ValueType::Sign::SIGNED)
+                continue;
+
             // is there a overflow result value
             const ValueFlow::Value *value = tok->getValueGE(maxint + 1, _settings);
             if (!value)
                 value = tok->getValueLE(-maxint - 2, _settings);
-            if (!value)
-                continue;
-
-            // is result signed integer?
-            const ValueType *vt = tok->valueType();
-            if (vt && vt->type == ValueType::Type::INT && vt->sign == ValueType::Sign::SIGNED)
+            if (value)
                 integerOverflowError(tok, *value);
         }
     }
