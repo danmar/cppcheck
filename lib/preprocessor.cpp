@@ -550,7 +550,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             continue;
         }
 
-        if ((ch == '#') && (str.compare(i, 7, "#error ") == 0 || str.compare(i, 9, "#warning ") == 0)) {
+        if ((ch == '#') && (str.compare(i+1, 6, "error ") == 0 || str.compare(i+1, 8, "warning ") == 0)) {
             if (str.compare(i, 6, "#error") == 0)
                 code << "#error";
 
@@ -1126,20 +1126,20 @@ std::string Preprocessor::getdef(std::string line, bool def)
         return "";
 
     // If def is true, the line must start with "#ifdef"
-    if (def && line.compare(0, 7, "#ifdef ") != 0 && line.compare(0, 4, "#if ") != 0
-        && (line.compare(0, 6, "#elif ") != 0 || line.compare(0, 7, "#elif !") == 0)) {
+    if (def && line.compare(1, 6, "ifdef ") != 0 && line.compare(1, 3, "if ") != 0
+        && (line.compare(1, 5, "elif ") != 0 || line.compare(1, 6, "elif !") == 0)) {
         return "";
     }
 
     // If def is false, the line must start with "#ifndef"
-    if (!def && line.compare(0, 8, "#ifndef ") != 0 && line.compare(0, 7, "#elif !") != 0) {
+    if (!def && line.compare(1, 7, "ifndef ") != 0 && line.compare(1, 6, "elif !") != 0) {
         return "";
     }
 
     // Remove the "#ifdef" or "#ifndef"
-    if (line.compare(0, 12, "#if defined ") == 0)
+    if (line.compare(1, 11, "if defined ") == 0)
         line.erase(0, 11);
-    else if (line.compare(0, 15, "#elif !defined(") == 0) {
+    else if (line.compare(1, 14, "elif !defined(") == 0) {
         line.erase(0, 15);
         std::string::size_type pos = line.find(')');
         // if pos == ::npos then another part of the code will complain
@@ -3007,7 +3007,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
         // Preprocessor directive
         if (line[0] == '#') {
             // defining a macro..
-            if (line.compare(0, 8, "#define ") == 0) {
+            if (line.compare(1, 7, "define ") == 0) {
                 PreprocessorMacro *macro = new PreprocessorMacro(line.substr(8), &settings);
                 if (macro->name().empty() || macro->name() == "NULL") {
                     delete macro;
@@ -3025,7 +3025,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             }
 
             // undefining a macro..
-            else if (line.compare(0, 7, "#undef ") == 0) {
+            else if (line.compare(1, 6, "undef ") == 0) {
                 std::map<std::string, PreprocessorMacro *>::iterator it;
                 it = macros.find(line.substr(7));
                 if (it != macros.end()) {
@@ -3036,7 +3036,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             }
 
             // entering a file, update position..
-            else if (line.compare(0, 7, "#file \"") == 0) {
+            else if (line.compare(1, 6, "file \"") == 0) {
                 fileinfo.push(std::pair<unsigned int, std::string>(linenr, filename));
                 filename = line.substr(7, line.length() - 8);
                 linenr = 0;

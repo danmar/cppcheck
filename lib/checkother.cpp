@@ -308,7 +308,7 @@ void CheckOther::invalidPointerCast()
             if (Token::Match(tok, "( const| %type% %type%| const| * )")) {
                 toTok = tok;
                 fromTok = tok->astOperand1();
-            } else if (Token::Match(tok, "reinterpret_cast <") && tok->linkAt(1)) {
+            } else if (Token::simpleMatch(tok, "reinterpret_cast <") && tok->linkAt(1)) {
                 toTok = tok->linkAt(1)->next();
                 fromTok = toTok->astOperand2();
             }
