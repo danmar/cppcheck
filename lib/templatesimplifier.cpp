@@ -1272,6 +1272,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             }
         }
         Token * const tok2 = *iter2;
+        if (errorlogger && !tokenlist.getFiles().empty())
+            errorlogger->reportProgress(tokenlist.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
         assert(tokenlist.validateToken(tok2)); // that assertion fails on examples from #6021
         if (tok2->str() != name)
             continue;
