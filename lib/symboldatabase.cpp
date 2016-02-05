@@ -3890,7 +3890,7 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, char defau
                 }
                 ::setValueType(tok, ValueType(sign, type, 0U), cpp, defsign);
             }
-        } else if (tok->isComparisonOp())
+        } else if (tok->isComparisonOp() || tok->tokType() == Token::eLogicalOp)
             ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U), cpp, defsign);
         else if (tok->tokType() == Token::eChar)
             ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U), cpp, defsign);
