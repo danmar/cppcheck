@@ -441,9 +441,14 @@ void CheckBool::checkAssignBoolToFloat()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%var% =")) {
-                const Variable * const var = tok->variable();
-                if (var && var->isFloatingType() && !var->isArrayOrPointer() && astIsBool(tok->next()->astOperand2()))
+            if (tok->str() == "=" && astIsBool(tok->astOperand2())) {
+                const Token *lhs = tok->astOperand1();
+                while (lhs && (lhs->str() == "." || lhs->str() == "::"))
+                    lhs = lhs->astOperand2();
+                if (!lhs || !lhs->variable())
+                    continue;
+                const Variable* var = lhs->variable();
+                if (var && var->isFloatingType() && !var->isArrayOrPointer())
                     assignBoolToFloatError(tok->next());
             }
         }

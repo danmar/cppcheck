@@ -187,6 +187,15 @@ private:
               "    unknown = false;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    float p;\n"
+              "};\n"
+              "void f() {\n"
+              "    S s = {0};\n"
+              "    s.p = true;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Boolean value assigned to floating point variable.\n", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt1() {
