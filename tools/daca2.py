@@ -116,8 +116,8 @@ def removeLargeFiles(path):
             removeLargeFiles(g + '/')
         elif os.path.isfile(g) and g[-4:] != '.txt':
             statinfo = os.stat(g)
-            # Remove test files, the code is not meant to be proper/valid
-            if path.find('/test/') > 0 or path.find('/testsuite/') > 0:
+            # Remove gcc torture tests, that is not meant to be valid code
+            if path.find('/gcc/testsuite/') > 0:
                 os.remove(g)
             if path.find('/clang/INPUTS/') > 0 or statinfo.st_size > 1000000:
                 os.remove(g)
