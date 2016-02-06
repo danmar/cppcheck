@@ -981,6 +981,12 @@ void CheckCondition::alwaysTrueFalse()
             if (!tok->astParent() || !Token::Match(tok->astParent()->previous(), "%name% ("))
                 continue;
 
+            // Don't warn in assertions. Condition is often 'always true' by intention.
+            // If platform,defines,etc cause 'always false' then that is not dangerous neither.
+            const std::string &str = tok->astParent()->previous()->str();
+            if (str.find("assert")!=std::string::npos || str.find("ASSERT")!=std::string::npos)
+                continue;
+
             // Don't warn when there are expanded macros..
             bool isExpandedMacro = false;
             std::stack<const Token*> tokens;
