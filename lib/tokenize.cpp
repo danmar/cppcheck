@@ -205,7 +205,7 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last,
 //---------------------------------------------------------------------------
 
 // check if this statement is a duplicate definition
-bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, const std::set<std::string>& structs) const
+bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef) const
 {
     // check for an end of definition
     const Token * tok = *tokPtr;
@@ -295,7 +295,6 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 // declaration after forward declaration
                                 return true;
                             } else if (tok->next()->str() == "{") {
-                                if (structs.find(name->strAt(-1)) == structs.end())
                                 return true;
                             } else if (Token::Match(tok->next(), ")|*")) {
                                 return true;
@@ -323,9 +322,8 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                             tok = tok->previous();
                     }
 
-                    if ((*tokPtr)->strAt(1) != "(" || !Token::Match((*tokPtr)->linkAt(1), ") .|(|[")) {
+                    if ((*tokPtr)->strAt(1) != "(" || !Token::Match((*tokPtr)->linkAt(1), ") .|(|["))
                         return true;
-                    }
                 }
             }
         }
@@ -535,13 +533,6 @@ Token *Tokenizer::processFunc(Token *tok2, bool inOperator) const
 
 void Tokenizer::simplifyTypedef()
 {
-    // Collect all structs for later detection of undefined structs
-    std::set<std::string> structs;
-    for (const Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "struct %type% {|:"))
-            structs.insert(tok->strAt(1));
-    }
-
     std::vector<Space> spaceInfo;
     bool isNamespace = false;
     std::string className;
@@ -1163,7 +1154,7 @@ void Tokenizer::simplifyTypedef()
                             }
                         } else if (Token::Match(tok2->previous(), "case|;|{|} %type% :")) {
                             tok2 = tok2->next();
-                        } else if (duplicateTypedef(&tok2, typeName, typeDef, structs)) {
+                        } else if (duplicateTypedef(&tok2, typeName, typeDef)) {
                             // skip to end of scope if not already there
                             if (tok2->str() != "}") {
                                 while (tok2->next()) {
@@ -7264,16 +7255,15 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr) const
                     }
                 }
             } else {
-                if (Token::Match(tok->previous(), "enum|,")) {
+                if (Token::Match(tok->previous(), "enum|,"))
                     return true;
-                } else if (Token::Match(tok->previous(), "%type%")) {
+                else if (Token::Match(tok->previous(), "%type%")) {
                     // look backwards
                     const Token *back = tok;
                     while (back && back->isName())
                         back = back->previous();
-                    if (!back || (Token::Match(back, "[(,;{}]") && !Token::Match(back->next(),"return|throw"))) {
+                    if (!back || (Token::Match(back, "[(,;{}]") && !Token::Match(back->next(),"return|throw")))
                         return true;
-                    }
                 }
             }
         }
@@ -7330,8 +7320,8 @@ public:
         }
 
         // Simplify calculations..
-        while (start && start->previous() && TemplateSimplifier::simplifyNumericCalculations(start->previous())) 
-		{ }
+        while (start && start->previous() && TemplateSimplifier::simplifyNumericCalculations(start->previous())) {
+        }
 
         if (Token::Match(start, "%num% [,}]")) {
             value = start;
@@ -7351,7 +7341,6 @@ void Tokenizer::simplifyEnum()
     int classLevel = 0;
     bool goback = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-
         if (goback) {
             //jump back once, see the comment at the end of the function
             goback = false;
@@ -8685,7 +8674,7 @@ std::string Tokenizer::simplifyString(const std::string &source)
 
     return str;
 }
-											
+
 void Tokenizer::simplifyWhile0()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {

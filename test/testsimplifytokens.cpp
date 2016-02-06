@@ -168,8 +168,6 @@ private:
         TEST_CASE(enum5);
         TEST_CASE(enum6);
         TEST_CASE(enum7);
-        TEST_CASE(enum8);
-        TEST_CASE(enum9); // ticket 1404
         TEST_CASE(enum10); // ticket 1445
         TEST_CASE(enum11);
         TEST_CASE(enum12);
@@ -182,7 +180,6 @@ private:
         TEST_CASE(enum19); // ticket #2536
         TEST_CASE(enum20); // ticket #2600
         TEST_CASE(enum21); // ticket #2720
-        TEST_CASE(enum22); // ticket #2745
         TEST_CASE(enum23); // ticket #2804
         TEST_CASE(enum24); // ticket #2828
         TEST_CASE(enum25); // ticket #2966
@@ -198,8 +195,6 @@ private:
         TEST_CASE(enum35); // ticket #3953 (avoid simplification of type)
         TEST_CASE(enum36); // ticket #4378
         TEST_CASE(enum37); // ticket #4280 (shadow variable)
-        TEST_CASE(enum38); // ticket #4463 (when throwing enum id, don't warn about shadow variable)
-        TEST_CASE(enum39); // ticket #5145 (fp variable hides enum)
         TEST_CASE(enum40);
         TEST_CASE(enum41); // ticket #5212 (valgrind errors during enum simplification)
         TEST_CASE(enum42); // ticket #5182 (template function call in enum value)
@@ -2995,59 +2990,6 @@ private:
         return tokenizer.tokens()->stringifyList(0, true);
     }
 
-    void enum8() {
-        // ticket 1388
-        checkSimplifyEnum("enum Direction {N=100,E,S,W,ALL};\n"
-                          "template<class T,int S> class EF_Vector{\n"
-                          "  T v_v[S];\n"
-                          "\n"
-                          "public:\n"
-                          "  EF_Vector();\n"
-                          "  explicit EF_Vector(const T &);\n"
-                          "  explicit EF_Vector(const T arr[S]);\n"
-                          "};\n"
-                          "\n"
-                          "template<class T,int S>\n"
-                          "EF_Vector<T,S>::EF_Vector()\n"
-                          "{\n"
-                          "}\n"
-                          "\n"
-                          "template<class T,int S>\n"
-                          "EF_Vector<T,S>::EF_Vector(const T &t)\n"
-                          "{\n"
-                          "  for(int i=0;i<S;i++)\n"
-                          "    v_v[i]=t;\n"
-                          "}\n"
-                          "\n"
-                          "template<class T,int S>\n"
-                          "EF_Vector<T,S>::EF_Vector(const T arr[S])\n"
-                          "{\n"
-                          "  for(int i=0;i<S;i++)\n"
-                          "    v_v[i]=arr[i];\n"
-                          "}\n"
-                          "\n"
-                          "void initialize()\n"
-                          "{\n"
-                          "   EF_Vector<float,6> d;\n"
-                          "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void enum9() {
-        // ticket 1404
-        checkSimplifyEnum("class XX {\n"
-                          "public:\n"
-                          "static void Set(const int &p){m_p=p;}\n"
-                          "static int m_p;\n"
-                          "};\n"
-                          "int XX::m_p=0;\n"
-                          "int main() {\n"
-                          "  enum { XX };\n"
-                          "  XX::Set(std::numeric_limits<X>::digits());\n"
-                          "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void enum10() {
         // ticket 1445
         const char code[] = "enum {\n"
@@ -3204,42 +3146,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void enum22() { // ticket #2745
-        const char code[] = "enum en { x = 0 };\n"
-                            "void f() {\n"
-                            "    int x = 0;\n"
-                            "    g(x);\n"
-                            "}\n"
-                            "void f2(int &x) {\n"
-                            "    x+=1;\n"
-                            "}\n";
-        checkSimplifyEnum(code);
-        ASSERT_EQUALS("", errout.str());
-
-        // avoid false positive: in other scope
-        const char code2[] = "class C1 { enum en { x = 0 }; };\n"
-                             "class C2 { bool x; };\n";
-        checkSimplifyEnum(code2);
-        ASSERT_EQUALS("", errout.str());
-
-        // avoid false positive: inner if-scope
-        const char code3[] = "enum en { x = 0 };\n"
-                             "void f() { if (aa) ; else if (bb==x) df; }\n";
-        checkSimplifyEnum(code3);
-        ASSERT_EQUALS("", errout.str());
-
-        // avoid false positive: Initializer list
-        const char code4[] = "struct S {\n"
-                             "    enum { E = 1 };\n"
-                             "    explicit S(float f)\n"
-                             "        : f_(f * E)\n"
-                             "    {}\n"
-                             "    float f_;\n"
-                             "};";
-        checkSimplifyEnum(code4);
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void enum23() { // ticket #2804
         const char code[] = "enum Enumerator : std::uint8_t { ITEM1, ITEM2, ITEM3 };\n"
                             "Enumerator e = ITEM3;\n";
@@ -3350,22 +3256,6 @@ private:
 
         const char code4[] = "enum { a, b }; void f() { int &a=x; }";
         ASSERT_EQUALS("void f ( ) { int & a = x ; }", checkSimplifyEnum(code4));
-
-        // #4857 - not shadow variable
-        checkSimplifyEnum("enum { a,b }; void f() { if (x) { } else if ( x & a ) {} }");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void enum38() { // #4463
-        const char code[] = "enum { a,b }; void f() { throw a; }";
-        checkSimplifyEnum(code);
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void enum39() { // #5145 - fp variable hides enum
-        const char code[] = "enum { A }; void f() { int a = 1 * A; }";
-        checkSimplifyEnum(code);
-        ASSERT_EQUALS("", errout.str());
     }
 
     void enum40() {
