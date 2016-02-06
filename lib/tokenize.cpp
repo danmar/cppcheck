@@ -3584,22 +3584,23 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Remove redundant parentheses
     simplifyRedundantParentheses();
-    for (Token *tok = list.front(); tok; tok = tok->next())
-        while (TemplateSimplifier::simplifyNumericCalculations(tok))
-            ;
 
-    // Handle templates..
-    simplifyTemplates();
-
-    // The simplifyTemplates have inner loops
-    if (_settings->terminated())
-        return false;
-
-    // Simplify templates.. sometimes the "simplifyTemplates" fail and
-    // then unsimplified function calls etc remain. These have the
-    // "wrong" syntax. So this function will just fix so that the
-    // syntax is corrected.
     if (!isC()) {
+        // TODO: Only simplify template parameters
+        for (Token *tok = list.front(); tok; tok = tok->next())
+            while (TemplateSimplifier::simplifyNumericCalculations(tok))
+                ;
+
+        // Handle templates..
+        simplifyTemplates();
+
+        // The simplifyTemplates have inner loops
+        if (_settings->terminated())
+            return false;
+
+        // sometimes the "simplifyTemplates" fail and then unsimplified
+        // function calls etc remain. These have the "wrong" syntax. So
+        // this function will just fix so that the syntax is corrected.
         validate(); // #6847 - invalid code
         TemplateSimplifier::cleanupAfterSimplify(list.front());
     }
