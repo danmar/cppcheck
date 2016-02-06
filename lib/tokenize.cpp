@@ -204,20 +204,6 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last,
 
 //---------------------------------------------------------------------------
 
-void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string &type) const
-{
-    if (tok1 && !(_settings->isEnabled("style") && _settings->inconclusive))
-        return;
-
-    std::list<const Token*> locationList;
-    locationList.push_back(tok1);
-    locationList.push_back(tok2);
-    const std::string tok2_str = tok2 ? tok2->str() : std::string("name");
-
-    reportError(locationList, Severity::style, "variableHidingTypedef",
-                std::string("The " + type + " '" + tok2_str + "' hides a typedef with the same name."), true);
-}
-
 // check if this statement is a duplicate definition
 bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, const std::set<std::string>& structs) const
 {
@@ -260,7 +246,6 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                 if (!Token::Match(tok->tokAt(-3), ",|<"))
                     return false;
 
-                duplicateTypedefError(*tokPtr, name, "template instantiation");
                 *tokPtr = end->link();
                 return true;
             }
@@ -271,7 +256,6 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                 // look backwards
                 if (Token::Match(tok->previous(), "%type%") &&
                     !Token::Match(tok->previous(), "return|new|const|struct")) {
-                    duplicateTypedefError(*tokPtr, name, "function parameter");
                     // duplicate definition so skip entire function
                     *tokPtr = end->next()->link();
                     return true;
@@ -284,7 +268,6 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                     while (end && end->str() != "{")
                         end = end->next();
                     if (end) {
-                        duplicateTypedefError(*tokPtr, name, "template parameter");
                         *tokPtr = end->link();
                         return true;
                     }
@@ -302,10 +285,8 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                         if (tok->previous()->str() == "}") {
                             tok = tok->previous()->link();
                         } else if (tok->previous()->str() == "typedef") {
-                            duplicateTypedefError(*tokPtr, name, "typedef");
                             return true;
                         } else if (tok->previous()->str() == "enum") {
-                            duplicateTypedefError(*tokPtr, name, "enum");
                             return true;
                         } else if (tok->previous()->str() == "struct") {
                             if (tok->strAt(-2) == "typedef" &&
@@ -315,28 +296,24 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 return true;
                             } else if (tok->next()->str() == "{") {
                                 if (structs.find(name->strAt(-1)) == structs.end())
-                                    duplicateTypedefError(*tokPtr, name, "struct");
                                 return true;
                             } else if (Token::Match(tok->next(), ")|*")) {
                                 return true;
                             } else if (tok->next()->str() == name->str()) {
                                 return true;
                             } else if (tok->next()->str() != ";") {
-                                duplicateTypedefError(*tokPtr, name, "struct");
                                 return true;
                             } else {
                                 return false;
                             }
                         } else if (tok->previous()->str() == "union") {
                             if (tok->next()->str() != ";") {
-                                duplicateTypedefError(*tokPtr, name, "union");
                                 return true;
                             } else {
                                 return false;
                             }
                         } else if (isCPP() && tok->previous()->str() == "class") {
                             if (tok->next()->str() != ";") {
-                                duplicateTypedefError(*tokPtr, name, "class");
                                 return true;
                             } else {
                                 return false;
@@ -347,7 +324,6 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                     }
 
                     if ((*tokPtr)->strAt(1) != "(" || !Token::Match((*tokPtr)->linkAt(1), ") .|(|[")) {
-                        duplicateTypedefError(*tokPtr, name, "variable");
                         return true;
                     }
                 }
@@ -7224,24 +7200,10 @@ void Tokenizer::simplifyNestedStrcat()
     }
 }
 
-void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const std::string & type) const
-{
-    if (tok1 && !(_settings->isEnabled("style")))
-        return;
-
-    std::list<const Token*> locationList;
-    locationList.push_back(tok1);
-    locationList.push_back(tok2);
-    const std::string tok2_str = tok2 ? tok2->str() : std::string("name");
-
-    reportError(locationList, Severity::style, "variableHidingEnum",
-                std::string(type + " '" + tok2_str + "' hides enumerator with same name"));
-}
-
 // Check if this statement is a duplicate definition.  A duplicate
 // definition will hide the enumerator within it's scope so just
 // skip the entire scope of the duplicate.
-bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
+bool Tokenizer::duplicateDefinition(Token ** tokPtr) const
 {
     // check for an end of definition
     const Token * tok = *tokPtr;
@@ -7283,7 +7245,6 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
                     (Token::Match(tok->previous(), "%type%") &&
                      tok->previous()->str() != "return") ||
                     Token::Match(tok->tokAt(-2), "%type% &|*")) {
-                    duplicateEnumError(*tokPtr, name, "Function parameter");
                     // duplicate definition so skip entire function
                     *tokPtr = end->next()->link();
                     return true;
@@ -7297,14 +7258,12 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
                     while (end && end->str() != "{")
                         end = end->next();
                     if (end) {
-                        duplicateEnumError(*tokPtr, name, "Template parameter");
                         *tokPtr = end->link();
                         return true;
                     }
                 }
             } else {
                 if (Token::Match(tok->previous(), "enum|,")) {
-                    duplicateEnumError(*tokPtr, name, "Variable");
                     return true;
                 } else if (Token::Match(tok->previous(), "%type%")) {
                     // look backwards
@@ -7312,7 +7271,6 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
                     while (back && back->isName())
                         back = back->previous();
                     if (!back || (Token::Match(back, "[(,;{}]") && !Token::Match(back->next(),"return|throw"))) {
-                        duplicateEnumError(*tokPtr, name, "Variable");
                         return true;
                     }
                 }
@@ -7371,7 +7329,8 @@ public:
         }
 
         // Simplify calculations..
-        while (start && start->previous() && TemplateSimplifier::simplifyNumericCalculations(start->previous())) { }
+        while (start && start->previous() && TemplateSimplifier::simplifyNumericCalculations(start->previous())) 
+		{ }
 
         if (Token::Match(start, "%num% [,}]")) {
             value = start;
@@ -7390,7 +7349,6 @@ void Tokenizer::simplifyEnum()
     std::string className;
     int classLevel = 0;
     bool goback = false;
-    const bool printStyle = _settings->isEnabled("style");
     for (Token *tok = list.front(); tok; tok = tok->next()) {
 
         if (goback) {
@@ -7646,10 +7604,6 @@ void Tokenizer::simplifyEnum()
                                         if (prev->str() == "(" && (!Token::Match(prev->tokAt(-2), "%type%|::|*|& %type% (") || prev->strAt(-2) == "else"))
                                             continue;
                                         shadowVars.insert(arg->str());
-                                        if (inScope && printStyle) {
-                                            const EnumValue& enumValue = enumValues.find(arg->str())->second;
-                                            duplicateEnumError(arg, enumValue.name, "Function argument");
-                                        }
                                     }
                                 }
                             }
@@ -7666,10 +7620,6 @@ void Tokenizer::simplifyEnum()
                                         (Token::Match(prev->previous(), "%type% *|&") && (prev->previous()->isStandardType() || prev->strAt(-1) == "const" || Token::Match(prev->tokAt(-2), ";|{|}")))) {
                                         // variable declaration?
                                         shadowVars.insert(tok3->str());
-                                        if (inScope && printStyle) {
-                                            const EnumValue& enumValue = enumValues.find(tok3->str())->second;
-                                            duplicateEnumError(tok3, enumValue.name, "Variable");
-                                        }
                                     }
                                 }
                             }
@@ -7702,7 +7652,7 @@ void Tokenizer::simplifyEnum()
                                (shadowId.empty() || shadowId.top().find(tok2->str()) == shadowId.top().end()) &&   // no shadow enum/var/etc of enum
                                enumValues.find(tok2->str()) != enumValues.end()) {    // tok2 is a enum id with a known value
                         ev = &(enumValues.find(tok2->str())->second);
-                        if (!duplicateDefinition(&tok2, ev->name)) {
+                        if (!duplicateDefinition(&tok2)) {
                             if (tok2->strAt(-1) == "::" ||
                                 Token::Match(tok2->next(), "::|[|=")) {
                                 // Don't replace this enum if:
@@ -8734,14 +8684,7 @@ std::string Tokenizer::simplifyString(const std::string &source)
 
     return str;
 }
-
-void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
-{
-    Tokenizer t(settings, errorLogger);
-    t.duplicateTypedefError(0, 0, "variable");
-    t.duplicateEnumError(0, 0, "variable");
-}
-
+											
 void Tokenizer::simplifyWhile0()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {

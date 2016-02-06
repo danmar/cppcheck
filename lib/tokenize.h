@@ -171,11 +171,6 @@ public:
      */
     bool isFunctionParameterPassedByValue(const Token *fpar) const;
 
-    /**
-     * get error messages that the tokenizer generate
-     */
-    static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
-
     /** Simplify assignment in function call "f(x=g());" => "x=g();f(x);"
      */
     void simplifyAssignmentInFunctionCall();
@@ -701,7 +696,7 @@ private:
     /**
      * check for duplicate enum definition
      */
-    bool duplicateDefinition(Token **tokPtr, const Token *name) const;
+    bool duplicateDefinition(Token **tokPtr) const;
 
     /**
      * report error message
@@ -709,13 +704,7 @@ private:
     void reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
     void reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
 
-    /**
-     * duplicate enum definition error
-     */
-    void duplicateEnumError(const Token *tok1, const Token *tok2, const std::string & type) const;
-
     bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, const std::set<std::string>& structs) const;
-    void duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string & type) const;
 
     void unsupportedTypedef(const Token *tok) const;
 

@@ -3030,10 +3030,7 @@ private:
                           "{\n"
                           "   EF_Vector<float,6> d;\n"
                           "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator with same name\n"
-                      "[test.cpp:11] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator with same name\n"
-                      "[test.cpp:16] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator with same name\n"
-                      "[test.cpp:23] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator with same name\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void enum9() {
@@ -3075,8 +3072,7 @@ private:
                                 "}";
         ASSERT_EQUALS(expected, checkSimplifyEnum(code));
 
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Variable 'u' hides enumerator with same name\n"
-                      "[test.cpp:4] -> [test.cpp:3]: (style) Variable 'v' hides enumerator with same name\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void enum12() {
@@ -3218,9 +3214,7 @@ private:
                             "    x+=1;\n"
                             "}\n";
         checkSimplifyEnum(code);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Variable 'x' hides enumerator with same name\n"
-                      "[test.cpp:6] -> [test.cpp:1]: (style) Function argument 'x' hides enumerator with same name\n",
-                      errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // avoid false positive: in other scope
         const char code2[] = "class C1 { enum en { x = 0 }; };\n"
@@ -3433,7 +3427,7 @@ private:
         std::istringstream istr("x ; return a not_eq x;");
         tokenizer.tokenize(istr, "test.c");
         Token *x_token = tokenizer.list.front()->tokAt(5);
-        ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&x_token, tokenizer.tokens()));
+        ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&x_token));
     }
 
     void removestd() {

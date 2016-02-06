@@ -636,7 +636,6 @@ void CppCheck::getErrorMessages()
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
         (*it)->getErrorMessages(this, &s);
 
-    Tokenizer::getErrorMessages(this, &s);
     Preprocessor::getErrorMessages(this, &s);
 }
 
