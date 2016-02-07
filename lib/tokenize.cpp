@@ -7748,14 +7748,13 @@ void Tokenizer::simplifyEnum()
                         }
                     } else if (tok2->str() == "{")
                         ++level;
-                    else if (!pattern.empty() && ((tok2->str() == "enum" && Token::simpleMatch(tok2->next(), pattern.c_str())) || Token::simpleMatch(tok2, pattern.c_str()))) {
+                    else if (!pattern.empty() && Token::Match(tok2, ("enum| " + pattern).c_str())) {
                         simplify = true;
                         hasClass = true;
                     } else if (inScope && !exitThisScope && (tok2->str() == enumType->str() || (tok2->str() == "enum" && tok2->next() && tok2->next()->str() == enumType->str()))) {
-                        if (tok2->strAt(-1) == "::") {
-                            // Don't replace this enum if it's preceded by "::"
-                        } else if (tok2->next() &&
-                                   (tok2->next()->isName() || tok2->next()->str() == "(")) {
+                        if (!Token::Match(tok2->previous(), "%op%|::|:") &&
+                            !Token::simpleMatch(tok2->tokAt(-2), ") ,") &&
+                            Token::Match(tok2->next(), "%name%|(")) {
                             simplify = true;
                             hasClass = false;
                         } else if (tok2->previous()->str() == "(" && tok2->next()->str() == ")") {
