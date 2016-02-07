@@ -487,8 +487,12 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             const Token *end = tok->next()->link();
 
             // If address of variable is taken in the block then bail out
-            if (Token::findmatch(tok->tokAt(2), "& %varid%", end, var.declarationId()))
+            if (var.isPointer() || var.isArray()) {
+                if (Token::findmatch(tok->tokAt(2), "%varid%", end, var.declarationId()))
+                    return true;
+            } else if (Token::findmatch(tok->tokAt(2), "& %varid%", end, var.declarationId())) {
                 return true;
+            }
 
             // Skip block
             tok = end;
