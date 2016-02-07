@@ -7549,10 +7549,11 @@ void Tokenizer::simplifyEnum()
                 bool inScope = !enumClass; // enum class objects are always in a different scope
 
                 std::stack<std::set<std::string> > shadowId;  // duplicate ids in inner scope
-                bool simplify = false;
-                const EnumValue *ev = nullptr;
 
                 for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next()) {
+                    bool simplify = false;
+                    const EnumValue *ev = nullptr;
+
                     if (tok2->str() == "}") {
                         --level;
                         if (level < 0)
@@ -7640,6 +7641,7 @@ void Tokenizer::simplifyEnum()
                         }
                     } else if (inScope &&    // enum is in scope
                                (shadowId.empty() || shadowId.top().find(tok2->str()) == shadowId.top().end()) &&   // no shadow enum/var/etc of enum
+                               !Token::Match(tok2->previous(), "} %name% ;") &&
                                enumValues.find(tok2->str()) != enumValues.end()) {    // tok2 is a enum id with a known value
                         ev = &(enumValues.find(tok2->str())->second);
                         if (!duplicateDefinition(&tok2)) {
@@ -7697,8 +7699,6 @@ void Tokenizer::simplifyEnum()
                                 tok2 = tok2->next();
                             }
                         }
-
-                        simplify = false;
                     }
                 }
             }

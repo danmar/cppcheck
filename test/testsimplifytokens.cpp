@@ -202,6 +202,7 @@ private:
         TEST_CASE(enum44);
         TEST_CASE(enum45); // ticket #6806 (enum in init list)
         TEST_CASE(enum46); // ticket #4625 (shadow declaration)
+        TEST_CASE(enum47); // ticket #4973 (wrong simplification in shadow struct variable declaration)
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(enumOriginalName)
         TEST_CASE(duplicateDefinition); // ticket #3565
@@ -3309,6 +3310,12 @@ private:
         const char code[] = "enum e {foo,bar};\n"
                             "class c { enum e {foo=0,bar}; };";
         ASSERT_EQUALS("class c { } ;", checkSimplifyEnum(code));
+    }
+
+    void enum47() { // #4973 - wrong simplification in shadow struct variable declaration
+        const char code[] = "enum e {foo};\n"
+                            "union { struct { } foo; };";
+        ASSERT_EQUALS("union { struct Anonymous0 { } ; struct Anonymous0 foo ; } ;", checkSimplifyEnum(code));
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function
