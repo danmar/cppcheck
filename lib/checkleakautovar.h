@@ -53,6 +53,7 @@ public:
         alloctype.erase(varid);
         possibleUsage.erase(varid);
         conditionalAlloc.erase(varid);
+        referenced.erase(varid);
     }
 
     void swap(VarInfo &other) {
