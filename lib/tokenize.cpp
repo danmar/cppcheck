@@ -7754,7 +7754,7 @@ void Tokenizer::simplifyEnum()
                     } else if (inScope && !exitThisScope && (tok2->str() == enumType->str() || (tok2->str() == "enum" && tok2->next() && tok2->next()->str() == enumType->str()))) {
                         if (!Token::Match(tok2->previous(), "%op%|::|:") &&
                             !Token::simpleMatch(tok2->tokAt(-2), ") ,") &&
-                            Token::Match(tok2->next(), "%name%|(")) {
+                            Token::Match(tok2->next(), "%name%|( !!{")) {
                             simplify = true;
                             hasClass = false;
                         } else if (tok2->previous()->str() == "(" && tok2->next()->str() == ")") {

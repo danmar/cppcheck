@@ -201,6 +201,7 @@ private:
         TEST_CASE(enum43); // lhs in assignment
         TEST_CASE(enum44);
         TEST_CASE(enum45); // ticket #6806 (enum in init list)
+        TEST_CASE(enum46); // ticket #4625 (shadow declaration)
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(enumOriginalName)
         TEST_CASE(duplicateDefinition); // ticket #3565
@@ -3302,6 +3303,12 @@ private:
         const char code[] = "enum a {};\n"
                             "c::c() : a(0), a(0) {}";
         ASSERT_EQUALS("c :: c ( ) : a ( 0 ) , a ( 0 ) { }", checkSimplifyEnum(code));
+    }
+
+    void enum46() { // #4625 - wrong simplification in shadow declaration
+        const char code[] = "enum e {foo,bar};\n"
+                            "class c { enum e {foo=0,bar}; };";
+        ASSERT_EQUALS("class c { } ;", checkSimplifyEnum(code));
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function
