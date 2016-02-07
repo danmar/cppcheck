@@ -49,8 +49,20 @@ void VarInfo::print()
         if (use != possibleUsage.end())
             strusage = use->second;
 
-        std::cout << "alloctype='" << it->second.type << "' "
-                  << "possibleUsage='" << strusage << "'" << std::endl;
+        std::string status;
+        switch (it->second.status) {
+        case DEALLOC: status = "dealloc"; break;
+        case ALLOC: status = "alloc"; break;
+        case NOALLOC: status = "noalloc"; break;
+        default: status = "?"; break;
+        };
+
+        std::cout << "status=" << status << " "
+                  << "alloctype='" << it->second.type << "' "
+                  << "possibleUsage='" << strusage << "' " 
+                  << "conditionalAlloc=" << (conditionalAlloc.find(it->first) != conditionalAlloc.end() ? "yes" : "no") << " "
+                  << "referenced=" << (referenced.find(it->first) != referenced.end() ? "yes" : "no") << " "
+                  << std::endl;
     }
 }
 
