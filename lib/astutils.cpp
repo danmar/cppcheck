@@ -24,9 +24,24 @@
 #include "tokenize.h"
 #include <set>
 
+static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
+{
+    if (!tok)
+        return false;
+    const ValueType *valueType = tok->valueType();
+    if (!valueType)
+        return false;
+    return valueType->type == ValueType::Type::CHAR && valueType->pointer == 0U && valueType->sign == sign;
+}
+
 bool astIsSignedChar(const Token *tok)
 {
-    return tok && tok->valueType() && tok->valueType()->sign == ValueType::Sign::SIGNED && tok->valueType()->type == ValueType::Type::CHAR && tok->valueType()->pointer == 0U;
+    return astIsCharWithSign(tok, ValueType::Sign::SIGNED);
+}
+
+bool astIsUnknownSignChar(const Token *tok)
+{
+    return astIsCharWithSign(tok, ValueType::Sign::UNKNOWN_SIGN);
 }
 
 bool astIsIntegral(const Token *tok, bool unknown)
