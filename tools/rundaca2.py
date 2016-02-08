@@ -7,9 +7,15 @@ import shutil
 import time
 import sys
 
+START = '0'
 PASSWORD = ''
-if len(sys.argv) == 2:
-    PASSWORD = sys.argv[1]
+for arg in sys.argv[1:]:
+	if len(arg)==1:
+		START = '0123456789abcdefghijklmnopqrstuvwxyz'.find(arg)
+		if START < 0:
+			START = 0
+	else:
+		PASSWORD = arg
 
 # Upload file to sourceforge web server using scp
 def upload(file_to_upload, destination):
@@ -64,7 +70,7 @@ def daca2(foldernum):
     subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2-addons.py'), 'lib' + folder, '--rev=' + rev])
     upload(os.path.expanduser('~/daca2/lib' + folder + '/results.txt'), 'evidente/addons-lib' + folder + '.txt')
 
-foldernum = 0
+foldernum = START
 while True:
     daca2(foldernum)
     foldernum = foldernum + 1
