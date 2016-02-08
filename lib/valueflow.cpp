@@ -1160,7 +1160,7 @@ static bool valueFlowForward(Token * const               startToken,
                 if (tok3->varId() == varid) {
                     for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it)
                         setTokenValue(tok3, *it);
-                } else if (Token::Match(tok3, "%oror%|&&|?")) {
+                } else if (Token::Match(tok3, "%oror%|&&|?|;")) {
                     break;
                 }
             }
@@ -1229,7 +1229,7 @@ static bool valueFlowForward(Token * const               startToken,
                             for (it = values.begin(); it != values.end(); ++it)
                                 setTokenValue(condtok, *it);
                         }
-                        if (Token::Match(condtok, "%oror%|&&"))
+                        if (Token::Match(condtok, "%oror%|&&|?|;"))
                             break;
                     }
                     if (settings->debugwarnings)

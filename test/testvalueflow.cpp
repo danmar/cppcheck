@@ -1176,6 +1176,14 @@ private:
                "  a = x;\n" // <- x can be 0
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 9U, 0)); // x can be 0 at line 9
+
+        code = "void f(const int a[]) {\n" // #6616
+               "  const int *x = 0;\n"
+               "  for (int i = 0; i < 10; i = *x) {\n" // <- x is not 0
+               "    x = a[i];\n"
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
     }
 
     void valueFlowAfterCondition() {
