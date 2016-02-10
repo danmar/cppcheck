@@ -1417,7 +1417,9 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
 
 void CheckOther::checkCharVariable()
 {
-    if (!_settings->isEnabled("warning"))
+    const bool warning = _settings->isEnabled("warning");
+    const bool portability = _settings->isEnabled("portability");
+    if (!warning && !portability)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -1426,12 +1428,16 @@ void CheckOther::checkCharVariable()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% [")) {
-                if (!tok->variable() || !tok->variable()->isArray())
+                if (!tok->variable())
+                    continue;
+                if (!tok->variable()->isArray() && !tok->variable()->isPointer())
                     continue;
                 const Token *index = tok->next()->astOperand2();
-                if (astIsSignedChar(index) && index->getValueGE(0x80, _settings))
-                    charArrayIndexError(tok);
-            } else if (Token::Match(tok, "[&|^]") && tok->astOperand2() && tok->astOperand1()) {
+                if (warning && tok->variable()->isArray() && astIsSignedChar(index) && index->getValueGE(0x80, _settings))
+                    signedCharArrayIndexError(tok);
+                if (portability && astIsUnknownSignChar(index) && index->getValueGE(0x80, _settings))
+                    unknownSignCharArrayIndexError(tok);
+            } else if (warning && Token::Match(tok, "[&|^]") && tok->astOperand2() && tok->astOperand1()) {
                 bool warn = false;
                 if (astIsSignedChar(tok->astOperand1())) {
                     const ValueFlow::Value *v1 = tok->astOperand1()->getValueLE(-1, _settings);
@@ -1460,15 +1466,25 @@ void CheckOther::checkCharVariable()
     }
 }
 
-void CheckOther::charArrayIndexError(const Token *tok)
+void CheckOther::signedCharArrayIndexError(const Token *tok)
 {
     reportError(tok,
                 Severity::warning,
-                "charArrayIndex",
+                "signedCharArrayIndex",
                 "Signed 'char' type used as array index.\n"
                 "Signed 'char' type used as array index. If the value "
                 "can be greater than 127 there will be a buffer underflow "
                 "because of sign extension.");
+}
+
+void CheckOther::unknownSignCharArrayIndexError(const Token *tok)
+{
+    reportError(tok,
+                Severity::portability,
+                "unknownSignCharArrayIndex",
+                "'char' type used as array index.\n"
+                "'char' type used as array index. Values greater that 127 will be "
+                "treated depending on whether 'char' is signed or unsigned on target platform.");
 }
 
 void CheckOther::charBitOpError(const Token *tok)

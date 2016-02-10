@@ -29,6 +29,8 @@ class Token;
 
 /** Is expression a 'signed char' if no promotion is used */
 bool astIsSignedChar(const Token *tok);
+/** Is expression a 'char' if no promotion is used? */
+bool astIsUnknownSignChar(const Token *tok);
 /** Is expression of integral type? */
 bool astIsIntegral(const Token *tok, bool unknown);
 /** Is expression of floating point type? */

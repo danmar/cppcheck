@@ -218,7 +218,8 @@ private:
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void passedByValueError(const Token *tok, const std::string &parname);
     void constStatementError(const Token *tok, const std::string &type);
-    void charArrayIndexError(const Token *tok);
+    void signedCharArrayIndexError(const Token *tok);
+    void unknownSignCharArrayIndexError(const Token *tok);
     void charBitOpError(const Token *tok);
     void variableScopeError(const Token *tok, const std::string &varname);
     void zerodivError(const Token *tok, bool inconclusive);
@@ -280,7 +281,8 @@ private:
         c.cstyleCastError(0);
         c.passedByValueError(0, "parametername");
         c.constStatementError(0, "type");
-        c.charArrayIndexError(0);
+        c.signedCharArrayIndexError(0);
+        c.unknownSignCharArrayIndexError(0);
         c.charBitOpError(0);
         c.variableScopeError(0, "varname");
         c.redundantAssignmentInSwitchError(0, 0, "var");
