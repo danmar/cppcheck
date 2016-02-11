@@ -357,6 +357,9 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         if (_settings.terminated())
             return;
 
+        if (tokenizer.isMaxTime())
+            return;
+
         Timer timerRunChecks((*it)->name() + "::runChecks", _settings.showtime, &S_timerResults);
         (*it)->runChecks(&tokenizer, &_settings, this);
     }
@@ -380,6 +383,9 @@ void CppCheck::checkSimplifiedTokens(const Tokenizer &tokenizer)
     // call all "runSimplifiedChecks" in all registered Check classes
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
         if (_settings.terminated())
+            return;
+
+        if (tokenizer.isMaxTime())
             return;
 
         Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings.showtime, &S_timerResults);

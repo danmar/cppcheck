@@ -1127,6 +1127,13 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
     for (unsigned int i = 1; i <= _tokenizer->varIdCount(); i++) {
         const Variable * const var = symbolDatabase->getVariableFromVarId(i);
         if (var && var->isArray() && var->dimension(0) > 0) {
+            _errorLogger->reportProgress(_tokenizer->list.getSourceFilePath(),
+                                         "Check (BufferOverrun::checkGlobalAndLocalVariable 1)",
+                                         var->nameToken()->progressValue());
+
+            if (_tokenizer->isMaxTime())
+                return;
+
             const Token *tok = var->nameToken();
             do {
                 if (tok->str() == "{") {
@@ -1169,8 +1176,11 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             int nextTok = 0;
 
             _errorLogger->reportProgress(_tokenizer->list.getSourceFilePath(),
-                                         "Check (BufferOverrun::checkGlobalAndLocalVariable)",
+                                         "Check (BufferOverrun::checkGlobalAndLocalVariable 2)",
                                          tok->progressValue());
+
+            if (_tokenizer->isMaxTime())
+                return;
 
             if (_tokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]")) {
                 size = MathLib::toLongNumber(tok->strAt(6));
@@ -1412,6 +1422,8 @@ void CheckBufferOverrun::checkStructVariable()
 void CheckBufferOverrun::bufferOverrun()
 {
     checkGlobalAndLocalVariable();
+    if (_tokenizer->isMaxTime())
+        return;
     checkStructVariable();
     checkBufferAllocatedWithStrlen();
     checkStringArgument();

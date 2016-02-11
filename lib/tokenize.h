@@ -811,6 +811,14 @@ public:
     */
     static const Token * startOfExecutableScope(const Token * tok);
 
+    bool isMaxTime() const {
+#ifdef MAXTIME
+        return (std::time(0) > maxtime);
+#else
+        return false;
+#endif
+    }
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);
@@ -852,6 +860,7 @@ private:
      * TimerResults
      */
     TimerResults *m_timerResults;
+
 #ifdef MAXTIME
     /** Tokenizer maxtime */
     std::time_t maxtime;

@@ -545,10 +545,8 @@ void Tokenizer::simplifyTypedef()
         if (_settings->terminated())
             return;
 
-#ifdef MAXTIME
-        if (std::time(0) > maxtime)
+        if (isMaxTime())
             return;
-#endif
 
         if (goback) {
             //jump back once, see the comment at the end of the function
@@ -6421,10 +6419,8 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
     if (_errorLogger && !list.getFiles().empty())
         _errorLogger->reportProgress(list.getFiles()[0], "Tokenize (simplifyKnownVariables)", tok3->progressValue());
 
-#ifdef MAXTIME
-    if (std::time(0) > maxtime)
+    if (isMaxTime())
         return false;
-#endif
 
     bool ret = false;
 
