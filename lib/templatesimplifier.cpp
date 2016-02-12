@@ -1222,6 +1222,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     ErrorLogger* errorlogger,
     const Settings *_settings,
     const Token *tok,
+    const std::time_t maxtime,
     std::list<Token *> &templateInstantiations,
     std::set<std::string> &expandedtemplates)
 {
@@ -1274,6 +1275,12 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         Token * const tok2 = *iter2;
         if (errorlogger && !tokenlist.getFiles().empty())
             errorlogger->reportProgress(tokenlist.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
+#ifdef MAXTIME
+        if (std::time(0) > maxtime)
+            return false;
+#else
+        (void)maxtime;
+#endif
         assert(tokenlist.validateToken(tok2)); // that assertion fails on examples from #6021
         if (tok2->str() != name)
             continue;
@@ -1404,6 +1411,7 @@ void TemplateSimplifier::simplifyTemplates(
     TokenList& tokenlist,
     ErrorLogger* errorlogger,
     const Settings *_settings,
+    const std::time_t maxtime,
     bool &_codeWithTemplates
 )
 {
@@ -1450,6 +1458,7 @@ void TemplateSimplifier::simplifyTemplates(
                                 errorlogger,
                                 _settings,
                                 *iter1,
+                                maxtime,
                                 templateInstantiations,
                                 expandedtemplates);
             if (instantiated)

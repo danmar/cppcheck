@@ -25,6 +25,7 @@
 #include <set>
 #include <list>
 #include <string>
+#include <ctime>
 #include <vector>
 #include "config.h"
 
@@ -137,6 +138,7 @@ public:
      * @param errorlogger error logger
      * @param _settings settings
      * @param tok token where the template declaration begins
+     * @param maxtime time when the simplification will stop
      * @param templateInstantiations a list of template usages (not necessarily just for this template)
      * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
      * @return true if the template was instantiated
@@ -146,6 +148,7 @@ public:
         ErrorLogger* errorlogger,
         const Settings *_settings,
         const Token *tok,
+        const std::time_t maxtime,
         std::list<Token *> &templateInstantiations,
         std::set<std::string> &expandedtemplates);
 
@@ -154,12 +157,14 @@ public:
      * @param tokenlist token list
      * @param errorlogger error logger
      * @param _settings settings
+     * @param maxtime time when the simplification should be stopped
      * @param _codeWithTemplates output parameter that is set if code contains templates
      */
     static void simplifyTemplates(
         TokenList& tokenlist,
         ErrorLogger* errorlogger,
         const Settings *_settings,
+        const std::time_t maxtime,
         bool &_codeWithTemplates);
 
     /**

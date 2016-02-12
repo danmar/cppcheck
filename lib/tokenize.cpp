@@ -2357,6 +2357,11 @@ void Tokenizer::simplifyTemplates()
         list,
         _errorLogger,
         _settings,
+#ifdef MAXTIME
+        maxtime,
+#else
+        0, // ignored
+#endif
         _codeWithTemplates);
 }
 //---------------------------------------------------------------------------
