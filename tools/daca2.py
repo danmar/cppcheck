@@ -149,11 +149,10 @@ def scanarchive(filepath, jobs):
 #
 # List of skipped packages - which trigger known yet unresolved problems with cppcheck.
 # The issues on trac (http://trac.cppcheck.net) are given for reference
-# boost #3654 (?)
 # insight#5184
 #
 
-    if filename[:5] == 'boost' or filename[:7] == 'insight':
+    if filename[:7] == 'insight':
         results = open('results.txt', 'at')
         results.write('fixme: skipped package to avoid hang\n')
         results.close()
