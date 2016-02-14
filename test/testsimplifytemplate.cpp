@@ -135,7 +135,7 @@ private:
     }
 
     void template1() {
-        const char code[] = "template <classname T> void f(T val) { T a; }\n"
+        const char code[] = "template <class T> void f(T val) { T a; }\n"
                             "f<int>(10);";
 
         const char expected[] = "f<int> ( 10 ) ; "
@@ -145,7 +145,7 @@ private:
     }
 
     void template2() {
-        const char code[] = "template <classname T> class Fred { T a; };\n"
+        const char code[] = "template <class T> class Fred { T a; };\n"
                             "Fred<int> fred;";
 
         const char expected[] = "Fred<int> fred ; "
@@ -155,7 +155,7 @@ private:
     }
 
     void template3() {
-        const char code[] = "template <classname T, int sz> class Fred { T data[sz]; };\n"
+        const char code[] = "template <class T, int sz> class Fred { T data[sz]; };\n"
                             "Fred<float,4> fred;";
 
         const char expected[] = "Fred<float,4> fred ; "
@@ -165,7 +165,7 @@ private:
     }
 
     void template4() {
-        const char code[] = "template <classname T> class Fred { Fred(); };\n"
+        const char code[] = "template <class T> class Fred { Fred(); };\n"
                             "Fred<float> fred;";
 
         const char expected[] = "Fred<float> fred ; "
@@ -175,11 +175,11 @@ private:
     }
 
     void template5() {
-        const char code[] = "template <classname T> class Fred { };\n"
-                            "template <classname T> Fred<T>::Fred() { }\n"
+        const char code[] = "template <class T> class Fred { };\n"
+                            "template <class T> Fred<T>::Fred() { }\n"
                             "Fred<float> fred;";
 
-        const char expected[] = "template < classname T > Fred < T > :: Fred ( ) { } " // <- TODO: this should be removed
+        const char expected[] = "template < class T > Fred < T > :: Fred ( ) { } " // <- TODO: this should be removed
                                 "Fred<float> fred ; "
                                 "class Fred<float> { } ; "
                                 "Fred<float> :: Fred<float> ( ) { }";
@@ -188,7 +188,7 @@ private:
     }
 
     void template6() {
-        const char code[] = "template <classname T> class Fred { };\n"
+        const char code[] = "template <class T> class Fred { };\n"
                             "Fred<float> fred1;\n"
                             "Fred<float> fred2;";
 
@@ -545,7 +545,7 @@ private:
 
     void template21() {
         {
-            const char code[] = "template <classname T> struct Fred { T a; };\n"
+            const char code[] = "template <class T> struct Fred { T a; };\n"
                                 "Fred<int> fred;";
 
             const char expected[] = "Fred<int> fred ; "
@@ -555,7 +555,7 @@ private:
         }
 
         {
-            const char code[] = "template <classname T, int sz> struct Fred { T data[sz]; };\n"
+            const char code[] = "template <class T, int sz> struct Fred { T data[sz]; };\n"
                                 "Fred<float,4> fred;";
 
             const char expected[] = "Fred<float,4> fred ; "
@@ -565,7 +565,7 @@ private:
         }
 
         {
-            const char code[] = "template <classname T> struct Fred { Fred(); };\n"
+            const char code[] = "template <class T> struct Fred { Fred(); };\n"
                                 "Fred<float> fred;";
 
             const char expected[] = "Fred<float> fred ; "
@@ -575,7 +575,7 @@ private:
         }
 
         {
-            const char code[] = "template <classname T> struct Fred { };\n"
+            const char code[] = "template <class T> struct Fred { };\n"
                                 "Fred<float> fred1;\n"
                                 "Fred<float> fred2;";
 
@@ -588,7 +588,7 @@ private:
     }
 
     void template22() {
-        const char code[] = "template <classname T> struct Fred { T a; };\n"
+        const char code[] = "template <class T> struct Fred { T a; };\n"
                             "Fred<std::string> fred;";
 
         const char expected[] = "Fred<std::string> fred ; "
@@ -598,7 +598,7 @@ private:
     }
 
     void template23() {
-        const char code[] = "template <classname T> void foo() { }\n"
+        const char code[] = "template <class T> void foo() { }\n"
                             "void bar() {\n"
                             "    std::cout << (foo<double>());\n"
                             "}";
@@ -896,14 +896,14 @@ private:
     }
 
     void template49() { // #6237
-        const char code[] = "template <classname T> class Fred { void f(); void g(); };\n"
-                            "template <classname T> void Fred<T>::f() { }\n"
-                            "template <classname T> void Fred<T>::g() { }\n"
+        const char code[] = "template <class T> class Fred { void f(); void g(); };\n"
+                            "template <class T> void Fred<T>::f() { }\n"
+                            "template <class T> void Fred<T>::g() { }\n"
                             "template void Fred<float>::f();\n"
                             "template void Fred<int>::g();\n";
 
-        const char expected[] = "template < classname T > void Fred<T> :: f ( ) { } "
-                                "template < classname T > void Fred<T> :: g ( ) { } "
+        const char expected[] = "template < class T > void Fred<T> :: f ( ) { } "
+                                "template < class T > void Fred<T> :: g ( ) { } "
                                 "template void Fred<float> :: f ( ) ; "
                                 "template void Fred<int> :: g ( ) ; "
                                 "class Fred<T> { void f ( ) ; void g ( ) ; } ; "
@@ -916,12 +916,12 @@ private:
     }
 
     void template50() { // #4272
-        const char code[] = "template <classname T> class Fred { void f(); };\n"
-                            "template <classname T> void Fred<T>::f() { }\n"
+        const char code[] = "template <class T> class Fred { void f(); };\n"
+                            "template <class T> void Fred<T>::f() { }\n"
                             "template<> void Fred<float>::f() { }\n"
                             "template<> void Fred<int>::g() { }\n";
 
-        const char expected[] = "template < classname T > void Fred<T> :: f ( ) { } "
+        const char expected[] = "template < class T > void Fred<T> :: f ( ) { } "
                                 "template < > void Fred<float> :: f ( ) { } "
                                 "template < > void Fred<int> :: g ( ) { } "
                                 "class Fred<T> { void f ( ) ; } ; "
