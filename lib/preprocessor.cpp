@@ -2285,7 +2285,8 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                     continue;
                 }
 
-                includes.push_back(filename);
+                // #6913 - simplify Path to avoid strange recursion
+                includes.push_back(Path::simplifyPath(filename));
 
                 // Don't include header if it's already included and contains #pragma once
                 if (pragmaOnce.find(filename) != pragmaOnce.end()) {
