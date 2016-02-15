@@ -146,18 +146,6 @@ def scanarchive(filepath, jobs):
     elif filename[-4:] == '.bz2':
         subprocess.call(['tar', 'xjvf', filename])
 
-#
-# List of skipped packages - which trigger known yet unresolved problems with cppcheck.
-# The issues on trac (http://trac.cppcheck.net) are given for reference
-# insight#5184
-#
-
-    if filename[:7] == 'insight':
-        results = open('results.txt', 'at')
-        results.write('fixme: skipped package to avoid hang\n')
-        results.close()
-        return
-
     removeLargeFiles('')
 
     print('cppcheck ' + filename)
