@@ -3935,6 +3935,28 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, char defau
     }
 }
 
+void SymbolDatabase::debugValueType() const
+{
+    unsigned int linenr = 0U;
+    std::cout << std::endl << "### ValueType ###" << std::endl;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (tok->linenr() != linenr)
+            std::cout << std::endl << tok->linenr() << ": ";
+        linenr = tok->linenr();
+        std::cout << tok->str();
+        if (tok->valueType()) {
+            std::string t = tok->valueType()->str();
+            std::string::size_type pos;
+            while ((pos = t.find(" ")) != std::string::npos)
+                t[pos] = '_';
+            std::cout << ':' << t;
+        }
+        std::cout << ' ';
+    }
+    std::cout << std::endl << std::endl;
+}
+
+
 std::string ValueType::str() const
 {
     std::string ret;

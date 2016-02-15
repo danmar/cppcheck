@@ -3828,8 +3828,10 @@ void Tokenizer::printDebugOutput(unsigned int simplification) const
         if (_symbolDatabase) {
             if (_settings->xml)
                 _symbolDatabase->printXml(std::cout);
-            else if (_settings->verbose)
+            else if (_settings->verbose) {
                 _symbolDatabase->printOut("Symbol database");
+                _symbolDatabase->debugValueType();
+            }
         }
 
         if (_settings->verbose)
