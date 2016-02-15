@@ -1,0 +1,460 @@
+<?xml version="1.0"?>
+<!--
+
+`xsltproc -''-nonet \
+          -''-param man.charmap.use.subset "0" \
+          -''-param make.year.ranges "1" \
+          -''-param make.single.year.ranges "1" \
+          /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl \
+          manpage.xml'
+
+A manual page <package>.<section> will be generated. You may view the
+manual page with: nroff -man <package>.<section> | less'. A typical entry
+in a Makefile or Makefile.am is:
+
+DB2MAN = /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl
+XP     = xsltproc -''-nonet -''-param man.charmap.use.subset "0"
+
+manpage.1: manpage.xml
+        $(XP) $(DB2MAN) $<
+
+The xsltproc binary is found in the xsltproc package. The XSL files are in
+docbook-xsl. A description of the parameters you can use can be found in the
+docbook-xsl-doc-* packages. Please remember that if you create the nroff
+version in one of the debian/rules file targets (such as build), you will need
+to include xsltproc and docbook-xsl in your Build-Depends control field.
+Alternatively use the xmlto command/package. That will also automatically
+pull in xsltproc and docbook-xsl.
+
+Notes for using docbook2x: docbook2x-man does not automatically create the
+AUTHOR(S) and COPYRIGHT sections. In this case, please add them manually as
+<refsect1> ... </refsect1>.
+
+To disable the automatic creation of the AUTHOR(S) and COPYRIGHT sections
+read /usr/share/doc/docbook-xsl/doc/manpages/authors.html. This file can be
+found in the docbook-xsl-doc-html package.
+
+Validation can be done using: `xmllint -''-noout -''-valid manpage.xml`
+
+General documentation about man-pages and man-page-formatting:
+man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
+
+--><!-- Fill in your name for FIRSTNAME and SURNAME. --><!-- dhusername could also be set to "&firstname; &surname;". --><!-- SECTION should be 1-8, maybe w/ subsection other parameters are
+       allowed: see man(7), man(1) and
+       http://www.tldp.org/HOWTO/Man-Page/q2.html. --><!-- TITLE should be something like "User commands" or similar (see
+       http://www.tldp.org/HOWTO/Man-Page/q2.html). --><!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
+[
+<!ENTITY dhfirstname "Reijo">
+<!ENTITY dhsurname "Tomperi">
+<!ENTITY dhusername "&dhfirstname; &dhsurname;">
+<!ENTITY dhemail "aggro80@users.sourceforge.net">
+<!ENTITY dhsection "1">
+<!ENTITY dhtitle "cppcheck User Manual">
+<!ENTITY dhucpackage "CPPCHECK">
+<!ENTITY dhpackage "cppcheck">
+]>
+<refentry>
+  <refentryinfo>
+    <title>cppcheck ユーザーマニュアル</title>
+    <productname>&dhpackage;</productname>
+    <authorgroup>
+      <author>
+       <firstname>&dhfirstname;</firstname>
+        <surname>&dhsurname;</surname>
+        <contrib>このmanpageはDebian systemのために作成されました。</contrib>
+        <address>
+          <email>&dhemail;</email>
+        </address>
+      </author>
+    </authorgroup>
+    <copyright>
+      <year>2009 - 2016</year>
+      <holder>Reijo Tomperi, translated by fu7mu4</holder>
+    </copyright>
+    <legalnotice>
+      <para>このマニュアルページはDebian systemのために作成されました (他のシステムで使用を制限しません).</para>
+      <para>Permission is granted to copy, distribute and/or modify this
+        document under the terms of the GNU General Public License,
+        Version 3 or (at your option) any later version published by
+        the Free Software Foundation.</para>
+      <para>On Debian systems, the complete text of the GNU General Public
+        License can be found in
+    <filename>/usr/share/common-licenses/GPL-3</filename>.</para>
+    </legalnotice>
+  </refentryinfo>
+  <refmeta> <refentrytitle>CPPCHECK</refentrytitle> <manvolnum>1</manvolnum> </refmeta> <refnamediv> <refname>cppcheck</refname> <refpurpose>C/C++ ソースコード静的か解析ツール</refpurpose> </refnamediv> <refsynopsisdiv> <cmdsynopsis> <command>cppcheck</command> <arg choice="opt"><option>--append=&lt;file&gt;</option></arg> <arg choice="opt"><option>--check-config</option></arg> <arg choice="opt"><option>--check-library</option></arg> <arg choice="opt"><option>-D&lt;id&gt;</option></arg> <arg choice="opt"><option>-U&lt;id&gt;</option></arg> <arg choice="opt"><option>--enable=&lt;id&gt;</option></arg> <arg choice="opt"><option>--error-exitcode=&lt;n&gt;</option></arg> <arg choice="opt"><option>--errorlist</option></arg> <arg choice="opt"><option>--exitcode-suppressions=&lt;file&gt;</option></arg> <arg choice="opt"><option>--file-list=&lt;file&gt;</option></arg> <arg choice="opt"><option>--force</option></arg> <arg choice="opt"><option>--help</option></arg> <arg choice="opt"><option>-I&lt;dir&gt;</option></arg> <arg choice="opt"><option>--includes-file=&lt;file&gt;</option></arg> <arg choice="opt"><option>--config-exclude=&lt;dir&gt;</option></arg> <arg choice="opt"><option>--config-excludes-file=&lt;file&gt;</option></arg> <arg choice="opt"><option>--include=&lt;file&gt;</option></arg> <arg choice="opt"><option>-i&lt;dir&gt;</option></arg> <arg choice="opt"><option>--inconclusive</option></arg> <arg choice="opt"><option>--inline-suppr</option></arg> <arg choice="opt"><option>-j&lt;jobs&gt;</option></arg> <arg choice="opt"><option>-l&lt;load&gt;</option></arg> <arg choice="opt"><option>--language=&lt;language&gt;</option></arg> <arg choice="opt"><option>--library=&lt;cfg&gt;</option></arg> <arg choice="opt"><option>--max-configs=&lt;limit&gt;</option></arg> <arg choice="opt"><option>--platform=&lt;type&gt;</option></arg> <arg choice="opt"><option>--quiet</option></arg> <arg choice="opt"><option>--relative-paths=&lt;paths&gt;</option></arg> <arg choice="opt"><option>--report-progress</option></arg> <arg choice="opt"><option>--rule=&lt;rule&gt;</option></arg> <arg choice="opt"><option>--rule-file=&lt;file&gt;</option></arg> <arg choice="opt"><option>--std=&lt;id&gt;</option></arg> <arg choice="opt"><option>--suppress=&lt;spec&gt;</option></arg> <arg choice="opt"><option>--suppressions-list=&lt;file&gt;</option></arg> <arg choice="opt"><option>--template='&lt;text&gt;'</option></arg> <arg choice="opt"><option>--verbose</option></arg> <arg choice="opt"><option>--version</option></arg> <arg choice="opt"><option>--xml</option></arg> <arg choice="opt"><option>--xml-version=&lt;version&gt;]</option></arg> <arg choice="opt"><option>ファイルまたはパス</option></arg> <arg choice="plain"><option>...</option></arg> </cmdsynopsis> </refsynopsisdiv>
+  <refsect1 id="description">
+    <title>説明</title>
+    <para>Cppcheck は C/C++ のコンパイラが検出できないようなバグの検出を試みるコマンドラインツールです。これは多目的ツールです。また、さまざまなコンパイラの拡張構文やインラインアセンブル等含む非標準的なソースコードをチェックできます。Cppcheckの内部プリプロセッサは、インクルード、マクロといくつかのプリプロセッサコマンドを取り扱うことができます。Cppcheck は設定できる項目が多いのですが、ソースコードのパスを与えるだけで使うことができるようになります。</para>
+  </refsect1>
+  <refsect1 id="options">
+    <title>オプション</title>
+    <para>与えた C/C++ ファイルを解析して通常のエラーを生成します。</para>
+    <variablelist>
+      <!-- Use the variablelist.term.separator and the
+           variablelist.term.break.after parameters to
+           control the term elements. -->
+      <varlistentry>
+        <term><option>--append=&lt;file&gt;</option></term>
+        <listitem>
+          <para>これらの実装を提供することで、関数についての情報を提供できるようにします。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--check-config</option></term>
+        <listitem>
+          <para>Cppcheckの設定をチェックします。このフラグは通常のソースコードの解析を無効にします。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--check-library</option></term>
+        <listitem>
+          <para>ライブラリファイルが不完全な場合に情報メッセージを表示します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-D&lt;id&gt;</option></term>
+        <listitem>
+          <para>Cppcheckはデフォルトでプリプロセッサのデファインのコンパイルスイッチ設定の組み合わせを全てチェックします。-Dを使用するとこのチェックを制限します。 to limit the checking. -Dを使用した場合、与えらえたプリプロセッサのデファインのコンパイルスイッチの設定の組み合わせを制限してチェックします。例: -DDEBUG=1 -D__cplusplus</para>
+        </listitem>
+      </varlistentry>
+        <varlistentry>
+            <term><option>-U&lt;id&gt;</option></term>
+            <listitem>
+                <para>Cppcheckはデフォルトでプリプロセッサのデファインのコンパイルスイッチ設定の組み合わせを全てチェックします。'-U'を使用した場合、#ifdef &lt;id&gt;のコードのあるパスを避けてソースコードをチェックします。例: '-UDEBUG'</para>
+            </listitem>
+        </varlistentry>
+        <varlistentry>
+        <term><option>--enable=&lt;id&gt;</option></term>
+        <listitem>
+          <para>追加のチェックを有効にします。利用できるidは: <glosslist> <glossentry> <glossterm>all</glossterm>
+                <glossdef>
+                  <para>全てのチェックを有効にします。--enable=allは全てのプログラムをチェックするときだけ使用することをお勧めします。というのは、このオプションはunusedFunctionを有効にするからです。</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>warning</glossterm>
+                <glossdef>
+                  <para>warningのメッセージを有効にします。</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>style</glossterm>
+                <glossdef>
+                  <para>コードスタイルのチェックを全て有効にします。'style'と'performance'と'portability'の全てのメッセージを有効にします。</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>performance</glossterm>
+                <glossdef>
+                  <para>performanceのメッセージを有効にします。</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>portability</glossterm>
+                <glossdef>
+                  <para>portabilityのメッセージを有効にします。</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>information</glossterm>
+                <glossdef>
+                  <para>informationのメッセージを有効にします。</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>unusedFunction</glossterm>
+                <glossdef>
+                  <para>未使用関数をチェックします。これは、プログラム全体をチェックするときにだけ有効にするようお勧めします。</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>missingInclude</glossterm>
+                <glossdef>
+                  <para>インクルードファイルが見つからない場合に警告します。詳細については--check-configオプションを使用します。</para>
+                </glossdef>
+              </glossentry>
+            </glosslist>デフォルトでは追加のチェックを有効にしません。いくつかのidはコンマで区切って与えることができます。例--enable=style,unusedFunction。--stdを参照してください。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--error-exitcode=&lt;n&gt;</option></term>
+        <listitem>
+          <para>もしエラーが検出された場合、終了コードとして整数nを返す(デフォルトは0)。引数が正しくない場合、スキャン対象ファイルがない場合に EXIT_FAILURE を返す。注意：あなたのOSはこの値を変更することがあります。例：256を0に変更することがある。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--errorlist</option></term>
+        <listitem>
+          <para>XMLフォーマットで出力可能なエラーメッセージを全てリストアップして出力します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--exitcode-suppressions=&lt;file&gt;</option></term>
+        <listitem>
+          <para>メッセージは表示させたいが、終了コードを0でない値にしたくないときに使用します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--file-list=&lt;file&gt;</option></term>
+        <listitem>
+          <para>テキストファイルで、チェックするファイルを指定します。一行毎に一ファイルを記載してください。ファイル名に - を指定したとき、ファイルリストを標準入力から読み込みます。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-f</option></term>
+        <term><option>--force</option></term>
+        <listitem>
+          <para>コンパイルスイッチの組み合わせが多すぎ、最大値を越えている場合でも強制的に全ての組み合わせでチェックします。組み合わせが多すぎるファイルが検出された場合、エラーが表示されます。そのためデフォルトでこのオプションを使う理由はありません。もし、 --max-configs= のオプションと同時に使用する場合、直前のオプションはこれでなければなりません。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-h</option></term>
+        <term><option>--help</option></term>
+        <listitem>
+          <para>ヘルプテキストを表示します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-I &lt;dir&gt;</option></term>
+        <listitem>
+          <para>ヘッダファイルのサーチパスを指定します。-I パラメータを複数回使用して、それぞれのパスを追加することができます。最初に与えたパスから順にヘッダーファイルを検索します。もしパスがソースファイルへの相対パスだった場合、これは必要ありません。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--includes-file=&lt;file&gt;</option></term>
+        <listitem>
+          <para>ヘッダーファイルを含むディレクトリのパスを、テキストファイルで指定します。一行毎に一パスを記載してください。最初に与えたパスから順にヘッダーファイルを検索します。もしパスがソースファイルへの相対パスだった場合、これは必要ありません。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--config-exclude=&lt;dir&gt;</option></term>
+        <listitem>
+          <para>コンパイルスイッチの組み合わせから除外するパス。このパスにマッチする、(ソースファイルではない)ヘッダファイルで定義されたプリプロセッサのコンパイルスイッチの組み合わせは、その他のコンパイルスイッチの組み合わせを評価する際に、無視します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--config-exclude-file=&lt;file&gt;</option></term>
+        <listitem>
+          <para>コンパイルスイッチの組み合わせから除外するパスのリストを記載した、ファイルを指定します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--include=&lt;file&gt;</option></term>
+        <listitem>
+          <para>ファイルをチェックする前に強制的にファイルをインクルードします。使用例としては、Linuxのカーネルをチェックする場合、それぞれのファイルをコンパイルするためにautoconf.hが必要になるような場合があります。これは、GCCの -includeオプションと同じように動作します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-i &lt;dir&gt;</option></term>
+        <listitem>
+          <para>除外したいパスを指定します。-i パラメータを複数回使用して、それぞれのパスを除外することができます。パラメータとして、ディレクトリ名やファイル名を指定します。ディレクトリ名の場合、パスの全体にマッチします。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--inconclusive</option></term>
+        <listitem>
+          <para>疑いのあるケースも含めてCppcheckは報告します。このオプションがある場合、疑陽性も含まれます。結果の善し悪しを判断する前にそれぞれの結果をよく考慮してください。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--inline-suppr</option></term>
+        <listitem>
+          <para>インライン出力抑制を有効にします。次のような形式でコメント中にインライン出力抑制を記載して直後のエラーの報告を抑制します。: // cppcheck-suppress memleak</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-j &lt;jobs&gt;</option></term>
+        <listitem>
+          <para>この検査に使用するスレッド数&lt;jobs&gt;を指定します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-l &lt;load&gt;</option></term>
+        <listitem>
+          <para>これ以外のスレッドがあり、ロードアベレージが少なくとも&lt;load&gt;で指定される値である場合、新しくスレッドを起動しない。ただしこのオプションは非UNIX環境では無視されます。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--language=&lt;language&gt;</option></term>
+        <listitem>
+          <para>全てのファイルが指定された言語であると指定します。指定できる言語は次のどちらかです。: c, c++</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--library=&lt;cfg&gt;</option></term>
+        <listitem>
+          <para>ライブラリ設定を使います。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--max-configs=&lt;limit&gt;</option></term>
+        <listitem>
+          <para>1ファイルでのコンパイススイッチの組み合わせの最大数。これ以上の場合、組み合わせの一部を無視します。デフォルトは12です。もし--forceオプションと同時に指定した場合、後ろにある方が有効になります。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--platform=&lt;type&gt;</option></term>
+        <listitem>
+          <para>プラットフォーム特有の型とサイズを指定します。利用できるプラットフォームには次のものがあります。: <glosslist> <glossentry> <glossterm>unix32</glossterm>
+                <glossdef>
+                  <para>32 ビットのUNIX環境</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>unix64</glossterm>
+                <glossdef>
+                  <para>64 ビットのUNIX環境</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>win32A</glossterm>
+                <glossdef>
+                  <para>32 ビットのWindows環境 (ASCII 文字エンコード)</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>win32W</glossterm>
+                <glossdef>
+                  <para>ビットのWindows環境 (UNICODE文字エンコード)</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>win64</glossterm>
+                <glossdef>
+                  <para>64 ビットのWindows環境</para>
+                </glossdef>
+              </glossentry>
+            </glosslist>デフォルトのプラットフォームは、Cppcheckをコンパイルしたときのものが使用されます。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-q</option></term>
+        <term><option>--quiet</option></term>
+        <listitem>
+          <para>エラー有るときに限り、メッセージを表示します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-rp</option></term>
+        <term><option>-rp=&lt;paths&gt;</option></term>
+        <term><option>--relative-paths;</option></term>
+        <term><option>--relative-paths=&lt;paths&gt;</option></term>
+        <listitem>
+          <para>出力する際に、相対パスを使用します。&lt;paths&gt;が指定された場合、これをベースとします。複数のパスを指定する場合、それぞれをセミコロン';'で区切ることができます。指定されない場合、ソースファイルを検出したパスが使用されます。例：test/test.cppを検査する際にtestを指定した場合、パスはtest/test.cppではなく、test.cppとして出力されます。この機能は相対パスを作成する際に文字列を比較して作成しています。そのため、ホームフォルダを意味する、'~'は正しく動作しませんん。この機能は、現在、ディレクトリツリーの下位にあるファイルにベースパスを指定することにのみ使用されています。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--report-progress</option></term>
+        <listitem>
+          <para>ファイルのチェックの進捗を報告します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--rule=&lt;rule&gt;</option></term>
+        <listitem>
+          <para>独自のチェックを作成するための正規表現を指定します。例：&quot;/ 0&quot;というルールによってゼロ除算がチェックできます。このコマンドは、cppcheck を HAVE_RULES=yesと指定してコンパイルした場合にのみ利用できます。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--rule-file=&lt;file&gt;</option></term>
+        <listitem>
+          <para>ルートを記載したXMLファイルを使用します。記載方法の詳細ついては、 https://sourceforge.net/projects/cppcheck/files/Articles/ を確認してください。このコマンドは、cppcheck を HAVE_RULES=yesと指定してコンパイルした場合にのみ利用できます。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--std=&lt;id&gt;</option></term>
+        <listitem>
+          <para>言語規約を指定します。指定できる規約には次のものがあります。: <glosslist> <glossentry> <glossterm>posix</glossterm>
+                <glossdef>
+                  <para>POSIX準拠のソースコード</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>c89</glossterm>
+                <glossdef>
+                  <para>C89規約準拠のCのソースコード</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>c99</glossterm>
+                <glossdef>
+                  <para>C99規約準拠のCのソースコード</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>c11</glossterm>
+                <glossdef>
+                  <para>C11規約準拠のソースコード(デフォルト)</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>c++03</glossterm>
+                <glossdef>
+                  <para>C++03規約準拠のC++のソースコード</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>c++11</glossterm>
+                <glossdef>
+                  <para>C++11規約準拠のC++のソースコード(デフォルト)</para>
+                </glossdef>
+              </glossentry>
+            </glosslist>複数の規約を指定する例を示します。: 'cppcheck --std=c99 --std=posix file.cpp'</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--suppress=&lt;spec&gt;</option></term>
+        <listitem>
+          <para>指定した警告を抑制します。ここで&lt;spec&gt;は次のような形式です。: [error id]:[filename]:[line]. この[filename] と [line]はオプションです。[error id] に'*'を使用して、全ての警告メッセージを抑制することができます。(指定したファイル間に制限できます。)[filename]に、ワイルドカード文字の* や ?を使用できます。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--suppressions-list=&lt;file&gt;</option></term>
+        <listitem>
+          <para>警告メッセージの抑制をファイル中で指定します。このファイルは上で説明した&lt;spec&gt;を一行ずつ記載したものです。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--template='&lt;text&gt;'</option></term>
+        <listitem>
+          <para>エラーメッセージのフォーマットを指定します。例えば '{file}:{line},{severity},{id},{message}' や '{file}({line}):({severity}) {message}'を指定します。デフォルトのフォーマットは次のものです。: gcc, vs</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-v</option></term>
+        <term><option>--verbose</option></term>
+        <listitem>
+          <para>エラーメッセージの詳細を表示します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--version</option></term>
+        <listitem>
+          <para>バージョン情報を出力します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--xml</option></term>
+        <listitem>
+          <para>標準エラー出力にXML形式で出力します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--xml-version=&lt;version&gt;</option></term>
+        <listitem>
+          <para>XML ファイルの形式のバージョンを選択します。現在、バージョンとして 1と2が指定できます。デフォルトは1です。</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1 id="author">
+    <title>著者</title>
+    <para>このプログラムは Daniel Marjamäki と Cppcheck チームが作成しました。チームメンバーについてはAUTHORSファイルを確認してください。</para>
+  </refsect1>
+  <refsect1 id="see_also">
+    <title>参考文献</title>
+    <!-- In alpabetical order. -->
+    <para>全機能のリストはこちらにあります。: http://cppcheck.wiki.sourceforge.net/</para>
+  </refsect1>
+</refentry>
