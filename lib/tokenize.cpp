@@ -1960,10 +1960,7 @@ void Tokenizer::simplifyNull()
         else if (tok->str() == "__null" || tok->str() == "'\\0'" || tok->str() == "'\\x0'") {
             tok->originalName(tok->str());
             tok->str("0");
-        } else if (tok->isNumber() &&
-                   MathLib::isInt(tok->str()) &&
-                   MathLib::toLongNumber(tok->str()) == 0)
-            tok->str("0");
+        }
     }
 
     // nullptr..

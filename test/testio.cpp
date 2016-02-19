@@ -60,6 +60,7 @@ private:
         TEST_CASE(testUnsignedConst); // ticket #6132
 
         TEST_CASE(testAstType); // #7014
+        TEST_CASE(testPrintf0WithSuffix); // ticket #7069
     }
 
     void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
@@ -2765,6 +2766,15 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %i in format string (no. 1) requires 'int' but the argument type is 'signed short *'.\n", errout.str());
     }
+
+    void testPrintf0WithSuffix() { // ticket #7069
+        check("void foo() {\n"
+              "    printf(\"%u %lu %llu\", 0U, 0UL, 0ULL);\n"
+              "    printf(\"%u %lu %llu\", 0u, 0ul, 0ull);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestIO)
