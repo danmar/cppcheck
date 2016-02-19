@@ -8,7 +8,7 @@ if (BUILD_TESTS)
 
     add_executable(testrunner ${hdrs} ${srcs} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:cli_objs> $<TARGET_OBJECTS:tinyxml_objs>)
     if (HAVE_RULES)
-        target_link_libraries(testunner pcre)
+        target_link_libraries(testrunner pcre)
     endif()
 
     add_custom_target(copy_cfg ALL

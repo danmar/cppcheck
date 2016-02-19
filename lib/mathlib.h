@@ -112,6 +112,10 @@ public:
      * @return true if given character is octal digit.
      */
     static bool isOctalDigit(char c);
+    /*
+     * \param str character literal
+     * @return Number of internal representation of the character literal
+     * */
     static MathLib::bigint characterLiteralToLongNumber(const std::string& str);
 
 };
