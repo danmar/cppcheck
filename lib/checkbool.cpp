@@ -353,11 +353,12 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                 continue;
 
             if (numTok->isNumber()) {
-                if (numTok->str() == "0" &&
+                const MathLib::bigint num = MathLib::toLongNumber(numTok->str());
+                if (num==0 &&
                     (numInRhs ? Token::Match(tok, ">|==|!=")
                      : Token::Match(tok, "<|==|!=")))
                     continue;
-                if (numTok->str() == "1" &&
+                if (num==1 &&
                     (numInRhs ? Token::Match(tok, "<|==|!=")
                      : Token::Match(tok, ">|==|!=")))
                     continue;

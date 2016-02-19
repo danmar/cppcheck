@@ -538,6 +538,19 @@ private:
               "  return a > b or c < d;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "  return (a < b) != 0U;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("int f() {\n"
+              "  return (a < b) != 0x0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("int f() {\n"
+              "  return (a < b) != 42U;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
     }
 
     void checkComparisonOfFuncReturningBool1() {
