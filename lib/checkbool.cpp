@@ -29,8 +29,9 @@ namespace {
     CheckBool instance;
 }
 
-static const CWE CWE571(571);
-static const CWE CWE587(587);
+static const CWE CWE398(398U);  // Indicator of Poor Code Quality
+static const CWE CWE571(571U);  // Expression is Always True
+static const CWE CWE587(587U);  // Assignment of a Fixed Address to a Pointer
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -60,7 +61,8 @@ void CheckBool::incrementBooleanError(const Token *tok)
         Severity::style,
         "incrementboolean",
         "Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n"
-        "The operand of a postfix increment operator may be of type bool but it is deprecated by C++ Standard (Annex D-1) and the operand is always set to true. You should assign it the value 'true' instead."
+        "The operand of a postfix increment operator may be of type bool but it is deprecated by C++ Standard (Annex D-1) and the operand is always set to true. You should assign it the value 'true' instead.",
+        CWE398, false
     );
 }
 
@@ -104,7 +106,7 @@ void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &varna
 {
     reportError(tok, Severity::style, "bitwiseOnBoolean",
                 "Boolean variable '" + varname + "' is used in bitwise operation. Did you mean '" + op + "'?",
-                CWE(0),
+                CWE398,
                 true);
 }
 
@@ -214,7 +216,7 @@ void CheckBool::comparisonOfFuncReturningBoolError(const Token *tok, const std::
                 "Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n"
                 "The return type of function '" + expression + "' is 'bool' "
                 "and result is of type 'bool'. Comparing 'bool' value using relational (<, >, <= or >=)"
-                " operator could cause unexpected results.");
+                " operator could cause unexpected results.", CWE398, false);
 }
 
 void CheckBool::comparisonOfTwoFuncsReturningBoolError(const Token *tok, const std::string &expression1, const std::string &expression2)
@@ -223,7 +225,7 @@ void CheckBool::comparisonOfTwoFuncsReturningBoolError(const Token *tok, const s
                 "Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n"
                 "The return type of function '" + expression1 + "' and function '" + expression2 + "' is 'bool' "
                 "and result is of type 'bool'. Comparing 'bool' value using relational (<, >, <= or >=)"
-                " operator could cause unexpected results.");
+                " operator could cause unexpected results.", CWE398, false);
 }
 
 //-------------------------------------------------------------------------------
@@ -282,7 +284,7 @@ void CheckBool::comparisonOfBoolWithBoolError(const Token *tok, const std::strin
                 "Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n"
                 "The variable '" + expression + "' is of type 'bool' "
                 "and comparing 'bool' value using relational (<, >, <= or >=)"
-                " operator could cause unexpected results.");
+                " operator could cause unexpected results.", CWE398, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -373,10 +375,10 @@ void CheckBool::comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0
 {
     if (n0o1)
         reportError(tok, Severity::warning, "compareBoolExpressionWithInt",
-                    "Comparison of a boolean expression with an integer other than 0 or 1.");
+                    "Comparison of a boolean expression with an integer other than 0 or 1.", CWE398, false);
     else
         reportError(tok, Severity::warning, "compareBoolExpressionWithInt",
-                    "Comparison of a boolean expression with an integer.");
+                    "Comparison of a boolean expression with an integer.", CWE398, false);
 }
 
 

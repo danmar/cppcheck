@@ -28,6 +28,11 @@
 #include <limits>
 #include <stack>
 
+// CWE ids used 
+static const struct CWE CWE398(398U);
+static const struct CWE CWE570(570U);
+static const struct CWE CWE571(571U);
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -191,7 +196,7 @@ void CheckCondition::assignIfError(const Token *tok1, const Token *tok2, const s
     reportError(locations,
                 Severity::style,
                 "assignIfError",
-                "Mismatching assignment and comparison, comparison '" + condition + "' is always " + std::string(result ? "true" : "false") + ".");
+                "Mismatching assignment and comparison, comparison '" + condition + "' is always " + std::string(result ? "true" : "false") + ".", CWE398, false);
 }
 
 
@@ -208,7 +213,7 @@ void CheckCondition::mismatchingBitAndError(const Token *tok1, const MathLib::bi
     reportError(locations,
                 Severity::style,
                 "mismatchingBitAnd",
-                msg.str());
+                msg.str(), CWE398, false);
 }
 
 
@@ -317,7 +322,7 @@ void CheckCondition::comparisonError(const Token *tok, const std::string &bitop,
                              "spot sometimes. In case of complex expression it might help to split it to "
                              "separate expressions.");
 
-    reportError(tok, Severity::style, "comparisonError", errmsg);
+    reportError(tok, Severity::style, "comparisonError", errmsg, CWE398, false);
 }
 
 bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions) const
@@ -395,7 +400,7 @@ void CheckCondition::multiConditionError(const Token *tok, unsigned int line1)
     errmsg << "Expression is always false because 'else if' condition matches previous condition at line "
            << line1 << ".";
 
-    reportError(tok, Severity::style, "multiCondition", errmsg.str());
+    reportError(tok, Severity::style, "multiCondition", errmsg.str(), CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -481,7 +486,7 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
     std::list<const Token*> callstack;
     callstack.push_back(tok1);
     callstack.push_back(tok2);
-    reportError(callstack, Severity::warning, "oppositeInnerCondition", "Opposite conditions in nested 'if' blocks lead to a dead code block.");
+    reportError(callstack, Severity::warning, "oppositeInnerCondition", "Opposite conditions in nested 'if' blocks lead to a dead code block.", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -805,17 +810,17 @@ void CheckCondition::incorrectLogicOperatorError(const Token *tok, const std::st
         reportError(tok, Severity::warning, "incorrectLogicOperator",
                     "Logical disjunction always evaluates to true: " + condition + ".\n"
                     "Logical disjunction always evaluates to true: " + condition + ". "
-                    "Are these conditions necessary? Did you intend to use && instead? Are the numbers correct? Are you comparing the correct variables?");
+                    "Are these conditions necessary? Did you intend to use && instead? Are the numbers correct? Are you comparing the correct variables?", CWE571, false);
     else
         reportError(tok, Severity::warning, "incorrectLogicOperator",
                     "Logical conjunction always evaluates to false: " + condition + ".\n"
                     "Logical conjunction always evaluates to false: " + condition + ". "
-                    "Are these conditions necessary? Did you intend to use || instead? Are the numbers correct? Are you comparing the correct variables?");
+                    "Are these conditions necessary? Did you intend to use || instead? Are the numbers correct? Are you comparing the correct variables?", CWE570, false);
 }
 
 void CheckCondition::redundantConditionError(const Token *tok, const std::string &text)
 {
-    reportError(tok, Severity::style, "redundantCondition", "Redundant condition: " + text);
+    reportError(tok, Severity::style, "redundantCondition", "Redundant condition: " + text, CWE398, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -854,7 +859,7 @@ void CheckCondition::checkModuloAlwaysTrueFalse()
 void CheckCondition::moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal)
 {
     reportError(tok, Severity::warning, "moduloAlwaysTrueFalse",
-                "Comparison of modulo result is predetermined, because it is always less than " + maxVal + ".");
+                "Comparison of modulo result is predetermined, because it is always less than " + maxVal + ".", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -955,7 +960,7 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
     reportError(tok,
                 Severity::style,
                 "clarifyCondition",
-                errmsg);
+                errmsg, CWE398, false);
 }
 
 

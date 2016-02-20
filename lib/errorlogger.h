@@ -27,6 +27,13 @@
 #include <list>
 #include <string>
 
+struct CWE {
+        explicit CWE(unsigned short ID) : id(ID) {}
+            unsigned short id;
+};
+
+
+
 class Token;
 class TokenList;
 
@@ -198,7 +205,9 @@ public:
         };
 
         ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
+        ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive);
         ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive);
+        ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive);
         ErrorMessage();
 
         /**
