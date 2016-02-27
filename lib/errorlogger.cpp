@@ -21,6 +21,7 @@
 #include "cppcheck.h"
 #include "tokenlist.h"
 #include "token.h"
+#include "utils.h"
 
 #include <tinyxml2.h>
 
@@ -136,7 +137,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     std::ostringstream oss;
     oss << _id.length() << " " << _id;
     oss << Severity::toString(_severity).length() << " " << Severity::toString(_severity);
-    oss << MathLib::toString(_cwe).length() << " " << MathLib::toString(_cwe);
+    oss << MathLib::toString(_cwe.id).length() << " " << MathLib::toString(_cwe.id);
     if (_inconclusive) {
         const std::string inconclusive("inconclusive");
         oss << inconclusive.length() << " " << inconclusive;
@@ -193,7 +194,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     _id = results[0];
     _severity = Severity::fromString(results[1]);
     std::istringstream scwe(results[2]);
-    scwe >> _cwe;
+    scwe >> _cwe.id;
     _shortMessage = results[3];
     _verboseMessage = results[4];
 
@@ -209,7 +210,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         iss.get();
         std::string temp;
         for (unsigned int i = 0; i < len && iss.good(); ++i) {
-            char c = static_cast<char>(iss.get());
+            const char c = static_cast<char>(iss.get());
             temp.append(1, c);
         }
 
@@ -311,8 +312,8 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
         printer.PushAttribute("severity", Severity::toString(_severity).c_str());
         printer.PushAttribute("msg", fixInvalidChars(_shortMessage).c_str());
         printer.PushAttribute("verbose", fixInvalidChars(_verboseMessage).c_str());
-        if (_cwe)
-            printer.PushAttribute("cwe", _cwe);
+        if (_cwe.id)
+            printer.PushAttribute("cwe", _cwe.id);
         if (_inconclusive)
             printer.PushAttribute("inconclusive", "true");
 
@@ -410,8 +411,8 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
         if (suppressed)
             continue;
 
-        std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
-        callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(i->file, i->line));
+        const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack = make_container< std::list<ErrorLogger::ErrorMessage::FileLocation> > ()
+                << ErrorLogger::ErrorMessage::FileLocation(i->file, i->line);
         reportErr(ErrorLogger::ErrorMessage(callStack, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression", false));
     }
 }

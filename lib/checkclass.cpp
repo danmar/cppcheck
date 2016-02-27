@@ -364,7 +364,7 @@ void CheckClass::copyConstructorMallocError(const Token *cctor, const Token *all
 
 void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::string& varname)
 {
-    reportError(tok, Severity::style, "copyCtorPointerCopying", 
+    reportError(tok, Severity::style, "copyCtorPointerCopying",
                 "Value of pointer '" + varname + "', which points to allocated memory, is copied in copy constructor instead of allocating new memory.", CWE398, false);
 }
 
@@ -1228,7 +1228,7 @@ void CheckClass::operatorEqReturnError(const Token *tok, const std::string &clas
 {
     reportError(tok, Severity::style, "operatorEq", "'" + className + "::operator=' should return '" + className + " &'.\n"
                 "The "+className+"::operator= does not conform to standard C/C++ behaviour. To conform to standard C/C++ behaviour, return a reference to self (such as: '"+className+" &"+className+"::operator=(..) { .. return *this; }'. For safety reasons it might be better to not fix this message. If you think that safety is always more important than conformance then please ignore/suppress this message. For more details about this topic, see the book \"Effective C++\" by Scott Meyers."
-               , CWE398, false);
+                , CWE398, false);
 }
 
 //---------------------------------------------------------------------------

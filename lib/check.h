@@ -118,7 +118,7 @@ protected:
     /** report an error */
     template<typename T, typename U>
     void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
-        std::list<const Token *> callstack(1, tok);
+        const std::list<const Token *> callstack(1, tok);
         reportError(callstack, severity, id, msg, cwe, inconclusive);
     }
 
@@ -131,8 +131,7 @@ protected:
     /** report an error */
     template<typename T, typename U>
     void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
-        ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer?&_tokenizer->list:0, severity, id, msg, cwe, inconclusive);
-        errmsg._cwe = cwe.id;
+        const ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer?&_tokenizer->list:0, severity, id, msg, cwe, inconclusive);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
         else

@@ -28,7 +28,7 @@
 #include <limits>
 #include <stack>
 
-// CWE ids used 
+// CWE ids used
 static const struct CWE CWE398(398U);
 static const struct CWE CWE570(570U);
 static const struct CWE CWE571(571U);

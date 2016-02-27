@@ -27,9 +27,13 @@
 #include <list>
 #include <string>
 
+/**
+ * CWE id (Common Weakness Enumeration)
+ * See https://cwe.mitre.org/ for further reference.
+ * */
 struct CWE {
-        explicit CWE(unsigned short ID) : id(ID) {}
-            unsigned short id;
+    explicit CWE(unsigned short ID) : id(ID) {}
+    unsigned short id;
 };
 
 
@@ -239,7 +243,7 @@ public:
         std::string file0;
 
         Severity::SeverityType _severity;
-        unsigned int _cwe;
+        CWE _cwe;
         bool _inconclusive;
 
         /** set short and verbose messages */

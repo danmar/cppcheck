@@ -272,7 +272,7 @@ void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, A
 }
 //---------------------------------------------------------------------------
 
-void CheckMemoryLeak::reportErr(const Token *tok, Severity::SeverityType severity, const std::string &id, const std::string &msg, unsigned int cwe) const
+void CheckMemoryLeak::reportErr(const Token *tok, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const
 {
     std::list<const Token *> callstack;
 
@@ -282,11 +282,9 @@ void CheckMemoryLeak::reportErr(const Token *tok, Severity::SeverityType severit
     reportErr(callstack, severity, id, msg, cwe);
 }
 
-void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, unsigned int cwe) const
+void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const
 {
-    ErrorLogger::ErrorMessage errmsg(callstack, tokenizer?&tokenizer->list:0, severity, id, msg, false);
-    errmsg._cwe = cwe;
-
+    const ErrorLogger::ErrorMessage errmsg(callstack, tokenizer?&tokenizer->list:0, severity, id, msg, cwe, false);
     if (errorLogger)
         errorLogger->reportErr(errmsg);
     else
@@ -295,12 +293,12 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
 
 void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname) const
 {
-    reportErr(tok, Severity::error, "memleak", "Memory leak: " + varname, 401U);
+    reportErr(tok, Severity::error, "memleak", "Memory leak: " + varname, CWE(401U));
 }
 
 void CheckMemoryLeak::memleakUponReallocFailureError(const Token *tok, const std::string &varname) const
 {
-    reportErr(tok, Severity::error, "memleakOnRealloc", "Common realloc mistake: \'" + varname + "\' nulled but not freed upon failure", 401U);
+    reportErr(tok, Severity::error, "memleakOnRealloc", "Common realloc mistake: \'" + varname + "\' nulled but not freed upon failure", CWE(401U));
 }
 
 void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &varname) const
@@ -308,27 +306,27 @@ void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &var
     std::string errmsg("Resource leak");
     if (!varname.empty())
         errmsg += ": " + varname;
-    reportErr(tok, Severity::error, "resourceLeak", errmsg, 775U);
+    reportErr(tok, Severity::error, "resourceLeak", errmsg, CWE(775U));
 }
 
 void CheckMemoryLeak::deallocDeallocError(const Token *tok, const std::string &varname) const
 {
-    reportErr(tok, Severity::error, "deallocDealloc", "Deallocating a deallocated pointer: " + varname, 415U);
+    reportErr(tok, Severity::error, "deallocDealloc", "Deallocating a deallocated pointer: " + varname, CWE(415U));
 }
 
 void CheckMemoryLeak::deallocuseError(const Token *tok, const std::string &varname) const
 {
-    reportErr(tok, Severity::error, "deallocuse", "Dereferencing '" + varname + "' after it is deallocated / released", 416U);
+    reportErr(tok, Severity::error, "deallocuse", "Dereferencing '" + varname + "' after it is deallocated / released", CWE(416U));
 }
 
 void CheckMemoryLeak::mismatchSizeError(const Token *tok, const std::string &sz) const
 {
-    reportErr(tok, Severity::error, "mismatchSize", "The allocated size " + sz + " is not a multiple of the underlying type's size.", 131U);
+    reportErr(tok, Severity::error, "mismatchSize", "The allocated size " + sz + " is not a multiple of the underlying type's size.", CWE(131U));
 }
 
 void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname) const
 {
-    reportErr(callstack, Severity::error, "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname, 762U);
+    reportErr(callstack, Severity::error, "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname, CWE(762U));
 }
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* func, std::list<const Function*> *callstack) const
