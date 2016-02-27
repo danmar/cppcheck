@@ -40,6 +40,9 @@ static const char ExtraVersion[] = "";
 
 static TimerResults S_timerResults;
 
+// CWE ids used
+static const CWE CWE398(398U);  // Indicator of Poor Code Quality
+
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
     : _errorLogger(errorLogger), exitcode(0), _useGlobalSuppressions(useGlobalSuppressions), tooManyConfigs(false), _simplify(true)
 {
@@ -523,7 +526,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
     ErrorLogger::ErrorMessage errmsg(loclist,
                                      Severity::information,
                                      msg.str(),
-                                     "toomanyconfigs",
+                                     "toomanyconfigs", CWE398,
                                      false);
 
     reportErr(errmsg);

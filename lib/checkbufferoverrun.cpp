@@ -44,8 +44,9 @@ namespace {
 //---------------------------------------------------------------------------
 
 // CWE ids used:
-static const CWE CWE119(119U);
 static const CWE CWE131(131U);
+static const CWE CWE398(398U);
+static const CWE CWE786(786U);
 static const CWE CWE788(788U);
 
 //---------------------------------------------------------------------------
@@ -99,7 +100,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
         std::list<const Token *> callstack;
         callstack.push_back(tok);
         callstack.push_back(condition);
-        reportError(callstack, Severity::warning, "arrayIndexOutOfBoundsCond", errmsg.str(), CWE(0U), false);
+        reportError(callstack, Severity::warning, "arrayIndexOutOfBoundsCond", errmsg.str(), CWE119, false);
     } else {
         std::ostringstream errmsg;
         errmsg << "Array '" << arrayInfo.varname();
@@ -114,7 +115,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
             errmsg << " out of bounds.";
         }
 
-        reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str());
+        reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str(), CWE119, false);
     }
 }
 
@@ -155,12 +156,12 @@ void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std:
         reportError(tok, Severity::warning, "possibleBufferAccessOutOfBounds",
                     "Possible buffer overflow if strlen(" + src + ") is larger than sizeof(" + dst + ")-strlen(" + dst +").\n"
                     "Possible buffer overflow if strlen(" + src + ") is larger than sizeof(" + dst + ")-strlen(" + dst +"). "
-                    "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
+                    "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.", CWE398, false);
     else
         reportError(tok, Severity::warning, "possibleBufferAccessOutOfBounds",
                     "Possible buffer overflow if strlen(" + src + ") is larger than or equal to sizeof(" + dst + ").\n"
                     "Possible buffer overflow if strlen(" + src + ") is larger than or equal to sizeof(" + dst + "). "
-                    "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
+                    "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.", CWE398, false);
 }
 
 void CheckBufferOverrun::strncatUsageError(const Token *tok)
@@ -205,7 +206,7 @@ void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const Token *
     }
     std::string verbosemsg(errmsg + ". From chapter 6.5.6 in the C specification:\n"
                            "\"When an expression that has integer type is added to or subtracted from a pointer, ..\" and then \"If both the pointer operand and the result point to elements of the same array object, or one past the last element of the array object, the evaluation shall not produce an overflow; otherwise, the behavior is undefined.\"");
-    reportError(tok, Severity::portability, "pointerOutOfBounds", errmsg + ".\n" + verbosemsg);
+    reportError(tok, Severity::portability, "pointerOutOfBounds", errmsg + ".\n" + verbosemsg, CWE398, false);
     /*
          "Undefined behaviour: The result of this pointer arithmetic does not point into
          or just one element past the end of the " + object + ".
@@ -247,7 +248,7 @@ void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const st
 
 void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname)
 {
-    reportError(tok, Severity::warning, "argumentSize", "The array '" + varname + "' is too small, the function '" + functionName + "' expects a bigger one.");
+    reportError(tok, Severity::warning, "argumentSize", "The array '" + varname + "' is too small, the function '" + functionName + "' expects a bigger one.", CWE398, false);
 }
 
 void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
@@ -1727,7 +1728,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, MathLib::bigint in
 {
     std::ostringstream ostr;
     ostr << "Array index " << index << " is out of bounds.";
-    reportError(tok, Severity::error, "negativeIndex", ostr.str());
+    reportError(tok, Severity::error, "negativeIndex", ostr.str(), CWE786, false);
 }
 
 void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::Value &index)
@@ -1736,7 +1737,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::V
     ostr << "Array index " << index.intvalue << " is out of bounds.";
     if (index.condition)
         ostr << " Otherwise there is useless condition at line " << index.condition->linenr() << ".";
-    reportError(tok, index.condition ? Severity::warning : Severity::error, "negativeIndex", ostr.str(), CWE(0U), index.inconclusive);
+    reportError(tok, index.condition ? Severity::warning : Severity::error, "negativeIndex", ostr.str(), CWE786, index.inconclusive);
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo()
@@ -1870,7 +1871,7 @@ void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::s
                 "Defensive programming: The variable '" + indexName + "' is used as an array index before it "
                 "is checked that is within limits. This can mean that the array might be accessed out of bounds. "
                 "Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the array will "
-                "not be accessed if the index is out of limits.");
+                "not be accessed if the index is out of limits.", CWE398, false);
 }
 
 Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
@@ -1962,7 +1963,7 @@ void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &
                                                    Severity::error,
                                                    ostr.str(),
                                                    "arrayIndexOutOfBounds",
-                                                   false);
+                                                   CWE788, false);
             errorLogger.reportErr(errmsg);
         }
     }

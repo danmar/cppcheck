@@ -33,8 +33,9 @@ namespace {
     static CheckAutoVariables instance;
 }
 
-static const CWE CWE562(562U);
-static const CWE CWE590(590U);
+static const CWE CWE398(398U);  // Indicator of Poor Code Quality
+static const CWE CWE562(562U);  // Return of Stack Variable Address
+static const CWE CWE590(590U);  // Free of Memory not on the Heap
 
 bool CheckAutoVariables::isPtrArg(const Token *tok)
 {
@@ -332,7 +333,7 @@ void CheckAutoVariables::errorUselessAssignmentArg(const Token *tok)
     reportError(tok,
                 Severity::style,
                 "uselessAssignmentArg",
-                "Assignment of function parameter has no effect outside the function.");
+                "Assignment of function parameter has no effect outside the function.", CWE398, false);
 }
 
 void CheckAutoVariables::errorUselessAssignmentPtrArg(const Token *tok)
@@ -340,7 +341,7 @@ void CheckAutoVariables::errorUselessAssignmentPtrArg(const Token *tok)
     reportError(tok,
                 Severity::warning,
                 "uselessAssignmentPtrArg",
-                "Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?");
+                "Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?", CWE398, false);
 }
 
 //---------------------------------------------------------------------------

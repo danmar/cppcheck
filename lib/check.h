@@ -33,10 +33,6 @@
 /// @addtogroup Core
 /// @{
 
-struct CWE {
-    explicit CWE(unsigned short ID) : id(ID) {}
-    unsigned short id;
-};
 
 /**
  * @brief Interface class that cppcheck uses to communicate with the checks.
@@ -135,7 +131,7 @@ protected:
     /** report an error */
     template<typename T, typename U>
     void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
-        ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer?&_tokenizer->list:0, severity, id, msg, inconclusive);
+        ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer?&_tokenizer->list:0, severity, id, msg, cwe, inconclusive);
         errmsg._cwe = cwe.id;
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);

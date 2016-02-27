@@ -58,8 +58,40 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
     setmsg(msg);
 }
 
+
+
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive) :
+    _callStack(callStack), // locations for this error message
+    _id(id),               // set the message id
+    _severity(severity),   // severity for this error message
+    _cwe(cwe.id),
+    _inconclusive(inconclusive)
+{
+    // set the summary and verbose messages
+    setmsg(msg);
+}
+
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive)
     : _id(id), _severity(severity), _cwe(0U), _inconclusive(inconclusive)
+{
+    // Format callstack
+    for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
+        // --errorlist can provide null values here
+        if (!(*it))
+            continue;
+
+        _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(*it, list));
+    }
+
+    if (list && !list->getFiles().empty())
+        file0 = list->getFiles()[0];
+
+    setmsg(msg);
+}
+
+
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive)
+    : _id(id), _severity(severity), _cwe(cwe.id), _inconclusive(inconclusive)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {

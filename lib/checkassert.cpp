@@ -25,6 +25,8 @@
 
 //---------------------------------------------------------------------------
 
+// CWE ids used
+static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 
 // Register this check class (by creating a static instance of it)
 namespace {
@@ -92,7 +94,7 @@ void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& f
                 "Non-pure function: '" + functionName + "' is called inside assert statement. "
                 "Assert statements are removed from release builds so the code inside "
                 "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.");
+                "builds, this is a bug.", CWE398, false);
 }
 
 void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& varname)
@@ -102,7 +104,7 @@ void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& v
                 "Variable '" + varname + "' is modified insert assert statement. "
                 "Assert statements are removed from release builds so the code inside "
                 "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.");
+                "builds, this is a bug.", CWE398, false);
 }
 
 // checks if side effects happen on the variable prior to tmp
