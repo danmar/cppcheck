@@ -328,7 +328,19 @@ class CppCheckHandler(XmlContentHandler):
         if name == 'cppcheck':
             self.versionCppcheck = attributes['version']
         if name == 'error':
-            try:
+            # is there a better solution than this?
+            if (attributes.has_key('inconclusive') and attributes.has_key('cwe')):
+                self.errors.append({
+                    'file': '',
+                    'line': 0,
+                    'id': attributes['id'],
+                    'severity': attributes['severity'],
+                    'msg': attributes['msg'],
+                    'verbose': attributes.get('verbose'),
+                    'inconclusive': attributes['inconclusive'],
+                    'cwe': attributes['cwe']
+                })
+            elif attributes.has_key('inconclusive'):
                 self.errors.append({
                     'file': '',
                     'line': 0,
@@ -338,7 +350,17 @@ class CppCheckHandler(XmlContentHandler):
                     'verbose': attributes.get('verbose'),
                     'inconclusive': attributes['inconclusive']
                 })
-            except KeyError:
+            elif attributes.has_key('cwe'):
+                self.errors.append({
+                    'file': '',
+                    'line': 0,
+                    'id': attributes['id'],
+                    'severity': attributes['severity'],
+                    'msg': attributes['msg'],
+                    'verbose': attributes.get('verbose'),
+                    'cwe': attributes['cwe']
+                })
+            else:
                 self.errors.append({
                     'file': '',
                     'line': 0,
@@ -531,8 +553,9 @@ if __name__ == '__main__':
         output_file.write('       <p>\n' + '        ' + str(stats_count) + ' total<br/><br/>\n' + ''.join(stat_html) + '<br/><br/><a href="stats.html">Statistics</a></p>')
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
         output_file.write('       <table>\n')
+
         output_file.write(
-            '       <tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
+            '       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
         for filename, data in sorted(files.items()):
             if filename in decode_errors:  # don't print a link but a note
                 output_file.write("\n       <tr><td colspan='4'>%s</td></tr>" % (filename))
@@ -556,23 +579,36 @@ if __name__ == '__main__':
                     except KeyError:
                         pass
 
+                    try:
+                        if error['cwe']:
+                            cwe_url = "<a href='https://cwe.mitre.org/data/definitions/" + error['cwe'] + ".html'>" + error['cwe'] + "</a>"
+                    except KeyError:
+                        cwe_url = ""
+
                     if error['severity'] == 'error':
                         error_class = 'class="error"'
                     if error['id'] == 'missingInclude':
-                        output_file.write(
-                            '\n         <tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
-                            (error['id'], error['severity'], error['msg']))
+                            output_file.write(
+                                '\n         <tr><td></td><td>%s</td><td></td><td>%s</td><td>%s</td></tr>' %
+                                (error['id'], error['severity'], error['msg']))
                     elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
                         output_file.write(
-                            "\n         <tr><td></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
+                            "\n         <tr><td></td><td>%s</td><td></td><td>%s</td><td %s>%s</td></tr>" %
                             (error['id'], error['severity'], error_class,
                              error['msg']))
                     else:
-                        output_file.write(
-                            "\n       <tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
-                            (data['htmlfile'], error['line'], error['line'],
-                             error['id'], error['severity'], error_class,
-                             error['msg']))
+                        if cwe_url:
+                            output_file.write(
+                                "\n       <tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
+                                (data['htmlfile'], error['line'], error['line'],
+                                 error['id'], cwe_url, error['severity'], error_class,
+                                 error['msg']))
+                        else:
+                            output_file.write(
+                                "\n       <tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td></td><td>%s</td><td %s>%s</td></tr>" %
+                                (data['htmlfile'], error['line'], error['line'],
+                                 error['id'], error['severity'], error_class,
+                                 error['msg']))
 
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
