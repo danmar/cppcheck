@@ -5267,6 +5267,8 @@ void Tokenizer::simplifyFunctionPointers()
             syntaxError(nullptr);
         }
         Token *endTok = tok->link()->next()->link();
+        if (Token::simpleMatch(endTok, ") throw ("))
+            endTok = endTok->linkAt(2);
         if (!Token::Match(endTok, ") const| ;|,|)|=|[|{"))
             continue;
 

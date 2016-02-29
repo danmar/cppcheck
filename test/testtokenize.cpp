@@ -314,6 +314,7 @@ private:
         TEST_CASE(functionpointer5);
         TEST_CASE(functionpointer6);
         TEST_CASE(functionpointer7);
+        TEST_CASE(functionpointer8); // #7410 - throw
 
         TEST_CASE(removeRedundantAssignment);
 
@@ -4715,6 +4716,13 @@ private:
         const char code1[] = "void (X::*y)();";
         const char expected1[] = "\n\n##file 0\n"
                                  "1: void * y@1 ;\n";
+        ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
+    }
+
+    void functionpointer8() {
+        const char code1[] = "int (*f)() throw(int);";
+        const char expected1[] = "\n\n##file 0\n"
+                                 "1: int * f@1 ;\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
     }
 
