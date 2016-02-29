@@ -316,10 +316,10 @@ private:
         return preprocessor0.read(istr, "test.c");
     }
 
-    void preprocess(const char* code, std::map<std::string, std::string>& actual) {
+    void preprocess(const char* code, std::map<std::string, std::string>& actual, const char filename[] = "file.c") {
         errout.str("");
         std::istringstream istr(code);
-        preprocessor0.preprocess(istr, actual, "file.c");
+        preprocessor0.preprocess(istr, actual, filename);
     }
 
 
@@ -429,61 +429,32 @@ private:
 
 
     void Bug2190219() {
-        const char filedata[] = "int main()\n"
-                                "{\n"
-                                "#ifdef __cplusplus\n"
-                                "    int* flags = new int[10];\n"
+        const char filedata[] = "#ifdef __cplusplus\n"
+                                "cpp\n"
                                 "#else\n"
-                                "    int* flags = (int*)malloc((10)*sizeof(int));\n"
-                                "#endif\n"
-                                "\n"
-                                "#ifdef __cplusplus\n"
-                                "    delete [] flags;\n"
-                                "#else\n"
-                                "    free(flags);\n"
-                                "#endif\n"
-                                "}\n";
+                                "c\n"
+                                "#endif";
 
-        // Expected result..
-        std::map<std::string, std::string> expected;
-        expected[""]          = "int main()\n"
-                                "{\n"
-                                "\n"
-                                "\n"
-                                "\n"
-                                "int* flags = (int*)malloc((10)*sizeof(int));\n"
-                                "\n"
-                                "\n"
-                                "\n"
-                                "\n"
-                                "\n"
-                                "free(flags);\n"
-                                "\n"
-                                "}\n";
+        {
+            // Preprocess => actual result..
+            std::map<std::string, std::string> actual;
+            preprocess(filedata, actual, "file.cpp");
 
-        expected["__cplusplus"] = "int main()\n"
-                                  "{\n"
-                                  "\n"
-                                  "int* flags = new int[10];\n"
-                                  "\n"
-                                  "\n"
-                                  "\n"
-                                  "\n"
-                                  "\n"
-                                  "delete [] flags;\n"
-                                  "\n"
-                                  "\n"
-                                  "\n"
-                                  "}\n";
+            // Compare results..
+            ASSERT_EQUALS(1U, actual.size());
+            ASSERT_EQUALS("\ncpp\n\n\n\n", actual[""]);
+        }
 
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        {
+            // Ticket #7102 - skip __cplusplus in C code
+            // Preprocess => actual result..
+            std::map<std::string, std::string> actual;
+            preprocess(filedata, actual, "file.c");
 
-        // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS(expected[""], actual[""]);
-        ASSERT_EQUALS(expected["__cplusplus"], actual["__cplusplus"]);
+            // Compare results..
+            ASSERT_EQUALS(1U, actual.size());
+            ASSERT_EQUALS("\n\n\nc\n\n", actual[""]);
+        }
     }
 
 

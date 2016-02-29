@@ -1565,6 +1565,17 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     ret.sort();
     ret.unique();
 
+    // C code => remove __cplusplus configurations..
+    if (!cplusplus(&_settings, filename) && Path::isC(filename)) {
+        for (std::list<std::string>::iterator it = ret.begin(); it != ret.end();) {
+            if (it->find("__cplusplus") != std::string::npos) {
+                ret.erase(it++);
+            } else {
+                ++it;
+            }
+        }
+    }
+
     // cleanup unhandled configurations..
     for (std::list<std::string>::iterator it = ret.begin(); it != ret.end();) {
         const std::string s(*it + ";");
