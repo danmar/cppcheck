@@ -5745,7 +5745,7 @@ private:
         check("void f(unsigned long long ull) {\n"
               "    if (ull == 0x89504e470d0a1a0a || ull == 0x8a4d4e470d0a1a0a) ;\n"
               "}\n");
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && defined(_M_AMD64)
         TODO_ASSERT_EQUALS("", "[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 #else
         ASSERT_EQUALS("", errout.str());
