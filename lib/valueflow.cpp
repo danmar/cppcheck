@@ -970,14 +970,14 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
                 continue;
 
             // extra logic for unsigned variables 'i>=1' => possible value can also be 0
-            ValueFlow::Value val(tok, num);
-            val.varId = varid;
             if (Token::Match(tok, "<|>")) {
                 if (num != 0)
                     continue;
                 if (!var->typeStartToken()->isUnsigned())
                     continue;
             }
+            ValueFlow::Value val(tok, num);
+            val.varId = varid;
             ValueFlow::Value val2;
             if (num==1U && Token::Match(tok,"<=|>=")) {
                 if (var->typeStartToken()->isUnsigned()) {
