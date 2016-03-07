@@ -33,9 +33,15 @@ namespace {
     CheckOther instance;
 }
 
+static const struct CWE CWE197(197U);   // Numeric Truncation Error
 static const struct CWE CWE369(369U);
+static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 static const struct CWE CWE563(563U);
+static const struct CWE CWE570(570U);   // Expression is Always False
+static const struct CWE CWE571(571U);   // Expression is Always True
 static const struct CWE CWE686(686U);
+static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
+
 static const struct CWE CWE758(758U);
 
 //----------------------------------------------------------------------------------
@@ -111,7 +117,7 @@ void CheckOther::checkCastIntToCharAndBackError(const Token *tok, const std::str
         " When "+ strFunctionName +"() returns EOF this value is truncated. Comparing the char "
         "variable with EOF can have unexpected results. For instance a loop \"while (EOF != (c = "+ strFunctionName +"());\" "
         "loops forever on some compilers/platforms and on other compilers/platforms it will stop "
-        "when the file contains a matching character."
+        "when the file contains a matching character.", CWE197, false 
     );
 }
 
@@ -284,7 +290,7 @@ void CheckOther::cstyleCastError(const Token *tok)
                 "C-style pointer casting detected. C++ offers four different kinds of casts as replacements: "
                 "static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to "
                 "any of those automatically, thus it is considered safer if the programmer explicitly states "
-                "which kind of cast is expected. See also: https://www.securecoding.cert.org/confluence/display/cplusplus/EXP05-CPP.+Do+not+use+C-style+casts.");
+                "which kind of cast is expected. See also: https://www.securecoding.cert.org/confluence/display/cplusplus/EXP05-CPP.+Do+not+use+C-style+casts.", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -338,11 +344,11 @@ void CheckOther::invalidPointerCastError(const Token* tok, const std::string& fr
 {
     if (to == "integer") { // If we cast something to int*, this can be useful to play with its binary data representation
         if (!inconclusive)
-            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to integer* is not portable due to different binary data representations on different platforms.");
+            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to integer* is not portable due to different binary data representations on different platforms.", CWE704, false);
         else
-            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to char* is not portable due to different binary data representations on different platforms.", CWE(0U), true);
+            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to char* is not portable due to different binary data representations on different platforms.", CWE704, true);
     } else
-        reportError(tok, Severity::portability, "invalidPointerCast", "Casting between " + from + "* and " + to + "* which have an incompatible binary data representation.");
+        reportError(tok, Severity::portability, "invalidPointerCast", "Casting between " + from + "* and " + to + "* which have an incompatible binary data representation.", CWE704, false);
 }
 
 //---------------------------------------------------------------------------
@@ -598,7 +604,7 @@ void CheckOther::redundantCopyError(const Token *tok1, const Token* tok2, const 
 {
     const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
     reportError(callstack, Severity::performance, "redundantCopy",
-                "Buffer '" + var + "' is being written before its old content has been used.");
+                "Buffer '" + var + "' is being written before its old content has been used.", CWE398, false);
 }
 
 void CheckOther::redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
@@ -614,10 +620,10 @@ void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, 
     if (inconclusive)
         reportError(callstack, Severity::style, "redundantAssignment",
                     "Variable '" + var + "' is reassigned a value before the old one has been used if variable is no semaphore variable.\n"
-                    "Variable '" + var + "' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", CWE(0U), true);
+                    "Variable '" + var + "' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", CWE398, true);
     else
         reportError(callstack, Severity::style, "redundantAssignment",
-                    "Variable '" + var + "' is reassigned a value before the old one has been used.");
+                    "Variable '" + var + "' is reassigned a value before the old one has been used.", CWE398, false);
 }
 
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
@@ -1408,7 +1414,7 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
     reportError(tok, Severity::performance, "passedByValue",
                 "Function parameter '" + parname + "' should be passed by reference.\n"
                 "Parameter '" +  parname + "' is passed by value. It could be passed "
-                "as a (const) reference which is usually faster and recommended in C++.");
+                "as a (const) reference which is usually faster and recommended in C++.", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1624,7 +1630,7 @@ void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv, boo
         callstack.push_back(tokdiv);
     }
     const std::string linenr(MathLib::toString(tokdiv ? tokdiv->linenr() : 0));
-    reportError(callstack, Severity::warning, "zerodivcond", ValueFlow::eitherTheConditionIsRedundant(tokcond) + " or there is division by zero at line " + linenr + ".", CWE(0U), inconclusive);
+    reportError(callstack, Severity::warning, "zerodivcond", ValueFlow::eitherTheConditionIsRedundant(tokcond) + " or there is division by zero at line " + linenr + ".", CWE369, inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -2001,10 +2007,12 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse()
 void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result)
 {
     const std::string strResult = result ? "true" : "false";
+    const struct CWE cweResult = result ? CWE571 : CWE570;
+
     reportError(tok, Severity::warning, "comparisonFunctionIsAlwaysTrueOrFalse",
                 "Comparison of two identical variables with " + functionName + "(" + varName + "," + varName + ") always evaluates to " + strResult + ".\n"
                 "The function " + functionName + " is designed to compare two variables. Calling this function with one variable (" + varName + ") "
-                "for both parameters leads to a statement which is always " + strResult + ".");
+                "for both parameters leads to a statement which is always " + strResult + ".", cweResult, false);
 }
 
 //---------------------------------------------------------------------------

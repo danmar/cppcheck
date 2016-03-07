@@ -33,6 +33,8 @@ namespace {
     CheckIO instance;
 }
 
+// CVE ID used: 
+static const CWE CWE398(398U);  // Indicator of Poor Code Quality 
 static const CWE CWE664(664U);
 static const CWE CWE685(685U);
 static const CWE CWE687(687U);
@@ -333,7 +335,7 @@ void CheckIO::checkFileUsage()
 void CheckIO::fflushOnInputStreamError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::portability,
-                "fflushOnInputStream", "fflush() called on input stream '" + varname + "' may result in undefined behaviour on non-linux systems.");
+                "fflushOnInputStream", "fflush() called on input stream '" + varname + "' may result in undefined behaviour on non-linux systems.", CWE398, false);
 }
 
 void CheckIO::ioWithoutPositioningError(const Token *tok)
@@ -364,7 +366,7 @@ void CheckIO::useClosedFileError(const Token *tok)
 void CheckIO::seekOnAppendedFileError(const Token *tok)
 {
     reportError(tok, Severity::warning,
-                "seekOnAppendedFile", "Repositioning operation performed on a file opened in append mode has no effect.");
+                "seekOnAppendedFile", "Repositioning operation performed on a file opened in append mode has no effect.", CWE398, false);
 }
 
 

@@ -955,7 +955,7 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
     reportError(tok,
                 Severity::style,
                 "clarifyCondition",
-                errmsg);
+                errmsg, CWE398, false);
 }
 
 
