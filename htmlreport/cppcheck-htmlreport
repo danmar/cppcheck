@@ -590,27 +590,20 @@ if __name__ == '__main__':
                     if error['severity'] == 'error':
                         error_class = 'class="error"'
                     if error['id'] == 'missingInclude':
-                            output_file.write(
-                                '\n         <tr><td></td><td>%s</td><td></td><td>%s</td><td>%s</td></tr>' %
-                                (error['id'], error['severity'], error['msg']))
+                        output_file.write(
+                            '\n         <tr><td></td><td>%s</td><td></td><td>%s</td><td>%s</td></tr>' %
+                            (error['id'], error['severity'], error['msg']))
                     elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
                         output_file.write(
-                            "\n         <tr><td></td><td>%s</td><td></td><td>%s</td><td %s>%s</td></tr>" %
+                            '\n         <tr><td></td><td>%s</td><td></td><td>%s</td><td %s>%s</td></tr>' %
                             (error['id'], error['severity'], error_class,
                              error['msg']))
                     else:
-                        if cwe_url:
-                            output_file.write(
-                                "\n       <tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
-                                (data['htmlfile'], error['line'], error['line'],
-                                 error['id'], cwe_url, error['severity'], error_class,
-                                 error['msg']))
-                        else:
-                            output_file.write(
-                                "\n       <tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td></td><td>%s</td><td %s>%s</td></tr>" %
-                                (data['htmlfile'], error['line'], error['line'],
-                                 error['id'], error['severity'], error_class,
-                                 error['msg']))
+                        output_file.write(
+                            '\n       <tr><td><a href="%s#line-%d">%d</a></td><td>%s</td><td>%s</td><td>%s</td><td %s>%s</td></tr>' %
+                            (data['htmlfile'], error['line'], error['line'],
+                             error['id'], cwe_url, error['severity'], error_class,
+                             error['msg']))
 
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
