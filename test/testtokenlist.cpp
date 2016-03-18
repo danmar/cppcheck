@@ -45,7 +45,7 @@ private:
         const std::string code = "0x89504e470d0a1a0a";
         TokenList tokenlist(&settings);
         tokenlist.addtoken(code, 1, 1, false);
-        ASSERT_EQUALS("9894494448401390090", tokenlist.front()->str());
+        ASSERT_EQUALS("9894494448401390090U", tokenlist.front()->str());
         // that is supposed to break on 32bit
         //unsigned long numberUL(0);
         //std::istringstream(tokenlist.front()->str()) >> numberUL;

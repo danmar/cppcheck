@@ -54,6 +54,9 @@ MathLib::value::value(const std::string &s) :
     type = MathLib::value::INT;
     intValue = MathLib::toLongNumber(s);
 
+    if (isIntHex(s) && intValue < 0)
+        isUnsigned = true;
+
     // read suffix
     if (s.size() >= 2U) {
         for (std::size_t i = s.size() - 1U; i > 0U; --i) {
@@ -93,9 +96,10 @@ std::string MathLib::value::str() const
         return ret.substr(0, pos+1);
     }
 
-    ostr << intValue;
     if (isUnsigned)
-        ostr << "U";
+        ostr << static_cast<biguint>(intValue) << "U";
+    else
+        ostr << intValue;
     if (type == MathLib::value::LONG)
         ostr << "L";
     else if (type == MathLib::value::LONGLONG)

@@ -129,9 +129,7 @@ void TokenList::addtoken(std::string str, const unsigned int lineno, const unsig
 
     // Replace hexadecimal value with decimal
     if (MathLib::isIntHex(str) || MathLib::isOct(str) || MathLib::isBin(str)) {
-        std::ostringstream str2stream;
-        str2stream << MathLib::toULongNumber(str);
-        str = str2stream.str();
+        str = MathLib::value(str).str();
     } else if (str.compare(0, 5, "_Bool") == 0) {
         str = "bool";
     }
