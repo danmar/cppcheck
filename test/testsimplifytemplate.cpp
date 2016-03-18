@@ -687,6 +687,10 @@ private:
         // #4010 - template reference type
         const char code[] = "template<class T> struct A{}; A<int&> a;";
         ASSERT_EQUALS("A<int&> a ; struct A<int&> { } ;", tok(code));
+
+        // #7409 - rvalue
+        const char code2[] = "template<class T> struct A{}; A<int&&> a;";
+        ASSERT_EQUALS("A<int&&> a ; struct A<int&&> { } ;", tok(code2));
     }
 
     void template32() {

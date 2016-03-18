@@ -276,7 +276,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // * / const
-        while (Token::Match(tok, "*|&|const"))
+        while (Token::Match(tok, "*|&|&&|const"))
             tok = tok->next();
 
         if (!tok)
