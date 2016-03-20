@@ -1466,6 +1466,10 @@ To toggle what kind of errors are shown, open view menu.</source>
         <source>Show internal warnings in log</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Show statistics on check completion</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsDialog</name>

@@ -125,7 +125,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sauvegarder</translation>
     </message>
     <message>
         <source>Functions</source>
@@ -133,7 +133,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ajouter</translation>
     </message>
     <message>
         <source>noreturn</source>
@@ -165,7 +165,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Editer</translation>
     </message>
     <message>
         <source>Library files (*.cfg)</source>
@@ -596,7 +596,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Show information messages</source>
-        <translation>Afficher les messages d'information</translation>
+        <translation>Afficher les messages d&apos;information</translation>
     </message>
     <message>
         <source>Portability</source>
@@ -608,7 +608,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>You must close the project file before selecting new files or directories!</source>
-        <translation>Vous devez d'abord fermer le projet avant de choisir des fichiers/répertoires</translation>
+        <translation>Vous devez d&apos;abord fermer le projet avant de choisir des fichiers/répertoires</translation>
     </message>
     <message>
         <source>Open the report file</source>
@@ -740,7 +740,7 @@ Do you want to remove the file from the recently used projects -list?</source>
 Opening a new XML file will clear current results.Do you want to proceed?</source>
         <translation>Les résultats courant seront effacés.
 		
-L'ouverture d'un nouveau fichier XML effacera les resultats. Voulez-vous confirmar l'opération ?</translation>
+L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vous confirmar l&apos;opération ?</translation>
     </message>
     <message>
         <source>Show S&amp;cratchpad...</source>
@@ -811,7 +811,7 @@ Options:
     </message>
     <message>
         <source>Bad attribute value</source>
-        <translation>Mauvaise valeur d'attribut</translation>
+        <translation>Mauvaise valeur d&apos;attribut</translation>
     </message>
     <message>
         <source>Failed to load the selected library &apos;%1&apos;.
@@ -847,7 +847,7 @@ Options:
     </message>
     <message>
         <source>Print Pre&amp;view...</source>
-        <translation>Apercu d'impression...</translation>
+        <translation>Apercu d&apos;impression...</translation>
     </message>
     <message>
         <source>Open a Print Preview Dialog for the Current Results</source>
@@ -933,7 +933,7 @@ Options:
     </message>
     <message>
         <source>Could not write the project file.</source>
-        <translation>Impossible d'écrire dans le fichier projet.</translation>
+        <translation>Impossible d&apos;écrire dans le fichier projet.</translation>
     </message>
 </context>
 <context>
@@ -1080,19 +1080,19 @@ Options:
     <name>QPlatformTheme</name>
     <message>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OK</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Annuler</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fermer</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sauvegarder</translation>
     </message>
 </context>
 <context>
@@ -1211,7 +1211,7 @@ Please select the default editor application in preferences/Applications.</sourc
     </message>
     <message>
         <source>Copy message id</source>
-        <translation>Copier l'identifiant du message</translation>
+        <translation>Copier l&apos;identifiant du message</translation>
     </message>
     <message>
         <source>Hide all with id</source>
@@ -1219,7 +1219,7 @@ Please select the default editor application in preferences/Applications.</sourc
     </message>
     <message>
         <source>Open containing folder</source>
-        <translation>Ouvrir l'emplacement du fichier</translation>
+        <translation>Ouvrir l&apos;emplacement du fichier</translation>
     </message>
     <message>
         <source>Inconclusive</source>
@@ -1284,7 +1284,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>No errors found, nothing to print.</source>
-        <translation>Aucune erreur trouvée. Il n'y a rien à imprimer</translation>
+        <translation>Aucune erreur trouvée. Il n&apos;y a rien à imprimer</translation>
     </message>
     <message>
         <source>First included by</source>
@@ -1390,7 +1390,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Display error Id in column &quot;Id&quot;</source>
-        <translation>Afficher l'identifiant d'erreur Id dans la colonne &quot;Id&quot;</translation>
+        <translation>Afficher l&apos;identifiant d&apos;erreur Id dans la colonne &quot;Id&quot;</translation>
     </message>
     <message>
         <source>Check for inconclusive errors also</source>
@@ -1399,6 +1399,10 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     <message>
         <source>Show internal warnings in log</source>
         <translation>Montrer les avertissements internes dans le journal</translation>
+    </message>
+    <message>
+        <source>Show statistics on check completion</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1417,7 +1421,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Select include directory</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Selectionner un répertoire à inclure</translation>
     </message>
     <message>
         <source>[Default]</source>
@@ -1468,7 +1472,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Scan Duration:</source>
-        <translation>Durée de l'analyse :</translation>
+        <translation>Durée de l&apos;analyse :</translation>
     </message>
     <message>
         <source>Errors:</source>
@@ -1492,7 +1496,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Information messages:</source>
-        <translation>Messages d'information :</translation>
+        <translation>Messages d&apos;information :</translation>
     </message>
     <message>
         <source>Copy to Clipboard</source>
@@ -1544,7 +1548,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Paths</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Chemins</translation>
     </message>
     <message>
         <source>Include paths</source>
@@ -1568,15 +1572,15 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Errors</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Erreurs</translation>
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Avertissements</translation>
     </message>
     <message>
         <source>Style warnings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Avertissement de style</translation>
     </message>
     <message>
         <source>Portability warnings</source>
@@ -1584,7 +1588,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Performance warnings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Avertissements de performance</translation>
     </message>
     <message>
         <source>Information messages</source>
