@@ -3220,6 +3220,9 @@ private:
         ASSERT_EQUALS("",           typeOf("a = 12 << x;", "<<", "test.cpp")); // << might be overloaded
         ASSERT_EQUALS("signed int", typeOf("a = 12 << x;", "<<", "test.c"));
 
+        // assignment => result has same type as lhs
+        ASSERT_EQUALS("unsigned short", typeOf("unsigned short x; x = 3;", "="));
+
         // array..
         ASSERT_EQUALS("void * *", typeOf("void * x[10]; a = x + 0;", "+"));
         ASSERT_EQUALS("signed int *", typeOf("int x[10]; a = x + 1;", "+"));

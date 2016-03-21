@@ -3688,6 +3688,12 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
         return;
     }
 
+    if (parent->isAssignmentOp()) {
+        if (vt1)
+            setValueType(parent, *vt1, cpp, defaultSignedness);
+        return;
+    }
+
     if (parent->str() == "[" && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
         vt.pointer -= 1U;
