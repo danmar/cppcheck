@@ -2650,8 +2650,8 @@ private:
     }
 
     void simplifyKnownVariables57() { // #4724
-        ASSERT_EQUALS("unsigned long long x ; x = 9223372036854775808 ;", tokenizeAndStringify("unsigned long long x = 1UL << 63 ;", true));
-        ASSERT_EQUALS("long long x ; x = -9223372036854775808 ;", tokenizeAndStringify("long long x = 1L << 63 ;", true));
+        ASSERT_EQUALS("unsigned long long x ; x = 9223372036854775808UL ;", tokenizeAndStringify("unsigned long long x = 1UL << 63 ;", true));
+        ASSERT_EQUALS("long long x ; x = -9223372036854775808L ;", tokenizeAndStringify("long long x = 1L << 63 ;", true));
     }
 
     void simplifyKnownVariables58() { // #5268

@@ -59,6 +59,8 @@ public:
         static value calc(char op, const value &v1, const value &v2);
         int compare(const value &v) const;
         value add(int v) const;
+        value shiftLeft(const value &v) const;
+        value shiftRight(const value &v) const;
     };
 
     typedef long long bigint;
@@ -128,6 +130,8 @@ MathLib::value operator%(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator&(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator|(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator^(const MathLib::value &v1, const MathLib::value &v2);
+MathLib::value operator<<(const MathLib::value &v1, const MathLib::value &v2);
+MathLib::value operator>>(const MathLib::value &v1, const MathLib::value &v2);
 
 template<> CPPCHECKLIB std::string MathLib::toString(double value); // Declare specialization to avoid linker problems
 

@@ -891,48 +891,6 @@ static bool isLowerEqualThanMulDiv(const Token* lower)
     return isLowerThanMulDiv(lower) || Token::Match(lower, "[*/%]");
 }
 
-static std::string ShiftInt(const char cop, const Token* left, const Token* right)
-{
-    if (cop == '&' || cop == '|' || cop == '^')
-        return MathLib::calculate(left->str(), right->str(), cop);
-
-    const MathLib::bigint leftInt = MathLib::toLongNumber(left->str());
-    const MathLib::bigint rightInt = MathLib::toLongNumber(right->str());
-    const bool rightIntIsPositive = rightInt >= 0;
-
-    if (cop == '<') {
-        const bool leftOperationIsNotLeftShift = left->previous()->str() != "<<";
-        const bool operandIsLeftShift = right->previous()->str() == "<<";
-
-        // Ensure that its not a shift operator as used for streams
-        if (leftOperationIsNotLeftShift && operandIsLeftShift && rightIntIsPositive) {
-            const bool leftIntIsPositive = leftInt >= 0;
-            if (!leftIntIsPositive) { // In case the left integer is negative, e.g. -1000 << 16. Do not simplify.
-                return left->str() + " << " + right->str();
-            }
-            return MathLib::toString(leftInt << rightInt);
-        }
-    } else if (rightIntIsPositive) {
-        return MathLib::toString(leftInt >> rightInt);
-    }
-    return "";
-}
-
-static std::string ShiftUInt(const char cop, const Token* left, const Token* right)
-{
-    if (cop == '&' || cop == '|' || cop == '^')
-        return MathLib::calculate(left->str(), right->str(), cop);
-
-    const MathLib::biguint leftInt=MathLib::toULongNumber(left->str());
-    const MathLib::biguint rightInt=MathLib::toULongNumber(right->str());
-    if (cop == '<') {
-        if (left->previous()->str() != "<<") // Ensure that its not a shift operator as used for streams
-            return MathLib::toString(leftInt << rightInt);
-    } else {
-        return MathLib::toString(leftInt >> rightInt);
-    }
-    return "";
-}
 
 bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 {
@@ -968,15 +926,34 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
             if (MathLib::isNegative(tok->str()) || MathLib::isNegative(tok->strAt(2)))
                 continue;
 
-            const char cop = op->str()[0];
-            std::string result;
-            if (tok->str().find_first_of("uU") != std::string::npos)
-                result = ShiftUInt(cop, tok, tok->tokAt(2));
-            else
-                result = ShiftInt(cop, tok, tok->tokAt(2));
-            if (result.empty())
+            const MathLib::value v1(tok->str());
+            const MathLib::value v2(tok->strAt(2));
+
+            if (!v1.isInt() || !v2.isInt())
+                continue;
+
+            switch (op->str()[0]) {
+            case '<':
+                tok->str((v1 << v2).str());
+                ret = true;
                 break;
-            tok->str(result);
+            case '>':
+                tok->str((v1 >> v2).str());
+                ret = true;
+                break;
+            case '&':
+                tok->str((v1 & v2).str());
+                ret = true;
+                break;
+            case '|':
+                tok->str((v1 | v2).str());
+                ret = true;
+                break;
+            case '^':
+                tok->str((v1 ^ v2).str());
+                ret = true;
+                break;
+            };
         }
 
         // Logical operations
