@@ -1621,6 +1621,13 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             // skip variable names
             first = first->next();
             second = second->next();
+
+            // skip default value assignment
+            if (first->next()->str() == "=") {
+                do {
+                    first = first->next();
+                } while (!Token::Match(first->next(), ",|)"));
+            }
         }
 
         // variable with class path
