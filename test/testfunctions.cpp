@@ -230,7 +230,7 @@ private:
               "{\n"
               "    char *x = alloca(10);\n"
               "}", "test.cpp");  // #4382 - there are no VLAs in C++
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Obsolete function 'alloca' called. In C++11 and later it is recommended to use std::array<> instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Obsolete function 'alloca' called.\n", errout.str());
 
         check("void f()\n"
               "{\n"
