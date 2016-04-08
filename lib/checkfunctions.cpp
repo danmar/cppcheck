@@ -53,7 +53,7 @@ void CheckFunctions::checkProhibitedFunctions()
                                     "(http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).");
                     else
                         reportError(tok, Severity::warning, "allocaCalled",
-                                    "Obsolete function 'alloca' called. In C++11 and later it is recommended to use std::array<> instead.\n"
+                                    "Obsolete function 'alloca' called.\n"
                                     "The obsolete function 'alloca' is called. In C++11 and later it is recommended to use std::array<> or "
                                     "a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons "
                                     "(http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).");
