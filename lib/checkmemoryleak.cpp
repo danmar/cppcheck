@@ -38,6 +38,8 @@ namespace {
     CheckMemoryLeakNoVar instance4;
 }
 
+// CWE ID used:
+static const CWE CWE398(398U);
 static const CWE CWE771(771U);
 static const CWE CWE772(772U);
 
@@ -2342,7 +2344,7 @@ void CheckMemoryLeakInClass::unsafeClassError(const Token *tok, const std::strin
 
     reportError(tok, Severity::style, "unsafeClassCanLeak",
                 "Class '" + classname + "' is unsafe, '" + varname + "' can leak by wrong usage.\n"
-                "The class '" + classname + "' is unsafe, wrong usage can cause memory/resource leaks for '" + varname + "'. This can for instance be fixed by adding proper cleanup in the destructor.");
+                "The class '" + classname + "' is unsafe, wrong usage can cause memory/resource leaks for '" + varname + "'. This can for instance be fixed by adding proper cleanup in the destructor.", CWE398, false);
 }
 
 
@@ -2380,7 +2382,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
 
 void CheckMemoryLeakInClass::publicAllocationError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::warning, "publicAllocationError", "Possible leak in public function. The pointer '" + varname + "' is not deallocated before it is allocated.");
+    reportError(tok, Severity::warning, "publicAllocationError", "Possible leak in public function. The pointer '" + varname + "' is not deallocated before it is allocated.", CWE398, false);
 }
 
 

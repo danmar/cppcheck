@@ -24,9 +24,12 @@
 #include "config.h"
 #include "check.h"
 
+// CWE ID used:
+static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
+
+
 /// @addtogroup Checks
 /// @{
-
 
 
 /**
@@ -87,30 +90,30 @@ private:
                     "Class " + className + " is not safe, destructor throws exception\n"
                     "The class " + className + " is not safe because its destructor "
                     "throws an exception. If " + className + " is used and an exception "
-                    "is thrown that is caught in an outer scope the program will terminate.");
+                    "is thrown that is caught in an outer scope the program will terminate.", CWE398, false);
     }
 
     void deallocThrowError(const Token * const tok, const std::string &varname) {
         reportError(tok, Severity::warning, "exceptDeallocThrow", "Exception thrown in invalid state, '" +
-                    varname + "' points at deallocated memory.");
+                    varname + "' points at deallocated memory.", CWE398, false);
     }
 
     void rethrowCopyError(const Token * const tok, const std::string &varname) {
         reportError(tok, Severity::style, "exceptRethrowCopy",
                     "Throwing a copy of the caught exception instead of rethrowing the original exception.\n"
                     "Rethrowing an exception with 'throw " + varname + ";' creates an unnecessary copy of '" + varname + "'. "
-                    "To rethrow the caught exception without unnecessary copying or slicing, use a bare 'throw;'.");
+                    "To rethrow the caught exception without unnecessary copying or slicing, use a bare 'throw;'.", CWE398, false);
     }
 
     void catchExceptionByValueError(const Token *tok) {
         reportError(tok, Severity::style,
                     "catchExceptionByValue", "Exception should be caught by reference.\n"
                     "The exception is caught by value. It could be caught "
-                    "as a (const) reference which is usually recommended in C++.");
+                    "as a (const) reference which is usually recommended in C++.", CWE398, false);
     }
 
     void noexceptThrowError(const Token * const tok) {
-        reportError(tok, Severity::error, "throwInNoexceptFunction", "Exception thrown in function declared not to throw exceptions.");
+        reportError(tok, Severity::error, "throwInNoexceptFunction", "Exception thrown in function declared not to throw exceptions.", CWE398, false);
     }
 
     /** Missing exception specification */
