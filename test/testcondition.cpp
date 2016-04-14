@@ -1622,6 +1622,29 @@ private:
               "  assert(x == 0);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        //TRAC #7428 false negative: Statement is always false
+        check("void f() {\n"
+              "assert( (a & 0x07) == 8U );\n" // statement always false, because 7 == 8 is false
+              "assert( (a & 0x07) >  7U );\n" // statement always false, because 7 > 7 is false
+              "assert( (a | 0x07) <  7U );\n" // statement always false, because 7 < 7 is false
+              "assert( (a & 0x07) >  8U );\n" // statement always false, because 7 > 8 is false
+              "assert( (a | 0x07) <  6U );\n" // statement always false, because 7 < 6 is false
+              "assert( (a & 0x07) >= 7U );\n" // statement correct
+              "assert( (a | 0x07) <= 7U );\n" // statement correct
+              "assert( (a & 0x07) >= 8U );\n" // statement always false, because 7 >= 8 is false
+              "assert( (a | 0x07) <= 6U );\n" // statement always false, because 7 <= 6 is false
+              "assert( (a & 0x07) >  3U );\n" // statement correct
+              "assert( (a | 0x07) <  9U );\n" // statement correct
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) == 0x8' is always false.\n"
+                      "[test.cpp:3]: (style) Expression '(X & 0x7) > 0x7' is always false.\n"
+                      "[test.cpp:4]: (style) Expression '(X | 0x7) < 0x7' is always false.\n"
+                      "[test.cpp:5]: (style) Expression '(X & 0x7) > 0x8' is always false.\n"
+                      "[test.cpp:6]: (style) Expression '(X | 0x7) < 0x6' is always false.\n"
+                      "[test.cpp:9]: (style) Expression '(X & 0x7) >= 0x8' is always false.\n"
+                      "[test.cpp:10]: (style) Expression '(X | 0x7) <= 0x6' is always false.\n",
+                      errout.str());
     }
 
     void checkInvalidTestForOverflow() {
