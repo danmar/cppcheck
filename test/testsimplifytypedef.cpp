@@ -151,6 +151,7 @@ private:
         TEST_CASE(simplifyTypedef115); // ticket #6998
         TEST_CASE(simplifyTypedef116); // ticket #5624
         TEST_CASE(simplifyTypedef117); // ticket #6507
+        TEST_CASE(simplifyTypedef118); // ticket #5749
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2350,6 +2351,22 @@ private:
                                 "struct bstr bstr0 ( const char * s ) { "
                                 "return ( struct bstr ) { ( unsigned char * ) s , s ? strlen ( s ) : 0 } ; "
                                 "}";
+        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef118() { // #5749
+        const char code[] = "struct ClassyClass {\n"
+                "int id;\n"
+                "typedef int (ClassyClass::*funky_type);\n"
+                "operator funky_type() {\n"
+                "return &ClassyClass::id;\n"
+                "}}";
+        const char expected[] = "struct ClassyClass { "
+                "int id ; "
+                "operatorintClassyClass::* ( ) { "
+                "return & ClassyClass :: id ; "
+                "} }";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }

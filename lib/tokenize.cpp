@@ -1430,9 +1430,19 @@ void Tokenizer::simplifyTypedef()
                             tok2->insertToken("*");
                             tok2 = tok2->next();
                         } else {
-                            tok2->insertToken("(");
-                            tok2 = tok2->next();
-                            Token *tok3 = tok2;
+                            // This is the case of casting operator.
+                            // Name is not available, and () should not be
+                            // inserted
+                            bool castOperator = inOperator && Token::Match(tok2, "%type% (");
+
+                            Token *tok3;
+
+                            if (!castOperator) {
+                                tok2->insertToken("(");
+                                tok2 = tok2->next();
+
+                                tok3 = tok2;
+                            }
 
                             const Token *tok4 = namespaceStart;
 
@@ -1447,12 +1457,15 @@ void Tokenizer::simplifyTypedef()
                             tok2->insertToken("*");
                             tok2 = tok2->next();
 
-                            // skip over name
-                            tok2 = tok2->next();
+                            if (!castOperator) {
+                                // skip over name
+                                tok2 = tok2->next();
 
-                            tok2->insertToken(")");
-                            tok2 = tok2->next();
-                            Token::createMutualLinks(tok2, tok3);
+                                tok2->insertToken(")");
+                                tok2 = tok2->next();
+
+                                Token::createMutualLinks(tok2, tok3);
+                            }
                         }
                     } else if (typeOf) {
                         tok2 = copyTokens(tok2, argStart, argEnd);
