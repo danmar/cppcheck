@@ -117,7 +117,7 @@ void CheckOther::checkCastIntToCharAndBackError(const Token *tok, const std::str
         " When "+ strFunctionName +"() returns EOF this value is truncated. Comparing the char "
         "variable with EOF can have unexpected results. For instance a loop \"while (EOF != (c = "+ strFunctionName +"());\" "
         "loops forever on some compilers/platforms and on other compilers/platforms it will stop "
-        "when the file contains a matching character.", CWE197, false 
+        "when the file contains a matching character.", CWE197, false
     );
 }
 

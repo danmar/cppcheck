@@ -307,14 +307,12 @@ void CheckCondition::comparison()
                         const std::string& op(tok->str());
                         comparisonError(expr1, expr1->str(), num1, op, num2, op!="!=" ? false : true);
                     }
-                }
-                else if (Token::simpleMatch(tok, ">")) {
+                } else if (Token::simpleMatch(tok, ">")) {
                     if ((expr1->str() == "&" && (num1 <= num2))) {
                         const std::string& op(tok->str());
                         comparisonError(expr1, expr1->str(), num1, op, num2, false);
                     }
-                }
-                else if (Token::simpleMatch(tok, "<")) {
+                } else if (Token::simpleMatch(tok, "<")) {
                     if ((expr1->str() == "|" && (num1 >= num2))) {
                         const std::string& op(tok->str());
                         comparisonError(expr1, expr1->str(), num1, op, num2, false);

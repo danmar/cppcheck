@@ -33,8 +33,8 @@ namespace {
     CheckIO instance;
 }
 
-// CVE ID used: 
-static const CWE CWE398(398U);  // Indicator of Poor Code Quality 
+// CVE ID used:
+static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 static const CWE CWE664(664U);
 static const CWE CWE685(685U);
 static const CWE CWE687(687U);
