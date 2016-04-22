@@ -1375,7 +1375,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             }
 
             // skip over modifiers and other stuff
-            while (Token::Match(tok1, "const|static|extern|template|virtual|struct|class"))
+            while (Token::Match(tok1, "const|static|extern|template|virtual|struct|class|enum"))
                 tok1 = tok1->previous();
 
             // should be at a sequence point if this is a function
