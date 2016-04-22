@@ -746,7 +746,7 @@ private:
 
     // #4195 - segfault for "enum { int f ( ) { return = } r = f ( ) ; }"
     void tokenize24() {
-        ASSERT_THROW(tokenizeAndStringify("enum { int f ( ) { return = } r = f ( ) ; }"), InternalError);
+        TODO_ASSERT_THROW(tokenizeAndStringify("enum { int f ( ) { return = } r = f ( ) ; }"), InternalError);
     }
 
     // #4239 - segfault for "f ( struct { int typedef T x ; } ) { }"
@@ -2664,9 +2664,14 @@ private:
                             "int baz() { "
                             "  return sizeof(arr_t); "
                             "}";
-        ASSERT_EQUALS("int foo ( int ) ; "
-                      "void bar ( ) { throw foo ( 1 ) ; } "
-                      "int baz ( ) { return 2 ; }", tokenizeAndStringify(code, true));
+        ASSERT_EQUALS("enum e { VAL1 = 1 , VAL2 } ; "
+                      "int foo ( int ) ; "
+                      "void bar ( ) { "
+                      "throw foo ( VAL1 ) ; "
+                      "} "
+                      "int baz ( ) { "
+                      "return sizeof ( char [ VAL2 ] ) ; "
+                      "}", tokenizeAndStringify(code, true));
     }
 
     void simplifyKnownVariables59() { // #5062 - for head

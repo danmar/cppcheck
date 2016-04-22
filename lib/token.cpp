@@ -223,8 +223,6 @@ void Token::deleteThis()
         _link = _next->_link;
         _scope = _next->_scope;
         _function = _next->_function;
-        _variable = _next->_variable;
-        _type = _next->_type;
         if (_next->_originalName) {
             delete _originalName;
             _originalName = _next->_originalName;
@@ -250,8 +248,6 @@ void Token::deleteThis()
         _link = _previous->_link;
         _scope = _previous->_scope;
         _function = _previous->_function;
-        _variable = _previous->_variable;
-        _type = _previous->_type;
         if (_previous->_originalName) {
             delete _originalName;
             _originalName = _previous->_originalName;
@@ -1475,5 +1471,15 @@ void Token::setValueType(ValueType *vt)
         delete valuetype;
         valuetype = vt;
     }
+}
+
+void Token::type(const ::Type *t)
+{
+    _type = t;
+    if (t) {
+        _tokType = eType;
+        isEnumType(_type->isEnumType());
+    } else if (_tokType == eType)
+        _tokType = eName;
 }
 

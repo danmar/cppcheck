@@ -103,13 +103,14 @@ public:
         classScope(classScope_),
         enclosingScope(enclosingScope_),
         needInitialization(Unknown) {
+        if (classDef_ && classDef_->str() == "enum")
+            needInitialization = True;
     }
 
-    const std::string& name() const {
-        const Token* next = classDef->next();
-        if (next->isName())
-            return next->str();
-        return emptyString;
+    const std::string& name() const;
+
+    bool isEnumType() const {
+        return classDef && classDef->str() == "enum";
     }
 
     const Token *initBaseInfo(const Token *tok, const Token *tok1);
@@ -129,6 +130,17 @@ public:
     * @return true if there is a dependency
     */
     bool findDependency(const Type* ancestor) const;
+};
+
+class CPPCHECKLIB Enumerator {
+public:
+    explicit Enumerator(const Scope * scope_) : scope(scope_), name(nullptr), value(0), start(nullptr), end(nullptr), value_known(false) { }
+    const Scope * scope;
+    const Token * name;
+    MathLib::bigint value;
+    const Token * start;
+    const Token * end;
+    bool value_known;
 };
 
 /** @brief Information about a member variable. */
@@ -546,6 +558,13 @@ public:
         return getFlag(fIsIntType);
     }
 
+    /**
+    * Determine whether it's an enumeration type
+    * @return true if the type is known and it's an enumeration type
+    */
+    bool isEnumType() const {
+        return type() && type()->isEnumType();
+    }
 
 private:
     // only symbol database can change the type
@@ -833,7 +852,7 @@ public:
         const Scope *scope;
     };
 
-    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda };
+    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda, eEnum };
 
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
@@ -859,12 +878,26 @@ public:
     const Scope *functionOf; // scope this function belongs to
     Function *function; // function info for this function
 
+    // enum specific fields
+    const Token * enumType;
+    bool enumClass;
+
+    std::vector<Enumerator> enumeratorList;
+
+    const Enumerator * findEnumerator(const std::string & name) const {
+        for (std::size_t i = 0, end = enumeratorList.size(); i < end; ++i) {
+            if (enumeratorList[i].name->str() == name)
+                return &enumeratorList[i];
+        }
+        return nullptr;
+    }
+
     bool isClassOrStruct() const {
         return (type == eClass || type == eStruct);
     }
 
     bool isExecutable() const {
-        return type != eClass && type != eStruct && type != eUnion && type != eGlobal && type != eNamespace;
+        return type != eClass && type != eStruct && type != eUnion && type != eGlobal && type != eNamespace && type != eEnum;
     }
 
     bool isLocal() const {
@@ -944,6 +977,8 @@ public:
      * @return pointer to variable
      */
     const Variable *getVariable(const std::string &varname) const;
+
+    const Token * addEnum(const Token * tok, bool isCpp);
 
 private:
     /**
@@ -1052,6 +1087,8 @@ private:
 
     /** Whether iName is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
     bool isReservedName(const std::string& iName) const;
+
+    const Enumerator * findEnumerator(const Token * tok) const;
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;

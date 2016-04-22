@@ -551,11 +551,6 @@ private:
     void simplifyFuncInWhile();
 
     /**
-     * Replace enum with constant value
-     */
-    void simplifyEnum();
-
-    /**
      * Remove "std::" before some function names
      */
     void simplifyStd();

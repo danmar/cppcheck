@@ -1387,7 +1387,7 @@ void CheckOther::checkConstantFunctionParameter()
 
     for (unsigned int i = 1; i < symbolDatabase->getVariableListSize(); i++) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
-        if (!var || !var->isArgument() || !var->isClass() || !var->isConst() || var->isPointer() || var->isArray() || var->isReference())
+        if (!var || !var->isArgument() || !var->isClass() || !var->isConst() || var->isPointer() || var->isArray() || var->isReference() || var->isEnumType())
             continue;
 
         if (var->scope() && var->scope()->function->arg->link()->strAt(-1) == ".")

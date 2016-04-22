@@ -90,7 +90,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
         bool stdtype = _tokenizer->isC();
         const Token* tok = i->typeStartToken();
         for (; tok != i->nameToken() && tok->str() != "<"; tok = tok->next()) {
-            if (tok->isStandardType())
+            if (tok->isStandardType() || tok->isEnumType())
                 stdtype = true;
         }
         if (i->isArray() && !stdtype)
@@ -124,7 +124,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
                         _settings->library.returnuninitdata.count(tok->strAt(3)) == 1U) {
                         if (arg->typeStartToken()->str() == "struct")
                             checkStruct(tok, *arg);
-                        else if (arg->typeStartToken()->isStandardType()) {
+                        else if (arg->typeStartToken()->isStandardType() || arg->typeStartToken()->isEnumType()) {
                             Alloc alloc = NO_ALLOC;
                             checkScopeForVariable(tok->next(), *arg, nullptr, nullptr, &alloc, "");
                         }
@@ -645,7 +645,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 *alloc = NO_CTOR_CALL;
                 continue;
             }
-            if (var.isPointer() && (var.typeStartToken()->isStandardType() || (var.type() && var.type()->needInitialization == Type::True)) && Token::simpleMatch(tok->next(), "= new")) {
+            if (var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::True)) && Token::simpleMatch(tok->next(), "= new")) {
                 *alloc = CTOR_CALL;
                 if (var.typeScope() && var.typeScope()->numConstructors > 0)
                     return true;
@@ -901,11 +901,11 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
                 } while (Token::simpleMatch(tok2, "<<"));
                 if (tok2 && tok2->strAt(-1) == "::")
                     tok2 = tok2->previous();
-                if (tok2 && (Token::simpleMatch(tok2->previous(), "std ::") || (tok2->variable() && tok2->variable()->isStlType()) || tok2->isStandardType()))
+                if (tok2 && (Token::simpleMatch(tok2->previous(), "std ::") || (tok2->variable() && tok2->variable()->isStlType()) || tok2->isStandardType() || tok2->isEnumType()))
                     return true;
             }
             const Variable *var = vartok->tokAt(-2)->variable();
-            return (var && var->typeStartToken()->isStandardType());
+            return (var && (var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType()));
         }
 
         // is there something like: ; "*((&var ..expr.. ="  => the variable is assigned
@@ -970,7 +970,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         // Is variable a known POD type then this is a variable usage,
         // otherwise we assume it's not.
         const Variable *var = vartok->variable();
-        return (var && var->typeStartToken()->isStandardType());
+        return (var && (var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType()));
     }
 
     if (alloc == NO_ALLOC && vartok->next() && vartok->next()->isOp() && !vartok->next()->isAssignmentOp())

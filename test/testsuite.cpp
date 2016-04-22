@@ -215,6 +215,18 @@ void TestFixture::todoAssertEquals(const char *filename, unsigned int linenr, lo
     todoAssertEquals(filename, linenr, wantedStr.str(), currentStr.str(), actualStr.str());
 }
 
+void TestFixture::assertThrow(const char *filename, unsigned int linenr) const
+{
+    ++fails_counter;
+    if (gcc_style_errors) {
+        errmsg << filename << ':' << linenr << " Assertion succeeded. "
+               << "The expected exception was thrown" << std::endl;
+    } else {
+        errmsg << "Assertion succeeded in " << filename << " at line " << linenr << std::endl
+               << "The expected exception was thrown" << std::endl << "_____" << std::endl;
+    }
+}
+
 void TestFixture::assertThrowFail(const char *filename, unsigned int linenr) const
 {
     ++fails_counter;
