@@ -2419,7 +2419,7 @@ void SymbolDatabase::printOut(const char *title) const
                 std::cout << "int";
             std::cout << std::endl;
             std::cout << "    enumClass: " << scope->enumClass << std::endl;
-            for (const auto & enumerator : scope->enumeratorList) {
+            for (const Enumerator & enumerator : scope->enumeratorList) {
                 std::cout << "        Enumerator: " << enumerator.name->str() << " = ";
                 if (enumerator.value_known) {
                     std::cout << enumerator.value;
