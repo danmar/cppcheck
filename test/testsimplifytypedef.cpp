@@ -2357,16 +2357,16 @@ private:
 
     void simplifyTypedef118() { // #5749
         const char code[] = "struct ClassyClass {\n"
-                "int id;\n"
-                "typedef int (ClassyClass::*funky_type);\n"
-                "operator funky_type() {\n"
-                "return &ClassyClass::id;\n"
-                "}}";
+                            "int id;\n"
+                            "typedef int (ClassyClass::*funky_type);\n"
+                            "operator funky_type() {\n"
+                            "return &ClassyClass::id;\n"
+                            "}}";
         const char expected[] = "struct ClassyClass { "
-                "int id ; "
-                "operatorintClassyClass::* ( ) { "
-                "return & ClassyClass :: id ; "
-                "} }";
+                                "int id ; "
+                                "operatorintClassyClass::* ( ) { "
+                                "return & ClassyClass :: id ; "
+                                "} }";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }

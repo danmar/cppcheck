@@ -2419,7 +2419,7 @@ void SymbolDatabase::printOut(const char *title) const
                 std::cout << "int";
             std::cout << std::endl;
             std::cout << "    enumClass: " << scope->enumClass << std::endl;
-			for (std::vector<Enumerator>::const_iterator enumerator = scope->enumeratorList.begin(); enumerator != scope->enumeratorList.end(); ++enumerator) {
+            for (std::vector<Enumerator>::const_iterator enumerator = scope->enumeratorList.begin(); enumerator != scope->enumeratorList.end(); ++enumerator) {
                 std::cout << "        Enumerator: " << enumerator->name->str() << " = ";
                 if (enumerator->value_known) {
                     std::cout << enumerator->value;
@@ -3358,7 +3358,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
         if (enumerator)
             return enumerator;
 
-		for (std::list<Scope *>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
+        for (std::list<Scope *>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
             enumerator = (*s)->findEnumerator(tok->str());
 
             if (enumerator)
