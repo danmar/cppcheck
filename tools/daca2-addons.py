@@ -163,9 +163,10 @@ def scanarchive(filepath, jobs):
 # flite #5975
 # insight#5184
 # valgrind #6151
+# gcc-arm - no ticket. Reproducible timeout in daca2 though as of 1.73/early 2016.
 #
 
-    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:7] == 'insight' or filename[:8] == 'valgrind':
+    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:7] == 'insight' or filename[:8] == 'valgrind' or filename[:7] == 'gcc-arm':
         results = open('results.txt', 'at')
         results.write('fixme: skipped package to avoid hang\n')
         results.close()
