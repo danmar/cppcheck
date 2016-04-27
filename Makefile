@@ -273,6 +273,9 @@ run-dmake: dmake
 reduce:	tools/reduce.o externals/tinyxml/tinyxml2.o $(LIBOBJ)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -g -o reduce tools/reduce.o -Ilib -Iexternals/tinyxml $(LIBOBJ) $(LIBS) externals/tinyxml/tinyxml2.o $(LDFLAGS) $(RDYNAMIC)
 
+release-build: clean
+	make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
+
 clean:
 	rm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/tinyxml/*.o testrunner reduce dmake cppcheck cppcheck.1
 
