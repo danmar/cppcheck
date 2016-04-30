@@ -36,7 +36,8 @@ namespace {
 static const struct CWE CWE197(197U);   // Numeric Truncation Error
 static const struct CWE CWE369(369U);
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE563(563U);
+static const struct CWE CWE484(484U);   // Omitted Break Statement in Switch
+static const struct CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
 static const struct CWE CWE570(570U);   // Expression is Always False
 static const struct CWE CWE571(571U);   // Expression is Always True
 static const struct CWE CWE686(686U);
@@ -604,14 +605,14 @@ void CheckOther::redundantCopyError(const Token *tok1, const Token* tok2, const 
 {
     const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
     reportError(callstack, Severity::performance, "redundantCopy",
-                "Buffer '" + var + "' is being written before its old content has been used.", CWE398, false);
+                "Buffer '" + var + "' is being written before its old content has been used.", CWE563, false);
 }
 
 void CheckOther::redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
     const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
     reportError(callstack, Severity::warning, "redundantCopyInSwitch",
-                "Buffer '" + var + "' is being written before its old content has been used. 'break;' missing?");
+                "Buffer '" + var + "' is being written before its old content has been used. 'break;' missing?", CWE563, false);
 }
 
 void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
@@ -620,17 +621,17 @@ void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, 
     if (inconclusive)
         reportError(callstack, Severity::style, "redundantAssignment",
                     "Variable '" + var + "' is reassigned a value before the old one has been used if variable is no semaphore variable.\n"
-                    "Variable '" + var + "' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", CWE398, true);
+                    "Variable '" + var + "' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", CWE563, true);
     else
         reportError(callstack, Severity::style, "redundantAssignment",
-                    "Variable '" + var + "' is reassigned a value before the old one has been used.", CWE398, false);
+                    "Variable '" + var + "' is reassigned a value before the old one has been used.", CWE563, false);
 }
 
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
     const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
     reportError(callstack, Severity::warning, "redundantAssignInSwitch",
-                "Variable '" + var + "' is reassigned a value before the old one has been used. 'break;' missing?");
+                "Variable '" + var + "' is reassigned a value before the old one has been used. 'break;' missing?", CWE563, false);
 }
 
 
@@ -842,7 +843,7 @@ void CheckOther::checkSwitchCaseFallThrough()
 void CheckOther::switchCaseFallThrough(const Token *tok)
 {
     reportError(tok, Severity::style,
-                "switchCaseFallThrough", "Switch falls through case without comment. 'break;' missing?");
+                "switchCaseFallThrough", "Switch falls through case without comment. 'break;' missing?", CWE484, false);
 }
 
 
@@ -1324,7 +1325,7 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
                 "        }\n"
                 "    }\n"
                 "}\n"
-                "When you see this message it is always safe to reduce the variable scope 1 level.");
+                "When you see this message it is always safe to reduce the variable scope 1 level.", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1504,7 +1505,7 @@ void CheckOther::charBitOpError(const Token *tok)
                 "    int i = 0 | c;\n"
                 "    if (i & 0x8000)\n"
                 "        printf(\"not expected\");\n"
-                "The \"not expected\" will be printed on the screen.");
+                "The \"not expected\" will be printed on the screen.", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1577,7 +1578,7 @@ void CheckOther::checkIncompleteStatement()
 
 void CheckOther::constStatementError(const Token *tok, const std::string &type)
 {
-    reportError(tok, Severity::warning, "constStatement", "Redundant code: Found a statement that begins with " + type + " constant.");
+    reportError(tok, Severity::warning, "constStatement", "Redundant code: Found a statement that begins with " + type + " constant.", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -2173,7 +2174,7 @@ void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
                 "Use const reference for '" + varname + "' to avoid unnecessary data copying.\n"
                 "The const variable '"+varname+"' is assigned a copy of the data. You can avoid "
                 "the unnecessary data copying by converting '" + varname + "' to const reference.",
-                CWE(0U),
+                CWE398,
                 true); // since #5618 that check became inconlusive
 }
 
