@@ -36,11 +36,11 @@ else
 	against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
 fi
 
-# We should not pass non-C/C++ files to cppcheck. Filter filenames with pattern.
-pattern='\.(c|cpp|cc|cxx|h|hpp)$'
-changed_files=$(git diff-index --cached --name-only $against | grep -E $pattern)
+# We should pass only added or modified C/C++ source files to cppcheck.
+changed_files=$(git diff-index --cached $against | \
+	grep -E '[MA]	.*\.(c|cpp|cc|cxx)$' | cut -d'	' -f 2)
 
 if [ -n "$changed_files" ]; then
-    cppcheck --error-exitcode=1 $changed_files
-    exit $?
+	cppcheck --error-exitcode=1 $changed_files
+	exit $?
 fi
