@@ -1600,7 +1600,7 @@ void CheckOther::checkZeroDivision()
             if (MathLib::isFloat(tok->astOperand1()->str()))
                 continue;
         } else if (tok->astOperand1()->isName()) {
-            if (tok->astOperand1()->variable() && !tok->astOperand1()->variable()->isIntegralType())
+            if (!tok->astOperand1()->valueType()->isIntegral())
                 continue;
         } else if (!tok->astOperand1()->isArithmeticalOp())
             continue;

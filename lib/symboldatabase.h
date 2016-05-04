@@ -159,8 +159,7 @@ class CPPCHECKLIB Variable {
         fHasDefault  = (1 << 9), /** @brief function argument with default value */
         fIsStlType   = (1 << 10), /** @brief STL type ('std::') */
         fIsStlString = (1 << 11), /** @brief std::string|wstring|basic_string&lt;T&gt;|u16string|u32string */
-        fIsIntType   = (1 << 12), /** @brief Integral type */
-        fIsFloatType = (1 << 13)  /** @brief Floating point type */
+        fIsFloatType = (1 << 12)  /** @brief Floating point type */
     };
 
     /**
@@ -548,14 +547,6 @@ public:
     */
     bool isFloatingType() const {
         return getFlag(fIsFloatType);
-    }
-
-    /**
-     * Determine whether it's an integral number type
-     * @return true if the type is known and it's an integral type (bool, char, short, int, long long and their unsigned counter parts) or a pointer/array to it
-     */
-    bool isIntegralType() const {
-        return getFlag(fIsIntType);
     }
 
     /**
@@ -1068,7 +1059,7 @@ public:
     void validateVariables() const;
 
     /** Set valuetype in provided tokenlist */
-    static void setValueTypeInTokenList(Token *tokens, bool cpp, char defaultSignedness);
+    static void setValueTypeInTokenList(Token *tokens, bool cpp, char defaultSignedness, const Library* lib);
 
     void debugValueType() const;
 
@@ -1105,7 +1096,7 @@ private:
 class CPPCHECKLIB ValueType {
 public:
     enum Sign {UNKNOWN_SIGN, SIGNED, UNSIGNED} sign;
-    enum Type {UNKNOWN_TYPE, NONSTD, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, FLOAT, DOUBLE, LONGDOUBLE} type;
+    enum Type {UNKNOWN_TYPE, NONSTD, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE} type;
     unsigned int pointer; // 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     unsigned int constness;  // bit 0=data, bit 1=*, bit 2=**
     const Scope *typeScope;
@@ -1118,7 +1109,7 @@ public:
     ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), originalTypeName(otn) {}
 
     bool isIntegral() const {
-        return (type >= ValueType::Type::BOOL && type <= ValueType::Type::LONGLONG);
+        return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
     }
 
     std::string str() const;

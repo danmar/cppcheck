@@ -31,7 +31,12 @@ public:
     }
 
 private:
+    Settings _settings;
+
     void run() {
+        LOAD_LIB_2(_settings.library, "std.cfg");
+
+
         TEST_CASE(emptyBrackets);
 
         TEST_CASE(zeroDiv1);
@@ -172,7 +177,6 @@ private:
         errout.str("");
 
         if (!settings) {
-            static Settings _settings;
             settings = &_settings;
         }
         settings->addEnabled("style");
@@ -312,6 +316,11 @@ private:
 
         check("void foo(int& i) {\n"
               "    i %= 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout.str());
+
+        check("uint8_t foo(uint8_t i) {\n"
+              "    return i / 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout.str());
     }
