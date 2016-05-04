@@ -2093,7 +2093,6 @@ private:
               "    std::string errmsg;\n"
               "    return errmsg.c_str();\n"
               "}");
-
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
 
         check("const char *get_msg() {\n"
@@ -2142,6 +2141,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
 
+        check("class Foo {\n"
+              "    std::string GetVal() const;\n"
+              "};\n"
+              "const char *f() {\n"
+              "    Foo f;\n"
+              "    return f.GetVal().c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
+
         check("const char* foo() {\n"
               "    static std::string text;\n"
               "    text = \"hello world\n\";\n"
@@ -2161,6 +2169,15 @@ private:
               "    return errmsg.c_str();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (performance) Returning the result of c_str() in a function that returns std::string is slow and redundant.\n", errout.str());
+
+        check("class Foo {\n"
+              "    std::string GetVal() const;\n"
+              "};\n"
+              "std::string f() {\n"
+              "    Foo f;\n"
+              "    return f.GetVal().c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (performance) Returning the result of c_str() in a function that returns std::string is slow and redundant.\n", errout.str());
 
         check("std::string get_msg() {\n"
               "    std::string errmsg;\n"
