@@ -202,11 +202,19 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // #7247 : dont check return statements in nested functions..
+        // #7247: dont check return statements in nested functions..
         check("int foo() {\n"
               "  struct {\n"
               "    const char * name() { return \"abc\"; }\n"
               "  } table;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #7451: Lambdas
+        check("const int* test(std::vector<int> outputs, const std::string& text) {\n"
+              "  auto it = std::find_if(outputs.begin(), outputs.end(), \n"
+              "     [&](int ele) { return \"test\" == text; });\n"
+              "  return nullptr;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
