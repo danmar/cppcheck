@@ -830,7 +830,7 @@ private:
         {
             const char code[] = "void f(FOO::BAR const);\n";
             ASSERT_EQUALS("\n\n##file 0\n"
-                          "1: void f ( FOO :: BAR const ) ;\n",
+                          "1: void f ( const FOO :: BAR ) ;\n",
                           tokenize(code));
         }
         {

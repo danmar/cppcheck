@@ -5805,7 +5805,7 @@ void Tokenizer::simplifyStaticConst()
             // Look backwards to find the beginning of the declaration
             Token* leftTok = tok;
             for (; leftTok; leftTok = leftTok->previous()) {
-                if (!Token::Match(leftTok, "%type%|static|const|extern") ||
+                if (!Token::Match(leftTok, "%type%|static|const|extern|struct|::") ||
                     (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator")))
                     break;
             }

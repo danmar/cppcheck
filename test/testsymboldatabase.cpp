@@ -667,7 +667,7 @@ private:
     void isVariableDeclarationPointerConst() {
         reset();
         givenACodeSampleToTokenize var("std::string const* s;");
-        bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
+        bool result = si.isVariableDeclaration(var.tokens()->next(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings.library);
         ASSERT(false == v.isArray());

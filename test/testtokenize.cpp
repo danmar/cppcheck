@@ -3933,7 +3933,7 @@ private:
                              "    a::b const *p = 0;\n"
                              "}\n";
         ASSERT_EQUALS("void f ( ) {\n"
-                      "a :: b const * p ; p = 0 ;\n"
+                      "const a :: b * p ; p = 0 ;\n"
                       "}"
                       , tokenizeAndStringify(code1));
 
@@ -3942,7 +3942,7 @@ private:
                              "    ::a::b const *p = 0;\n"
                              "}\n";
         ASSERT_EQUALS("void f ( ) {\n"
-                      ":: a :: b const * p ; p = 0 ;\n"
+                      "const :: a :: b * p ; p = 0 ;\n"
                       "}"
                       , tokenizeAndStringify(code2));
     }
