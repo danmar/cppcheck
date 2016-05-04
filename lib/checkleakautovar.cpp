@@ -516,7 +516,7 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const Va
         if (_tokenizer->isCPP() && arg->str() == "new")
             arg = arg->next();
 
-        if (Token::Match(arg, "%var% [-,)]") || Token::Match(arg, "& %var%")) {
+        if (Token::Match(arg, "%var% [-,)] !!.") || Token::Match(arg, "& %var%")) {
 
             // goto variable
             if (arg->str() == "&")

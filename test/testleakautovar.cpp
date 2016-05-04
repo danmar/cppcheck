@@ -760,6 +760,13 @@ private:
             "    }\n"
             "};", true);
         ASSERT_EQUALS("", errout.str());
+
+        // #7401
+        check("void pCodeLabelDestruct(pCode *pc) {\n"
+              "    free(PCL(pc)->label);\n"
+              "    free(pc);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void doublefree2() {  // #3891
