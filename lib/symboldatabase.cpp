@@ -793,16 +793,24 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 } else if (tok->str() == "{") {
                     if (tok->previous()->varId())
                         tok = tok->link();
-                    else if (tok->strAt(-1) == ")" && tok->linkAt(-1)->strAt(-1) == "]") {
-                        scopeList.push_back(Scope(this, tok->linkAt(-1)->linkAt(-1), scope, Scope::eLambda, tok));
-                        scope->nestedList.push_back(&scopeList.back());
-                        scope = &scopeList.back();
-                    } else if (!Token::Match(tok->previous(), "=|,|(|return") && !(tok->strAt(-1) == ")" && Token::Match(tok->linkAt(-1)->previous(), "=|,|(|return"))) {
-                        scopeList.push_back(Scope(this, tok, scope, Scope::eUnconditional, tok));
-                        scope->nestedList.push_back(&scopeList.back());
-                        scope = &scopeList.back();
-                    } else {
-                        tok = tok->link();
+                    else {
+                        const Token* tok2 = tok->previous();
+                        while (!Token::Match(tok2, ";|}|{|)"))
+                            tok2 = tok2->previous();
+                        if (tok2->next() != tok && tok2->strAt(1) != ".")
+                            tok2 = nullptr; // No lambda
+
+                        if (tok2 && tok2->str() == ")" && tok2->link()->strAt(-1) == "]") {
+                            scopeList.push_back(Scope(this, tok2->link()->linkAt(-1), scope, Scope::eLambda, tok));
+                            scope->nestedList.push_back(&scopeList.back());
+                            scope = &scopeList.back();
+                        } else if (!Token::Match(tok->previous(), "=|,|(|return") && !(tok->strAt(-1) == ")" && Token::Match(tok->linkAt(-1)->previous(), "=|,|(|return"))) {
+                            scopeList.push_back(Scope(this, tok, scope, Scope::eUnconditional, tok));
+                            scope->nestedList.push_back(&scopeList.back());
+                            scope = &scopeList.back();
+                        } else {
+                            tok = tok->link();
+                        }
                     }
                 }
             }
