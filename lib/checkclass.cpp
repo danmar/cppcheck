@@ -1109,8 +1109,8 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
             memsetErrorReference(tok, tok->str(), type->classDef->str());
             continue;
         }
-        // don't warn if variable static or const, pointer or reference
-        if (!var->isStatic() && !var->isConst() && !var->isPointer()) {
+        // don't warn if variable static or const, pointer or array of pointers
+        if (!var->isStatic() && !var->isConst() && !var->isPointer() && (!var->isArray() || var->typeEndToken()->str() != "*")) {
             const Token *tok1 = var->typeStartToken();
             const Scope *typeScope = var->typeScope();
 

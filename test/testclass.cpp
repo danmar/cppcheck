@@ -2400,6 +2400,20 @@ private:
                       "  memset(&a, 0, sizeof(a)); \n"
                       "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Using 'memset' on class that contains a reference.\n", errout.str());
+
+        // #7456
+        checkNoMemset("struct A {\n"
+                      "  A() {}\n"
+                      "  virtual ~A() {}\n"
+                      "};\n"
+                      "struct B {\n"
+                      "  A* arr[4];\n"
+                      "};\n"
+                      "void func() {\n"
+                      "  B b[4];\n"
+                      "  memset(b, 0, sizeof(b));\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void memsetOnInvalid() { // Ticket #5425
