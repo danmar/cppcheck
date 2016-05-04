@@ -3377,6 +3377,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Remove [[deprecated]]
     simplifyDeprecated();
 
+    // remove __attribute__((?))
+    simplifyAttribute();
+
     // Simplify the C alternative tokens (and, or, etc.)
     simplifyCAlternativeTokens();
 
@@ -3469,9 +3472,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // That call here fixes #7190
     validate();
-
-    // remove __attribute__((?))
-    simplifyAttribute();
 
     // remove unnecessary member qualification..
     removeUnnecessaryQualification();
