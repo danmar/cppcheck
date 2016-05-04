@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import io
 import os
 import sys
 import re
@@ -604,7 +605,7 @@ class MatchCompiler:
     def convertFile(self, srcname, destname, line_directive):
         self._reset()
 
-        fin = open(srcname, "rt")
+        fin = io.open(srcname, "rt", encoding="us-ascii")
         srclines = fin.readlines()
         fin.close()
 
@@ -637,7 +638,7 @@ class MatchCompiler:
         if line_directive:
             lineno = '#line 1 "' + srcname + '"\n'
 
-        fout = open(destname, 'wt')
+        fout = io.open(destname, 'wt', encoding="us-ascii")
         fout.write(header + strFunctions + lineno + code)
         fout.close()
 
