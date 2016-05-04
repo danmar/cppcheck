@@ -119,7 +119,9 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
         tok = tok->previous();
     }
     tok = tok ? tok->previous() : nullptr;
-    if (!Token::Match(tok,"%name% ("))
+    if (tok && tok->link() && tok->str() == ">")
+        tok = tok->link()->previous();
+    if (!Token::Match(tok, "%name% ("))
         return false; // not a function => do not bailout
 
     if (!tok->function()) {
