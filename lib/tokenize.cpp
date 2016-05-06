@@ -3278,7 +3278,7 @@ bool Tokenizer::simplifySizeof()
             }
 
             // Some default value
-            std::size_t size = 0;
+            MathLib::biguint size = 0;
 
             const unsigned int varid = nametok->varId();
             if (derefs != 0 && varid != 0 && declTokOfVar.find(varid) != declTokOfVar.end()) {

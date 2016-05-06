@@ -905,48 +905,14 @@ void CheckCondition::clarifyCondition()
                     } else if (!tok2->isName() && !tok2->isNumber() && tok2->str() != ".")
                         break;
                 }
-            }
-        }
-    }
-
-    // using boolean result in bitwise operation ! x [&|^]
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%comp%|!")) {
-                if (tok->link()) // don't write false positives when templates are used
-                    continue;
-
-                const Token *tok2 = tok->next();
-
-                // Todo: There are false positives if '(' if encountered. It
-                // is assumed there is something like '(char *)&..' and therefore
-                // it bails out.
-                if (Token::Match(tok2, "(|&"))
-                    continue;
-
-                while (tok2 && (tok2->isName() || tok2->isNumber() || Token::Match(tok2, ".|(|["))) {
-                    if (Token::Match(tok2, "(|["))
-                        tok2 = tok2->link();
-                    tok2 = tok2->next();
-                }
-
-                if (Token::Match(tok2, "[&|^]")) {
-                    // don't write false positives when templates are used
-                    if (Token::Match(tok2, "&|* ,|>") || Token::simpleMatch(tok2->previous(), "const &"))
-                        continue;
-
-                    // #3609 - CWinTraits<WS_CHILD|WS_VISIBLE>::..
-                    if (!isC && Token::Match(tok->previous(), "%name% <")) {
-                        const Token *tok3 = tok2;
-                        while (Token::Match(tok3, "[&|^] %name%"))
-                            tok3 = tok3->tokAt(2);
-                        if (Token::Match(tok3, ",|>"))
-                            continue;
-                    }
-
+            } else if (tok->tokType() == Token::eBitOp) {
+                // using boolean result in bitwise operation ! x [&|^]
+                const ValueType* vt1 = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+                const ValueType* vt2 = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+                if (vt1 && vt1->type == ValueType::BOOL)
                     clarifyConditionError(tok, false, true);
-                }
+                else if (vt2 && vt2->type == ValueType::BOOL)
+                    clarifyConditionError(tok, false, true);
             }
         }
     }
