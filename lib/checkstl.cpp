@@ -1047,14 +1047,18 @@ void CheckStl::string_c_str()
                 }
 
                 bool local = false;
+                bool ptr = false;
                 const Variable* lastVar = nullptr;
                 const Function* lastFunc = nullptr;
                 bool funcStr = false;
                 if (Token::Match(tok2, "%var% .")) {
                     local = isLocal(tok2);
+                    ptr = tok2->variable() && tok2->variable()->isPointer();
                 }
                 while (tok2) {
                     if (Token::Match(tok2, "%var% .|::")) {
+                        if (ptr)
+                            local = false;
                         lastVar = tok2->variable();
                         tok2 = tok2->tokAt(2);
                     } else if (Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") .")) {
@@ -1067,7 +1071,7 @@ void CheckStl::string_c_str()
                 }
 
                 if (Token::Match(tok2, "c_str|data ( ) ;")) {
-                    if (local && lastVar && lastVar->isStlStringType())
+                    if ((local || returnType != charPtr) && lastVar && lastVar->isStlStringType())
                         err = true;
                     else if (funcStr && lastVar && lastVar->isStlType(stl_string_stream))
                         err = true;

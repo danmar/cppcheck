@@ -2303,6 +2303,34 @@ private:
               "    return String::Format(\"%s:\", name).c_str();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7480
+        check("struct InternalMapInfo {\n"
+              "    std::string author;\n"
+              "};\n"
+              "const char* GetMapAuthor(int index) {\n"
+              "    const InternalMapInfo* mapInfo = &internal_getMapInfo;\n"
+              "    return mapInfo->author.c_str();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct InternalMapInfo {\n"
+              "    std::string author;\n"
+              "};\n"
+              "std::string GetMapAuthor(int index) {\n"
+              "    const InternalMapInfo* mapInfo = &internal_getMapInfo;\n"
+              "    return mapInfo->author.c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (performance) Returning the result of c_str() in a function that returns std::string is slow and redundant.\n", errout.str());
+
+        check("struct InternalMapInfo {\n"
+              "    std::string author;\n"
+              "};\n"
+              "const char* GetMapAuthor(int index) {\n"
+              "    const InternalMapInfo mapInfo = internal_getMapInfo;\n"
+              "    return mapInfo.author.c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
     }
 
     void autoPointer() {
