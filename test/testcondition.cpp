@@ -77,6 +77,7 @@ private:
         TEST_CASE(clarifyCondition4);     // ticket #3110
         TEST_CASE(clarifyCondition5);     // #3609 CWinTraits<WS_CHILD|WS_VISIBLE>..
         TEST_CASE(clarifyCondition6);     // #3818
+        TEST_CASE(clarifyCondition7);
 
         TEST_CASE(alwaysTrue);
 
@@ -1564,6 +1565,15 @@ private:
               "SharedPtr& operator=( SharedPtr<Y> const & r ) {\n"
               "    px = r.px;\n"
               "    return *this;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void clarifyCondition7() {
+        // Ensure that binary and unary &, and & in declarations are distinguished properly
+        check("void f(bool error) {\n"
+              "    bool & withoutSideEffects=found.first->second;\n" // Declaring a reference to a boolean; & is no operator at all
+              "    execute(secondExpression, &programMemory, &result, &error);\n" // Unary &
               "}");
         ASSERT_EQUALS("", errout.str());
     }
