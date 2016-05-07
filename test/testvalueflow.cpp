@@ -164,11 +164,12 @@ private:
     }
 
     void valueFlowNumber() {
-        ASSERT_EQUALS(123, valueOfTok("x=123;",   "123").intvalue);
+        ASSERT_EQUALS(123, valueOfTok("x=123;", "123").intvalue);
+        ASSERT_EQUALS(10, valueOfTok("enum {A=10,B=15}; x=A+0;", "+").intvalue);
         ASSERT_EQUALS(0, valueOfTok("x=false;", "false").intvalue);
-        ASSERT_EQUALS(1, valueOfTok("x=true;",  "true").intvalue);
-        ASSERT_EQUALS(0, valueOfTok("x(NULL);",  "NULL").intvalue);
-        ASSERT_EQUALS((int)('a'), valueOfTok("x='a';",  "'a'").intvalue);
+        ASSERT_EQUALS(1, valueOfTok("x=true;", "true").intvalue);
+        ASSERT_EQUALS(0, valueOfTok("x(NULL);", "NULL").intvalue);
+        ASSERT_EQUALS((int)('a'), valueOfTok("x='a';", "'a'").intvalue);
         ASSERT_EQUALS((int)('\n'), valueOfTok("x='\\n';", "'\\n'").intvalue);
     }
 

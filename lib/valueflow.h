@@ -94,6 +94,10 @@ namespace ValueFlow {
         }
     };
 
+    /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).
+    void valueFlowConstantFoldAST(const Token *expr);
+
+    /// Perform valueflow analysis.
     void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
 
     std::string eitherTheConditionIsRedundant(const Token *condition);

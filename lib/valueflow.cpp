@@ -570,14 +570,28 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
     }
 }
 
+
+// Handle various constants..
+static void valueFlowSetConstantValue(const Token *tok)
+{
+    if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
+        ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
+        value.setKnown();
+        setTokenValue(const_cast<Token *>(tok), value);
+    }
+
+    if (tok->enumerator() && tok->enumerator()->value_known) {
+        ValueFlow::Value value(tok->enumerator()->value);
+        value.setKnown();
+        setTokenValue(const_cast<Token *>(tok), value);
+    }
+}
+
+
 static void valueFlowNumber(TokenList *tokenlist)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
-            ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
-            value.setKnown();
-            setTokenValue(tok, value);
-        }
+        valueFlowSetConstantValue(tok);
     }
 
     if (tokenlist->isCPP()) {
@@ -2363,6 +2377,16 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
     }
 }
 
+void ValueFlow::valueFlowConstantFoldAST(const Token *expr)
+{
+    if (!expr || !expr->values.empty())
+        return;
+    valueFlowConstantFoldAST(expr->astOperand1());
+    valueFlowConstantFoldAST(expr->astOperand2());
+    valueFlowSetConstantValue(expr);
+}
+
+
 void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next())
@@ -2400,3 +2424,5 @@ std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
     }
     return "Either the condition '" + condition->expressionString() + "' is redundant";
 }
+
+
