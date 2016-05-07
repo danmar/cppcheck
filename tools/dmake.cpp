@@ -344,7 +344,7 @@ int main(int argc, char **argv)
                                 "-Wredundant-decls "
                                 "-Wshadow "
 //                                "-Wsign-conversion "
-                                "-Wsign-promo "
+//                                "-Wsign-promo "
                                 "-Wno-missing-field-initializers "
                                 "-Wno-missing-braces "
 //                                "-Wunreachable-code "
