@@ -1696,6 +1696,9 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration,
 
     if (simplifyTokenList1(list.getFiles()[0].c_str())) {
         if (!noSymbolDB_AST) {
+            list.createAst();
+            list.validateAst();
+
             createSymbolDatabase();
 
             // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
@@ -1704,13 +1707,12 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration,
                 if (var && var->isRValueReference()) {
                     Token* endTok = const_cast<Token*>(var->typeEndToken());
                     endTok->str("&");
+                    endTok->astOperand1(nullptr);
+                    endTok->astOperand2(nullptr);
                     endTok->insertToken("&");
                     endTok->next()->scope(endTok->scope());
                 }
             }
-
-            list.createAst();
-            list.validateAst();
 
             SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings->defaultSign, &_settings->library);
             ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
@@ -3793,13 +3795,13 @@ bool Tokenizer::simplifyTokenList2()
 
     Token::assignProgressValues(list.front());
 
-    // Create symbol database and then remove const keywords
-    createSymbolDatabase();
-    simplifyPointerConst();
-
     list.createAst();
     // skipping this here may help improve performance. Might be enabled later on demand. #7208
     // list.validateAst();
+
+    // Create symbol database and then remove const keywords
+    createSymbolDatabase();
+    simplifyPointerConst();
 
     ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
 
