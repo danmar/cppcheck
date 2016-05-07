@@ -35,7 +35,7 @@ class Function;
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), symbolDatabase(NULL) {
+    CheckClass() : Check(myName()), symbolDatabase(nullptr) {
     }
 
     /** @brief This constructor is used when running checks. */
@@ -169,33 +169,33 @@ private:
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckClass c(0, settings, errorLogger);
-        c.noConstructorError(0, "classname", false);
-        c.noExplicitConstructorError(0, "classname", false);
-        //c.copyConstructorMallocError(0, 0, "var");
-        c.copyConstructorShallowCopyError(0, "var");
-        c.noCopyConstructorError(0, "class", false);
-        c.uninitVarError(0, "classname", "varname", false);
-        c.operatorEqVarError(0, "classname", "", false);
-        c.unusedPrivateFunctionError(0, "classname", "funcname");
-        c.memsetError(0, "memfunc", "classname", "class");
-        c.memsetErrorReference(0, "memfunc", "class");
-        c.memsetErrorFloat(0, "class");
-        c.mallocOnClassWarning(0, "malloc", 0);
-        c.mallocOnClassError(0, "malloc", 0, "std::string");
-        c.operatorEqReturnError(0, "class");
-        c.virtualDestructorError(0, "Base", "Derived", false);
-        c.thisSubtractionError(0);
-        c.operatorEqRetRefThisError(0);
-        c.operatorEqMissingReturnStatementError(0, true);
-        c.operatorEqShouldBeLeftUnimplementedError(0);
-        c.operatorEqToSelfError(0);
-        c.checkConstError(0, "class", "function", false);
-        c.checkConstError(0, "class", "function", true);
-        c.initializerListError(0, 0, "class", "variable");
-        c.suggestInitializationList(0, "variable");
-        c.selfInitializationError(0, "var");
-        c.duplInheritedMembersError(0, 0, "class", "class", "variable", false, false);
+        CheckClass c(nullptr, settings, errorLogger);
+        c.noConstructorError(nullptr, "classname", false);
+        c.noExplicitConstructorError(nullptr, "classname", false);
+        //c.copyConstructorMallocError(nullptr, 0, "var");
+        c.copyConstructorShallowCopyError(nullptr, "var");
+        c.noCopyConstructorError(nullptr, "class", false);
+        c.uninitVarError(nullptr, "classname", "varname", false);
+        c.operatorEqVarError(nullptr, "classname", "", false);
+        c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
+        c.memsetError(nullptr, "memfunc", "classname", "class");
+        c.memsetErrorReference(nullptr, "memfunc", "class");
+        c.memsetErrorFloat(nullptr, "class");
+        c.mallocOnClassWarning(nullptr, "malloc", 0);
+        c.mallocOnClassError(nullptr, "malloc", 0, "std::string");
+        c.operatorEqReturnError(nullptr, "class");
+        c.virtualDestructorError(nullptr, "Base", "Derived", false);
+        c.thisSubtractionError(nullptr);
+        c.operatorEqRetRefThisError(nullptr);
+        c.operatorEqMissingReturnStatementError(nullptr, true);
+        c.operatorEqShouldBeLeftUnimplementedError(nullptr);
+        c.operatorEqToSelfError(nullptr);
+        c.checkConstError(nullptr, "class", "function", false);
+        c.checkConstError(nullptr, "class", "function", true);
+        c.initializerListError(nullptr, 0, "class", "variable");
+        c.suggestInitializationList(nullptr, "variable");
+        c.selfInitializationError(nullptr, "var");
+        c.duplInheritedMembersError(nullptr, 0, "class", "class", "variable", false, false);
     }
 
     static std::string myName() {

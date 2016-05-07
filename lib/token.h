@@ -748,7 +748,7 @@ public:
             if (it->intvalue == val && !it->tokvalue)
                 return &(*it);
         }
-        return NULL;
+        return nullptr;
     }
 
     const ValueFlow::Value * getMaxValue(bool condition) const {
@@ -758,7 +758,7 @@ public:
             if (it->tokvalue)
                 continue;
             if ((!ret || it->intvalue > ret->intvalue) &&
-                ((it->condition != NULL) == condition))
+                ((it->condition != nullptr) == condition))
                 ret = &(*it);
         }
         return ret;
@@ -911,7 +911,7 @@ public:
     bool isCalculation() const;
 
     void clearAst() {
-        _astOperand1 = _astOperand2 = _astParent = NULL;
+        _astOperand1 = _astOperand2 = _astParent = nullptr;
     }
 
     std::string astString(const char *sep = "") const {

@@ -80,12 +80,12 @@ private:
     void longCastReturnError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckType c(0, settings, errorLogger);
-        c.tooBigBitwiseShiftError(0, 32, ValueFlow::Value(64));
-        c.integerOverflowError(0, ValueFlow::Value(1LL<<32));
-        c.signConversionError(0, false);
-        c.longCastAssignError(0);
-        c.longCastReturnError(0);
+        CheckType c(nullptr, settings, errorLogger);
+        c.tooBigBitwiseShiftError(nullptr, 32, ValueFlow::Value(64));
+        c.integerOverflowError(nullptr, ValueFlow::Value(1LL<<32));
+        c.signConversionError(nullptr, false);
+        c.longCastAssignError(nullptr);
+        c.longCastReturnError(nullptr);
     }
 
     static std::string myName() {

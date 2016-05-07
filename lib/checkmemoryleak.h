@@ -108,7 +108,7 @@ public:
     /**
      * @brief Get type of allocation at given position
      */
-    AllocType getAllocationType(const Token *tok2, unsigned int varid, std::list<const Function*> *callstack = NULL) const;
+    AllocType getAllocationType(const Token *tok2, unsigned int varid, std::list<const Function*> *callstack = nullptr) const;
 
     /**
      * @brief Get type of reallocation at given position
@@ -149,7 +149,7 @@ public:
     void memleakUponReallocFailureError(const Token *tok, const std::string &varname) const;
 
     /** What type of allocated memory does the given function return? */
-    AllocType functionReturnType(const Function* func, std::list<const Function*> *callstack = NULL) const;
+    AllocType functionReturnType(const Function* func, std::list<const Function*> *callstack = nullptr) const;
 
     /** Function allocates pointed-to argument (a la asprintf)? */
     const char *functionArgAlloc(const Function *func, unsigned int targetpar, AllocType &allocType) const;
@@ -176,7 +176,7 @@ public:
 class CPPCHECKLIB CheckMemoryLeakInFunction : private Check, public CheckMemoryLeak {
 public:
     /** @brief This constructor is used when registering this class */
-    CheckMemoryLeakInFunction() : Check(myName()), CheckMemoryLeak(0, 0, 0), symbolDatabase(NULL) {
+    CheckMemoryLeakInFunction() : Check(myName()), CheckMemoryLeak(0, 0, 0), symbolDatabase(nullptr) {
     }
 
     /** @brief This constructor is used when running checks */
@@ -284,17 +284,17 @@ public:
 private:
     /** Report all possible errors (for the --errorlist) */
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
-        CheckMemoryLeakInFunction c(0, settings, e);
+        CheckMemoryLeakInFunction c(nullptr, settings, e);
 
-        c.memleakError(0, "varname");
-        c.resourceLeakError(0, "varname");
+        c.memleakError(nullptr, "varname");
+        c.resourceLeakError(nullptr, "varname");
 
-        c.deallocDeallocError(0, "varname");
-        c.deallocuseError(0, "varname");
-        c.mismatchSizeError(0, "sz");
+        c.deallocDeallocError(nullptr, "varname");
+        c.deallocuseError(nullptr, "varname");
+        c.mismatchSizeError(nullptr, "sz");
         std::list<const Token *> callstack;
         c.mismatchAllocDealloc(callstack, "varname");
-        c.memleakUponReallocFailureError(0, "varname");
+        c.memleakUponReallocFailureError(nullptr, "varname");
     }
 
     /**
@@ -442,11 +442,11 @@ private:
     void unsafeArgAllocError(const Token *tok, const std::string &funcName, const std::string &ptrType, const std::string &objType);
 
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
-        CheckMemoryLeakNoVar c(0, settings, e);
+        CheckMemoryLeakNoVar c(nullptr, settings, e);
 
-        c.functionCallLeak(0, "funcName", "funcName");
-        c.returnValueNotUsedError(0, "funcName");
-        c.unsafeArgAllocError(0, "funcName", "shared_ptr", "int");
+        c.functionCallLeak(nullptr, "funcName", "funcName");
+        c.returnValueNotUsedError(nullptr, "funcName");
+        c.unsafeArgAllocError(nullptr, "funcName", "shared_ptr", "int");
     }
 
     static std::string myName() {

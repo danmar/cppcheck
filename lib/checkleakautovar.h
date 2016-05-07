@@ -126,10 +126,10 @@ private:
     void configurationInfo(const Token* tok, const std::string &functionName);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckLeakAutoVar c(0, settings, errorLogger);
-        c.deallocReturnError(0, "p");
-        c.configurationInfo(0, "f");  // user configuration is needed to complete analysis
-        c.doubleFreeError(0, "varname", 0);
+        CheckLeakAutoVar c(nullptr, settings, errorLogger);
+        c.deallocReturnError(nullptr, "p");
+        c.configurationInfo(nullptr, "f");  // user configuration is needed to complete analysis
+        c.doubleFreeError(nullptr, "varname", 0);
     }
 
     static std::string myName() {

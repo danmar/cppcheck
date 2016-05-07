@@ -110,17 +110,17 @@ private:
     void pointerArithBoolError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckBool c(0, settings, errorLogger);
+        CheckBool c(nullptr, settings, errorLogger);
 
-        c.assignBoolToPointerError(0);
-        c.assignBoolToFloatError(0);
-        c.comparisonOfFuncReturningBoolError(0, "func_name");
-        c.comparisonOfTwoFuncsReturningBoolError(0, "func_name1", "func_name2");
-        c.comparisonOfBoolWithBoolError(0, "var_name");
-        c.incrementBooleanError(0);
-        c.bitwiseOnBooleanError(0, "varname", "&&");
-        c.comparisonOfBoolExpressionWithIntError(0, true);
-        c.pointerArithBoolError(0);
+        c.assignBoolToPointerError(nullptr);
+        c.assignBoolToFloatError(nullptr);
+        c.comparisonOfFuncReturningBoolError(nullptr, "func_name");
+        c.comparisonOfTwoFuncsReturningBoolError(nullptr, "func_name1", "func_name2");
+        c.comparisonOfBoolWithBoolError(nullptr, "var_name");
+        c.incrementBooleanError(nullptr);
+        c.bitwiseOnBooleanError(nullptr, "varname", "&&");
+        c.comparisonOfBoolExpressionWithIntError(nullptr, true);
+        c.pointerArithBoolError(nullptr);
     }
 
     static std::string myName() {

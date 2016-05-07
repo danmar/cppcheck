@@ -93,14 +93,14 @@ public:
 
 private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckUninitVar c(0, settings, errorLogger);
+        CheckUninitVar c(nullptr, settings, errorLogger);
 
         // error
-        c.uninitstringError(0, "varname", true);
-        c.uninitdataError(0, "varname");
-        c.uninitvarError(0, "varname");
-        c.uninitStructMemberError(0, "a.b");
-        c.deadPointerError(0,0);
+        c.uninitstringError(nullptr, "varname", true);
+        c.uninitdataError(nullptr, "varname");
+        c.uninitvarError(nullptr, "varname");
+        c.uninitStructMemberError(nullptr, "a.b");
+        c.deadPointerError(nullptr, nullptr);
     }
 
     static std::string myName() {

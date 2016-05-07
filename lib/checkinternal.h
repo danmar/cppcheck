@@ -85,15 +85,15 @@ private:
     void extraWhitespaceError(const Token *tok, const std::string &pattern, const std::string &funcname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckInternal c(0, settings, errorLogger);
-        c.multiComparePatternError(0, ";|%type%", "Match");
-        c.simplePatternError(0, "class {", "Match");
-        c.complexPatternError(0, "%type% ( )", "Match");
-        c.missingPercentCharacterError(0, "%num", "Match");
-        c.unknownPatternError(0, "%typ");
-        c.redundantNextPreviousError(0, "previous", "next");
-        c.orInComplexPattern(0, "||", "Match");
-        c.extraWhitespaceError(0, "%str% ", "Match");
+        CheckInternal c(nullptr, settings, errorLogger);
+        c.multiComparePatternError(nullptr, ";|%type%", "Match");
+        c.simplePatternError(nullptr, "class {", "Match");
+        c.complexPatternError(nullptr, "%type% ( )", "Match");
+        c.missingPercentCharacterError(nullptr, "%num", "Match");
+        c.unknownPatternError(nullptr, "%typ");
+        c.redundantNextPreviousError(nullptr, "previous", "next");
+        c.orInComplexPattern(nullptr, "||", "Match");
+        c.extraWhitespaceError(nullptr, "%str% ", "Match");
     }
 
     static std::string myName() {

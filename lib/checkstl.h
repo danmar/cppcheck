@@ -186,34 +186,34 @@ private:
     void readingEmptyStlContainerError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckStl c(0, settings, errorLogger);
-        c.invalidIteratorError(0, "iterator");
-        c.iteratorsError(0, "container1", "container2");
-        c.mismatchingContainersError(0);
-        c.dereferenceErasedError(0, 0, "iter");
-        c.stlOutOfBoundsError(0, "i", "foo", false);
-        c.invalidIteratorError(0, "push_back|push_front|insert", "iterator");
-        c.invalidPointerError(0, "push_back", "pointer");
-        c.stlBoundariesError(0);
-        c.if_findError(0, false);
-        c.if_findError(0, true);
-        c.string_c_strError(0);
-        c.string_c_strReturn(0);
-        c.string_c_strParam(0, 0);
-        c.sizeError(0);
-        c.missingComparisonError(0, 0);
-        c.redundantIfRemoveError(0);
-        c.autoPointerError(0);
-        c.autoPointerContainerError(0);
-        c.autoPointerArrayError(0);
-        c.autoPointerMallocError(0, "malloc");
-        c.uselessCallsReturnValueError(0, "str", "find");
-        c.uselessCallsSwapError(0, "str");
-        c.uselessCallsSubstrError(0, false);
-        c.uselessCallsEmptyError(0);
-        c.uselessCallsRemoveError(0, "remove");
-        c.dereferenceInvalidIteratorError(0, "i");
-        c.readingEmptyStlContainerError(0);
+        CheckStl c(nullptr, settings, errorLogger);
+        c.invalidIteratorError(nullptr, "iterator");
+        c.iteratorsError(nullptr, "container1", "container2");
+        c.mismatchingContainersError(nullptr);
+        c.dereferenceErasedError(nullptr, nullptr, "iter");
+        c.stlOutOfBoundsError(nullptr, "i", "foo", false);
+        c.invalidIteratorError(nullptr, "push_back|push_front|insert", "iterator");
+        c.invalidPointerError(nullptr, "push_back", "pointer");
+        c.stlBoundariesError(nullptr);
+        c.if_findError(nullptr, false);
+        c.if_findError(nullptr, true);
+        c.string_c_strError(nullptr);
+        c.string_c_strReturn(nullptr);
+        c.string_c_strParam(nullptr, 0);
+        c.sizeError(nullptr);
+        c.missingComparisonError(nullptr, 0);
+        c.redundantIfRemoveError(nullptr);
+        c.autoPointerError(nullptr);
+        c.autoPointerContainerError(nullptr);
+        c.autoPointerArrayError(nullptr);
+        c.autoPointerMallocError(nullptr, "malloc");
+        c.uselessCallsReturnValueError(nullptr, "str", "find");
+        c.uselessCallsSwapError(nullptr, "str");
+        c.uselessCallsSubstrError(nullptr, false);
+        c.uselessCallsEmptyError(nullptr);
+        c.uselessCallsRemoveError(nullptr, "remove");
+        c.dereferenceInvalidIteratorError(nullptr, "i");
+        c.readingEmptyStlContainerError(nullptr);
     }
 
     static std::string myName() {

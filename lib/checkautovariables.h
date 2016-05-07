@@ -92,16 +92,16 @@ private:
     void errorUselessAssignmentPtrArg(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckAutoVariables c(0,settings,errorLogger);
-        c.errorAutoVariableAssignment(0, false);
-        c.errorReturnAddressToAutoVariable(0);
-        c.errorReturnPointerToLocalArray(0);
-        c.errorReturnReference(0);
-        c.errorReturnTempReference(0);
-        c.errorInvalidDeallocation(0);
-        c.errorReturnAddressOfFunctionParameter(0, "parameter");
-        c.errorUselessAssignmentArg(0);
-        c.errorUselessAssignmentPtrArg(0);
+        CheckAutoVariables c(nullptr,settings,errorLogger);
+        c.errorAutoVariableAssignment(nullptr, false);
+        c.errorReturnAddressToAutoVariable(nullptr);
+        c.errorReturnPointerToLocalArray(nullptr);
+        c.errorReturnReference(nullptr);
+        c.errorReturnTempReference(nullptr);
+        c.errorInvalidDeallocation(nullptr);
+        c.errorReturnAddressOfFunctionParameter(nullptr, "parameter");
+        c.errorUselessAssignmentArg(nullptr);
+        c.errorUselessAssignmentPtrArg(nullptr);
     }
 
     static std::string myName() {

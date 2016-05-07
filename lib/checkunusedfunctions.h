@@ -58,7 +58,7 @@ public:
 private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckUnusedFunctions c(0, settings, errorLogger);
+        CheckUnusedFunctions c(nullptr, settings, errorLogger);
         c.unusedFunctionError(errorLogger, "", 0, "funcName");
     }
 

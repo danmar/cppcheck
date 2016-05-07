@@ -1433,8 +1433,7 @@ void Tokenizer::simplifyTypedef()
                             // This is the case of casting operator.
                             // Name is not available, and () should not be
                             // inserted
-                            bool castOperator = inOperator && Token::Match(tok2, "%type% (");
-
+                            const bool castOperator = inOperator && Token::Match(tok2, "%type% (");
                             Token *tok3;
 
                             if (!castOperator) {
@@ -1679,7 +1678,7 @@ void Tokenizer::simplifyMulAndParens()
 }
 
 bool Tokenizer::createTokens(std::istream &code,
-                             const char FileName[])
+                             const std::string& FileName)
 {
     // make sure settings specified
     assert(_settings);

@@ -82,14 +82,14 @@ private:
     void unassignedVariableError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckUnusedVar c(0, settings, errorLogger);
+        CheckUnusedVar c(nullptr, settings, errorLogger);
 
         // style/warning
-        c.unusedVariableError(0, "varname");
-        c.allocatedButUnusedVariableError(0, "varname");
-        c.unreadVariableError(0, "varname");
-        c.unassignedVariableError(0, "varname");
-        c.unusedStructMemberError(0, "structname", "variable");
+        c.unusedVariableError(nullptr, "varname");
+        c.allocatedButUnusedVariableError(nullptr, "varname");
+        c.unreadVariableError(nullptr, "varname");
+        c.unassignedVariableError(nullptr, "varname");
+        c.unusedStructMemberError(nullptr, "structname", "variable");
     }
 
     static std::string myName() {

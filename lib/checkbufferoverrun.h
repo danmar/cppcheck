@@ -243,23 +243,23 @@ private:
 
 public:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckBufferOverrun c(0, settings, errorLogger);
+        CheckBufferOverrun c(nullptr, settings, errorLogger);
         const std::vector<MathLib::bigint> indexes(2, 1);
-        c.arrayIndexOutOfBoundsError(0, ArrayInfo(0, "array", 1, 2), indexes);
-        c.bufferOverrunError(0, std::string("buffer"));
-        c.strncatUsageError(0);
-        c.outOfBoundsError(0, "index", true, 2, 1);
-        c.sizeArgumentAsCharError(0);
-        c.terminateStrncpyError(0, "buffer");
-        c.bufferNotZeroTerminatedError(0, "buffer", "strncpy");
-        c.negativeIndexError(0, -1);
-        c.cmdLineArgsError(0);
+        c.arrayIndexOutOfBoundsError(nullptr, ArrayInfo(0, "array", 1, 2), indexes);
+        c.bufferOverrunError(nullptr, std::string("buffer"));
+        c.strncatUsageError(nullptr);
+        c.outOfBoundsError(nullptr, "index", true, 2, 1);
+        c.sizeArgumentAsCharError(nullptr);
+        c.terminateStrncpyError(nullptr, "buffer");
+        c.bufferNotZeroTerminatedError(nullptr, "buffer", "strncpy");
+        c.negativeIndexError(nullptr, -1);
+        c.cmdLineArgsError(nullptr);
         c.pointerOutOfBoundsError(nullptr, nullptr, 0);
-        c.arrayIndexThenCheckError(0, "index");
-        c.possibleBufferOverrunError(0, "source", "destination", false);
-        c.argumentSizeError(0, "function", "array");
-        c.negativeMemoryAllocationSizeError(0);
-        c.negativeArraySizeError(0);
+        c.arrayIndexThenCheckError(nullptr, "index");
+        c.possibleBufferOverrunError(nullptr, "source", "destination", false);
+        c.argumentSizeError(nullptr, "function", "array");
+        c.negativeMemoryAllocationSizeError(nullptr);
+        c.negativeArraySizeError(nullptr);
         c.reportError(nullptr, Severity::warning, "arrayIndexOutOfBoundsCond", "Array 'x[10]' accessed at index 20, which is out of bounds. Otherwise condition 'y==20' is redundant.", CWE119, false);
     }
 private:

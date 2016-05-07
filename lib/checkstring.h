@@ -92,17 +92,17 @@ private:
     void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckString c(0, settings, errorLogger);
+        CheckString c(nullptr, settings, errorLogger);
 
-        c.stringLiteralWriteError(0,0);
-        c.sprintfOverlappingDataError(0, "varname");
-        c.strPlusCharError(0);
-        c.incorrectStringCompareError(0, "substr", "\"Hello World\"");
-        c.suspiciousStringCompareError(0, "foo");
-        c.suspiciousStringCompareError_char(0, "foo");
-        c.incorrectStringBooleanError(0, "\"Hello World\"");
-        c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
-        c.alwaysTrueStringVariableCompareError(0, "varname1", "varname2");
+        c.stringLiteralWriteError(nullptr,0);
+        c.sprintfOverlappingDataError(nullptr, "varname");
+        c.strPlusCharError(nullptr);
+        c.incorrectStringCompareError(nullptr, "substr", "\"Hello World\"");
+        c.suspiciousStringCompareError(nullptr, "foo");
+        c.suspiciousStringCompareError_char(nullptr, "foo");
+        c.incorrectStringBooleanError(nullptr, "\"Hello World\"");
+        c.alwaysTrueFalseStringCompareError(nullptr, "str1", "str2");
+        c.alwaysTrueStringVariableCompareError(nullptr, "varname1", "varname2");
     }
 
     static std::string myName() {

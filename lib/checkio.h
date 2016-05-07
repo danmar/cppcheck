@@ -130,30 +130,30 @@ private:
     static void argumentType(std::ostream & s, const ArgumentInfo * argInfo);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckIO c(0, settings, errorLogger);
+        CheckIO c(nullptr, settings, errorLogger);
 
-        c.coutCerrMisusageError(0, "cout");
-        c.fflushOnInputStreamError(0, "stdin");
-        c.ioWithoutPositioningError(0);
-        c.readWriteOnlyFileError(0);
-        c.writeReadOnlyFileError(0);
-        c.useClosedFileError(0);
-        c.seekOnAppendedFileError(0);
-        c.invalidScanfError(0);
-        c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
-        c.invalidScanfArgTypeError_s(0, 1, "s", NULL);
-        c.invalidScanfArgTypeError_int(0, 1, "d", NULL, false);
-        c.invalidScanfArgTypeError_float(0, 1, "f", NULL);
-        c.invalidPrintfArgTypeError_s(0, 1, NULL);
-        c.invalidPrintfArgTypeError_n(0, 1, NULL);
-        c.invalidPrintfArgTypeError_p(0, 1, NULL);
-        c.invalidPrintfArgTypeError_int(0, 1, "X", NULL);
-        c.invalidPrintfArgTypeError_uint(0, 1, "u", NULL);
-        c.invalidPrintfArgTypeError_sint(0, 1, "i", NULL);
-        c.invalidPrintfArgTypeError_float(0, 1, "f", NULL);
-        c.invalidLengthModifierError(0, 1, "I");
-        c.invalidScanfFormatWidthError(0, 10, 5, NULL);
-        c.wrongPrintfScanfPosixParameterPositionError(0, "printf", 2, 1);
+        c.coutCerrMisusageError(nullptr,  "cout");
+        c.fflushOnInputStreamError(nullptr,  "stdin");
+        c.ioWithoutPositioningError(nullptr);
+        c.readWriteOnlyFileError(nullptr);
+        c.writeReadOnlyFileError(nullptr);
+        c.useClosedFileError(nullptr);
+        c.seekOnAppendedFileError(nullptr);
+        c.invalidScanfError(nullptr);
+        c.wrongPrintfScanfArgumentsError(nullptr, "printf",3,2);
+        c.invalidScanfArgTypeError_s(nullptr,  1, "s", nullptr);
+        c.invalidScanfArgTypeError_int(nullptr,  1, "d", nullptr, false);
+        c.invalidScanfArgTypeError_float(nullptr,  1, "f", nullptr);
+        c.invalidPrintfArgTypeError_s(nullptr,  1, nullptr);
+        c.invalidPrintfArgTypeError_n(nullptr,  1, nullptr);
+        c.invalidPrintfArgTypeError_p(nullptr,  1, nullptr);
+        c.invalidPrintfArgTypeError_int(nullptr,  1, "X", nullptr);
+        c.invalidPrintfArgTypeError_uint(nullptr,  1, "u", nullptr);
+        c.invalidPrintfArgTypeError_sint(nullptr,  1, "i", nullptr);
+        c.invalidPrintfArgTypeError_float(nullptr,  1, "f", nullptr);
+        c.invalidLengthModifierError(nullptr,  1, "I");
+        c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr);
+        c.wrongPrintfScanfPosixParameterPositionError(nullptr,  "printf", 2, 1);
     }
 
     static std::string myName() {

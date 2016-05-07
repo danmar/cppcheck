@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "check.h"
+#include "utils.h"
 
 // CWE ID used:
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
@@ -119,9 +120,7 @@ private:
     /** Missing exception specification */
     void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname) {
         std::string str1(tok1 ? tok1->str() : "foo");
-        std::list<const Token*> locationList;
-        locationList.push_back(tok1);
-        locationList.push_back(tok2);
+        const std::list<const Token*> locationList = make_container< std::list<const Token*> > () << tok1 << tok2;
         reportError(locationList, Severity::style, "unhandledExceptionSpecification",
                     "Unhandled exception specification when calling function " + str1 + "().\n"
                     "Unhandled exception specification when calling function " + str1 + "(). "
@@ -130,13 +129,13 @@ private:
 
     /** Generate all possible errors (for --errorlist) */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckExceptionSafety c(0, settings, errorLogger);
-        c.destructorsError(0, "Class");
-        c.deallocThrowError(0, "p");
-        c.rethrowCopyError(0, "varname");
-        c.catchExceptionByValueError(0);
-        c.noexceptThrowError(0);
-        c.unhandledExceptionSpecificationError(0, 0, "funcname");
+        CheckExceptionSafety c(nullptr, settings, errorLogger);
+        c.destructorsError(nullptr, "Class");
+        c.deallocThrowError(nullptr, "p");
+        c.rethrowCopyError(nullptr, "varname");
+        c.catchExceptionByValueError(nullptr);
+        c.noexceptThrowError(nullptr);
+        c.unhandledExceptionSpecificationError(nullptr, 0, "funcname");
     }
 
     /** Short description of class (for --doc) */

@@ -72,7 +72,7 @@ public:
     bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
 
     bool createTokens(std::istream &code,
-                      const char FileName[]);
+                      const std::string& FileName);
 
     bool simplifyTokens1(const std::string &configuration,
                          bool noSymbolDB_AST = false);
