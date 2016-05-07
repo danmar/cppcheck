@@ -4047,7 +4047,7 @@ static void setValueType(Token *tok, const Variable &var, bool cpp, ValueType::S
                 setValueType(tok, valuetype, cpp, defaultSignedness, lib);
                 valuetype.originalTypeName = var.type()->classScope->className;
             }
-        } else {
+        } else if (parsedecl(var.typeStartToken(), &valuetype, defaultSignedness, lib)) {
             valuetype.sign = ValueType::SIGNED;
             valuetype.type = ValueType::INT;
             setValueType(tok, valuetype, cpp, defaultSignedness, lib);

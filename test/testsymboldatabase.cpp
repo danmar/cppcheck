@@ -3220,6 +3220,7 @@ private:
         ASSERT_EQUALS("signed int", typeOf("struct X {int i;}; void f(struct X x) { x.i }", "."));
         ASSERT_EQUALS("signed int *", typeOf("int *p; a = p++;", "++"));
         ASSERT_EQUALS("signed int", typeOf("int x; a = x++;", "++"));
+        ASSERT_EQUALS("signed int *", typeOf("enum AB {A,B}; enum AB *ab; x=ab+2;", "+"));
 
         // Unary arithmetic/bit operators
         ASSERT_EQUALS("signed int", typeOf("int x; a = -x;", "-"));
