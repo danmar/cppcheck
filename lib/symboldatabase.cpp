@@ -1302,7 +1302,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 SymbolDatabase::~SymbolDatabase()
 {
     // Clear scope, type, function and variable pointers
-    for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
+    for (const Token* tok = _tokenizer->list.front(); tok; tok = tok->next()) {
         const_cast<Token *>(tok)->scope(0);
         const_cast<Token *>(tok)->type(0);
         const_cast<Token *>(tok)->function(0);
