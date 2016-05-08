@@ -4418,11 +4418,11 @@ std::string ValueType::str() const
         ret += " long double";
     else if (type == NONSTD && typeScope) {
         std::string className(typeScope->className);
-        const Scope *s = typeScope;
-        while (s->nestedIn && s->nestedIn->type != Scope::eGlobal) {
-            s = s->nestedIn;
-            if (s->type == Scope::eClass || s->type == Scope::eStruct || s->type == Scope::eNamespace)
-                className = s->className + "::" + className;
+        const Scope *scope = typeScope->nestedIn;
+        while (scope && scope->type != Scope::eGlobal) {
+            if (scope->type == Scope::eClass || scope->type == Scope::eStruct || scope->type == Scope::eNamespace)
+                className = scope->className + "::" + className;
+            scope = scope->nestedIn;
         }
         ret += ' ' + className;
     }
