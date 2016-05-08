@@ -1308,6 +1308,7 @@ SymbolDatabase::~SymbolDatabase()
         const_cast<Token *>(tok)->function(0);
         const_cast<Token *>(tok)->variable(0);
         const_cast<Token *>(tok)->enumerator(0);
+        const_cast<Token *>(tok)->setValueType(0);
     }
 }
 
