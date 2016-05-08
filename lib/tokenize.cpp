@@ -3801,6 +3801,7 @@ bool Tokenizer::simplifyTokenList2()
 
     // Create symbol database and then remove const keywords
     createSymbolDatabase();
+    SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings->defaultSign, &_settings->library);
     simplifyPointerConst();
 
     ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
