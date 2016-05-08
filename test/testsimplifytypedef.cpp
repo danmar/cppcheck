@@ -1412,9 +1412,9 @@ private:
                             "_Iterator v3;";
 
         // The expected result..
-        const char expected[] = "long * v1 ; "
-                                "void * v2 [ 2 ] ; "
-                                "int * * v3 ;";
+        const char expected[] = "long * const v1 ; "
+                                "void * const v2 [ 2 ] ; "
+                                "int * const * v3 ;";
         ASSERT_EQUALS(expected, tok(code));
 
         // Check for output..

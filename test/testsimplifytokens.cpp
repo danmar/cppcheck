@@ -153,8 +153,6 @@ private:
         TEST_CASE(pointeralias3);
         TEST_CASE(pointeralias4);
 
-        TEST_CASE(reduceConstness);
-
         // simplify "while (0)"
         TEST_CASE(while0);
         // ticket #3140
@@ -2778,10 +2776,6 @@ private:
                                 " return 5 ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void reduceConstness() {
-        ASSERT_EQUALS("char * p ;", tok("char * const p;"));
     }
 
     void while0() {

@@ -2698,7 +2698,7 @@ private:
                             "}";
         ASSERT_EQUALS("void f ( ) {\n"
                       "int i ; i = 1 ;\n"
-                      "const int * constPtrToConst ; constPtrToConst = & i ;\n"
+                      "const int * const constPtrToConst ; constPtrToConst = & i ;\n"
                       "std :: cout << i << std :: endl ;\n"
                       "std :: cout << & i << std :: endl ;\n"
                       "}", tokenizeAndStringify(code, true));
