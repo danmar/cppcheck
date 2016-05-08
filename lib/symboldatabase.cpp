@@ -4228,7 +4228,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         type = type->previous();
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
     valuetype->type = valuetype->typeScope ? ValueType::Type::NONSTD : ValueType::Type::UNKNOWN_TYPE;
-    while (Token::Match(type, "%name%|*|&") && !type->variable()) {
+    while (Token::Match(type, "%name%|*|&|::") && !type->variable()) {
         if (type->isSigned())
             valuetype->sign = ValueType::Sign::SIGNED;
         else if (type->isUnsigned())
