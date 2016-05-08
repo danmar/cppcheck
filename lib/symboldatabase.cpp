@@ -4041,18 +4041,7 @@ static void setValueType(Token *tok, const Variable &var, bool cpp, ValueType::S
     ValueType valuetype;
     valuetype.pointer = var.dimensions().size();
     valuetype.typeScope = var.typeScope();
-    if (var.isEnumType()) {
-        if (var.type() && var.type()->classScope && var.type()->classScope->enumType) {
-            if (parsedecl(var.type()->classScope->enumType, &valuetype, defaultSignedness, lib)) {
-                setValueType(tok, valuetype, cpp, defaultSignedness, lib);
-                valuetype.originalTypeName = var.type()->classScope->className;
-            }
-        } else if (parsedecl(var.typeStartToken(), &valuetype, defaultSignedness, lib)) {
-            valuetype.sign = ValueType::SIGNED;
-            valuetype.type = ValueType::INT;
-            setValueType(tok, valuetype, cpp, defaultSignedness, lib);
-        }
-    } else if (parsedecl(var.typeStartToken(), &valuetype, defaultSignedness, lib))
+    if (parsedecl(var.typeStartToken(), &valuetype, defaultSignedness, lib))
         setValueType(tok, valuetype, cpp, defaultSignedness, lib);
 }
 
@@ -4238,7 +4227,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     while (Token::Match(type->previous(), "%name%"))
         type = type->previous();
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
-    valuetype->type = ValueType::Type::UNKNOWN_TYPE;
+    valuetype->type = valuetype->typeScope ? ValueType::Type::NONSTD : ValueType::Type::UNKNOWN_TYPE;
     while (Token::Match(type, "%name%|*|&") && !type->variable()) {
         if (type->isSigned())
             valuetype->sign = ValueType::Sign::SIGNED;
@@ -4262,7 +4251,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = ValueType::Type::FLOAT;
         else if (type->str() == "double")
             valuetype->type = type->isLong() ? ValueType::Type::LONGDOUBLE : ValueType::Type::DOUBLE;
-        else if (type->str() == "struct")
+        else if (type->str() == "struct" || type->str() == "enum")
             valuetype->type = ValueType::Type::NONSTD;
         else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
             return nullptr;
@@ -4427,6 +4416,8 @@ std::string ValueType::str() const
         ret += " double";
     else if (type == LONGDOUBLE)
         ret += " long double";
+    else if (type == NONSTD && typeScope)
+        ret += ' ' + typeScope->className;
     for (unsigned int p = 0; p < pointer; p++) {
         ret += " *";
         if (constness & (2 << p))
