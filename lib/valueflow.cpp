@@ -2384,7 +2384,7 @@ const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(const Token *expr)
         valueFlowConstantFoldAST(expr->astOperand2());
         valueFlowSetConstantValue(expr);
     }
-    return expr && expr->values.size() == 1U && expr->values.front().isKnown() ? &expr->values.front() : nullptr;    
+    return expr && expr->values.size() == 1U && expr->values.front().isKnown() ? &expr->values.front() : nullptr;
 }
 
 

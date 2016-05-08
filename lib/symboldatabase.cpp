@@ -4416,8 +4416,16 @@ std::string ValueType::str() const
         ret += " double";
     else if (type == LONGDOUBLE)
         ret += " long double";
-    else if (type == NONSTD && typeScope)
-        ret += ' ' + typeScope->className;
+    else if (type == NONSTD && typeScope) {
+        std::string className(typeScope->className);
+        const Scope *s = typeScope;
+        while (s->nestedIn && s->nestedIn->type != Scope::eGlobal) {
+            s = s->nestedIn;
+            if (s->type == Scope::eClass || s->type == Scope::eStruct || s->type == Scope::eNamespace)
+                className = s->className + "::" + className;
+        }
+        ret += ' ' + className;
+    }
     for (unsigned int p = 0; p < pointer; p++) {
         ret += " *";
         if (constness & (2 << p))
