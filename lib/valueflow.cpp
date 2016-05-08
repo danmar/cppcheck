@@ -2377,13 +2377,14 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
     }
 }
 
-void ValueFlow::valueFlowConstantFoldAST(const Token *expr)
+const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(const Token *expr)
 {
-    if (!expr || !expr->values.empty())
-        return;
-    valueFlowConstantFoldAST(expr->astOperand1());
-    valueFlowConstantFoldAST(expr->astOperand2());
-    valueFlowSetConstantValue(expr);
+    if (expr && expr->values.empty()) {
+        valueFlowConstantFoldAST(expr->astOperand1());
+        valueFlowConstantFoldAST(expr->astOperand2());
+        valueFlowSetConstantValue(expr);
+    }
+    return expr && expr->values.size() == 1U && expr->values.front().isKnown() ? &expr->values.front() : nullptr;    
 }
 
 
