@@ -41,7 +41,7 @@
 #   define _XOPEN_SOURCE // ucontext.h APIs can only be used on Mac OSX >= 10.7 if _XOPEN_SOURCE is defined
 #   include <ucontext.h>
 #   undef _XOPEN_SOURCE
-#else
+#elif !defined(__OpenBSD__)
 #   include <ucontext.h>
 #endif
 #ifdef __linux__
