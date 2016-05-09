@@ -242,6 +242,10 @@ private:
         TEST_CASE(symboldatabase53); // #7124 (library podtype)
         TEST_CASE(symboldatabase54); // #7257
 
+        TEST_CASE(enum1);
+        TEST_CASE(enum2);
+        TEST_CASE(enum3);
+
         TEST_CASE(isImplicitlyVirtual);
         TEST_CASE(isPure);
 
@@ -2248,6 +2252,44 @@ private:
         if (db) {
             ASSERT_EQUALS(1U, db->functionScopes.size());
             ASSERT_EQUALS("getReg", db->functionScopes.front()->className);
+        }
+    }
+
+    void enum1() {
+        GET_SYMBOL_DB("enum BOOL { FALSE, TRUE }; enum BOOL b;");
+
+        /* there is a enum scope with the name BOOL */
+        ASSERT(db && db->scopeList.back().type == Scope::eEnum && db->scopeList.back().className == "BOOL");
+
+        /* b is a enum variable, type is BOOL */
+        ASSERT(db && db->getVariableFromVarId(1)->isEnumType());
+    }
+
+    void enum2() {
+        GET_SYMBOL_DB("enum BOOL { FALSE, TRUE } b;");
+
+        /* there is a enum scope with the name BOOL */
+        ASSERT(db && db->scopeList.back().type == Scope::eEnum && db->scopeList.back().className == "BOOL");
+
+        /* b is a enum variable, type is BOOL */
+        ASSERT(db && db->getVariableFromVarId(1)->isEnumType());
+    }
+
+    void enum3() {
+        GET_SYMBOL_DB("enum ABC { A=11,B,C=A+B };");
+        ASSERT(db && db->scopeList.back().type == Scope::eEnum);
+        if (db) {
+            /* There is an enum A with value 11 */
+            const Enumerator *A = db->scopeList.back().findEnumerator("A");
+            ASSERT(A && A->value==11 && A->value_known);
+
+            /* There is an enum B with value 12 */
+            const Enumerator *B = db->scopeList.back().findEnumerator("B");
+            ASSERT(B && B->value==12 && B->value_known);
+
+            /* There is an enum C with value 23 */
+            const Enumerator *C = db->scopeList.back().findEnumerator("C");
+            ASSERT(C && C->value==23 && C->value_known);
         }
     }
 
