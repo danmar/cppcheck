@@ -214,7 +214,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                 // Create tokens, skip rest of iteration if failed
                 std::istringstream istr(codeWithoutCfg);
                 Timer timer("Tokenizer::createTokens", _settings.showtime, &S_timerResults);
-                bool result = _tokenizer.createTokens(istr, filename.c_str());
+                bool result = _tokenizer.createTokens(istr, filename);
                 timer.Stop();
                 if (!result)
                     continue;
