@@ -3293,9 +3293,21 @@ const Token * Scope::addEnum(const Token * tok, bool isCpp)
 
                 // look for possible constant folding expressions
                 else if (enumerator.start) {
-                    // FIXME do const folding
-                }
+                    // rhs of operator:
+                    const Token *rhs = enumerator.start->previous()->astOperand2();
 
+                    if (rhs) {
+                        // constant folding of expression:
+                        ValueFlow::valueFlowConstantFoldAST(rhs);
+
+                        // get constant folded value:
+                        if (rhs->values.size() == 1U && rhs->values.front().isKnown()) {
+                            enumerator.value = rhs->values.front().intvalue;
+                            enumerator.value_known = true;
+                            value = enumerator.value + 1;
+                        }
+                    }
+                }
             }
 
             // not initialized so use default value
@@ -3383,8 +3395,24 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
             }
         }
 
-        if (scope->nestedIn)
-            return scope->nestedIn->findEnumerator(tok->str());
+        while (scope && scope->nestedIn) {
+            if (scope && scope->type == Scope::eFunction && scope->functionOf)
+                scope = scope->functionOf;
+            else
+                scope = scope->nestedIn;
+
+            enumerator = scope->findEnumerator(tok->str());
+
+            if (enumerator)
+                return enumerator;
+
+            for (const Scope * s : scope->nestedList) {
+                enumerator = s->findEnumerator(tok->str());
+
+                if (enumerator)
+                    return enumerator;
+            }
+        }
     }
 
     return nullptr;
