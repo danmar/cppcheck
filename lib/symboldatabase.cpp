@@ -3406,8 +3406,8 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
             if (enumerator)
                 return enumerator;
 
-            for (const Scope * s : scope->nestedList) {
-                enumerator = s->findEnumerator(tok->str());
+            for (std::list<Scope*>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
+                enumerator = (*s)->findEnumerator(tok->str());
 
                 if (enumerator)
                     return enumerator;
