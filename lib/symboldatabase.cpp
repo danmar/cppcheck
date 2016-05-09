@@ -4228,7 +4228,12 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     while (Token::Match(type->previous(), "%name%"))
         type = type->previous();
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
-    valuetype->type = valuetype->typeScope ? ValueType::Type::NONSTD : ValueType::Type::UNKNOWN_TYPE;
+    if (!valuetype->typeScope)
+        valuetype->type = ValueType::Type::UNKNOWN_TYPE;
+    else if (valuetype->typeScope->type == Scope::eEnum)
+        valuetype->type = ValueType::Type::INT;
+    else
+        valuetype->type = ValueType::Type::NONSTD;
     while (Token::Match(type, "%name%|*|&|::") && !type->variable()) {
         if (type->isSigned())
             valuetype->sign = ValueType::Sign::SIGNED;
@@ -4252,7 +4257,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = ValueType::Type::FLOAT;
         else if (type->str() == "double")
             valuetype->type = type->isLong() ? ValueType::Type::LONGDOUBLE : ValueType::Type::DOUBLE;
-        else if (type->str() == "struct" || type->str() == "enum")
+        else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum"))
             valuetype->type = ValueType::Type::NONSTD;
         else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
             return nullptr;
