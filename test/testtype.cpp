@@ -39,6 +39,8 @@ private:
         TEST_CASE(signConversion);
         TEST_CASE(longCastAssign);
         TEST_CASE(longCastReturn);
+        TEST_CASE(enumMismatchAssign);
+        TEST_CASE(enumMismatchCompare);
     }
 
     void check(const char code[], Settings* settings = 0) {
@@ -199,6 +201,35 @@ private:
               "}\n", &settings);
         ASSERT_EQUALS("", errout.str());
     }
+
+    void enumMismatchAssign() {
+        Settings settings;
+        settings.addEnabled("style");
+
+        check("enum ABC {A,B,C};\n"
+              "void f() {\n"
+              "  enum ABC abc = 5;\n"
+              "}", &settings);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Assigning mismatching value 5 to enum variable.\n", errout.str());
+    }
+
+    void enumMismatchCompare() {
+        Settings settings;
+        settings.addEnabled("style");
+
+        check("enum ABC {A,B,C};\n"
+              "void f(enum ABC abc) {\n"
+              "  if (abc==5) {}\n"
+              "}", &settings);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comparing mismatching value 5 with enum variable.\n", errout.str());
+
+        check("enum ABC {A,B,C};\n"
+              "void f(enum ABC abc) {\n"
+              "  if (5==abc) {}\n"
+              "}", &settings);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comparing mismatching value 5 with enum variable.\n", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestType)
