@@ -7,7 +7,7 @@ import shutil
 import time
 import sys
 
-START = '0'
+START = 0
 PASSWORD = ''
 for arg in sys.argv[1:]:
 	if len(arg)==1:
