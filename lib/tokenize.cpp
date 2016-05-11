@@ -2640,46 +2640,48 @@ void Tokenizer::setVarId()
                 functionDeclEndStack.push(newFunctionDeclEnd);
                 scopeInfo.push(variableId);
             }
-        } else if (tok->str() == "{") {
+        } else if (Token::Match(tok, "{|}")) {
+            const Token * const startToken = (tok->str() == "{") ? tok : tok->link();
+
             // parse anonymous unions as part of the current scope
-            if (!(initlist && Token::Match(tok->previous(), "%name%|>|>>") && Token::Match(tok->link(), "} ,|{"))) {
-                bool isExecutable;
-                if (tok->strAt(-1) == ")" || Token::Match(tok->tokAt(-2), ") %type%") ||
-                    (initlist && tok->strAt(-1) == "}")) {
-                    isExecutable = true;
-                } else {
-                    isExecutable = ((scopeStack.top().isExecutable || initlist || tok->strAt(-1) == "else") &&
-                                    !isClassStructUnionEnumStart(tok));
-                    scopeInfo.push(variableId);
-                }
-                initlist = false;
-                scopeStack.push(scopeStackEntryType(isExecutable, _varId));
-            }
-        } else if (tok->str() == "}") {
-            // parse anonymous unions/structs as part of the current scope
-            if (!(Token::simpleMatch(tok, "} ;") && tok->link() && Token::Match(tok->link()->previous(), "union|struct|enum {")) &&
-                !(initlist && Token::Match(tok, "} ,|{") && Token::Match(tok->link()->previous(), "%name%|>|>> {"))) {
-                bool isNamespace = false;
-                for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous())
-                    isNamespace |= (tok1->str() == "namespace");
-                // Set variable ids in class declaration..
-                if (!initlist && !isC() && !scopeStack.top().isExecutable && tok->link() && !isNamespace) {
-                    setVarIdClassDeclaration(tok->link(),
-                                             variableId,
-                                             scopeStack.top().startVarid,
-                                             structMembers);
-                }
+            if (!Token::Match(startToken->previous(), "union|struct|enum {") &&
+                !(initlist && Token::Match(startToken->previous(), "%name%|>|>>") && Token::Match(startToken->link(), "} ,|{"))) {
 
-                if (scopeInfo.empty()) {
-                    variableId.clear();
-                } else {
-                    variableId.swap(scopeInfo.top());
-                    scopeInfo.pop();
-                }
+                if (tok->str() == "{") {
+                    bool isExecutable;
+                    if (tok->strAt(-1) == ")" || Token::Match(tok->tokAt(-2), ") %type%") ||
+                        (initlist && tok->strAt(-1) == "}")) {
+                        isExecutable = true;
+                    } else {
+                        isExecutable = ((scopeStack.top().isExecutable || initlist || tok->strAt(-1) == "else") &&
+                                        !isClassStructUnionEnumStart(tok));
+                        scopeInfo.push(variableId);
+                    }
+                    initlist = false;
+                    scopeStack.push(scopeStackEntryType(isExecutable, _varId));
+                } else { /* if (tok->str() == "}") */
+                    bool isNamespace = false;
+                    for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous())
+                        isNamespace |= (tok1->str() == "namespace");
+                    // Set variable ids in class declaration..
+                    if (!initlist && !isC() && !scopeStack.top().isExecutable && tok->link() && !isNamespace) {
+                        setVarIdClassDeclaration(tok->link(),
+                                                 variableId,
+                                                 scopeStack.top().startVarid,
+                                                 structMembers);
+                    }
 
-                scopeStack.pop();
-                if (scopeStack.empty()) {  // should be impossible
-                    scopeStack.push(scopeStackEntryType());
+                    if (scopeInfo.empty()) {
+                        variableId.clear();
+                    } else {
+                        variableId.swap(scopeInfo.top());
+                        scopeInfo.pop();
+                    }
+
+                    scopeStack.pop();
+                    if (scopeStack.empty()) {  // should be impossible
+                        scopeStack.push(scopeStackEntryType());
+                    }
                 }
             }
         }

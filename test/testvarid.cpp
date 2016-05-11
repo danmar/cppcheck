@@ -1628,6 +1628,18 @@ private:
                       "9: h ( a@1 , b@2 , c@3 , d@4 ) ;\n"
                       "10: }\n",
                       tokenize(code3));
+
+        // #7444
+        const char code4[] = "class Foo {\n"
+                             "    void f(float a) { this->a = a; }\n"
+                             "    union { float a; int b; };\n"
+                             "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Foo {\n"
+                      "2: void f ( float a@1 ) { this . a@2 = a@1 ; }\n"
+                      "3: union { float a@2 ; int b@3 ; } ;\n"
+                      "4: } ;\n",
+                      tokenize(code4));
     }
 
     void varid_in_class12() { // #4637 - method
