@@ -228,6 +228,13 @@ private:
               "  if (5==abc) {}\n"
               "}", &settings);
         ASSERT_EQUALS("[test.cpp:3]: (style) Comparing mismatching value 5 with enum variable.\n", errout.str());
+
+        check("enum ABC {NEG1=-2,NEG2=-1,POS1=1,POS2=2};\n" // #7491
+              "void f(enum ABC abc) {\n"
+              "  if (abc>0) {}\n"
+              "}", &settings);
+        ASSERT_EQUALS("", errout.str());
+
     }
 
 };

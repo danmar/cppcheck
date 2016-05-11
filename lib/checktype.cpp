@@ -338,16 +338,16 @@ void CheckType::checkEnumMismatch()
         }
 
         // Comparing enum variable against mismatching value
-        else if (tok->isComparisonOp()) {
+        else if (Token::Match(tok, "==|!=")) {
             if (!tok->astOperand1() || !tok->astOperand2())
                 continue;
 
             const ValueFlow::Value * const v1 = mismatchingValue(tok->astOperand1()->valueType(), tok->astOperand2()->values);
-            if (v1)
+            if (v1 && v1->isKnown())
                 enumMismatchCompareError(tok, *v1);
 
             const ValueFlow::Value * const v2 = mismatchingValue(tok->astOperand2()->valueType(), tok->astOperand1()->values);
-            if (v2)
+            if (v2 && v2->isKnown())
                 enumMismatchCompareError(tok, *v2);
         }
     }
