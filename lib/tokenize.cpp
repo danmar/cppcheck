@@ -39,11 +39,11 @@
 namespace {
     // local struct used in setVarId
     // in order to store information about the scope
-    struct scopeStackEntryType {
-        scopeStackEntryType()
+    struct VarIdscopeInfo {
+        VarIdscopeInfo()
             :isExecutable(false), startVarid(0) {
         }
-        scopeStackEntryType(bool _isExecutable, unsigned int _startVarid)
+        VarIdscopeInfo(bool _isExecutable, unsigned int _startVarid)
             :isExecutable(_isExecutable), startVarid(_startVarid) {
         }
 
@@ -2609,9 +2609,9 @@ void Tokenizer::setVarId()
     std::map<unsigned int, std::map<std::string, unsigned int> > structMembers;
     std::stack< std::map<std::string, unsigned int> > scopeInfo;
 
-    std::stack<scopeStackEntryType> scopeStack;
+    std::stack<VarIdscopeInfo> scopeStack;
 
-    scopeStack.push(scopeStackEntryType());
+    scopeStack.push(VarIdscopeInfo());
     std::stack<const Token *> functionDeclEndStack;
     bool initlist = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -2625,7 +2625,7 @@ void Tokenizer::setVarId()
                 variableId.swap(scopeInfo.top());
                 scopeInfo.pop();
             } else if (tok->str() == "{")
-                scopeStack.push(scopeStackEntryType(true, _varId));
+                scopeStack.push(VarIdscopeInfo(true, _varId));
         } else if (!initlist && tok->str()=="(") {
             const Token * newFunctionDeclEnd = nullptr;
             if (!scopeStack.top().isExecutable)
@@ -2658,7 +2658,7 @@ void Tokenizer::setVarId()
                         scopeInfo.push(variableId);
                     }
                     initlist = false;
-                    scopeStack.push(scopeStackEntryType(isExecutable, _varId));
+                    scopeStack.push(VarIdscopeInfo(isExecutable, _varId));
                 } else { /* if (tok->str() == "}") */
                     bool isNamespace = false;
                     for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous())
@@ -2680,7 +2680,7 @@ void Tokenizer::setVarId()
 
                     scopeStack.pop();
                     if (scopeStack.empty()) {  // should be impossible
-                        scopeStack.push(scopeStackEntryType());
+                        scopeStack.push(VarIdscopeInfo());
                     }
                 }
             }
