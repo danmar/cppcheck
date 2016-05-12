@@ -245,6 +245,7 @@ private:
         TEST_CASE(enum1);
         TEST_CASE(enum2);
         TEST_CASE(enum3);
+        TEST_CASE(enum4);
 
         TEST_CASE(isImplicitlyVirtual);
         TEST_CASE(isPure);
@@ -2291,6 +2292,34 @@ private:
             const Enumerator *C = db->scopeList.back().findEnumerator("C");
             ASSERT(C && C->value==23 && C->value_known);
         }
+    }
+
+    void enum4() { // #7493
+        GET_SYMBOL_DB("enum Offsets { O1, O2, O3 };\n"
+                      "enum MyEnums { E1=O1+1, E2=O2+1, E3=O3+1 };");
+        ASSERT(db);
+        if (!db)
+            return;
+        ASSERT_EQUALS(3U, db->scopeList.size());
+
+        // Assert that all enum values are known
+        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+
+        // Offsets
+        ++scope;
+        ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
+        ASSERT_EQUALS(3U, scope->enumeratorList.size());
+        ASSERT_EQUALS(true, scope->enumeratorList[0].value_known);
+        ASSERT_EQUALS(true, scope->enumeratorList[1].value_known);
+        ASSERT_EQUALS(true, scope->enumeratorList[2].value_known);
+
+        // MyEnums
+        ++scope;
+        ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
+        ASSERT_EQUALS(3U, scope->enumeratorList.size());
+        TODO_ASSERT_EQUALS(true, false, scope->enumeratorList[0].value_known);
+        TODO_ASSERT_EQUALS(true, false, scope->enumeratorList[1].value_known);
+        TODO_ASSERT_EQUALS(true, false, scope->enumeratorList[2].value_known);
     }
 
     void isImplicitlyVirtual() {
