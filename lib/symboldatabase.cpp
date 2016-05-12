@@ -497,12 +497,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                 tok = tok->tokAt(2);
                             }
 
-                            scope->addFunction(function);
-                        }
+                            // skip over unknown tokens
+                            while (tok && tok->str() != ";")
+                                tok = tok->next();
 
-                        // 'const' or unknown macro (#5197)
-                        else if (Token::Match(end, ") %any% ;")) {
-                            tok = end->tokAt(2);
                             scope->addFunction(function);
                         }
 
