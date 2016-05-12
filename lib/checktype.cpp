@@ -306,12 +306,16 @@ static const ValueFlow::Value *mismatchingValue(const ValueType *enumType, const
     if (!enumType || !enumType->typeScope || enumType->typeScope->type != Scope::eEnum)
         return nullptr;
     const Scope * const enumScope = enumType->typeScope;
+    for (unsigned int i = 0; i < enumScope->enumeratorList.size(); ++i) {
+        if (!enumScope->enumeratorList[i].value_known)
+            return nullptr;
+    }
     for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
         if (it->tokvalue)
             continue;
         bool found = false;
         for (unsigned int i = 0; i < enumScope->enumeratorList.size(); ++i) {
-            if (enumScope->enumeratorList[i].value_known && enumScope->enumeratorList[i].value == it->intvalue) {
+            if (enumScope->enumeratorList[i].value == it->intvalue) {
                 found = true;
                 break;
             }

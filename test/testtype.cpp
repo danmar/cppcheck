@@ -211,6 +211,12 @@ private:
               "  enum ABC abc = 5;\n"
               "}", &settings);
         ASSERT_EQUALS("[test.cpp:3]: (style) Assigning mismatching value 5 to enum variable.\n", errout.str());
+
+        check("enum ABC {A=X,B,C};\n" // #7493 => enum constants for ABC has unknown values
+              "void f() {\n"
+              "  enum ABC abc = 5;\n"
+              "}", &settings);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void enumMismatchCompare() {
