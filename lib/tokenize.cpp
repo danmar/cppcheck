@@ -2888,121 +2888,123 @@ void Tokenizer::setVarIdPass2()
     // class members..
     std::map<std::string, std::map<std::string, unsigned int> > varsByClass;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "namespace|class|struct %name% {|:|::")) {
-            std::string classname(tok->next()->str());
-            const Token* tokStart = tok->tokAt(2);
-            unsigned int nestedCount = 1;
-            while (Token::Match(tokStart, ":: %name%")) {
-                classname += " :: " + tokStart->strAt(1);
-                tokStart = tokStart->tokAt(2);
-                nestedCount++;
-            }
+        if (!Token::Match(tok, "namespace|class|struct %name% {|:|::"))
+            continue;
 
-            std::map<std::string, unsigned int>& thisClassVars = varsByClass[classname];
-            while (tokStart && tokStart->str() != "{") {
-                if (Token::Match(tokStart, "public|private|protected %name%"))
-                    tokStart = tokStart->next();
-                if (tokStart->strAt(1) == "," || tokStart->strAt(1) == "{") {
-                    const std::map<std::string, unsigned int>& baseClassVars = varsByClass[tokStart->str()];
-                    thisClassVars.insert(baseClassVars.begin(), baseClassVars.end());
-                }
+        std::string classname(tok->next()->str());
+        const Token* tokStart = tok->tokAt(2);
+        unsigned int nestedCount = 1;
+        while (Token::Match(tokStart, ":: %name%")) {
+            classname += " :: " + tokStart->strAt(1);
+            tokStart = tokStart->tokAt(2);
+            nestedCount++;
+        }
+
+        std::map<std::string, unsigned int>& thisClassVars = varsByClass[classname];
+        while (tokStart && tokStart->str() != "{") {
+            if (Token::Match(tokStart, "public|private|protected %name%"))
                 tokStart = tokStart->next();
+            if (tokStart->strAt(1) == "," || tokStart->strAt(1) == "{") {
+                const std::map<std::string, unsigned int>& baseClassVars = varsByClass[tokStart->str()];
+                thisClassVars.insert(baseClassVars.begin(), baseClassVars.end());
             }
-            // What member variables are there in this class?
-            if (tokStart) {
-                for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
-                    // skip parentheses..
-                    if (tok2->link()) {
-                        if (tok2->str() == "{") {
-                            if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
-                                setVarIdClassFunction(classname, tok2, tok2->link(), thisClassVars, structMembers, &_varId);
-                            tok2 = tok2->link();
-                        } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(")
-                            tok2 = tok2->link();
-                    }
-
-                    // Found a member variable..
-                    else if (tok2->varId() > 0)
-                        thisClassVars[tok2->str()] = tok2->varId();
+            tokStart = tokStart->next();
+        }
+        // What member variables are there in this class?
+        if (tokStart) {
+            for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
+                // skip parentheses..
+                if (tok2->link()) {
+                    if (tok2->str() == "{") {
+                        if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
+                            setVarIdClassFunction(classname, tok2, tok2->link(), thisClassVars, structMembers, &_varId);
+                        tok2 = tok2->link();
+                    } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(")
+                        tok2 = tok2->link();
                 }
-            }
 
-            // Are there any member variables in this class?
-            if (thisClassVars.empty())
+                // Found a member variable..
+                else if (tok2->varId() > 0)
+                    thisClassVars[tok2->str()] = tok2->varId();
+            }
+        }
+
+        // Are there any member variables in this class?
+        if (thisClassVars.empty())
+            continue;
+
+        // Member variables
+        for (std::list<Token *>::iterator func = allMemberVars.begin(); func != allMemberVars.end(); ++func) {
+            if (!Token::simpleMatch(*func, classname.c_str()))
                 continue;
 
-            // Member variables
-            for (std::list<Token *>::iterator func = allMemberVars.begin(); func != allMemberVars.end(); ++func) {
-                if (!Token::simpleMatch(*func, classname.c_str()))
-                    continue;
+            Token *tok2 = *func;
+            tok2 = tok2->tokAt(2);
+            tok2->varId(thisClassVars[tok2->str()]);
+        }
 
-                Token *tok2 = *func;
-                tok2 = tok2->tokAt(2);
-                tok2->varId(thisClassVars[tok2->str()]);
-            }
+        if (isC() || tok->str() == "namespace")
+            continue;
 
-            if (isC() || tok->str() == "namespace")
+        // Set variable ids in member functions for this class..
+        for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
+            Token *tok2 = *func;
+
+            if (!Token::Match(tok2, classname.c_str()))
                 continue;
 
-            // Set variable ids in member functions for this class..
-            for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
-                Token *tok2 = *func;
+            if (Token::Match(tok2, "%name% <"))
+                tok2 = tok2->next()->findClosingBracket();
 
-                if (!Token::Match(tok2, classname.c_str()))
-                    continue;
+            // Found a class function..
+            if (!Token::Match(tok2, "%any% :: ~| %name%"))
+                continue;
 
-                if (Token::Match(tok2, "%name% <"))
-                    tok2 = tok2->next()->findClosingBracket();
+            // Goto the end parentheses..
+            tok2 = tok2->tokAt(nestedCount*2);
+            if (tok2->str() == "~")
+                tok2 = tok2->linkAt(2);
+            else
+                tok2 = tok2->linkAt(1);
 
-                // Found a class function..
-                if (!Token::Match(tok2, "%any% :: ~| %name%"))
-                    continue;
+            // If this is a function implementation.. add it to funclist
+            Token * start = const_cast<Token *>(isFunctionHead(tok2, "{"));
+            if (start) {
+                setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &_varId);
+            }
 
-                // Goto the end parentheses..
-                tok2 = tok2->tokAt(nestedCount*2);
-                if (tok2->str() == "~")
-                    tok2 = tok2->linkAt(2);
-                else
-                    tok2 = tok2->linkAt(1);
+            if (Token::Match(tok2, ") %name% ("))
+                tok2 = tok2->linkAt(2);
 
-                // If this is a function implementation.. add it to funclist
-                Token * start = const_cast<Token *>(isFunctionHead(tok2, "{"));
-                if (start) {
-                    setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &_varId);
-                }
+            // constructor with initializer list
+            if (!Token::Match(tok2, ") : ::| %name%"))
+                continue;
 
-                if (Token::Match(tok2, ") %name% ("))
-                    tok2 = tok2->linkAt(2);
+            Token *tok3 = tok2;
+            while (Token::Match(tok3, "[)}] [,:]")) {
+                tok3 = tok3->tokAt(2);
+                if (Token::Match(tok3, ":: %name%"))
+                    tok3 = tok3->next();
+                while (Token::Match(tok3, "%name% :: %name%"))
+                    tok3 = tok3->tokAt(2);
+                if (!Token::Match(tok3, "%name% (|{|<"))
+                    break;
 
-                // constructor with initializer list
-                if (Token::Match(tok2, ") : ::| %name%")) {
-                    Token *tok3 = tok2;
-                    while (Token::Match(tok3, "[)}] [,:]")) {
-                        tok3 = tok3->tokAt(2);
-                        if (Token::Match(tok3, ":: %name%"))
-                            tok3 = tok3->next();
-                        while (Token::Match(tok3, "%name% :: %name%"))
-                            tok3 = tok3->tokAt(2);
-                        if (!Token::Match(tok3, "%name% (|{|<"))
-                            break;
+                // set varid
+                std::map<std::string, unsigned int>::const_iterator varpos = thisClassVars.find(tok3->str());
+                if (varpos != thisClassVars.end())
+                    tok3->varId(varpos->second);
 
-                        // set varid
-                        std::map<std::string, unsigned int>::const_iterator varpos = thisClassVars.find(tok3->str());
-                        if (varpos != thisClassVars.end())
-                            tok3->varId(varpos->second);
-
-                        // goto end of var
-                        if (tok3->strAt(1) == "<") {
-                            tok3 = tok3->next()->findClosingBracket();
-                            if (tok3 && tok3->next() && tok3->next()->link())
-                                tok3 = tok3->next()->link();
-                        } else
-                            tok3 = tok3->linkAt(1);
-                    }
-                    if (Token::Match(tok3, ")|} {")) {
-                        setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &_varId);
-                    }
-                }
+                // goto end of var
+                if (tok3->strAt(1) == "<") {
+                    tok3 = tok3->next()->findClosingBracket();
+                    if (tok3 && tok3->next() && tok3->next()->link())
+                        tok3 = tok3->next()->link();
+                } else
+                    tok3 = tok3->linkAt(1);
+            }
+            if (Token::Match(tok3, ")|} {")) {
+                setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &_varId);
             }
         }
     }
