@@ -111,6 +111,8 @@ public:
 
     /** Set variable id */
     void setVarId();
+    void setVarIdPass1();
+    void setVarIdPass2();
 
     /**
     * Basic simplification of tokenlist

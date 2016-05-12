@@ -2583,12 +2583,6 @@ static void setVarIdClassFunction(const std::string &classname,
 }
 
 
-// Variable declarations can't start with "return" etc.
-static const std::set<std::string> notstart_c = make_container< std::set<std::string> > ()
-        << "goto" << "NOT" << "return" << "sizeof"<< "typedef";
-static const std::set<std::string> notstart_cpp = make_container< std::set<std::string> > ()
-        << notstart_c
-        << "delete" << "friend" << "new" << "throw" << "using" << "virtual" << "explicit" << "const_cast" << "dynamic_cast" << "reinterpret_cast" << "static_cast" ;
 
 void Tokenizer::setVarId()
 {
@@ -2600,6 +2594,21 @@ void Tokenizer::setVarId()
 
     setPodTypes();
 
+    setVarIdPass1();
+
+    setVarIdPass2();
+}
+
+
+// Variable declarations can't start with "return" etc.
+static const std::set<std::string> notstart_c = make_container< std::set<std::string> > ()
+        << "goto" << "NOT" << "return" << "sizeof"<< "typedef";
+static const std::set<std::string> notstart_cpp = make_container< std::set<std::string> > ()
+        << notstart_c
+        << "delete" << "friend" << "new" << "throw" << "using" << "virtual" << "explicit" << "const_cast" << "dynamic_cast" << "reinterpret_cast" << "static_cast" ;
+
+void Tokenizer::setVarIdPass1()
+{
     // Variable declarations can't start with "return" etc.
     const std::set<std::string>& notstart = (isC()) ? notstart_c : notstart_cpp;
 
@@ -2841,10 +2850,11 @@ void Tokenizer::setVarId()
             tok = tok->previous();
         }
     }
+}
 
-    // Clear the structMembers because it will be used when member functions
-    // are parsed. The old info is not bad, it is just redundant.
-    structMembers.clear();
+void Tokenizer::setVarIdPass2()
+{
+    std::map<unsigned int, std::map<std::string, unsigned int> > structMembers;
 
     // Member functions and variables in this source
     std::list<Token *> allMemberFunctions;
