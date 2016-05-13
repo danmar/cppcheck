@@ -108,6 +108,7 @@ private:
 
         // Execution reaches a 'throw'
         TEST_CASE(throw1);
+        TEST_CASE(throw2);
 
         // Possible leak => Further configuration is needed for complete analysis
         TEST_CASE(configuration1);
@@ -1099,6 +1100,23 @@ private:
               "        throw 123;\n"
               "    } catch (...) { }\n"
               "    free(p);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void throw2() { // do not miss ::NS::Except()
+        check("namespace NS {\n"
+              "    class Except {\n"
+              "    };\n"
+              "}\n"
+              "void foo(int i)\n"
+              "{\n"
+              "    int *pi = new int;\n"
+              "    if (i == 42) {\n"
+              "        delete pi;\n"
+              "        throw ::NS::Except();\n"
+              "    }\n"
+              "    delete pi;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
     }
