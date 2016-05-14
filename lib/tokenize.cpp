@@ -3090,6 +3090,8 @@ void Tokenizer::createLinks2()
             } else
                 token->link(0);
         } else if (!templateToken && !isStruct && Token::Match(token, "%oror%|&&|;")) {
+            if (Token::Match(token, "&& [,>]"))
+                continue;
             while (!type.empty() && type.top()->str() == "<")
                 type.pop();
         } else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId()) {

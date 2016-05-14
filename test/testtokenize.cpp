@@ -4550,6 +4550,17 @@ private:
         }
 
         {
+            const char code[] = "Data<T&&>";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+            ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(4));
+            ASSERT_EQUALS(true, tok->tokAt(1) == tok->linkAt(4));
+        }
+
+        {
             // #6601
             const char code[] = "template<class R> struct FuncType<R(&)()> : FuncType<R()> { };";
             errout.str("");
