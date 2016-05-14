@@ -829,6 +829,16 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         }
                     }
 
+                    if (Token::simpleMatch(tok->next(), "= new")) {
+                        tok = tok->tokAt(2);
+                        while (Token::Match(tok->next(), "%name%|::|(|[")) {
+                            if (Token::Match(tok->next(), "(|["))
+                                tok = tok->linkAt(1);
+                            else
+                                tok = tok->next();
+                        }
+                    }
+
                     if (alloc == No && alloctype == No)
                         alloctype = CheckMemoryLeak::New;
                 }

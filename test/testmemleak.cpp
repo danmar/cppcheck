@@ -413,6 +413,10 @@ private:
         ASSERT_EQUALS(";;assign;", getcode("A * a = new (X) A;", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("int i = open(a,b);", "i"));
         ASSERT_EQUALS(";;assign;", getcode("int i = open();", "i"));
+        ASSERT_EQUALS(";;alloc;use;", getcode("int *p; dostuff(p = new int);", "p"));
+        ASSERT_EQUALS(";;alloc;use;", getcode("int *p; dostuff(p = new int());", "p"));
+        ASSERT_EQUALS(";;alloc;use;", getcode("int *p; fred.dostuff(p = new int);", "p"));
+        ASSERT_EQUALS(";;alloc;use;", getcode("int *p; fred.dostuff(p = new int());", "p"));
 
         // alloc; return use;
         ASSERT_EQUALS(";;alloc;returnuse;", getcode("int *a = new int[10]; return a;", "a"));
@@ -509,7 +513,6 @@ private:
         ASSERT_EQUALS(";;;use;", getcode("char *p; const char *q; q = p;", "p"));
         ASSERT_EQUALS(";;use;;", getcode("char *s; x = {1,s};", "s"));
         ASSERT_EQUALS(";{};;alloc;;use;", getcode("struct Foo { }; Foo *p; p = malloc(10); const Foo *q; q = p;", "p"));
-        ASSERT_EQUALS(";;alloc;use;", getcode("Fred *fred; p.setFred(fred = new Fred);", "fred"));
         ASSERT_EQUALS(";;useuse_;", getcode("struct AB *ab; f(ab->a);", "ab"));
         ASSERT_EQUALS(";;use;", getcode("struct AB *ab; ab = pop(ab);", "ab"));
 
