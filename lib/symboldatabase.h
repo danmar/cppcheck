@@ -1061,8 +1061,6 @@ public:
     /** Set valuetype in provided tokenlist */
     static void setValueTypeInTokenList(Token *tokens, bool cpp, char defaultSignedness, const Library* lib);
 
-    void debugValueType() const;
-
 private:
     friend class Scope;
     friend class Function;

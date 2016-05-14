@@ -3843,7 +3843,6 @@ void Tokenizer::printDebugOutput(unsigned int simplification) const
                 _symbolDatabase->printXml(std::cout);
             else if (_settings->verbose) {
                 _symbolDatabase->printOut("Symbol database");
-                _symbolDatabase->debugValueType();
             }
         }
 
