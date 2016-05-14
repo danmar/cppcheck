@@ -3217,7 +3217,7 @@ bool Tokenizer::simplifySizeof()
             tok->deleteThis();
             tok->deleteNext();
             std::ostringstream sz;
-            sz << ((isC()) ? 4 : 1) ; // #7490 sizeof('a') should be 4 in C mode
+            sz << ((isC()) ? _settings->sizeof_int : 1) ; // #7490 sizeof('a') should be sizeof(int) in C mode
             tok->str(sz.str());
             ret = true;
             continue;

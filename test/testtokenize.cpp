@@ -23,7 +23,7 @@
 #include "path.h"
 #include "preprocessor.h" // usually tests here should not use preprocessor...
 #include <cstring>
-
+#include <sstream>
 
 class TestTokenizer : public TestFixture {
 public:
@@ -5878,7 +5878,9 @@ private:
     }
 
     void sizeOfCharLiteral() { // #7490 sizeof('a') should be 4 in C mode
-        ASSERT_EQUALS("unsigned long a ; a = 4 ;",
+        std::stringstream expected;
+        expected << "unsigned long a ; a = " << settings1.sizeof_int << " ;";
+        ASSERT_EQUALS(expected.str(),
                       tokenizeAndStringify("unsigned long a = sizeof('x');", true, true, Settings::Native, "test.c", false));
         ASSERT_EQUALS("unsigned long a ; a = 1 ;",
                       tokenizeAndStringify("unsigned long a = sizeof('x');", true, true, Settings::Native, "test.cpp", true));
