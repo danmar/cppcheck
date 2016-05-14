@@ -71,8 +71,8 @@ private:
         TEST_CASE(uninitvar_cpp11ArrayInit); // #7010
         TEST_CASE(uninitvar_rangeBasedFor); // #7078
         TEST_CASE(trac_4871);
-
         TEST_CASE(syntax_error); // Ticket #5073
+        TEST_CASE(trac_5970);
 
         // dead pointer
         TEST_CASE(deadPointer);
@@ -3769,6 +3769,17 @@ private:
                             "}";
         ASSERT_THROW(checkUninitVar(code), InternalError);
     }
+
+    void trac_5970() { // Ticket #5073
+        checkUninitVar("void DES_ede3_ofb64_encrypt() {\n"
+                       "  DES_cblock d; \n"
+                       "  char *dp; \n"
+                       "  dp=(char *)d; \n"
+                       "  init(dp); \n"
+                       "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     void checkDeadPointer(const char code[]) {
         // Clear the error buffer..
