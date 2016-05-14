@@ -40,10 +40,12 @@ static const struct CWE CWE484(484U);   // Omitted Break Statement in Switch
 static const struct CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
 static const struct CWE CWE570(570U);   // Expression is Always False
 static const struct CWE CWE571(571U);   // Expression is Always True
-static const struct CWE CWE686(686U);
+static const struct CWE CWE686(686U);   // Function Call With Incorrect Argument Type
+static const struct CWE CWE687(687U);   // Function Call With Incorrectly Specified Argument Value
+static const struct CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
 static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
-
-static const struct CWE CWE758(758U);
+static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const struct CWE CWE783(783U);   // Operator Precedence Logic Error
 
 //----------------------------------------------------------------------------------
 // The return value of fgetc(), getc(), ungetc(), getchar() etc. is an integer value.
@@ -174,7 +176,7 @@ void CheckOther::clarifyCalculationError(const Token *tok, const std::string &op
                 "clarifyCalculation",
                 "Clarify calculation precedence for '" + op + "' and '?'.\n"
                 "Suspicious calculation. Please use parentheses to clarify the code. "
-                "The code '" + calc + "' should be written as either '" + s1 + "' or '" + s2 + "'.");
+                "The code '" + calc + "' should be written as either '" + s1 + "' or '" + s2 + "'.", CWE783, false);
 }
 
 //---------------------------------------------------------------------------
@@ -210,7 +212,7 @@ void CheckOther::clarifyStatementError(const Token *tok)
 {
     reportError(tok, Severity::warning, "clarifyStatement", "Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n"
                 "A statement like '*A++;' might not do what you intended. Postfix 'operator++' is executed before 'operator*'. "
-                "Thus, the dereference is meaningless. Did you intend to write '(*A)++;'?");
+                "Thus, the dereference is meaningless. Did you intend to write '(*A)++;'?", CWE783, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1087,7 +1089,7 @@ void CheckOther::memsetZeroBytesError(const Token *tok)
     const std::string verbose(summary + " The second and third arguments might be inverted."
                               " The function memset ( void * ptr, int value, size_t num ) sets the"
                               " first num bytes of the block of memory pointed by ptr to the specified value.");
-    reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose);
+    reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose, CWE687, false);
 }
 
 void CheckOther::checkMemsetInvalid2ndParam()
@@ -1137,14 +1139,14 @@ void CheckOther::memsetFloatError(const Token *tok, const std::string &var_value
                               "' is a float, its representation is implementation defined.");
     const std::string verbose(message + " memset() is used to set each byte of a block of memory to a specific value and"
                               " the actual representation of a floating-point value is implementation defined.");
-    reportError(tok, Severity::portability, "memsetFloat", message + "\n" + verbose);
+    reportError(tok, Severity::portability, "memsetFloat", message + "\n" + verbose, CWE688, false);
 }
 
 void CheckOther::memsetValueOutOfRangeError(const Token *tok, const std::string &value)
 {
     const std::string message("The 2nd memset() argument '" + value + "' doesn't fit into an 'unsigned char'.");
     const std::string verbose(message + " The 2nd parameter is passed as an 'int', but the function fills the block of memory using the 'unsigned char' conversion of this value.");
-    reportError(tok, Severity::warning, "memsetValueOutOfRange", message + "\n" + verbose);
+    reportError(tok, Severity::warning, "memsetValueOutOfRange", message + "\n" + verbose, CWE686, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1963,7 +1965,7 @@ void CheckOther::duplicateExpressionTernaryError(const Token *tok)
 void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::warning,
-                "selfAssignment", "Redundant assignment of '" + varname + "' to itself.");
+                "selfAssignment", "Redundant assignment of '" + varname + "' to itself.", CWE398, false);
 }
 
 //-----------------------------------------------------------------------------
