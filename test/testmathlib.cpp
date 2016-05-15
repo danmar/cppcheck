@@ -58,6 +58,7 @@ private:
         TEST_CASE(tan);
         TEST_CASE(abs);
         TEST_CASE(toString);
+        TEST_CASE(characterLiteralsNormalization);
     }
 
     void isGreater() const {
@@ -289,6 +290,7 @@ private:
         ASSERT_EQUALS((int)('\34'),  MathLib::toLongNumber("'\\34'"));
         ASSERT_EQUALS((int)('\034'), MathLib::toLongNumber("'\\034'"));
         ASSERT_EQUALS((int)('\134'), MathLib::toLongNumber("'\\134'"));
+        ASSERT_EQUALS((int)('\134t'), MathLib::toLongNumber("'\\134t'")); // Ticket #7452
         ASSERT_THROW(MathLib::toLongNumber("'\\9'"), InternalError);
         ASSERT_THROW(MathLib::toLongNumber("'\\934'"), InternalError);
         // that is not gcc/clang encoding
@@ -1118,6 +1120,27 @@ private:
         // double (tailing l or L)
         ASSERT_EQUALS("0"     , MathLib::toString(+0.0l));
         ASSERT_EQUALS("-0"    , MathLib::toString(-0.0L));
+    }
+
+    void characterLiteralsNormalization() {
+        // `A` is 0x41 and 0101
+        ASSERT_EQUALS("A" , MathLib::normalizeCharacterLiteral("\\x41"));
+        ASSERT_EQUALS("A" , MathLib::normalizeCharacterLiteral("\\101"));
+        // Hexa and octal numbers should not only be intepreted in byte 1
+        ASSERT_EQUALS("TESTATEST" , MathLib::normalizeCharacterLiteral("TEST\\x41TEST"));
+        ASSERT_EQUALS("TESTATEST" , MathLib::normalizeCharacterLiteral("TEST\\101TEST"));
+        ASSERT_EQUALS("TESTTESTA" , MathLib::normalizeCharacterLiteral("TESTTEST\\x41"));
+        ASSERT_EQUALS("TESTTESTA" , MathLib::normalizeCharacterLiteral("TESTTEST\\101"));
+        // Single escape sequences
+        ASSERT_EQUALS("\?" , MathLib::normalizeCharacterLiteral("\\?"));
+        ASSERT_EQUALS("\'" , MathLib::normalizeCharacterLiteral("\\'"));
+        // Incomplete hexa and octal sequences
+        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\"), InternalError);
+        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\x"), InternalError);
+        // No octal digit in an octal sequence
+        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\9"), InternalError);
+        // Unsupported single escape sequence
+        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\c"), InternalError);
     }
 };
 
