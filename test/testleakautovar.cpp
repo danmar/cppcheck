@@ -98,6 +98,7 @@ private:
         TEST_CASE(return2);
         TEST_CASE(return3);
         TEST_CASE(return4);
+        TEST_CASE(return5);
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -1039,6 +1040,20 @@ private:
               "        throw 1;\n"
               "    }\n"
               "    delete [] p;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void return5() { // ticket #6397 - conditional allocation/deallocation and conditional return
+        // avoid false positives
+        check("void f(int *p, int x) {\n"
+              "    if (x != 0) {\n"
+              "        free(p);\n"
+              "    }\n"
+              "    if (x != 0) {\n"
+              "        return;\n"
+              "    }\n"
+              "    *p = 0;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
     }

@@ -362,8 +362,20 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 VarInfo old;
                 old.swap(*varInfo);
 
-                // Conditional allocation in varInfo1
                 std::map<unsigned int, VarInfo::AllocInfo>::const_iterator it;
+
+                for (it = old.alloctype.begin(); it != old.alloctype.end(); ++it) {
+                    const unsigned int varId = it->first;
+                    if (old.conditionalAlloc.find(varId) == old.conditionalAlloc.end())
+                        continue;
+                    if (varInfo1.alloctype.find(varId) == varInfo1.alloctype.end() ||
+                        varInfo2.alloctype.find(varId) == varInfo2.alloctype.end()) {
+                        varInfo1.erase(varId);
+                        varInfo2.erase(varId);
+                    }
+                }
+
+                // Conditional allocation in varInfo1
                 for (it = varInfo1.alloctype.begin(); it != varInfo1.alloctype.end(); ++it) {
                     if (varInfo2.alloctype.find(it->first) == varInfo2.alloctype.end() &&
                         old.alloctype.find(it->first) == old.alloctype.end()) {
