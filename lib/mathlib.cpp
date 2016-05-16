@@ -21,6 +21,7 @@
 #include "mathlib.h"
 #include "errorlogger.h"
 
+#include <algorithm> // VS2013: std::min and std::max
 #include <cmath>
 #include <cctype>
 #include <cstdlib>
