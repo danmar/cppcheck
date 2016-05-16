@@ -374,16 +374,16 @@ std::string MathLib::normalizeCharacterLiteral(const std::string& iLiteral)
         switch (iLiteral[idx]) {
         case 'x':
             // Hexa-decimal number: skip \x and interpret the next two characters
-            {
-                if (++idx == iLiteralLen)
-                    throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant '" + iLiteral + "'.");
-                std::string tempBuf;
+        {
+            if (++idx == iLiteralLen)
+                throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant '" + iLiteral + "'.");
+            std::string tempBuf;
+            tempBuf.push_back(iLiteral[idx]);
+            if (++idx != iLiteralLen)
                 tempBuf.push_back(iLiteral[idx]);
-                if (++idx != iLiteralLen)
-                    tempBuf.push_back(iLiteral[idx]);
-                normalizedLiteral.push_back(static_cast<char>(MathLib::toULongNumber("0x" + tempBuf)));
-                continue;
-            }
+            normalizedLiteral.push_back(static_cast<char>(MathLib::toULongNumber("0x" + tempBuf)));
+            continue;
+        }
         case 'u':
         case 'U':
             // Unicode string; just skip the \u or \U
