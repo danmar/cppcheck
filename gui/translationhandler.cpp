@@ -29,16 +29,19 @@
 // Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"
 static void unused()
 {
-    // Qt4
+#if ((QT_VERSION >= 0x040000)&&(QT_VERSION < 0x050000))
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "OK"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Cancel"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Close"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Save"));
-    // Qt5
+#elif ((QT_VERSION >= 0x050000)&&(QT_VERSION < 0x060000))
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "OK"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Cancel"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Close"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Save"));
+#else
+#error Unsupported Qt version.
+#endif
 }
 
 TranslationHandler::TranslationHandler(QObject *parent) :
