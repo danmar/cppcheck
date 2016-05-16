@@ -408,7 +408,7 @@ private:
               "    void f() { }\n"
               "    void f(int) { }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:10]: (style) Unused private function: 'A::f'\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incompleteImplementation() {

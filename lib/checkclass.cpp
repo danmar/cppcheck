@@ -890,7 +890,7 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
             for (const Token *ftok = func->functionScope->classDef->linkAt(1); ftok != func->functionScope->classEnd; ftok = ftok->next()) {
                 if (ftok->function() == privfunc)
                     return true;
-                if (ftok->varId() == 0U && !ftok->function() && ftok->str() == privfunc->name()) // TODO: This condition should be redundant	
+                if (ftok->varId() == 0U && ftok->str() == privfunc->name()) // TODO: This condition should be redundant
                     return true;
             }
         } else if ((func->type != Function::eCopyConstructor &&
