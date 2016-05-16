@@ -392,6 +392,17 @@ private:
               "    };\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"  // #6968 - outer definition
+              "public:\n"
+              "  class B;\n"
+              "private:\n"
+              "  void f() {}\n"
+              "}\n"
+              "class A::B {"
+              "  B() { A a; a.f(); }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

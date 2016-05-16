@@ -899,10 +899,10 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
             return true;
     }
 
-    for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
-        if ((*i)->isClassOrStruct())
-            if (checkFunctionUsage(privfunc, *i)) // Check nested classes, which can access private functions of their base
-                return true;
+    for (std::list<Type*>::const_iterator i = scope->definedTypes.begin(); i != scope->definedTypes.end(); ++i) {
+        const Type *type = *i;
+        if (type->enclosingScope == scope && checkFunctionUsage(privfunc, type->classScope))
+            return true;
     }
 
     for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
