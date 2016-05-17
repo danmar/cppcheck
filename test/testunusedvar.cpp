@@ -119,6 +119,7 @@ private:
         TEST_CASE(localvararray1);  // ticket #2780
         TEST_CASE(localvararray2);  // ticket #3438
         TEST_CASE(localvararray3);  // ticket #3980
+        TEST_CASE(localvararray4);  // ticket #4839
         TEST_CASE(localvarstring1);
         TEST_CASE(localvarstring2); // ticket #2929
         TEST_CASE(localvarconst1);
@@ -3650,6 +3651,16 @@ private:
                               "    int p[5][5];\n"
                               "    *((int*)p[0]) = 0;\n"
                               "    return p[0][0];\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvararray4() {
+        functionVariableUsage("void foo() {\n"
+                              "    int p[1];\n"
+                              "    int *pp[0];\n"
+                              "    p[0] = 1;\n"
+                              "    *pp[0] = p[0];\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

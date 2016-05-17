@@ -1013,6 +1013,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         // assignment
         else if ((Token::Match(tok, "%name% [") && Token::simpleMatch(skipBracketsAndMembers(tok->next()), "=")) ||
                  (Token::simpleMatch(tok, "* (") && Token::simpleMatch(tok->next()->link(), ") ="))) {
+            const Token *eq = tok;
+            while (eq && !eq->isAssignmentOp())
+                eq = eq->astParent();
+
+            const bool deref = eq && eq->astOperand1() && eq->astOperand1()->valueType() && eq->astOperand1()->valueType()->pointer == 0U;
+
             if (tok->str() == "*") {
                 tok = tok->tokAt(2);
                 if (tok->str() == "(")
@@ -1031,7 +1037,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     variables.read(varid, tok);
                     variables.writeAliases(varid, tok);
                 } else if (var->_type == Variables::pointerArray) {
-                    tok = doAssignment(variables, tok, false, scope);
+                    tok = doAssignment(variables, tok, deref, scope);
                 } else
                     variables.writeAll(varid, tok);
             }
