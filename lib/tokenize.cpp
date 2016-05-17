@@ -7978,6 +7978,8 @@ void Tokenizer::simplifyComma()
                 tok = tok->link()->next();
         }
 
+        if (!tok)
+            syntaxError(nullptr); // invalid code like in #4195
         if (Token::Match(tok, "(|[") ||
             (tok->str() == "{" && tok->previous() && tok->previous()->str() == "=")) {
             tok = tok->link();
