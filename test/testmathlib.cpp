@@ -301,6 +301,7 @@ private:
             ASSERT_EQUALS(0, MathLib::characterLiteralToLongNumber(std::string("")));
             ASSERT_EQUALS(32, MathLib::characterLiteralToLongNumber(std::string(" ")));
             ASSERT_EQUALS(538976288, MathLib::characterLiteralToLongNumber(std::string("          ")));
+            ASSERT_THROW(MathLib::characterLiteralToLongNumber(std::string("\\u")), InternalError);
         }
 
         ASSERT_EQUALS(-8552249625308161526, MathLib::toLongNumber("0x89504e470d0a1a0a"));

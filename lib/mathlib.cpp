@@ -356,6 +356,8 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
     // is implementation-defined.
     // clang and gcc seem to use the following encoding: 'AB' as (('A' << 8) | 'B')
     const std::string& normStr = normalizeCharacterLiteral(str);
+    if (normStr.empty())
+        throw InternalError(0, "Internal Error. MathLib::characterLiteralToLongNumber: Unhandled char constant '" + str + "'.");
     return encodeMultiChar(normStr);
 }
 
