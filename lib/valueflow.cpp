@@ -25,6 +25,9 @@
 #include "token.h"
 #include "tokenlist.h"
 #include <stack>
+#if GCC_VERSION < 40600
+#include <limits>
+#endif
 
 namespace {
     struct ProgramMemory {
