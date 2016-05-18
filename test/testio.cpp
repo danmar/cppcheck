@@ -2563,7 +2563,7 @@ private:
         check("void foo() {\n"
               "    char lineBuffer [600];\n"
               "    const char * const format = \"%15s%17s%17s%17s%17s\n\";\n"
-              "    sprintf_s(lineBuffer, format, \"type\", \"sum\", \"avg\", \"min\", \"max\");\n"
+              "    sprintf_s(lineBuffer, 600, format, \"type\", \"sum\", \"avg\", \"min\", \"max\");\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
 
@@ -2572,9 +2572,9 @@ private:
               "    const char format2[] = \"%15s%17s%17s%17s%17s\n\";\n"
               "    const char * const format3 = format1;\n"
               "    int i = 0;\n"
-              "    sprintf_s(lineBuffer, format1, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
-              "    sprintf_s(lineBuffer, format2, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
-              "    sprintf_s(lineBuffer, format3, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
+              "    sprintf_s(lineBuffer, 100, format1, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
+              "    sprintf_s(lineBuffer, 100, format2, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
+              "    sprintf_s(lineBuffer, 100, format3, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "    sprintf(lineBuffer, format1, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "    sprintf(lineBuffer, format2, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "    sprintf(lineBuffer, format3, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
