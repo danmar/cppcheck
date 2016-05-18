@@ -116,7 +116,11 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
     // as an empty message to the user if --verbose is used.
     // Even this doesn't cause problems with messages that have multiple
     // lines, none of the the error messages should end into it.
+#if GCC_VERSION >= 40600
     assert(!(msg.back() =='\n'));
+#else
+    assert(!(msg[msg.size() - 1] =='\n'));
+#endif
 
     // The summary and verbose message are separated by a newline
     // If there is no newline then both the summary and verbose messages
