@@ -775,7 +775,14 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
 
         // templates
-        if (tok->isName() && tok->str().back() == '>') {
+        if (tok->isName() && 
+#if GCC_VERSION >= 40600
+            tok->str().back() == '>'
+#else
+            tok->str()[tok->str().size() - 1] == '>'
+#endif
+        )
+        {
             // TODO: This is a quick fix to handle when constants are used
             // as template parameters. Try to handle this better, perhaps
             // only remove constants.
