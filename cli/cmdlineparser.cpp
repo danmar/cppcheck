@@ -72,7 +72,11 @@ static void AddInclPathsToList(const std::string& FileList, std::list<std::strin
                 PathName = Path::fromNativeSeparators(PathName);
 
                 // If path doesn't end with / or \, add it
+#if GCC_VERSION >= 40600
                 if (PathName.back() != '/')
+#else
+                if (PathName[PathName.size() - 1] != '/')
+#endif
                     PathName += '/';
 
                 PathNames->push_back(PathName);
@@ -411,7 +415,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 path = Path::fromNativeSeparators(path);
 
                 // If path doesn't end with / or \, add it
+#if GCC_VERSION >= 40600
                 if (path.back() != '/')
+#else
+                if (path[path.size() - 1] != '/')
+#endif
                     path += '/';
 
                 _settings->includePaths.push_back(path);
@@ -465,7 +473,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
                     if (FileLister::isDirectory(path)) {
                         // If directory name doesn't end with / or \, add it
+#if GCC_VERSION >= 40600
                         if (path.back() != '/')
+#else
+                        if (path[path.size() - 1] != '/')
+#endif
                             path += '/';
                     }
                     _ignoredPaths.push_back(path);
