@@ -223,7 +223,11 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
 {
     if (!path.empty()) {
         std::string corrected_path = path;
+#if GCC_VERSION >= 40600
         if (corrected_path.back() == '/')
+#else
+        if (corrected_path[corrected_path.size() - 1] == '/')
+#endif
             corrected_path.erase(corrected_path.end() - 1);
 
         addFiles2(files, corrected_path, extra, recursive, ignored);
