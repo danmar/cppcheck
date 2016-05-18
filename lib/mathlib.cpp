@@ -338,7 +338,11 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 
 static unsigned int encodeMultiChar(const std::string& str)
 {
+#if GCC_VERSION >= 40600
     unsigned int retval(str.front());
+#else
+    unsigned int retval(str[0]);
+#endif
     for (std::string::const_iterator it=str.begin()+1; it!=str.end(); ++it) {
         retval = retval<<8 | *it;
     }
