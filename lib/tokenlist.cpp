@@ -297,8 +297,13 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
         } else if (std::strchr("+-", ch) &&
                    CurrentToken.length() > 0 &&
                    std::isdigit((unsigned char)CurrentToken[0]) &&
+#if GCC_VERSION >= 40600
                    (CurrentToken.back() == 'e' ||
                     CurrentToken.back() == 'E') &&
+#else
+                   (CurrentToken[CurrentToken.size() - 1] == 'e' ||
+                    CurrentToken[CurrentToken.size() - 1] == 'E') &&
+#endif
                    !MathLib::isIntHex(CurrentToken)) {
             // Don't separate doubles "4.2e+10"
         } else if (CurrentToken.empty() && ch == '.' && std::isdigit((unsigned char)code.peek())) {
