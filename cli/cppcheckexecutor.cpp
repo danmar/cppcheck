@@ -119,7 +119,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             else {
                 // If the include path is not found, warn user and remove the non-existing path from the list.
                 if (settings.isEnabled("information"))
-                    std::cerr << "(information) Couldn't find path given by -I '" << path << '\'' << std::endl;
+                    std::cout << "(information) Couldn't find path given by -I '" << path << '\'' << std::endl;
                 iter = settings.includePaths.erase(iter);
             }
         }
@@ -179,7 +179,6 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     if (settings.terminated()) {
         return EXIT_SUCCESS;
     }
-
     if (cppCheck.settings().exceptionHandling) {
         return check_wrapper(cppCheck, argc, argv);
     } else {
@@ -199,301 +198,299 @@ std::size_t GetArrayLength(const T(&)[size])
 
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
-namespace  {
-    /*
-     * Try to print the callstack.
-     * That is very sensitive to the operating system, hardware, compiler and runtime!
-     * The code is not meant for production environment, it's using functions not whitelisted for usage in a signal handler function.
-     */
-    void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool lowMem)
-    {
+/*
+ * Try to print the callstack.
+ * That is very sensitive to the operating system, hardware, compiler and runtime!
+ * The code is not meant for production environment, it's using functions not whitelisted for usage in a signal handler function.
+ */
+static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool lowMem)
+{
 #if defined(USE_UNIX_BACKTRACE_SUPPORT)
 // 32 vs. 64bit
 #define ADDRESSDISPLAYLENGTH ((sizeof(long)==8)?12:8)
-        const int fd = fileno(output);
-        void *array[32]= {0}; // the less resources the better...
-        const int currentdepth = backtrace(array, (int)GetArrayLength(array));
-        const int offset=2; // some entries on top are within our own exception handling code or libc
-        if (maxdepth<0)
-            maxdepth=currentdepth-offset;
-        else
-            maxdepth = std::min(maxdepth, currentdepth);
-        if (lowMem) {
-            fputs("Callstack (symbols only):\n", output);
-            fflush(output);
-            backtrace_symbols_fd(array+offset, maxdepth, fd);
-            fflush(output);
-        } else {
-            char **symbolstrings = backtrace_symbols(array, currentdepth);
-            if (symbolstrings) {
-                fputs("Callstack:\n", output);
-                for (int i = offset; i < maxdepth; ++i) {
-                    const char * const symbol = symbolstrings[i];
-                    char * realname = nullptr;
-                    const char * const firstBracketName     = strchr(symbol, '(');
-                    const char * const firstBracketAddress  = strchr(symbol, '[');
-                    const char * const secondBracketAddress = strchr(firstBracketAddress, ']');
-                    const char * const beginAddress         = firstBracketAddress+3;
-                    const int addressLen = int(secondBracketAddress-beginAddress);
-                    const int padLen     = int(ADDRESSDISPLAYLENGTH-addressLen);
-                    if (demangling && firstBracketName) {
-                        const char * const plus = strchr(firstBracketName, '+');
-                        if (plus && (plus>(firstBracketName+1))) {
-                            char input_buffer[512]= {0};
-                            strncpy(input_buffer, firstBracketName+1, plus-firstBracketName-1);
-                            char output_buffer[1024]= {0};
-                            size_t length = GetArrayLength(output_buffer);
-                            int status=0;
-                            realname = abi::__cxa_demangle(input_buffer, output_buffer, &length, &status); // non-NULL on success
-                        }
-                    }
-                    const int ordinal=i-offset;
-                    fprintf(output, "#%-2d 0x",
-                            ordinal);
-                    if (padLen>0)
-                        fprintf(output, "%0*d",
-                                padLen, 0);
-                    if (realname) {
-                        fprintf(output, "%.*s in %s\n",
-                                (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
-                                realname);
-                    } else {
-                        fprintf(output, "%.*s in %.*s\n",
-                                (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
-                                (int)(firstBracketAddress-symbol), symbol);
+    const int fd = fileno(output);
+    void *array[32]= {0}; // the less resources the better...
+    const int currentdepth = backtrace(array, (int)GetArrayLength(array));
+    const int offset=2; // some entries on top are within our own exception handling code or libc
+    if (maxdepth<0)
+        maxdepth=currentdepth-offset;
+    else
+        maxdepth = std::min(maxdepth, currentdepth);
+    if (lowMem) {
+        fputs("Callstack (symbols only):\n", output);
+        backtrace_symbols_fd(array+offset, maxdepth, fd);
+        fflush(output);
+    } else {
+        char **symbolstrings = backtrace_symbols(array, currentdepth);
+        if (symbolstrings) {
+            fputs("Callstack:\n", output);
+            for (int i = offset; i < maxdepth; ++i) {
+                const char * const symbol = symbolstrings[i];
+                char * realname = nullptr;
+                const char * const firstBracketName     = strchr(symbol, '(');
+                const char * const firstBracketAddress  = strchr(symbol, '[');
+                const char * const secondBracketAddress = strchr(firstBracketAddress, ']');
+                const char * const beginAddress         = firstBracketAddress+3;
+                const int addressLen = int(secondBracketAddress-beginAddress);
+                const int padLen     = int(ADDRESSDISPLAYLENGTH-addressLen);
+                if (demangling && firstBracketName) {
+                    const char * const plus = strchr(firstBracketName, '+');
+                    if (plus && (plus>(firstBracketName+1))) {
+                        char input_buffer[512]= {0};
+                        strncpy(input_buffer, firstBracketName+1, plus-firstBracketName-1);
+                        char output_buffer[1024]= {0};
+                        size_t length = GetArrayLength(output_buffer);
+                        int status=0;
+                        realname = abi::__cxa_demangle(input_buffer, output_buffer, &length, &status); // non-NULL on success
                     }
                 }
-                free(symbolstrings);
-            } else {
-                fputs("Callstack could not be obtained\n", output);
+                const int ordinal=i-offset;
+                fprintf(output, "#%-2d 0x",
+                        ordinal);
+                if (padLen>0)
+                    fprintf(output, "%0*d",
+                            padLen, 0);
+                if (realname) {
+                    fprintf(output, "%.*s in %s\n",
+                            (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
+                            realname);
+                } else {
+                    fprintf(output, "%.*s in %.*s\n",
+                            (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
+                            (int)(firstBracketAddress-symbol), symbol);
+                }
             }
+            free(symbolstrings);
+        } else {
+            fputs("Callstack could not be obtained\n", output);
         }
+    }
 #undef ADDRESSDISPLAYLENGTH
 #endif
-    }
+}
 
-    const size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a reasonable buffer
-    char mytstack[MYSTACKSIZE]= {0}; // alternative stack for signal handler
-    bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space. See CppCheckExecutor::check_wrapper()
+static const size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a reasonable buffer
+static char mytstack[MYSTACKSIZE]= {0}; // alternative stack for signal handler
+static bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space. See CppCheckExecutor::check_wrapper()
 
-    /*
-     * \param[in] ptr address to be examined.
-     * \return true if address is supposed to be on stack (contrary to heap or elsewhere). If ptr is 0 false will be returned.
-     * If unknown better return false.
-     */
-    bool IsAddressOnStack(const void* ptr)
-    {
-        if (nullptr==ptr)
-            return false;
-        char a;
-        if (bStackBelowHeap)
-            return ptr < &a;
-        else
-            return ptr > &a;
-    }
+/*
+ * \param[in] ptr address to be examined.
+ * \return true if address is supposed to be on stack (contrary to heap). If ptr is 0 false will be returned.
+ * If unknown better return false.
+ */
+static bool IsAddressOnStack(const void* ptr)
+{
+    if (nullptr==ptr)
+        return false;
+    char a;
+    if (bStackBelowHeap)
+        return ptr < &a;
+    else
+        return ptr > &a;
+}
 
-    /* (declare this list here, so it may be used in signal handlers in addition to main())
-     * A list of signals available in ISO C
-     * Check out http://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
-     * For now we only want to detect abnormal behaviour for a few selected signals:
-     */
+/* (declare this list here, so it may be used in signal handlers in addition to main())
+ * A list of signals available in ISO C
+ * Check out http://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
+ * For now we only want to detect abnormal behaviour for a few selected signals:
+ */
 
 #define DECLARE_SIGNAL(x) << std::make_pair(x, #x)
-    typedef std::map<int, std::string> Signalmap_t;
-    const Signalmap_t listofsignals = make_container< Signalmap_t > ()
-                                      DECLARE_SIGNAL(SIGABRT)
-                                      DECLARE_SIGNAL(SIGBUS)
-                                      DECLARE_SIGNAL(SIGFPE)
-                                      DECLARE_SIGNAL(SIGILL)
-                                      DECLARE_SIGNAL(SIGINT)
-                                      DECLARE_SIGNAL(SIGQUIT)
-                                      DECLARE_SIGNAL(SIGSEGV)
-                                      DECLARE_SIGNAL(SIGSYS)
-                                      // don't care: SIGTERM
-                                      DECLARE_SIGNAL(SIGUSR1)
-                                      DECLARE_SIGNAL(SIGUSR2)
-                                      ;
+typedef std::map<int, std::string> Signalmap_t;
+static const Signalmap_t listofsignals = make_container< Signalmap_t > ()
+        DECLARE_SIGNAL(SIGABRT)
+        DECLARE_SIGNAL(SIGBUS)
+        DECLARE_SIGNAL(SIGFPE)
+        DECLARE_SIGNAL(SIGILL)
+        DECLARE_SIGNAL(SIGINT)
+        DECLARE_SIGNAL(SIGQUIT)
+        DECLARE_SIGNAL(SIGSEGV)
+        DECLARE_SIGNAL(SIGSYS)
+        // don't care: SIGTERM
+        DECLARE_SIGNAL(SIGUSR1)
+        DECLARE_SIGNAL(SIGUSR2)
+        ;
 #undef DECLARE_SIGNAL
-    /*
-     * Entry pointer for signal handlers
-     * It uses functions which are not safe to be called from a signal handler,
-     * but when ending up here something went terribly wrong anyway.
-     * And all which is left is just printing some information and terminate.
-     */
-    void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
-    {
-        int type = -1;
-        pid_t killid = getpid();
+/*
+ * Entry pointer for signal handlers
+ * It uses functions which are not safe to be called from a signal handler,
+ * (http://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_04 has a whitelist)
+ * but when ending up here something went terribly wrong anyway.
+ * And all which is left is just printing some information and terminate.
+ */
+static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
+{
+    int type = -1;
+    pid_t killid = getpid();
 #if defined(__linux__) && defined(REG_ERR)
-        const ucontext_t* const uc = reinterpret_cast<const ucontext_t*>(context);
-        killid = (pid_t) syscall(SYS_gettid);
-        if (uc) {
-            type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
-        }
+    const ucontext_t* const uc = reinterpret_cast<const ucontext_t*>(context);
+    killid = (pid_t) syscall(SYS_gettid);
+    if (uc) {
+        type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
+    }
 #endif
-        const Signalmap_t::const_iterator it=listofsignals.find(signo);
-        const char * const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
-        bool printCallstack=true;
-        bool lowMem=false;
-        bool unexpectedSignal=true;
-        const bool isaddressonstack = IsAddressOnStack(info->si_addr);
-        FILE* output = CppCheckExecutor::getExceptionOutput();
-        switch (signo) {
-        case SIGABRT:
-            fputs("Internal error: cppcheck received signal ", output);
-            fputs(signame, output);
-            fputs(" - out of memory?\n", output);
-            lowMem=true; // educated guess
+    const Signalmap_t::const_iterator it=listofsignals.find(signo);
+    const char * const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
+    bool printCallstack=true;
+    bool lowMem=false;
+    bool unexpectedSignal=true;
+    const bool isaddressonstack = IsAddressOnStack(info->si_addr);
+    FILE* output = CppCheckExecutor::getExceptionOutput();
+    switch (signo) {
+    case SIGABRT:
+        fputs("Internal error: cppcheck received signal ", output);
+        fputs(signame, output);
+        fputs(" - out of memory?\n", output);
+        lowMem=true; // educated guess
+        break;
+    case SIGBUS:
+        fputs("Internal error: cppcheck received signal ", output);
+        fputs(signame, output);
+        switch (info->si_code) {
+        case BUS_ADRALN: // invalid address alignment
+            fputs(" - BUS_ADRALN", output);
             break;
-        case SIGBUS:
-            fputs("Internal error: cppcheck received signal ", output);
-            fputs(signame, output);
-            switch (info->si_code) {
-            case BUS_ADRALN: // invalid address alignment
-                fputs(" - BUS_ADRALN", output);
-                break;
-            case BUS_ADRERR: // nonexistent physical address
-                fputs(" - BUS_ADRERR", output);
-                break;
-            case BUS_OBJERR: // object-specific hardware error
-                fputs(" - BUS_OBJERR", output);
-                break;
+        case BUS_ADRERR: // nonexistent physical address
+            fputs(" - BUS_ADRERR", output);
+            break;
+        case BUS_OBJERR: // object-specific hardware error
+            fputs(" - BUS_OBJERR", output);
+            break;
 #ifdef BUS_MCEERR_AR
-            case BUS_MCEERR_AR: // Hardware memory error consumed on a machine check;
-                fputs(" - BUS_MCEERR_AR", output);
-                break;
+        case BUS_MCEERR_AR: // Hardware memory error consumed on a machine check;
+            fputs(" - BUS_MCEERR_AR", output);
+            break;
 #endif
 #ifdef BUS_MCEERR_AO
-            case BUS_MCEERR_AO: // Hardware memory error detected in process but not consumed
-                fputs(" - BUS_MCEERR_AO", output);
-                break;
+        case BUS_MCEERR_AO: // Hardware memory error detected in process but not consumed
+            fputs(" - BUS_MCEERR_AO", output);
+            break;
 #endif
-            default:
-                break;
-            }
-            fprintf(output, " (at 0x%lx).\n",
-                    (unsigned long)info->si_addr);
+        default:
             break;
-        case SIGFPE:
-            fputs("Internal error: cppcheck received signal ", output);
-            fputs(signame, output);
-            switch (info->si_code) {
-            case FPE_INTDIV: //     integer divide by zero
-                fputs(" - FPE_INTDIV", output);
-                break;
-            case FPE_INTOVF: //     integer overflow
-                fputs(" - FPE_INTOVF", output);
-                break;
-            case FPE_FLTDIV: //     floating-point divide by zero
-                fputs(" - FPE_FLTDIV", output);
-                break;
-            case FPE_FLTOVF: //     floating-point overflow
-                fputs(" - FPE_FLTOVF", output);
-                break;
-            case FPE_FLTUND: //     floating-point underflow
-                fputs(" - FPE_FLTUND", output);
-                break;
-            case FPE_FLTRES: //     floating-point inexact result
-                fputs(" - FPE_FLTRES", output);
-                break;
-            case FPE_FLTINV: //     floating-point invalid operation
-                fputs(" - FPE_FLTINV", output);
-                break;
-            case FPE_FLTSUB: //     subscript out of range
-                fputs(" - FPE_FLTSUB", output);
-                break;
-            default:
-                break;
-            }
-            fprintf(output, " (at 0x%lx).\n",
-                    (unsigned long)info->si_addr);
+        }
+        fprintf(output, " (at 0x%lx).\n",
+                (unsigned long)info->si_addr);
+        break;
+    case SIGFPE:
+        fputs("Internal error: cppcheck received signal ", output);
+        fputs(signame, output);
+        switch (info->si_code) {
+        case FPE_INTDIV: //     integer divide by zero
+            fputs(" - FPE_INTDIV", output);
             break;
-        case SIGILL:
-            fputs("Internal error: cppcheck received signal ", output);
-            fputs(signame, output);
-            switch (info->si_code) {
-            case ILL_ILLOPC: //     illegal opcode
-                fputs(" - ILL_ILLOPC", output);
-                break;
-            case ILL_ILLOPN: //    illegal operand
-                fputs(" - ILL_ILLOPN", output);
-                break;
-            case ILL_ILLADR: //    illegal addressing mode
-                fputs(" - ILL_ILLADR", output);
-                break;
-            case ILL_ILLTRP: //    illegal trap
-                fputs(" - ILL_ILLTRP", output);
-                break;
-            case ILL_PRVOPC: //    privileged opcode
-                fputs(" - ILL_PRVOPC", output);
-                break;
-            case ILL_PRVREG: //    privileged register
-                fputs(" - ILL_PRVREG", output);
-                break;
-            case ILL_COPROC: //    coprocessor error
-                fputs(" - ILL_COPROC", output);
-                break;
-            case ILL_BADSTK: //    internal stack error
-                fputs(" - ILL_BADSTK", output);
-                break;
-            default:
-                break;
-            }
-            fprintf(output, " (at 0x%lx).%s\n",
-                    (unsigned long)info->si_addr,
-                    (isaddressonstack)?" Stackoverflow?":"");
+        case FPE_INTOVF: //     integer overflow
+            fputs(" - FPE_INTOVF", output);
             break;
-        case SIGINT:
-            unexpectedSignal=false;
-            fputs("cppcheck received signal ", output);
-            fputs(signame, output);
-            printCallstack=true;
-            fputs(".\n", output);
+        case FPE_FLTDIV: //     floating-point divide by zero
+            fputs(" - FPE_FLTDIV", output);
             break;
-        case SIGSEGV:
-            fputs("Internal error: cppcheck received signal ", output);
-            fputs(signame, output);
-            switch (info->si_code) {
-            case SEGV_MAPERR: //    address not mapped to object
-                fputs(" - SEGV_MAPERR", output);
-                break;
-            case SEGV_ACCERR: //    invalid permissions for mapped object
-                fputs(" - SEGV_ACCERR", output);
-                break;
-            default:
-                break;
-            }
-            fprintf(output, " (%sat 0x%lx).%s\n",
-                    (type==-1)? "" :
-                    (type==0) ? "reading " : "writing ",
-                    (unsigned long)info->si_addr,
-                    (isaddressonstack)?" Stackoverflow?":""
-                   );
+        case FPE_FLTOVF: //     floating-point overflow
+            fputs(" - FPE_FLTOVF", output);
             break;
-        case SIGUSR1:
-            unexpectedSignal=false;
-            fputs("cppcheck received signal ", output);
-            fputs(signame, output);
-            fputs(".\n", output);
+        case FPE_FLTUND: //     floating-point underflow
+            fputs(" - FPE_FLTUND", output);
+            break;
+        case FPE_FLTRES: //     floating-point inexact result
+            fputs(" - FPE_FLTRES", output);
+            break;
+        case FPE_FLTINV: //     floating-point invalid operation
+            fputs(" - FPE_FLTINV", output);
+            break;
+        case FPE_FLTSUB: //     subscript out of range
+            fputs(" - FPE_FLTSUB", output);
             break;
         default:
-            fputs("Internal error: cppcheck received signal ", output);
-            fputs(signame, output);
-            fputs(".\n", output);
             break;
         }
-        if (printCallstack) {
-            print_stacktrace(output, true, -1, lowMem);
+        fprintf(output, " (at 0x%lx).\n",
+                (unsigned long)info->si_addr);
+        break;
+    case SIGILL:
+        fputs("Internal error: cppcheck received signal ", output);
+        fputs(signame, output);
+        switch (info->si_code) {
+        case ILL_ILLOPC: //     illegal opcode
+            fputs(" - ILL_ILLOPC", output);
+            break;
+        case ILL_ILLOPN: //    illegal operand
+            fputs(" - ILL_ILLOPN", output);
+            break;
+        case ILL_ILLADR: //    illegal addressing mode
+            fputs(" - ILL_ILLADR", output);
+            break;
+        case ILL_ILLTRP: //    illegal trap
+            fputs(" - ILL_ILLTRP", output);
+            break;
+        case ILL_PRVOPC: //    privileged opcode
+            fputs(" - ILL_PRVOPC", output);
+            break;
+        case ILL_PRVREG: //    privileged register
+            fputs(" - ILL_PRVREG", output);
+            break;
+        case ILL_COPROC: //    coprocessor error
+            fputs(" - ILL_COPROC", output);
+            break;
+        case ILL_BADSTK: //    internal stack error
+            fputs(" - ILL_BADSTK", output);
+            break;
+        default:
+            break;
         }
-        if (unexpectedSignal) {
-            fputs("\nPlease report this to the cppcheck developers!\n", output);
+        fprintf(output, " (at 0x%lx).%s\n",
+                (unsigned long)info->si_addr,
+                (isaddressonstack)?" Stackoverflow?":"");
+        break;
+    case SIGINT:
+        unexpectedSignal=false; // legal usage: interrupt application via CTRL-C
+        fputs("cppcheck received signal ", output);
+        fputs(signame, output);
+        printCallstack=true;
+        fputs(".\n", output);
+        break;
+    case SIGSEGV:
+        fputs("Internal error: cppcheck received signal ", output);
+        fputs(signame, output);
+        switch (info->si_code) {
+        case SEGV_MAPERR: //    address not mapped to object
+            fputs(" - SEGV_MAPERR", output);
+            break;
+        case SEGV_ACCERR: //    invalid permissions for mapped object
+            fputs(" - SEGV_ACCERR", output);
+            break;
+        default:
+            break;
         }
-        fflush(output);
-
-        // now let things proceed, shutdown and hopefully dump core for post-mortem analysis
-        signal(signo, SIG_DFL);
-        kill(killid, signo);
+        fprintf(output, " (%sat 0x%lx).%s\n",
+                (type==-1)? "" :
+                (type==0) ? "reading " : "writing ",
+                (unsigned long)info->si_addr,
+                (isaddressonstack)?" Stackoverflow?":""
+               );
+        break;
+    case SIGUSR1:
+    case SIGUSR2:
+        fputs("cppcheck received signal ", output);
+        fputs(signame, output);
+        fputs(".\n", output);
+        break;
+    default:
+        fputs("Internal error: cppcheck received signal ", output);
+        fputs(signame, output);
+        fputs(".\n", output);
+        break;
     }
+    if (printCallstack) {
+        print_stacktrace(output, true, -1, lowMem);
+    }
+    if (unexpectedSignal) {
+        fputs("\nPlease report this to the cppcheck developers!\n", output);
+    }
+    fflush(output);
+
+    // now let things proceed, shutdown and hopefully dump core for post-mortem analysis
+    signal(signo, SIG_DFL);
+    kill(killid, signo);
 }
 #endif
 
