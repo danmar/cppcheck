@@ -423,6 +423,33 @@ static bool astHasAutoResult(const Token *tok)
     return false;
 }
 
+/*!
+ * Skip over a lambda expression
+ * \return next token - or next token beyond lambda
+ * \todo handle explicit return type
+ */
+static const Token* skipLambda(const Token* first)
+{
+    if (!first)
+        return nullptr;
+    if (first->str() != "[")
+        return first;
+    const Token* tok = first->link()->next();
+    if (!tok)
+        return nullptr;
+    if (tok->str() == "(") {
+        tok = tok->link()->next();
+    }
+    if (tok->str() == "constexpr")
+        tok = tok->next();
+    if (tok->str() == "mutable")
+        tok = tok->next();
+    if (tok->str() == "{") {
+        tok = tok->link()->next();
+    }
+    return tok;
+}
+
 void CheckAutoVariables::returnReference()
 {
     if (_tokenizer->isC())
@@ -447,10 +474,9 @@ void CheckAutoVariables::returnReference()
                 }
 
                 // Skip over lambdas
-                if (tok2->str() == "[" && tok2->link()->strAt(1) == "(" && tok2->link()->linkAt(1)->strAt(1) == "{")
-                    tok2 = tok2->link()->linkAt(1)->linkAt(1);
+                tok2 = skipLambda(tok2);
 
-                if (tok2->str() != "return")
+                if (!tok2 || tok2->str() != "return")
                     continue;
 
                 // return..

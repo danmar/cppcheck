@@ -1023,6 +1023,16 @@ private:
               "    });\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5844
+        check("map<string,string> const &getVariableTable() {\n"
+              "static map<string,string> const s_var = []{\n"
+              "    map<string,string> var;\n"
+              "    return var;\n"
+              "  }();\n"
+              "return s_var;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceInnerScope() {
