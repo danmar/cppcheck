@@ -1207,6 +1207,12 @@ private:
               "    m_dsmccQueue.enqueue(new DSMCCPacket(somethingunrelated));\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: dataCopy\n", errout.str());
+
+        check("void f() {\n"
+              "  char *buf = new char[1000];\n"
+              "  clist.push_back(new (std::nothrow) C(buf));\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function C() should have <use>/<leak-ignore> configuration\n", errout.str());
     }
 
     void testKeywords() {
