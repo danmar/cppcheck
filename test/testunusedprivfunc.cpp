@@ -481,6 +481,24 @@ private:
               "    void func() {}\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("class Base {\n"
+              "public:\n"
+              "    void dostuff() {\n"
+              "      f();\n"
+              "    }\n"
+              "\n"
+              "private:\n"
+              "    virtual Base* f() = 0;\n"
+              "};\n"
+              "\n"
+              "class Derived : public Base {\n"
+              "private:\n"
+              "    Derived* f() {\n"
+              "      return 0;\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void friendClass() {

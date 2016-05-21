@@ -2789,7 +2789,9 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
 
                     // check for matching return parameters
                     while (temp1->str() != "virtual") {
-                        if (temp1->str() != temp2->str()) {
+                        if (temp1->str() != temp2->str() &&
+                            !(temp1->str() == derivedFromType->name() &&
+                              temp2->str() == baseType->name())) {
                             returnMatch = false;
                             break;
                         }
