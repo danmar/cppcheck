@@ -163,6 +163,15 @@ void CheckLeakAutoVar::check()
     }
 }
 
+static bool isVarUsedInTree(const Token *tok, unsigned int varid)
+{
+    if (!tok)
+        return false;
+    if (tok->varId() == varid)
+        return true;
+    return isVarUsedInTree(tok->astOperand1(), varid) || isVarUsedInTree(tok->astOperand2(), varid);
+}
+
 void CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   VarInfo *varInfo,
                                   std::set<unsigned int> notzero)
@@ -237,18 +246,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
 
             // is variable used in rhs?
-            bool used_in_rhs = false;
-            for (const Token *tok2 = varTok->tokAt(2); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == ";") {
-                    break;
-                }
-                if (varTok->varId() == tok2->varId()) {
-                    used_in_rhs = true;
-                    break;
-                }
-            }
-            // TODO: Better checking how the pointer is used in rhs?
-            if (used_in_rhs)
+            if (isVarUsedInTree(varTok->next()->astOperand2(), varTok->varId()))
                 continue;
 
             // Variable has already been allocated => error
