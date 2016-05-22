@@ -120,20 +120,15 @@ void CheckSizeof::checkSizeofForPointerSize()
             // Once leaving those tests, it is mandatory to have:
             // - variable matching the used pointer
             // - tokVar pointing on the argument where sizeof may be used
-            if (Token::Match(tok, "%var% = malloc|alloca (")) {
-                variable = tok;
+            if (Token::Match(tok->tokAt(2), "malloc|alloca|calloc (")) {
+                if (Token::Match(tok, "%var% ="))
+                    variable = tok;
+                else if (tok->strAt(1) == ")" && Token::Match(tok->linkAt(1)->tokAt(-2), "%var% ="))
+                    variable = tok->linkAt(1)->tokAt(-2);
+                else if (tok->link() && Token::Match(tok, "> ( malloc|alloca|calloc (") && Token::Match(tok->link()->tokAt(-3), "%var% ="))
+                    variable = tok->link()->tokAt(-3);
                 tokSize = tok->tokAt(4);
                 tokFunc = tok->tokAt(2);
-            } else if (Token::Match(tok, "%var% = calloc (")) {
-                variable = tok;
-                tokSize = tok->tokAt(4)->nextArgument();
-                tokFunc = tok->tokAt(2);
-            } else if (Token::Match(tok, "return malloc|alloca (")) {
-                tokSize = tok->tokAt(3);
-                tokFunc = tok->next();
-            } else if (Token::simpleMatch(tok, "return calloc (")) {
-                tokSize = tok->tokAt(3)->nextArgument();
-                tokFunc = tok->next();
             } else if (Token::simpleMatch(tok, "memset (") && tok->strAt(-1) != ".") {
                 variable = tok->tokAt(2);
                 tokSize = variable->nextArgument();
@@ -150,6 +145,9 @@ void CheckSizeof::checkSizeofForPointerSize()
             } else {
                 continue;
             }
+
+            if (tokFunc && tokFunc->str() == "calloc")
+                tokSize = tokSize->nextArgument();
 
             if (tokFunc && tokSize) {
                 for (const Token* tok2 = tokSize; tok2 != tokFunc->linkAt(1); tok2 = tok2->next()) {
@@ -192,6 +190,14 @@ void CheckSizeof::checkSizeofForPointerSize()
             if (tokSize->str() != "sizeof")
                 continue;
 
+            // Now check for the sizeof usage: Does the level of pointer indirection match?
+            if (tokSize->linkAt(1)->strAt(-1) == "*") {
+                if (variable && variable->valueType() && variable->valueType()->pointer == 1)
+                    sizeofForPointerError(variable, variable->str());
+                else if (variable2 && variable2->valueType() && variable2->valueType()->pointer == 1)
+                    sizeofForPointerError(variable2, variable2->str());
+            }
+
             if (Token::simpleMatch(tokSize, "sizeof ( &"))
                 tokSize = tokSize->tokAt(3);
             else if (Token::Match(tokSize, "sizeof (|&"))
@@ -205,9 +211,8 @@ void CheckSizeof::checkSizeofForPointerSize()
             if (Token::Match(tokSize, "%var% [|("))
                 continue;
 
-            // Now check for the sizeof usage. Once here, everything using sizeof(varid) or sizeof(&varid)
+            // Now check for the sizeof usage again. Once here, everything using sizeof(varid) or sizeof(&varid)
             // looks suspicious
-            // Do it for first variable
             if (variable && tokSize->varId() == variable->varId())
                 sizeofForPointerError(variable, variable->str());
             if (variable2 && tokSize->varId() == variable2->varId())
