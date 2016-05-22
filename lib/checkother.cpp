@@ -36,7 +36,9 @@ namespace {
 static const struct CWE CWE197(197U);   // Numeric Truncation Error
 static const struct CWE CWE369(369U);
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const struct CWE CWE475(475U);   // Undefined Behavior for Input to API
 static const struct CWE CWE484(484U);   // Omitted Break Statement in Switch
+static const struct CWE CWE561(561U);   // Dead Code
 static const struct CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
 static const struct CWE CWE570(570U);   // Expression is Always False
 static const struct CWE CWE571(571U);   // Expression is Always True
@@ -1052,13 +1054,13 @@ void CheckOther::duplicateBreakError(const Token *tok, bool inconclusive)
     reportError(tok, Severity::style, "duplicateBreak",
                 "Consecutive return, break, continue, goto or throw statements are unnecessary.\n"
                 "Consecutive return, break, continue, goto or throw statements are unnecessary. "
-                "The second statement can never be executed, and so should be removed.", CWE(0U), inconclusive);
+                "The second statement can never be executed, and so should be removed.", CWE561, inconclusive);
 }
 
 void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 {
     reportError(tok, Severity::style, "unreachableCode",
-                "Statements following return, break, continue, goto or throw will never be executed.", CWE(0U), inconclusive);
+                "Statements following return, break, continue, goto or throw will never be executed.", CWE561, inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -1375,7 +1377,7 @@ void CheckOther::commaSeparatedReturnError(const Token *tok)
                 "        return a + 1,\n"
                 "    b++;\n"
                 "However it can be useful to use comma in macros. Cppcheck does not warn when such a "
-                "macro is then used in a return statement, it is less likely such code is misunderstood.");
+                "macro is then used in a return statement, it is less likely such code is misunderstood.", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1657,7 +1659,7 @@ void CheckOther::nanInArithmeticExpressionError(const Token *tok)
     reportError(tok, Severity::style, "nanInArithmeticExpression",
                 "Using NaN/Inf in a computation.\n"
                 "Using NaN/Inf in a computation. "
-                "Although nothing bad really happens, it is suspicious.");
+                "Although nothing bad really happens, it is suspicious.", CWE369, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1952,7 +1954,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
     reportError(toks, Severity::style, "duplicateExpression", "Same expression on both sides of \'" + op + "\'.\n"
                 "Finding the same expression on both sides of an operator is suspicious and might "
                 "indicate a cut and paste or logic error. Please examine this code carefully to "
-                "determine if it is correct.");
+                "determine if it is correct.", CWE398, false);
 }
 
 void CheckOther::duplicateExpressionTernaryError(const Token *tok)
@@ -2077,19 +2079,19 @@ void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &
                     "Checking if unsigned variable '" + varname + "' is less than zero. An unsigned "
                     "variable will never be negative so it is either pointless or an error to check if it is. "
                     "It's not known if the used constant is a template parameter or not and therefore "
-                    "this message might be a false warning.", CWE(0U), true);
+                    "this message might be a false warning.", CWE570, true);
     } else {
         reportError(tok, Severity::style, "unsignedLessThanZero",
                     "Checking if unsigned variable '" + varname + "' is less than zero.\n"
                     "The unsigned variable '" + varname + "' will never be negative so it "
-                    "is either pointless or an error to check if it is.");
+                    "is either pointless or an error to check if it is.", CWE570, false);
     }
 }
 
 void CheckOther::pointerLessThanZeroError(const Token *tok, bool inconclusive)
 {
     reportError(tok, Severity::style, "pointerLessThanZero",
-                "A pointer can not be negative so it is either pointless or an error to check if it is.", CWE(0U), inconclusive);
+                "A pointer can not be negative so it is either pointless or an error to check if it is.", CWE570, inconclusive);
 }
 
 void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive)
@@ -2099,17 +2101,17 @@ void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varn
                     "Unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it.\n"
                     "The unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it. "
                     "It's not known if the used constant is a "
-                    "template parameter or not and therefore this message might be a false warning", CWE(0U), true);
+                    "template parameter or not and therefore this message might be a false warning", CWE570, true);
     } else {
         reportError(tok, Severity::style, "unsignedPositive",
-                    "Unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it.");
+                    "Unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it.", CWE570, false);
     }
 }
 
 void CheckOther::pointerPositiveError(const Token *tok, bool inconclusive)
 {
     reportError(tok, Severity::style, "pointerPositive",
-                "A pointer can not be negative so it is either pointless or an error to check if it is not.", CWE(0U), inconclusive);
+                "A pointer can not be negative so it is either pointless or an error to check if it is not.", CWE570, inconclusive);
 }
 
 /* check if a constructor in given class scope takes a reference */
@@ -2376,7 +2378,7 @@ void CheckOther::varFuncNullUBError(const Token *tok)
                 "    h();\n"
                 "    g();\n"
                 "    return 0;\n"
-                "}");
+                "}", CWE475, false);
 }
 
 void CheckOther::checkRedundantPointerOp()

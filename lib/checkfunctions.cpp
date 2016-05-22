@@ -32,6 +32,7 @@ namespace {
     CheckFunctions instance;
 }
 
+static const CWE CWE252(252U);  // Unchecked Return Value
 static const CWE CWE466(447U);  // Use of Obsolete Functions
 static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const CWE CWE628(628U);  // Function Call with Incorrectly Specified Arguments
@@ -177,7 +178,7 @@ void CheckFunctions::checkIgnoredReturnValue()
 void CheckFunctions::ignoredReturnValueError(const Token* tok, const std::string& function)
 {
     reportError(tok, Severity::warning, "ignoredReturnValue",
-                "Return value of function " + function + "() is not used.", CWE(0U), false);
+                "Return value of function " + function + "() is not used.", CWE252, false);
 }
 
 
