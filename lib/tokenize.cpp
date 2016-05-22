@@ -3530,6 +3530,11 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         simplifyTypedef();
     }
 
+    // Add parentheses to ternary operator where necessary
+    // TODO: this is only necessary if one typedef simplification had a comma and was used within ?:
+    // If typedef handling is refactored and moved to symboldatabase someday we can remove this
+    prepareTernaryOpForAST();
+
     for (Token* tok = list.front(); tok;) {
         if (Token::Match(tok, "union|struct|class union|struct|class"))
             tok->deleteNext();

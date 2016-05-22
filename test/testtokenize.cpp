@@ -8025,6 +8025,8 @@ private:
         ASSERT_EQUALS("a ? ( b , c ) : d ;", tokenizeAndStringify("a ? (b , c) : d;"));
 
         ASSERT_EQUALS("a ? ( 1 ? ( a , b ) : 3 ) : d ;", tokenizeAndStringify("a ? 1 ? a, b : 3 : d;"));
+
+        ASSERT_EQUALS("a ? ( std :: map < int , int > ( ) ) : 0 ;", tokenizeAndStringify("typedef std::map<int,int> mymap; a ? mymap() : 0;"));
     }
 
     std::string testAst(const char code[],bool verbose=false) {
