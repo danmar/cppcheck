@@ -148,6 +148,7 @@ private:
         TEST_CASE(varid_inheritedMembers); // #4101
         TEST_CASE(varid_header); // #6386
         TEST_CASE(varid_rangeBasedFor);
+        TEST_CASE(varid_structinit); // #6406
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2440,6 +2441,24 @@ private:
                                "        break;\n"
                                "    }\n"
                                "}", false, "test.c"));
+    }
+
+    void varid_structinit() { // #6406
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void foo ( ) {\n"
+                      "2: struct ABC abc@1 ; abc@1 = { . a@2 = 0 , . b@3 = 1 } ;\n"
+                      "3: }\n",
+                      tokenize("void foo() {\n"
+                               "  struct ABC abc = {.a=0,.b=1};\n"
+                               "}"));
+
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void foo ( ) {\n"
+                      "2: struct ABC abc@1 ; abc@1 = { . a@2 = abc@1 . a@2 , . b@3 = abc@1 . b@3 } ;\n"
+                      "3: }\n",
+                      tokenize("void foo() {\n"
+                               "  struct ABC abc = {.a=abc.a,.b=abc.b};\n"
+                               "}"));
     }
 
     void varidclass1() {
