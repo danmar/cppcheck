@@ -44,6 +44,7 @@ private:
 
         TEST_CASE(testScanf1); // Scanf without field limiters
         TEST_CASE(testScanf2);
+        TEST_CASE(testScanf3); // #3494
         TEST_CASE(testScanf4); // #ticket 2553
 
         TEST_CASE(testScanfArgument);
@@ -722,6 +723,16 @@ private:
               "    scanf(\"%*[^~]\");\n" // Ignore input
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) scanf format string requires 0 parameters but 1 is given.\n", errout.str());
+    }
+
+    void testScanf3() { // ticket #3494
+        check("void f() {\n"
+              "  char str[8];\n"
+              "  scanf(\"%7c\", str);\n"
+              "  scanf(\"%8c\", str);\n"
+              "  scanf(\"%9c\", str);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Width 9 given in format string (no. 1) is larger than destination buffer 'str[8]', use %8c to prevent overflowing it.\n", errout.str());
     }
 
     void testScanf4() { // ticket #2553

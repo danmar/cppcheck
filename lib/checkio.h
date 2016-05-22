@@ -126,7 +126,7 @@ private:
     void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidLengthModifierError(const Token* tok, unsigned int numFormat, const std::string& modifier);
-    void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var);
+    void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var, char c);
     static void argumentType(std::ostream & s, const ArgumentInfo * argInfo);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -152,7 +152,7 @@ private:
         c.invalidPrintfArgTypeError_sint(nullptr,  1, "i", nullptr);
         c.invalidPrintfArgTypeError_float(nullptr,  1, "f", nullptr);
         c.invalidLengthModifierError(nullptr,  1, "I");
-        c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr);
+        c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr, 's');
         c.wrongPrintfScanfPosixParameterPositionError(nullptr,  "printf", 2, 1);
     }
 
