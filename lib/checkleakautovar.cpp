@@ -207,7 +207,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         if (tok->str() == "(" && tok->previous()->isName()) {
             VarInfo::AllocInfo allocation(0, VarInfo::NOALLOC);
-            functionCall(tok->previous(), varInfo, allocation);
+            functionCall(tok->previous(), varInfo, allocation, nullptr);
             tok = tok->link();
             continue;
         }
@@ -274,9 +274,9 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             // allocation?
             if (varTok->next()->astOperand2() && Token::Match(varTok->next()->astOperand2()->previous(), "%type% (")) {
-                int i = _settings->library.alloc(varTok->next()->astOperand2()->previous());
-                if (i > 0) {
-                    alloctype[varTok->varId()].type = i;
+                const Library::AllocFunc* f = _settings->library.alloc(varTok->next()->astOperand2()->previous());
+                if (f && f->arg == -1) {
+                    alloctype[varTok->varId()].type = f->groupId;
                     alloctype[varTok->varId()].status = VarInfo::ALLOC;
                 }
             } else if (_tokenizer->isCPP() && varTok->strAt(2) == "new") {
@@ -301,10 +301,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 if (innerTok->str() == ")")
                     break;
                 if (innerTok->str() == "(" && innerTok->previous()->isName()) {
-                    VarInfo::AllocInfo allocation(_settings->library.dealloc(tok), VarInfo::DEALLOC);
-                    if (allocation.type == 0)
-                        allocation.status = VarInfo::NOALLOC;
-                    functionCall(innerTok->previous(), varInfo, allocation);
+                    VarInfo::AllocInfo allocation(0, VarInfo::NOALLOC);
+                    functionCall(innerTok->previous(), varInfo, allocation, nullptr);
                     innerTok = innerTok->link();
                 }
             }
@@ -440,10 +438,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // Function call..
         else if (Token::Match(tok, "%type% (")) {
-            VarInfo::AllocInfo allocation(_settings->library.dealloc(tok), VarInfo::DEALLOC);
+            const Library::AllocFunc* af = _settings->library.dealloc(tok);
+            VarInfo::AllocInfo allocation(af ? af->groupId : 0, VarInfo::DEALLOC);
             if (allocation.type == 0)
                 allocation.status = VarInfo::NOALLOC;
-            functionCall(tok, varInfo, allocation);
+            functionCall(tok, varInfo, allocation, af);
 
             tok = tok->next()->link();
 
@@ -516,13 +515,14 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocI
     }
 }
 
-void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const VarInfo::AllocInfo& allocation)
+void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af)
 {
     // Ignore function call?
     const bool ignore = bool(_settings->library.leakignore.find(tok->str()) != _settings->library.leakignore.end());
     if (ignore)
         return;
 
+    int argNr = 1;
     for (const Token *arg = tok->tokAt(2); arg; arg = arg->nextArgument()) {
         if (_tokenizer->isCPP() && arg->str() == "new") {
             arg = arg->next();
@@ -537,10 +537,12 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const Va
                 arg = arg->next();
 
             // Is variable allocated?
-            changeAllocStatus(varInfo, allocation, tok, arg);
+            if (!af || af->arg == argNr)
+                changeAllocStatus(varInfo, allocation, tok, arg);
         } else if (Token::Match(arg, "%name% (")) {
-            functionCall(arg, varInfo, allocation);
+            functionCall(arg, varInfo, allocation, af);
         }
+        argNr++;
     }
 }
 

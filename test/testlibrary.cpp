@@ -43,6 +43,7 @@ private:
         TEST_CASE(function_warn);
         TEST_CASE(memory);
         TEST_CASE(memory2); // define extra "free" allocation functions
+        TEST_CASE(memory3);
         TEST_CASE(resource);
         TEST_CASE(podtype);
         TEST_CASE(container);
@@ -358,7 +359,11 @@ private:
         ASSERT(library.argumentChecks.empty());
 
         ASSERT(Library::ismemory(library.alloc("CreateX")));
-        ASSERT_EQUALS(library.alloc("CreateX"), library.dealloc("DeleteX"));
+        ASSERT_EQUALS(library.allocId("CreateX"), library.deallocId("DeleteX"));
+        const Library::AllocFunc* af = library.alloc("CreateX");
+        ASSERT(af && af->arg == -1);
+        const Library::AllocFunc* df = library.dealloc("DeleteX");
+        ASSERT(df && df->arg == 1);
     }
     void memory2() const {
         const char xmldata1[] = "<?xml version=\"1.0\"?>\n"
@@ -380,8 +385,30 @@ private:
         library.loadxmldata(xmldata1, sizeof(xmldata1));
         library.loadxmldata(xmldata2, sizeof(xmldata2));
 
-        ASSERT_EQUALS(library.dealloc("free"), library.alloc("malloc"));
-        ASSERT_EQUALS(library.dealloc("free"), library.alloc("foo"));
+        ASSERT_EQUALS(library.deallocId("free"), library.allocId("malloc"));
+        ASSERT_EQUALS(library.deallocId("free"), library.allocId("foo"));
+    }
+    void memory3() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <memory>\n"
+                               "    <alloc arg=\"5\" init=\"false\">CreateX</alloc>\n"
+                               "    <dealloc arg=\"2\">DeleteX</dealloc>\n"
+                               "  </memory>\n"
+                               "</def>";
+
+        Library library;
+        readLibrary(library, xmldata);
+        ASSERT(library.use.empty());
+        ASSERT(library.leakignore.empty());
+        ASSERT(library.argumentChecks.empty());
+
+        const Library::AllocFunc* af = library.alloc("CreateX");
+        ASSERT(af && af->arg == 5);
+        const Library::AllocFunc* df = library.dealloc("DeleteX");
+        ASSERT(df && df->arg == 2);
+
+        ASSERT(library.returnuninitdata.find("CreateX") != library.returnuninitdata.cend());
     }
 
     void resource() const {
@@ -399,8 +426,8 @@ private:
         ASSERT(library.leakignore.empty());
         ASSERT(library.argumentChecks.empty());
 
-        ASSERT(Library::isresource(library.alloc("CreateX")));
-        ASSERT_EQUALS(library.alloc("CreateX"), library.dealloc("DeleteX"));
+        ASSERT(Library::isresource(library.allocId("CreateX")));
+        ASSERT_EQUALS(library.allocId("CreateX"), library.deallocId("DeleteX"));
     }
 
     void podtype() const {

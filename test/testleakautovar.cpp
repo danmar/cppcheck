@@ -32,11 +32,11 @@ private:
     void run() {
         int id = 0;
         while (!settings.library.ismemory(++id));
-        settings.library.setalloc("malloc", id);
-        settings.library.setdealloc("free", id);
+        settings.library.setalloc("malloc", id, -1);
+        settings.library.setdealloc("free", id, 1);
         while (!settings.library.isresource(++id));
-        settings.library.setalloc("fopen", id);
-        settings.library.setdealloc("fclose", id);
+        settings.library.setalloc("fopen", id, -1);
+        settings.library.setdealloc("fclose", id, 1);
 
         // Assign
         TEST_CASE(assign1);
@@ -1269,8 +1269,7 @@ private:
               "  HeapFree(MyHeap, 0, b);"
               "  HeapDestroy(MyHeap);"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.c:1]: (error) Mismatching allocation and deallocation: MyHeap\n"
-                           "[test.c:1]: (error) Resource handle 'MyHeap' freed twice.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {"
               "  int *a = HeapAlloc(GetProcessHeap(), 0, sizeof(int));"
@@ -1287,8 +1286,7 @@ private:
               "  HeapFree(MyHeap, 0, a);"
               "  HeapDestroy(MyHeap);"
               "}");
-        TODO_ASSERT_EQUALS("[test.c:1] (error) Memory leak: b", "[test.c:1]: (error) Mismatching allocation and deallocation: MyHeap\n"
-                           "[test.c:1]: (error) Memory leak: b\n", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (error) Memory leak: b\n", errout.str());
 
         check("void f() {"
               "  HANDLE MyHeap = HeapCreate(0, 0, 0);"
@@ -1297,7 +1295,8 @@ private:
               "  HeapFree(MyHeap, 0, a);"
               "  HeapFree(MyHeap, 0, b);"
               "}");
-        TODO_ASSERT_EQUALS("[test.c:1] (error) Resource leak: MyHeap", "[test.c:1]: (error) Mismatching allocation and deallocation: MyHeap\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.c:1] (error) Resource leak: MyHeap",
+                           "", errout.str());
 
         check("void f() {"
               "  HANDLE MyHeap = HeapCreate(0, 0, 0);"
@@ -1305,8 +1304,9 @@ private:
               "  int *b = HeapAlloc(MyHeap, 0, sizeof(int));"
               "  HeapFree(MyHeap, 0, a);"
               "}");
-        TODO_ASSERT_EQUALS("[test.c:1] (error) Resource leak: MyHeap\n[test.c:1] (error) Memory leak: b",
-                           "[test.c:1]: (error) Mismatching allocation and deallocation: MyHeap\n[test.c:1]: (error) Memory leak: b\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.c:1] (error) Memory leak: MyHeap\n"
+                           "[test.c:1] (error) Memory leak: b",
+                           "[test.c:1]: (error) Memory leak: b\n", errout.str());
     }
 };
 

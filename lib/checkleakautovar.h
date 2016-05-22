@@ -105,7 +105,7 @@ private:
                     std::set<unsigned int> notzero);
 
     /** parse function call */
-    void functionCall(const Token *tok, VarInfo *varInfo, const VarInfo::AllocInfo& allocation);
+    void functionCall(const Token *tok, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
 
     /** parse changes in allocation status */
     void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);

@@ -139,9 +139,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             int allocationId = 0;
             for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
                 if (strcmp(memorynode->Name(),"dealloc")==0) {
-                    const std::map<std::string,int>::const_iterator it = _dealloc.find(memorynode->GetText());
+                    const std::map<std::string, AllocFunc>::const_iterator it = _dealloc.find(memorynode->GetText());
                     if (it != _dealloc.end()) {
-                        allocationId = it->second;
+                        allocationId = it->second.groupId;
                         break;
                     }
                 }
@@ -158,14 +158,29 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
                 const std::string memorynodename = memorynode->Name();
                 if (memorynodename == "alloc") {
-                    _alloc[memorynode->GetText()] = allocationId;
+                    AllocFunc temp;
+                    temp.groupId = allocationId;
+
                     const char *init = memorynode->Attribute("init");
                     if (init && strcmp(init,"false")==0) {
                         returnuninitdata.insert(memorynode->GetText());
                     }
-                } else if (memorynodename == "dealloc")
-                    _dealloc[memorynode->GetText()] = allocationId;
-                else if (memorynodename == "use")
+                    const char *arg = memorynode->Attribute("arg");
+                    if (arg)
+                        temp.arg = atoi(arg);
+                    else
+                        temp.arg = -1;
+                    _alloc[memorynode->GetText()] = temp;
+                } else if (memorynodename == "dealloc") {
+                    AllocFunc temp;
+                    temp.groupId = allocationId;
+                    const char *arg = memorynode->Attribute("arg");
+                    if (arg)
+                        temp.arg = atoi(arg);
+                    else
+                        temp.arg = 1;
+                    _dealloc[memorynode->GetText()] = temp;
+                } else if (memorynodename == "use")
                     use.insert(memorynode->GetText());
                 else
                     unknown_elements.insert(memorynodename);
@@ -772,18 +787,32 @@ bool Library::isuninitargbad(const Token *ftok, int argnr) const
 }
 
 
-/** get allocation id for function */
-int Library::alloc(const Token *tok) const
+/** get allocation info for function */
+const Library::AllocFunc* Library::alloc(const Token *tok) const
 {
     const std::string funcname = functionName(tok);
-    return isNotLibraryFunction(tok) && argumentChecks.find(funcname) != argumentChecks.end() ? 0 : getid(_alloc, funcname);
+    return isNotLibraryFunction(tok) && argumentChecks.find(funcname) != argumentChecks.end() ? 0 : getAllocDealloc(_alloc, funcname);
+}
+
+/** get deallocation info for function */
+const Library::AllocFunc* Library::dealloc(const Token *tok) const
+{
+    const std::string funcname = functionName(tok);
+    return isNotLibraryFunction(tok) && argumentChecks.find(funcname) != argumentChecks.end() ? 0 : getAllocDealloc(_dealloc, funcname);
+}
+
+/** get allocation id for function */
+int Library::alloc(const Token *tok, int arg) const
+{
+    const Library::AllocFunc* af = alloc(tok);
+    return (af && af->arg == arg) ? af->groupId : 0;
 }
 
 /** get deallocation id for function */
-int Library::dealloc(const Token *tok) const
+int Library::dealloc(const Token *tok, int arg) const
 {
-    const std::string funcname = functionName(tok);
-    return isNotLibraryFunction(tok) && argumentChecks.find(funcname) != argumentChecks.end() ? 0 : getid(_dealloc, funcname);
+    const Library::AllocFunc* af = dealloc(tok);
+    return (af && af->arg == arg) ? af->groupId : 0;
 }
 
 

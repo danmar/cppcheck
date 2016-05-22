@@ -154,11 +154,11 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         }
 
         // Does tok2 point on a Library allocation function?
-        const int alloctype = settings1->library.alloc(tok2);
+        const int alloctype = settings1->library.alloc(tok2, -1);
         if (alloctype > 0) {
-            if (alloctype == settings1->library.dealloc("free"))
+            if (alloctype == settings1->library.deallocId("free"))
                 return Malloc;
-            if (alloctype == settings1->library.dealloc("fclose"))
+            if (alloctype == settings1->library.deallocId("fclose"))
                 return File;
             return Library::ismemory(alloctype) ? OtherMem : OtherRes;
         }
@@ -227,30 +227,34 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         if (Token::simpleMatch(tok, "fcloseall ( )"))
             return File;
 
-        const Token* vartok = tok->tokAt(2);
-        while (Token::Match(vartok, "%name% .|::"))
-            vartok = vartok->tokAt(2);
+        int argNr = 1;
+        for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->nextArgument()) {
+            const Token* vartok = tok2;
+            while (Token::Match(vartok, "%name% .|::"))
+                vartok = vartok->tokAt(2);
 
-        if (Token::Match(vartok, "%varid% )|,|-", varid)) {
-            if (tok->str() == "realloc" && Token::simpleMatch(vartok->next(), ", 0 )"))
-                return Malloc;
-
-            if (settings1->standards.posix) {
-                if (tok->str() == "close")
-                    return Fd;
-                if (tok->str() == "pclose")
-                    return Pipe;
-            }
-
-            // Does tok point on a Library deallocation function?
-            const int dealloctype = settings1->library.dealloc(tok);
-            if (dealloctype > 0) {
-                if (dealloctype == settings1->library.dealloc("free"))
+            if (Token::Match(vartok, "%varid% )|,|-", varid)) {
+                if (tok->str() == "realloc" && Token::simpleMatch(vartok->next(), ", 0 )"))
                     return Malloc;
-                if (dealloctype == settings1->library.dealloc("fclose"))
-                    return File;
-                return Library::ismemory(dealloctype) ? OtherMem : OtherRes;
+
+                if (settings1->standards.posix) {
+                    if (tok->str() == "close")
+                        return Fd;
+                    if (tok->str() == "pclose")
+                        return Pipe;
+                }
+
+                // Does tok point on a Library deallocation function?
+                const int dealloctype = settings1->library.dealloc(tok, argNr);
+                if (dealloctype > 0) {
+                    if (dealloctype == settings1->library.deallocId("free"))
+                        return Malloc;
+                    if (dealloctype == settings1->library.deallocId("fclose"))
+                        return File;
+                    return Library::ismemory(dealloctype) ? OtherMem : OtherRes;
+                }
             }
+            argNr++;
         }
     }
 
