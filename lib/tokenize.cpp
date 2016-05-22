@@ -2470,8 +2470,8 @@ static void setVarIdStructMembers(Token **tok1,
 
         tok = tok->tokAt(3);
         while (tok->str() != "}") {
-            while (Token::Match(tok, "{|[|("))
-                tok = tok->link()->next();
+            if (Token::Match(tok, "{|[|("))
+                tok = tok->link();
             if (Token::Match(tok->previous(), "[,{] . %name% =")) {
                 tok = tok->next();
                 const std::map<std::string, unsigned int>::iterator it = members.find(tok->str());
