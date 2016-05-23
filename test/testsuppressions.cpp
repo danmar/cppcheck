@@ -345,6 +345,9 @@ private:
         Suppressions suppressions;
         suppressions.addSuppressionLine("*:test\\*");
         ASSERT_EQUALS(true, suppressions.isSuppressed("someid", "test/foo/bar.cpp", 142));
+
+        suppressions.addSuppressionLine("abc:include/1.h");
+        ASSERT_EQUALS(true, suppressions.isSuppressed("abc", "include\\1.h", 142));
     }
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"

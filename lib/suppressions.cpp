@@ -198,7 +198,7 @@ bool Suppressions::FileMatcher::isSuppressed(const std::string &file, unsigned i
 
 bool Suppressions::FileMatcher::isSuppressedLocal(const std::string &file, unsigned int line)
 {
-    std::map<std::string, std::map<unsigned int, bool> >::iterator f = _files.find(file);
+    std::map<std::string, std::map<unsigned int, bool> >::iterator f = _files.find(Path::fromNativeSeparators(file));
     if (f != _files.end()) {
         std::map<unsigned int, bool>::iterator l = f->second.find(0U);
         if (l != f->second.end()) {
@@ -268,7 +268,7 @@ std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppres
         if (!unusedFunctionChecking && i->first == "unusedFunction")
             continue;
 
-        std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(file);
+        std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(Path::fromNativeSeparators(file));
         if (f != i->second._files.end()) {
             for (std::map<unsigned int, bool>::const_iterator l = f->second.begin(); l != f->second.end(); ++l) {
                 if (!l->second) {
