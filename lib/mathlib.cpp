@@ -393,7 +393,7 @@ std::string MathLib::normalizeCharacterLiteral(const std::string& iLiteral)
             continue;
         }
         // Single digit octal number
-        if (1 == std::min<unsigned>(3, iLiteralLen - idx)) {
+        if (1 == iLiteralLen - idx) {
             switch (iLiteral[idx]) {
             case '0':
             case '1':
