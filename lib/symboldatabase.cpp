@@ -4149,7 +4149,7 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
         return;
     }
 
-    if (parent->str() == "[" && valuetype.pointer > 0U) {
+    if (parent->str() == "[" && (!cpp || parent->astOperand1() == tok) && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
         vt.pointer -= 1U;
         setValueType(parent, vt, cpp, defaultSignedness, lib);
