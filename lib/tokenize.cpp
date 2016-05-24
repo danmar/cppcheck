@@ -6044,6 +6044,9 @@ namespace {
 //  xor_eq   =>     ^=
 bool Tokenizer::simplifyCAlternativeTokens()
 {
+    if (!isC())
+        return false;
+
     /* For C code: executable scope level */
     unsigned int executableScopeLevel = 0;
 
@@ -6066,17 +6069,16 @@ bool Tokenizer::simplifyCAlternativeTokens()
 
         const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
         if (cOpIt != cAlternativeTokens.end()) {
-            if (isC() && !Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
+            if (!Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
                 continue;
             tok->str(cOpIt->second);
             ret = true;
         } else if (Token::Match(tok, "not|compl")) {
             // Don't simplify 'not p;' (in case 'not' is a type)
-            if (isC() && (!Token::Match(tok->next(), "%name%|%op%|(") ||
-                          Token::Match(tok->previous(), "[;{}]") ||
-                          (executableScopeLevel == 0U && tok->strAt(-1) == "(")))
+            if (!Token::Match(tok->next(), "%name%|(") ||
+                Token::Match(tok->previous(), "[;{}]") ||
+                (executableScopeLevel == 0U && tok->strAt(-1) == "("))
                 continue;
-
             tok->str((tok->str() == "not") ? "!" : "~");
             ret = true;
         }
