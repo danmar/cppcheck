@@ -117,8 +117,8 @@ private:
 
     void oppositeInnerConditionError(const Token *tok1, const Token* tok2);
 
-    void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always);
-    void redundantConditionError(const Token *tok, const std::string &text);
+    void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive);
+    void redundantConditionError(const Token *tok, const std::string &text, bool inconclusive);
 
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
 
@@ -137,8 +137,8 @@ private:
         c.multiConditionError(nullptr,1);
         c.mismatchingBitAndError(nullptr, 0xf0, 0, 1);
         c.oppositeInnerConditionError(nullptr, 0);
-        c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true);
-        c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.");
+        c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false);
+        c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
         c.moduloAlwaysTrueFalseError(nullptr, "1");
         c.clarifyConditionError(nullptr, true, false);
         c.alwaysTrueFalseError(nullptr, true);

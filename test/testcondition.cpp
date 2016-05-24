@@ -84,9 +84,11 @@ private:
         TEST_CASE(checkInvalidTestForOverflow);
     }
 
-    void check(const char code[], const char* filename = "test.cpp") {
+    void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
+
+        settings0.inconclusive = inconclusive;
 
         CheckCondition checkCondition;
 
@@ -946,13 +948,28 @@ private:
     void incorrectLogicOperator6() { // char literals
         check("void f(char x) {\n"
               "  if (x == '1' || x == '2') {}\n"
-              "}");
+              "}", "test.cpp", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char x) {\n"
               "  if (x == '1' && x == '2') {}\n"
-              "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+              "}", "test.cpp", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == '1' && x == '2'.\n", errout.str());
+
+        check("int f(char c) {\n"
+              "  return (c >= 'a' && c <= 'z');\n"
+              "}", "test.cpp", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(char c) {\n"
+              "  return (c <= 'a' && c >= 'z');\n"
+              "}", "test.cpp", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Logical conjunction always evaluates to false: c <= 'a' && c >= 'z'.\n", errout.str());
+
+        check("int f(char c) {\n"
+              "  return (c <= 'a' && c >= 'z');\n"
+              "}", "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectLogicOperator7() { // opposite expressions
