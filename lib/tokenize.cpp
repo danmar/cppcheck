@@ -9028,11 +9028,14 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "CopyMemory|RtlCopyMemory|RtlCopyBytes (")) {
+        if (tok->strAt(1) != "(")
+            continue;
+
+        if (Token::Match(tok, "CopyMemory|RtlCopyMemory|RtlCopyBytes")) {
             tok->str("memcpy");
-        } else if (Token::Match(tok, "MoveMemory|RtlMoveMemory (")) {
+        } else if (Token::Match(tok, "MoveMemory|RtlMoveMemory")) {
             tok->str("memmove");
-        } else if (Token::Match(tok, "FillMemory|RtlFillMemory|RtlFillBytes (")) {
+        } else if (Token::Match(tok, "FillMemory|RtlFillMemory|RtlFillBytes")) {
             // FillMemory(dst, len, val) -> memset(dst, val, len)
             tok->str("memset");
 
@@ -9045,7 +9048,7 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
                 if (tok2)
                     Token::move(tok1->previous(), tok2->tokAt(-2), tok->next()->link()->previous()); // Swap third with second argument
             }
-        } else if (Token::Match(tok, "ZeroMemory|RtlZeroMemory|RtlZeroBytes|RtlSecureZeroMemory (")) {
+        } else if (Token::Match(tok, "ZeroMemory|RtlZeroMemory|RtlZeroBytes|RtlSecureZeroMemory")) {
             // ZeroMemory(dst, len) -> memset(dst, 0, len)
             tok->str("memset");
 
@@ -9059,7 +9062,7 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
                 tok1 = tok1->next();
                 tok1->insertToken(",");
             }
-        } else if (Token::simpleMatch(tok, "RtlCompareMemory (")) {
+        } else if (Token::simpleMatch(tok, "RtlCompareMemory")) {
             // RtlCompareMemory(src1, src2, len) -> memcmp(src1, src2, len)
             tok->str("memcmp");
             // For the record, when memcmp returns 0, both strings are equal.
@@ -9073,48 +9076,43 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
 
 namespace {
     struct triplet {
-        triplet(const char* t, const char* m, const char* u) : tchar(t), mbcs(m), unicode(u) {}
-        explicit triplet(const std::string& t) : tchar(t) {}
-        bool operator <(const triplet& rhs) const {
-            return tchar < rhs.tchar;
-        }
-        std::string tchar, mbcs, unicode;
+        triplet(const char* m, const char* u) :  mbcs(m), unicode(u) {}
+        std::string mbcs, unicode;
     };
 
-    const std::set<triplet> apis = make_container< std::set<triplet> >() <<
-                                   triplet("_topen", "open", "_wopen") <<
-                                   triplet("_tsopen_s", "_sopen_s", "_wsopen_s") <<
-                                   triplet("_tfopen", "fopen", "_wfopen") <<
-                                   triplet("_tfopen_s", "fopen_s", "_wfopen_s") <<
-                                   triplet("_tfreopen", "freopen", "_wfreopen") <<
-                                   triplet("_tfreopen_s", "freopen_s", "_wfreopen_s") <<
-                                   triplet("_tcscat", "strcat", "wcscat") <<
-                                   triplet("_tcschr", "strchr", "wcschr") <<
-                                   triplet("_tcscmp", "strcmp", "wcscmp") <<
-                                   triplet("_tcsdup", "strdup", "wcsdup") <<
-                                   triplet("_tcscpy", "strcpy", "wcscpy") <<
-                                   triplet("_tcslen", "strlen", "wcslen") <<
-                                   triplet("_tcsncat", "strncat", "wcsncat") <<
-                                   triplet("_tcsncpy", "strncpy", "wcsncpy") <<
-                                   triplet("_tcsnlen", "strnlen", "wcsnlen") <<
-                                   triplet("_tcsrchr", "strrchr", "wcsrchr") <<
-                                   triplet("_tcsstr", "strstr", "wcsstr") <<
-                                   triplet("_tcstok", "strtok", "wcstok") <<
-                                   triplet("_ftprintf", "fprintf", "fwprintf") <<
-                                   triplet("_tprintf", "printf", "wprintf") <<
-                                   triplet("_stprintf", "sprintf", "swprintf") <<
-                                   triplet("_sntprintf", "_snprintf", "_snwprintf") <<
-                                   triplet("_ftscanf", "fscanf", "fwscanf") <<
-                                   triplet("_tscanf", "scanf", "wscanf") <<
-                                   triplet("_stscanf", "sscanf", "swscanf") <<
-                                   triplet("_ftprintf_s", "fprintf_s", "fwprintf_s") <<
-                                   triplet("_tprintf_s", "printf_s", "wprintf_s") <<
-                                   triplet("_stprintf_s", "sprintf_s", "swprintf_s") <<
-                                   triplet("_sntprintf_s", "_snprintf_s", "_snwprintf_s") <<
-                                   triplet("_ftscanf_s", "fscanf_s", "fwscanf_s") <<
-                                   triplet("_tscanf_s", "scanf_s", "wscanf_s") <<
-                                   triplet("_stscanf_s", "sscanf_s", "swscanf_s")
-                                   ;
+    const std::map<std::string, triplet> apis = make_container< std::map<std::string, triplet> >() <<
+            std::make_pair("_topen", triplet("open", "_wopen")) <<
+            std::make_pair("_tsopen_s", triplet("_sopen_s", "_wsopen_s")) <<
+            std::make_pair("_tfopen", triplet("fopen", "_wfopen")) <<
+            std::make_pair("_tfopen_s", triplet("fopen_s", "_wfopen_s")) <<
+            std::make_pair("_tfreopen", triplet("freopen", "_wfreopen")) <<
+            std::make_pair("_tfreopen_s", triplet("freopen_s", "_wfreopen_s")) <<
+            std::make_pair("_tcscat", triplet("strcat", "wcscat")) <<
+            std::make_pair("_tcschr", triplet("strchr", "wcschr")) <<
+            std::make_pair("_tcscmp", triplet("strcmp", "wcscmp")) <<
+            std::make_pair("_tcsdup", triplet("strdup", "wcsdup")) <<
+            std::make_pair("_tcscpy", triplet("strcpy", "wcscpy")) <<
+            std::make_pair("_tcslen", triplet("strlen", "wcslen")) <<
+            std::make_pair("_tcsncat", triplet("strncat", "wcsncat")) <<
+            std::make_pair("_tcsncpy", triplet("strncpy", "wcsncpy")) <<
+            std::make_pair("_tcsnlen", triplet("strnlen", "wcsnlen")) <<
+            std::make_pair("_tcsrchr", triplet("strrchr", "wcsrchr")) <<
+            std::make_pair("_tcsstr", triplet("strstr", "wcsstr")) <<
+            std::make_pair("_tcstok", triplet("strtok", "wcstok")) <<
+            std::make_pair("_ftprintf", triplet("fprintf", "fwprintf")) <<
+            std::make_pair("_tprintf", triplet("printf", "wprintf")) <<
+            std::make_pair("_stprintf", triplet("sprintf", "swprintf")) <<
+            std::make_pair("_sntprintf", triplet("_snprintf", "_snwprintf")) <<
+            std::make_pair("_ftscanf", triplet("fscanf", "fwscanf")) <<
+            std::make_pair("_tscanf", triplet("scanf", "wscanf")) <<
+            std::make_pair("_stscanf", triplet("sscanf", "swscanf")) <<
+            std::make_pair("_ftprintf_s", triplet("fprintf_s", "fwprintf_s")) <<
+            std::make_pair("_tprintf_s", triplet("printf_s", "wprintf_s")) <<
+            std::make_pair("_stprintf_s", triplet("sprintf_s", "swprintf_s")) <<
+            std::make_pair("_sntprintf_s", triplet("_snprintf_s", "_snwprintf_s")) <<
+            std::make_pair("_ftscanf_s", triplet("fscanf_s", "fwscanf_s")) <<
+            std::make_pair("_tscanf_s", triplet("scanf_s", "wscanf_s")) <<
+            std::make_pair("_stscanf_s", triplet("sscanf_s", "swscanf_s"));
 }
 
 void Tokenizer::simplifyMicrosoftStringFunctions()
@@ -9125,13 +9123,13 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
 
     const bool ansi = _settings->platformType == Settings::Win32A;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        std::set<triplet>::const_iterator match = apis.find(triplet(tok->str()));
+        if (tok->strAt(1) != "(")
+            continue;
+
+        std::map<std::string, triplet>::const_iterator match = apis.find(tok->str());
         if (match!=apis.end()) {
-            const std::string pattern(match->tchar + " (");
-            if (Token::simpleMatch(tok, pattern.c_str())) {
-                tok->str(ansi ? match->mbcs : match->unicode);
-                tok->originalName(match->tchar);
-            }
+            tok->str(ansi ? match->second.mbcs : match->second.unicode);
+            tok->originalName(match->first);
         } else if (Token::Match(tok, "_T ( %char%|%str% )")) {
             tok->deleteNext();
             tok->deleteThis();
