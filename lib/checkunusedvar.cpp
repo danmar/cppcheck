@@ -1213,6 +1213,8 @@ void CheckUnusedVar::checkStructMemberUsage()
     if (!_settings->isEnabled("style"))
         return;
 
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
     std::string structname;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->fileIndex() != 0)
@@ -1232,44 +1234,43 @@ void CheckUnusedVar::checkStructMemberUsage()
                     break;
             }
 
+            if (structname.empty())
+                continue;
+
             // bail out if struct is inherited
-            if (!structname.empty() && Token::findmatch(tok, (",|private|protected|public " + structname).c_str())) {
+            bool bailout = false;
+            for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.cbegin(); i != symbolDatabase->scopeList.cend(); ++i) {
+                if (i->definedType) {
+                    for (size_t j = 0; j < i->definedType->derivedFrom.size(); j++) {
+                        if (i->definedType->derivedFrom[j].type == tok->tokAt(3)->scope()->definedType) {
+                            bailout = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (bailout) {
                 structname.clear();
                 continue;
             }
 
-            // Bail out if some data is casted to struct..
-            const std::string castPattern("( struct| " + tok->next()->str() + " * ) & %name% [");
-            if (Token::findmatch(tok, castPattern.c_str()))
-                structname.clear();
-
-            // Bail out if instance is initialized with {}..
-            if (!structname.empty()) {
-                const std::string pattern1(structname + " %name% ;");
-                const Token *tok2 = tok;
-                while (nullptr != (tok2 = Token::findmatch(tok2->next(), pattern1.c_str()))) {
-                    if (Token::simpleMatch(tok2->tokAt(3), (tok2->strAt(1) + " = {").c_str())) {
-                        structname.clear();
-                        break;
-                    }
+            // bail out for extern/global struct
+            for (size_t i = 0; i < symbolDatabase->getVariableListSize(); i++) {
+                const Variable* var = symbolDatabase->getVariableFromVarId(i);
+                if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic())) && var->typeEndToken()->str() == structname) {
+                    structname.clear();
+                    break;
                 }
             }
 
             if (structname.empty())
                 continue;
 
-            // bail out for extern/global struct
-            const std::string definitionPattern(structname + " %name%");
-            for (const Token *tok2 = Token::findmatch(tok, definitionPattern.c_str());
-                 tok2 && tok2->next();
-                 tok2 = Token::findmatch(tok2->next(), definitionPattern.c_str())) {
+            // Bail out if some data is casted to struct..
+            const std::string castPattern("( struct| " + tok->next()->str() + " * ) & %name% [");
+            if (Token::findmatch(tok, castPattern.c_str()))
+                structname.clear();
 
-                const Variable *var = tok2->next()->variable();
-                if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic()))) {
-                    structname.clear();
-                    break;
-                }
-            }
             if (structname.empty())
                 continue;
 
