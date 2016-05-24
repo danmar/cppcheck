@@ -41,13 +41,14 @@ namespace {
     // in order to store information about the scope
     struct VarIdscopeInfo {
         VarIdscopeInfo()
-            :isExecutable(false), startVarid(0) {
+            :isExecutable(false), isStructInit(false), startVarid(0) {
         }
-        VarIdscopeInfo(bool _isExecutable, unsigned int _startVarid)
-            :isExecutable(_isExecutable), startVarid(_startVarid) {
+        VarIdscopeInfo(bool _isExecutable, bool _isStructInit, unsigned int _startVarid)
+            :isExecutable(_isExecutable), isStructInit(_isStructInit), startVarid(_startVarid) {
         }
 
         const bool isExecutable;
+        const bool isStructInit;
         const unsigned int startVarid;
     };
 }
@@ -2662,7 +2663,7 @@ void Tokenizer::setVarIdPass1()
                 variableId.swap(scopeInfo.top());
                 scopeInfo.pop();
             } else if (tok->str() == "{")
-                scopeStack.push(VarIdscopeInfo(true, _varId));
+                scopeStack.push(VarIdscopeInfo(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", _varId));
         } else if (!initlist && tok->str()=="(") {
             const Token * newFunctionDeclEnd = nullptr;
             if (!scopeStack.top().isExecutable)
@@ -2692,10 +2693,11 @@ void Tokenizer::setVarIdPass1()
                     } else {
                         isExecutable = ((scopeStack.top().isExecutable || initlist || tok->strAt(-1) == "else") &&
                                         !isClassStructUnionEnumStart(tok));
-                        scopeInfo.push(variableId);
+                        if (!(scopeStack.top().isStructInit || tok->strAt(-1) == "="))
+                            scopeInfo.push(variableId);
                     }
                     initlist = false;
-                    scopeStack.push(VarIdscopeInfo(isExecutable, _varId));
+                    scopeStack.push(VarIdscopeInfo(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", _varId));
                 } else { /* if (tok->str() == "}") */
                     bool isNamespace = false;
                     for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous())
@@ -2708,11 +2710,13 @@ void Tokenizer::setVarIdPass1()
                                                  structMembers);
                     }
 
-                    if (scopeInfo.empty()) {
-                        variableId.clear();
-                    } else {
-                        variableId.swap(scopeInfo.top());
-                        scopeInfo.pop();
+                    if (!scopeStack.top().isStructInit) {
+                        if (scopeInfo.empty()) {
+                            variableId.clear();
+                        } else {
+                            variableId.swap(scopeInfo.top());
+                            scopeInfo.pop();
+                        }
                     }
 
                     scopeStack.pop();
