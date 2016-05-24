@@ -31,7 +31,7 @@
 #include "standards.h"
 #include "errorlogger.h"
 #include "timer.h"
-
+#include "cache.h"
 /// @addtogroup Core
 /// @{
 
@@ -113,6 +113,12 @@ public:
 
     /** @brief Paths used as base for conversion to relative paths. */
     std::vector<std::string> basePaths;
+
+    /** @brief Path to cache file. */
+	std::string cacheFile;
+
+	/** @brief Cache */
+	Cache cache;
 
     /** @brief write XML results (--xml) */
     bool xml;

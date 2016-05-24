@@ -25,10 +25,12 @@
 #include "settings.h"
 #include "errorlogger.h"
 #include "check.h"
+#include "tempcache.h"
 
 #include <string>
 #include <list>
 #include <istream>
+#include <memory>
 
 class Tokenizer;
 
@@ -185,7 +187,8 @@ private:
      */
     virtual void reportOut(const std::string &outmsg);
 
-    std::list<std::string> _errorList;
+	std::list<std::string> _errorList;
+	std::shared_ptr<TempCache> _tempCache;
     Settings _settings;
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value);

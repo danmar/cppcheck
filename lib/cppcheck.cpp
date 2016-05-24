@@ -160,7 +160,10 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
         std::set<unsigned long long> checksums;
         unsigned int checkCount = 0;
         for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
-            // bail out if terminated
+			
+			_tempCache.reset(); // dump previous iteration results.
+
+			// bail out if terminated
             if (_settings.terminated())
                 break;
 
@@ -187,6 +190,13 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
             Timer t("Preprocessor::getcode", _settings.showtime, &S_timerResults);
             std::string codeWithoutCfg = preprocessor.getcode(filedata, cfg, filename);
             t.Stop();
+
+			if (_settings.cache.ReportCachedResults(filename.c_str(), cfg.c_str(), codeWithoutCfg.c_str(), this))
+			{
+				reportOut("File is cached: " + filename);
+				continue;
+			}
+			_tempCache.reset(new TempCache(this, &_settings, filename, cfg, codeWithoutCfg));
 
             codeWithoutCfg += _settings.append();
 
@@ -263,9 +273,9 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
 
                     // Check simplified tokens
                     checkSimplifiedTokens(_tokenizer);
-                }
-
-            } catch (const InternalError &e) {
+				}
+			
+			} catch (const InternalError &e) {
                 if (_settings.isEnabled("information") && (_settings.debug || _settings.verbose))
                     purgedConfigurationMessage(filename, cfg);
                 internalErrorFound=true;
@@ -302,6 +312,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
         internalError(filename, e.errorMessage);
         exitcode=1; // e.g. reflect a syntax error
     }
+	_tempCache.reset();
 
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
@@ -567,7 +578,13 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     if (errmsg.empty())
         return;
 
-    // Alert only about unique errors
+	// Cache- even non-unique errors, as next test may be we different configurations and we don't want to mask an error just because in this scan it had different configurations.
+	if (!!_tempCache && !_settings.cacheFile.empty())
+	{
+		_tempCache->Report(msg.serialize());
+	}
+	
+	// Alert only about unique errors
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
         return;
 

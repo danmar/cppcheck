@@ -37,6 +37,7 @@
   <ItemGroup>
     <ClCompile Include="..\externals\tinyxml\tinyxml2.cpp" />
     <ClCompile Include="astutils.cpp" />
+    <ClCompile Include="cache.cpp" />
     <ClCompile Include="check.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -91,6 +92,8 @@
   <ItemGroup>
     <ClInclude Include="..\externals\tinyxml\tinyxml2.h" />
     <ClInclude Include="astutils.h" />
+    <ClInclude Include="cache.h" />
+    <ClInclude Include="tempcache.h" />
     <ClInclude Include="check.h" />
     <ClInclude Include="check64bit.h" />
     <ClInclude Include="checkassert.h" />

@@ -173,6 +173,22 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+            // Cache file (--cache=)
+            else if (std::strncmp(argv[i], "--cache=", strlen("--cache=")) == 0) {
+                std::string str(argv[i]);
+				str=str.substr(strlen("--cache="));
+				if( str.empty()){
+                    PrintMessage("cppcheck: No cache file given to '--cache=' option.");
+                    return false;
+                }
+
+				_settings->cacheFile = str;
+				if (0 != _settings->cache.Load(str))
+				{
+					PrintMessage("cppcheck: Failed loading cache file " + str);
+				}
+            }
+
             // Filter errors
             else if (std::strncmp(argv[i], "--exitcode-suppressions=", 24) == 0) {
                 // exitcode-suppressions=filename.txt
