@@ -4081,6 +4081,8 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
 
 static void setValueType(Token *tok, const Variable &var, bool cpp, ValueType::Sign defaultSignedness, const Library* lib)
 {
+    if (var.isStlType())
+        return;
     ValueType valuetype;
     valuetype.pointer = var.dimensions().size();
     valuetype.typeScope = var.typeScope();
