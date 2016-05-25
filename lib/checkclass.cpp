@@ -90,8 +90,21 @@ void CheckClass::constructors()
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
+        bool usedInUnion = false;
+        for (std::list<Scope>::const_iterator it = symbolDatabase->scopeList.begin(); it != symbolDatabase->scopeList.end(); ++it) {
+            if (it->type != Scope::eUnion)
+                continue;
+            const Scope &unionScope = *it;
+            for (std::list<Variable>::const_iterator var = unionScope.varlist.begin(); var != unionScope.varlist.end(); ++var) {
+                if (var->type() && var->type()->classScope == scope) {
+                    usedInUnion = true;
+                    break;
+                }
+            }
+        }
+
         // There are no constructors.
-        if (scope->numConstructors == 0 && printStyle) {
+        if (scope->numConstructors == 0 && printStyle && !usedInUnion) {
             // If there is a private variable, there should be a constructor..
             std::list<Variable>::const_iterator var;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
