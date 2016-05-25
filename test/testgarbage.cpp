@@ -231,6 +231,7 @@ private:
         TEST_CASE(garbageCode180);
         TEST_CASE(garbageCode181);
         TEST_CASE(garbageCode182); // #4195
+        TEST_CASE(garbageCode183); // #7505
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1514,6 +1515,10 @@ private:
     // #4195 - segfault for "enum { int f ( ) { return = } r = f ( ) ; }"
     void garbageCode182() {
         ASSERT_THROW(checkCode("enum { int f ( ) { return = } r = f ( ) ; }"), InternalError);
+    }
+    // #7505 - segfault
+    void garbageCode183() {
+        ASSERT_THROW(checkCode("= { int } enum return { r = f() f(); }"), InternalError);
     }
 
 };
