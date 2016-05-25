@@ -514,7 +514,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
         return;
 
     // Prevent recursion
-    for (std::list<const Token*>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
+    for (std::list<const Token*>::const_iterator it = callstack.cbegin(); it != callstack.cend(); ++it) {
         // Same function name => bail out
         if (tok->str() == (*it)->str())
             return;
@@ -679,12 +679,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         }
 
         // memset, memcmp, memcpy, strncpy, fgets..
-        if (declarationId == 0 && size > 0) {
+        if (declarationId == 0 && size > 0 && Token::Match(tok, "%name% ( !!)")) {
             std::list<const Token *> callstack;
             callstack.push_back(tok);
-            if (Token::Match(tok, ("%name% ( " + varnames + " ,").c_str()))
+            const Token* tok2 = tok->tokAt(2);
+            if (Token::Match(tok2, (varnames + " ,").c_str()))
                 checkFunctionParameter(*tok, 1, arrayInfo, callstack);
-            if (Token::Match(tok, ("%name% ( %name% , " + varnames + " ,").c_str()))
+            tok2 = tok2->nextArgument();
+            if (Token::Match(tok2, (varnames + " ,").c_str()))
                 checkFunctionParameter(*tok, 2, arrayInfo, callstack);
         }
 
@@ -911,10 +913,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             }
         }
 
-        else if (!tok->scope()->isExecutable()) // No executable code outside of executable scope - continue to increase performance
+        if (!tok->scope()->isExecutable()) // No executable code outside of executable scope - continue to increase performance
             continue;
 
-        else if (Token::Match(tok, "%name% (")) {
+        else if (tok->next() && tok->next()->link() && Token::Match(tok, "%name% (")) {
             // Check function call..
             checkFunctionCall(tok, arrayInfo, std::list<const Token*>());
 
@@ -966,16 +968,16 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             }
 
             // Writing data into array..
-            if (total_size > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) {
-                const std::size_t len = Token::getStrLength(tok->tokAt(4));
-                if (len >= total_size) {
-                    bufferOverrunError(tok, arrayInfo.varname());
-                    continue;
-                }
-            }
-
-            // Detect few strcat() calls
             if (total_size > 0) {
+                if (Token::Match(tok, "strcpy ( %varid% , %str% )", declarationId)) {
+                    const std::size_t len = Token::getStrLength(tok->tokAt(4));
+                    if (len >= total_size) {
+                        bufferOverrunError(tok, arrayInfo.varname());
+                        continue;
+                    }
+                }
+
+                // Detect few strcat() calls
                 MathLib::biguint charactersAppend = 0;
                 const Token *tok2 = tok;
 
@@ -1191,11 +1193,11 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 if (size < 0) {
                     negativeMemoryAllocationSizeError(tok->next()->next());
                 }
-            } else if (_tokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% ( %num%|%name% )")) {
+            } else if (_tokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% (|;")) {
                 size = 1;
                 type = tok->strAt(4);
                 var = tok->next()->variable();
-                nextTok = 8;
+                nextTok = 7;
             } else if (Token::Match(tok, "[*;{}] %var% = malloc|alloca ( %num% ) ;")) {
                 size = MathLib::toLongNumber(tok->strAt(5));
                 type = "char";   // minimum type, typesize=1
