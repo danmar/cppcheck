@@ -172,6 +172,8 @@ public:
 
     /** Check for buffer overruns (based on ArrayInfo) */
     void checkScope(const Token *tok, const ArrayInfo &arrayInfo);
+    void checkScope(const Token *tok, std::map<unsigned int, ArrayInfo> arrayInfo);
+    void checkScope_inner(const Token *tok, const ArrayInfo &arrayInfo);
 
     /** Check for buffer overruns */
     void checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo);
