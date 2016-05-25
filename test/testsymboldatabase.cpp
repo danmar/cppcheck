@@ -3360,6 +3360,9 @@ private:
         ASSERT_EQUALS("signed int", typeOf("struct AB { int a; int b; } ab; x = ab.a;", "."));
         ASSERT_EQUALS("signed int", typeOf("struct AB { int a; int b; } *ab; x = ab[1].a;", "."));
 
+        // Overloaded operators
+        ASSERT_EQUALS("Fred", typeOf("class Fred { Fred& operator<(int); }; void f() { Fred fred; x=fred<123; }", "<"));
+
         // Static members
         ASSERT_EQUALS("signed int", typeOf("struct AB { static int a; }; x = AB::a;", "::"));
 

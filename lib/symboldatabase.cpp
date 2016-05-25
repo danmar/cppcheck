@@ -4303,7 +4303,10 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = type->isLong() ? ValueType::Type::LONGDOUBLE : ValueType::Type::DOUBLE;
         else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum"))
             valuetype->type = ValueType::Type::NONSTD;
-        else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
+        else if (!valuetype->typeScope && type->type() && type->type()->classScope) {
+            valuetype->type = ValueType::Type::NONSTD;
+            valuetype->typeScope = type->type()->classScope;
+        } else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
             return nullptr;
         else if (type->str() == "*")
             valuetype->pointer++;
@@ -4328,6 +4331,36 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     }
 
     return (type && (valuetype->type != ValueType::Type::UNKNOWN_TYPE || valuetype->pointer > 0)) ? type : nullptr;
+}
+
+static const Scope *getClassScope(const Token *tok)
+{
+    return tok && tok->valueType() && tok->valueType()->typeScope && tok->valueType()->typeScope->isClassOrStruct() ?
+           tok->valueType()->typeScope :
+           nullptr;
+}
+
+static const Function *getOperatorFunction(const Token * const tok)
+{
+    const std::string functionName("operator" + tok->str());
+    std::multimap<std::string, const Function *>::const_iterator it;
+    const Scope *classScope;
+
+    classScope = getClassScope(tok->astOperand1());
+    if (classScope) {
+        it = classScope->functionMap.find(functionName);
+        if (it != classScope->functionMap.end())
+            return it->second;
+    }
+
+    classScope = getClassScope(tok->astOperand2());
+    if (classScope) {
+        it = classScope->functionMap.find(functionName);
+        if (it != classScope->functionMap.end())
+            return it->second;
+    }
+
+    return nullptr;
 }
 
 void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, char defaultSignedness, const Library* lib)
@@ -4365,9 +4398,18 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, char defau
                 }
                 ::setValueType(tok, ValueType(sign, type, 0U), cpp, defsign, lib);
             }
-        } else if (tok->isComparisonOp() || tok->tokType() == Token::eLogicalOp)
+        } else if (tok->isComparisonOp() || tok->tokType() == Token::eLogicalOp) {
+            if (cpp && tok->isComparisonOp() && (getClassScope(tok->astOperand1()) || getClassScope(tok->astOperand2()))) {
+                const Function *function = getOperatorFunction(tok);
+                if (function) {
+                    ValueType vt;
+                    parsedecl(function->retDef, &vt, defsign, lib);
+                    ::setValueType(tok, vt, cpp, defsign, lib);
+                    continue;
+                }
+            }
             ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U), cpp, defsign, lib);
-        else if (tok->tokType() == Token::eChar)
+        } else if (tok->tokType() == Token::eChar)
             ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U), cpp, defsign, lib);
         else if (tok->tokType() == Token::eString) {
             ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U);
