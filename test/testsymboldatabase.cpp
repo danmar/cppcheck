@@ -2297,7 +2297,7 @@ private:
     void enum4() { // #7493
         GET_SYMBOL_DB("enum Offsets { O1, O2, O3 };\n"
                       "enum MyEnums { E1=O1+1, E2=O2+1, E3=O3+1 };");
-        ASSERT(db);
+        ASSERT(db != nullptr);
         if (!db)
             return;
         ASSERT_EQUALS(3U, db->scopeList.size());

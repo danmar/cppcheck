@@ -1346,11 +1346,10 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 }
             }
             if (par != 0) {
-                std::ostringstream lineStream;
-                lineStream << __LINE__;
-                const std::string errorId = "preprocessor" + lineStream.str();
+                std::ostringstream errorId;
+                errorId << "preprocessor" <<  __LINE__;
                 const std::string errorText = "mismatching number of '(' and ')' in this line: " + def;
-                writeError(filename, linenr, _errorLogger, errorId, errorText);
+                writeError(filename, linenr, _errorLogger, errorId.str(), errorText);
                 ret.clear();
                 return ret;
             }
@@ -1455,8 +1454,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 deflist.back() = ndeflist.back();
                 ndeflist.pop_back();
             } else {
-                std::string tempDef((deflist.back() == "1") ? "0" : "1");
-                deflist.back() = tempDef;
+                deflist.back() = (deflist.back() == "1") ? "0" : "1";
             }
         }
 

@@ -1208,7 +1208,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
     // find enumerators
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
-        if (!tok->isName() || tok->varId() || tok->function() || tok->type() || tok->enumerator())
+        if (tok->tokType() != Token::eName)
             continue;
         const Enumerator * enumerator = findEnumerator(tok);
         if (enumerator)
