@@ -3498,7 +3498,7 @@ bool Scope::hasInlineOrLambdaFunction() const
     for (std::list<Scope*>::const_iterator it = nestedList.begin(); it != nestedList.end(); ++it) {
         const Scope *s = *it;
         // Inline function
-        if (s->type == Scope::eUnconditional && Token::Match(s->classStart->previous(), ") {"))
+        if (s->type == Scope::eUnconditional && Token::simpleMatch(s->classStart->previous(), ") {"))
             return true;
         // Lambda function
         if (s->type == Scope::eLambda)
