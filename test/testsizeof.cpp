@@ -573,6 +573,20 @@ private:
               "  memmove(aug + extra_string, aug, buf - (bfd_byte *)aug);\n" // #7100
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7518
+        check("bool create_iso_definition(cpp_reader *pfile, cpp_macro *macro) {\n"
+              "  cpp_token *token;\n"
+              "  cpp_hashnode **params = malloc(sizeof(cpp_hashnode *) * macro->paramc);\n"
+              "  memcpy(params, macro->params, sizeof(cpp_hashnode *) * macro->paramc);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void* foo() {\n"
+              "  void* AtomName = malloc(sizeof(char *) * 34);\n"
+              "  return AtomName;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkPointerSizeofStruct() {

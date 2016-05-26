@@ -162,6 +162,9 @@ void CheckSizeof::checkSizeofForPointerSize()
             while (Token::Match(variable, "%var% ::|."))
                 variable = variable->tokAt(2);
 
+            while (Token::Match(variable2, "%var% ::|."))
+                variable2 = variable2->tokAt(2);
+
             // Ensure the variables are in the symbol database
             // Also ensure the variables are pointers
             // Only keep variables which are pointers
@@ -192,9 +195,9 @@ void CheckSizeof::checkSizeofForPointerSize()
 
             // Now check for the sizeof usage: Does the level of pointer indirection match?
             if (tokSize->linkAt(1)->strAt(-1) == "*") {
-                if (variable && variable->valueType() && variable->valueType()->pointer == 1)
+                if (variable && variable->valueType() && variable->valueType()->pointer == 1 && variable->valueType()->type != ValueType::VOID)
                     sizeofForPointerError(variable, variable->str());
-                else if (variable2 && variable2->valueType() && variable2->valueType()->pointer == 1)
+                else if (variable2 && variable2->valueType() && variable2->valueType()->pointer == 1 && variable2->valueType()->type != ValueType::VOID)
                     sizeofForPointerError(variable2, variable2->str());
             }
 
