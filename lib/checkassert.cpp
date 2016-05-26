@@ -44,7 +44,7 @@ void CheckAssert::assertWithSideEffects()
 
         const Token *endTok = tok->next()->link();
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
-            checkVariableAssignment(tmp);
+            checkVariableAssignment(tmp, tok->scope());
 
             if (tmp->tokType() == Token::eFunction) {
                 const Function* f = tmp->function();
@@ -108,11 +108,20 @@ void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& v
 }
 
 // checks if side effects happen on the variable prior to tmp
-void CheckAssert::checkVariableAssignment(const Token* assignTok)
+void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *assertionScope)
 {
     const Variable* prevVar = assignTok->previous()->variable();
     if (!prevVar)
         return;
+
+    // Variable declared in inner scope in assert => dont warn
+    if (assertionScope != prevVar->scope()) {
+        const Scope *s = prevVar->scope();
+        while (s && s != assertionScope)
+            s = s->nestedIn;
+        if (s == assertionScope)
+            return;
+    }
 
     // assignment
     if (assignTok->isAssignmentOp() || assignTok->tokType() == Token::eIncDecOp) {
