@@ -1287,15 +1287,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         // rhs of [
                         const Token *rhs = dimension.start->previous()->astOperand2();
 
-                        if (rhs) {
-                            // constant folding of expression:
-                            ValueFlow::valueFlowConstantFoldAST(rhs);
+                        // constant folding of expression:
+                        ValueFlow::valueFlowConstantFoldAST(rhs);
 
-                            // get constant folded value:
-                            if (rhs->values.size() == 1U && rhs->values.front().isKnown()) {
-                                dimension.num = rhs->values.front().intvalue;
-                                dimension.known = true;
-                            }
+                        // get constant folded value:
+                        if (rhs && rhs->values.size() == 1U && rhs->values.front().isKnown()) {
+                            dimension.num = rhs->values.front().intvalue;
+                            dimension.known = true;
                         }
                     }
                 }
@@ -3284,16 +3282,14 @@ const Token * Scope::addEnum(const Token * tok, bool isCpp)
                     // rhs of operator:
                     const Token *rhs = enumerator.start->previous()->astOperand2();
 
-                    if (rhs) {
-                        // constant folding of expression:
-                        ValueFlow::valueFlowConstantFoldAST(rhs);
+                    // constant folding of expression:
+                    ValueFlow::valueFlowConstantFoldAST(rhs);
 
-                        // get constant folded value:
-                        if (rhs->values.size() == 1U && rhs->values.front().isKnown()) {
-                            enumerator.value = rhs->values.front().intvalue;
-                            enumerator.value_known = true;
-                            value = enumerator.value + 1;
-                        }
+                    // get constant folded value:
+                    if (rhs && rhs->values.size() == 1U && rhs->values.front().isKnown()) {
+                        enumerator.value = rhs->values.front().intvalue;
+                        enumerator.value_known = true;
+                        value = enumerator.value + 1;
                     }
                 }
             }
