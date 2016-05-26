@@ -898,6 +898,9 @@ public:
                 type == eTry || type == eCatch);
     }
 
+    // Is there lambda/inline function(s) in this scope?
+    bool hasInlineFunction() const;
+
     /**
      * @brief find a function
      * @param tok token of function call

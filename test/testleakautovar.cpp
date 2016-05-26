@@ -121,6 +121,8 @@ private:
 
         TEST_CASE(nestedAllocation);
         TEST_CASE(testKeywords); // #6767
+
+        TEST_CASE(inlineFunction); // #3989
     }
 
     void check(const char code[], bool cpp = false) {
@@ -1221,6 +1223,19 @@ private:
               "  free(new);\n"
               "  return 0;\n"
               "}", false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void inlineFunction() {
+        check("int test() {\n"
+              "  char *c;\n"
+              "  int ret() {\n"
+              "        free(c);\n"
+              "        return 0;\n"
+              "    }\n"
+              "    c = malloc(128);\n"
+              "    return ret();\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

@@ -2177,8 +2177,8 @@ void CheckMemoryLeakInFunction::check()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-
-        checkScope(scope->classStart->next(), "", 0, scope->functionOf != nullptr, 1);
+        if (!scope->hasInlineFunction())
+            checkScope(scope->classStart->next(), "", 0, scope->functionOf != nullptr, 1);
     }
 
     // Check variables..
@@ -2195,6 +2195,9 @@ void CheckMemoryLeakInFunction::check()
 
         // check for known class without implementation (forward declaration)
         if (var->isPointer() && var->type() && !var->typeScope())
+            continue;
+
+        if (var->scope()->hasInlineFunction())
             continue;
 
         unsigned int sz = _tokenizer->sizeOfType(var->typeStartToken());

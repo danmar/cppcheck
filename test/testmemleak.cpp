@@ -250,6 +250,8 @@ private:
         TEST_CASE(allocfunc13); // Ticket #4494 and #4540 - class function
         TEST_CASE(allocfunc14); // Use pointer before returning it
 
+        TEST_CASE(inlineFunction); // #3989 - inline function
+
         TEST_CASE(throw1);
         TEST_CASE(throw2);
 
@@ -2675,6 +2677,19 @@ private:
               "\n"
               "static void f() {\n"
               "    struct ABC *abc = newabc();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void inlineFunction() { // #3989 - inline function
+        check("int test() {\n"
+              "  char *c;\n"
+              "  int ret() {\n"
+              "        free(c);\n"
+              "        return 0;\n"
+              "    }\n"
+              "    c = malloc(128);\n"
+              "    return ret();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

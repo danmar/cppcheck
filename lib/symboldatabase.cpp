@@ -3493,7 +3493,16 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
     return nullptr;
 }
 
-//---------------------------------------------------------------------------
+bool Scope::hasInlineFunction() const
+{
+    for (std::list<Scope*>::const_iterator it = nestedList.begin(); it != nestedList.end(); ++it) {
+        const Scope *s = *it;
+        // Inline function
+        if (s->type == Scope::eUnconditional && Token::Match(s->classStart->previous(), ") {"))
+            return true;
+    }
+    return false;
+}
 
 void Scope::findFunctionInBase(const std::string & name, size_t args, std::vector<const Function *> & matches) const
 {
