@@ -162,6 +162,8 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     const Token* parent = tok->astParent();
     if (!parent)
         return false;
+    if (parent->str() == "." && parent->astOperand2() == tok)
+        return isPointerDeRef(parent, unknown);
     const bool firstOperand = parent->astOperand1() == tok;
     while (parent->str() == "(" && (parent->astOperand2() == nullptr && parent->strAt(1) != ")")) { // Skip over casts
         parent = parent->astParent();

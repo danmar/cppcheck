@@ -65,6 +65,7 @@ private:
         TEST_CASE(doublefree2);
         TEST_CASE(doublefree3); // #4914
         TEST_CASE(doublefree4); // #5451 - FP when exit is called
+        TEST_CASE(doublefree5); // #5522
 
         // exit
         TEST_CASE(exit1);
@@ -810,6 +811,15 @@ private:
               "  free(p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void doublefree5() {  // #5522
+        check("void f(char *p) {\n"
+              "  free(p);\n"
+              "  x = (q == p);\n"
+              "  free(p);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
     }
 
     void exit1() {

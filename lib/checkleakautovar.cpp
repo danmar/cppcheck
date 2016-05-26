@@ -22,6 +22,7 @@
 
 #include "checkleakautovar.h"
 #include "checkmemoryleak.h"  // <- CheckMemoryLeak::memoryLeak
+#include "checknullpointer.h" // <- CheckNullPointer::isPointerDeRef
 #include "tokenize.h"
 #include "symboldatabase.h"
 #include "astutils.h"
@@ -196,7 +197,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         if (tok->varId() > 0) {
             const std::map<unsigned int, VarInfo::AllocInfo>::const_iterator var = alloctype.find(tok->varId());
             if (var != alloctype.end()) {
-                if (var->second.status == VarInfo::DEALLOC && tok->strAt(-1) != "&" && (!Token::Match(tok, "%name% =") || tok->strAt(-1) == "*")) {
+                bool unknown = false;
+                if (var->second.status == VarInfo::DEALLOC && CheckNullPointer::isPointerDeRef(tok,unknown) && !unknown) {
                     deallocUseError(tok, tok->str());
                 } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
                     varInfo->erase(tok->varId());
