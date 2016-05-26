@@ -140,7 +140,7 @@ void CheckLeakAutoVar::check()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        if (scope->hasInlineFunction())
+        if (scope->hasInlineOrLambdaFunction())
             continue;
 
         // Empty variable info

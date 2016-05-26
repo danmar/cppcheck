@@ -899,7 +899,7 @@ public:
     }
 
     // Is there lambda/inline function(s) in this scope?
-    bool hasInlineFunction() const;
+    bool hasInlineOrLambdaFunction() const;
 
     /**
      * @brief find a function

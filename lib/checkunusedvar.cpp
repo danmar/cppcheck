@@ -1136,6 +1136,11 @@ void CheckUnusedVar::checkFunctionVariableUsage()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
 
+        // Bailout when there are lambdas or inline functions
+        // TODO: Handle lambdas and inline functions properly
+        if (scope->hasInlineOrLambdaFunction())
+            continue;
+
         // varId, usage {read, write, modified}
         Variables variables;
 
