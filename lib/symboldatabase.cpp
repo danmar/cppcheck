@@ -3279,27 +3279,8 @@ const Token * Scope::addEnum(const Token * tok, bool isCpp)
                     }
                 }
 
-                // look for single token enumerators
-                if (enumerator.start == enumerator.end) {
-                    // check if token is a number
-                    if (enumerator.start->isNumber()) {
-                        enumerator.value = MathLib::toLongNumber(enumerator.start->str());
-                        enumerator.value_known = true;
-                        value = enumerator.value + 1;
-                    }
-
-                    // check if token is an enumerator
-                    else if (enumerator.start->isEnumerator()) {
-                        if (enumerator.start->enumerator()->value_known) {
-                            enumerator.value = enumerator.start->enumerator()->value;
-                            enumerator.value_known = true;
-                            value = enumerator.value + 1;
-                        }
-                    }
-                }
-
                 // look for possible constant folding expressions
-                else if (enumerator.start) {
+                if (enumerator.start) {
                     // rhs of operator:
                     const Token *rhs = enumerator.start->previous()->astOperand2();
 
