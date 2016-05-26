@@ -706,11 +706,11 @@ private:
               "    scanf(\"%dx%s\", &b, bar);\n"
               "    fclose(file);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) scanf without field width limits can crash with huge input data.\n"
-                      "[test.cpp:5]: (warning) scanf without field width limits can crash with huge input data.\n"
-                      "[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data.\n"
-                      "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data.\n"
-                      "[test.cpp:8]: (warning) scanf without field width limits can crash with huge input data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) fscanf() without field width limits can crash with huge input data.\n"
+                      "[test.cpp:5]: (warning) scanf() without field width limits can crash with huge input data.\n"
+                      "[test.cpp:6]: (warning) scanf() without field width limits can crash with huge input data.\n"
+                      "[test.cpp:7]: (warning) sscanf() without field width limits can crash with huge input data.\n"
+                      "[test.cpp:8]: (warning) scanf() without field width limits can crash with huge input data.\n", errout.str());
     }
 
     void testScanf2() {
@@ -856,7 +856,7 @@ private:
               "}", true);
         ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) Width 3 given in format string (no. 1) is smaller than destination buffer 'output[5]'.\n"
                       "[test.cpp:7]: (error) Width 5 given in format string (no. 1) is larger than destination buffer 'output[5]', use %4s to prevent overflowing it.\n"
-                      "[test.cpp:4]: (warning) scanf without field width limits can crash with huge input data.\n", errout.str());
+                      "[test.cpp:4]: (warning) sscanf() without field width limits can crash with huge input data.\n", errout.str());
 
         check("void foo() {\n"
               "    const size_t BUFLENGTH(2048);\n"
@@ -1340,7 +1340,7 @@ private:
                   "    scanf(\"%s\n\", c);\n"
                   "}\n");
             ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires a 'char *' but the argument type is 'const char *'.\n"
-                          "[test.cpp:3]: (warning) scanf without field width limits can crash with huge input data.\n", errout.str());
+                          "[test.cpp:3]: (warning) scanf() without field width limits can crash with huge input data.\n", errout.str());
         }
 
     }

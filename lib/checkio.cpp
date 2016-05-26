@@ -422,10 +422,10 @@ void CheckIO::invalidScanf()
 
 void CheckIO::invalidScanfError(const Token *tok)
 {
-
+    std::string fname = (tok ? tok->str() : std::string("scanf"));
     reportError(tok, Severity::warning,
-                "invalidscanf", "scanf without field width limits can crash with huge input data.\n"
-                "scanf without field width limits can crash with huge input data. Add a field width "
+                "invalidscanf", fname + "() without field width limits can crash with huge input data.\n" +
+                fname + "() without field width limits can crash with huge input data. Add a field width "
                 "specifier to fix this problem:\n"
                 "    %s => %20s\n"
                 "\n"
