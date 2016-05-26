@@ -463,7 +463,6 @@ private:
         TEST_CASE(removeMacroInClassDef); // #6058
 
         TEST_CASE(sizeofAddParentheses);
-        TEST_CASE(noreturn); // #5783
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -8425,30 +8424,6 @@ private:
         ASSERT_EQUALS("sizeof ( a . b ) + 3 ;", tokenizeAndStringify("sizeof a.b+3;"));
         ASSERT_EQUALS("sizeof ( a [ 2 ] . b ) + 3 ;", tokenizeAndStringify("sizeof a[2].b+3;"));
         ASSERT_EQUALS("f ( 0 , sizeof ( ptr . bar ) ) ;", tokenizeAndStringify("f(0, sizeof ptr->bar );"));
-    }
-
-    // see #5783
-    void noreturn() {
-        const char code[] = "void myassert() {\n"
-                            "  exit(1);\n"
-                            "}\n"
-                            "void f(char *buf) {\n"
-                            "  if(i==0) {\n"
-                            "    free(buf);\n"
-                            "    myassert();\n"
-                            "  }\n"
-                            "  free(buf);\n"
-                            "}\n";
-
-        // tokenize..
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        const Token * func = Token::findsimplematch(tokenizer.tokens(), "myassert");
-
-        TODO_ASSERT(func && func->isAttributeNoreturn());
-
     }
 };
 
