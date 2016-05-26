@@ -246,6 +246,7 @@ private:
         TEST_CASE(enum2);
         TEST_CASE(enum3);
         TEST_CASE(enum4);
+        TEST_CASE(enum5);
 
         TEST_CASE(isImplicitlyVirtual);
         TEST_CASE(isPure);
@@ -288,15 +289,19 @@ private:
         TEST_CASE(valuetype);
     }
 
-    void array() const {
-        std::istringstream code("int a[10+2];");
-        TokenList list(nullptr);
-        list.createTokens(code, "test.c");
-        list.front()->tokAt(2)->link(list.front()->tokAt(6));
-        Variable v(list.front()->next(), list.front(), list.back(), 0, Public, nullptr, nullptr, &settings.library);
-        ASSERT(v.isArray());
-        ASSERT_EQUALS(1U, v.dimensions().size());
-        ASSERT_EQUALS(0U, v.dimension(0));
+    void array() {
+        GET_SYMBOL_DB_C("int a[10+2];");
+        ASSERT(db != nullptr);
+        if (!db)
+            return;
+        ASSERT(db->getVariableListSize() == 2); // the first one is not used
+        const Variable * v = db->getVariableFromVarId(1);
+        ASSERT(v != nullptr);
+        if (!v)
+            return;
+        ASSERT(v->isArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(12U, v->dimension(0));
     }
 
     void stlarray() const {
@@ -2320,6 +2325,67 @@ private:
         TODO_ASSERT_EQUALS(true, false, scope->enumeratorList[0].value_known);
         TODO_ASSERT_EQUALS(true, false, scope->enumeratorList[1].value_known);
         TODO_ASSERT_EQUALS(true, false, scope->enumeratorList[2].value_known);
+    }
+
+    void enum5() {
+        GET_SYMBOL_DB("enum { A = 10, B = 2 };\n"
+                      "int a[10 + 2];\n"
+                      "int b[A];\n"
+                      "int c[A + 2];\n"
+                      "int d[10 + B];\n"
+                      "int e[A + B];\n");
+        ASSERT(db);
+        if (!db)
+            return;
+        ASSERT_EQUALS(2U, db->scopeList.size());
+
+        // Assert that all enum values are known
+        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+
+        ++scope;
+        ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
+        ASSERT_EQUALS(2U, scope->enumeratorList.size());
+        ASSERT_EQUALS(true, scope->enumeratorList[0].value_known);
+        ASSERT_EQUALS(10, scope->enumeratorList[0].value);
+        ASSERT_EQUALS(true, scope->enumeratorList[1].value_known);
+        ASSERT_EQUALS(2, scope->enumeratorList[1].value);
+
+        ASSERT(db->getVariableListSize() == 6); // the first one is not used
+        const Variable * v = db->getVariableFromVarId(1);
+        ASSERT(v != nullptr);
+        if (!v)
+            return;
+        ASSERT(v->isArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(12U, v->dimension(0));
+        v = db->getVariableFromVarId(2);
+        ASSERT(v != nullptr);
+        if (!v)
+            return;
+        ASSERT(v->isArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(10U, v->dimension(0));
+        v = db->getVariableFromVarId(3);
+        ASSERT(v != nullptr);
+        if (!v)
+            return;
+        ASSERT(v->isArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(12U, v->dimension(0));
+        v = db->getVariableFromVarId(4);
+        ASSERT(v != nullptr);
+        if (!v)
+            return;
+        ASSERT(v->isArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(12U, v->dimension(0));
+        v = db->getVariableFromVarId(5);
+        ASSERT(v != nullptr);
+        if (!v)
+            return;
+        ASSERT(v->isArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(12U, v->dimension(0));
     }
 
     void isImplicitlyVirtual() {

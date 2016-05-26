@@ -1284,24 +1284,17 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     }
                     // check for qualified enumerator
                     else if (dimension.end) {
-                        if (dimension.end->enumerator()) {
-                            if (dimension.end->enumerator()->value_known) {
-                                dimension.num = dimension.end->enumerator()->value;
+                        // rhs of [
+                        const Token *rhs = dimension.start->previous()->astOperand2();
+
+                        if (rhs) {
+                            // constant folding of expression:
+                            ValueFlow::valueFlowConstantFoldAST(rhs);
+
+                            // get constant folded value:
+                            if (rhs->values.size() == 1U && rhs->values.front().isKnown()) {
+                                dimension.num = rhs->values.front().intvalue;
                                 dimension.known = true;
-                            }
-                        } else {
-                            // rhs of [
-                            const Token *rhs = dimension.start->previous()->astOperand2();
-
-                            if (rhs) {
-                                // constant folding of expression:
-                                ValueFlow::valueFlowConstantFoldAST(rhs);
-
-                                // get constant folded value:
-                                if (rhs->values.size() == 1U && rhs->values.front().isKnown()) {
-                                    dimension.num = rhs->values.front().intvalue;
-                                    dimension.known = true;
-                                }
                             }
                         }
                     }

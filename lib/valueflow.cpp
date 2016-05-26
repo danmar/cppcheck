@@ -578,9 +578,7 @@ static void valueFlowSetConstantValue(const Token *tok)
         ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
         value.setKnown();
         setTokenValue(const_cast<Token *>(tok), value);
-    }
-
-    if (tok->enumerator() && tok->enumerator()->value_known) {
+    } else if (tok->enumerator() && tok->enumerator()->value_known) {
         ValueFlow::Value value(tok->enumerator()->value);
         value.setKnown();
         setTokenValue(const_cast<Token *>(tok), value);
