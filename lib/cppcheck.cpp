@@ -586,7 +586,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
             return;
     }
 
-    if (!_settings.nofail.isSuppressed(msg._id, file, line))
+    if (!_settings.nofail.isSuppressed(msg._id, file, line) && !_settings.nomsg.isSuppressed(msg._id, file, line))
         exitcode = 1;
 
     _errorList.push_back(errmsg);

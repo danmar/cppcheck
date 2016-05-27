@@ -131,15 +131,15 @@ private:
     }
 
     // Check the suppression
-    void checkSuppression(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppression(const char code[], const std::string &suppression = emptyString) {
         std::map<std::string, std::string> files;
         files["test.cpp"] = code;
 
-        checkSuppression(files, suppression);
+        return checkSuppression(files, suppression);
     }
 
     // Check the suppression for multiple files
-    void checkSuppression(std::map<std::string, std::string> &files, const std::string &suppression = emptyString) {
+    unsigned int checkSuppression(std::map<std::string, std::string> &files, const std::string &suppression = emptyString) {
         // Clear the error log
         errout.str("");
 
@@ -153,15 +153,18 @@ private:
             ASSERT_EQUALS("", r);
         }
 
+        unsigned int exitCode = 0;
         for (std::map<std::string, std::string>::const_iterator file = files.begin(); file != files.end(); ++file) {
-            cppCheck.check(file->first, file->second);
+            exitCode |= cppCheck.check(file->first, file->second);
         }
         cppCheck.analyseWholeProgram();
 
         reportSuppressions(settings, files);
+
+        return exitCode;
     }
 
-    void checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
         errout.str("");
         output.str("");
 
@@ -179,16 +182,18 @@ private:
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
             executor.addFileContent(i->first, code);
 
-        executor.check();
+        unsigned int exitCode = executor.check();
 
         std::map<std::string, std::string> files_for_report;
         for (std::map<std::string, std::size_t>::const_iterator file = files.begin(); file != files.end(); ++file)
             files_for_report[file->first] = "";
 
         reportSuppressions(settings, files_for_report);
+
+        return exitCode;
     }
 
-    void runChecks(void (TestSuppressions::*check)(const char[], const std::string &)) {
+    void runChecks(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
         // check to make sure the appropriate error is present
         (this->*check)("void f() {\n"
                        "    int a;\n"
@@ -319,6 +324,18 @@ private:
                        "}\n",
                        "");
         ASSERT_EQUALS("[test.cpp:4]: (information) Unmatched suppression: uninitvar\n", errout.str());
+
+        // #5746 - exitcode
+        ASSERT_EQUALS(1U,
+                      (this->*check)("int f() {\n"
+                                     "  int a; return a;\n"
+                                     "}\n",
+                                     ""));
+        ASSERT_EQUALS(0U,
+                      (this->*check)("int f() {\n"
+                                     "  int a; return a;\n"
+                                     "}\n",
+                                     "uninitvar"));
     }
 
     void suppressionsSettings() {
