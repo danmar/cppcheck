@@ -2187,6 +2187,12 @@ private:
         ASSERT_EQUALS("[test.cpp:9]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.\n"
                       "[test.cpp:9]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'float'.\n", errout.str());
 
+        // Ticket #7445
+        check("struct S { unsigned short x; } s = {0};\n"
+              "void foo() {\n"
+              "    printf(\"%d\", s.x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
