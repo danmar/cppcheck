@@ -1389,9 +1389,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
                 tempToken->insertToken("a");
                 tempToken = tempToken->next();
             }
-            if (valuetype->pointer == 0U && valuetype->type <= ValueType::INT)
-                tempToken->str("int");
-            else if (valuetype->type == ValueType::BOOL)
+            if (valuetype->type == ValueType::BOOL)
                 tempToken->str("bool");
             else if (valuetype->type == ValueType::CHAR)
                 tempToken->str("char");
