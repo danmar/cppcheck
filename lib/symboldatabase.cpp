@@ -1206,6 +1206,61 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
     }
 
+    // fill in enumerators in enum
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+        if (it->type != Scope::eEnum)
+            continue;
+
+        // add enumerators to enumerator tokens
+        for (std::size_t i = 0, end = it->enumeratorList.size(); i < end; ++i)
+            const_cast<Token *>(it->enumeratorList[i].name)->enumerator(&it->enumeratorList[i]);
+    }
+
+    // fill in enumerator values
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+        if (it->type != Scope::eEnum)
+            continue;
+
+        MathLib::bigint value = 0;
+
+        for (std::size_t i = 0, end = it->enumeratorList.size(); i < end; ++i) {
+            Enumerator & enumerator = it->enumeratorList[i];
+
+            // look for initialization tokens that can be converted to enumerators and convert them
+            if (enumerator.start) {
+                for (const Token * tok3 = enumerator.start; tok3 && tok3 != enumerator.end->next(); tok3 = tok3->next()) {
+                    if (tok3->tokType() == Token::eName) {
+                        const Enumerator * e = findEnumerator(tok3);
+                        if (e)
+                            const_cast<Token *>(tok3)->enumerator(e);
+                    }
+                }
+
+                // look for possible constant folding expressions
+                if (enumerator.start) {
+                    // rhs of operator:
+                    const Token *rhs = enumerator.start->previous()->astOperand2();
+
+                    // constant folding of expression:
+                    ValueFlow::valueFlowConstantFoldAST(rhs);
+
+                    // get constant folded value:
+                    if (rhs && rhs->values.size() == 1U && rhs->values.front().isKnown()) {
+                        enumerator.value = rhs->values.front().intvalue;
+                        enumerator.value_known = true;
+                        value = enumerator.value + 1;
+                    }
+                }
+            }
+
+            // not initialized so use default value
+            else {
+                enumerator.value = value++;
+                enumerator.value_known = true;
+            }
+        }
+    }
+
     // find enumerators
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
         if (tok->tokType() != Token::eName)
@@ -3255,52 +3310,6 @@ const Token * Scope::addEnum(const Token * tok, bool isCpp)
             tok2 = nullptr;
     } else
         tok2 = nullptr;
-
-    if (tok2) {
-        // add enumerators to enumerator tokens
-        for (std::size_t i = 0, end = enumeratorList.size(); i < end; ++i)
-            const_cast<Token *>(enumeratorList[i].name)->enumerator(&enumeratorList[i]);
-
-        MathLib::bigint value = 0;
-
-        // fill in enumerator values
-        for (std::size_t i = 0, end = enumeratorList.size(); i < end; ++i) {
-            Enumerator & enumerator = enumeratorList[i];
-
-            // look for initialization tokens that can be converted to enumerators and convert them
-            if (enumerator.start) {
-                for (const Token * tok3 = enumerator.start; tok3 && tok3 != enumerator.end->next(); tok3 = tok3->next()) {
-                    if (tok3->tokType() == Token::eName) {
-                        const Enumerator * e = findEnumerator(tok3->str());
-                        if (e)
-                            const_cast<Token *>(tok3)->enumerator(e);
-                    }
-                }
-
-                // look for possible constant folding expressions
-                if (enumerator.start) {
-                    // rhs of operator:
-                    const Token *rhs = enumerator.start->previous()->astOperand2();
-
-                    // constant folding of expression:
-                    ValueFlow::valueFlowConstantFoldAST(rhs);
-
-                    // get constant folded value:
-                    if (rhs && rhs->values.size() == 1U && rhs->values.front().isKnown()) {
-                        enumerator.value = rhs->values.front().intvalue;
-                        enumerator.value_known = true;
-                        value = enumerator.value + 1;
-                    }
-                }
-            }
-
-            // not initialized so use default value
-            else {
-                enumerator.value = value++;
-                enumerator.value_known = true;
-            }
-        }
-    }
 
     return tok2;
 }

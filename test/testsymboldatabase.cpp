@@ -2300,8 +2300,8 @@ private:
     }
 
     void enum4() { // #7493
-        GET_SYMBOL_DB("enum Offsets { O1, O2, O3 };\n"
-                      "enum MyEnums { E1=O1+1, E2=O2+1, E3=O3+1 };");
+        GET_SYMBOL_DB("enum Offsets { O1, O2, O3=5, O4 };\n"
+                      "enum MyEnums { E1=O1+1, E2, E3=O3+1 };");
         ASSERT(db != nullptr);
         if (!db)
             return;
@@ -2313,18 +2313,75 @@ private:
         // Offsets
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
-        ASSERT_EQUALS(3U, scope->enumeratorList.size());
+        ASSERT_EQUALS(4U, scope->enumeratorList.size());
+
+        ASSERT(scope->enumeratorList[0].name->enumerator() == &scope->enumeratorList[0]);
+        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[0].name->tokType());
+        ASSERT(scope->enumeratorList[0].scope == &*scope);
+        ASSERT_EQUALS("O1", scope->enumeratorList[0].name->str());
+        ASSERT(scope->enumeratorList[0].start == nullptr);
+        ASSERT(scope->enumeratorList[0].end == nullptr);
         ASSERT_EQUALS(true, scope->enumeratorList[0].value_known);
+        ASSERT_EQUALS(0, scope->enumeratorList[0].value);
+
+        ASSERT(scope->enumeratorList[1].name->enumerator() == &scope->enumeratorList[1]);
+        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[1].name->tokType());
+        ASSERT(scope->enumeratorList[1].scope == &*scope);
+        ASSERT_EQUALS("O2", scope->enumeratorList[1].name->str());
+        ASSERT(scope->enumeratorList[1].start == nullptr);
+        ASSERT(scope->enumeratorList[1].end == nullptr);
         ASSERT_EQUALS(true, scope->enumeratorList[1].value_known);
+        ASSERT_EQUALS(1, scope->enumeratorList[1].value);
+
+        ASSERT(scope->enumeratorList[2].name->enumerator() == &scope->enumeratorList[2]);
+        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[2].name->tokType());
+        ASSERT(scope->enumeratorList[2].scope == &*scope);
+        ASSERT_EQUALS("O3", scope->enumeratorList[2].name->str());
+        ASSERT(scope->enumeratorList[2].start != nullptr);
+        ASSERT(scope->enumeratorList[2].end != nullptr);
         ASSERT_EQUALS(true, scope->enumeratorList[2].value_known);
+        ASSERT_EQUALS(5, scope->enumeratorList[2].value);
+
+        ASSERT(scope->enumeratorList[3].name->enumerator() == &scope->enumeratorList[3]);
+        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[3].name->tokType());
+        ASSERT(scope->enumeratorList[3].scope == &*scope);
+        ASSERT_EQUALS("O4", scope->enumeratorList[3].name->str());
+        ASSERT(scope->enumeratorList[3].start == nullptr);
+        ASSERT(scope->enumeratorList[3].end == nullptr);
+        ASSERT_EQUALS(true, scope->enumeratorList[3].value_known);
+        ASSERT_EQUALS(6, scope->enumeratorList[3].value);
 
         // MyEnums
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
         ASSERT_EQUALS(3U, scope->enumeratorList.size());
-        TODO_ASSERT_EQUALS(true, false, scope->enumeratorList[0].value_known);
-        TODO_ASSERT_EQUALS(true, false, scope->enumeratorList[1].value_known);
-        TODO_ASSERT_EQUALS(true, false, scope->enumeratorList[2].value_known);
+
+        ASSERT(scope->enumeratorList[0].name->enumerator() == &scope->enumeratorList[0]);
+        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[0].name->tokType());
+        ASSERT(scope->enumeratorList[0].scope == &*scope);
+        ASSERT_EQUALS("E1", scope->enumeratorList[0].name->str());
+        ASSERT(scope->enumeratorList[0].start != nullptr);
+        ASSERT(scope->enumeratorList[0].end != nullptr);
+        ASSERT_EQUALS(true, scope->enumeratorList[0].value_known);
+        ASSERT_EQUALS(1, scope->enumeratorList[0].value);
+
+        ASSERT(scope->enumeratorList[1].name->enumerator() == &scope->enumeratorList[1]);
+        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[1].name->tokType());
+        ASSERT(scope->enumeratorList[1].scope == &*scope);
+        ASSERT_EQUALS("E2", scope->enumeratorList[1].name->str());
+        ASSERT(scope->enumeratorList[1].start == nullptr);
+        ASSERT(scope->enumeratorList[1].end == nullptr);
+        ASSERT_EQUALS(true, scope->enumeratorList[1].value_known);
+        ASSERT_EQUALS(2, scope->enumeratorList[1].value);
+
+        ASSERT(scope->enumeratorList[2].name->enumerator() == &scope->enumeratorList[2]);
+        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[2].name->tokType());
+        ASSERT(scope->enumeratorList[2].scope == &*scope);
+        ASSERT_EQUALS("E3", scope->enumeratorList[2].name->str());
+        ASSERT(scope->enumeratorList[2].start != nullptr);
+        ASSERT(scope->enumeratorList[2].end != nullptr);
+        ASSERT_EQUALS(true, scope->enumeratorList[2].value_known);
+        ASSERT_EQUALS(6, scope->enumeratorList[2].value);
     }
 
     void enum5() {
