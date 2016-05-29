@@ -50,7 +50,6 @@ public:
         checkType.checkIntegerOverflow();
         checkType.checkSignConversion();
         checkType.checkLongCast();
-        checkType.checkEnumMismatch();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -71,9 +70,6 @@ public:
 
     /** @brief %Check for implicit long cast of int result */
     void checkLongCast();
-
-    /** @brief %Check for mismatching enum usage */
-    void checkEnumMismatch();
 private:
 
     // Error messages..
@@ -82,8 +78,6 @@ private:
     void signConversionError(const Token *tok, const bool constvalue);
     void longCastAssignError(const Token *tok);
     void longCastReturnError(const Token *tok);
-    void enumMismatchAssignError(const Token *tok, const ValueFlow::Value &value);
-    void enumMismatchCompareError(const Token *tok, const ValueFlow::Value &value);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckType c(nullptr, settings, errorLogger);
@@ -92,7 +86,6 @@ private:
         c.signConversionError(nullptr, false);
         c.longCastAssignError(nullptr);
         c.longCastReturnError(nullptr);
-        c.enumMismatchAssignError(nullptr, ValueFlow::Value(1000));
     }
 
     static std::string myName() {
@@ -105,8 +98,7 @@ private:
                "- signed integer overflow (only enabled when --platform is used)\n"
                "- dangerous sign conversion, when signed value can be negative\n"
                "- possible loss of information when assigning int result to long variable\n"
-               "- possible loss of information when returning int result as long return value\n"
-               "- enum usage with mismatching values\n";
+               "- possible loss of information when returning int result as long return value\n";
     }
 };
 /// @}
