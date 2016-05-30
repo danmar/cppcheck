@@ -299,7 +299,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
     } catch (const std::runtime_error &e) {
         internalError(filename, e.what());
     } catch (const std::bad_alloc &e) {
-      internalError(filename, e.what());
+        internalError(filename, e.what());
     } catch (const InternalError &e) {
         internalError(filename, e.errorMessage);
         exitcode=1; // e.g. reflect a syntax error
