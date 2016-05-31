@@ -173,10 +173,15 @@ bool Cache::ReportCachedResults(const char* filePath, const char* configuration,
 	{
 		ErrorLogger::ErrorMessage msg;
 		string t = currChild->GetText();
-		if (msg.deserialize(t))
+		if (!msg.deserialize(t))
 		{
-			pLogger->reportErr(msg);
+			return false;
 		}
+		if (msg._id.compare("syntaxError") != 0)
+		{
+			msg.file0 = filePath;
+		}
+		pLogger->reportErr(msg);
 	}
 
 	return true;
