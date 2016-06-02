@@ -122,7 +122,7 @@ void CheckVaarg::va_list_usage()
                 }
                 open = nopen;
                 tok = tok->linkAt(1);
-            } else if (Token::Match(tok, "throw|return"))
+            } else if (Token::Match(tok, "throw|return|break"))
                 exitOnEndOfStatement = true;
             else if (_tokenizer->isCPP() && tok->str() == "try") {
                 open = false;

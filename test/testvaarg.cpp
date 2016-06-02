@@ -200,6 +200,22 @@ private:
               "    va_end(v2);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7527
+        check("void foo(int flag1, int flag2, ...) {\n"
+              "    switch (flag1) {\n"
+              "    default:\n"
+              "        va_list vargs;\n"
+              "        va_start(vargs, flag2);\n"
+              "        if (flag2) {\n"
+              "            va_end(vargs);\n"
+              "            break;\n"
+              "        }\n"
+              "        int data = va_arg(vargs, int);\n"
+              "        va_end(vargs);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void va_start_subsequentCalls() {
