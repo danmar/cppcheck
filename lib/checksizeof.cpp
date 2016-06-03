@@ -22,12 +22,17 @@
 #include "symboldatabase.h"
 #include <algorithm>
 #include <cctype>
+
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckSizeof instance;
 }
+
+// CWE IDs used:
+static const struct CWE CWE398(398U);	// Indicator of Poor Code Quality
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -374,7 +379,7 @@ void CheckSizeof::sizeofVoidError(const Token *tok)
 {
     const std::string message = "Behaviour of 'sizeof(void)' is not covered by the ISO C standard.";
     const std::string verbose = message + " A value for 'sizeof(void)' is defined only as part of a GNU C extension, which defines 'sizeof(void)' to be 1.";
-    reportError(tok, Severity::portability, "sizeofVoid", message + "\n" + verbose);
+    reportError(tok, Severity::portability, "sizeofVoid", message + "\n" + verbose, CWE398, false);
 }
 
 void CheckSizeof::sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname)
