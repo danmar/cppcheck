@@ -88,6 +88,7 @@ private:
         TEST_CASE(template53);  // #4335 - bail out for valid code
         TEST_CASE(template54);  // #6587 - memory corruption upon valid code
         TEST_CASE(template55);  // #6604 - simplify "const const" to "const" in template instantiations
+        TEST_CASE(template56);  // #7117 - const ternary operator simplification as template parameter
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
@@ -1009,6 +1010,16 @@ private:
                 "    }\n"
                 "};\n"
                 "A<int> a(0);"));
+    }
+
+    void template56() { // #7117
+        tok("template<bool B> struct Foo { "
+            "  std::array<int, B ? 1 : 2> mfoo; "
+            "}; "
+            "void foo() { "
+            "  Foo<true> myFoo; "
+            "}", /*simplify=*/true, /*debugwarnings=*/true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void template_enum() {
