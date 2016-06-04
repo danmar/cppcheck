@@ -1249,6 +1249,42 @@ bool MathLib::isOctalDigit(char c)
     return (c >= '0' && c <= '7');
 }
 
+bool MathLib::isDigitSeparator(const std::string& iCode, std::string::size_type iPos) {
+    if (iPos == 0 || iPos >= iCode.size() || iCode[iPos] != '\'')
+        return false;
+    std::string::size_type i = iPos - 1;
+    while (std::isxdigit(iCode[i])) {
+        if (i == 0)
+            return true; // Only xdigits before '
+        --i;
+    }
+    if (i == iPos - 1) { // No xdigit before '
+        return false;
+    } else {
+        switch(iCode[i]) {
+        case ' ':
+        case '.':
+        case ',':
+        case 'x':
+        case '(':
+        case '{':
+        case '+':
+        case '-':
+        case '*':
+        case '%':
+        case '/':
+        case '&':
+        case '|':
+        case '^':
+        case '~':
+        case '=':
+            return true;
+        default:
+            return false;
+        }
+    }
+}
+
 MathLib::value operator+(const MathLib::value &v1, const MathLib::value &v2)
 {
     return MathLib::value::calc('+',v1,v2);

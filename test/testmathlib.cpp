@@ -59,6 +59,7 @@ private:
         TEST_CASE(abs);
         TEST_CASE(toString);
         TEST_CASE(characterLiteralsNormalization);
+        TEST_CASE(CPP14DigitSeparators);
     }
 
     void isGreater() const {
@@ -1142,6 +1143,23 @@ private:
         ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\9"), InternalError);
         // Unsupported single escape sequence
         ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\c"), InternalError);
+    }
+
+    void CPP14DigitSeparators() { // Ticket #7137
+        ASSERT(MathLib::isDigitSeparator("'", 0) == false);
+        ASSERT(MathLib::isDigitSeparator("123'0;", 3));
+        ASSERT(MathLib::isDigitSeparator("foo(1'2);", 5));
+        ASSERT(MathLib::isDigitSeparator("foo(1,1'2);", 7));
+        ASSERT(MathLib::isDigitSeparator("int a=1'234-1'2-'0';", 7));
+        ASSERT(MathLib::isDigitSeparator("int a=1'234-1'2-'0';", 13));
+        ASSERT(MathLib::isDigitSeparator("int a=1'234-1'2-'0';", 16) == false);
+        ASSERT(MathLib::isDigitSeparator("int b=1+9'8;", 9));
+        ASSERT(MathLib::isDigitSeparator("if (1'2) { char c = 'c'; }", 5));
+        ASSERT(MathLib::isDigitSeparator("if (120%1'2) { char c = 'c'; }", 9));
+        ASSERT(MathLib::isDigitSeparator("if (120&1'2) { char c = 'c'; }", 9));
+        ASSERT(MathLib::isDigitSeparator("if (120|1'2) { char c = 'c'; }", 9));
+        ASSERT(MathLib::isDigitSeparator("if (120%1'2) { char c = 'c'; }", 24) == false);
+        ASSERT(MathLib::isDigitSeparator("if (120%1'2) { char c = 'c'; }", 26) == false);
     }
 };
 
