@@ -352,6 +352,11 @@ private:
 
         ASSERT_EQUALS("int i = 0x0F0FFFFF;", preprocessorRead("int i = 0x0F0F'FFFF;"));
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #7137
+        const char code[] = "void t(char c) { switch (c) { case'M': break; } }";
+        ASSERT_EQUALS(code, preprocessorRead(code));
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -122,6 +122,13 @@ public:
      * */
     static MathLib::bigint characterLiteralToLongNumber(const std::string& str);
 
+    /**
+     * \param iCode Code being considered
+     * \param iPos A posision within iCode
+     * \return Whether iCode[iPos] is a C++14 digit separator
+     */
+    static bool isDigitSeparator(const std::string& iCode, std::string::size_type iPos);
+
 private:
     /*
      * \param iLiteral A character literal
