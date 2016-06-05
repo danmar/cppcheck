@@ -40,7 +40,7 @@ class Directive:
 #
 # The CppcheckData.tokenlist is a list of Token items
 #
-# C++ class: http://cppcheck.sourceforge.net/devinfo/doxyoutput/classToken.html
+# C++ class: http://cppcheck.net/devinfo/doxyoutput/classToken.html
 #
 # To iterate through all tokens use such code:
 # @code
@@ -257,7 +257,7 @@ class Token:
         return None
 
 ## Scope. Information about global scope, function scopes, class scopes, inner scopes, etc.
-# C++ class: http://cppcheck.sourceforge.net/devinfo/doxyoutput/classScope.html
+# C++ class: http://cppcheck.net/devinfo/doxyoutput/classScope.html
 
 
 class Scope:
@@ -294,7 +294,7 @@ class Scope:
 
 ## Information about a function
 # C++ class:
-# http://cppcheck.sourceforge.net/devinfo/doxyoutput/classFunction.html
+# http://cppcheck.net/devinfo/doxyoutput/classFunction.html
 
 
 class Function:
@@ -321,7 +321,7 @@ class Function:
 
 ## Information about a variable
 # C++ class:
-# http://cppcheck.sourceforge.net/devinfo/doxyoutput/classVariable.html
+# http://cppcheck.net/devinfo/doxyoutput/classVariable.html
 
 
 class Variable:
@@ -379,7 +379,7 @@ class ValueFlow:
     # Each possible value has a ValueFlow::Value item.
     # Each ValueFlow::Value either has a intvalue or tokvalue
     # C++ class:
-    # http://cppcheck.sourceforge.net/devinfo/doxyoutput/classValueFlow_1_1Value.html
+    # http://cppcheck.net/devinfo/doxyoutput/classValueFlow_1_1Value.html
 
     class Value:
         ## integer value

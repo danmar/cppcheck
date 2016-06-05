@@ -46,7 +46,7 @@
 #include "showtypes.h"
 #include "librarydialog.h"
 
-static const QString OnlineHelpURL("http://cppcheck.sourceforge.net/manual.html");
+static const QString OnlineHelpURL("http://cppcheck.net/manual.html");
 
 MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mSettings(settings),
