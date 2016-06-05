@@ -1358,17 +1358,17 @@ Options:
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="100"/>
+        <location filename="translationhandler.cpp" line="103"/>
         <source>Unknown language specified!</source>
         <translation>¡Idioma especificado desconocido!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="130"/>
+        <location filename="translationhandler.cpp" line="133"/>
         <source>Language file %1 not found!</source>
         <translation>¡Fichero de idioma %1 no encontrado!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="136"/>
+        <location filename="translationhandler.cpp" line="139"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>Fallo al cargar la traducción para el idioma %1 desde el fichero %2</translation>
     </message>
@@ -2052,7 +2052,7 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="142"/>
+        <location filename="translationhandler.cpp" line="145"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -2065,7 +2065,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 El idioma de la interfaz gráfica ha sido cambiado a Inglés. Abra la ventana de Preferencias para seleccionar alguno de los idiomas disponibles.</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="148"/>
+        <location filename="translationhandler.cpp" line="151"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
