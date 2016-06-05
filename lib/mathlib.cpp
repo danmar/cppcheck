@@ -1249,7 +1249,8 @@ bool MathLib::isOctalDigit(char c)
     return (c >= '0' && c <= '7');
 }
 
-bool MathLib::isDigitSeparator(const std::string& iCode, std::string::size_type iPos) {
+bool MathLib::isDigitSeparator(const std::string& iCode, std::string::size_type iPos)
+{
     if (iPos == 0 || iPos >= iCode.size() || iCode[iPos] != '\'')
         return false;
     std::string::size_type i = iPos - 1;
@@ -1261,7 +1262,7 @@ bool MathLib::isDigitSeparator(const std::string& iCode, std::string::size_type 
     if (i == iPos - 1) { // No xdigit before '
         return false;
     } else {
-        switch(iCode[i]) {
+        switch (iCode[i]) {
         case ' ':
         case '.':
         case ',':
