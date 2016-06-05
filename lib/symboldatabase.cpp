@@ -32,6 +32,21 @@
 #include <iomanip>
 #include <cctype>
 
+static const Type* findVariableTypeInBase(const Scope* scope, const Token* typeTok)
+{
+    if (scope && scope->definedType && !scope->definedType->derivedFrom.empty()) {
+        for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+            const Type *base = scope->definedType->derivedFrom[i].type;
+            if (base && base->classScope) {
+                const Type * type = base->classScope->findType(typeTok->str());
+                if (type)
+                    return type;
+            }
+        }
+    }
+    return nullptr;
+}
+
 //---------------------------------------------------------------------------
 
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -892,8 +907,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 const Token *type = func->retDef;
                 while (Token::Match(type, "static|const|struct|union|enum"))
                     type = type->next();
-                if (type)
-                    func->retType = findTypeInNested(type, func->nestedIn);
+                if (type) {
+                    func->retType = findVariableTypeInBase(&*it, type);
+                    if (!func->retType)
+                        func->retType = findTypeInNested(type, func->nestedIn);
+                }
             }
         }
     }
@@ -3412,21 +3430,6 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
 }
 
 //---------------------------------------------------------------------------
-
-static const Type* findVariableTypeInBase(const Scope* scope, const Token* typeTok)
-{
-    if (scope && scope->definedType && !scope->definedType->derivedFrom.empty()) {
-        for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
-            const Type *base = scope->definedType->derivedFrom[i].type;
-            if (base && base->classScope) {
-                const Type * type = base->classScope->findType(typeTok->str());
-                if (type)
-                    return type;
-            }
-        }
-    }
-    return nullptr;
-}
 
 const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *typeTok) const
 {

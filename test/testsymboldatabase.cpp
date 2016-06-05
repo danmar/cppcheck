@@ -247,6 +247,7 @@ private:
         TEST_CASE(enum3);
         TEST_CASE(enum4);
         TEST_CASE(enum5);
+        TEST_CASE(enum6);
 
         TEST_CASE(isImplicitlyVirtual);
         TEST_CASE(isPure);
@@ -2443,6 +2444,29 @@ private:
         ASSERT(v->isArray());
         ASSERT_EQUALS(1U, v->dimensions().size());
         ASSERT_EQUALS(12U, v->dimension(0));
+    }
+
+    void enum6() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    enum Enum { E0, E1 };\n"
+                      "};\n"
+                      "struct Barney : public Fred {\n"
+                      "    Enum func(Enum e) { return e; }\n"
+                      "};");
+        ASSERT(db);
+        if (!db)
+            return;
+        const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
+        ASSERT(functionToken);
+        if (!functionToken)
+            return;
+        const Function *function = functionToken->function();
+        ASSERT(function);
+        if (!function)
+            return;
+        ASSERT(function->token->str() == "func");
+        ASSERT(function->retDef && function->retDef->str() == "Enum");
+        ASSERT(function->retType && function->retType->name() == "Enum");
     }
 
     void isImplicitlyVirtual() {
