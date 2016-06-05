@@ -27,9 +27,13 @@ namespace {
     CheckStl instance;
 }
 
-// CWE ids used:
-static const struct CWE CWE664(664U);
-static const struct CWE CWE788(788U);
+// CWE IDs used:
+static const struct CWE CWE398(398U);	// Indicator of Poor Code Quality
+static const struct CWE CWE597(597U);	// Use of Wrong Operator in String Comparison
+static const struct CWE CWE664(664U);	// Improper Control of a Resource Through its Lifetime
+static const struct CWE CWE704(704U);	// Incorrect Type Conversion or Cast
+static const struct CWE CWE788(788U);	// Access of Memory Location After End of Buffer
+static const struct CWE CWE834(834U);	// Excessive Iteration
 
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)
@@ -720,7 +724,7 @@ void CheckStl::if_findError(const Token *tok, bool str)
                     "Either inefficient or wrong usage of string::find(). string::compare() will be faster if "
                     "string::find's result is compared with 0, because it will not scan the whole "
                     "string. If your intention is to check that there are no findings in the string, "
-                    "you should compare with std::string::npos.");
+                    "you should compare with std::string::npos.", CWE597, false);
     else
         reportError(tok, Severity::warning, "stlIfFind", "Suspicious condition. The result of find() is an iterator, but it is not properly checked.");
 }
@@ -794,7 +798,7 @@ void CheckStl::sizeError(const Token *tok)
                 "Checking for '" + varname + "' emptiness might be inefficient. "
                 "Using " + varname + ".empty() instead of " + varname + ".size() can be faster. " +
                 varname + ".size() can take linear time but " + varname + ".empty() is "
-                "guaranteed to take constant time.");
+                "guaranteed to take constant time.", CWE398, false);
 }
 
 void CheckStl::redundantCondition()
@@ -833,7 +837,7 @@ void CheckStl::redundantIfRemoveError(const Token *tok)
     reportError(tok, Severity::style, "redundantIfRemove",
                 "Redundant checking of STL container element existence before removing it.\n"
                 "Redundant checking of STL container element existence before removing it. "
-                "It is safe to call the remove method on a non-existing element.");
+                "It is safe to call the remove method on a non-existing element.", CWE398, false);
 }
 
 void CheckStl::missingComparison()
@@ -913,7 +917,7 @@ void CheckStl::missingComparisonError(const Token *incrementToken1, const Token 
            << "There is no comparison between these increments to prevent that the iterator is "
            << "incremented beyond the end.";
 
-    reportError(callstack, Severity::warning, "StlMissingComparison", errmsg.str());
+    reportError(callstack, Severity::warning, "StlMissingComparison", errmsg.str(), CWE834, false);
 }
 
 
@@ -1105,7 +1109,7 @@ void CheckStl::string_c_strError(const Token* tok)
 void CheckStl::string_c_strReturn(const Token* tok)
 {
     reportError(tok, Severity::performance, "stlcstrReturn", "Returning the result of c_str() in a function that returns std::string is slow and redundant.\n"
-                "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly returning the string.");
+                "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly returning the string.", CWE704, false);
 }
 
 void CheckStl::string_c_strParam(const Token* tok, unsigned int number)
@@ -1113,7 +1117,7 @@ void CheckStl::string_c_strParam(const Token* tok, unsigned int number)
     std::ostringstream oss;
     oss << "Passing the result of c_str() to a function that takes std::string as argument no. " << number << " is slow and redundant.\n"
         "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly passing the string.";
-    reportError(tok, Severity::performance, "stlcstrParam", oss.str());
+    reportError(tok, Severity::performance, "stlcstrParam", oss.str(), CWE704, false);
 }
 
 static bool hasArrayEnd(const Token *tok1)
