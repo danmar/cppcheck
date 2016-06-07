@@ -32,7 +32,7 @@ namespace {
 }
 
 // CWE IDs used:
-static const struct CWE CWE398(398U);	// Indicator of Poor Code Quality
+static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -28,12 +28,12 @@ namespace {
 }
 
 // CWE IDs used:
-static const struct CWE CWE398(398U);	// Indicator of Poor Code Quality
-static const struct CWE CWE597(597U);	// Use of Wrong Operator in String Comparison
-static const struct CWE CWE664(664U);	// Improper Control of a Resource Through its Lifetime
-static const struct CWE CWE704(704U);	// Incorrect Type Conversion or Cast
-static const struct CWE CWE788(788U);	// Access of Memory Location After End of Buffer
-static const struct CWE CWE834(834U);	// Excessive Iteration
+static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const struct CWE CWE597(597U);   // Use of Wrong Operator in String Comparison
+static const struct CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
+static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
+static const struct CWE CWE788(788U);   // Access of Memory Location After End of Buffer
+static const struct CWE CWE834(834U);   // Excessive Iteration
 
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)

@@ -216,6 +216,53 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7533
+        check("void action_push(int type, ...) {\n"
+              "    va_list args;\n"
+              "    va_start(args, type);\n"
+              "    switch (push_mode) {\n"
+              "    case UNDO:\n"
+              "        list_add(&act->node, &to_redo);\n"
+              "        break;\n"
+              "    case REDO:\n"
+              "        list_add(&act->node, &to_undo);\n"
+              "        break;\n"
+              "    }\n"
+              "    va_end(args);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void action_push(int type, ...) {\n"
+              "    va_list args;\n"
+              "    va_start(args, type);\n"
+              "    switch (push_mode) {\n"
+              "    case UNDO:\n"
+              "        list_add(&act->node, &to_redo);\n"
+              "        va_end(args);\n"
+              "        break;\n"
+              "    case REDO:\n"
+              "        list_add(&act->node, &to_undo);\n"
+              "        va_end(args);\n"
+              "        break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void action_push(int type, ...) {\n"
+              "    va_list args;\n"
+              "    va_start(args, type);\n"
+              "    switch (push_mode) {\n"
+              "    case UNDO:\n"
+              "        list_add(&act->node, &to_redo);\n"
+              "        break;\n"
+              "    case REDO:\n"
+              "        list_add(&act->node, &to_undo);\n"
+              "        va_end(args);\n"
+              "        break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:13]: (error) va_list 'args' was opened but not closed by va_end().\n", errout.str());
     }
 
     void va_start_subsequentCalls() {
