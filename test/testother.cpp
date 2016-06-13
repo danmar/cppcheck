@@ -5389,6 +5389,23 @@ private:
               "    return i;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7175 - read+write
+        check("void f() {\n"
+              "    char buf[100];\n"
+              "    strcpy(buf, x);\n"
+              "    strcpy(buf, dostuff(buf));\n" // <- read + write
+              "    strcpy(buf, x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    char buf[100];\n"
+              "    strcpy(buf, x);\n"
+              "    strcpy(buf, dostuff(buf));\n"
+              "    strcpy(buf, x);\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void varFuncNullUB() { // #4482

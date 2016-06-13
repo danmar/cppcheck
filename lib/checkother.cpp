@@ -573,6 +573,19 @@ void CheckOther::checkRedundantAssignment()
                             if (it == memAssignments.end())
                                 memAssignments[param1->varId()] = tok;
                             else {
+                                bool read = false;
+                                for (const Token *tok2 = tok->linkAt(1); tok2 != writtenArgumentsEnd; tok2 = tok2->previous()) {
+                                    if (tok2->varId() == param1->varId()) {
+                                        // TODO: is this a read? maybe it's a write
+                                        read = true;
+                                        break;
+                                    }
+                                }
+                                if (read) {
+                                    memAssignments[param1->varId()] = tok;
+                                    continue;
+                                }
+
                                 if (printWarning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                     redundantCopyInSwitchError(it->second, tok, param1->str());
                                 else if (printPerformance)
