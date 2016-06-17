@@ -281,7 +281,7 @@ void CheckCondition::comparison()
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "==|!=|>|>=|<|<=")) {
+        if (Token::Match(tok, "==|!=|>")) {
             const Token *expr1 = tok->astOperand1();
             const Token *expr2 = tok->astOperand2();
             if (!expr1 || !expr2)
@@ -301,19 +301,14 @@ void CheckCondition::comparison()
                 const MathLib::bigint num1 = *num;
                 if (num1 < 0)
                     continue;
-                if (Token::Match(tok, "==|!=|>=|<=")) {
+                if (Token::Match(tok, "==|!=")) {
                     if ((expr1->str() == "&" && (num1 & num2) != num2) ||
                         (expr1->str() == "|" && (num1 | num2) != num2)) {
                         const std::string& op(tok->str());
-                        comparisonError(expr1, expr1->str(), num1, op, num2, op!="!=" ? false : true);
+                        comparisonError(expr1, expr1->str(), num1, op, num2, op=="==" ? false : true);
                     }
                 } else if (Token::simpleMatch(tok, ">")) {
                     if ((expr1->str() == "&" && (num1 <= num2))) {
-                        const std::string& op(tok->str());
-                        comparisonError(expr1, expr1->str(), num1, op, num2, false);
-                    }
-                } else if (Token::simpleMatch(tok, "<")) {
-                    if ((expr1->str() == "|" && (num1 >= num2))) {
                         const std::string& op(tok->str());
                         comparisonError(expr1, expr1->str(), num1, op, num2, false);
                     }
