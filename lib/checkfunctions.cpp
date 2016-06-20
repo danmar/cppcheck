@@ -48,13 +48,14 @@ void CheckFunctions::checkProhibitedFunctions()
             if (tok->isName() && tok->varId() == 0 && tok->strAt(1) == "(") {
                 // alloca() is special as it depends on the code being C or C++, so it is not in Library
                 if (checkAlloca && Token::simpleMatch(tok, "alloca (") && (!tok->function() || tok->function()->nestedIn->type == Scope::eGlobal)) {
-                    if (_tokenizer->isC())
-                        reportError(tok, Severity::warning, "allocaCalled",
-                                    "Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n"
-                                    "The obsolete function 'alloca' is called. In C99 and later it is recommended to use a variable length array or "
-                                    "a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons "
-                                    "(http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).");
-                    else
+                    if (_tokenizer->isC()) {
+                        if (_settings->standards.c > Standards::C89)
+                            reportError(tok, Severity::warning, "allocaCalled",
+                                        "Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n"
+                                        "The obsolete function 'alloca' is called. In C99 and later it is recommended to use a variable length array or "
+                                        "a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons "
+                                        "(http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).");
+                    } else
                         reportError(tok, Severity::warning, "allocaCalled",
                                     "Obsolete function 'alloca' called.\n"
                                     "The obsolete function 'alloca' is called. In C++11 and later it is recommended to use std::array<> or "
