@@ -51,7 +51,7 @@ def daca2(foldernum):
     rev = rev[:rev.find('\n')]
 
     # compile cppcheck
-    subprocess.call(['nice', 'make', 'SRCDIR=build', 'CFGDIR=' + os.path.expanduser('~/cppcheck/cfg'), 'CXXFLAGS=-g -O2', 'CPPFLAGS=-DMAXTIME=600'])
+    subprocess.call(['nice', 'make', 'SRCDIR=build', 'CFGDIR=' + os.path.expanduser('~/cppcheck/cfg'), 'CXXFLAGS=-g -O2 -static-libstdc++', 'CPPFLAGS=-DMAXTIME=600'])
     subprocess.call(['cp', 'cppcheck', os.path.expanduser('~/daca2/cppcheck-O2')])
 
     # run cppcheck
