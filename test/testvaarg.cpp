@@ -299,6 +299,17 @@ private:
               "  BG_TString result(f);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7559
+        check("void mowgli_object_message_broadcast(mowgli_object_t *self, const char *name, ...) {\n"
+              "  va_list va;\n"
+              "  MOWGLI_LIST_FOREACH(n, self->klass->message_handlers.head) {\n"
+              "    if (!strcasecmp(sig2->name, name))\n"
+              "      break;\n"
+              "  }\n"
+              "  va_start(va, name);\n"
+              "  va_end(va);\n"
+              "}");
     }
 };
 
