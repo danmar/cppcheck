@@ -1502,15 +1502,20 @@ void CheckBufferOverrun::bufferOverrun2()
             varname = tok->str();
 
 
+        const Variable * const var = tok->variable();
+        if (!var)
+            continue;
+
         const Token * const strtoken = tok->getValueTokenMinStrSize();
-        if (strtoken) {
+        if (strtoken && !var->isArray()) {
+            // TODO: check for access to symbol inside the array bounds, but outside the stored string:
+            //  char arr[10] = "123";
+            //  arr[7] = 'x'; // warning: arr[7] is inside the array bounds, but past the string's end
+
             ArrayInfo arrayInfo(tok->varId(), varname, 1U, Token::getStrSize(strtoken));
             valueFlowCheckArrayIndex(tok->next(), arrayInfo);
-        }
-
-        else {
-            const Variable * const var = tok->variable();
-            if (!var || var->nameToken() == tok || !var->isArray())
+        } else {
+            if (var->nameToken() == tok || !var->isArray())
                 continue;
 
             // TODO: last array in struct..

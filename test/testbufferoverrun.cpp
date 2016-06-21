@@ -164,6 +164,7 @@ private:
         TEST_CASE(buffer_overrun_26); // #4432 (segmentation fault)
         TEST_CASE(buffer_overrun_27); // #4444 (segmentation fault)
         TEST_CASE(buffer_overrun_28); // Out of bound char array access
+        TEST_CASE(buffer_overrun_29); // #7083: false positive: typedef and initialization with strings
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(buffer_overrun_function_array_argument);
         TEST_CASE(possible_buffer_overrun_1); // #3035
@@ -2474,6 +2475,19 @@ private:
         check("char c = \"\\0abc\"[2];");
         ASSERT_EQUALS("", errout.str());
     }
+
+
+    // #7083: false positive: typedef and initialization with strings
+    void buffer_overrun_29() {
+        check("typedef char testChar[10]; \n"
+              "int main(){ \n"
+              "  testChar tc1 = \"\"; \n"
+              "  tc1[5]='a'; \n"
+              "} \n"
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     void buffer_overrun_bailoutIfSwitch() {
         // No false positive
