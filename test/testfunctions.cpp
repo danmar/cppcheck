@@ -249,6 +249,12 @@ private:
         check("void f()\n"
               "{\n"
               "    char *x = alloca(10);\n"
+              "}", "test.c"); // #7558 - no alternative to alloca in C89
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char *x = alloca(10);\n"
               "}", "test.c");
         ASSERT_EQUALS("", errout.str());
         settings.standards.c = Standards::C11;

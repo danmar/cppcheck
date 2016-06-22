@@ -129,6 +129,8 @@ void CheckVaarg::va_list_usage()
                 while (scope->nestedIn && scope->type != Scope::eFor && scope->type != Scope::eWhile && scope->type != Scope::eDo && scope->type != Scope::eSwitch)
                     scope = scope->nestedIn;
                 tok = scope->classEnd;
+                if (!tok)
+                    return;
             } else if (_tokenizer->isCPP() && tok->str() == "try") {
                 open = false;
                 break;
