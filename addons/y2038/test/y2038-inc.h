@@ -8,4 +8,24 @@
 
 #define _USE_TIME_BITS64
 
+/*
+ * Declare just enough for clock_gettime
+ */
+
+typedef int clockid_t;
+
+typedef int __time_t;
+
+typedef long int __syscall_slong_t;
+
+struct timespec
+{
+    __time_t tv_sec;		/* Seconds.  */
+    __syscall_slong_t tv_nsec;	/* Nanoseconds.  */
+};
+
+extern int clock_gettime(clockid_t clk_id, struct timespec *tp);
+
+#define CLOCK_REALTIME 0
+
 #endif /* INC2038 */

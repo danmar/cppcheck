@@ -6,7 +6,7 @@
 #
 # 1. _TIME_BITS being defined to something else than 64 bits
 # 2. _USE_TIME_BITS64 being defined when _TIME_BITS is not
-# 3. Any Y2038-sensitive symbol when _USE_TIME_BITS64 is not defined.
+# 3. Any Y2038-unsafe symbol when _USE_TIME_BITS64 is not defined.
 #
 # Example usage:
 # $ cppcheck --dump path-to-src/
@@ -77,17 +77,113 @@ re_define_use_time_bits64 = re.compile(r'^\s*#\s*define\s+_USE_TIME_BITS64\s*$')
 # test for '#undef _USE_TIME_BITS64' (if it ever happens)
 re_undef_use_time_bits64 = re.compile(r'^\s*#\s*undef\s+_USE_TIME_BITS64\s*$')
 
-#------------------------------------
-# List of Y2038-sensitive identifiers
-#------------------------------------
+#---------------------------------
+# List of Y2038-unsafe identifiers
+#---------------------------------
 
 # This is WIP. Eventually it should contain all identifiers (types
 # and functions) which would be affected by the Y2038 bug.
 
 id_Y2038 = [
-    'time_t',
+    # Y2038-unsafe types by definition
+    'time_t'
+    # Types using Y2038-unsafe types
+    'lastlog',
+    'msqid_ds',
+    'semid_ds',
+    'timeb',
     'timespec',
-    'clock_gettime'
+    'timeval',
+    'utimbuf',
+    'itimerspec',
+    'stat',
+    'clnt_ops',
+    'elf_prstatus',
+    'itimerval',
+    'ntptimeval',
+    'rusage',
+    'timex',
+    'utmp',
+    'utmpx',
+    # APIs using 2038-unsafe types
+    'ctime',
+    'ctime_r',
+    'difftime',
+    'gmtime',
+    'gmtime_r',
+    'localtime',
+    'localtime_r',
+    'mktime',
+    'stime',
+    'timegm',
+    'timelocal',
+    'time',
+    'msgctl',
+    'ftime',
+    'aio_suspend',
+    'clock_getres',
+    'clock_gettime',
+    'clock_nanosleep',
+    'clock_settime',
+    'futimens',
+    'mq_timedreceive',
+    'mq_timedsend',
+    'nanosleep',
+    'pselect',
+    'pthread_cond_timedwait',
+    'pthread_mutex_timedlock',
+    'pthread_rwlock_timedrdlock',
+    'pthread_rwlock_timedwrlock',
+    'sched_rr_get_interval',
+    'sem_timedwait',
+    'sigtimedwait',
+    'timespec_get',
+    'utimensat',
+    'adjtime',
+    'pmap_rmtcall',
+    'clntudp_bufcreate',
+    'clntudp_create',
+    'futimes',
+    'gettimeofday',
+    'lutimes',
+    'select',
+    'settimeofday',
+    'utimes',
+    'utime',
+    'timerfd_gettime',
+    'timerfd_settime',
+    'timer_gettime',
+    'timer_settime',
+    'fstatat',
+    'fstat',
+    '__fxstatat',
+    '__fxstat',
+    'lstat',
+    '__lxstat',
+    'stat',
+    '__xstat',
+    'struct itimerval',
+    'setitimer',
+    'getitimer',
+    'ntp_gettime',
+    'getrusage',
+    'wait3',
+    'wait4',
+    'adjtimex',
+    'ntp_adjtime',
+    'getutent_r',
+    'getutent',
+    'getutid_r',
+    'getutid',
+    'getutline_r',
+    'getutline',
+    'login',
+    'pututline',
+    'updwtmp',
+    'getutxent',
+    'getutxid',
+    'getutxline',
+    'pututxline'
 ]
 
 # return all files ending in .dump among or under the given paths
@@ -182,7 +278,7 @@ for dumpfile in dumpfiles:
                 if not any(lower <= int(token.linenr) <= upper
                            for (lower, upper) in safe_ranges):
                     reportTokDiag(args.template, cfg, token, 'warning',
-                                  token.str + ' might be Y2038-sensitive')
+                                  token.str + ' is Y2038-unsafe')
             token = token.next
 
 printDiagnostics()

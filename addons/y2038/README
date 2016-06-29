@@ -39,14 +39,14 @@ There is Y2038-proofing work in progress on the Linux and GNU glibc front.
 2. What is the Y2038 ccpcheck addon?
 
 The Y2038 cppcheck addon is a tool to help detect code which might need fixing
-because it is Y2038-sensitive. This may be because it uses types or functions
-from libc or from the Linux kernel which are known not to be Y2038-proof.
+because it is Y2038-unsafe. This may be because it uses types or functions from
+GNU libc or from the Linux kernel which are known not to be Y2038-proof.
 
 3. How does the Y2038 cppcheck addon work?
 
 The Y2038 cppcheck addon takes XML dumps produced by cppcheck from source code
 files and looks for the names of types or functions which are known to be Y2038-
-sensitive, and emits diagnostics whenever it finds one.
+unsafe, and emits diagnostics whenever it finds one.
 
 Of course, this is of little use if your code uses a Y2038-proof glibc and
 correctly configured Y2038-proof time support.
@@ -85,10 +85,10 @@ The Y2038 cppcheck performs the following checks:
      which defaults to 32-bit time support.
 
   3. Upon meeting a symbol (type or function) which is known to be Y2038-
-     sensitive, if _USE_TIME_BITS64 is undefined or _TIME_BITS not properly
+     unsafe, if _USE_TIME_BITS64 is undefined or _TIME_BITS not properly
      defined, this warning diagnostic is emitted:
 
-	Warning: <symbol> might be Y2038-sensitive
+	Warning: <symbol> is Y2038-unsafe
 
      This reflects the fact that the user code is referring to a symbol
      which, when glibc defaults to 32-bit time support, might fail Y2038.
@@ -143,8 +143,8 @@ Checking addons/y2038/test/y2038-test-4-good.c.dump, config ""...
 [addons/y2038/test/y2038-test-1-bad-time-bits.c:10]: (information) addons/y2038/test/y2038-inc.h was included from here
 [addons/y2038/test/y2038-inc.h:9]: (warning) _USE_TIME_BITS64 is defined but _TIME_BITS was not
 [addons/y2038/test/y2038-test-2-no-time-bits.c:8]: (information) addons/y2038/test/y2038-inc.h was included from here
-[addons/y2038/test/y2038-test-3-no-use-time-bits.c:13]: (warning) timespec might be Y2038-sensitive
-[addons/y2038/test/y2038-test-3-no-use-time-bits.c:15]: (warning) clock_gettime might be Y2038-sensitive
+[addons/y2038/test/y2038-test-3-no-use-time-bits.c:13]: (warning) timespec is Y2038-unsafe
+[addons/y2038/test/y2038-test-3-no-use-time-bits.c:15]: (warning) clock_gettime is Y2038-unsafe
 
 Note: y2038.py recognizes option --template as cppcheck does, including
 pre-defined templates 'gcc', 'vs' and 'edit'. The short form -t is also
