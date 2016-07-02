@@ -120,6 +120,9 @@ public:
     /** @brief XML version (--xmlver=..) */
     int xml_version;
 
+    /** @brief XML results file (--xmlresults=...) */
+    std::string xml_results;
+
     /** @brief How many processes/threads should do checking at the same
         time. Default is 1. (-j N) */
     unsigned int jobs;
