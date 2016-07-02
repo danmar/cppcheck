@@ -1145,7 +1145,7 @@ private:
         ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\c"), InternalError);
     }
 
-    void CPP14DigitSeparators() { // Ticket #7137
+    void CPP14DigitSeparators() { // Ticket #7137, #7565
         ASSERT(MathLib::isDigitSeparator("'", 0) == false);
         ASSERT(MathLib::isDigitSeparator("123'0;", 3));
         ASSERT(MathLib::isDigitSeparator("foo(1'2);", 5));
@@ -1160,6 +1160,7 @@ private:
         ASSERT(MathLib::isDigitSeparator("if (120|1'2) { char c = 'c'; }", 9));
         ASSERT(MathLib::isDigitSeparator("if (120%1'2) { char c = 'c'; }", 24) == false);
         ASSERT(MathLib::isDigitSeparator("if (120%1'2) { char c = 'c'; }", 26) == false);
+        ASSERT(MathLib::isDigitSeparator("0b0000001'0010'01110", 14));
     }
 };
 

@@ -1280,6 +1280,8 @@ bool MathLib::isDigitSeparator(const std::string& iCode, std::string::size_type 
         case '~':
         case '=':
             return true;
+        case '\'':
+            return isDigitSeparator(iCode, i);
         default:
             return false;
         }
