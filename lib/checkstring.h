@@ -49,6 +49,7 @@ public:
         // Checks
         checkString.strPlusChar();
         checkString.checkSuspiciousStringCompare();
+        checkString.stringLiteralWrite();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -59,7 +60,6 @@ public:
         checkString.checkIncorrectStringCompare();
         checkString.checkAlwaysTrueOrFalseStringCompare();
         checkString.sprintfOverlappingData();
-        checkString.stringLiteralWrite();
     }
 
     /** @brief undefined behaviour, writing string literal */

@@ -54,16 +54,15 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyTokenList2();
 
         // Clear the error buffer..
         errout.str("");
 
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
-        checkBufferOverrun.bufferOverrun();
-        checkBufferOverrun.bufferOverrun2();
-        checkBufferOverrun.arrayIndexThenCheck();
+        checkBufferOverrun.runChecks(&tokenizer, &settings, this);
+        tokenizer.simplifyTokenList2();
+        checkBufferOverrun.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
     void run() {
@@ -2000,6 +1999,13 @@ private:
               "    const char *name = \"\";\n"
               "    if ( name[0] == 'U' ? name[1] : 0) {}\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int main(int argc, char **argv) {\n"
+              "    char str[6] = \"\\0\";\n"
+              "    unsigned short port = 65535;\n"
+              "    snprintf(str, sizeof(str), \"%hu\", port);\n"
+              "}", settings0, "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 
