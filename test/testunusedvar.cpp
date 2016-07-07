@@ -3770,9 +3770,25 @@ private:
                               "    }\n"
                               "    return ptr;\n"
                               "}");
+        ASSERT_EQUALS("", errout.str()); // Don't write an error that "a" is not used
 
-        // Don't write an error that "a" is not used
-        ASSERT_EQUALS("", errout.str());
+        functionVariableUsage("void x() {\n"
+                              "    unsigned char* pcOctet = NULL;\n"
+                              "    float fValeur;\n"
+                              "    switch (pnodeCurrent->left.pnode->usLen) {\n"
+                              "    case 4:\n"
+                              "        fValeur = (float)pevalDataLeft->data.fd;\n"
+                              "        pcOctet = (unsigned char*)&fValeur;\n"
+                              "        break;\n"
+                              "    case 8:\n"
+                              "        pcOctet = (unsigned char*)&pevalDataLeft->data.fd;\n"
+                              "        break;\n"
+                              "    }\n"
+                              "    for (iIndice = 1; iIndice <= (pnodeCurrent->usLen / 2); iIndice++) {\n"
+                              "        *pcData = gacHexChar[(*pcOctet >> 4) & 0x0F];\n"
+                              "    }\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str()); // Don't write an error that "fValeur" is not used
     }
 
     void localvarNULL() { // #4203 - Setting NULL value is not redundant - it is safe

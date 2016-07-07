@@ -1464,21 +1464,10 @@ void CheckBufferOverrun::checkStructVariable()
         }
     }
 }
+
 //---------------------------------------------------------------------------
 
 void CheckBufferOverrun::bufferOverrun()
-{
-    checkGlobalAndLocalVariable();
-    if (_tokenizer->isMaxTime())
-        return;
-    checkStructVariable();
-    checkBufferAllocatedWithStrlen();
-    checkStringArgument();
-    checkInsecureCmdLineArgs();
-}
-//---------------------------------------------------------------------------
-
-void CheckBufferOverrun::bufferOverrun2()
 {
     // singlepass checking using ast, symboldatabase and valueflow
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {

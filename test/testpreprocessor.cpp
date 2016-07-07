@@ -26,6 +26,7 @@
 #include "tokenize.h"
 #include "token.h"
 #include "settings.h"
+#include "simplecpp.h"
 
 #include <map>
 #include <string>
@@ -49,7 +50,29 @@ public:
         }
 
         static std::string expandMacros(const char code[], ErrorLogger *errorLogger = 0) {
-            return Preprocessor::expandMacros(code, "file.cpp", "", errorLogger);
+            std::istringstream istr(code);
+            simplecpp::OutputList outputList;
+            const simplecpp::TokenList tokens1 = simplecpp::TokenList(istr, "file.cpp", &outputList);
+            const simplecpp::TokenList tokens2 = simplecpp::preprocess(tokens1, simplecpp::Defines(), &outputList);
+
+            if (errorLogger) {
+                for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
+                    const simplecpp::Output &output = *it;
+                    if (output.type == simplecpp::Output::ERROR) {
+
+                        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                        ErrorLogger::ErrorMessage::FileLocation loc(output.location.file, output.location.line);
+                        locationList.push_back(loc);
+                        errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
+                                               Severity::error,
+                                               output.msg,
+                                               "preprocessorError",
+                                               false));
+                    }
+                }
+            }
+
+            return tokens2.stringify();
         }
 
         static int getHeaderFileName(std::string &str) {
@@ -181,7 +204,6 @@ private:
         TEST_CASE(macro_simple18);  // (1e-7)
         TEST_CASE(macroInMacro1);
         TEST_CASE(macroInMacro2);
-        TEST_CASE(macro_mismatch);
         TEST_CASE(macro_linenumbers);
         TEST_CASE(macro_nopar);
         TEST_CASE(macro_incdec);  // separate ++ and -- with space when expanding such macro: '#define M(X)  A-X'
@@ -291,8 +313,6 @@ private:
         TEST_CASE(undef10);
 
         TEST_CASE(handleUndef);
-
-        TEST_CASE(macroChar);
 
         TEST_CASE(validateCfg);
 
@@ -448,7 +468,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1U, actual.size());
-            ASSERT_EQUALS("\ncpp\n\n\n\n", actual[""]);
+            ASSERT_EQUALS("\ncpp", actual[""]);
         }
 
         {
@@ -459,7 +479,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1U, actual.size());
-            ASSERT_EQUALS("\n\n\nc\n\n", actual[""]);
+            ASSERT_EQUALS("\n\n\nc", actual[""]);
         }
     }
 
@@ -477,8 +497,8 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\nqwerty\n\n", actual[""]);
-        ASSERT_EQUALS("\nabcdef\n\n\n\n", actual["WIN32"]);
+        ASSERT_EQUALS("\n\n\nqwerty", actual[""]);
+        ASSERT_EQUALS("\nabcdef", actual["WIN32"]);
     }
 
     void test2() {
@@ -494,8 +514,8 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\" # ifdef WIN32\"\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\n\n\nqwerty\n\n", actual["WIN32"]);
+        ASSERT_EQUALS("\n\" # ifdef WIN32\"", actual[""]);
+        ASSERT_EQUALS("\n\n\nqwerty", actual["WIN32"]);
     }
 
     void test3() {
@@ -513,9 +533,9 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\n\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\na\n\n\n\nc\n\n", actual["ABC"]);
-        ASSERT_EQUALS("\na\n\nb\n\nc\n\n", actual["ABC;DEF"]);
+        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("\na\n\n\n\nc", actual["ABC"]);
+        ASSERT_EQUALS("\na\n\nb\n\nc", actual["ABC;DEF"]);
     }
 
     void test4() {
@@ -532,8 +552,8 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\nA\n\n\nA\n\n", actual["ABC"]);
+        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("\nA\n\n\nA", actual["ABC"]);
     }
 
     void test5() {
@@ -552,9 +572,9 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\nB\n\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\nA\n\n\n\n\n\n\n", actual["ABC"]);
-        ASSERT_EQUALS("\n\n\nB\n\nC\n\n\n", actual["DEF"]);
+        ASSERT_EQUALS("\n\n\nB", actual[""]);
+        ASSERT_EQUALS("\nA", actual["ABC"]);
+        ASSERT_EQUALS("\n\n\nB\n\nC", actual["DEF"]);
     }
 
     void test6() {
@@ -587,8 +607,8 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\nA\n\nB\n\n\n", actual["ABC"]);
+        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("\nA\n\nB", actual["ABC"]);
 
         test7a();
         test7b();
@@ -714,8 +734,8 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(2U, actual.size());
-        ASSERT_EQUALS("\n\n\n", actual[""]);
-        ASSERT_EQUALS("\n1\n\n", actual["A=1"]);
+        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("\n1", actual["A=1"]);
     }
 
     void test9() {
@@ -759,7 +779,7 @@ private:
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("\n;\n\n\n\n", actual["A"]);
+        ASSERT_EQUALS("\n;", actual["A"]);
 
     }
 
@@ -942,8 +962,8 @@ private:
 
         // Expected configurations: "" and "ABC"
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n#file \"abc.h\"\n\n\n\n\n\n\n\n\n#endfile\n\nint main() {}\n", actual[""]);
-        ASSERT_EQUALS("\n#file \"abc.h\"\nclass A{};\n\n\n\n\n\n\n\n#endfile\n\nint main() {}\n", actual["ABC"]);
+        ASSERT_EQUALS("\n#line 4 \"file.c\"\nint main ( ) { }", actual[""]);
+        ASSERT_EQUALS("\n#line 1 \"abc.h\"\nclass A { } ;\n#line 4 \"file.c\"\n int main ( ) { }", actual["ABC"]);
     }
 
     void newlines() {
@@ -966,7 +986,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\n\n\n\n", actual[""]);
+            ASSERT_EQUALS("", actual[""]);
         }
 
         {
@@ -981,7 +1001,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\n\n\n\n", actual[""]);
+            ASSERT_EQUALS("", actual[""]);
         }
 
         {
@@ -996,7 +1016,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("void f()\n{\n*p = a / *b / *c;\n}\n", actual[""]);
+            ASSERT_EQUALS("void f ( )\n{\n* p = a / * b / * c ;\n}", actual[""]);
         }
     }
 
@@ -1014,7 +1034,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("", actual[""]);
     }
 
     void if1() {
@@ -1028,7 +1048,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\nABC\n\n", actual[""]);
+        ASSERT_EQUALS("\nABC", actual[""]);
     }
 
 
@@ -1046,9 +1066,9 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\n\n\n\n\n", actual[""]);
-            ASSERT_EQUALS("\nABC\n\n\n\n", actual["DEF1"]);
-            ASSERT_EQUALS("\n\n\nDEF\n\n", actual["DEF2"]);
+            ASSERT_EQUALS("", actual[""]);
+            ASSERT_EQUALS("\nABC", actual["DEF1"]);
+            ASSERT_EQUALS("\n\n\nDEF", actual["DEF2"]);
         }
 
         {
@@ -1066,9 +1086,9 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\n\n\n\n\nGHI\n\n", actual[""]);
-            ASSERT_EQUALS("\nABC\n\n\n\n\n\n", actual["DEF1"]);
-            ASSERT_EQUALS("\n\n\nDEF\n\n\n\n", actual["DEF2"]);
+            ASSERT_EQUALS("\n\n\n\n\nGHI", actual[""]);
+            ASSERT_EQUALS("\nABC", actual["DEF1"]);
+            ASSERT_EQUALS("\n\n\nDEF", actual["DEF2"]);
         }
     }
 
@@ -1126,9 +1146,11 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\nB\n\n", actual[""]);
-        TODO_ASSERT_EQUALS("\nA\n\n\n\n",
-                           "", actual["LIBVER=101"]);
+        ASSERT_EQUALS("\n"
+                      "\n"
+                      "\n"
+                      "B", actual[""]);
+        TODO_ASSERT_EQUALS("A", "", actual["LIBVER=101"]);
     }
 
     void if_cond2() {
@@ -1145,9 +1167,9 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\na\n\n\n\n\n", actual["A"]);
-        ASSERT_EQUALS("\na\n\n\nab\n\n", actual["A;B"]);
+        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("\na", actual["A"]);
+        ASSERT_EQUALS("\na\n\n\nab", actual["A;B"]);
         if_cond2b();
         if_cond2c();
         if_cond2d();
@@ -1170,9 +1192,9 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n!a\n\n\n\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\n\n\n\n\n\na\n\n", actual["A"]);
-        ASSERT_EQUALS("\n!a\n\nb\n\n\n\n\n", actual["B"]);
+        ASSERT_EQUALS("\n! a", actual[""]);
+        ASSERT_EQUALS("\n\n\n\n\n\na", actual["A"]);
+        ASSERT_EQUALS("\n! a\n\nb", actual["B"]);
     }
 
     void if_cond2c() {
@@ -1193,9 +1215,9 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n!a\n\n\n\n!b\n\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\n", actual["A"]);
-        ASSERT_EQUALS("\n!a\n\nb\n\n\n\n\n\n\n", actual["B"]);
+        ASSERT_EQUALS("\n! a\n\n\n\n! b", actual[""]);
+        ASSERT_EQUALS("\n\n\n\n\n\n\n\na", actual["A"]);
+        ASSERT_EQUALS("\n! a\n\nb", actual["B"]);
     }
 
     void if_cond2d() {
@@ -1221,10 +1243,10 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(4, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n!a\n\n\n\n!b\n\n\n\n\n\n\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\n\n\n!b\n\n\n", actual["A"]);
-        ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\nb\n\n\n\n\n", actual["A;B"]);
-        ASSERT_EQUALS("\n!a\n\nb\n\n\n\n\n\n\n\n\n\n\n\n", actual["B"]);
+        ASSERT_EQUALS("\n! a\n\n\n\n! b", actual[""]);
+        ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\n\n\n! b", actual["A"]);
+        ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\nb", actual["A;B"]);
+        ASSERT_EQUALS("\n! a\n\nb", actual["B"]);
     }
 
     void if_cond2e() {
@@ -1245,9 +1267,9 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n!a\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\n\n\n!b\n\n", actual["A"]);
-        TODO_ASSERT_EQUALS("\n\n\n\n\n", "", actual["A;B"]);
+        ASSERT_EQUALS("\n! a", actual[""]);
+        ASSERT_EQUALS("\n\n\n! b", actual["A"]);
+        ASSERT_EQUALS("", actual["A;B"]);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1265,9 +1287,9 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\na\n\n\n\n\n", actual["A"]);
-        ASSERT_EQUALS("\na\n\nabc\n\n\n", actual["A;B;C"]);
+        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("\na", actual["A"]);
+        ASSERT_EQUALS("\na\n\nabc", actual["A;B;C"]);
     }
 
     void if_cond4() {
@@ -1284,7 +1306,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\n\n\nab\n\n", actual[""]);
+            ASSERT_EQUALS("\n\n\nab", actual[""]);
         }
 
         {
@@ -1302,9 +1324,9 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\n\n\n\n\n\n\n", actual[""]);
-            ASSERT_EQUALS("\n{\n\n\n\n}\n\n", actual["A"]);
-            ASSERT_EQUALS("\n{\n\nfoo();\n\n}\n\n", actual["A;B"]);
+            ASSERT_EQUALS("", actual[""]);
+            ASSERT_EQUALS("\n{\n\n\n\n}", actual["A"]);
+            ASSERT_EQUALS("\n{\n\nfoo ( ) ;\n\n}", actual["A;B"]);
         }
 
         {
@@ -1320,7 +1342,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\n\n\nab\n\n", actual[""]);
+            ASSERT_EQUALS("\n\n\nab", actual[""]);
         }
 
         {
@@ -1334,8 +1356,8 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\n\n\n", actual[""]);
-            ASSERT_EQUALS("\nfoo();\n\n", actual["A"]);
+            ASSERT_EQUALS("", actual[""]);
+            ASSERT_EQUALS("\nfoo ( ) ;", actual["A"]);
         }
 
         {
@@ -1349,7 +1371,7 @@ private:
 
             // Compare results..
             TODO_ASSERT_EQUALS(2, 1, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\nfoo();\n\n", actual[""]);
+            ASSERT_EQUALS("\nfoo ( ) ;", actual[""]);
         }
     }
 
@@ -1368,8 +1390,8 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\ncd\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\nab\n\ncd\n\nef\n\n", actual["A;B"]);
+        ASSERT_EQUALS("\n\n\ncd", actual[""]);
+        ASSERT_EQUALS("\nab\n\ncd\n\nef", actual["A;B"]);
     }
 
     void if_cond6() {
@@ -1395,7 +1417,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, (int)actual.size());
-        ASSERT_EQUALS("\n\n", actual[""]);
+        ASSERT_EQUALS("", actual[""]);
     }
 
 
@@ -1410,7 +1432,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, (int)actual.size());
-        ASSERT_EQUALS("\nabc\n\n", actual[""]);
+        ASSERT_EQUALS("\nabc", actual[""]);
     }
 
     void if_cond10() {
@@ -1440,21 +1462,21 @@ private:
                                 "#if A == 1\n"
                                 ";\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n\n;\n\n", preprocessor0.getcode(filedata,"",""));
+        ASSERT_EQUALS("\n\n;", preprocessor0.getcode(filedata,"",""));
     }
 
     void if_cond13() {
         const char filedata[] = "#if ('A' == 0x41)\n"
                                 "123\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n123\n\n", preprocessor0.getcode(filedata,"",""));
+        ASSERT_EQUALS("\n123", preprocessor0.getcode(filedata,"",""));
     }
 
     void if_cond14() {
         const char filedata[] = "#if !(A)\n"
                                 "123\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n123\n\n", preprocessor0.getcode(filedata,"",""));
+        ASSERT_EQUALS("\n123", preprocessor0.getcode(filedata,"",""));
     }
 
     void if_cond15() { // #4456 - segmentation fault
@@ -1489,7 +1511,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, (int)actual.size());
-        ASSERT_EQUALS("\n\n\n", actual[""]);
+        ASSERT_EQUALS("", actual[""]);
 
         // the "defined(DEF_10) || defined(DEF_11)" are not handled correctly..
         ASSERT_EQUALS("(debug) unhandled configuration: defined(DEF_10)||defined(DEF_11)\n", errout.str());
@@ -1503,8 +1525,8 @@ private:
         const std::string code("#if X || Y\n"
                                "a1;\n"
                                "#endif\n");
-        ASSERT_EQUALS("\na1;\n\n", preprocessor0.getcode(code, "X", "test.c"));
-        ASSERT_EQUALS("\na1;\n\n", preprocessor0.getcode(code, "Y", "test.c"));
+        ASSERT_EQUALS("\na1 ;", preprocessor0.getcode(code, "X", "test.c"));
+        ASSERT_EQUALS("\na1 ;", preprocessor0.getcode(code, "Y", "test.c"));
     }
 
     void if_macro_eq_macro() {
@@ -1519,7 +1541,7 @@ private:
         std::map<std::string, std::string> actual;
         preprocess(code, actual);
 
-        ASSERT_EQUALS("\n\n\n\nWilma\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\n\n\n\nWilma", actual[""]);
     }
 
     void ticket_3675() {
@@ -1547,7 +1569,7 @@ private:
         preprocess(code, actual);
 
         // First, it must not hang. Second, inline must becomes inline, and __forceinline must become __forceinline.
-        ASSERT_EQUALS("\n\n\n\n\n$$$__forceinline $$inline $$__forceinline\n", actual[""]);
+        ASSERT_EQUALS("\n\n\n\n\n$__forceinline $inline $__forceinline", actual[""]);
     }
 
     void ticket_4922() { // #4922
@@ -1581,8 +1603,8 @@ private:
 
     void multiline4() {
         errout.str("");
-        const char filedata[] = "#define A int a = 4;\\ \n"
-                                " int b = 5;\n"
+        const char filedata[] = "#define A 1 \\ \n"
+                                "2\n"
                                 "A\n";
 
         // Preprocess => actual result..
@@ -1592,9 +1614,9 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
 #ifdef __GNUC__
-        ASSERT_EQUALS("\n\n$int $a = $4; $int $b = $5;\n", actual[""]);
+        ASSERT_EQUALS("\n\n$1 $2", actual[""]);
 #else
-        ASSERT_EQUALS("\nint b = 5;\n$int $a = $4;\\\n", actual[""]);
+        ASSERT_EQUALS("\n2\n$1 \\", actual[""]);
 #endif
         ASSERT_EQUALS("", errout.str());
     }
@@ -1613,7 +1635,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\nint main(){\n$int $a = $4;\n}\n", actual[""]);
+        ASSERT_EQUALS("\n\nint main ( ) {\n$int $a $= $4 $;\n}", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1650,32 +1672,32 @@ private:
         {
             const char filedata[] = "#define AAA(aa) f(aa)\n"
                                     "AAA(5);\n";
-            ASSERT_EQUALS("\n$f($5);\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\nf ( 5 ) ;", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             const char filedata[] = "#define AAA(aa) f(aa)\n"
                                     "AAA (5);\n";
-            ASSERT_EQUALS("\n$f($5);\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\nf ( 5 ) ;", OurPreprocessor::expandMacros(filedata));
         }
     }
 
     void macro_simple2() const {
         const char filedata[] = "#define min(x,y) x<y?x:y\n"
                                 "min(a(),b());\n";
-        ASSERT_EQUALS("\n$a()<$b()?$a():$b();\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\na ( ) < b ( ) ? a ( ) : b ( ) ;", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple3() const {
         const char filedata[] = "#define A 4\n"
                                 "A AA\n";
-        ASSERT_EQUALS("\n$4 AA\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n4 AA", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple4() const {
         const char filedata[] = "#define TEMP_1 if( temp > 0 ) return 1;\n"
                                 "TEMP_1\n";
-        ASSERT_EQUALS("\n$if( $temp > $0 ) $return $1;\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nif ( temp > 0 ) return 1 ;", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple5() const {
@@ -1686,75 +1708,75 @@ private:
                                 "    int temp = 0;\n"
                                 "    ABC\n"
                                 "}\n";
-        ASSERT_EQUALS("\n\nvoid foo()\n{\n    int temp = 0;\n    $if( $temp > $0 ) $return $1;\n}\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\nvoid foo ( )\n{\nint temp = 0 ;\nif ( temp > 0 ) return 1 ;\n}", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple6() const {
         const char filedata[] = "#define ABC (a+b+c)\n"
                                 "ABC\n";
-        ASSERT_EQUALS("\n$($a+$b+$c)\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n( a + b + c )", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple7() const {
         const char filedata[] = "#define ABC(str) str\n"
                                 "ABC(\"(\")\n";
-        ASSERT_EQUALS("\n$\"(\"\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\"(\"", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple8() const {
         const char filedata[] = "#define ABC 123\n"
                                 "#define ABCD 1234\n"
                                 "ABC ABCD\n";
-        ASSERT_EQUALS("\n\n$123 $1234\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\n123 1234", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple9() const {
         const char filedata[] = "#define ABC(a) f(a)\n"
                                 "ABC( \"\\\"\" );\n"
                                 "ABC( \"g\" );\n";
-        ASSERT_EQUALS("\n$f(\"\\\"\");\n$f(\"g\");\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nf ( \"\\\"\" ) ;\nf ( \"g\" ) ;", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple10() const {
         const char filedata[] = "#define ABC(t) t x\n"
                                 "ABC(unsigned long);\n";
-        ASSERT_EQUALS("\n$unsigned $long $x;\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nunsigned long x ;", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple11() const {
         const char filedata[] = "#define ABC(x) delete x\n"
                                 "ABC(a);\n";
-        ASSERT_EQUALS("\n$delete $a;\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\ndelete a ;", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple12() const {
         const char filedata[] = "#define AB ab.AB\n"
                                 "AB.CD\n";
-        ASSERT_EQUALS("\n$ab.$AB.CD\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nab . AB . CD", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple13() const {
         const char filedata[] = "#define TRACE(x)\n"
                                 "TRACE(;if(a))\n";
-        ASSERT_EQUALS("\n$\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple14() const {
         const char filedata[] = "#define A \"  a  \"\n"
                                 "printf(A);\n";
-        ASSERT_EQUALS("\nprintf($\"  a  \");\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nprintf ( \"  a  \" ) ;", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple15() const {
         const char filedata[] = "#define FOO\"foo\"\n"
                                 "FOO\n";
-        ASSERT_EQUALS("\n$\"foo\"\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\"foo\"", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple16() const {  // # 4703
         const char filedata[] = "#define MACRO( A, B, C ) class A##B##C##Creator {};\n"
                                 "MACRO( B\t, U , G )";
-        ASSERT_EQUALS("\n$class $BUGCreator{};", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nclass BUGCreator { } ;", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple17() const {  // # 5074 - the Token::isExpandedMacro() doesn't always indicate properly if token comes from macro
@@ -1762,41 +1784,41 @@ private:
         // "\n123+$123" since the first 123 comes from the source code
         const char filedata[] = "#define MACRO(A) A+123\n"
                                 "MACRO(123)";
-        ASSERT_EQUALS("\n$123+$123", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n123 + 123", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple18() const {  // (1e-7)
         const char filedata1[] = "#define A (1e-7)\n"
                                  "a=A;";
-        ASSERT_EQUALS("\na=$($1e-7);", OurPreprocessor::expandMacros(filedata1));
+        ASSERT_EQUALS("\na = ( 1e-7 ) ;", OurPreprocessor::expandMacros(filedata1));
 
         const char filedata2[] = "#define A (1E-7)\n"
                                  "a=A;";
-        ASSERT_EQUALS("\na=$($1E-7);", OurPreprocessor::expandMacros(filedata2));
+        ASSERT_EQUALS("\na = ( 1E-7 ) ;", OurPreprocessor::expandMacros(filedata2));
 
         const char filedata3[] = "#define A (1e+7)\n"
                                  "a=A;";
-        ASSERT_EQUALS("\na=$($1e+7);", OurPreprocessor::expandMacros(filedata3));
+        ASSERT_EQUALS("\na = ( 1e+7 ) ;", OurPreprocessor::expandMacros(filedata3));
 
         const char filedata4[] = "#define A (1.e+7)\n"
                                  "a=A;";
-        ASSERT_EQUALS("\na=$($1.e+7);", OurPreprocessor::expandMacros(filedata4));
+        ASSERT_EQUALS("\na = ( 1.e+7 ) ;", OurPreprocessor::expandMacros(filedata4));
 
         const char filedata5[] = "#define A (1.7f)\n"
                                  "a=A;";
-        ASSERT_EQUALS("\na=$($1.7f);", OurPreprocessor::expandMacros(filedata5));
+        ASSERT_EQUALS("\na = ( 1.7f ) ;", OurPreprocessor::expandMacros(filedata5));
 
         const char filedata6[] = "#define A (.1)\n"
                                  "a=A;";
-        ASSERT_EQUALS("\na=$($.1);", OurPreprocessor::expandMacros(filedata6));
+        ASSERT_EQUALS("\na = ( .1 ) ;", OurPreprocessor::expandMacros(filedata6));
 
         const char filedata7[] = "#define A (1.)\n"
                                  "a=A;";
-        ASSERT_EQUALS("\na=$($1.);", OurPreprocessor::expandMacros(filedata7));
+        ASSERT_EQUALS("\na = ( 1. ) ;", OurPreprocessor::expandMacros(filedata7));
 
         const char filedata8[] = "#define A (8.0E+007)\n"
                                  "a=A;";
-        ASSERT_EQUALS("\na=$($8.0E+007);", OurPreprocessor::expandMacros(filedata8));
+        ASSERT_EQUALS("\na = ( 8.0E+007 ) ;", OurPreprocessor::expandMacros(filedata8));
     }
 
     void macroInMacro1() const {
@@ -1804,66 +1826,52 @@ private:
             const char filedata[] = "#define A(m) long n = m; n++;\n"
                                     "#define B(n) A(n)\n"
                                     "B(0)\n";
-            ASSERT_EQUALS("\n\n$$long $n=$0;$n++;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\nlong n = 0 ; n ++ ;", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             const char filedata[] = "#define A B\n"
                                     "#define B 3\n"
                                     "A\n";
-            ASSERT_EQUALS("\n\n$$3\n", OurPreprocessor::expandMacros(filedata));
-        }
-
-        {
-            const char filedata[] = "#define DBG(fmt, args...) printf(fmt, ## args)\n"
-                                    "#define D(fmt, args...) DBG(fmt, ## args)\n"
-                                    "DBG(\"hello\");\n";
-            ASSERT_EQUALS("\n\n$printf(\"hello\");\n", OurPreprocessor::expandMacros(filedata));
-        }
-
-        {
-            const char filedata[] = "#define DBG(fmt, args...) printf(fmt, ## args)\n"
-                                    "#define D(fmt, args...) DBG(fmt, ## args)\n"
-                                    "DBG(\"hello: %d\",3);\n";
-            ASSERT_EQUALS("\n\n$printf(\"hello: %d\",$3);\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n3", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             const char filedata[] = "#define BC(b, c...) 0##b * 0##c\n"
                                     "#define ABC(a, b...) a + BC(b)\n"
                                     "\n"
-                                    "ABC(1);\n"
+                                    "ABC(1);\n" // <- too few parameters
                                     "ABC(2,3);\n"
                                     "ABC(4,5,6);\n";
 
-            ASSERT_EQUALS("\n\n\n$1+$$0*$0;\n$2+$$03*$0;\n$4+$$05*$06;\n", OurPreprocessor::expandMacros(filedata));
+            //ASSERT_EQUALS("\n\n\n1 + 0 * 0;\n2 + 03 * 0;\n4 + 05 * 06;", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             const char filedata[] = "#define A 4\n"
                                     "#define B(a) a,A\n"
                                     "B(2);\n";
-            ASSERT_EQUALS("\n\n$2, $4;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n2 , 4 ;", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             const char filedata[] = "#define A(x) (x)\n"
                                     "#define B )A(\n"
                                     "#define C )A(\n";
-            ASSERT_EQUALS("\n\n\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             const char filedata[] = "#define A(x) (x*2)\n"
                                     "#define B A(\n"
                                     "foo B(i));\n";
-            ASSERT_EQUALS("\n\nfoo $$(($i)*$2);\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\nfoo ( ( i ) * 2 ) ;", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             const char filedata[] = "#define foo foo\n"
                                     "foo\n";
-            ASSERT_EQUALS("\n$foo\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\nfoo", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -1872,7 +1880,7 @@ private:
                 "#define A(name) void foo##name() { do { B(1, 2); }\n"
                 "A(0)\n"
                 "A(1)\n";
-            ASSERT_EQUALS("\n\n$void $foo0(){$do{$$}$while($0);}\n$void $foo1(){$do{$$}$while($0);}\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\nvoid foo0 ( ) { do { } while ( 0 ) ; }\nvoid foo1 ( ) { do { } while ( 0 ) ; }", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -1880,7 +1888,7 @@ private:
                 "#define B(x) (\n"
                 "#define A() B(xx)\n"
                 "B(1) A() ) )\n";
-            ASSERT_EQUALS("\n\n$( $$( ) )\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n( ( ) )", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -1888,14 +1896,14 @@ private:
                 "#define PTR1 (\n"
                 "#define PTR2 PTR1 PTR1\n"
                 "int PTR2 PTR2 foo )))) = 0;\n";
-            ASSERT_EQUALS("\n\nint $$( $$( $$( $$( foo )))) = 0;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\nint ( ( ( ( foo ) ) ) ) = 0 ;", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             const char filedata[] =
                 "#define PTR1 (\n"
                 "PTR1 PTR1\n";
-            ASSERT_EQUALS("\n$( $(\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n( (", OurPreprocessor::expandMacros(filedata));
         }
     }
 
@@ -1903,13 +1911,7 @@ private:
         const char filedata[] = "#define A(x) a##x\n"
                                 "#define B 0\n"
                                 "A(B)\n";
-        ASSERT_EQUALS("\n\n$aB\n", OurPreprocessor::expandMacros(filedata));
-    }
-
-    void macro_mismatch() const {
-        const char filedata[] = "#define AAA(aa,bb) f(aa)\n"
-                                "AAA(5);\n";
-        ASSERT_EQUALS("\nAAA(5);\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\naB", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_linenumbers() const {
@@ -1918,25 +1920,25 @@ private:
                                 "\n"
                                 ")\n"
                                 "int a;\n";
-        ASSERT_EQUALS("\n$"
+        ASSERT_EQUALS("\n"
                       "\n"
                       "\n"
                       "\n"
-                      "int a;\n",
+                      "int a ;",
                       OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_nopar() const {
         const char filedata[] = "#define AAA( ) { NULL }\n"
                                 "AAA()\n";
-        ASSERT_EQUALS("\n${ $NULL }\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n{ NULL }", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_incdec() const {
         const char filedata[] = "#define M1(X) 1+X\n"
                                 "#define M2(X) 2-X\n"
                                 "M1(+1) M2(-1)\n";
-        ASSERT_EQUALS("\n\n$1+ +$1 $2- -$1\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\n1 + + 1 2 - - 1", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_switchCase() const {
@@ -1948,14 +1950,14 @@ private:
                                     " break; "
                                     "}\n"
                                     "A( 5 );\n";
-            ASSERT_EQUALS("\n$switch($a){$case $2:$break;};\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\nswitch ( a ) { case 2 : break ; } ;", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             // Make sure "2 BB" doesn't become "2BB"
             const char filedata[] = "#define A() AA : 2 BB\n"
                                     "A();\n";
-            ASSERT_EQUALS("\n$AA : $2 $BB;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\nAA : 2 BB ;", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -1963,7 +1965,7 @@ private:
                                     "#define B() A\n"
                                     "#define C( a ) B() break;\n"
                                     "{C( 2 );\n";
-            ASSERT_EQUALS("\n\n\n{$$$}$break;;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n\n{ } break ; ;", OurPreprocessor::expandMacros(filedata));
         }
 
 
@@ -1972,7 +1974,7 @@ private:
                                     "#define B() A\n"
                                     "#define C( a ) B() _break;\n"
                                     "{C( 2 );\n";
-            ASSERT_EQUALS("\n\n\n{$$$}$_break;;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n\n{ } _break ; ;", OurPreprocessor::expandMacros(filedata));
         }
 
 
@@ -1981,21 +1983,21 @@ private:
                                     "#define B() A\n"
                                     "#define C( a ) B() 5;\n"
                                     "{C( 2 );\n";
-            ASSERT_EQUALS("\n\n\n{$$$}$5;;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n\n{ } 5 ; ;", OurPreprocessor::expandMacros(filedata));
         }
     }
 
     void macro_NULL() const {
         // Let the tokenizer handle NULL.
         // See ticket #4482 - UB when passing NULL to variadic function
-        ASSERT_EQUALS("\n$0", OurPreprocessor::expandMacros("#define null 0\nnull"));
-        ASSERT_EQUALS("\nNULL", OurPreprocessor::expandMacros("#define NULL 0\nNULL"));
+        ASSERT_EQUALS("\n0", OurPreprocessor::expandMacros("#define null 0\nnull"));
+        // TODO ASSERT_EQUALS("\nNULL", OurPreprocessor::expandMacros("#define NULL 0\nNULL"));
     }
 
     void string1() {
         const char filedata[] = "int main()"
                                 "{"
-                                "    const char *a = \"#define A\n\";"
+                                "    const char *a = \"#define A\";"
                                 "}\n";
 
         // Preprocess => actual result..
@@ -2004,7 +2006,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("int main(){ const char *a = \"#define A\n\";}\n", actual[""]);
+        ASSERT_EQUALS("int main ( ) { const char * a = \"#define A\" ; }", actual[""]);
     }
 
     void string2() const {
@@ -2012,14 +2014,14 @@ private:
                                 "str = \"AAA\"\n";
 
         // Compare results..
-        ASSERT_EQUALS("\nstr = \"AAA\"\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nstr = \"AAA\"", OurPreprocessor::expandMacros(filedata));
     }
 
     void string3() const {
         const char filedata[] = "str(\";\");\n";
 
         // Compare results..
-        ASSERT_EQUALS("str(\";\");\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("str ( \";\" ) ;", OurPreprocessor::expandMacros(filedata));
     }
 
 
@@ -2031,7 +2033,7 @@ private:
                                     "AAA\n";
 
             // Compare results..
-            ASSERT_EQUALS("\n\n\n$char $b=$0;\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n\nchar b = 0 ;", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -2040,7 +2042,7 @@ private:
                                     "#undef z\n"
                                     "int z;\n"
                                     "z = 0;\n";
-            ASSERT_EQUALS("\n\nint z;\nz = 0;\n", preprocessor0.getcode(filedata, "", ""));
+            ASSERT_EQUALS("\n\nint z ;\nz = 0 ;", preprocessor0.getcode(filedata, "", ""));
         }
     }
 
@@ -2051,37 +2053,37 @@ private:
                                 "AAA\n";
 
         // Compare results..
-        ASSERT_EQUALS("\n\n\n$789\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\n\n789", OurPreprocessor::expandMacros(filedata));
     }
 
     void preprocessor_doublesharp() const {
         // simple testcase without ##
         const char filedata1[] = "#define TEST(var,val) var = val\n"
                                  "TEST(foo,20);\n";
-        ASSERT_EQUALS("\n$foo=$20;\n", OurPreprocessor::expandMacros(filedata1));
+        ASSERT_EQUALS("\nfoo = 20 ;", OurPreprocessor::expandMacros(filedata1));
 
         // simple testcase with ##
         const char filedata2[] = "#define TEST(var,val) var##_##val = val\n"
                                  "TEST(foo,20);\n";
-        ASSERT_EQUALS("\n$foo_20=$20;\n", OurPreprocessor::expandMacros(filedata2));
+        ASSERT_EQUALS("\nfoo_20 = 20 ;", OurPreprocessor::expandMacros(filedata2));
 
         // concat macroname
         const char filedata3[] = "#define ABCD 123\n"
                                  "#define A(B) A##B\n"
                                  "A(BCD)\n";
-        ASSERT_EQUALS("\n\n$$123\n", OurPreprocessor::expandMacros(filedata3));
+        ASSERT_EQUALS("\n\n123", OurPreprocessor::expandMacros(filedata3));
 
         // Ticket #1802 - inner ## must be expanded before outer macro
         const char filedata4[] = "#define A(B) A##B\n"
                                  "#define a(B) A(B)\n"
                                  "a(A(B))\n";
-        ASSERT_EQUALS("\n\n$$AAB\n", OurPreprocessor::expandMacros(filedata4));
+        ASSERT_EQUALS("\n\nAAB", OurPreprocessor::expandMacros(filedata4));
 
         // Ticket #1802 - inner ## must be expanded before outer macro
         const char filedata5[] = "#define AB(A,B) A##B\n"
                                  "#define ab(A,B) AB(A,B)\n"
                                  "ab(a,AB(b,c))\n";
-        ASSERT_EQUALS("\n\n$$abc\n", OurPreprocessor::expandMacros(filedata5));
+        ASSERT_EQUALS("\n\nabc", OurPreprocessor::expandMacros(filedata5));
 
         // Ticket #1802
         const char filedata6[] = "#define AB_(A,B) A ## B\n"
@@ -2089,7 +2091,7 @@ private:
                                  "#define ab(suf) AB(X, AB_(_, suf))\n"
                                  "#define X x\n"
                                  "ab(y)\n";
-        ASSERT_EQUALS("\n\n\n\n$$$x_y\n", OurPreprocessor::expandMacros(filedata6));
+        ASSERT_EQUALS("\n\n\n\nx_y", OurPreprocessor::expandMacros(filedata6));
     }
 
 
@@ -2097,7 +2099,7 @@ private:
     void preprocessor_include_in_str() {
         const char filedata[] = "int main()\n"
                                 "{\n"
-                                "const char *a = \"#include <string>\n\";\n"
+                                "const char *a = \"#include <string>\";\n"
                                 "return 0;\n"
                                 "}\n";
 
@@ -2107,7 +2109,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("int main()\n{\nconst char *a = \"#include <string>\n\";\nreturn 0;\n}\n", actual[""]);
+        ASSERT_EQUALS("int main ( )\n{\nconst char * a = \"#include <string>\" ;\nreturn 0 ;\n}", actual[""]);
     }
 
 
@@ -2120,7 +2122,7 @@ private:
         // Preprocess..
         std::string actual = OurPreprocessor::expandMacros(filedata);
 
-        ASSERT_EQUALS("\n$printf(\"[0x%lx-0x%lx)\",$pstart,$pend);\n", actual);
+        ASSERT_EQUALS("\nprintf ( \"[0x%lx-0x%lx)\" , pstart , pend ) ;", actual);
     }
 
     void va_args_2() const {
@@ -2130,29 +2132,29 @@ private:
         // Preprocess..
         std::string actual = OurPreprocessor::expandMacros(filedata);
 
-        ASSERT_EQUALS("\n$printf(\"hello\");\n", actual);
+        // invalid code ASSERT_EQUALS("\nprintf ( \"hello\" ) ;", actual);
     }
 
     void va_args_3() const {
         const char filedata[] = "#define FRED(...) { fred(__VA_ARGS__); }\n"
                                 "FRED(123)\n";
-        ASSERT_EQUALS("\n${ $fred($123); }\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n{ fred ( 123 ) ; }", OurPreprocessor::expandMacros(filedata));
     }
 
     void va_args_4() const {
         const char filedata[] = "#define FRED(name, ...) name (__VA_ARGS__)\n"
                                 "FRED(abc, 123)\n";
-        ASSERT_EQUALS("\n$abc($123)\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nabc ( 123 )", OurPreprocessor::expandMacros(filedata));
     }
 
     void va_args_5() {
         const char filedata1[] = "#define A(...) #__VA_ARGS__\n"
                                  "A(123)\n";
-        ASSERT_EQUALS("\n$\"123\"\n", OurPreprocessor::expandMacros(filedata1));
+        ASSERT_EQUALS("\n\"123\"", OurPreprocessor::expandMacros(filedata1));
 
         const char filedata2[] = "#define A(X,...) X(#__VA_ARGS__)\n"
                                  "A(f,123)\n";
-        ASSERT_EQUALS("\n$f(\"123\")\n", OurPreprocessor::expandMacros(filedata2));
+        ASSERT_EQUALS("\nf ( \"123\" )", OurPreprocessor::expandMacros(filedata2));
     }
 
 
@@ -2171,7 +2173,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\nint main()\n{\nif( $'ABCD' == 0 );\nreturn 0;\n}\n", actual[""]);
+        ASSERT_EQUALS("\nint main ( )\n{\nif ( $'ABCD' == 0 ) ;\nreturn 0 ;\n}", actual[""]);
     }
 
 
@@ -2182,7 +2184,7 @@ private:
         // expand macros..
         std::string actual = OurPreprocessor::expandMacros(filedata);
 
-        ASSERT_EQUALS("\n$\"abc\"\n", actual);
+        ASSERT_EQUALS("\n\"abc\"", actual);
     }
 
     void stringify2() const {
@@ -2192,7 +2194,7 @@ private:
         // expand macros..
         std::string actual = OurPreprocessor::expandMacros(filedata);
 
-        ASSERT_EQUALS("\n$g(\"abc\");\n", actual);
+        ASSERT_EQUALS("\ng ( \"abc\" ) ;", actual);
     }
 
     void stringify3() const {
@@ -2202,7 +2204,7 @@ private:
         // expand macros..
         std::string actual = OurPreprocessor::expandMacros(filedata);
 
-        ASSERT_EQUALS("\n$g(\"abc\");\n", actual);
+        ASSERT_EQUALS("\ng ( \"abc\" ) ;", actual);
     }
 
     void stringify4() const {
@@ -2214,13 +2216,13 @@ private:
         // expand macros..
         std::string actual = OurPreprocessor::expandMacros(filedata);
 
-        ASSERT_EQUALS("\n1 $\n\n\"abc\" 2\n", actual);
+        ASSERT_EQUALS("\n1 \"abc\"\n\n2", actual);
     }
 
     void stringify5() const {
         const char filedata[] = "#define A(x) a(#x,x)\n"
                                 "A(foo(\"\\\"\"))\n";
-        ASSERT_EQUALS("\n$a(\"foo(\\\"\\\\\\\"\\\")\",$foo(\"\\\"\"))\n", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\na ( \"foo(\"\\\"\")\" , foo ( \"\\\"\" ) )", OurPreprocessor::expandMacros(filedata));
     }
 
     void pragma() {
@@ -2235,7 +2237,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\nvoid f()\n{\n}\n", actual[""]);
+        ASSERT_EQUALS("\nvoid f ( )\n{\n}", actual[""]);
     }
 
     void pragma_asm_1() {
@@ -2254,7 +2256,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\naaa\n\n\n\nbbb\n", actual[""]);
+        ASSERT_EQUALS("\nasm();\n\naaa\n\nasm();\n\nbbb", actual[""]);
     }
 
     void pragma_asm_2() {
@@ -2269,7 +2271,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\nasm(temp);\nbbb\n", actual[""]);
+        ASSERT_EQUALS("\nasm();\n\nbbb", actual[""]);
     }
 
     void pragma_once() {
@@ -2295,7 +2297,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        const std::string expected("void f() {\n\n\n}\n");
+        const std::string expected("void f ( ) {\n\n\n}");
         ASSERT_EQUALS(expected, actual[""]);
         ASSERT_EQUALS(expected, actual["A"]);
     }
@@ -2309,20 +2311,13 @@ private:
                                     "{\n"
                                     "  char a = 'a'; // '\n"
                                     "}\n";
-            const char expected[] = "\n"
-                                    "\n"
-                                    "\n"
-                                    "void f()\n"
-                                    "{\n"
-                                    "char a = 'a';\n"
-                                    "}\n";
 
             // Preprocess => actual result..
             std::map<std::string, std::string> actual;
             preprocess(filedata, actual);
 
-            ASSERT_EQUALS(expected, actual[""]);
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", actual[""]);
+            ASSERT_EQUALS("[file.c:2]: (error) No pair for character ('). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
         }
     }
 
@@ -2378,8 +2373,8 @@ private:
             errout.str("");
             const std::string actual(OurPreprocessor::expandMacros(filedata, this));
 
-            ASSERT_EQUALS("\n\nint a = $1;\n", actual);
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", actual);
+            ASSERT_EQUALS("[file.cpp:2]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
         }
 
         {
@@ -2429,7 +2424,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\nvoid f() {\n$g( );\n}\n", actual[""]);
+        ASSERT_EQUALS("\nvoid f ( ) {\n$g $( ) ;\n}", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2447,8 +2442,8 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\n\n\n$20\n", actual[""]);
-        ASSERT_EQUALS("\n\n\n\n\n$10\n", actual["A"]);
+        ASSERT_EQUALS("\n\n\n\n\n$20", actual[""]);
+        ASSERT_EQUALS("\n\n\n\n\n$10", actual["A"]);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2464,7 +2459,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\nvoid f() ${ }\n", actual[""]);
+        ASSERT_EQUALS("\n\nvoid f ( ) ${ }", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2485,7 +2480,7 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("[file.c:6]: (error) Syntax error. Not enough parameters for macro 'BC'.\n", errout.str());
+        ASSERT_EQUALS("[file.c:6]: (error) Syntax error. Wrong number of parameters for macro 'BC'.\n", errout.str());
     }
 
     void newline_in_macro() {
@@ -2501,7 +2496,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\nvoid f()\n{\n$printf(\"\\n\");\n}\n", actual[""]);
+        ASSERT_EQUALS("\nvoid f ( )\n{\n$printf $( \"\\n\" $) ;\n}", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2550,8 +2545,8 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\nA\n\n\nA\n\n", actual["ABC"]);
+        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("\nA\n\n\nA", actual["ABC"]);
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
 
@@ -2561,14 +2556,14 @@ private:
                                     "#if A\n"
                                     "FOO\n"
                                     "#endif";
-            ASSERT_EQUALS("\n\n\n\n", preprocessor0.getcode(filedata,"",""));
+            ASSERT_EQUALS("", preprocessor0.getcode(filedata,"",""));
         }
         {
             const char filedata[] = "#define A 1\n"
                                     "#if A==1\n"
                                     "FOO\n"
                                     "#endif";
-            ASSERT_EQUALS("\n\nFOO\n\n", preprocessor0.getcode(filedata,"",""));
+            ASSERT_EQUALS("\n\nFOO", preprocessor0.getcode(filedata,"",""));
         }
     }
 
@@ -2578,7 +2573,7 @@ private:
                                 "#if (B==A) || (B==C)\n"
                                 "FOO\n"
                                 "#endif";
-        ASSERT_EQUALS("\n\n\nFOO\n\n", preprocessor0.getcode(filedata,"",""));
+        ASSERT_EQUALS("\n\n\nFOO", preprocessor0.getcode(filedata,"",""));
     }
 
     void define_if3() {
@@ -2586,7 +2581,7 @@ private:
                                 "#if (A==0)\n"
                                 "FOO\n"
                                 "#endif";
-        ASSERT_EQUALS("\n\nFOO\n\n", preprocessor0.getcode(filedata,"",""));
+        ASSERT_EQUALS("\n\nFOO", preprocessor0.getcode(filedata,"",""));
     }
 
     void define_if4() {
@@ -2594,7 +2589,7 @@ private:
                                 "#if X==123\n"
                                 "FOO\n"
                                 "#endif";
-        ASSERT_EQUALS("\n\nFOO\n\n", preprocessor0.getcode(filedata,"",""));
+        ASSERT_EQUALS("\n\nFOO", preprocessor0.getcode(filedata,"",""));
     }
 
     void define_if5() { // #4516 - #define B (A & 0x00f0)
@@ -2604,7 +2599,7 @@ private:
                                     "#if B==0x0010\n"
                                     "FOO\n"
                                     "#endif";
-            ASSERT_EQUALS("\n\n\nFOO\n\n", preprocessor0.getcode(filedata,"",""));
+            ASSERT_EQUALS("\n\n\nFOO", preprocessor0.getcode(filedata,"",""));
         }
         {
             const char filedata[] = "#define A 0x00f0\n"
@@ -2613,14 +2608,14 @@ private:
                                     "#if C==0x0010\n"
                                     "FOO\n"
                                     "#endif";
-            ASSERT_EQUALS("\n\n\n\nFOO\n\n", preprocessor0.getcode(filedata,"",""));
+            ASSERT_EQUALS("\n\n\n\nFOO", preprocessor0.getcode(filedata,"",""));
         }
         {
             const char filedata[] = "#define A (1+A)\n" // don't hang for recursive macros
                                     "#if A==1\n"
                                     "FOO\n"
                                     "#endif";
-            ASSERT_EQUALS("\n\n\n\n", preprocessor0.getcode(filedata,"",""));
+            ASSERT_EQUALS("\n\nFOO", preprocessor0.getcode(filedata,"",""));
         }
     }
 
@@ -2659,7 +2654,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1, (int)actual.size());
-            ASSERT_EQUALS("\n\n\n\nB\n\n", actual[""]);
+            ASSERT_EQUALS("\n\n\n\nB", actual[""]);
         }
 
         {
@@ -2674,7 +2669,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1, (int)actual.size());
-            ASSERT_EQUALS("\n\n$1\n\n", actual[""]);
+            ASSERT_EQUALS("\n\n$1", actual[""]);
         }
 
         {
@@ -2689,7 +2684,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1, (int)actual.size());
-            ASSERT_EQUALS("\n\n$1\n\n", actual[""]);
+            ASSERT_EQUALS("\n\n$1", actual[""]);
         }
 
         {
@@ -2704,7 +2699,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1, (int)actual.size());
-            ASSERT_EQUALS("\n\n$1\n\n", actual[""]);
+            ASSERT_EQUALS("\n\n$1", actual[""]);
         }
 
         {
@@ -2720,7 +2715,7 @@ private:
 
             // Compare results..
             ASSERT_EQUALS(1, (int)actual.size());
-            ASSERT_EQUALS("\n\n\n\n$1\n", actual[""]);
+            ASSERT_EQUALS("\n\n\n\n$1", actual[""]);
         }
     }
 
@@ -2736,7 +2731,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1U, actual.size());
-        ASSERT_EQUALS("\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("", actual[""]);
     }
 
     void define_ifndef2() {
@@ -2749,8 +2744,8 @@ private:
                                 "B me;\n";
 
         // Preprocess => actual result..
-        ASSERT_EQUALS("\n\n\n\n\n\n$int me;\n", preprocessor0.getcode(filedata, "", "a.cpp"));
-        ASSERT_EQUALS("\n\n\n\n\n\n$char me;\n", preprocessor0.getcode(filedata, "A", "a.cpp"));
+        ASSERT_EQUALS("\n\n\n\n\n\n$int me ;", preprocessor0.getcode(filedata, "", "a.cpp"));
+        ASSERT_EQUALS("\n\n\n\n\n\n$char me ;", preprocessor0.getcode(filedata, "A", "a.cpp"));
     }
 
     void ifndef_define() {
@@ -2764,7 +2759,7 @@ private:
         preprocess(filedata, actual);
 
         ASSERT_EQUALS(1U, actual.size());
-        ASSERT_EQUALS("\n\n\n$123;\n", actual[""]);
+        ASSERT_EQUALS("\n\n\n123 ;", actual[""]);
     }
 
     void undef_ifdef() {
@@ -2774,8 +2769,8 @@ private:
                                 "#endif\n";
 
         // Preprocess => actual result..
-        ASSERT_EQUALS("\n\n\n\n", preprocessor0.getcode(filedata, "", "a.cpp"));
-        ASSERT_EQUALS("\n\n\n\n", preprocessor0.getcode(filedata, "A", "a.cpp"));
+        ASSERT_EQUALS("", preprocessor0.getcode(filedata, "", "a.cpp"));
+        ASSERT_EQUALS("", preprocessor0.getcode(filedata, "A", "a.cpp"));
     }
 
     void redundant_config() {
@@ -2817,7 +2812,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS("char a[] = \"#endfile\";\nchar b[] = \"#endfile\";\n\n", actual[""]);
+        ASSERT_EQUALS("char a [ ] = \"#endfile\" ;\nchar b [ ] = \"#endfile\" ;", actual[""]);
         ASSERT_EQUALS(1, (int)actual.size());
     }
 
@@ -2937,7 +2932,7 @@ private:
                               "#endif\n");
         std::string actual = preprocessor0.getcode(src, "X=1", "test.c");
 
-        ASSERT_EQUALS("\nFred & Wilma\n\n", actual);
+        ASSERT_EQUALS("\nFred & Wilma", actual);
     }
 
     void predefine2() {
@@ -2946,12 +2941,12 @@ private:
                               "#endif\n");
         {
             std::string actual = preprocessor0.getcode(src, "X=1", "test.c");
-            ASSERT_EQUALS("\n\n\n", actual);
+            ASSERT_EQUALS("", actual);
         }
 
         {
             std::string actual = preprocessor0.getcode(src, "X=1;Y=2", "test.c");
-            ASSERT_EQUALS("\nFred & Wilma\n\n", actual);
+            ASSERT_EQUALS("\nFred & Wilma", actual);
         }
     }
 
@@ -2963,22 +2958,22 @@ private:
                             "Fred & Wilma\n"
                             "#endif\n";
         const std::string actual = preprocessor0.getcode(code, "TEST", "test.c");
-        ASSERT_EQUALS("\n\n\nFred & Wilma\n\n", actual);
+        ASSERT_EQUALS("\n\n\nFred & Wilma", actual);
     }
 
     void predefine4() {
         // #3577
         const char code[] = "char buf[X];\n";
         const std::string actual = preprocessor0.getcode(code, "X=123", "test.c");
-        ASSERT_EQUALS("char buf[$123];\n", actual);
+        ASSERT_EQUALS("char buf [ $123 ] ;", actual);
     }
 
     void predefine5() {  // #3737, #5119 - automatically define __cplusplus
         // #3737...
         const char code[] = "#ifdef __cplusplus\n123\n#endif";
         Settings settings;
-        ASSERT_EQUALS("\n\n\n",    preprocessor0.getcode(code, "X=123", "test.c"));
-        ASSERT_EQUALS("\n123\n\n", preprocessor0.getcode(code, "X=123", "test.cpp"));
+        ASSERT_EQUALS("",      preprocessor0.getcode(code, "X=123", "test.c"));
+        ASSERT_EQUALS("\n123", preprocessor0.getcode(code, "X=123", "test.cpp"));
 
         // #5119...
         ASSERT_EQUALS(false, Preprocessor::cplusplus(nullptr,"test.c"));
@@ -3026,7 +3021,7 @@ private:
         // #2942 - segfault
         const char code[] = "#elif (){\n";
         const std::string actual = preprocessor0.getcode(code, "TEST", "test.c");
-        ASSERT_EQUALS("\n", actual);
+        ASSERT_EQUALS("", actual);
     }
 
     void def_handleIncludes() {
@@ -3517,7 +3512,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1U, actual.size());
-        TODO_ASSERT_EQUALS("\n;\n","\n$XDefined;\n", actual[""]);
+        TODO_ASSERT_EQUALS("\n;","\n$XDefined;\n", actual[""]);
     }
 
     void undef8() {
@@ -3619,14 +3614,6 @@ private:
         ASSERT_EQUALS(0U, configurations.size());
     }
 
-    void macroChar() const {
-        const char filedata[] = "#define X 1\nX\n";
-        ASSERT_EQUALS("\n$1\n", OurPreprocessor::expandMacros(filedata,nullptr));
-        Preprocessor::macroChar = char(1);
-        ASSERT_EQUALS("\n" + std::string(char(1),1U) + "1\n", OurPreprocessor::expandMacros(filedata,nullptr));
-        Preprocessor::macroChar = '$';
-    }
-
     void validateCfg() {
         Settings settings;
         Preprocessor preprocessor(settings, this);
@@ -3674,7 +3661,7 @@ private:
 
         std::map<std::string, std::string> actual;
         preprocess(code, actual);
-        ASSERT_EQUALS("\nFred & Wilma\n\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\nFred & Wilma", actual[""]);
     }
 
     void double_include() {

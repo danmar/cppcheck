@@ -61,17 +61,24 @@ public:
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
+        checkBufferOverrun.checkGlobalAndLocalVariable();
+        if (_tokenizer->isMaxTime())
+            return;
+        checkBufferOverrun.checkStructVariable();
+        checkBufferOverrun.checkBufferAllocatedWithStrlen();
+        checkBufferOverrun.checkInsecureCmdLineArgs();
         checkBufferOverrun.bufferOverrun();
-        checkBufferOverrun.bufferOverrun2();
         checkBufferOverrun.arrayIndexThenCheck();
         checkBufferOverrun.negativeArraySize();
     }
 
-    /** @brief %Check for buffer overruns */
-    void bufferOverrun();
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+        CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
+        checkBufferOverrun.checkStringArgument();
+    }
 
-    /** @brief %Check for buffer overruns #2 (single pass, use ast and valueflow) */
-    void bufferOverrun2();
+    /** @brief %Check for buffer overruns (single pass, use ast and valueflow) */
+    void bufferOverrun();
 
     /** @brief Using array index before bounds check */
     void arrayIndexThenCheck();
