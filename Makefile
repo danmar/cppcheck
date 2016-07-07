@@ -107,7 +107,7 @@ ifndef PREFIX
 endif
 
 ifndef INCLUDE_FOR_LIB
-    INCLUDE_FOR_LIB=-Ilib -Iexternals/simplecpp -Iexternals/tinyxml
+    INCLUDE_FOR_LIB=-Ilib -Iexternals/tinyxml
 endif
 
 ifndef INCLUDE_FOR_CLI
@@ -115,7 +115,7 @@ ifndef INCLUDE_FOR_CLI
 endif
 
 ifndef INCLUDE_FOR_TEST
-    INCLUDE_FOR_TEST=-Ilib -Icli -Iexternals/simplecpp -Iexternals/tinyxml
+    INCLUDE_FOR_TEST=-Ilib -Icli -Iexternals/tinyxml
 endif
 
 BIN=$(DESTDIR)$(PREFIX)/bin
@@ -236,17 +236,11 @@ TESTOBJ =     test/options.o \
               test/testvalueflow.o \
               test/testvarid.o
 
-ifndef SIMPLECPP
-    SIMPLECPP = externals/simplecpp/simplecpp.o
-endif
-
-
 ifndef TINYXML
     TINYXML = externals/tinyxml/tinyxml2.o
 endif
 
 
-EXTOBJ += $(SIMPLECPP)
 EXTOBJ += $(TINYXML)
 .PHONY: run-dmake
 
@@ -619,9 +613,6 @@ test/testvalueflow.o: test/testvalueflow.cpp lib/cxx11emu.h test/testsuite.h lib
 
 test/testvarid.o: test/testvarid.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testvarid.o test/testvarid.cpp
-
-externals/simplecpp/simplecpp.o: externals/simplecpp/simplecpp.cpp lib/cxx11emu.h externals/simplecpp/simplecpp.h
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o externals/simplecpp/simplecpp.o externals/simplecpp/simplecpp.cpp
 
 externals/tinyxml/tinyxml2.o: externals/tinyxml/tinyxml2.cpp lib/cxx11emu.h externals/tinyxml/tinyxml2.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o externals/tinyxml/tinyxml2.o externals/tinyxml/tinyxml2.cpp

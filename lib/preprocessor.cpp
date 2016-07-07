@@ -23,7 +23,6 @@
 #include "path.h"
 #include "errorlogger.h"
 #include "settings.h"
-#include "simplecpp.h"
 
 #include <algorithm>
 #include <sstream>
@@ -1020,6 +1019,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
         forcedIncludes +=
             "#file \"" + cur + "\"\n" +
+            "#line 1\n" +
             fileData + "\n" +
             "#endfile\n"
             ;
@@ -1035,6 +1035,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile =
             forcedIncludes +
             "#file \"" + filename + "\"\n" +
+            "#line 1\n" +
             processedFile +
             "#endfile\n"
             ;
@@ -1792,145 +1793,6 @@ bool Preprocessor::match_cfg_def(std::map<std::string, std::string> cfg, std::st
 
 std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename)
 {
-    if (_settings.userUndefs.empty()) {
-        // Create a map for the cfg for faster access to defines
-        const std::map<std::string, std::string> defines(getcfgmap(cfg, &_settings, Path::simplifyPath(filename)));
-
-        simplecpp::OutputList outputList;
-        std::list<simplecpp::MacroUsage> macroUsage;
-
-        std::istringstream istr(filedata);
-        const simplecpp::TokenList &tokens1 = simplecpp::TokenList(istr, Path::simplifyPath(filename), &outputList);
-        const simplecpp::TokenList &tokens2 = simplecpp::preprocess(tokens1, defines, &outputList, &macroUsage);
-
-        if (!_settings.force) {
-            for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
-                if (it->type == simplecpp::Output::ERROR) {
-                    error(it->location.file, it->location.line, it->msg);
-                    return "";
-                }
-            }
-        }
-
-        // directive list..
-        directives.clear();
-        for (const simplecpp::Token *tok = tokens1.cbegin(); tok; tok = tok ? tok->next : nullptr) {
-            if ((tok->op != '#') || (tok->previous && tok->previous->location.line == tok->location.line))
-                continue;
-            if (tok->next && tok->next->str == "endfile")
-                continue;
-            Directive directive(tok->location.file, tok->location.line, "");
-            for (const simplecpp::Token *tok2 = tok; tok2 && tok2->location.line == directive.linenr; tok2 = tok2->next) {
-                if (tok2->comment)
-                    continue;
-                if (!directive.str.empty() && (tok2->location.col > tok2->previous->location.col + tok2->previous->str.size()))
-                    directive.str += ' ';
-                if (directive.str == "#" && tok2->str == "file")
-                    directive.str += "include";
-                else
-                    directive.str += tok2->str;
-            }
-            directives.push_back(directive);
-        }
-
-        // ensure that define macros are not used in the code
-        for (std::map<std::string, std::string>::const_iterator defineIt = defines.begin(); defineIt != defines.end(); ++defineIt) {
-            const std::string macroName = defineIt->first;
-            if (macroName.find("(") != std::string::npos)
-                continue;
-            const std::string macroValue = defineIt->second;
-            if (!defineIt->second.empty())
-                continue;
-            for (std::list<simplecpp::MacroUsage>::const_iterator usageIt = macroUsage.begin(); usageIt != macroUsage.end(); ++usageIt) {
-                const simplecpp::MacroUsage &mu = *usageIt;
-                if (mu.macroName != macroName)
-                    continue;
-                bool directiveLocation = false;
-                for (std::list<Directive>::const_iterator dirIt = directives.begin(); dirIt != directives.end(); ++dirIt) {
-                    if (mu.useLocation.file == dirIt->file && mu.useLocation.line == dirIt->linenr) {
-                        directiveLocation = true;
-                        break;
-                    }
-                }
-                if (!directiveLocation) {
-                    if (_settings.isEnabled("information"))
-                        validateCfgError(cfg, macroName);
-                    return "";
-                }
-            }
-        }
-
-        // assembler code locations..
-        std::set<simplecpp::Location> assemblerLocations;
-        for (std::list<Directive>::const_iterator dirIt = directives.begin(); dirIt != directives.end(); ++dirIt) {
-            const Directive &d1 = *dirIt;
-            if (d1.str.compare(0, 11, "#pragma asm") != 0)
-                continue;
-            std::list<Directive>::const_iterator dirIt2 = dirIt;
-            ++dirIt2;
-            if (dirIt2 == directives.end())
-                continue;
-
-            const Directive &d2 = *dirIt2;
-            if (d2.str.compare(0,14,"#pragma endasm") != 0 || d1.file != d2.file)
-                continue;
-
-            simplecpp::Location loc;
-            loc.file = d1.file;
-            loc.col = 0U;
-
-            for (unsigned int linenr = d1.linenr + 1U; linenr < d2.linenr; linenr++) {
-                loc.line = linenr;
-                assemblerLocations.insert(loc);
-            }
-        }
-
-        const bool writeLocations = (filedata.find("\n#file \"") != std::string::npos);
-
-        std::string prevfile;
-        unsigned int line = 1;
-        std::ostringstream ret;
-        for (const simplecpp::Token *tok = tokens2.cbegin(); tok; tok = tok->next) {
-            if (writeLocations && tok->location.file != prevfile) {
-                ret << "\n#line " << tok->location.line << " \"" << tok->location.file << "\"\n";
-                prevfile = tok->location.file;
-                line = tok->location.line;
-            }
-
-            if (tok->previous && line == tok->location.line)
-                ret << ' ';
-            bool newline = false;
-            while (tok->location.line > line) {
-                ret << '\n';
-                line++;
-                newline = true;
-            }
-            if (newline) {
-                simplecpp::Location loc = tok->location;
-                loc.col = 0U;
-                if (assemblerLocations.find(loc) != assemblerLocations.end()) {
-                    ret << "asm();";
-                    while (assemblerLocations.find(loc) != assemblerLocations.end()) {
-                        loc.line++;
-                    }
-                    while (tok && tok->location.line < loc.line)
-                        tok = tok->next;
-                    if (!tok)
-                        break;
-                    while (line < tok->location.line) {
-                        ret << '\n';
-                        ++line;
-                    }
-                }
-            }
-            if (!tok->macro.empty())
-                ret << Preprocessor::macroChar;
-            ret << tok->str;
-        }
-
-        return ret.str();
-    }
-
     // For the error report and preprocessor dump:
     // line number relative to current (included) file
     // (may decrease when popping back from an included file)
@@ -1946,7 +1808,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     std::map<std::string, std::string> cfgmap(getcfgmap(cfg, &_settings, filename));
 
     std::stack<std::string> filenames;
-    filenames.push(Path::simplifyPath(filename));
+    filenames.push(filename);
     std::stack<unsigned int> lineNumbers;
     std::istringstream istr(filedata);
     std::string line;

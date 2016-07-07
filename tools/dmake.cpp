@@ -375,9 +375,9 @@ int main(int argc, char **argv)
          << "endif\n\n";
 
     makeConditionalVariable(fout, "PREFIX", "/usr");
-    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -Iexternals/simplecpp -Iexternals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -Iexternals/tinyxml");
     makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Iexternals/tinyxml");
-    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -Iexternals/simplecpp -Iexternals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -Iexternals/tinyxml");
 
     fout << "BIN=$(DESTDIR)$(PREFIX)/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux\n";
