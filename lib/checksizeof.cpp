@@ -33,7 +33,8 @@ namespace {
 
 // CWE IDs used:
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-
+static const struct CWE CWE467(467U);	// Use of sizeof() on a Pointer Type
+static const struct CWE CWE682(682U);	// Incorrect Calculation
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckSizeof::checkSizeofForNumericParameter()
@@ -60,7 +61,7 @@ void CheckSizeof::sizeofForNumericParameterError(const Token *tok)
                 "sizeofwithnumericparameter", "Suspicious usage of 'sizeof' with a numeric constant as parameter.\n"
                 "It is unusual to use a constant value with sizeof. For example, 'sizeof(10)'"
                 " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 10. 'sizeof('A')'"
-                " and 'sizeof(char)' can return different results.");
+                " and 'sizeof(char)' can return different results.", CWE682, false);
 }
 
 
@@ -102,7 +103,7 @@ void CheckSizeof::sizeofForArrayParameterError(const Token *tok)
                 "         return sizeof(a);\n"
                 "     }\n"
                 "returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 100 (the "
-                "size of the array in bytes)."
+                "size of the array in bytes).", CWE467, false
                );
 }
 
@@ -235,13 +236,13 @@ void CheckSizeof::sizeofForPointerError(const Token *tok, const std::string &var
                 "Size of pointer '" + varname + "' used instead of size of its data.\n"
                 "Size of pointer '" + varname + "' used instead of size of its data. "
                 "This is likely to lead to a buffer overflow. You probably intend to "
-                "write 'sizeof(*" + varname + ")'.");
+                "write 'sizeof(*" + varname + ")'.", CWE467, false);
 }
 
 void CheckSizeof::divideBySizeofError(const Token *tok, const std::string &memfunc)
 {
     reportError(tok, Severity::warning, "sizeofDivisionMemfunc",
-                "Division by result of sizeof(). " + memfunc + "() expects a size in bytes, did you intend to multiply instead?");
+                "Division by result of sizeof(). " + memfunc + "() expects a size in bytes, did you intend to multiply instead?", CWE682, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -265,7 +266,7 @@ void CheckSizeof::sizeofsizeofError(const Token *tok)
                 "sizeofsizeof", "Calling 'sizeof' on 'sizeof'.\n"
                 "Calling sizeof for 'sizeof looks like a suspicious code and "
                 "most likely there should be just one 'sizeof'. The current "
-                "code is equivalent to 'sizeof(size_t)'");
+                "code is equivalent to 'sizeof(size_t)'", CWE682, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -300,7 +301,7 @@ void CheckSizeof::sizeofCalculation()
 void CheckSizeof::sizeofCalculationError(const Token *tok, bool inconclusive)
 {
     reportError(tok, Severity::warning,
-                "sizeofCalculation", "Found calculation inside sizeof().", CWE(0U), inconclusive);
+                "sizeofCalculation", "Found calculation inside sizeof().", CWE682, inconclusive);
 }
 
 //-----------------------------------------------------------------------------
@@ -379,19 +380,19 @@ void CheckSizeof::sizeofVoidError(const Token *tok)
 {
     const std::string message = "Behaviour of 'sizeof(void)' is not covered by the ISO C standard.";
     const std::string verbose = message + " A value for 'sizeof(void)' is defined only as part of a GNU C extension, which defines 'sizeof(void)' to be 1.";
-    reportError(tok, Severity::portability, "sizeofVoid", message + "\n" + verbose, CWE398, false);
+    reportError(tok, Severity::portability, "sizeofVoid", message + "\n" + verbose, CWE682, false);
 }
 
 void CheckSizeof::sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname)
 {
     const std::string message = "'*" + varname + "' is of type 'void', the behaviour of 'sizeof(void)' is not covered by the ISO C standard.";
     const std::string verbose = message + " A value for 'sizeof(void)' is defined only as part of a GNU C extension, which defines 'sizeof(void)' to be 1.";
-    reportError(tok, Severity::portability, "sizeofDereferencedVoidPointer", message + "\n" + verbose);
+    reportError(tok, Severity::portability, "sizeofDereferencedVoidPointer", message + "\n" + verbose, CWE682, false);
 }
 
 void CheckSizeof::arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype)
 {
     const std::string message = "'" + varname + "' is of type '" + vartype + "'. When using void pointers in calculations, the behaviour is undefined.";
     const std::string verbose = message + " Arithmetic operations on 'void *' is a GNU C extension, which defines the 'sizeof(void)' to be 1.";
-    reportError(tok, Severity::portability, "arithOperationsOnVoidPointer", message + "\n" + verbose);
+    reportError(tok, Severity::portability, "arithOperationsOnVoidPointer", message + "\n" + verbose, CWE467, false);
 }
