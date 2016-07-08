@@ -33,8 +33,8 @@ namespace {
 
 // CWE IDs used:
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE467(467U);	// Use of sizeof() on a Pointer Type
-static const struct CWE CWE682(682U);	// Incorrect Calculation
+static const struct CWE CWE467(467U);   // Use of sizeof() on a Pointer Type
+static const struct CWE CWE682(682U);   // Incorrect Calculation
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckSizeof::checkSizeofForNumericParameter()

@@ -4659,7 +4659,7 @@ void Tokenizer::simplifyCompoundAssignment()
                 // Only enclose rhs in parentheses if there is some operator
                 bool someOperator = false;
                 for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "(")
+                    if (tok2->link() && Token::Match(tok2, "{|[|("))
                         tok2 = tok2->link();
 
                     if (Token::Match(tok2->next(), "[;)]")) {

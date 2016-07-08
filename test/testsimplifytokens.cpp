@@ -362,6 +362,9 @@ private:
 
         // #3469
         ASSERT_EQUALS("; a = a + ( b = 1 ) ;", tok("; a += b = 1;"));
+
+        // #7571
+        ASSERT_EQUALS("; foo = foo + [ & ] ( ) { } ;", tok("; foo += [&]() {int i;};"));
     }
 
 
