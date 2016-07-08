@@ -1260,7 +1260,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     const Token *rhs = enumerator.start->previous()->astOperand2();
 
                     // constant folding of expression:
-                    ValueFlow::valueFlowConstantFoldAST(rhs);
+                    ValueFlow::valueFlowConstantFoldAST(rhs, _settings);
 
                     // get constant folded value:
                     if (rhs && rhs->values.size() == 1U && rhs->values.front().isKnown()) {
@@ -1361,7 +1361,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         const Token *rhs = dimension.start->previous()->astOperand2();
 
                         // constant folding of expression:
-                        ValueFlow::valueFlowConstantFoldAST(rhs);
+                        ValueFlow::valueFlowConstantFoldAST(rhs, _settings);
 
                         // get constant folded value:
                         if (rhs && rhs->values.size() == 1U && rhs->values.front().isKnown()) {

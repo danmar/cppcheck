@@ -248,6 +248,7 @@ private:
         TEST_CASE(enum4);
         TEST_CASE(enum5);
         TEST_CASE(enum6);
+        TEST_CASE(enum7);
 
         TEST_CASE(isImplicitlyVirtual);
         TEST_CASE(isPure);
@@ -2467,6 +2468,54 @@ private:
         ASSERT(function->token->str() == "func");
         ASSERT(function->retDef && function->retDef->str() == "Enum");
         ASSERT(function->retType && function->retType->name() == "Enum");
+    }
+
+#define TEST(S) \
+        v = db->getVariableFromVarId(id++); \
+        ASSERT(v != nullptr); \
+        if (!v) \
+            return; \
+        ASSERT(v->isArray()); \
+        ASSERT_EQUALS(1U, v->dimensions().size()); \
+        ASSERT_EQUALS(S, v->dimension(0))
+
+    void enum7() {
+        GET_SYMBOL_DB("enum E { X };\n"
+                      "enum EC : char { C };\n"
+                      "enum ES : short { S };\n"
+                      "enum EI : int { I };\n"
+                      "enum EL : long { L };\n"
+                      "enum ELL : long long { LL };\n"
+                      "char array1[sizeof(E)];\n"
+                      "char array2[sizeof(X)];\n"
+                      "char array3[sizeof(EC)];\n"
+                      "char array4[sizeof(C)];\n"
+                      "char array5[sizeof(ES)];\n"
+                      "char array6[sizeof(S)];\n"
+                      "char array7[sizeof(EI)];\n"
+                      "char array8[sizeof(I)];\n"
+                      "char array9[sizeof(EL)];\n"
+                      "char array10[sizeof(L)];\n"
+                      "char array11[sizeof(ELL)];\n"
+                      "char array12[sizeof(LL)];\n");
+        ASSERT(db);
+        if (!db)
+            return;
+        ASSERT(db->getVariableListSize() == 13); // the first one is not used
+        const Variable * v;
+        unsigned int id = 1;
+        TEST(settings.sizeof_int);
+        TEST(settings.sizeof_int);
+        TEST(1);
+        TEST(1);
+        TEST(settings.sizeof_short);
+        TEST(settings.sizeof_short);
+        TEST(settings.sizeof_int);
+        TEST(settings.sizeof_int);
+        TEST(settings.sizeof_long);
+        TEST(settings.sizeof_long);
+        TEST(settings.sizeof_long_long);
+        TEST(settings.sizeof_long_long);
     }
 
     void isImplicitlyVirtual() {

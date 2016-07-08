@@ -40,6 +40,10 @@ public:
         _settings = settings;
     }
 
+    const Settings *getSettings() const {
+        return _settings;
+    }
+
     /** @return the source file path. e.g. "file.cpp" */
     const std::string& getSourceFilePath() const;
 
