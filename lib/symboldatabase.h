@@ -1064,6 +1064,13 @@ public:
     /** Set valuetype in provided tokenlist */
     static void setValueTypeInTokenList(Token *tokens, bool cpp, char defaultSignedness, const Library* lib);
 
+    /**
+     * Calculates sizeof value for given type.
+     * @param type Token which will contain e.g. "int", "*", or string.
+     * @return sizeof for given type, or 0 if it can't be calculated.
+     */
+    unsigned int sizeOfType(const Token *type) const;
+
 private:
     friend class Scope;
     friend class Function;

@@ -4070,6 +4070,20 @@ bool SymbolDatabase::isReservedName(const std::string& iName) const
         return c_keywords.find(iName) != c_keywords.cend();
 }
 
+unsigned int SymbolDatabase::sizeOfType(const Token *type) const
+{
+    unsigned int size = _tokenizer->sizeOfType(type);
+
+    if (size == 0 && type->type() && type->type()->isEnumType()) {
+        size = _settings->sizeof_int;
+        const Token * enum_type = type->type()->classScope->enumType;
+        if (enum_type)
+            size = _tokenizer->sizeOfType(enum_type);
+    }
+
+    return size;
+}
+
 static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness, const Library* lib);
 static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, ValueType::Sign defaultSignedness, const Library* lib);
 

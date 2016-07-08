@@ -2913,6 +2913,22 @@ private:
               "  delete [] buf;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Array 'buf[9]' accessed at index 9, which is out of bounds.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    enum E { Size = 10 };\n"
+              "    char *s; s = new char[Size];\n"
+              "    s[Size] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 's[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    enum E { };\n"
+              "    E *e; e = new E[10];\n"
+              "    s[10] = 0;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array 's[10]' accessed at index 10, which is out of bounds.\n", "", errout.str());
     }
 
     // data is allocated with malloc
@@ -2957,6 +2973,27 @@ private:
               "  free(tab4);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    enum E { Size = 20 };\n"
+              "    E *tab4 = malloc(Size * 4);\n"
+              "    tab4[Size] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'tab4[20]' accessed at index 20, which is out of bounds.\n", errout.str());
+
+        check("void f() {\n"
+              "    enum E { Size = 20 };\n"
+              "    E *tab4 = malloc(4 * Size);\n"
+              "    tab4[Size] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'tab4[20]' accessed at index 20, which is out of bounds.\n", errout.str());
+
+        check("void f() {\n"
+              "    enum E { };\n"
+              "    E *tab4 = malloc(20 * sizeof(E));\n"
+              "    tab4[20] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'tab4[20]' accessed at index 20, which is out of bounds.\n", errout.str());
     }
 
     // statically allocated buffer
