@@ -101,7 +101,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                              tok2->next()->link()->strAt(1) == ";")
                         tok = tok2->next()->link()->next();
                     // skip variable declaration
-                    else if (Token::Match(tok2, "*|&"))
+                    else if (Token::Match(tok2, "*|&|>"))
                         continue;
                     else
                         break; // bail
