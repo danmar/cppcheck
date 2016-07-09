@@ -275,7 +275,7 @@ bool Settings::platformFile(const std::string &filename)
 {
     // open file..
     tinyxml2::XMLDocument doc;
-    if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_NO_ERROR)
+    if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_SUCCESS)
         return false;
 
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();

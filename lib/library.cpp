@@ -92,7 +92,7 @@ Library::Error Library::load(const char exename[], const char path[])
     } else
         absolute_path = Path::getAbsoluteFilePath(path);
 
-    if (error == tinyxml2::XML_NO_ERROR) {
+    if (error == tinyxml2::XML_SUCCESS) {
         if (_files.find(absolute_path) == _files.end()) {
             Error err = load(doc);
             if (err.errorcode == OK)
@@ -109,7 +109,7 @@ Library::Error Library::load(const char exename[], const char path[])
 bool Library::loadxmldata(const char xmldata[], std::size_t len)
 {
     tinyxml2::XMLDocument doc;
-    return (tinyxml2::XML_NO_ERROR == doc.Parse(xmldata, len)) && (load(doc).errorcode == OK);
+    return (tinyxml2::XML_SUCCESS == doc.Parse(xmldata, len)) && (load(doc).errorcode == OK);
 }
 
 Library::Error Library::load(const tinyxml2::XMLDocument &doc)
@@ -161,10 +161,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     AllocFunc temp;
                     temp.groupId = allocationId;
 
-                    const char *init = memorynode->Attribute("init");
-                    if (init && strcmp(init,"false")==0) {
+                    if (memorynode->Attribute("init", "false"))
                         returnuninitdata.insert(memorynode->GetText());
-                    }
+
                     const char *arg = memorynode->Attribute("arg");
                     if (arg)
                         temp.arg = atoi(arg);
@@ -234,10 +233,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 return Error(MISSING_ATTRIBUTE, "ext");
             _markupExtensions.insert(extension);
 
-            const char * const reporterrors = node->Attribute("reporterrors");
-            _reporterrors[extension] = (reporterrors && strcmp(reporterrors, "true") == 0);
-            const char * const aftercode = node->Attribute("aftercode");
-            _processAfterCode[extension] = (aftercode && strcmp(aftercode, "true") == 0);
+            _reporterrors[extension] = (node->Attribute("reporterrors", "true") != nullptr);
+            _processAfterCode[extension] = (node->Attribute("aftercode", "true") != nullptr);
 
             for (const tinyxml2::XMLElement *markupnode = node->FirstChildElement(); markupnode; markupnode = markupnode->NextSiblingElement()) {
                 const std::string markupnodename = markupnode->Name();
@@ -339,9 +336,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char* const itEndPattern = node->Attribute("itEndPattern");
             if (itEndPattern)
                 container.itEndPattern = itEndPattern;
-            const char* const opLessAllowed = node->Attribute("opLessAllowed");
-            if (opLessAllowed)
-                container.opLessAllowed = std::string(opLessAllowed) == "true";
+            container.opLessAllowed = (node->Attribute("opLessAllowed", "true") != nullptr);
 
             for (const tinyxml2::XMLElement *containerNode = node->FirstChildElement(); containerNode; containerNode = containerNode->NextSiblingElement()) {
                 const std::string containerNodeName = containerNode->Name();
@@ -419,18 +414,14 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         if (templateArg)
                             container.size_templateArgNo = atoi(templateArg);
                     } else if (containerNodeName == "access") {
-                        const char* const indexArg = containerNode->Attribute("indexOperator");
-                        if (indexArg)
-                            container.arrayLike_indexOp = std::string(indexArg) == "array-like";
+                        container.arrayLike_indexOp = (containerNode->Attribute("indexOperator", "array-like") != nullptr);
                     }
                 } else if (containerNodeName == "type") {
                     const char* const templateArg = containerNode->Attribute("templateParameter");
                     if (templateArg)
                         container.type_templateArgNo = atoi(templateArg);
 
-                    const char* const string = containerNode->Attribute("string");
-                    if (string)
-                        container.stdStringLike = std::string(string) == "std-like";
+                    container.stdStringLike = (containerNode->Attribute("string", "std-like") != nullptr);
                 } else
                     unknown_elements.insert(containerNodeName);
             }
