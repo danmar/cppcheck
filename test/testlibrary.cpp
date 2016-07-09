@@ -34,6 +34,7 @@ private:
         TEST_CASE(function);
         TEST_CASE(function_match_scope);
         TEST_CASE(function_match_args);
+        TEST_CASE(function_match_args_default);
         TEST_CASE(function_match_var);
         TEST_CASE(function_arg);
         TEST_CASE(function_arg_any);
@@ -126,11 +127,62 @@ private:
         TokenList tokenList(nullptr);
         std::istringstream istr("foo();"); // <- too few arguments, not library function
         tokenList.createTokens(istr);
-        tokenList.front()->next()->astOperand1(tokenList.front());
+        Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
+        tokenList.createAst();
 
         Library library;
         readLibrary(library, xmldata);
         ASSERT(library.isNotLibraryFunction(tokenList.front()));
+    }
+
+    void function_match_args_default() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"foo\">\n"
+                               "    <arg nr=\"1\"/>"
+                               "    <arg nr=\"2\" default=\"0\"/>"
+                               "  </function>\n"
+                               "</def>";
+
+        Library library;
+        readLibrary(library, xmldata);
+
+        {
+            TokenList tokenList(nullptr);
+            std::istringstream istr("foo();"); // <- too few arguments, not library function
+            tokenList.createTokens(istr);
+            Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
+            tokenList.createAst();
+
+            ASSERT(library.isNotLibraryFunction(tokenList.front()));
+        }
+        {
+            TokenList tokenList(nullptr);
+            std::istringstream istr("foo(a);"); // <- library function
+            tokenList.createTokens(istr);
+            Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
+            tokenList.createAst();
+
+            ASSERT(!library.isNotLibraryFunction(tokenList.front()));
+        }
+        {
+            TokenList tokenList(nullptr);
+            std::istringstream istr("foo(a, b);"); // <- library function
+            tokenList.createTokens(istr);
+            Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
+            tokenList.createAst();
+
+            ASSERT(!library.isNotLibraryFunction(tokenList.front()));
+        }
+        {
+            TokenList tokenList(nullptr);
+            std::istringstream istr("foo(a, b, c);"); // <- too much arguments, not library function
+            tokenList.createTokens(istr);
+            Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
+            tokenList.createAst();
+
+            ASSERT(library.isNotLibraryFunction(tokenList.front()));
+        }
     }
 
     void function_match_var() const {
@@ -160,7 +212,7 @@ private:
                                "    <arg nr=\"2\"><not-null/></arg>\n"
                                "    <arg nr=\"3\"><formatstr/></arg>\n"
                                "    <arg nr=\"4\"><strz/></arg>\n"
-                               "    <arg nr=\"5\"><not-bool/></arg>\n"
+                               "    <arg nr=\"5\" default=\"0\"><not-bool/></arg>\n"
                                "  </function>\n"
                                "</def>";
 
@@ -170,7 +222,9 @@ private:
         ASSERT_EQUALS(true, library.argumentChecks["foo"][2].notnull);
         ASSERT_EQUALS(true, library.argumentChecks["foo"][3].formatstr);
         ASSERT_EQUALS(true, library.argumentChecks["foo"][4].strz);
+        ASSERT_EQUALS(false, library.argumentChecks["foo"][4].optional);
         ASSERT_EQUALS(true, library.argumentChecks["foo"][5].notbool);
+        ASSERT_EQUALS(true, library.argumentChecks["foo"][5].optional);
     }
 
     void function_arg_any() const {

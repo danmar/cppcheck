@@ -336,7 +336,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char* const itEndPattern = node->Attribute("itEndPattern");
             if (itEndPattern)
                 container.itEndPattern = itEndPattern;
-            container.opLessAllowed = (node->Attribute("opLessAllowed", "true") != nullptr);
+            const char* const opLessAllowed = node->Attribute("opLessAllowed");
+            if (opLessAllowed)
+                container.opLessAllowed = std::string(opLessAllowed) == "true";
 
             for (const tinyxml2::XMLElement *containerNode = node->FirstChildElement(); containerNode; containerNode = containerNode->NextSiblingElement()) {
                 const std::string containerNodeName = containerNode->Name();
@@ -414,14 +416,18 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         if (templateArg)
                             container.size_templateArgNo = atoi(templateArg);
                     } else if (containerNodeName == "access") {
-                        container.arrayLike_indexOp = (containerNode->Attribute("indexOperator", "array-like") != nullptr);
+                        const char* const indexArg = containerNode->Attribute("indexOperator");
+                        if (indexArg)
+                            container.arrayLike_indexOp = std::string(indexArg) == "array-like";
                     }
                 } else if (containerNodeName == "type") {
                     const char* const templateArg = containerNode->Attribute("templateParameter");
                     if (templateArg)
                         container.type_templateArgNo = atoi(templateArg);
 
-                    container.stdStringLike = (containerNode->Attribute("string", "std-like") != nullptr);
+                    const char* const string = containerNode->Attribute("string");
+                    if (string)
+                        container.stdStringLike = std::string(string) == "std-like";
                 } else
                     unknown_elements.insert(containerNodeName);
             }
@@ -530,9 +536,12 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             leakignore.insert(name);
         else if (functionnodename == "use-retval")
             _useretval.insert(name);
-        else if (functionnodename == "arg" && functionnode->Attribute("nr") != nullptr) {
-            const bool bAnyArg = strcmp(functionnode->Attribute("nr"),"any")==0;
-            const int nr = (bAnyArg) ? -1 : atoi(functionnode->Attribute("nr"));
+        else if (functionnodename == "arg") {
+            const char* argNrString = functionnode->Attribute("nr");
+            if (!argNrString)
+                return Error(MISSING_ATTRIBUTE, "nr");
+            const bool bAnyArg = strcmp(argNrString, "any")==0;
+            const int nr = (bAnyArg) ? -1 : atoi(argNrString);
             bool notbool = false;
             bool notnull = false;
             bool notuninit = false;
@@ -620,6 +629,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             argumentChecks[name][nr].notuninit = notuninit;
             argumentChecks[name][nr].formatstr = formatstr;
             argumentChecks[name][nr].strz      = strz;
+            argumentChecks[name][nr].optional  = functionnode->Attribute("default") != nullptr;
         } else if (functionnodename == "ignorefunction") {
             _ignorefunction.insert(name);
         } else if (functionnodename == "formatstr") {
@@ -894,13 +904,17 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
     if (it == argumentChecks.end())
         return (callargs != 0);
     int args = 0;
+    int firstOptionalArg = -1;
     for (std::map<int, ArgumentChecks>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
         if (it2->first > args)
             args = it2->first;
+        if (it2->second.optional && (firstOptionalArg == -1 || firstOptionalArg > it2->first))
+            firstOptionalArg = it2->first;
+
         if (it2->second.formatstr)
             return args > callargs;
     }
-    return args != callargs;
+    return (firstOptionalArg < 0) ? args != callargs : !(callargs >= firstOptionalArg-1 && callargs <= args);
 }
 
 const Library::WarnInfo* Library::getWarnInfo(const Token* ftok) const

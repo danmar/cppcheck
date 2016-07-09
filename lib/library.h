@@ -226,7 +226,8 @@ public:
             notnull(false),
             notuninit(false),
             formatstr(false),
-            strz(false) {
+            strz(false),
+            optional(false) {
         }
 
         bool         notbool;
@@ -234,6 +235,7 @@ public:
         bool         notuninit;
         bool         formatstr;
         bool         strz;
+        bool         optional;
         std::string  valid;
 
         class MinSize {

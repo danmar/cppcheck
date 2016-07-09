@@ -1417,7 +1417,7 @@ private:
                   "        ;\n"
                   "}");
 
-            ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
+            ASSERT_EQUALS_MSG("[test.cpp:4]: (error) Dangerous comparison using operator< on iterator.\n", errout.str(), stlCont[i]);
         }
 
         check("void f() {\n"
