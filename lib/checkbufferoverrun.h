@@ -63,7 +63,7 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.checkGlobalAndLocalVariable();
-        if (_tokenizer && _tokenizer->isMaxTime())
+        if (tokenizer && tokenizer->isMaxTime())
             return;
         checkBufferOverrun.checkStructVariable();
         checkBufferOverrun.checkBufferAllocatedWithStrlen();
