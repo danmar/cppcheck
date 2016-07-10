@@ -1435,23 +1435,22 @@ void CheckStl::readingEmptyStlContainer_parseUsage(const Token* tok, const Libra
         } else if (!noerror)
             readingEmptyStlContainerError(tok);
     } else if (Token::Match(tok, "%name% . %type% (")) {
-        const Library::Container::Yield yield = container->getYield(tok->strAt(2));
-        const Token* parent = tok->tokAt(3)->astParent();
         // Member function call
-        if (yield != Library::Container::NO_YIELD &&
-            ((yield != Library::Container::ITERATOR &&
-              yield != Library::Container::START_ITERATOR &&
-              yield != Library::Container::END_ITERATOR) || !parent || Token::Match(parent, "%cop%|=|*"))) { // These functions read from the container
-            if (!noerror)
-                readingEmptyStlContainerError(tok);
-        } else {
-            const Library::Container::Action action = container->getAction(tok->strAt(2));
-            if (action == Library::Container::FIND || action == Library::Container::ERASE || action == Library::Container::POP || action == Library::Container::CLEAR) {
-                if (!noerror)
-                    readingEmptyStlContainerError(tok);
-            } else
-                empty.erase(tok->varId());
+        const Library::Container::Action action = container->getAction(tok->strAt(2));
+        if ((action == Library::Container::FIND || action == Library::Container::ERASE || action == Library::Container::POP || action == Library::Container::CLEAR) && !noerror) {
+            readingEmptyStlContainerError(tok);
+            return;
         }
+
+        const Token* parent = tok->tokAt(3)->astParent();
+        const Library::Container::Yield yield = container->getYield(tok->strAt(2));
+        bool yieldsIterator = (yield == Library::Container::ITERATOR || yield == Library::Container::START_ITERATOR || yield == Library::Container::END_ITERATOR);
+        if (yield != Library::Container::NO_YIELD &&
+            (!parent || Token::Match(parent, "%cop%|*") || parent->isAssignmentOp() || !yieldsIterator)) { // These functions read from the container
+            if (!noerror && (!yieldsIterator || !parent || !parent->isAssignmentOp()))
+                readingEmptyStlContainerError(tok);
+        } else
+            empty.erase(tok->varId());
     } else if (tok->strAt(-1) == "=") {
         // Assignment (RHS)
         if (!noerror)
