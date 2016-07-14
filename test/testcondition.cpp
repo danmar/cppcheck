@@ -655,6 +655,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        //TRAC #7567: "(a | 7) > 6U" is always true for unsigned a
+        check("void f(unsigned int a) {\n"
+              "assert( (a | 0x7) > 6U );\n" // statement always true for unsigned a
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) > 0x6' is always true.\n",
+                      errout.str());
+
         //TRAC #7522 false positive: condition '(X|7)>=6' is correct (X can be negative)
         check("void f() {\n"
               "assert( (a | 0x07) >= 6U );\n" // statement correct (X can be negative)
