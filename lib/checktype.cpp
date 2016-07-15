@@ -36,8 +36,9 @@ namespace {
 //
 
 // CWE ids used:
-static const struct CWE CWE758(758U);
-static const struct CWE CWE190(190U);
+static const struct CWE CWE195(195U);	// Signed to Unsigned Conversion Error
+static const struct CWE CWE758(758U);	// Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const struct CWE CWE190(190U);	// Integer Overflow or Wraparound
 
 
 void CheckType::checkTooBigBitwiseShift()
@@ -207,7 +208,7 @@ void CheckType::signConversionError(const Token *tok, const bool constvalue)
                 "signConversion",
                 (constvalue) ?
                 "Suspicious code: sign conversion of " + varname + " in calculation because '" + varname + "' has a negative value" :
-                "Suspicious code: sign conversion of " + varname + " in calculation, even though " + varname + " can have a negative value");
+                "Suspicious code: sign conversion of " + varname + " in calculation, even though " + varname + " can have a negative value", CWE195, false);
 }
 
 
