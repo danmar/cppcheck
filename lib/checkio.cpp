@@ -1168,6 +1168,10 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             if (!typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
                                                 invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                             break;
+                                        case 'L':
+                                            if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            break;
                                         default:
                                             if (!Token::Match(argInfo.typeToken, "bool|char|short|int"))
                                                 invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
@@ -1228,6 +1232,10 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
                                                     invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                             } else if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'L':
+                                            if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                 invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                             break;
                                         default:

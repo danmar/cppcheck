@@ -2193,6 +2193,13 @@ private:
               "    printf(\"%d\", s.x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #7601
+        check("void foo(int i, unsigned int ui, long long ll, unsigned long long ull) {\n"
+              "    printf(\"%Ld %Lu %Ld %Lu\", i, ui, ll, ull);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %Ld in format string (no. 1) requires 'long long' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %Lu in format string (no. 2) requires 'unsigned long long' but the argument type is 'unsigned int'.\n", errout.str());
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
