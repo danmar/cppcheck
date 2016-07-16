@@ -30,7 +30,7 @@
 // Register this check class
 CheckUnusedFunctions CheckUnusedFunctions::instance;
 
-static const struct CWE CWE561(561U);	// Dead Code
+static const struct CWE CWE561(561U);   // Dead Code
 
 
 //---------------------------------------------------------------------------

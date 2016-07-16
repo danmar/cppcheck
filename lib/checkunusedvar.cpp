@@ -29,7 +29,7 @@ namespace {
     CheckUnusedVar instance;
 }
 
-static const struct CWE CWE563(563U);	// Assignment to Variable without Use ('Unused Variable')
+static const struct CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
 
 
 /**

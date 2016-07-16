@@ -36,9 +36,9 @@ namespace {
 //
 
 // CWE ids used:
-static const struct CWE CWE195(195U);	// Signed to Unsigned Conversion Error
-static const struct CWE CWE758(758U);	// Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const struct CWE CWE190(190U);	// Integer Overflow or Wraparound
+static const struct CWE CWE195(195U);   // Signed to Unsigned Conversion Error
+static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const struct CWE CWE190(190U);   // Integer Overflow or Wraparound
 
 
 void CheckType::checkTooBigBitwiseShift()
