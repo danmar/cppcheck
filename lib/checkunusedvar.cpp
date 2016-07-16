@@ -29,6 +29,9 @@ namespace {
     CheckUnusedVar instance;
 }
 
+static const struct CWE CWE563(563U);	// Assignment to Variable without Use ('Unused Variable')
+
+
 /**
  * @brief This class is used create a list of variables within a function.
  */
@@ -1192,7 +1195,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
 void CheckUnusedVar::unusedVariableError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::style, "unusedVariable", "Unused variable: " + varname);
+    reportError(tok, Severity::style, "unusedVariable", "Unused variable: " + varname, CWE563, false);
 }
 
 void CheckUnusedVar::allocatedButUnusedVariableError(const Token *tok, const std::string &varname)
