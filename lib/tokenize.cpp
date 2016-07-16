@@ -6024,18 +6024,16 @@ void Tokenizer::simplifyVariableMultipleAssign()
 }
 
 // Binary operators simplification map
-namespace {
-    const std::map<std::string, std::string> cAlternativeTokens = make_container< std::map<std::string, std::string> >()
-            << std::make_pair("and", "&&")
-            << std::make_pair("and_eq", "&=")
-            << std::make_pair("bitand", "&")
-            << std::make_pair("bitor", "|")
-            << std::make_pair("not_eq", "!=")
-            << std::make_pair("or", "||")
-            << std::make_pair("or_eq", "|=")
-            << std::make_pair("xor", "^")
-            << std::make_pair("xor_eq", "^=") ;
-}
+static const std::map<std::string, std::string> cAlternativeTokens = make_container< std::map<std::string, std::string> >()
+        << std::make_pair("and", "&&")
+        << std::make_pair("and_eq", "&=")
+        << std::make_pair("bitand", "&")
+        << std::make_pair("bitor", "|")
+        << std::make_pair("not_eq", "!=")
+        << std::make_pair("or", "||")
+        << std::make_pair("or_eq", "|=")
+        << std::make_pair("xor", "^")
+        << std::make_pair("xor_eq", "^=") ;
 
 // Simplify the C alternative tokens:
 //  and      =>     &&
@@ -6051,10 +6049,10 @@ namespace {
 //  xor_eq   =>     ^=
 bool Tokenizer::simplifyCAlternativeTokens()
 {
-    if (!isC())
-        return false;
+    // In C these are optional macros (iso646.h). In C++ these are builtin keywords.
+    bool cpp = isCPP();
 
-    /* For C code: executable scope level */
+    /* executable scope level */
     unsigned int executableScopeLevel = 0;
 
     bool ret = false;
@@ -6076,15 +6074,15 @@ bool Tokenizer::simplifyCAlternativeTokens()
 
         const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
         if (cOpIt != cAlternativeTokens.end()) {
-            if (!Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
+            if (!cpp && !Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
                 continue;
             tok->str(cOpIt->second);
             ret = true;
         } else if (Token::Match(tok, "not|compl")) {
             // Don't simplify 'not p;' (in case 'not' is a type)
-            if (!Token::Match(tok->next(), "%name%|(") ||
-                Token::Match(tok->previous(), "[;{}]") ||
-                (executableScopeLevel == 0U && tok->strAt(-1) == "("))
+            if (!cpp && (!Token::Match(tok->next(), "%name%|(") ||
+                         Token::Match(tok->previous(), "[;{}]") ||
+                         (executableScopeLevel == 0U && tok->strAt(-1) == "(")))
                 continue;
             tok->str((tok->str() == "not") ? "!" : "~");
             ret = true;
