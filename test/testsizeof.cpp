@@ -623,6 +623,12 @@ private:
               "    return malloc(num / sizeof(Foo));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Division by result of sizeof(). malloc() expects a size in bytes, did you intend to multiply instead?\n", errout.str());
+
+        check("void f() {\n"
+              "  char str[100];\n"
+              "  strncpy(str, xyz, sizeof(str)/sizeof(str[0]));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sizeofVoid() {

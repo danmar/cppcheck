@@ -157,6 +157,8 @@ void CheckSizeof::checkSizeofForPointerSize()
 
             if (tokFunc && tokSize) {
                 for (const Token* tok2 = tokSize; tok2 != tokFunc->linkAt(1); tok2 = tok2->next()) {
+                    if (tok2->str() == "sizeof")
+                        break;
                     if (Token::simpleMatch(tok2, "/ sizeof"))
                         divideBySizeofError(tok2, tokFunc->str());
                 }
