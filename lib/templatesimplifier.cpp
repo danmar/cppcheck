@@ -1032,9 +1032,9 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                 const Token *tok2 = tok;
                 bool andAnd = (tok->next()->str() == "&&");
                 for (; tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "(")
+                    if (tok2->str() == "(" || tok2->str() == "[")
                         ++par;
-                    else if (tok2->str() == ")") {
+                    else if (tok2->str() == ")" || tok2->str() == "]") {
                         if (par == 0)
                             break;
                         --par;
