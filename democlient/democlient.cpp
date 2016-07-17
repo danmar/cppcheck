@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <algorithm>
+#include <iostream>
 
 #include "cppcheck.h"
 #include "version.h"
@@ -14,7 +14,7 @@ static void unencode(const char *src, char *dest)
             *dest = ' ';
         else if (*src == '%') {
             unsigned int code;
-            if (sscanf(src+1, "%2x", &code) != 1)
+            if (std::sscanf(src+1, "%2x", &code) != 1)
                 code = '?';
             *dest = code;
             src += 2;
@@ -24,6 +24,7 @@ static void unencode(const char *src, char *dest)
     *dest = '\0';
 }
 
+static FILE *logfile = nullptr;
 
 class CppcheckExecutor : public ErrorLogger {
 private:
@@ -33,38 +34,31 @@ private:
 public:
     CppcheckExecutor()
         : ErrorLogger()
-        , stoptime(std::time(NULL)+2U)
-        , cppcheck(*this,false) {
+        , stoptime(std::time(nullptr)+2U)
+        , cppcheck(*this, false) {
         cppcheck.settings().addEnabled("all");
         cppcheck.settings().inconclusive = true;
     }
 
     void run(const char code[]) {
-        cppcheck.check("test.c", code);
+        cppcheck.check("test.cpp", code);
     }
 
     void reportOut(const std::string &outmsg) { }
     void reportErr(const ErrorLogger::ErrorMessage &msg) {
         const std::string s = msg.toString(true);
 
-        printf("%s\n", s.c_str());
+        std::cout << s << std::endl;
 
-        FILE *logfile = fopen("democlient.log", "at");
-        if (logfile != NULL) {
-            fprintf(logfile, "%s\n", s.c_str());
-            fclose(logfile);
-        }
+        if (logfile != nullptr)
+            std::fprintf(logfile, "%s\n", s.c_str());
     }
 
-    void reportProgress(const
-                        std::string &filename,
+    void reportProgress(const std::string& filename,
                         const char stage[],
                         const unsigned int value) {
-        if (std::time(NULL) >= stoptime) {
-            printf("time to analyse the "
-                   "code is more than 1 "
-                   "second. terminating."
-                   "\n\n");
+        if (std::time(nullptr) >= stoptime) {
+            std::cout << "Time to analyse the code exceeded 2 seconds. Terminating.\n\n";
             cppcheck.terminate();
         }
     }
@@ -73,21 +67,23 @@ public:
 
 int main()
 {
+    std::cout << "Content-type: text/html\r\n\r\n"
+              << "<!DOCTYPE html>\n";
+
     char data[4096] = {0};
 
-    const char *query_string = getenv("QUERY_STRING");
+    const char *query_string = std::getenv("QUERY_STRING");
     if (query_string)
         std::strncpy(data, query_string, sizeof(data)-2);
 
-    const char *lenstr = getenv("CONTENT_LENGTH");
+    const char *lenstr = std::getenv("CONTENT_LENGTH");
     if (lenstr) {
-        int len = std::min(1 + atoi(lenstr), (int)(sizeof(data) - 2));
-        fgets(data, len, stdin);
+        int len = std::min(1 + std::atoi(lenstr), (int)(sizeof(data) - 2));
+        std::fgets(data, len, stdin);
     }
 
     if (data[4000] != '\0') {
-        puts("Content-type: text/html\r\n\r\n");
-        puts("<html><body>For performance reasons the code must be shorter than 1000 chars.</body></html>");
+        std::cout << "<html><body>For performance reasons the code must be shorter than 1000 chars.</body></html>";
         return EXIT_SUCCESS;
     }
 
@@ -98,19 +94,18 @@ int main()
     char code[4096] = {0};
     unencode(pdata, code);
 
-    FILE *logfile = fopen("democlient.log", "at");
-    if (logfile != NULL) {
-        fprintf(logfile, "===========================================================\n%s\n", code);
-        fclose(logfile);
-    }
+    logfile = std::fopen("democlient.log", "at");
+    if (logfile != nullptr)
+        std::fprintf(logfile, "===========================================================\n%s\n", code);
 
-    puts("Content-type: text/html\r\n\r\n");
-    puts("<html><body>Cppcheck version " CPPCHECK_VERSION_STRING "<pre>");
+    std::cout << "<html><body>Cppcheck " CPPCHECK_VERSION_STRING "<pre>";
 
     CppcheckExecutor cppcheckExecutor;
     cppcheckExecutor.run(code);
 
-    puts("</pre>Done!</body></html>");
+    std::fclose(logfile);
+
+    std::cout << "</pre>Done!</body></html>";
 
     return EXIT_SUCCESS;
 }
