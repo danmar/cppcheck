@@ -157,10 +157,17 @@ void CheckSizeof::checkSizeofForPointerSize()
 
             if (tokFunc && tokSize) {
                 for (const Token* tok2 = tokSize; tok2 != tokFunc->linkAt(1); tok2 = tok2->next()) {
-                    if (tok2->str() == "sizeof")
-                        break;
-                    if (Token::simpleMatch(tok2, "/ sizeof"))
+                    if (Token::simpleMatch(tok2, "/ sizeof")) {
+                        // Allow division with sizeof(char)
+                        if (Token::simpleMatch(tok2->next(), "sizeof (")) {
+                            const Token *sztok = tok2->tokAt(2)->astOperand2();
+                            const ValueType *vt = ((sztok != nullptr) ? sztok->valueType() : nullptr);
+                            if (vt && vt->type == ValueType::CHAR && vt->pointer == 0)
+                                continue;
+                        }
+
                         divideBySizeofError(tok2, tokFunc->str());
+                    }
                 }
             }
 
