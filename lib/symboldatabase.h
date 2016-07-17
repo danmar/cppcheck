@@ -1079,7 +1079,7 @@ private:
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **info, const Token **tok);
-    bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart) const;
+    bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
     const Type *findTypeInNested(const Token *tok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
     Function *findFunctionInScope(const Token *func, const Scope *ns);

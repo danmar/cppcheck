@@ -79,6 +79,11 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
             tok = tok->linkAt(1)->next();
         if (Token::Match(tok, "%name% (") && tok->isUpperCaseName())
             tok = tok->linkAt(1)->next();
+        if (tok && tok->str() == ".") { // trailing return type
+            for (tok = tok->next(); tok && !Token::Match(tok, "[;{]"); tok = tok->next())
+                if (tok->link() && Token::Match(tok, "<|[|("))
+                    tok = tok->link();
+        }
         if (Token::Match(tok, "= 0|default|delete ;"))
             tok = tok->tokAt(2);
         return (tok && endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
