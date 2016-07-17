@@ -838,6 +838,22 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 8U, "\"\""));
         ASSERT_EQUALS(false, testValueOfX(code, 9U, "\"\""));
 
+        code = "void f() {\n" // #7599
+               "  t *x = 0;\n"
+               "  y = (a ? 1 : x\n" // <- x is 0
+               "       && x->y ? 1 : 2);" // <- x is not 0
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "void f() {\n" // #7599
+               "  t *x = 0;\n"
+               "  y = (a ? 1 : !x\n" // <- x is 0
+               "       || x->y ? 1 : 2);" // <- x is not 0
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
         // if/else
         code = "void f() {\n"
                "    int x = 123;\n"

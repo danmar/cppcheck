@@ -1069,6 +1069,23 @@ static void valueFlowAST(Token *tok, unsigned int varid, const ValueFlow::Value 
     if (tok->varId() == varid)
         setTokenValue(tok, value);
     valueFlowAST(const_cast<Token*>(tok->astOperand1()), varid, value);
+    if (tok->str() == "&&" && tok->astOperand1() && tok->astOperand1()->getValue(0)) {
+        ProgramMemory pm;
+        pm.setValue(varid,value);
+        if (conditionIsFalse(tok->astOperand1(), pm))
+            return;
+    } else if (tok->str() == "||" && tok->astOperand1()) {
+        bool nonzero = false;
+        for (std::list<ValueFlow::Value>::const_iterator it = tok->astOperand1()->values.begin(); it != tok->astOperand1()->values.end(); ++it) {
+            nonzero |= (it->intvalue != 0);
+        }
+        if (!nonzero)
+            return;
+        ProgramMemory pm;
+        pm.setValue(varid,value);
+        if (conditionIsTrue(tok->astOperand1(), pm))
+            return;
+    }
     valueFlowAST(const_cast<Token*>(tok->astOperand2()), varid, value);
 }
 
@@ -1446,6 +1463,7 @@ static bool valueFlowForward(Token * const               startToken,
                         valueFlowAST(const_cast<Token*>(op2), varid, *it);
                 }
             }
+
             // Skip conditional expressions..
             while (tok2->astOperand1() || tok2->astOperand2()) {
                 if (tok2->astOperand2())
