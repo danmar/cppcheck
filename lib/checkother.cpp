@@ -407,6 +407,13 @@ static bool nonLocal(const Variable* var)
     return !var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference();
 }
 
+static bool nonLocalVolatile(const Variable* var)
+{
+    if (var && var->isVolatile())
+        return false;
+    return nonLocal(var);
+}
+
 static void eraseNotLocalArg(std::map<unsigned int, const Token*>& container, const SymbolDatabase* symbolDatabase)
 {
     for (std::map<unsigned int, const Token*>::iterator i = container.begin(); i != container.end();) {
@@ -493,6 +500,18 @@ void CheckOther::checkRedundantAssignment()
                 varAssignments.clear();
                 memAssignments.clear();
             } else if (tok->tokType() == Token::eVariable && !Token::Match(tok, "%name% (")) {
+                const Token *eq = nullptr;
+                for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
+                    if (Token::Match(tok2, "[([]"))
+                        tok2 = tok2->link();
+                    else if (Token::Match(tok2, "[)];,]"))
+                        break;
+                    else if (tok2->str() == "=") {
+                        eq = tok2;
+                        break;
+                    }
+                }
+
                 // Set initialization flag
                 if (!Token::Match(tok, "%var% ["))
                     initialized.insert(tok->varId());
@@ -512,19 +531,48 @@ void CheckOther::checkRedundantAssignment()
                 }
 
                 std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
-                if (Token::simpleMatch(tok->next(), "=") && Token::Match(startToken, "[;{}]")) { // Assignment
+                if (eq && Token::Match(startToken, "[;{}]")) { // Assignment
                     if (it != varAssignments.end()) {
-                        bool error = true; // Ensure that variable is not used on right side
-                        for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-                            if (tok2->str() == ";")
+                        const Token *oldeq = nullptr;
+                        for (const Token *tok2 = it->second; tok2; tok2 = tok2->next()) {
+                            if (Token::Match(tok2, "[([]"))
+                                tok2 = tok2->link();
+                            else if (Token::Match(tok2, "[)];,]"))
                                 break;
-                            else if (tok2->varId() == tok->varId()) {
+                            else if (Token::Match(tok2, "++|--|=")) {
+                                oldeq = tok2;
+                                break;
+                            }
+                        }
+                        if (!oldeq) {
+                            const Token *tok2 = it->second;
+                            while (Token::Match(tok2, "%name%|.|[|*|("))
+                                tok2 = tok2->astParent();
+                            if (Token::Match(tok2, "++|--"))
+                                oldeq = tok2;
+                        }
+
+                        // Ensure that LHS in assignments are the same
+                        bool error = oldeq && isSameExpression(_tokenizer->isCPP(), true, eq->astOperand1(), oldeq->astOperand1(), _settings->library.functionpure);
+
+                        // Ensure that variable is not used on right side
+                        std::stack<const Token *> tokens;
+                        tokens.push(eq->astOperand2());
+                        while (!tokens.empty()) {
+                            const Token *rhs = tokens.top();
+                            tokens.pop();
+                            if (!rhs)
+                                continue;
+                            tokens.push(rhs->astOperand1());
+                            tokens.push(rhs->astOperand2());
+                            if (rhs->varId() == tok->varId()) {
                                 error = false;
                                 break;
-                            } else if (Token::Match(tok2, "%name% (") && nonLocal(tok->variable())) { // Called function might use the variable
-                                const Function* const func = tok2->function();
+                            }
+                            if (Token::Match(rhs->previous(), "%name% (") && nonLocalVolatile(tok->variable())) { // Called function might use the variable
+                                const Function* const func = rhs->function();
                                 const Variable* const var = tok->variable();
-                                if (!var || var->isGlobal() || var->isReference() || ((!func || func->nestedIn) && tok2->strAt(-1) != ".")) {// Global variable, or member function
+                                if (!var || var->isGlobal() || var->isReference() || ((!func || func->nestedIn) && rhs->strAt(-1) != ".")) {// Global variable, or member function
                                     error = false;
                                     break;
                                 }
@@ -532,13 +580,13 @@ void CheckOther::checkRedundantAssignment()
                         }
                         if (error) {
                             if (printWarning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
-                                redundantAssignmentInSwitchError(it->second, tok, tok->str());
+                                redundantAssignmentInSwitchError(it->second, tok, eq->astOperand1()->expressionString());
                             else if (printPerformance) {
                                 // See #7133
-                                const bool nonlocal = it->second->variable() && nonLocal(it->second->variable());
-                                if (printInconclusive || !nonlocal) // see #5089 - report inconclusive only when requested
+                                const bool nonlocal = it->second->variable() && nonLocalVolatile(it->second->variable());
+                                if (printInconclusive || !nonlocal) // report inconclusive only when requested
                                     if (_tokenizer->isC() || checkExceptionHandling(tok)) // see #6555 to see how exception handling might have an impact
-                                        redundantAssignmentError(it->second, tok, tok->str(), nonlocal); // Inconclusive for non-local variables
+                                        redundantAssignmentError(it->second, tok, eq->astOperand1()->expressionString(), nonlocal); // Inconclusive for non-local variables
                             }
                         }
                         it->second = tok;

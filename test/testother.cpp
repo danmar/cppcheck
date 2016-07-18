@@ -4907,6 +4907,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style, inconclusive) Variable 'i' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
 
+        check("void f() {\n"
+              "    int i[10];\n"
+              "    i[2] = 1;\n"
+              "    i[2] = 1;\n"
+              "}", nullptr, false, false, false);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'i[2]' is reassigned a value before the old one has been used.\n", errout.str());
+
         // Testing different types
         check("void f() {\n"
               "    Foo& bar = foo();\n"
@@ -5041,7 +5048,7 @@ private:
               "    x = 2;\n"
               "    x = z.g();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (style, inconclusive) Variable 'x' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // from #3103 (avoid a false negative)
         check("int foo(){\n"
@@ -5097,7 +5104,7 @@ private:
               "    ab.a = 2;\n"
               "    return ab.a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (style, inconclusive) Variable 'a' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (style) Variable 'ab.a' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("struct AB { int a; int b; };\n"
               "\n"
@@ -5257,9 +5264,7 @@ private:
               "   catch (const uno::Exception&)  {\n"
               "   }\n"
               "}", "test.cpp", false, true);
-        TODO_ASSERT_EQUALS("",
-                           "[test.cpp:6] -> [test.cpp:9]: (style) Variable 'Name' is reassigned a value before the old one has been used.\n",
-                           errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void ConvertBitmapData(sal_uInt16 nDestBits) {\n"
               "BitmapBuffer aSrcBuf;\n"
@@ -5268,7 +5273,7 @@ private:
               "    aSrcBuf.mnBitCount = nDestBits;\n"
               "    bConverted = ::ImplFastBitmapConversion( aDstBuf, aSrcBuf, aTwoRects );\n"
               "}", "test.c");
-        ASSERT_EQUALS("[test.c:3] -> [test.c:5]: (style) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.c:3] -> [test.c:5]: (style) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used.\n", errout.str());
         check("void ConvertBitmapData(sal_uInt16 nDestBits) {\n"
               "BitmapBuffer aSrcBuf;\n"
               "    aSrcBuf.mnBitCount = nSrcBits;\n"
@@ -5276,8 +5281,8 @@ private:
               "    aSrcBuf.mnBitCount = nDestBits;\n"
               "    bConverted = ::ImplFastBitmapConversion( aDstBuf, aSrcBuf, aTwoRects );\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style, inconclusive) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n",
-                           "[test.cpp:3] -> [test.cpp:5]: (style) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n",
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style, inconclusive) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used.\n",
+                           "[test.cpp:3] -> [test.cpp:5]: (style) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used.\n",
                            errout.str());
 
     }

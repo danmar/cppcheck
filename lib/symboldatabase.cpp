@@ -1613,6 +1613,8 @@ void Variable::evaluate(const Library* lib)
             setFlag(fIsStatic, true);
         else if (tok->str() == "extern")
             setFlag(fIsExtern, true);
+        else if (tok->str() == "volatile")
+            setFlag(fIsVolatile, true);
         else if (tok->str() == "mutable")
             setFlag(fIsMutable, true);
         else if (tok->str() == "const")
