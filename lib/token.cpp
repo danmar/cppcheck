@@ -992,7 +992,7 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
 
     std::ostringstream ret;
 
-    unsigned int lineNumber = _linenr;
+    unsigned int lineNumber = _linenr - (linenumbers ? 1U : 0U);
     unsigned int fileInd = files ? ~0U : _fileIndex;
     std::map<int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok != end; tok = tok->next()) {
@@ -1009,6 +1009,7 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
                     ret << fileNames->at(tok->_fileIndex);
                 else
                     ret << fileInd;
+                ret << '\n';
             }
 
             lineNumber = lineNumbers[fileInd];
@@ -1019,6 +1020,8 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
             if (lineNumber+4 < tok->linenr() && fileInd == tok->_fileIndex) {
                 ret << '\n' << lineNumber+1 << ":\n|\n";
                 ret << tok->linenr()-1 << ":\n";
+                ret << tok->linenr() << ": ";
+            } else if (this == tok && linenumbers) {
                 ret << tok->linenr() << ": ";
             } else {
                 while (lineNumber < tok->linenr()) {
@@ -1038,7 +1041,7 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
         if (tok->next() != end && (!linebreaks || (tok->next()->linenr() <= tok->linenr() && tok->next()->fileIndex() == tok->fileIndex())))
             ret << ' ';
     }
-    if (linebreaks && files)
+    if (linebreaks && (files || linenumbers))
         ret << '\n';
     return ret.str();
 }
