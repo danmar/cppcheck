@@ -553,7 +553,7 @@ void CheckOther::checkRedundantAssignment()
                         }
 
                         // Ensure that LHS in assignments are the same
-                        bool error = oldeq && isSameExpression(_tokenizer->isCPP(), true, eq->astOperand1(), oldeq->astOperand1(), _settings->library.functionpure);
+                        bool error = oldeq && eq->astOperand1() && isSameExpression(_tokenizer->isCPP(), true, eq->astOperand1(), oldeq->astOperand1(), _settings->library.functionpure);
 
                         // Ensure that variable is not used on right side
                         std::stack<const Token *> tokens;
