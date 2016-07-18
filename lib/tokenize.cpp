@@ -2732,11 +2732,13 @@ void Tokenizer::setVarIdPass1()
             }
         }
 
-        if (tok == list.front() || Token::Match(tok, "[;{}]") ||
-            (tok->str() == "(" && isFunctionHead(tok,"{")) ||
-            (tok->str() == "(" && !scopeStack.top().isExecutable && isFunctionHead(tok,";:")) ||
-            (tok->str() == "," && !scopeStack.top().isExecutable) ||
-            (tok->isName() && tok->str().at(tok->str().length()-1U) == ':')) {
+        if (!scopeStack.top().isStructInit &&
+            (tok == list.front() ||
+             Token::Match(tok, "[;{}]") ||
+             (tok->str() == "(" && isFunctionHead(tok,"{")) ||
+             (tok->str() == "(" && !scopeStack.top().isExecutable && isFunctionHead(tok,";:")) ||
+             (tok->str() == "," && !scopeStack.top().isExecutable) ||
+             (tok->isName() && tok->str().at(tok->str().length()-1U) == ':'))) {
 
             // No variable declarations in sizeof
             if (Token::simpleMatch(tok->previous(), "sizeof (")) {

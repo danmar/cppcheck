@@ -149,6 +149,7 @@ private:
         TEST_CASE(varid_header); // #6386
         TEST_CASE(varid_rangeBasedFor);
         TEST_CASE(varid_structinit); // #6406
+        TEST_CASE(varid_arrayinit); // #7579
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2299,6 +2300,10 @@ private:
                       tokenize("void foo() {\n"
                                "  struct ABC abc = {.a=abc.a,.b=abc.b};\n"
                                "}"));
+    }
+
+    void varid_arrayinit() { // #7579 - no variable declaration in rhs
+        ASSERT_EQUALS("1: void foo ( int * a@1 ) { int b@2 [ 1 ] = { x * a@1 [ 0 ] } ; }\n", tokenize("void foo(int*a) { int b[] = { x*a[0] }; }"));
     }
 
     void varidclass1() {
