@@ -880,6 +880,11 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         reportErr(ErrorLogger::ErrorMessage::getXMLFooter(settings.xml_version));
     }
 
+	if (!settings.cacheFile.empty())
+	{
+		settings.cache.Save();
+	}
+
     _settings = 0;
     if (returnValue)
         return settings.exitCode;

@@ -1,4 +1,5 @@
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml/)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/)
 
 file(GLOB_RECURSE hdrs "*.h")
 file(GLOB_RECURSE srcs "*.cpp")
