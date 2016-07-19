@@ -2627,7 +2627,7 @@ private:
                         std::string innercode;
                         std::map<std::string,PreprocessorMacro *> innermacros = macros;
                         innermacros.erase(innerMacroName);
-                        innerMacro->code(innerparams, innerparams, innermacros, innercode);
+                        innerMacro->code(innerparams, innermacros, innercode);
                         params2[ipar] = innercode;
                     }
                 }
@@ -2708,13 +2708,12 @@ public:
 
     /**
      * get expanded code for this macro
-     * @param params2 completely expanded macro parameters
-     * @param params3 non-expanded macro parameters
+     * @param params2 macro parameters
      * @param macros macro definitions (recursion)
      * @param macrocode output string
      * @return true if the expanding was successful
      */
-    bool code(const std::vector<std::string> &params2, const std::vector<std::string> &params3, const std::map<std::string, PreprocessorMacro *> &macros, std::string &macrocode) const {
+    bool code(const std::vector<std::string> &params2, const std::map<std::string, PreprocessorMacro *> &macros, std::string &macrocode) const {
         if (_nopar || (_params.empty() && _variadic)) {
             macrocode = _macro.substr(1 + _macro.find(')'));
             if (macrocode.empty())
@@ -2773,15 +2772,12 @@ public:
             while (tok && tok->str() != ")")
                 tok = tok->next();
             if (tok) {
-                bool noprescan = false;
                 bool optcomma = false;
                 while (nullptr != (tok = tok->next())) {
                     std::string str = tok->str();
                     if (str[0] == '#' || tok->isName()) {
-                        if (str == "##") {
-                            noprescan = true;
+                        if (str == "##")
                             continue;
-                        }
 
                         const bool stringify(str[0] == '#');
                         if (stringify) {
@@ -2803,14 +2799,8 @@ public:
                                     // Macro had more parameters than caller used.
                                     macrocode = "";
                                     return false;
-                                } else {
-                                    if (noprescan) {
-                                        noprescan = false;
-                                        str = params3[i];
-                                    } else {
-                                        str = givenparams[i];
-                                    }
-                                }
+                                } else
+                                    str = givenparams[i];
 
                                 break;
                             }
@@ -3094,13 +3084,13 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             // the macro again, the macro should not be expanded again.
             // The limits are used to prevent recursive expanding.
             // * When a macro is expanded its limit position is set to
-            //   the first expanded character.
+            //   the last expanded character.
             // * macros are only allowed to be expanded when the
-            //   the position is before the limit.
-            // * The limit is relative to the start of the "line"
-            //   variable. Inserting and deleting text after the limit
+            //   the position is beyond the limit.
+            // * The limit is relative to the end of the "line"
+            //   variable. Inserting and deleting text before the limit
             //   without updating the limit is safe.
-            // * when base_pos is prior to a limit the limit needs to be
+            // * when pos goes beyond a limit the limit needs to be
             //   deleted because it is unsafe to insert/delete text
             //   after the limit otherwise
             std::map<const PreprocessorMacro *, std::size_t> limits;
@@ -3108,54 +3098,9 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             // pos is the current position in line
             std::string::size_type pos = 0;
 
-            // base_pos is the starting point of the current macro expansion
-            // macro expansion only commences once all macros have been scanned
-            // recursively and have been pushed on the macro expansion stack
-            std::string::size_type base_pos;
-
-            // Offset from the end of the line from where further macro
-            // expansion is not necessary
-            std::string::size_type end_pos = 0;
-
             // scan line to see if there are any macros to expand..
             unsigned int tmpLinenr = 0;
-
-            // The stack of starting positions of macros to be expanded along
-            // with their unexpanded parameters
-            std::stack<std::pair<std::string::size_type, std::vector<std::string>>> pos_stack;
-
-            // Flag that indicates whether we are scanning line or processing the macro stack
-            bool processing_stack = false;
-
-            std::vector<std::string> unexpanded_params;
-
-            while ((pos < (line.size() - end_pos)) || !(pos_stack.empty())) {
-                if (pos >= line.size() - end_pos) {
-                    // We are at the end of the line so start processing the stack
-                    pos = pos_stack.top().first;
-                    unexpanded_params = pos_stack.top().second;
-                    pos_stack.pop();
-                    if (processing_stack) {
-                        // Remove old limits
-                        for (std::map<const PreprocessorMacro *, std::size_t>::iterator iter = limits.begin();
-                             iter != limits.end();) {
-                            if (base_pos <= iter->second) {
-                                // We have gone past this limit range, so just delete it
-                                limits.erase(iter++);
-                            } else {
-                                ++iter;
-                            }
-                        }
-                    }
-                    base_pos = pos;
-                    if (pos >= (line.size() - end_pos)) {
-                        // The macro expansion popped off the stack exceeds the
-                        // end position for macro expansion so discard it
-                        continue;
-                    }
-                    processing_stack = true;
-                }
-
+            while (pos < line.size()) {
                 if (line[pos] == '\n')
                     ++tmpLinenr;
 
@@ -3188,7 +3133,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
                 // found an identifier..
                 // the "while" is used in case the expanded macro will immediately call another macro
-                while ((pos < (line.size() - end_pos)) && (std::isalpha((unsigned char)line[pos]) || line[pos] == '_')) {
+                while (pos < line.length() && (std::isalpha((unsigned char)line[pos]) || line[pos] == '_')) {
                     // pos1 = start position of macro
                     const std::string::size_type pos1 = pos++;
 
@@ -3211,22 +3156,14 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     // macro
                     {
                         const std::map<const PreprocessorMacro *, std::size_t>::const_iterator it2 = limits.find(macro);
-                        if (it2 != limits.end() && pos1 > it2->second) {
-                            // Update end_pos to avoid trying to expand this
-                            // macro again
-                            end_pos = line.size() - pos1;
+                        if (it2 != limits.end() && pos <= line.length() - it2->second)
                             break;
-                        }
                     }
-
-                    std::vector<std::string> params;
 
                     // get parameters from line..
-                    if (macro->params().size() && pos >= line.length()) {
-                        pos_stack.push(std::make_pair(pos1, params));
+                    if (macro->params().size() && pos >= line.length())
                         break;
-                    }
-
+                    std::vector<std::string> params;
                     std::string::size_type pos2 = pos;
 
                     // number of newlines within macro use
@@ -3239,23 +3176,9 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
                         getparams(line,pos2,params,numberOfNewlines,endFound);
 
-                        // something went wrong (eg. perhaps the parameters
-                        // require a prescan?) so bail out but push the
-                        // expansion onto the stack assuming we'll be able to
-                        // get the parameters after a prescan
-                        if (!endFound && params.size() != 0) {
-                            pos_stack.push(std::make_pair(pos1, params));
-                            processing_stack = false;
+                        // something went wrong so bail out
+                        if (!endFound)
                             break;
-                        }
-                    }
-                    pos_stack.push(std::make_pair(pos1, params));
-                    if (processing_stack) {
-                        // Expand macro parameters
-                        processing_stack = false;
-                    } else {
-                        // Continue scanning
-                        continue;
                     }
 
                     // Just an empty parameter => clear
@@ -3263,14 +3186,12 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                         params.clear();
 
                     // Check that it's the same number of parameters..
-                    if (!macro->variadic() && params.size() != macro->params().size()) {
-                        pos_stack.pop();
+                    if (!macro->variadic() && params.size() != macro->params().size())
                         break;
-                    }
 
                     // Create macro code..
                     std::string tempMacro;
-                    if (!macro->code(params, unexpanded_params, macros, tempMacro)) {
+                    if (!macro->code(params, macros, tempMacro)) {
                         // Syntax error in code
                         writeError(filename,
                                    linenr + tmpLinenr,
@@ -3292,8 +3213,19 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     if (macro->variadic() || macro->nopar() || !macro->params().empty())
                         ++pos2;
 
-                    // don't allow this macro to be expanded again after pos1
-                    limits[macro] = pos1;
+                    // Remove old limits
+                    for (std::map<const PreprocessorMacro *, std::size_t>::iterator iter = limits.begin();
+                         iter != limits.end();) {
+                        if ((line.length() - pos1) < iter->second) {
+                            // We have gone past this limit, so just delete it
+                            limits.erase(iter++);
+                        } else {
+                            ++iter;
+                        }
+                    }
+
+                    // don't allow this macro to be expanded again before pos2
+                    limits[macro] = line.length() - pos2;
 
                     // erase macro
                     line.erase(pos1, pos2 - pos1);
