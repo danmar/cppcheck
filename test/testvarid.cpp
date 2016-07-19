@@ -28,8 +28,6 @@ public:
     }
 
 private:
-    Settings settings;
-
     void run() {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -178,6 +176,8 @@ private:
     std::string tokenize(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
         errout.str("");
 
+        Settings settings;
+        settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
         settings.standards.cpp = Standards::CPP11;
 
