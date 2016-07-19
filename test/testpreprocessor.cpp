@@ -187,6 +187,7 @@ private:
         TEST_CASE(macro_incdec);  // separate ++ and -- with space when expanding such macro: '#define M(X)  A-X'
         TEST_CASE(macro_switchCase);
         TEST_CASE(macro_NULL); // skip #define NULL .. it is replaced in the tokenizer
+        TEST_CASE(macro_prescan); // #7563: Macro parameter prescan
         TEST_CASE(string1);
         TEST_CASE(string2);
         TEST_CASE(string3);
@@ -1990,6 +1991,25 @@ private:
         // See ticket #4482 - UB when passing NULL to variadic function
         ASSERT_EQUALS("\n$0", OurPreprocessor::expandMacros("#define null 0\nnull"));
         ASSERT_EQUALS("\nNULL", OurPreprocessor::expandMacros("#define NULL 0\nNULL"));
+    }
+
+    void macro_prescan() const {
+        const char filedata[] = "#define CONCAT_(a, b) a##b\n"
+                                "#define CONCAT(a, b) CONCAT_(a, b)\n"
+                                "#define VALUE(value) CONCAT(CONCAT(text1, value), text3),\n"
+                                "enum {\n"
+                                "VALUE(1)\n"
+                                "VALUE(2)\n"
+                                "VALUE(3)\n"
+                                "NUM_VALUES,\n"
+                                "};\n";
+        ASSERT_EQUALS("\n\n\nenum {\n"
+                      "$$$text11text3,\n"
+                      "$$$text12text3,\n"
+                      "$$$text13text3,\n"
+                      "NUM_VALUES,\n"
+                      "};\n",
+                      OurPreprocessor::expandMacros(filedata));
     }
 
     void string1() {
