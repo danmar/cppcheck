@@ -2769,11 +2769,11 @@ public:
         else {
             const std::vector<std::string> givenparams = expandInnerMacros(params2, macros);
 
-            bool noprescan = false;
             const Token *tok = tokens();
             while (tok && tok->str() != ")")
                 tok = tok->next();
             if (tok) {
+                bool noprescan = false;
                 bool optcomma = false;
                 while (nullptr != (tok = tok->next())) {
                     std::string str = tok->str();
