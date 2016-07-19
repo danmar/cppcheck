@@ -8342,6 +8342,9 @@ private:
     }
 
     void compileLimits() {
+#ifdef TRAVIS
+        // FIXME: this test is very slow when old preprocessor is used. therefore it is only run on travis.
+
         const char raw_code[] = "#define PTR1 (* (* (* (* (* (* (* (* (* (*\n"
                                 "#define PTR2 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1 PTR1\n"
                                 "#define PTR3 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2 PTR2\n"
@@ -8367,6 +8370,7 @@ private:
         const std::string code = preprocessor.getcode(filedata, emptyString, emptyString);
 
         tokenizeAndStringify(code.c_str()); // just survive...
+#endif
     }
 
     bool isStartOfExecutableScope(int offset, const char code[]) {
