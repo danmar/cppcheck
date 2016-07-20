@@ -1060,29 +1060,7 @@ private:
 }
 
 namespace {
-void simplifySizeof(simplecpp::TokenList &expr) {
-    std::map<std::string, std::size_t> sizeOfType(expr.sizeOfType);
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char"), sizeof(char)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short"), sizeof(short)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short int"), sizeof(short int)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("int"), sizeof(int)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long int"), sizeof(long int)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long"), sizeof(long)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long long"), sizeof(long long)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("float"), sizeof(float)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("double"), sizeof(double)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long double"), sizeof(long double)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char *"), sizeof(char *)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short *"), sizeof(short *)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short int *"), sizeof(short int *)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("int *"), sizeof(int *)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long int *"), sizeof(long int *)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long *"), sizeof(long *)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long long *"), sizeof(long long *)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("float *"), sizeof(float *)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("double *"), sizeof(double *)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long double *"), sizeof(long double *)));
-
+void simplifySizeof(simplecpp::TokenList &expr, const std::map<std::string, std::size_t> &sizeOfType) {
     for (simplecpp::Token *tok = expr.begin(); tok; tok = tok->next) {
         if (tok->str != "sizeof")
             continue;
@@ -1135,8 +1113,8 @@ void simplifyNumbers(simplecpp::TokenList &expr) {
     }
 }
 
-long long evaluate(simplecpp::TokenList expr) {
-    simplifySizeof(expr);
+long long evaluate(simplecpp::TokenList expr, const std::map<std::string, std::size_t> &sizeOfType) {
+    simplifySizeof(expr, sizeOfType);
     simplifyName(expr);
     simplifyNumbers(expr);
     expr.constFold();
@@ -1254,6 +1232,28 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
 {
     simplecpp::TokenList rawtokens2(rawtokens);
     rawtokens2.removeComments();
+
+    std::map<std::string, std::size_t> sizeOfType(rawtokens.sizeOfType);
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char"), sizeof(char)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short"), sizeof(short)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short int"), sizeof(short int)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("int"), sizeof(int)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long int"), sizeof(long int)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long"), sizeof(long)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long long"), sizeof(long long)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("float"), sizeof(float)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("double"), sizeof(double)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long double"), sizeof(long double)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char *"), sizeof(char *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short *"), sizeof(short *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short int *"), sizeof(short int *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("int *"), sizeof(int *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long int *"), sizeof(long int *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long *"), sizeof(long *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long long *"), sizeof(long long *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("float *"), sizeof(float *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("double *"), sizeof(double *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long double *"), sizeof(long double *)));
 
     std::map<TokenString, Macro> macros;
     for (std::list<std::string>::const_iterator it = dui.defines.begin(); it != dui.defines.end(); ++it) {
@@ -1388,7 +1388,7 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
                         }
                     }
                     try {
-                        conditionIsTrue = (evaluate(expr) != 0);
+                        conditionIsTrue = (evaluate(expr, sizeOfType) != 0);
                     } catch (const std::exception &) {
                         Output out(rawtok->location.files);
                         out.type = Output::ERROR;
