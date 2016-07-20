@@ -1220,6 +1220,8 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
         if (!f.is_open())
             continue;
 
+        ret[header2] = 0;
+
         TokenList *tokens = new TokenList(f, fileNumbers, header2);
         tokens->removeComments();
         if (!tokens->cbegin())
