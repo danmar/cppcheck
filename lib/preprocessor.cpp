@@ -219,11 +219,13 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             configs_ifndef.push_back((tok->next->str == "ifndef") ? config : std::string());
             ret.insert(cfg(configs_if));
         } else if (tok->next->str == "elif") {
-            configs_if.pop_back();
+            if (!configs_if.empty())
+                configs_if.pop_back();
             configs_if.push_back(readcondition(tok->next, defined));
             ret.insert(cfg(configs_if));
         } else if (tok->next->str == "else") {
-            configs_if.pop_back();
+            if (!configs_if.empty())
+                configs_if.pop_back();
             configs_if.push_back(configs_ifndef.back());
             ret.insert(cfg(configs_if));
         } else if (tok->next->str == "endif" && tok->location.sameline(tok->next->location)) {
