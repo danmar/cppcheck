@@ -146,7 +146,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                     continue;
 
                 const std::string code = "#line " +
-                                         std::to_string(tok->location.line) +
+                                         MathLib::toString(tok->location.line) +
                                          '\"' + tok->location.file() + "\'\n" +
                                          directive;
 
