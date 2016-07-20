@@ -1068,15 +1068,15 @@ void simplifySizeof(simplecpp::TokenList &expr) {
         for (simplecpp::Token *typeToken = tok1; typeToken != tok2; typeToken = typeToken->next) {
             if (typeToken->str == "char")
                 sz = sizeof(char);
-            if (typeToken->str == "short")
+            else if (typeToken->str == "short")
                 sz = sizeof(short);
-            if (typeToken->str == "int")
+            else if (typeToken->str == "int")
                 sz = sizeof(int);
-            if (typeToken->str == "long")
+            else if (typeToken->str == "long")
                 sz = sizeof(long);
-            if (typeToken->str == "float")
+            else if (typeToken->str == "float")
                 sz = sizeof(float);
-            if (typeToken->str == "double")
+            else if (typeToken->str == "double")
                 sz = sizeof(double);
         }
 
