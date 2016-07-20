@@ -48,6 +48,12 @@ const simplecpp::TokenString ELSE("else");
 const simplecpp::TokenString ELIF("elif");
 const simplecpp::TokenString ENDIF("endif");
 
+template<class T> std::string toString(T t) {
+    std::ostringstream ostr;
+    ostr << t;
+    return ostr.str();
+}
+
 bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2) {
     return tok1 && tok2 && tok1->location.sameline(tok2->location);
 }
@@ -476,7 +482,7 @@ void simplecpp::TokenList::constFoldMulDivRem(Token *tok) {
             continue;
 
         tok = tok->previous;
-        tok->setstr(std::to_string(result));
+        tok->setstr(toString(result));
         deleteToken(tok->next);
         deleteToken(tok->next);
     }
@@ -498,7 +504,7 @@ void simplecpp::TokenList::constFoldAddSub(Token *tok) {
             continue;
 
         tok = tok->previous;
-        tok->setstr(std::to_string(result));
+        tok->setstr(toString(result));
         deleteToken(tok->next);
         deleteToken(tok->next);
     }
@@ -530,7 +536,7 @@ void simplecpp::TokenList::constFoldComparison(Token *tok) {
             continue;
 
         tok = tok->previous;
-        tok->setstr(std::to_string(result));
+        tok->setstr(toString(result));
         deleteToken(tok->next);
         deleteToken(tok->next);
     }
@@ -555,7 +561,7 @@ void simplecpp::TokenList::constFoldBitwise(Token *tok)
             else /*if (tok->op == '|')*/
                 result = (std::stoll(tok->previous->str) | std::stoll(tok->next->str));
             tok = tok->previous;
-            tok->setstr(std::to_string(result));
+            tok->setstr(toString(result));
             deleteToken(tok->next);
             deleteToken(tok->next);
         }
@@ -578,7 +584,7 @@ void simplecpp::TokenList::constFoldLogicalOp(Token *tok) {
             result = (std::stoll(tok->previous->str) && std::stoll(tok->next->str));
 
         tok = tok->previous;
-        tok->setstr(std::to_string(result));
+        tok->setstr(toString(result));
         deleteToken(tok->next);
         deleteToken(tok->next);
     }
@@ -1101,7 +1107,7 @@ void simplifySizeof(simplecpp::TokenList &expr) {
 
         const std::map<std::string, std::size_t>::const_iterator it = sizeOfType.find(type);
         if (it != sizeOfType.end())
-            tok->setstr(std::to_string(it->second));
+            tok->setstr(toString(it->second));
         else
             continue;
 
@@ -1123,9 +1129,9 @@ void simplifyNumbers(simplecpp::TokenList &expr) {
         if (tok->str.size() == 1U)
             continue;
         if (tok->str.compare(0,2,"0x") == 0)
-            tok->setstr(std::to_string(std::stoull(tok->str.substr(2), nullptr, 16)));
+            tok->setstr(toString(std::stoull(tok->str.substr(2), nullptr, 16)));
         else if (tok->str[0] == '\'')
-            tok->setstr(std::to_string((unsigned char)tok->str[1]));
+            tok->setstr(toString((unsigned int)tok->str[1] & 0xffU));
     }
 }
 
