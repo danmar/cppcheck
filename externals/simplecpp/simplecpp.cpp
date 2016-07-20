@@ -103,6 +103,7 @@ void simplecpp::TokenList::operator=(const TokenList &other) {
     clear();
     for (const Token *tok = other.cbegin(); tok; tok = tok->next)
         push_back(new Token(*tok));
+    sizeOfType = other.sizeOfType;
 }
 
 void simplecpp::TokenList::clear() {
@@ -112,6 +113,7 @@ void simplecpp::TokenList::clear() {
         first = next;
     }
     last = nullptr;
+    sizeOfType.clear();
 }
 
 void simplecpp::TokenList::push_back(Token *tok) {
@@ -1053,35 +1055,57 @@ private:
 
 namespace {
 void simplifySizeof(simplecpp::TokenList &expr) {
+    std::map<std::string, std::size_t> sizeOfType(expr.sizeOfType);
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char"), sizeof(char)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short"), sizeof(short)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short int"), sizeof(short int)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("int"), sizeof(int)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long int"), sizeof(long int)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long"), sizeof(long)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long long"), sizeof(long long)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("float"), sizeof(float)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("double"), sizeof(double)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long double"), sizeof(long double)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char *"), sizeof(char *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short *"), sizeof(short *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short int *"), sizeof(short int *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("int *"), sizeof(int *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long int *"), sizeof(long int *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long *"), sizeof(long *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long long *"), sizeof(long long *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("float *"), sizeof(float *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("double *"), sizeof(double *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long double *"), sizeof(long double *)));
+
     for (simplecpp::Token *tok = expr.begin(); tok; tok = tok->next) {
         if (tok->str != "sizeof")
             continue;
         simplecpp::Token *tok1 = tok->next;
         simplecpp::Token *tok2 = tok1->next;
         if (tok1->op == '(') {
+            tok1 = tok1->next;
             while (tok2->op != ')')
                 tok2 = tok2->next;
-            tok2 = tok2->next;
         }
 
-        unsigned int sz = 0;
+        std::string type;
         for (simplecpp::Token *typeToken = tok1; typeToken != tok2; typeToken = typeToken->next) {
-            if (typeToken->str == "char")
-                sz = sizeof(char);
-            else if (typeToken->str == "short")
-                sz = sizeof(short);
-            else if (typeToken->str == "int")
-                sz = sizeof(int);
-            else if (typeToken->str == "long")
-                sz = sizeof(long);
-            else if (typeToken->str == "float")
-                sz = sizeof(float);
-            else if (typeToken->str == "double")
-                sz = sizeof(double);
+            if ((typeToken->str == "unsigned" || typeToken->str == "signed") && typeToken->next->name)
+                continue;
+            if (typeToken->str == "*" && type.find("*") != std::string::npos)
+                continue;
+            if (!type.empty())
+                type += ' ';
+            type += typeToken->str;
         }
 
-        tok->setstr(std::to_string(sz));
+        const std::map<std::string, std::size_t>::const_iterator it = sizeOfType.find(type);
+        if (it != sizeOfType.end())
+            tok->setstr(std::to_string(it->second));
+        else
+            continue;
 
+        tok2 = tok2->next;
         while (tok->next != tok2)
             expr.deleteToken(tok->next);
     }

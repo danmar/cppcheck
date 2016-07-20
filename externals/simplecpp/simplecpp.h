@@ -187,6 +187,9 @@ public:
         delete tok;
     }
 
+    /** sizeof(T) */
+    std::map<std::string, std::size_t> sizeOfType;
+
 private:
     void combineOperators();
 
