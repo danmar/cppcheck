@@ -107,15 +107,15 @@ ifndef PREFIX
 endif
 
 ifndef INCLUDE_FOR_LIB
-    INCLUDE_FOR_LIB=-Ilib -Iexternals/tinyxml
+    INCLUDE_FOR_LIB=-Ilib -Iexternals/simplecpp -Iexternals/tinyxml
 endif
 
 ifndef INCLUDE_FOR_CLI
-    INCLUDE_FOR_CLI=-Ilib -Iexternals/tinyxml
+    INCLUDE_FOR_CLI=-Ilib -Iexternals/simplecpp -Iexternals/tinyxml
 endif
 
 ifndef INCLUDE_FOR_TEST
-    INCLUDE_FOR_TEST=-Ilib -Icli -Iexternals/tinyxml
+    INCLUDE_FOR_TEST=-Ilib -Icli -Iexternals/simplecpp -Iexternals/tinyxml
 endif
 
 BIN=$(DESTDIR)$(PREFIX)/bin
@@ -170,6 +170,9 @@ LIBOBJ =      $(SRCDIR)/astutils.o \
               $(SRCDIR)/tokenize.o \
               $(SRCDIR)/tokenlist.o \
               $(SRCDIR)/valueflow.o
+
+EXTOBJ =      externals/simplecpp/simplecpp.o \
+              externals/tinyxml/tinyxml2.o
 
 CLIOBJ =      cli/cmdlineparser.o \
               cli/cppcheckexecutor.o \
@@ -236,12 +239,6 @@ TESTOBJ =     test/options.o \
               test/testvalueflow.o \
               test/testvarid.o
 
-ifndef TINYXML
-    TINYXML = externals/tinyxml/tinyxml2.o
-endif
-
-
-EXTOBJ += $(TINYXML)
 .PHONY: run-dmake
 
 
@@ -270,11 +267,11 @@ dmake:	tools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o
 run-dmake: dmake
 	./dmake
 
-reduce:	tools/reduce.o externals/tinyxml/tinyxml2.o $(LIBOBJ)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -g -o reduce tools/reduce.o -Ilib -Iexternals/tinyxml $(LIBOBJ) $(LIBS) externals/tinyxml/tinyxml2.o $(LDFLAGS) $(RDYNAMIC)
+reduce:	tools/reduce.o $(LIBOBJ) $(EXTOBJ)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -g -o reduce tools/reduce.o $(INCLUDE_FOR_LIB) $(LIBOBJ) $(LIBS) $(EXTOBJ) $(LDFLAGS) $(RDYNAMIC)
 
 clean:
-	rm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/tinyxml/*.o testrunner reduce dmake cppcheck cppcheck.1
+	rm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner reduce dmake cppcheck cppcheck.1
 
 man:	man/cppcheck.1
 
@@ -395,7 +392,7 @@ $(SRCDIR)/mathlib.o: lib/mathlib.cpp lib/cxx11emu.h lib/mathlib.h lib/config.h l
 $(SRCDIR)/path.o: lib/path.cpp lib/cxx11emu.h lib/path.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/path.o $(SRCDIR)/path.cpp
 
-$(SRCDIR)/preprocessor.o: lib/preprocessor.cpp lib/cxx11emu.h lib/preprocessor.h lib/config.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/path.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
+$(SRCDIR)/preprocessor.o: lib/preprocessor.cpp lib/cxx11emu.h lib/preprocessor.h lib/config.h lib/path.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/preprocessor.o $(SRCDIR)/preprocessor.cpp
 
 $(SRCDIR)/settings.o: lib/settings.cpp lib/cxx11emu.h lib/settings.h lib/config.h lib/library.h lib/mathlib.h lib/standards.h lib/errorlogger.h lib/suppressions.h lib/timer.h lib/preprocessor.h lib/utils.h
@@ -614,8 +611,11 @@ test/testvalueflow.o: test/testvalueflow.cpp lib/cxx11emu.h test/testsuite.h lib
 test/testvarid.o: test/testvarid.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testvarid.o test/testvarid.cpp
 
+externals/simplecpp/simplecpp.o: externals/simplecpp/simplecpp.cpp lib/cxx11emu.h externals/simplecpp/simplecpp.h
+	$(CXX)  $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o externals/simplecpp/simplecpp.o externals/simplecpp/simplecpp.cpp
+
 externals/tinyxml/tinyxml2.o: externals/tinyxml/tinyxml2.cpp lib/cxx11emu.h externals/tinyxml/tinyxml2.h
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o externals/tinyxml/tinyxml2.o externals/tinyxml/tinyxml2.cpp
+	$(CXX)  $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o externals/tinyxml/tinyxml2.o externals/tinyxml/tinyxml2.cpp
 
 tools/dmake.o: tools/dmake.cpp lib/cxx11emu.h cli/filelister.h cli/pathmatch.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/dmake.o tools/dmake.cpp

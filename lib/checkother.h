@@ -88,7 +88,6 @@ public:
         checkOther.checkMisusedScopedObject();
         checkOther.checkMemsetZeroBytes();
         checkOther.checkMemsetInvalid2ndParam();
-        checkOther.checkSwitchCaseFallThrough();
         checkOther.checkPipeParameterSize();
 
         checkOther.checkInvalidFree();
@@ -142,9 +141,6 @@ public:
 
     /** @brief %Check for code like 'case A||B:'*/
     void checkSuspiciousEqualityComparison();
-
-    /** @brief %Check for switch case fall through without comment */
-    void checkSwitchCaseFallThrough();
 
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
@@ -230,7 +226,6 @@ private:
     void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);
     void redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var);
     void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
-    void switchCaseFallThrough(const Token *tok);
     void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
     void suspiciousEqualityComparisonError(const Token* tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
@@ -287,7 +282,6 @@ private:
         c.variableScopeError(nullptr,  "varname");
         c.redundantAssignmentInSwitchError(nullptr,  0, "var");
         c.redundantCopyInSwitchError(nullptr,  0, "var");
-        c.switchCaseFallThrough(nullptr);
         c.suspiciousCaseInSwitchError(nullptr,  "||");
         c.suspiciousEqualityComparisonError(nullptr);
         c.selfAssignmentError(nullptr,  "varname");
