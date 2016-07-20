@@ -473,10 +473,13 @@ void simplecpp::TokenList::constFoldMulDivRem(Token *tok) {
             long long rhs = std::stoll(tok->next->str);
             if (rhs == 0)
                 throw std::overflow_error("division/modulo by zero");
+            long long lhs = std::stoll(tok->previous->str);
+            if (rhs == -1 && lhs == std::numeric_limits<long long>::min())
+                throw std::overflow_error("division overflow");
             if (tok->op == '/')
-                result = (std::stoll(tok->previous->str) / rhs);
+                result = (lhs / rhs);
             else
-                result = (std::stoll(tok->previous->str) % rhs);
+                result = (lhs % rhs);
         }
         else
             continue;
