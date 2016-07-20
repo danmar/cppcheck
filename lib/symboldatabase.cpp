@@ -4468,6 +4468,13 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, char defau
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
                 valuetype.originalTypeName = "size_t";
                 setValueType(tok, valuetype, cpp, defsign, lib);
+
+                if (Token::Match(tok, "( %type% %type%| *| *| )")) {
+                    ValueType vt;
+                    if (parsedecl(tok->next(), &vt, defsign, lib)) {
+                        setValueType(tok->next(), vt, cpp, defsign, lib);
+                    }
+                }
             }
         } else if (tok->variable()) {
             setValueType(tok, *tok->variable(), cpp, defsign, lib);

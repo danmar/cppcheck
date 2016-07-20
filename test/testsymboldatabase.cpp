@@ -3626,6 +3626,9 @@ private:
         ASSERT_EQUALS("char", typeOf("a = static_cast<char>(32);", "("));
         ASSERT_EQUALS("", typeOf("a = (unsigned x)0;", "("));
 
+        // sizeof..
+        ASSERT_EQUALS("char", typeOf("sizeof(char)", "char"));
+
         // const..
         ASSERT_EQUALS("const char *", typeOf("a = \"123\";", "\"123\""));
         ASSERT_EQUALS("const signed int *", typeOf("const int *a; x = a + 1;", "a +"));
