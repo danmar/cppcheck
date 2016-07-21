@@ -1163,16 +1163,18 @@ const simplecpp::Token *gotoNextLine(const simplecpp::Token *tok) {
     return tok;
 }
 
-std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::string &sourcefile, const std::string &header) {
-    if (sourcefile.find_first_of("\\/") != std::string::npos) {
-        const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
-        f.open(s.c_str());
-        if (f.is_open())
-            return s;
-    } else {
-        f.open(header.c_str());
-        if (f.is_open())
-            return header;
+std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::string &sourcefile, const std::string &header, bool systemheader) {
+    if (!systemheader) {
+        if (sourcefile.find_first_of("\\/") != std::string::npos) {
+            const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
+            f.open(s.c_str());
+            if (f.is_open())
+                return s;
+        } else {
+            f.open(header.c_str());
+            if (f.is_open())
+                return header;
+        }
     }
 
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
@@ -1188,14 +1190,16 @@ std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::s
     return "";
 }
 
-std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui) {
-    if (sourcefile.find_first_of("\\/") != std::string::npos) {
-        const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
-        if (filedata.find(s) != filedata.end())
-            return s;
-    } else {
-        if (filedata.find(header) != filedata.end())
-            return header;
+std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader) {
+    if (!systemheader) {
+        if (sourcefile.find_first_of("\\/") != std::string::npos) {
+            const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
+            if (filedata.find(s) != filedata.end())
+                return s;
+        } else {
+            if (filedata.find(header) != filedata.end())
+                return header;
+        }
     }
 
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
@@ -1210,8 +1214,8 @@ std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &fil
     return "";
 }
 
-bool hasFile(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui) {
-    return !getFileName(filedata, sourcefile, header, dui).empty();
+bool hasFile(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader) {
+    return !getFileName(filedata, sourcefile, header, dui, systemheader).empty();
 }
 
 }
@@ -1242,12 +1246,14 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
         if (!sameline(rawtok, htok))
             continue;
 
+        bool systemheader = (htok->str[0] == '<');
+
         const std::string header(htok->str.substr(1U, htok->str.size() - 2U));
-        if (hasFile(ret, sourcefile, header, dui))
+        if (hasFile(ret, sourcefile, header, dui, systemheader))
             continue;
 
         std::ifstream f;
-        const std::string header2 = openHeader(f,dui,sourcefile,header);
+        const std::string header2 = openHeader(f,dui,sourcefile,header,systemheader);
         if (!f.is_open())
             continue;
 
@@ -1356,8 +1362,9 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 } catch (const std::runtime_error &) {
                 }
             } else if (ifstates.top() == TRUE && rawtok->str == INCLUDE) {
+                const bool systemheader = (rawtok->next->str[0] == '<');
                 const std::string header(rawtok->next->str.substr(1U, rawtok->next->str.size() - 2U));
-                const std::string header2 = getFileName(filedata, rawtok->location.file(), header, dui);
+                const std::string header2 = getFileName(filedata, rawtok->location.file(), header, dui, systemheader);
                 if (!header2.empty() && pragmaOnce.find(header2) == pragmaOnce.end()) {
                     includetokenstack.push(gotoNextLine(rawtok));
                     const TokenList *includetokens = filedata.find(header2)->second;
