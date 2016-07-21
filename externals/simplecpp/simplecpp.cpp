@@ -1146,7 +1146,7 @@ void simplifyNumbers(simplecpp::TokenList &expr) {
     }
 }
 
-long long evaluate(simplecpp::TokenList expr, const std::map<std::string, std::size_t> &sizeOfType) {
+long long evaluate(simplecpp::TokenList &expr, const std::map<std::string, std::size_t> &sizeOfType) {
     simplifySizeof(expr, sizeOfType);
     simplifyName(expr);
     simplifyNumbers(expr);
@@ -1262,7 +1262,7 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
     return ret;
 }
 
-simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, simplecpp::TokenList *> &filedata, const struct simplecpp::DUI &dui, simplecpp::OutputList *outputList, std::list<struct simplecpp::MacroUsage> *macroUsage)
+void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, simplecpp::TokenList *> &filedata, const struct simplecpp::DUI &dui, simplecpp::OutputList *outputList, std::list<struct simplecpp::MacroUsage> *macroUsage)
 {
     std::map<std::string, std::size_t> sizeOfType(rawtokens.sizeOfType);
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char"), sizeof(char)));
@@ -1312,7 +1312,6 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
 
     std::set<std::string> pragmaOnce;
 
-    TokenList output(files);
     for (const Token *rawtok = rawtokens.cbegin(); rawtok || !includetokenstack.empty();) {
         if (rawtok == NULL) {
             rawtok = includetokenstack.top();
@@ -1338,7 +1337,8 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
                     err.msg = '#' + rawtok->str + ' ' + err.msg;
                     outputList->push_back(err);
                 }
-                return TokenList(files);
+                output.clear();
+                return;
             }
 
             if (rawtok->str == DEFINE) {
@@ -1416,7 +1416,8 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
                                 out.msg = "failed to expand \'" + tok->str + "\', " + err.what;
                                 if (outputList)
                                     outputList->push_back(out);
-                                return TokenList(files);
+                                output.clear();
+                                return;
                             }
                             for (const Token *tok2 = value.cbegin(); tok2; tok2 = tok2->next)
                                 expr.push_back(new Token(tok2->str, tok->location));
@@ -1433,7 +1434,8 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
                         out.msg = "failed to evaluate " + std::string(rawtok->str == IF ? "#if" : "#elif") + " condition";
                         if (outputList)
                             outputList->push_back(out);
-                        return TokenList(files);
+                        output.clear();
+                        return;
                     }
                 }
 
@@ -1487,7 +1489,8 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
                     out.msg = err.what;
                     if (outputList)
                         outputList->push_back(out);
-                    return TokenList(files);
+                    output.clear();
+                    return;
                 }
                 continue;
             }
@@ -1511,6 +1514,4 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
             }
         }
     }
-
-    return output;
 }

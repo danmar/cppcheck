@@ -521,7 +521,8 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
 
     simplecpp::OutputList outputList;
     std::list<simplecpp::MacroUsage> macroUsage;
-    const simplecpp::TokenList &tokens2 = simplecpp::preprocess(tokens1, files, tokenlists, dui, &outputList, &macroUsage);
+    simplecpp::TokenList tokens2(files);
+    simplecpp::preprocess(tokens2, tokens1, files, tokenlists, dui, &outputList, &macroUsage);
 
     bool showerror = (!_settings.userDefines.empty() && !_settings.force);
     for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {

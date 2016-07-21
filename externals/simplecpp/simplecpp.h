@@ -257,7 +257,7 @@ std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<s
  *
  * @todo simplify interface
  */
-TokenList preprocess(const TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, TokenList*> &filedata, const struct DUI &dui, OutputList *outputList = 0, std::list<struct MacroUsage> *macroUsage = 0);
+void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, TokenList*> &filedata, const struct DUI &dui, OutputList *outputList = 0, std::list<struct MacroUsage> *macroUsage = 0);
 }
 
 #endif
