@@ -115,6 +115,20 @@ public:
     Location location;
     Token *previous;
     Token *next;
+
+    const Token *previousSkipComments() const {
+        const Token *tok = this->previous;
+        while (tok && tok->comment)
+            tok = tok->previous;
+        return tok;
+    }
+
+    const Token *nextSkipComments() const {
+        const Token *tok = this->next;
+        while (tok && tok->comment)
+            tok = tok->next;
+        return tok;
+    }
 private:
     TokenString string;
 };

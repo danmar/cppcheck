@@ -1219,29 +1219,30 @@ bool hasFile(const std::map<std::string, simplecpp::TokenList *> &filedata, cons
 
 std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::TokenList &rawtokens, std::vector<std::string> &fileNumbers, const struct simplecpp::DUI &dui, simplecpp::OutputList *outputList)
 {
-    simplecpp::TokenList rawtokens2(rawtokens);
-    rawtokens2.removeComments();
-
     std::map<std::string, simplecpp::TokenList*> ret;
 
     std::list<const Token *> filelist;
 
-    for (const Token *rawtok = rawtokens2.cbegin(); rawtok || !filelist.empty(); rawtok = rawtok->next) {
+    for (const Token *rawtok = rawtokens.cbegin(); rawtok || !filelist.empty(); rawtok = rawtok->next) {
         if (rawtok == NULL) {
             rawtok = filelist.back();
             filelist.pop_back();
         }
 
-        if (rawtok->op != '#' || sameline(rawtok->previous, rawtok))
+        if (rawtok->op != '#' || sameline(rawtok->previousSkipComments(), rawtok))
             continue;
 
-        rawtok = rawtok->next;
+        rawtok = rawtok->nextSkipComments();
         if (!rawtok || rawtok->str != INCLUDE)
             continue;
 
         const std::string &sourcefile = rawtok->location.file();
 
-        const std::string header(rawtok->next->str.substr(1U, rawtok->next->str.size() - 2U));
+        const Token *htok = rawtok->nextSkipComments();
+        if (!sameline(rawtok, htok))
+            continue;
+
+        const std::string header(htok->str.substr(1U, htok->str.size() - 2U));
         if (hasFile(ret, sourcefile, header, dui))
             continue;
 
@@ -1252,7 +1253,7 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
 
         ret[header2] = 0;
 
-        TokenList *tokens = new TokenList(f, fileNumbers, header2);
+        TokenList *tokens = new TokenList(f, fileNumbers, header2, outputList);
         ret[header2] = tokens;
         if (tokens->cbegin())
             filelist.push_back(tokens->cbegin());
