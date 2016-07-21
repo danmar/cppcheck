@@ -1224,7 +1224,8 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
 
         TokenList *tokens = new TokenList(f, fileNumbers, header2);
         ret[header2] = tokens;
-        filelist.push_back(tokens->cbegin());
+        if (tokens->cbegin())
+            filelist.push_back(tokens->cbegin());
     }
 
     return ret;
