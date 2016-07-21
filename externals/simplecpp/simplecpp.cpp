@@ -27,6 +27,7 @@
 #include <stdexcept>
 #include <vector>
 #include <cstring>
+#include <cstdlib> // strtoll, etc
 #include <sstream>
 #include <fstream>
 #include <iostream>
