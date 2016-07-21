@@ -27,6 +27,20 @@
 #include <string>
 #include <vector>
 
+
+#ifdef _WIN32
+#  ifdef SIMPLECPP_EXPORT
+#    define SIMPLECPP_LIB __declspec(dllexport)
+#  elif defined(SIMPLECPP_IMPORT)
+#    define SIMPLECPP_LIB __declspec(dllimport)
+#  else
+#    define SIMPLECPP_LIB
+#  endif
+#else
+#  define SIMPLECPP_LIB
+#endif
+
+
 namespace simplecpp {
 
 typedef std::string TokenString;
@@ -34,7 +48,7 @@ typedef std::string TokenString;
 /**
  * Location in source code
  */
-class Location {
+class SIMPLECPP_LIB Location {
 public:
     Location(const std::vector<std::string> &f) : files(f), fileIndex(0), line(1U), col(0U) {}
 
@@ -76,7 +90,7 @@ public:
  * token class.
  * @todo don't use std::string representation - for both memory and performance reasons
  */
-class Token {
+class SIMPLECPP_LIB Token {
 public:
     Token(const TokenString &s, const Location &loc) :
         str(string), location(loc), previous(NULL), next(NULL), string(s)
@@ -134,7 +148,7 @@ private:
 };
 
 /** Output from preprocessor */
-struct Output {
+struct SIMPLECPP_LIB Output {
     Output(const std::vector<std::string> &files) : type(ERROR), location(files) {}
     enum Type {
         ERROR, /* #error */
@@ -148,7 +162,7 @@ struct Output {
 typedef std::list<struct Output> OutputList;
 
 /** List of tokens. */
-class TokenList {
+class SIMPLECPP_LIB TokenList {
 public:
     TokenList(std::vector<std::string> &filenames);
     TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = 0);
@@ -228,20 +242,20 @@ private:
 };
 
 /** Tracking how macros are used */
-struct MacroUsage {
+struct SIMPLECPP_LIB MacroUsage {
     MacroUsage(const std::vector<std::string> &f) : macroLocation(f), useLocation(f) {}
     std::string macroName;
     Location    macroLocation;
     Location    useLocation;
 };
 
-struct DUI {
+struct SIMPLECPP_LIB DUI {
     std::list<std::string> defines;
     std::set<std::string> undefined;
     std::list<std::string> includePaths;
 };
 
-std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const struct DUI &dui, OutputList *outputList = 0);
+SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const struct DUI &dui, OutputList *outputList = 0);
 
 /**
  * Preprocess
@@ -257,7 +271,7 @@ std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<s
  *
  * @todo simplify interface
  */
-void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, TokenList*> &filedata, const struct DUI &dui, OutputList *outputList = 0, std::list<struct MacroUsage> *macroUsage = 0);
+SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, TokenList*> &filedata, const struct DUI &dui, OutputList *outputList = 0, std::list<struct MacroUsage> *macroUsage = 0);
 }
 
 #endif
