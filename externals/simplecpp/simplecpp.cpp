@@ -59,6 +59,30 @@ template<class T> std::string toString(T t) {
     return ostr.str();
 }
 
+long long stringToLL(const std::string &s)
+{
+    long long ret;
+    bool hex = (s.compare(0, 2, "0x") == 0);
+    std::istringstream istr(hex ? s.substr(2) : s);
+    if (hex)
+        istr >> std::hex;
+    istr >> ret;
+    return ret;
+}
+
+unsigned long long stringToULL(const std::string &s)
+{
+    unsigned long long ret;
+    bool hex = (s.compare(0, 2, "0x") == 0);
+    std::istringstream istr(hex ? s.substr(2) : s);
+    if (hex)
+        istr >> std::hex;
+    istr >> ret;
+    return ret;
+}
+
+
+
 bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2) {
     return tok1 && tok2 && tok1->location.sameline(tok2->location);
 }
@@ -474,12 +498,12 @@ void simplecpp::TokenList::constFoldMulDivRem(Token *tok) {
 
         long long result;
         if (tok->op == '*')
-            result = (std::strtoll(tok->previous->str.c_str(),0,0) * std::strtoll(tok->next->str.c_str(),0,0));
+            result = (stringToLL(tok->previous->str) * stringToLL(tok->next->str));
         else if (tok->op == '/' || tok->op == '%') {
-            long long rhs = std::strtoll(tok->next->str.c_str(),0,0);
+            long long rhs = stringToLL(tok->next->str);
             if (rhs == 0)
                 throw std::overflow_error("division/modulo by zero");
-            long long lhs = std::strtoll(tok->previous->str.c_str(),0,0);
+            long long lhs = stringToLL(tok->previous->str);
             if (rhs == -1 && lhs == std::numeric_limits<long long>::min())
                 throw std::overflow_error("division overflow");
             if (tok->op == '/')
@@ -506,9 +530,9 @@ void simplecpp::TokenList::constFoldAddSub(Token *tok) {
 
         long long result;
         if (tok->op == '+')
-            result = std::strtoll(tok->previous->str.c_str(),0,0) + std::strtoll(tok->next->str.c_str(),0,0);
+            result = stringToLL(tok->previous->str) + stringToLL(tok->next->str);
         else if (tok->op == '-')
-            result = std::strtoll(tok->previous->str.c_str(),0,0) - std::strtoll(tok->next->str.c_str(),0,0);
+            result = stringToLL(tok->previous->str) - stringToLL(tok->next->str);
         else
             continue;
 
@@ -530,17 +554,17 @@ void simplecpp::TokenList::constFoldComparison(Token *tok) {
 
         int result;
         if (tok->str == "==")
-            result = (std::strtoll(tok->previous->str.c_str(),0,0) == std::strtoll(tok->next->str.c_str(),0,0));
+            result = (stringToLL(tok->previous->str) == stringToLL(tok->next->str));
         else if (tok->str == "!=")
-            result = (std::strtoll(tok->previous->str.c_str(),0,0) != std::strtoll(tok->next->str.c_str(),0,0));
+            result = (stringToLL(tok->previous->str) != stringToLL(tok->next->str));
         else if (tok->str == ">")
-            result = (std::strtoll(tok->previous->str.c_str(),0,0) > std::strtoll(tok->next->str.c_str(),0,0));
+            result = (stringToLL(tok->previous->str) > stringToLL(tok->next->str));
         else if (tok->str == ">=")
-            result = (std::strtoll(tok->previous->str.c_str(),0,0) >= std::strtoll(tok->next->str.c_str(),0,0));
+            result = (stringToLL(tok->previous->str) >= stringToLL(tok->next->str));
         else if (tok->str == "<")
-            result = (std::strtoll(tok->previous->str.c_str(),0,0) < std::strtoll(tok->next->str.c_str(),0,0));
+            result = (stringToLL(tok->previous->str) < stringToLL(tok->next->str));
         else if (tok->str == "<=")
-            result = (std::strtoll(tok->previous->str.c_str(),0,0) <= std::strtoll(tok->next->str.c_str(),0,0));
+            result = (stringToLL(tok->previous->str) <= stringToLL(tok->next->str));
         else
             continue;
 
@@ -564,11 +588,11 @@ void simplecpp::TokenList::constFoldBitwise(Token *tok)
                 continue;
             long long result;
             if (tok->op == '&')
-                result = (std::strtoll(tok->previous->str.c_str(),0,0) & std::strtoll(tok->next->str.c_str(),0,0));
+                result = (stringToLL(tok->previous->str) & stringToLL(tok->next->str));
             else if (tok->op == '^')
-                result = (std::strtoll(tok->previous->str.c_str(),0,0) ^ std::strtoll(tok->next->str.c_str(),0,0));
+                result = (stringToLL(tok->previous->str) ^ stringToLL(tok->next->str));
             else /*if (tok->op == '|')*/
-                result = (std::strtoll(tok->previous->str.c_str(),0,0) | std::strtoll(tok->next->str.c_str(),0,0));
+                result = (stringToLL(tok->previous->str) | stringToLL(tok->next->str));
             tok = tok->previous;
             tok->setstr(toString(result));
             deleteToken(tok->next);
@@ -588,9 +612,9 @@ void simplecpp::TokenList::constFoldLogicalOp(Token *tok) {
 
         int result;
         if (tok->str == "||")
-            result = (std::strtoll(tok->previous->str.c_str(),0,0) || std::strtoll(tok->next->str.c_str(),0,0));
+            result = (stringToLL(tok->previous->str) || stringToLL(tok->next->str));
         else /*if (tok->str == "&&")*/
-            result = (std::strtoll(tok->previous->str.c_str(),0,0) && std::strtoll(tok->next->str.c_str(),0,0));
+            result = (stringToLL(tok->previous->str) && stringToLL(tok->next->str));
 
         tok = tok->previous;
         tok->setstr(toString(result));
@@ -1116,7 +1140,7 @@ void simplifyNumbers(simplecpp::TokenList &expr) {
         if (tok->str.size() == 1U)
             continue;
         if (tok->str.compare(0,2,"0x") == 0)
-            tok->setstr(toString(::strtoull(tok->str.substr(2).c_str(), NULL, 16)));
+            tok->setstr(toString(stringToULL(tok->str)));
         else if (tok->str[0] == '\'')
             tok->setstr(toString(tok->str[1] & 0xffU));
     }
@@ -1128,7 +1152,7 @@ long long evaluate(simplecpp::TokenList expr, const std::map<std::string, std::s
     simplifyNumbers(expr);
     expr.constFold();
     // TODO: handle invalid expressions
-    return expr.cbegin() && expr.cbegin() == expr.cend() && expr.cbegin()->number ? std::strtoll(expr.cbegin()->str.c_str(),0,0) : 0LL;
+    return expr.cbegin() && expr.cbegin() == expr.cend() && expr.cbegin()->number ? stringToLL(expr.cbegin()->str) : 0LL;
 }
 
 const simplecpp::Token *gotoNextLine(const simplecpp::Token *tok) {
