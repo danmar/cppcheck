@@ -79,13 +79,13 @@ public:
 class Token {
 public:
     Token(const TokenString &s, const Location &loc) :
-        str(string), location(loc), previous(nullptr), next(nullptr), string(s)
+        str(string), location(loc), previous(NULL), next(NULL), string(s)
     {
         flags();
     }
 
     Token(const Token &tok) :
-        str(string), macro(tok.macro), location(tok.location), previous(nullptr), next(nullptr), string(tok.str)
+        str(string), macro(tok.macro), location(tok.location), previous(NULL), next(NULL), string(tok.str)
     {
         flags();
     }

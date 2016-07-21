@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <limits>
 #include <list>
 #include <map>
 #include <set>
@@ -91,14 +92,14 @@ bool simplecpp::Token::endsWithOneOf(const char c[]) const {
     return std::strchr(c, str[str.size() - 1U]) != 0;
 }
 
-simplecpp::TokenList::TokenList(std::vector<std::string> &filenames) : first(nullptr), last(nullptr), files(filenames) {}
+simplecpp::TokenList::TokenList(std::vector<std::string> &filenames) : first(NULL), last(NULL), files(filenames) {}
 
 simplecpp::TokenList::TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename, OutputList *outputList)
-    : first(nullptr), last(nullptr), files(filenames) {
+    : first(NULL), last(NULL), files(filenames) {
     readfile(istr,filename,outputList);
 }
 
-simplecpp::TokenList::TokenList(const TokenList &other) : first(nullptr), last(nullptr), files(other.files) {
+simplecpp::TokenList::TokenList(const TokenList &other) : first(NULL), last(NULL), files(other.files) {
     *this = other;
 }
 
@@ -121,7 +122,7 @@ void simplecpp::TokenList::clear() {
         delete first;
         first = next;
     }
-    last = nullptr;
+    last = NULL;
     sizeOfType.clear();
 }
 
@@ -237,7 +238,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
     unsigned int multiline = 0U;
 
-    const Token *oldLastToken = nullptr;
+    const Token *oldLastToken = NULL;
 
     const unsigned short bom = getAndSkipBOM(istr);
 
@@ -397,7 +398,8 @@ void simplecpp::TokenList::combineOperators() {
             }
         }
         // match: [0-9.]+E [+-] [0-9]+
-        if (tok->number && (tok->str.back() == 'E' || tok->str.back() == 'e') && tok->next && tok->next->isOneOf("+-") && tok->next->next && tok->next->next->number) {
+        const char lastChar = tok->str[tok->str.size() - 1];
+        if (tok->number && (lastChar == 'E' || lastChar == 'e') && tok->next && tok->next->isOneOf("+-") && tok->next->next && tok->next->next->number) {
             tok->setstr(tok->str + tok->next->op + tok->next->next->str);
             deleteToken(tok->next);
             deleteToken(tok->next);
@@ -471,12 +473,12 @@ void simplecpp::TokenList::constFoldMulDivRem(Token *tok) {
 
         long long result;
         if (tok->op == '*')
-            result = (std::stoll(tok->previous->str) * std::stoll(tok->next->str));
+            result = (std::strtoll(tok->previous->str.c_str(),0,0) * std::strtoll(tok->next->str.c_str(),0,0));
         else if (tok->op == '/' || tok->op == '%') {
-            long long rhs = std::stoll(tok->next->str);
+            long long rhs = std::strtoll(tok->next->str.c_str(),0,0);
             if (rhs == 0)
                 throw std::overflow_error("division/modulo by zero");
-            long long lhs = std::stoll(tok->previous->str);
+            long long lhs = std::strtoll(tok->previous->str.c_str(),0,0);
             if (rhs == -1 && lhs == std::numeric_limits<long long>::min())
                 throw std::overflow_error("division overflow");
             if (tok->op == '/')
@@ -503,9 +505,9 @@ void simplecpp::TokenList::constFoldAddSub(Token *tok) {
 
         long long result;
         if (tok->op == '+')
-            result = (std::stoll(tok->previous->str) + std::stoll(tok->next->str));
+            result = std::strtoll(tok->previous->str.c_str(),0,0) + std::strtoll(tok->next->str.c_str(),0,0);
         else if (tok->op == '-')
-            result = (std::stoll(tok->previous->str) - std::stoll(tok->next->str));
+            result = std::strtoll(tok->previous->str.c_str(),0,0) - std::strtoll(tok->next->str.c_str(),0,0);
         else
             continue;
 
@@ -527,17 +529,17 @@ void simplecpp::TokenList::constFoldComparison(Token *tok) {
 
         int result;
         if (tok->str == "==")
-            result = (std::stoll(tok->previous->str) == std::stoll(tok->next->str));
+            result = (std::strtoll(tok->previous->str.c_str(),0,0) == std::strtoll(tok->next->str.c_str(),0,0));
         else if (tok->str == "!=")
-            result = (std::stoll(tok->previous->str) != std::stoll(tok->next->str));
+            result = (std::strtoll(tok->previous->str.c_str(),0,0) != std::strtoll(tok->next->str.c_str(),0,0));
         else if (tok->str == ">")
-            result = (std::stoll(tok->previous->str) > std::stoll(tok->next->str));
+            result = (std::strtoll(tok->previous->str.c_str(),0,0) > std::strtoll(tok->next->str.c_str(),0,0));
         else if (tok->str == ">=")
-            result = (std::stoll(tok->previous->str) >= std::stoll(tok->next->str));
+            result = (std::strtoll(tok->previous->str.c_str(),0,0) >= std::strtoll(tok->next->str.c_str(),0,0));
         else if (tok->str == "<")
-            result = (std::stoll(tok->previous->str) < std::stoll(tok->next->str));
+            result = (std::strtoll(tok->previous->str.c_str(),0,0) < std::strtoll(tok->next->str.c_str(),0,0));
         else if (tok->str == "<=")
-            result = (std::stoll(tok->previous->str) <= std::stoll(tok->next->str));
+            result = (std::strtoll(tok->previous->str.c_str(),0,0) <= std::strtoll(tok->next->str.c_str(),0,0));
         else
             continue;
 
@@ -561,11 +563,11 @@ void simplecpp::TokenList::constFoldBitwise(Token *tok)
                 continue;
             long long result;
             if (tok->op == '&')
-                result = (std::stoll(tok->previous->str) & std::stoll(tok->next->str));
+                result = (std::strtoll(tok->previous->str.c_str(),0,0) & std::strtoll(tok->next->str.c_str(),0,0));
             else if (tok->op == '^')
-                result = (std::stoll(tok->previous->str) ^ std::stoll(tok->next->str));
+                result = (std::strtoll(tok->previous->str.c_str(),0,0) ^ std::strtoll(tok->next->str.c_str(),0,0));
             else /*if (tok->op == '|')*/
-                result = (std::stoll(tok->previous->str) | std::stoll(tok->next->str));
+                result = (std::strtoll(tok->previous->str.c_str(),0,0) | std::strtoll(tok->next->str.c_str(),0,0));
             tok = tok->previous;
             tok->setstr(toString(result));
             deleteToken(tok->next);
@@ -585,9 +587,9 @@ void simplecpp::TokenList::constFoldLogicalOp(Token *tok) {
 
         int result;
         if (tok->str == "||")
-            result = (std::stoll(tok->previous->str) || std::stoll(tok->next->str));
+            result = (std::strtoll(tok->previous->str.c_str(),0,0) || std::strtoll(tok->next->str.c_str(),0,0));
         else /*if (tok->str == "&&")*/
-            result = (std::stoll(tok->previous->str) && std::stoll(tok->next->str));
+            result = (std::strtoll(tok->previous->str.c_str(),0,0) && std::strtoll(tok->next->str.c_str(),0,0));
 
         tok = tok->previous;
         tok->setstr(toString(result));
@@ -683,9 +685,9 @@ unsigned int simplecpp::TokenList::fileIndex(const std::string &filename) {
 namespace simplecpp {
 class Macro {
 public:
-    Macro(std::vector<std::string> &f) : nameToken(nullptr), files(f), tokenListDefine(f) {}
+    Macro(std::vector<std::string> &f) : nameToken(NULL), files(f), tokenListDefine(f) {}
 
-    explicit Macro(const Token *tok, std::vector<std::string> &f) : nameToken(nullptr), files(f), tokenListDefine(f) {
+    explicit Macro(const Token *tok, std::vector<std::string> &f) : nameToken(NULL), files(f), tokenListDefine(f) {
         if (sameline(tok->previous, tok))
             throw std::runtime_error("bad macro syntax");
         if (tok->op != '#')
@@ -699,14 +701,14 @@ public:
         parseDefine(tok);
     }
 
-    explicit Macro(const std::string &name, const std::string &value, std::vector<std::string> &f) : nameToken(nullptr), files(f), tokenListDefine(f) {
+    explicit Macro(const std::string &name, const std::string &value, std::vector<std::string> &f) : nameToken(NULL), files(f), tokenListDefine(f) {
         const std::string def(name + ' ' + value);
         std::istringstream istr(def);
         tokenListDefine.readfile(istr);
         parseDefine(tokenListDefine.cbegin());
     }
 
-    Macro(const Macro &macro) : nameToken(nullptr), files(macro.files), tokenListDefine(macro.files) {
+    Macro(const Macro &macro) : nameToken(NULL), files(macro.files), tokenListDefine(macro.files) {
         *this = macro;
     }
 
@@ -880,7 +882,7 @@ private:
         nameToken = nametoken;
         variadic = false;
         if (!nameToken) {
-            valueToken = endToken = nullptr;
+            valueToken = endToken = NULL;
             args.clear();
             return;
         }
@@ -911,7 +913,7 @@ private:
         }
 
         if (!sameline(valueToken, nameToken))
-            valueToken = nullptr;
+            valueToken = NULL;
         endToken = valueToken;
         while (sameline(endToken, nameToken))
             endToken = endToken->next;
@@ -934,7 +936,7 @@ private:
         std::vector<const Token *> parametertokens;
         parametertokens.push_back(nameToken->next);
         unsigned int par = 0U;
-        for (const Token *tok = nameToken->next->next; def ? sameline(tok,nameToken) : (tok != nullptr); tok = tok->next) {
+        for (const Token *tok = nameToken->next->next; def ? sameline(tok,nameToken) : (tok != NULL); tok = tok->next) {
             if (tok->op == '(')
                 ++par;
             else if (tok->op == ')') {
@@ -1113,9 +1115,9 @@ void simplifyNumbers(simplecpp::TokenList &expr) {
         if (tok->str.size() == 1U)
             continue;
         if (tok->str.compare(0,2,"0x") == 0)
-            tok->setstr(toString(std::stoull(tok->str.substr(2), nullptr, 16)));
+            tok->setstr(toString(::strtoull(tok->str.substr(2).c_str(), NULL, 16)));
         else if (tok->str[0] == '\'')
-            tok->setstr(toString((unsigned int)tok->str[1] & 0xffU));
+            tok->setstr(toString(tok->str[1] & 0xffU));
     }
 }
 
@@ -1125,7 +1127,7 @@ long long evaluate(simplecpp::TokenList expr, const std::map<std::string, std::s
     simplifyNumbers(expr);
     expr.constFold();
     // TODO: handle invalid expressions
-    return expr.cbegin() && expr.cbegin() == expr.cend() && expr.cbegin()->number ? std::stoll(expr.cbegin()->str) : 0LL;
+    return expr.cbegin() && expr.cbegin() == expr.cend() && expr.cbegin()->number ? std::strtoll(expr.cbegin()->str.c_str(),0,0) : 0LL;
 }
 
 const simplecpp::Token *gotoNextLine(const simplecpp::Token *tok) {
@@ -1139,11 +1141,11 @@ const simplecpp::Token *gotoNextLine(const simplecpp::Token *tok) {
 std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::string &sourcefile, const std::string &header) {
     if (sourcefile.find_first_of("\\/") != std::string::npos) {
         const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
-        f.open(s);
+        f.open(s.c_str());
         if (f.is_open())
             return s;
     } else {
-        f.open(header);
+        f.open(header.c_str());
         if (f.is_open())
             return header;
     }
@@ -1153,7 +1155,7 @@ std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::s
         if (!s.empty() && s[s.size()-1U]!='/' && s[s.size()-1U]!='\\')
             s += '/';
         s += header;
-        f.open(s);
+        f.open(s.c_str());
         if (f.is_open())
             return s;
     }
@@ -1200,7 +1202,7 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
     std::list<const Token *> filelist;
 
     for (const Token *rawtok = rawtokens2.cbegin(); rawtok || !filelist.empty(); rawtok = rawtok->next) {
-        if (rawtok == nullptr) {
+        if (rawtok == NULL) {
             rawtok = filelist.back();
             filelist.pop_back();
         }
@@ -1276,7 +1278,7 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
     // ELSE_IS_TRUE => code in current #if block should be dropped. the code in the #else should be kept.
     // ALWAYS_FALSE => drop all code in #if and #else
     enum IfState { TRUE, ELSE_IS_TRUE, ALWAYS_FALSE };
-    std::stack<IfState> ifstates;
+    std::stack<int> ifstates;
     ifstates.push(TRUE);
 
     std::list<TokenList *> includes;
@@ -1286,7 +1288,7 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
 
     TokenList output(files);
     for (const Token *rawtok = rawtokens.cbegin(); rawtok || !includetokenstack.empty();) {
-        if (rawtok == nullptr) {
+        if (rawtok == NULL) {
             rawtok = includetokenstack.top();
             includetokenstack.pop();
             continue;
@@ -1337,7 +1339,7 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
                     continue;
                 } else {
                     simplecpp::Output output(files);
-                    output.type = Output::Type::MISSING_INCLUDE;
+                    output.type = Output::MISSING_INCLUDE;
                     output.location = rawtok->location;
                     output.msg = "Header not found: " + rawtok->next->str;
                     if (outputList)
