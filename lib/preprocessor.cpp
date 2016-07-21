@@ -85,11 +85,8 @@ void Preprocessor::writeError(const std::string &fileName, const unsigned int li
 }
 
 
-void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
+static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_settings)
 {
-    if (!_settings.inlineSuppressions)
-        return;
-
     std::list<std::string> suppressionIDs;
 
     for (const simplecpp::Token *tok = tokens.cbegin(); tok; tok = tok->next) {
@@ -119,12 +116,22 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
             }
         }
 
-
         // Add the suppressions.
         for (std::list<std::string>::const_iterator it = suppressionIDs.begin(); it != suppressionIDs.end(); ++it) {
             _settings.nomsg.addSuppression(*it, relativeFilename, tok->location.line);
         }
         suppressionIDs.clear();
+    }
+}
+
+void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
+{
+    if (!_settings.inlineSuppressions)
+        return;
+    ::inlineSuppressions(tokens, _settings);
+    for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+        if (it->second)
+            ::inlineSuppressions(*it->second, _settings);
     }
 }
 
