@@ -3507,7 +3507,7 @@ private:
         for (tok = tokenizer.list.back(); tok; tok = tok->previous())
             if (Token::simpleMatch(tok, pattern))
                 break;
-        return tok->valueType() ? tok->valueType()->str() : std::string();
+        return (tok && tok->valueType()) ? tok->valueType()->str() : std::string();
     }
 
     void valuetype() {
