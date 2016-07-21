@@ -17,7 +17,7 @@
 #include "options.h"
 
 options::options(int argc, const char* argv[])
-    :_options(&argv[1], &argv[0] + argc)
+    :_options(argv + 1, argv + argc)
     ,_which_test("")
     ,_gcc_style_errors(_options.count("-g") != 0)
     ,_quiet(_options.count("-q") != 0)
