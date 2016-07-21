@@ -121,6 +121,9 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
         }
 
         if (_settings.checkConfiguration) {
+            for (std::set<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it)
+                (void)preprocessor.getcode(tokens1, *it, files, true);
+
             return 0;
         }
 

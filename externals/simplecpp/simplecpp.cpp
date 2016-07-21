@@ -48,6 +48,9 @@ const simplecpp::TokenString ELSE("else");
 const simplecpp::TokenString ELIF("elif");
 const simplecpp::TokenString ENDIF("endif");
 
+const simplecpp::TokenString PRAGMA("pragma");
+const simplecpp::TokenString ONCE("once");
+
 template<class T> std::string toString(T t) {
     std::ostringstream ostr;
     ostr << t;
@@ -1279,6 +1282,8 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
     std::list<TokenList *> includes;
     std::stack<const Token *> includetokenstack;
 
+    std::set<std::string> pragmaOnce;
+
     TokenList output(files);
     for (const Token *rawtok = rawtokens.cbegin(); rawtok || !includetokenstack.empty();) {
         if (rawtok == nullptr) {
@@ -1322,18 +1327,21 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
                     }
                 } catch (const std::runtime_error &) {
                 }
-            } else if (rawtok->str == INCLUDE) {
-                if (ifstates.top() == TRUE) {
-                    const std::string header(rawtok->next->str.substr(1U, rawtok->next->str.size() - 2U));
-                    const std::string header2 = getFileName(filedata, rawtok->location.file(), header, dui);
-                    if (!header2.empty()) {
-                        includetokenstack.push(gotoNextLine(rawtok));
-                        const TokenList *includetokens = filedata.find(header2)->second;
-                        rawtok = includetokens ? includetokens->cbegin() : 0;
-                        continue;
-                    } else {
-                        // TODO: Write warning message
-                    }
+            } else if (ifstates.top() == TRUE && rawtok->str == INCLUDE) {
+                const std::string header(rawtok->next->str.substr(1U, rawtok->next->str.size() - 2U));
+                const std::string header2 = getFileName(filedata, rawtok->location.file(), header, dui);
+                if (!header2.empty() && pragmaOnce.find(header2) == pragmaOnce.end()) {
+                    includetokenstack.push(gotoNextLine(rawtok));
+                    const TokenList *includetokens = filedata.find(header2)->second;
+                    rawtok = includetokens ? includetokens->cbegin() : 0;
+                    continue;
+                } else {
+                    simplecpp::Output output(files);
+                    output.type = Output::Type::MISSING_INCLUDE;
+                    output.location = rawtok->location;
+                    output.msg = "Header not found: " + rawtok->next->str;
+                    if (outputList)
+                        outputList->push_back(output);
                 }
             } else if (rawtok->str == IF || rawtok->str == IFDEF || rawtok->str == IFNDEF || rawtok->str == ELIF) {
                 bool conditionIsTrue;
@@ -1425,6 +1433,8 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
                     if (sameline(rawtok, tok))
                         macros.erase(tok->str);
                 }
+            } else if (ifstates.top() == TRUE && rawtok->str == PRAGMA && rawtok->next && rawtok->next->str == ONCE && sameline(rawtok,rawtok->next)) {
+                pragmaOnce.insert(rawtok->location.file());
             }
             rawtok = gotoNextLine(rawtok);
             continue;

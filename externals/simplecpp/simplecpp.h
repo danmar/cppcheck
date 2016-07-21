@@ -123,8 +123,9 @@ private:
 struct Output {
     Output(const std::vector<std::string> &files) : type(ERROR), location(files) {}
     enum Type {
-        ERROR, /* error */
-        WARNING /* warning */
+        ERROR, /* #error */
+        WARNING, /* #warning */
+        MISSING_INCLUDE
     } type;
     Location location;
     std::string msg;

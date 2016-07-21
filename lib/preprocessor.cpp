@@ -512,11 +512,21 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
 
     bool showerror = (!_settings.userDefines.empty() && !_settings.force);
     for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
-        if (it->type == simplecpp::Output::ERROR) {
+        switch (it->type) {
+        case simplecpp::Output::ERROR:
             if (it->msg.compare(0,6,"#error")!=0 || showerror)
                 error(it->location.file(), it->location.line, it->msg);
             return "";
+        case simplecpp::Output::WARNING:
+            break;
+        case simplecpp::Output::MISSING_INCLUDE: {
+            const std::string::size_type pos1 = it->msg.find_first_of("<\"");
+            const std::string::size_type pos2 = it->msg.find_first_of(">\"", pos1 + 1U);
+            if (pos1 < pos2 && pos2 != std::string::npos)
+                missingInclude(it->location.file(), it->location.line, it->msg.substr(pos1+1, pos2-pos1-1), it->msg[pos1] == '\"' ? UserHeader : SystemHeader);
         }
+        break;
+        };
     }
 
     // directive list..
@@ -649,10 +659,20 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     inlineSuppressions(tokens1);
 
     for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
-        if (it->type == simplecpp::Output::ERROR) {
+        switch (it->type) {
+        case simplecpp::Output::ERROR:
             error(it->location.file(), it->location.line, it->msg);
             return "";
+        case simplecpp::Output::WARNING:
+            break;
+        case simplecpp::Output::MISSING_INCLUDE: {
+            const std::string::size_type pos1 = it->msg.find_first_of("<\"");
+            const std::string::size_type pos2 = it->msg.find_first_of(">\"", pos1 + 1U);
+            if (pos1 < pos2 && pos2 != std::string::npos)
+                missingInclude(it->location.file(), it->location.line, it->msg.substr(pos1+1, pos2-pos1-1), it->msg[pos1] == '\"' ? UserHeader : SystemHeader);
         }
+        break;
+        };
     }
 
     return getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
