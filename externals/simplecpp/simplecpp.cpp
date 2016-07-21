@@ -1223,9 +1223,6 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
         ret[header2] = 0;
 
         TokenList *tokens = new TokenList(f, fileNumbers, header2);
-        tokens->removeComments();
-        if (!tokens->cbegin())
-            continue;
         ret[header2] = tokens;
         filelist.push_back(tokens->cbegin());
     }
@@ -1235,9 +1232,6 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
 
 simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, simplecpp::TokenList *> &filedata, const struct simplecpp::DUI &dui, simplecpp::OutputList *outputList, std::list<struct simplecpp::MacroUsage> *macroUsage)
 {
-    simplecpp::TokenList rawtokens2(rawtokens);
-    rawtokens2.removeComments();
-
     std::map<std::string, std::size_t> sizeOfType(rawtokens.sizeOfType);
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char"), sizeof(char)));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short"), sizeof(short)));
@@ -1285,7 +1279,7 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
     std::stack<const Token *> includetokenstack;
 
     TokenList output(files);
-    for (const Token *rawtok = rawtokens2.cbegin(); rawtok || !includetokenstack.empty();) {
+    for (const Token *rawtok = rawtokens.cbegin(); rawtok || !includetokenstack.empty();) {
         if (rawtok == nullptr) {
             rawtok = includetokenstack.top();
             includetokenstack.pop();
@@ -1333,7 +1327,8 @@ simplecpp::TokenList simplecpp::preprocess(const simplecpp::TokenList &rawtokens
                     const std::string header2 = getFileName(filedata, rawtok->location.file(), header, dui);
                     if (!header2.empty()) {
                         includetokenstack.push(gotoNextLine(rawtok));
-                        rawtok = filedata.find(header2)->second->cbegin();
+                        const TokenList *includetokens = filedata.find(header2)->second;
+                        rawtok = includetokens ? includetokens->cbegin() : 0;
                         continue;
                     } else {
                         // TODO: Write warning message

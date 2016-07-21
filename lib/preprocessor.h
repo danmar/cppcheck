@@ -92,6 +92,8 @@ public:
 
     void loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
 
+    void removeComments();
+
     /**
      * Extract the code for each configuration
      * @param istr The (file/string) stream to read from.

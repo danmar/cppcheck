@@ -104,19 +104,21 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
 
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens1(fileStream, files, filename, &outputList);
+        simplecpp::TokenList tokens1(fileStream, files, filename, &outputList);
+        preprocessor.loadFiles(tokens1, files);
+
+        // Parse comments and then remove them
+        preprocessor.inlineSuppressions(tokens1);
+        tokens1.removeComments();
+        preprocessor.removeComments();
 
         // Get configurations..
         if (_settings.userDefines.empty() || _settings.force) {
             Timer t("Preprocessor::getConfigs", _settings.showtime, &S_timerResults);
-            preprocessor.loadFiles(tokens1, files);
             configurations = preprocessor.getConfigs(tokens1);
         } else {
             configurations.insert(_settings.userDefines);
-            preprocessor.loadFiles(tokens1, files);
         }
-
-        preprocessor.inlineSuppressions(tokens1);
 
         if (_settings.checkConfiguration) {
             return 0;

@@ -260,7 +260,8 @@ private:
         std::istringstream istr(code);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens(istr, files, filename, &outputList);
+        simplecpp::TokenList tokens(istr, files, filename, &outputList);
+        tokens.removeComments();
         const std::set<std::string> configs(preprocessor0.getConfigs(tokens));
         for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it) {
             try {

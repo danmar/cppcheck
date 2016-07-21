@@ -457,6 +457,14 @@ void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
     tokenlists = simplecpp::load(rawtokens, files, dui, &outputList);
 }
 
+void Preprocessor::removeComments()
+{
+    for (std::map<std::string, simplecpp::TokenList*>::iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+        if (it->second)
+            it->second->removeComments();
+    }
+}
+
 std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations)
 {
     const std::string filename(files[0]);
