@@ -809,6 +809,12 @@ public:
             return nameToken->next;
         }
 
+        // No arguments => not macro expansion
+        if (nameToken->next && nameToken->next->op != '(') {
+            output->push_back(new Token(nameToken->str, loc));
+            return nameToken->next;
+        }
+
         // Parse macro-call
         const std::vector<const Token*> parametertokens(getMacroParameters(nameToken, !expandedmacros1.empty()));
         if (parametertokens.size() != args.size() + (args.empty() ? 2U : 1U)) {
