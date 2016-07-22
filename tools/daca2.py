@@ -122,6 +122,8 @@ def removeLargeFiles(path):
             if path.find('/clang/INPUTS/') > 0 or statinfo.st_size > 1000000:
                 os.remove(g)
 
+def strfCurrTime(fmt):
+    return datetime.time.strftime(datetime.datetime.now().time(), fmt)
 
 def scanarchive(filepath, jobs):
     # remove all files/folders except results.txt
@@ -148,7 +150,7 @@ def scanarchive(filepath, jobs):
 
     removeLargeFiles('')
 
-    print('cppcheck ' + filename)
+    print(strfCurrTime('[%H:%M] cppcheck ' ) + filename)
 
     p = subprocess.Popen(
         ['nice',
@@ -165,9 +167,9 @@ def scanarchive(filepath, jobs):
 
     results = open('results.txt', 'at')
     if p.returncode == 0:
-        results.write(comm[1])
+        results.write(comm[1] + strfCurrTime('[%H:%M]') + '\n')
     elif comm[0].find('cppcheck: error: could not find or open any of the paths given.') < 0:
-        results.write(comm[1])
+        results.write(comm[1] + strfCurrTime('[%H:%M]') + '\n')
         results.write('Exit code is not zero! Crash?\n')
     results.write('\n')
     results.close()
@@ -205,6 +207,7 @@ os.chdir(workdir + FOLDER)
 try:
     results = open('results.txt', 'wt')
     results.write('STARTDATE ' + str(datetime.date.today()) + '\n')
+    results.write('STARTTIME ' + strfCurrTime('%H:%M:%S') + '\n')
     if REV:
         results.write('GIT-REVISION ' + REV + '\n')
     results.write('\n')
@@ -215,6 +218,7 @@ try:
 
     results = open('results.txt', 'at')
     results.write('DATE ' + str(datetime.date.today()) + '\n')
+    results.write('TIME ' + strfCurrTime('%H:%M:%S') + '\n')
     results.close()
 
 except EOFError:
