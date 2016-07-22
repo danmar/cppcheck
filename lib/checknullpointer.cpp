@@ -282,7 +282,7 @@ void CheckNullPointer::nullPointerLinkedList()
 
                 // Check usage of dereferenced variable in the loop..
                 for (std::list<Scope*>::const_iterator j = i->nestedList.begin(); j != i->nestedList.end(); ++j) {
-                    Scope* scope = *j;
+                    const Scope* const scope = *j;
                     if (scope->type != Scope::eWhile)
                         continue;
 
