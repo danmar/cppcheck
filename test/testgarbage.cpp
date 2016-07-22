@@ -246,7 +246,7 @@ private:
         // run alternate check first. It should only ensure stability - so we catch exceptions here.
         try {
             checkCodeInternal(code, alternatefilename);
-        } catch (InternalError&) {
+        } catch (const InternalError&) {
         }
 
         return checkCodeInternal(code, filename);
@@ -451,7 +451,7 @@ private:
     }
 
     void garbageCode15() { // Ticket #5203
-        checkCode("int f ( int* r ) { {  int s[2] ; f ( s ) ; if ( ) } }");
+        ASSERT_THROW(checkCode("int f ( int* r ) { {  int s[2] ; f ( s ) ; if ( ) } }"), InternalError);
     }
 
     void garbageCode16() {
@@ -480,13 +480,13 @@ private:
 
     void garbageCode21() {
         // Ticket #3486 - Don't crash garbage code
-        checkCode("void f()\n"
-                  "{\n"
-                  "  (\n"
-                  "    x;\n"
-                  "    int a, a2, a2*x; if () ;\n"
-                  "  )\n"
-                  "}");
+        ASSERT_THROW(checkCode("void f()\n"
+                               "{\n"
+                               "  (\n"
+                               "    x;\n"
+                               "    int a, a2, a2*x; if () ;\n"
+                               "  )\n"
+                               "}"), InternalError);
     }
 
     void garbageCode22() {
@@ -765,7 +765,7 @@ private:
     }
 
     void garbageCode76() { // #6754
-        checkCode(" ( ) ( ) { ( ) [ ] } TEST ( ) { ( _broadcast_f32x4 ) ( ) ( ) ( ) ( ) if ( ) ( ) ; } E mask = ( ) [ ] ( ) res1.x =");
+        ASSERT_THROW(checkCode(" ( ) ( ) { ( ) [ ] } TEST ( ) { ( _broadcast_f32x4 ) ( ) ( ) ( ) ( ) if ( ) ( ) ; } E mask = ( ) [ ] ( ) res1.x ="), InternalError);
     }
 
     void garbageCode77() { // #6755

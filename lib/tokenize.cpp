@@ -3469,6 +3469,20 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
             Token::simpleMatch(tok->linkAt(2), "} ;")) {
             syntaxError(tok);
         }
+
+        if (tok->str() == "switch") { // switch (EXPR) { ... }
+            if (!Token::Match(tok->next(), "( !!)"))
+                syntaxError(tok->next());
+            if (!Token::simpleMatch(tok->linkAt(1),") {"))
+                syntaxError(tok->linkAt(1));
+            validateExpr(tok->next(), tok->linkAt(1));
+        }
+
+        if (Token::Match(tok, "if|while")) {
+            if (!Token::Match(tok->next(), "( !!)"))
+                syntaxError(tok->next());
+            validateExpr(tok->next(), tok->linkAt(1));
+        }
     }
 
     if (!simplifyAddBraces())
@@ -8173,6 +8187,29 @@ void Tokenizer::validate() const
     // Validate that the Tokenizer::list.back() is updated correctly during simplifications
     if (lastTok != list.back())
         cppcheckError(lastTok);
+}
+
+void Tokenizer::validateExpr(const Token *start, const Token *end)
+{
+    std::set<std::string> controlFlowKeywords;
+    controlFlowKeywords.insert("goto");
+    controlFlowKeywords.insert("do");
+    controlFlowKeywords.insert("if");
+    controlFlowKeywords.insert("else");
+    controlFlowKeywords.insert("for");
+    controlFlowKeywords.insert("while");
+    controlFlowKeywords.insert("switch");
+    controlFlowKeywords.insert("break");
+    controlFlowKeywords.insert("continue");
+    controlFlowKeywords.insert("return");
+    for (const Token *tok = start; tok != end; tok = tok->next()) {
+        if (controlFlowKeywords.find(tok->str()) != controlFlowKeywords.end())
+            syntaxError(tok);
+        if (tok->str() == ";")
+            syntaxError(tok);
+        if (tok->str() == "{")
+            tok = tok->link();
+    }
 }
 
 std::string Tokenizer::simplifyString(const std::string &source)

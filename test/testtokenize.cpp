@@ -102,16 +102,14 @@ private:
         TEST_CASE(ifAddBraces3);
         TEST_CASE(ifAddBraces4);
         TEST_CASE(ifAddBraces5);
-        TEST_CASE(ifAddBraces6);
         TEST_CASE(ifAddBraces7);
         TEST_CASE(ifAddBraces9);
         TEST_CASE(ifAddBraces10);
         TEST_CASE(ifAddBraces11);
         TEST_CASE(ifAddBraces12);
         TEST_CASE(ifAddBraces13);
-        TEST_CASE(ifAddBraces14); // #2610 - segfault: if()<{}
         TEST_CASE(ifAddBraces15); // #2616 - unknown macro before if
-        TEST_CASE(ifAddBraces16); // ticket # 2739 (segmentation fault)
+        TEST_CASE(ifAddBraces16);
         TEST_CASE(ifAddBraces17); // '} else' should be in the same line
         TEST_CASE(ifAddBraces18); // #3424 - if if { } else else
         TEST_CASE(ifAddBraces19); // #3928 - if for if else
@@ -1096,11 +1094,6 @@ private:
                       "}", tokenizeAndStringify(code, true));
     }
 
-    void ifAddBraces6() {
-        const char code[] = "if()";
-        ASSERT_EQUALS("if ( )", tokenizeAndStringify(code, true));
-    }
-
     void ifAddBraces7() {
         const char code[] = "void f()\n"
                             "{\n"
@@ -1163,20 +1156,12 @@ private:
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, true));
     }
 
-    void ifAddBraces14() {
-        // ticket #2610 (segfault)
-        tokenizeAndStringify("if()<{}", false);
-    }
-
     void ifAddBraces15() {
         // ticket #2616 - unknown macro before if
         ASSERT_EQUALS("{ A if ( x ) { y ( ) ; } }", tokenizeAndStringify("{A if(x)y();}", false));
     }
 
-    void ifAddBraces16() { // ticket # 2739 (segmentation fault)
-        tokenizeAndStringify("if()x");
-        ASSERT_EQUALS("", errout.str());
-
+    void ifAddBraces16() {
         // ticket #2873 - the fix is not needed anymore.
         {
             const char code[] = "void f() { "

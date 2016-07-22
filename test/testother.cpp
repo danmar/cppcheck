@@ -3410,7 +3410,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // make sure there are not "same expression" fp when there are different ({}) expressions
-        check("void f(long x) { if (({ 1+2; }) == ({3+4};)) {} }");
+        check("void f(long x) { if (({ 1+2; }) == ({3+4;})) {} }");
         ASSERT_EQUALS("", errout.str());
 
         // #5535: Reference named like its type

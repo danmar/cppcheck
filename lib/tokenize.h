@@ -592,6 +592,9 @@ private:
      */
     void validate() const;
 
+    /** Validate that expression is valid. If it's invalid a syntax error is reported. */
+    void validateExpr(const Token *start, const Token *end);
+
     /**
      * Remove __declspec()
      */
