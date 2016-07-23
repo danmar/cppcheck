@@ -839,6 +839,10 @@ public:
             }
 
             tok = tok->next;
+            if (tok == endToken) {
+                output->push_back(new Token(*tok->previous));
+                break;
+            }
             if (tok->op == '#') {
                 // A##B => AB
                 Token *A = output->end();
