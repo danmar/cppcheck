@@ -150,7 +150,7 @@ def scanarchive(filepath, jobs):
 
     removeLargeFiles('')
 
-    print(strfCurrTime('[%H:%M] cppcheck ' ) + filename)
+    print(strfCurrTime('[%H:%M] cppcheck ') + filename)
 
     p = subprocess.Popen(
         ['nice',

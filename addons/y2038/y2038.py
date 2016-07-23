@@ -198,7 +198,7 @@ def find_dump_files(paths):
             for (top, subdirs, files) in os.walk(path):
                 for file in files:
                     if file.endswith('.dump'):
-                        f = top+'/'+file
+                        f = top + '/' + file
                         if not f in dumpfiles:
                             dumpfiles.append(f)
     dumpfiles.sort()
@@ -212,9 +212,9 @@ def find_dump_files(paths):
 
 parser = cppcheckdata.ArgumentParser()
 parser.add_argument('-q', '--quiet', action='store_true',
-    help='do not print "Checking ..." lines')
+                    help='do not print "Checking ..." lines')
 parser.add_argument('paths', nargs='+', metavar='path',
-    help='path to dump file or directory')
+                    help='path to dump file or directory')
 
 # parse command line
 
@@ -258,7 +258,7 @@ for dumpfile in dumpfiles:
                 safe = int(srclinenr)
                 # warn about _TIME_BITS not being defined
                 if time_bits_defined == False:
-                    reportDirDiag(args.template, 
+                    reportDirDiag(args.template,
                         cfg, srcfile, srclinenr, directive, 'warning',
                                   '_USE_TIME_BITS64 is defined but _TIME_BITS was not')
             elif re_undef_use_time_bits64.match(directive.str):

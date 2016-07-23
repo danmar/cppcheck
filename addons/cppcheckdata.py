@@ -578,10 +578,11 @@ class CppCheckFormatter(argparse.HelpFormatter):
     '''
         Properly formats multiline argument helps
     '''
+
     def _split_lines(self, text, width):
         # this is the RawTextHelpFormatter._split_lines
         if text.startswith('R|'):
-            return text[2:].splitlines()  
+            return text[2:].splitlines()
         return argparse.HelpFormatter._split_lines(self, text, width)
 
 def ArgumentParser():
@@ -591,20 +592,20 @@ def ArgumentParser():
     '''
     parser = argparse.ArgumentParser(formatter_class=CppCheckFormatter)
     parser.add_argument('-t', '--template', metavar='<text>',
-        default='{callstack}: ({severity}) {message}',
-        help="R|Format the error messages. E.g.\n" \
-             "'{file}:{line},{severity},{id},{message}' or\n" \
-             "'{file}({line}):({severity}) {message}' or\n" \
-             "'{callstack} {message}'\n" \
-             "Pre-defined templates: gcc, vs, edit")
+                        default='{callstack}: ({severity}) {message}',
+                        help="R|Format the error messages. E.g.\n"
+                        "'{file}:{line},{severity},{id},{message}' or\n"
+                        "'{file}({line}):({severity}) {message}' or\n"
+                        "'{callstack} {message}'\n"
+                        "Pre-defined templates: gcc, vs, edit")
     return parser
 
 # Format an error message.
- 
+
 def reportError(template, callstack=[], severity='', message='', id=''):
     '''
         Format an error message according to the template.
-        
+
         :param template: format string, or 'gcc', 'vs' or 'edit'.
         :param callstack: e.g. [['file1.cpp',10],['file2.h','20'], ... ]
         :param severity: e.g. 'error', 'warning' ...
@@ -619,9 +620,9 @@ def reportError(template, callstack=[], severity='', message='', id=''):
     elif template == 'edit':
         template = '{file} +{line}: {severity}: {message}'
     # compute 'callstack}, {file} and {line} replacements
-    stack = ' -> '.join(['['+f+':'+str(l)+']' for (f,l) in callstack])
+    stack = ' -> '.join(['[' + f + ':' + str(l) + ']' for (f, l) in callstack])
     file = callstack[-1][0]
     line = str(callstack[-1][1])
     # format message
     return template.format(callstack=stack, file=file, line=line,
-        severity=severity, message=message, id=id)
+                           severity=severity, message=message, id=id)

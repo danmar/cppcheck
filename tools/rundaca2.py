@@ -10,12 +10,12 @@ import sys
 START = 0
 PASSWORD = ''
 for arg in sys.argv[1:]:
-	if len(arg)==1:
-		START = '0123456789abcdefghijklmnopqrstuvwxyz'.find(arg)
-		if START < 0:
-			START = 0
-	else:
-		PASSWORD = arg
+    if len(arg) == 1:
+        START = '0123456789abcdefghijklmnopqrstuvwxyz'.find(arg)
+        if START < 0:
+            START = 0
+    else:
+        PASSWORD = arg
 
 # Upload file to sourceforge web server using scp
 def upload(file_to_upload, destination):
