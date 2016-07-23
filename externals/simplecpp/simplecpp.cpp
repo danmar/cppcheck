@@ -755,77 +755,74 @@ public:
         }
     }
 
+    const Token * expand(TokenList * const output,
+                         const Token * rawtok,
+                         const std::map<TokenString,Macro> &macros,
+                         std::vector<std::string> &files) const {
+        std::set<TokenString> expandedmacros;
+        TokenList output2(files);
+        rawtok = expand(&output2,rawtok->location,rawtok,macros,expandedmacros);
+        while (output2.cend() && rawtok && (rawtok->op == '(' || output2.cend()->op == '(')) {
+            Token* macro2tok = output2.end();
+            if (macro2tok->op == '(')
+                macro2tok = macro2tok->previous;
+            if (!macro2tok || !macro2tok->name)
+                break;
+            if (output2.cbegin() != output2.cend() && macro2tok->str == this->name())
+                break;
+            const std::map<TokenString,Macro>::const_iterator macro = macros.find(macro2tok->str);
+            if (macro == macros.end() || !macro->second.functionLike())
+                break;
+            TokenList rawtokens2(files);
+            while (macro2tok) {
+                Token *next = macro2tok->next;
+                rawtokens2.push_back(new Token(*macro2tok));
+                output2.deleteToken(macro2tok);
+                macro2tok = next;
+            }
+            unsigned int par = (rawtokens2.cend()->op == '(') ? 1U : 0U;
+            const Token *rawtok2 = rawtok;
+            for (; rawtok2; rawtok2 = rawtok2->next) {
+                rawtokens2.push_back(new Token(*rawtok2));
+                if (rawtok2->op == '(')
+                    ++par;
+                else if (rawtok2->op == ')') {
+                    if (par <= 1U)
+                        break;
+                    --par;
+                }
+            }
+            if (!rawtok2 || par != 1U)
+                break;
+            if (macro->second.expand(&output2, rawtok->location, rawtokens2.cbegin(), macros, expandedmacros) != NULL)
+                break;
+            rawtok = rawtok2->next;
+        }
+        output->takeTokens(output2);
+        return rawtok;
+    }
+
     const Token * expand(TokenList * const output, const Location &loc, const Token * const nameToken, const std::map<TokenString,Macro> &macros, std::set<TokenString> expandedmacros) const {
         const std::set<TokenString> expandedmacros1(expandedmacros);
         expandedmacros.insert(nameToken->str);
 
         usageList.push_back(loc);
 
-        if (!functionLike()) {
-            Token * const token1 = output->end();
-            for (const Token *macro = valueToken; macro != endToken;) {
-                const std::map<TokenString, Macro>::const_iterator it = macros.find(macro->str);
-                if (it != macros.end() && expandedmacros.find(macro->str) == expandedmacros.end()) {
-                    try {
-                        const Token *macro2 = it->second.expand(output, loc, macro, macros, expandedmacros);
-                        while (macro != macro2 && macro != endToken)
-                            macro = macro->next;
-                    } catch (const wrongNumberOfParameters &) {
-                        if (sameline(macro,macro->next) && macro->next->op == '(') {
-                            unsigned int par = 1U;
-                            for (const Token *tok = macro->next->next; sameline(macro,tok); tok = tok->next) {
-                                if (tok->op == '(')
-                                    ++par;
-                                else if (tok->op == ')') {
-                                    --par;
-                                    if (par == 0U)
-                                        break;
-                                }
-                            }
-                            if (par > 0U) {
-                                TokenList tokens(files);
-                                const Token *tok;
-                                for (tok = macro; sameline(macro,tok); tok = tok->next)
-                                    tokens.push_back(new Token(*tok));
-                                for (tok = nameToken->next; tok; tok = tok->next) {
-                                    tokens.push_back(new Token(tok->str, macro->location));
-                                    if (tok->op == '(')
-                                        ++par;
-                                    else if (tok->op == ')') {
-                                        --par;
-                                        if (par == 0U)
-                                            break;
-                                    }
-                                }
-                                if (par == 0U) {
-                                    it->second.expand(output, loc, tokens.cbegin(), macros, expandedmacros);
-                                    return tok->next;
-                                }
-                            }
-                        } else {
-                            output->push_back(newMacroToken(macro->str, loc, false));
-                            macro = macro->next;
-                        }
-                    }
-                } else {
-                    output->push_back(newMacroToken(macro->str, loc, false));
-                    macro = macro->next;
-                }
-            }
-            setMacroName(output, token1, expandedmacros1);
-            return nameToken->next;
-        }
-
-        // No arguments => not macro expansion
-        if (nameToken->next && nameToken->next->op != '(') {
-            output->push_back(new Token(nameToken->str, loc));
-            return nameToken->next;
-        }
-
-        // Parse macro-call
         const std::vector<const Token*> parametertokens(getMacroParameters(nameToken, !expandedmacros1.empty()));
-        if (parametertokens.size() != args.size() + (args.empty() ? 2U : 1U)) {
-            throw wrongNumberOfParameters(nameToken->location, name());
+
+        Token * const output_end_1 = output->end();
+
+        if (functionLike()) {
+            // No arguments => not macro expansion
+            if (nameToken->next && nameToken->next->op != '(') {
+                output->push_back(new Token(nameToken->str, loc));
+                return nameToken->next;
+            }
+
+            // Parse macro-call
+            if (parametertokens.size() != args.size() + (args.empty() ? 2U : 1U)) {
+                throw wrongNumberOfParameters(nameToken->location, name());
+            }
         }
 
         // expand
@@ -871,7 +868,10 @@ public:
             }
         }
 
-        return parametertokens.back()->next;
+        if (!functionLike())
+            setMacroName(output, output_end_1, expandedmacros1);
+
+        return functionLike() ? parametertokens.back()->next : nameToken->next;
     }
 
     const TokenString &name() const {
@@ -884,6 +884,13 @@ public:
 
     const std::list<Location> &usage() const {
         return usageList;
+    }
+
+    bool functionLike() const {
+        return nameToken->next &&
+               nameToken->next->op == '(' &&
+               sameline(nameToken, nameToken->next) &&
+               nameToken->next->location.col == nameToken->location.col + nameToken->str.size();
     }
 
     struct Error {
@@ -968,7 +975,7 @@ private:
     }
 
     std::vector<const Token *> getMacroParameters(const Token *nameToken, bool def) const {
-        if (!nameToken->next || nameToken->next->op != '(')
+        if (!nameToken->next || nameToken->next->op != '(' || !functionLike())
             return std::vector<const Token *>();
 
         std::vector<const Token *> parametertokens;
@@ -1061,20 +1068,20 @@ private:
 
         // Macro..
         const std::map<TokenString, Macro>::const_iterator it = macros.find(tok->str);
-        if (it != macros.end() && expandedmacros1.find(tok->str) == expandedmacros1.end()) {
+        if (it != macros.end() && expandedmacros.find(tok->str) == expandedmacros.end()) {
             const Macro &calledMacro = it->second;
             if (!calledMacro.functionLike())
                 return calledMacro.expand(output, loc, tok, macros, expandedmacros);
             if (!sameline(tok, tok->next) || tok->next->op != '(') {
-                // FIXME: handle this
-                throw wrongNumberOfParameters(tok->location, tok->str);
+                output->push_back(newMacroToken(tok->str, loc, false));
+                return tok->next;
             }
             TokenList tokens(files);
             tokens.push_back(new Token(*tok));
             const Token *tok2 = appendTokens(&tokens, tok->next, macros, expandedmacros1, expandedmacros, parametertokens);
             if (!tok2) {
-                // FIXME: handle this
-                throw wrongNumberOfParameters(tok->location, tok->str);
+                output->push_back(newMacroToken(tok->str, loc, false));
+                return tok->next;
             }
             calledMacro.expand(output, loc, tokens.cbegin(), macros, expandedmacros);
             return tok2->next;
@@ -1134,13 +1141,6 @@ private:
                 tok->macro = nameToken->str;
             tok = tok->next;
         }
-    }
-
-    bool functionLike() const {
-        return nameToken->next &&
-               nameToken->next->op == '(' &&
-               sameline(nameToken, nameToken->next) &&
-               nameToken->next->location.col == nameToken->location.col + nameToken->str.size();
     }
 
     const Token *nameToken;
@@ -1491,9 +1491,8 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                         const std::map<std::string,Macro>::const_iterator it = macros.find(tok->str);
                         if (it != macros.end()) {
                             TokenList value(files);
-                            std::set<TokenString> expandedmacros;
                             try {
-                                it->second.expand(&value, tok->location, tok, macros, expandedmacros);
+                                it->second.expand(&value, tok, macros, files);
                             } catch (Macro::Error &err) {
                                 Output out(rawtok->location.files);
                                 out.type = Output::ERROR;
@@ -1504,8 +1503,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                                 output.clear();
                                 return;
                             }
-                            for (const Token *tok2 = value.cbegin(); tok2; tok2 = tok2->next)
-                                expr.push_back(new Token(tok2->str, tok->location));
+                            expr.takeTokens(value);
                         } else {
                             expr.push_back(new Token(*tok));
                         }
@@ -1564,9 +1562,8 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
         if (macros.find(rawtok->str) != macros.end()) {
             std::map<TokenString,Macro>::const_iterator macro = macros.find(rawtok->str);
             if (macro != macros.end()) {
-                std::set<TokenString> expandedmacros;
                 try {
-                    rawtok = macro->second.expand(&output,rawtok->location,rawtok,macros,expandedmacros);
+                    rawtok = macro->second.expand(&output, rawtok, macros, files);
                 } catch (const simplecpp::Macro::Error &err) {
                     Output out(err.location.files);
                     out.type = Output::ERROR;
