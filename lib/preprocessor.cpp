@@ -248,8 +248,10 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
         } else if (cmdtok->str == "else") {
             if (!configs_if.empty())
                 configs_if.pop_back();
-            configs_if.push_back(configs_ifndef.back());
-            ret.insert(cfg(configs_if));
+            if (!configs_ifndef.empty()) {
+                configs_if.push_back(configs_ifndef.back());
+                ret.insert(cfg(configs_if));
+            }
         } else if (cmdtok->str == "endif" && !sameline(tok, cmdtok->next)) {
             if (!configs_if.empty())
                 configs_if.pop_back();
