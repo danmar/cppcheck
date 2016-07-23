@@ -216,6 +216,19 @@ public:
         delete tok;
     }
 
+    void takeTokens(TokenList &other) {
+        if (!other.first)
+            return;
+        if (!first) {
+            first = other.first;
+        } else {
+            last->next = other.first;
+            other.first->previous = last;
+        }
+        last = other.last;
+        other.first = other.last = NULL;
+    }
+
     /** sizeof(T) */
     std::map<std::string, std::size_t> sizeOfType;
 

@@ -161,7 +161,7 @@ void simplecpp::TokenList::push_back(Token *tok) {
 }
 
 void simplecpp::TokenList::dump() const {
-    std::cout << stringify();
+    std::cout << stringify() << std::endl;
 }
 
 std::string simplecpp::TokenList::stringify() const {
@@ -579,19 +579,26 @@ void simplecpp::TokenList::constFoldBitwise(Token *tok)
 {
     Token * const tok1 = tok;
     for (const char *op = "&^|"; *op; op++) {
+        std::string altop;
+        if (*op == '&')
+            altop = "bitand";
+        else if (*op == '|')
+            altop = "bitor";
+        else
+            altop = "xor";
         for (tok = tok1; tok && tok->op != ')'; tok = tok->next) {
-            if (tok->op != *op)
+            if (tok->op != *op && tok->str != altop)
                 continue;
             if (!tok->previous || !tok->previous->number)
                 continue;
             if (!tok->next || !tok->next->number)
                 continue;
             long long result;
-            if (tok->op == '&')
+            if (*op == '&')
                 result = (stringToLL(tok->previous->str) & stringToLL(tok->next->str));
-            else if (tok->op == '^')
+            else if (*op == '^')
                 result = (stringToLL(tok->previous->str) ^ stringToLL(tok->next->str));
-            else /*if (tok->op == '|')*/
+            else /*if (*op == '|')*/
                 result = (stringToLL(tok->previous->str) | stringToLL(tok->next->str));
             tok = tok->previous;
             tok->setstr(toString(result));
@@ -603,7 +610,7 @@ void simplecpp::TokenList::constFoldBitwise(Token *tok)
 
 void simplecpp::TokenList::constFoldLogicalOp(Token *tok) {
     for (; tok && tok->op != ')'; tok = tok->next) {
-        if (tok->str != "&&" && tok->str != "||")
+        if (tok->str != "&&" && tok->str != "||" && tok->str != "and" && tok->str != "or")
             continue;
         if (!tok->previous || !tok->previous->number)
             continue;
@@ -611,7 +618,7 @@ void simplecpp::TokenList::constFoldLogicalOp(Token *tok) {
             continue;
 
         int result;
-        if (tok->str == "||")
+        if (tok->str == "||" || tok->str == "or")
             result = (stringToLL(tok->previous->str) || stringToLL(tok->next->str));
         else /*if (tok->str == "&&")*/
             result = (stringToLL(tok->previous->str) && stringToLL(tok->next->str));
@@ -983,6 +990,32 @@ private:
         return parametertokens;
     }
 
+    const Token *appendTokens(TokenList *tokens,
+                              const Token *lpar,
+                              const std::map<TokenString,Macro> &macros,
+                              const std::set<TokenString> &expandedmacros1,
+                              const std::set<TokenString> &expandedmacros,
+                              const std::vector<const Token*> &parametertokens) const {
+        if (!lpar || lpar->op != '(')
+            return NULL;
+        unsigned int par = 0;
+        const Token *tok = lpar;
+        while (sameline(lpar, tok)) {
+            if (!expandArg(tokens, tok, tok->location, macros, expandedmacros1, expandedmacros, parametertokens))
+                tokens->push_back(new Token(*tok));
+            if (tok->op == '(')
+                ++par;
+            else if (tok->op == ')') {
+                --par;
+                if (par == 0U)
+                    break;
+            }
+            tok = tok->next;
+        }
+        return sameline(lpar,tok) ? tok : NULL;
+    }
+
+
     const Token *expandToken(TokenList *output, const Location &loc, const Token *tok, const std::map<TokenString,Macro> &macros, std::set<TokenString> expandedmacros1, std::set<TokenString> expandedmacros, const std::vector<const Token*> &parametertokens) const {
         // Not name..
         if (!tok->name) {
@@ -991,8 +1024,40 @@ private:
         }
 
         // Macro parameter..
-        if (expandArg(output, tok, loc, macros, expandedmacros1, expandedmacros, parametertokens))
-            return tok->next;
+        {
+            TokenList temp(files);
+            if (expandArg(&temp, tok, loc, macros, expandedmacros1, expandedmacros, parametertokens)) {
+                if (!(temp.cend() && temp.cend()->name && tok->next && tok->next->op == '(')) {
+                    output->takeTokens(temp);
+                    return tok->next;
+                }
+
+                const std::map<TokenString, Macro>::const_iterator it = macros.find(temp.cend()->str);
+                if (it == macros.end() || expandedmacros1.find(temp.cend()->str) != expandedmacros1.end()) {
+                    output->takeTokens(temp);
+                    return tok->next;
+                }
+
+                const Macro &calledMacro = it->second;
+                if (!calledMacro.functionLike()) {
+                    output->takeTokens(temp);
+                    return tok->next;
+                }
+
+                TokenList temp2(files);
+                temp2.push_back(new Token(temp.cend()->str, tok->location));
+
+                const Token *tok2 = appendTokens(&temp2, tok->next, macros, expandedmacros1, expandedmacros, parametertokens);
+                if (!tok2)
+                    return tok->next;
+
+                output->takeTokens(temp);
+                output->deleteToken(output->end());
+                calledMacro.expand(output, loc, temp2.cbegin(), macros, expandedmacros);
+
+                return tok2->next;
+            }
+        }
 
         // Macro..
         const std::map<TokenString, Macro>::const_iterator it = macros.find(tok->str);
@@ -1006,19 +1071,10 @@ private:
             }
             TokenList tokens(files);
             tokens.push_back(new Token(*tok));
-            unsigned int par = 0;
-            const Token *tok2 = tok->next;
-            while (sameline(tok,tok2)) {
-                if (!expandArg(&tokens, tok2, tok2->location, macros, expandedmacros1, expandedmacros, parametertokens))
-                    tokens.push_back(new Token(*tok2));
-                if (tok2->op == '(')
-                    ++par;
-                else if (tok2->op == ')') {
-                    --par;
-                    if (par == 0U)
-                        break;
-                }
-                tok2 = tok2->next;
+            const Token *tok2 = appendTokens(&tokens, tok->next, macros, expandedmacros1, expandedmacros, parametertokens);
+            if (!tok2) {
+                // FIXME: handle this
+                throw wrongNumberOfParameters(tok->location, tok->str);
             }
             calledMacro.expand(output, loc, tokens.cbegin(), macros, expandedmacros);
             return tok2->next;
@@ -1135,9 +1191,25 @@ void simplifySizeof(simplecpp::TokenList &expr, const std::map<std::string, std:
 }
 
 void simplifyName(simplecpp::TokenList &expr) {
+    std::set<std::string> altop;
+    altop.insert("and");
+    altop.insert("or");
+    altop.insert("bitand");
+    altop.insert("bitor");
+    altop.insert("xor");
     for (simplecpp::Token *tok = expr.begin(); tok; tok = tok->next) {
-        if (tok->name)
+        if (tok->name) {
+            if (altop.find(tok->str) != altop.end()) {
+                bool alt = true;
+                if (!tok->previous || !tok->next)
+                    alt = false;
+                if (!(tok->previous->number || tok->previous->op == ')'))
+                    alt = false;
+                if (alt)
+                    continue;
+            }
             tok->setstr("0");
+        }
     }
 }
 
