@@ -1124,6 +1124,10 @@ private:
         if (argnr >= args.size())
             return false;
 
+        // empty variadic parameter
+        if (variadic && argnr + 1U >= parametertokens.size())
+            return true;
+
         for (const Token *partok = parametertokens[argnr]->next; partok != parametertokens[argnr + 1U]; partok = partok->next)
             output->push_back(new Token(*partok));
 
@@ -1136,7 +1140,8 @@ private:
         const unsigned int argnr = getArgNum(tok->str);
         if (argnr >= args.size())
             return false;
-
+        if (variadic && argnr + 1U >= parametertokens.size()) // empty variadic parameter
+            return true;
         for (const Token *partok = parametertokens[argnr]->next; partok != parametertokens[argnr + 1U];) {
             const std::map<TokenString, Macro>::const_iterator it = macros.find(partok->str);
             if (it != macros.end() && expandedmacros1.find(partok->str) == expandedmacros1.end())
