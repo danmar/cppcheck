@@ -48,7 +48,7 @@ public:
     std::string file;
 
     /** line number in (possibly included) file where directive is defined */
-    int linenr;
+    unsigned int linenr;
 
     /** the actual directive text */
     std::string str;

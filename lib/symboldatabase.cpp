@@ -4412,7 +4412,7 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, char defau
                 ValueType::Type type = ValueType::Type::INT;
                 if (MathLib::isIntHex(tok->str()))
                     sign = ValueType::Sign::UNSIGNED;
-                for (unsigned int pos = tok->str().size() - 1U; pos > 0U && std::isalpha(tok->str()[pos]); --pos) {
+                for (std::size_t pos = tok->str().size() - 1U; pos > 0U && std::isalpha(tok->str()[pos]); --pos) {
                     const char suffix = tok->str()[pos];
                     if (suffix == 'u' || suffix == 'U')
                         sign = ValueType::Sign::UNSIGNED;

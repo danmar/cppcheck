@@ -2480,7 +2480,7 @@ private:
                       "int c[A + 2];\n"
                       "int d[10 + B];\n"
                       "int e[A + B];\n");
-        ASSERT(db);
+        ASSERT(db != nullptr);
         if (!db)
             return;
         ASSERT_EQUALS(2U, db->scopeList.size());
@@ -2541,15 +2541,15 @@ private:
                       "struct Barney : public Fred {\n"
                       "    Enum func(Enum e) { return e; }\n"
                       "};");
-        ASSERT(db);
+        ASSERT(db != nullptr);
         if (!db)
             return;
         const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
-        ASSERT(functionToken);
+        ASSERT(functionToken != nullptr);
         if (!functionToken)
             return;
         const Function *function = functionToken->function();
-        ASSERT(function);
+        ASSERT(function != nullptr);
         if (!function)
             return;
         ASSERT(function->token->str() == "func");
@@ -2585,7 +2585,7 @@ private:
                       "char array10[sizeof(L)];\n"
                       "char array11[sizeof(ELL)];\n"
                       "char array12[sizeof(LL)];\n");
-        ASSERT(db);
+        ASSERT(db != nullptr);
         if (!db)
             return;
         ASSERT(db->getVariableListSize() == 13); // the first one is not used
