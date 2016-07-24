@@ -102,12 +102,6 @@ public:
                   const char FileName[],
                   const std::string &configuration = emptyString,
                   bool noSymbolDB_AST = false);
-    /**
-     * tokenize condition and run simple simplifications on it
-     * @param code code
-     * @return true if success.
-     */
-    bool tokenizeCondition(const std::string &code);
 
     /** Set variable id */
     void setVarId();
