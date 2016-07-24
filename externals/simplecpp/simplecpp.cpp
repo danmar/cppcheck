@@ -761,11 +761,26 @@ public:
                          std::vector<std::string> &files) const {
         std::set<TokenString> expandedmacros;
         TokenList output2(files);
-        rawtok = expand(&output2,rawtok->location,rawtok,macros,expandedmacros);
-        while (output2.cend() && rawtok && (rawtok->op == '(' || output2.cend()->op == '(')) {
+        rawtok = expand(&output2, rawtok->location, rawtok, macros, expandedmacros);
+        while (output2.cend() && rawtok) {
+            unsigned int par = 0;
             Token* macro2tok = output2.end();
-            if (macro2tok->op == '(')
+            while (macro2tok) {
+                if (macro2tok->op == '(') {
+                    if (par==0)
+                        break;
+                    --par;
+                }
+                else if (macro2tok->op == ')')
+                    ++par;
                 macro2tok = macro2tok->previous;
+            }
+            if (macro2tok) { // macro2tok->op == '('
+                macro2tok = macro2tok->previous;
+                expandedmacros.insert(name());
+            }
+            else if (rawtok->op == '(')
+                macro2tok = output2.end();
             if (!macro2tok || !macro2tok->name)
                 break;
             if (output2.cbegin() != output2.cend() && macro2tok->str == this->name())
@@ -774,16 +789,17 @@ public:
             if (macro == macros.end() || !macro->second.functionLike())
                 break;
             TokenList rawtokens2(files);
+            const Location loc(macro2tok->location);
             while (macro2tok) {
                 Token *next = macro2tok->next;
-                rawtokens2.push_back(new Token(*macro2tok));
+                rawtokens2.push_back(new Token(macro2tok->str, loc));
                 output2.deleteToken(macro2tok);
                 macro2tok = next;
             }
-            unsigned int par = (rawtokens2.cend()->op == '(') ? 1U : 0U;
+            par = (rawtokens2.cbegin() != rawtokens2.cend()) ? 1U : 0U;
             const Token *rawtok2 = rawtok;
             for (; rawtok2; rawtok2 = rawtok2->next) {
-                rawtokens2.push_back(new Token(*rawtok2));
+                rawtokens2.push_back(new Token(rawtok2->str, loc));
                 if (rawtok2->op == '(')
                     ++par;
                 else if (rawtok2->op == ')') {
@@ -820,8 +836,13 @@ public:
             }
 
             // Parse macro-call
-            if (parametertokens.size() != args.size() + (args.empty() ? 2U : 1U)) {
-                throw wrongNumberOfParameters(nameToken->location, name());
+            if (variadic) {
+                if (parametertokens.size() < args.size()) {
+                    throw wrongNumberOfParameters(nameToken->location, name());
+                }
+            } else {
+                if (parametertokens.size() != args.size() + (args.empty() ? 2U : 1U))
+                    throw wrongNumberOfParameters(nameToken->location, name());
             }
         }
 
@@ -1044,7 +1065,7 @@ private:
                 }
 
                 const std::map<TokenString, Macro>::const_iterator it = macros.find(temp.cend()->str);
-                if (it == macros.end() || expandedmacros1.find(temp.cend()->str) != expandedmacros1.end()) {
+                if (it == macros.end() || expandedmacros.find(temp.cend()->str) != expandedmacros.end()) {
                     output->takeTokens(temp);
                     return tok->next;
                 }
