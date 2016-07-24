@@ -33,112 +33,120 @@ namespace {
 
 void CheckInternal::checkTokenMatchPatterns()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
-            continue;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
+                continue;
 
-        const std::string& funcname = tok->strAt(2);
+            const std::string& funcname = tok->strAt(2);
 
-        // Get pattern string
-        const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || pattern_tok->tokType() != Token::eString)
-            continue;
+            // Get pattern string
+            const Token *pattern_tok = tok->tokAt(4)->nextArgument();
+            if (!pattern_tok || pattern_tok->tokType() != Token::eString)
+                continue;
 
-        const std::string pattern = pattern_tok->strValue();
-        if (pattern.empty()) {
-            simplePatternError(tok, pattern, funcname);
-            continue;
-        }
-
-        if (pattern.find("||") != std::string::npos || pattern.find(" | ") != std::string::npos || pattern[0] == '|' || (pattern[pattern.length() - 1] == '|' && pattern[pattern.length() - 2] == ' '))
-            orInComplexPattern(tok, pattern, funcname);
-
-        // Check for signs of complex patterns
-        if (pattern.find_first_of("[|") != std::string::npos)
-            continue;
-        else if (pattern.find("!!") != std::string::npos)
-            continue;
-
-        bool complex = false;
-        size_t index = pattern.find('%');
-        while (index != std::string::npos) {
-            if (pattern.length() <= index + 2) {
-                complex = true;
-                break;
+            const std::string pattern = pattern_tok->strValue();
+            if (pattern.empty()) {
+                simplePatternError(tok, pattern, funcname);
+                continue;
             }
-            if (pattern[index + 1] == 'o' && pattern[index + 2] == 'r') // %or% or %oror%
+
+            if (pattern.find("||") != std::string::npos || pattern.find(" | ") != std::string::npos || pattern[0] == '|' || (pattern[pattern.length() - 1] == '|' && pattern[pattern.length() - 2] == ' '))
+                orInComplexPattern(tok, pattern, funcname);
+
+            // Check for signs of complex patterns
+            if (pattern.find_first_of("[|") != std::string::npos)
+                continue;
+            else if (pattern.find("!!") != std::string::npos)
+                continue;
+
+            bool complex = false;
+            size_t index = pattern.find('%');
+            while (index != std::string::npos) {
+                if (pattern.length() <= index + 2) {
+                    complex = true;
+                    break;
+                }
+                if (pattern[index + 1] == 'o' && pattern[index + 2] == 'r') // %or% or %oror%
+                    index = pattern.find('%', index + 1);
+                else {
+                    complex = true;
+                    break;
+                }
                 index = pattern.find('%', index + 1);
-            else {
-                complex = true;
-                break;
             }
-            index = pattern.find('%', index+1);
+            if (!complex)
+                simplePatternError(tok, pattern, funcname);
         }
-        if (!complex)
-            simplePatternError(tok, pattern, funcname);
     }
 }
 
 void CheckInternal::checkTokenSimpleMatchPatterns()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "Token :: simpleMatch (") && !Token::simpleMatch(tok, "Token :: findsimplematch ("))
-            continue;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok, "Token :: simpleMatch (") && !Token::simpleMatch(tok, "Token :: findsimplematch ("))
+                continue;
 
-        const std::string& funcname = tok->strAt(2);
+            const std::string& funcname = tok->strAt(2);
 
-        // Get pattern string
-        const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || pattern_tok->tokType() != Token::eString)
-            continue;
+            // Get pattern string
+            const Token *pattern_tok = tok->tokAt(4)->nextArgument();
+            if (!pattern_tok || pattern_tok->tokType() != Token::eString)
+                continue;
 
-        const std::string pattern = pattern_tok->strValue();
-        if (pattern.empty()) {
-            complexPatternError(tok, pattern, funcname);
-            continue;
-        }
-
-        // Check for [xyz] usage - but exclude standalone square brackets
-        unsigned int char_count = 0;
-        for (std::string::size_type pos = 0; pos < pattern.size(); ++pos) {
-            char c = pattern[pos];
-
-            if (c == ' ') {
-                char_count = 0;
-            } else if (c == ']') {
-                if (char_count > 0) {
-                    complexPatternError(tok, pattern, funcname);
-                    continue;
-                }
-            } else {
-                ++char_count;
+            const std::string pattern = pattern_tok->strValue();
+            if (pattern.empty()) {
+                complexPatternError(tok, pattern, funcname);
+                continue;
             }
-        }
 
-        // Check | usage: Count characters before the symbol
-        char_count = 0;
-        for (std::string::size_type pos = 0; pos < pattern.size(); ++pos) {
-            const char c = pattern[pos];
+            // Check for [xyz] usage - but exclude standalone square brackets
+            unsigned int char_count = 0;
+            for (std::string::size_type pos = 0; pos < pattern.size(); ++pos) {
+                char c = pattern[pos];
 
-            if (c == ' ') {
-                char_count = 0;
-            } else if (c == '|') {
-                if (char_count > 0) {
-                    complexPatternError(tok, pattern, funcname);
-                    continue;
+                if (c == ' ') {
+                    char_count = 0;
+                } else if (c == ']') {
+                    if (char_count > 0) {
+                        complexPatternError(tok, pattern, funcname);
+                        continue;
+                    }
+                } else {
+                    ++char_count;
                 }
-            } else {
-                ++char_count;
             }
-        }
 
-        // Check for real errors
-        if (pattern.length() > 1) {
-            for (size_t i = 0; i < pattern.length() - 1; i++) {
-                if (pattern[i] == '%' && pattern[i + 1] != ' ')
-                    complexPatternError(tok, pattern, funcname);
-                else if (pattern[i] == '!' && pattern[i + 1] == '!')
-                    complexPatternError(tok, pattern, funcname);
+            // Check | usage: Count characters before the symbol
+            char_count = 0;
+            for (std::string::size_type pos = 0; pos < pattern.size(); ++pos) {
+                const char c = pattern[pos];
+
+                if (c == ' ') {
+                    char_count = 0;
+                } else if (c == '|') {
+                    if (char_count > 0) {
+                        complexPatternError(tok, pattern, funcname);
+                        continue;
+                    }
+                } else {
+                    ++char_count;
+                }
+            }
+
+            // Check for real errors
+            if (pattern.length() > 1) {
+                for (size_t j = 0; j < pattern.length() - 1; j++) {
+                    if (pattern[j] == '%' && pattern[j + 1] != ' ')
+                        complexPatternError(tok, pattern, funcname);
+                    else if (pattern[j] == '!' && pattern[j + 1] == '!')
+                        complexPatternError(tok, pattern, funcname);
+                }
             }
         }
     }
@@ -164,38 +172,42 @@ namespace {
 
 void CheckInternal::checkMissingPercentCharacter()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
-            continue;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
+                continue;
 
-        const std::string& funcname = tok->strAt(2);
+            const std::string& funcname = tok->strAt(2);
 
-        // Get pattern string
-        const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || pattern_tok->tokType() != Token::eString)
-            continue;
+            // Get pattern string
+            const Token *pattern_tok = tok->tokAt(4)->nextArgument();
+            if (!pattern_tok || pattern_tok->tokType() != Token::eString)
+                continue;
 
-        const std::string pattern = pattern_tok->strValue();
+            const std::string pattern = pattern_tok->strValue();
 
-        std::set<std::string>::const_iterator magic, magics_end = magics.end();
-        for (magic = magics.begin(); magic != magics_end; ++magic) {
-            const std::string broken_magic = (*magic).substr(0, (*magic).size()-1);
+            std::set<std::string>::const_iterator magic, magics_end = magics.end();
+            for (magic = magics.begin(); magic != magics_end; ++magic) {
+                const std::string broken_magic = (*magic).substr(0, (*magic).size() - 1);
 
-            std::string::size_type pos = 0;
-            while ((pos = pattern.find(broken_magic, pos)) != std::string::npos) {
-                // Check if it's the full pattern
-                if (pattern.find(*magic, pos) != pos) {
-                    // Known whitelist of substrings
-                    if ((broken_magic == "%var" && pattern.find("%varid%", pos) == pos) ||
-                        (broken_magic == "%or" && pattern.find("%oror%", pos) == pos)) {
-                        ++pos;
-                        continue;
+                std::string::size_type pos = 0;
+                while ((pos = pattern.find(broken_magic, pos)) != std::string::npos) {
+                    // Check if it's the full pattern
+                    if (pattern.find(*magic, pos) != pos) {
+                        // Known whitelist of substrings
+                        if ((broken_magic == "%var" && pattern.find("%varid%", pos) == pos) ||
+                            (broken_magic == "%or" && pattern.find("%oror%", pos) == pos)) {
+                            ++pos;
+                            continue;
+                        }
+
+                        missingPercentCharacterError(tok, pattern, funcname);
                     }
 
-                    missingPercentCharacterError(tok, pattern, funcname);
+                    ++pos;
                 }
-
-                ++pos;
             }
         }
     }
@@ -222,29 +234,33 @@ namespace {
 
 void CheckInternal::checkUnknownPattern()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
-            continue;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok, "Token :: Match (") && !Token::simpleMatch(tok, "Token :: findmatch ("))
+                continue;
 
-        // Get pattern string
-        const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || pattern_tok->tokType() != Token::eString)
-            continue;
+            // Get pattern string
+            const Token *pattern_tok = tok->tokAt(4)->nextArgument();
+            if (!pattern_tok || pattern_tok->tokType() != Token::eString)
+                continue;
 
-        const std::string pattern = pattern_tok->strValue();
-        bool inBrackets = false;
+            const std::string pattern = pattern_tok->strValue();
+            bool inBrackets = false;
 
-        for (std::string::size_type i = 0; i < pattern.length()-1; i++) {
-            if (pattern[i] == '[' && (i == 0 || pattern[i-1] == ' '))
-                inBrackets = true;
-            else if (pattern[i] == ']')
-                inBrackets = false;
-            else if (pattern[i] == '%' && pattern[i+1] != ' ' && pattern[i+1] != '|' && !inBrackets) {
-                const std::string::size_type end = pattern.find('%', i+1);
-                if (end != std::string::npos) {
-                    const std::string s = pattern.substr(i, end-i+1);
-                    if (knownPatterns.find(s) == knownPatterns.end())
-                        unknownPatternError(tok, s);
+            for (std::string::size_type j = 0; j < pattern.length() - 1; j++) {
+                if (pattern[j] == '[' && (j == 0 || pattern[j - 1] == ' '))
+                    inBrackets = true;
+                else if (pattern[j] == ']')
+                    inBrackets = false;
+                else if (pattern[j] == '%' && pattern[j + 1] != ' ' && pattern[j + 1] != '|' && !inBrackets) {
+                    const std::string::size_type end = pattern.find('%', j + 1);
+                    if (end != std::string::npos) {
+                        const std::string s = pattern.substr(j, end - j + 1);
+                        if (knownPatterns.find(s) == knownPatterns.end())
+                            unknownPatternError(tok, s);
+                    }
                 }
             }
         }
@@ -253,51 +269,60 @@ void CheckInternal::checkUnknownPattern()
 
 void CheckInternal::checkRedundantNextPrevious()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, ". previous ( ) . next|tokAt|strAt|linkAt (") || Token::Match(tok, ". next ( ) . previous|tokAt|strAt|linkAt (") ||
-            (Token::simpleMatch(tok, ". tokAt (") && Token::Match(tok->linkAt(2), ") . previous|next|tokAt|strAt|linkAt|str|link ("))) {
-            const std::string& func1 = tok->strAt(1);
-            const std::string& func2 = tok->linkAt(2)->strAt(2);
-
-            if ((func2 == "previous" || func2 == "next" || func2 == "str" || func2 == "link") && tok->linkAt(2)->strAt(4) != ")")
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->str() != ".")
                 continue;
+            tok = tok->next();
 
-            redundantNextPreviousError(tok, func1, func2);
-        } else if (Token::Match(tok, ". next|previous ( ) . next|previous ( ) . next|previous|linkAt|strAt|link|str (")) {
-            const std::string& func1 = tok->strAt(1);
-            const std::string& func2 = tok->strAt(9);
+            if (Token::Match(tok, "previous ( ) . next|tokAt|strAt|linkAt (") || Token::Match(tok, "next ( ) . previous|tokAt|strAt|linkAt (") ||
+                (Token::simpleMatch(tok, "tokAt (") && Token::Match(tok->linkAt(1), ") . previous|next|tokAt|strAt|linkAt|str|link ("))) {
+                const std::string& func1 = tok->str();
+                const std::string& func2 = tok->linkAt(1)->strAt(2);
 
-            if ((func2 == "previous" || func2 == "next" || func2 == "str" || func2 == "link") && tok->strAt(11) != ")")
-                continue;
+                if ((func2 == "previous" || func2 == "next" || func2 == "str" || func2 == "link") && tok->linkAt(1)->strAt(4) != ")")
+                    continue;
 
-            redundantNextPreviousError(tok, func1, func2);
+                redundantNextPreviousError(tok, func1, func2);
+            } else if (Token::Match(tok, "next|previous ( ) . next|previous ( ) . next|previous|linkAt|strAt|link|str (")) {
+                const std::string& func1 = tok->str();
+                const std::string& func2 = tok->strAt(8);
+
+                if ((func2 == "previous" || func2 == "next" || func2 == "str" || func2 == "link") && tok->strAt(10) != ")")
+                    continue;
+
+                redundantNextPreviousError(tok, func1, func2);
+            }
         }
     }
 }
 
 void CheckInternal::checkExtraWhitespace()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "Token :: simpleMatch (") &&
-            !Token::simpleMatch(tok, "Token :: findsimplematch (") &&
-            !Token::simpleMatch(tok, "Token :: Match (") &&
-            !Token::simpleMatch(tok, "Token :: findmatch ("))
-            continue;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "Token :: simpleMatch|findsimplematch|Match|findmatch ("))
+                continue;
 
-        const std::string& funcname = tok->strAt(2);
+            const std::string& funcname = tok->strAt(2);
 
-        // Get pattern string
-        const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || pattern_tok->tokType() != Token::eString)
-            continue;
+            // Get pattern string
+            const Token *pattern_tok = tok->tokAt(4)->nextArgument();
+            if (!pattern_tok || pattern_tok->tokType() != Token::eString)
+                continue;
 
-        const std::string pattern = pattern_tok->strValue();
-        if (!pattern.empty() && (pattern[0] == ' ' || *pattern.rbegin() == ' '))
-            extraWhitespaceError(tok, pattern, funcname);
+            const std::string pattern = pattern_tok->strValue();
+            if (!pattern.empty() && (pattern[0] == ' ' || *pattern.rbegin() == ' '))
+                extraWhitespaceError(tok, pattern, funcname);
 
-        // two whitespaces or more
-        if (pattern.find("  ") != std::string::npos)
-            extraWhitespaceError(tok, pattern, funcname);
+            // two whitespaces or more
+            if (pattern.find("  ") != std::string::npos)
+                extraWhitespaceError(tok, pattern, funcname);
+        }
     }
 }
 
