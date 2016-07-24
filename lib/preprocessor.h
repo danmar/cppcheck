@@ -169,12 +169,6 @@ public:
     static std::string removeParentheses(const std::string &str);
 
     /**
-     * clean up #-preprocessor lines (only)
-     * @param processedFile The data to be processed
-     */
-    static std::string preprocessCleanupDirectives(const std::string &processedFile);
-
-    /**
      * Returns the string between double quote characters or \< \> characters.
      * @param str e.g. \code#include "menu.h"\endcode or \code#include <menu.h>\endcode
      * After function call it will contain e.g. "menu.h" without double quotes.
