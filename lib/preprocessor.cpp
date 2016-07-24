@@ -135,6 +135,39 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
     }
 }
 
+void Preprocessor::setDirectives(const simplecpp::TokenList &tokens1)
+{
+    // directive list..
+    directives.clear();
+
+    std::list<const simplecpp::TokenList *> list;
+    list.push_back(&tokens1);
+    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+        list.push_back(it->second);
+    }
+
+    for (std::list<const simplecpp::TokenList *>::const_iterator it = list.begin(); it != list.end(); ++it) {
+        for (const simplecpp::Token *tok = (*it)->cbegin(); tok; tok = tok ? tok->next : nullptr) {
+            if ((tok->op != '#') || (tok->previous && tok->previous->location.line == tok->location.line))
+                continue;
+            if (tok->next && tok->next->str == "endfile")
+                continue;
+            Directive directive(tok->location.file(), tok->location.line, "");
+            for (const simplecpp::Token *tok2 = tok; tok2 && tok2->location.line == directive.linenr; tok2 = tok2->next) {
+                if (tok2->comment)
+                    continue;
+                if (!directive.str.empty() && (tok2->location.col > tok2->previous->location.col + tok2->previous->str.size()))
+                    directive.str += ' ';
+                if (directive.str == "#" && tok2->str == "file")
+                    directive.str += "include";
+                else
+                    directive.str += tok2->str;
+            }
+            directives.push_back(directive);
+        }
+    }
+}
+
 static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
 {
     return tok1 && tok2 && tok1->location.sameline(tok2->location);
@@ -465,27 +498,6 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
         };
     }
 
-    // directive list..
-    directives.clear();
-    for (const simplecpp::Token *tok = tokens1.cbegin(); tok; tok = tok ? tok->next : nullptr) {
-        if ((tok->op != '#') || (tok->previous && tok->previous->location.line == tok->location.line))
-            continue;
-        if (tok->next && tok->next->str == "endfile")
-            continue;
-        Directive directive(tok->location.file(), tok->location.line, "");
-        for (const simplecpp::Token *tok2 = tok; tok2 && tok2->location.line == directive.linenr; tok2 = tok2->next) {
-            if (tok2->comment)
-                continue;
-            if (!directive.str.empty() && (tok2->location.col > tok2->previous->location.col + tok2->previous->str.size()))
-                directive.str += ' ';
-            if (directive.str == "#" && tok2->str == "file")
-                directive.str += "include";
-            else
-                directive.str += tok2->str;
-        }
-        directives.push_back(directive);
-    }
-
     // ensure that guessed define macros without value are not used in the code
     for (std::list<std::string>::const_iterator defineIt = dui.defines.begin(); defineIt != dui.defines.end(); ++defineIt) {
         if (defineIt->find("=") != std::string::npos)
@@ -591,8 +603,11 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     std::vector<std::string> files;
 
     std::istringstream istr(filedata);
-    const simplecpp::TokenList &tokens1 = simplecpp::TokenList(istr, files, Path::simplifyPath(filename), &outputList);
+    simplecpp::TokenList tokens1(istr, files, Path::simplifyPath(filename), &outputList);
     inlineSuppressions(tokens1);
+    tokens1.removeComments();
+    removeComments();
+    setDirectives(tokens1);
 
     for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
         switch (it->type) {

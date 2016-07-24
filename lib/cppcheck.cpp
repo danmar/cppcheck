@@ -112,6 +112,9 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
         tokens1.removeComments();
         preprocessor.removeComments();
 
+        // Get directives
+        preprocessor.setDirectives(tokens1);
+
         // Get configurations..
         if (_settings.userDefines.empty() || _settings.force) {
             Timer t("Preprocessor::getConfigs", _settings.showtime, &S_timerResults);

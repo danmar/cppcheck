@@ -88,11 +88,14 @@ public:
 
     void inlineSuppressions(const simplecpp::TokenList &tokens);
 
+    void setDirectives(const simplecpp::TokenList &tokens);
+
     std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
 
     void loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
 
     void removeComments();
+
 
     /**
      * Extract the code for each configuration

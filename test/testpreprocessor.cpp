@@ -264,6 +264,7 @@ private:
         simplecpp::TokenList tokens(istr, files, filename, &outputList);
         tokens.removeComments();
         const std::set<std::string> configs(preprocessor0.getConfigs(tokens));
+        preprocessor0.setDirectives(tokens);
         for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it) {
             try {
                 const std::string &cfgcode = preprocessor0.getcode(tokens, *it, files, std::string(code).find("#file") != std::string::npos);
