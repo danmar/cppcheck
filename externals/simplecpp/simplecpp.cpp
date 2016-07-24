@@ -1184,6 +1184,34 @@ private:
 };
 }
 
+
+namespace simplecpp {
+std::string simplifyPath(std::string path) {
+    // replace backslash separators
+    std::string::size_type pos = 0;
+    while ((pos = path.find("\\",pos)) != std::string::npos)
+        path[pos] = '/';
+
+    // "./" at the start
+    if (path.size() > 3 && path.compare(0,2,"./") == 0 && path[2] != '/')
+        path.erase(0,2);
+
+    // remove "/./"
+    pos = 0;
+    while ((pos = path.find("/./",pos)) != std::string::npos) {
+        path.erase(pos,2);
+    }
+
+    // remove "xyz/../"
+    while ((pos = path.find("/../")) != std::string::npos) {
+        const std::string::size_type pos1 = path.rfind("/", pos - 1U);
+        path.erase(pos1,pos-pos1+3);
+    }
+
+    return path;
+}
+}
+
 namespace {
 void simplifySizeof(simplecpp::TokenList &expr, const std::map<std::string, std::size_t> &sizeOfType) {
     for (simplecpp::Token *tok = expr.begin(); tok; tok = tok->next) {
@@ -1277,11 +1305,11 @@ std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::s
             const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
             f.open(s.c_str());
             if (f.is_open())
-                return s;
+                return simplecpp::simplifyPath(s);
         } else {
             f.open(header.c_str());
             if (f.is_open())
-                return header;
+                return simplecpp::simplifyPath(header);
         }
     }
 
@@ -1292,7 +1320,7 @@ std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::s
         s += header;
         f.open(s.c_str());
         if (f.is_open())
-            return s;
+            return simplecpp::simplifyPath(s);
     }
 
     return "";
@@ -1303,10 +1331,10 @@ std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &fil
         if (sourcefile.find_first_of("\\/") != std::string::npos) {
             const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
             if (filedata.find(s) != filedata.end())
-                return s;
+                return simplecpp::simplifyPath(s);
         } else {
             if (filedata.find(header) != filedata.end())
-                return header;
+                return simplecpp::simplifyPath(header);
         }
     }
 
@@ -1316,7 +1344,7 @@ std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &fil
             s += '/';
         s += header;
         if (filedata.find(s) != filedata.end())
-            return s;
+            return simplecpp::simplifyPath(s);
     }
 
     return "";
@@ -1325,9 +1353,7 @@ std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &fil
 bool hasFile(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader) {
     return !getFileName(filedata, sourcefile, header, dui, systemheader).empty();
 }
-
 }
-
 
 std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::TokenList &rawtokens, std::vector<std::string> &fileNumbers, const struct simplecpp::DUI &dui, simplecpp::OutputList *outputList)
 {
