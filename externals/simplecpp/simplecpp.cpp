@@ -1203,9 +1203,15 @@ std::string simplifyPath(std::string path) {
     }
 
     // remove "xyz/../"
-    while ((pos = path.find("/../")) != std::string::npos) {
+    pos = 1U;
+    while ((pos = path.find("/../", pos)) != std::string::npos) {
         const std::string::size_type pos1 = path.rfind("/", pos - 1U);
-        path.erase(pos1,pos-pos1+3);
+        if (pos1 == std::string::npos)
+            pos++;
+        else {
+            path.erase(pos1,pos-pos1+3);
+            pos = std::min((std::string::size_type)1, pos1);
+        }
     }
 
     return path;
