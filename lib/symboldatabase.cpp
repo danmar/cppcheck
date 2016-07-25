@@ -4089,7 +4089,7 @@ unsigned int SymbolDatabase::sizeOfType(const Token *type) const
 {
     unsigned int size = _tokenizer->sizeOfType(type);
 
-    if (size == 0 && type->type() && type->type()->isEnumType()) {
+    if (size == 0 && type->type() && type->type()->isEnumType() && type->type()->classScope) {
         size = _settings->sizeof_int;
         const Token * enum_type = type->type()->classScope->enumType;
         if (enum_type)
