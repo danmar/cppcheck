@@ -1377,11 +1377,11 @@ std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::s
 std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader) {
     if (!systemheader) {
         if (sourcefile.find_first_of("\\/") != std::string::npos) {
-            const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
+            const std::string s(simplecpp::simplifyPath(sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header));
             if (filedata.find(s) != filedata.end())
-                return simplecpp::simplifyPath(s);
+                return s;
         } else {
-            if (filedata.find(header) != filedata.end())
+            if (filedata.find(simplecpp::simplifyPath(header)) != filedata.end())
                 return simplecpp::simplifyPath(header);
         }
     }
@@ -1391,8 +1391,9 @@ std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &fil
         if (!s.empty() && s[s.size()-1U]!='/' && s[s.size()-1U]!='\\')
             s += '/';
         s += header;
+        s = simplecpp::simplifyPath(s);
         if (filedata.find(s) != filedata.end())
-            return simplecpp::simplifyPath(s);
+            return s;
     }
 
     return "";
@@ -1443,6 +1444,9 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
 
         TokenList *tokens = new TokenList(f, fileNumbers, header2, outputList);
         ret[header2] = tokens;
+
+        //std::cout << "new " << (void*)tokens << ' ' << header2 << std::endl;
+
         if (tokens->cbegin())
             filelist.push_back(tokens->cbegin());
     }
