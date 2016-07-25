@@ -164,22 +164,6 @@ public:
      */
     static void writeError(const std::string &fileName, const unsigned int linenr, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText);
 
-    /**
-     * Remove redundant parentheses from preprocessor commands. This should only be called from read().
-     * @param str Code processed by read().
-     * @return code with reduced parentheses
-     */
-    static std::string removeParentheses(const std::string &str);
-
-    /**
-     * Returns the string between double quote characters or \< \> characters.
-     * @param str e.g. \code#include "menu.h"\endcode or \code#include <menu.h>\endcode
-     * After function call it will contain e.g. "menu.h" without double quotes.
-     * @return NoHeader empty string if double quotes or \< \> were not found.
-     *         UserHeader if file surrounded with "" was found
-     *         SystemHeader if file surrounded with \<\> was found
-     */
-    static Preprocessor::HeaderTypes getHeaderFileName(std::string &str);
 private:
 
     /**
@@ -189,8 +173,6 @@ private:
      * @return The string where space characters have been removed.
      */
     static std::string removeSpaceNearNL(const std::string &str);
-
-    static std::string getdef(std::string line, bool def);
 
 public:
 

@@ -71,10 +71,6 @@ public:
 
             return tokens2.stringify();
         }
-
-        static int getHeaderFileName(std::string &str) {
-            return Preprocessor::getHeaderFileName(str);
-        }
     };
 
 private:
@@ -197,7 +193,6 @@ private:
         TEST_CASE(conditionalDefine);
         TEST_CASE(macro_parameters);
         TEST_CASE(newline_in_macro);
-        TEST_CASE(includes);
         TEST_CASE(ifdef_ifdefined);
 
         // define and then ifdef
@@ -1999,38 +1994,6 @@ private:
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("\nvoid f ( )\n{\n$printf $( \"\\n\" $) ;\n}", actual[""]);
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void includes() const {
-        {
-            std::string src = "#include a.h";
-            ASSERT_EQUALS(OurPreprocessor::NoHeader, OurPreprocessor::getHeaderFileName(src));
-            ASSERT_EQUALS("", src);
-        }
-
-        {
-            std::string src = "#include \"b.h\"";
-            ASSERT_EQUALS(OurPreprocessor::UserHeader, OurPreprocessor::getHeaderFileName(src));
-            ASSERT_EQUALS("b.h", src);
-        }
-
-        {
-            std::string src = "#include <c.h>";
-            ASSERT_EQUALS(OurPreprocessor::SystemHeader, OurPreprocessor::getHeaderFileName(src));
-            ASSERT_EQUALS("c.h", src);
-        }
-
-        {
-            std::string src = "#include \"d/d.h\"";
-            ASSERT_EQUALS(OurPreprocessor::UserHeader, OurPreprocessor::getHeaderFileName(src));
-            ASSERT_EQUALS("d/d.h", src);
-        }
-
-        {
-            std::string src = "#include \"e\\e.h\"";
-            ASSERT_EQUALS(OurPreprocessor::UserHeader, OurPreprocessor::getHeaderFileName(src));
-            ASSERT_EQUALS("e/e.h", src);
-        }
     }
 
     void ifdef_ifdefined() {

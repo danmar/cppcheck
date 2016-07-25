@@ -643,35 +643,6 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
                             false));
 }
 
-Preprocessor::HeaderTypes Preprocessor::getHeaderFileName(std::string &str)
-{
-    std::string::size_type i = str.find_first_of("<\"");
-    if (i == std::string::npos) {
-        str = "";
-        return NoHeader;
-    }
-
-    char c = str[i];
-    if (c == '<')
-        c = '>';
-
-    std::string result;
-    for (i = i + 1; i < str.length(); ++i) {
-        if (str[i] == c)
-            break;
-
-        result.append(1, str[i]);
-    }
-
-    // Linux can't open include paths with \ separator, so fix them
-    std::replace(result.begin(), result.end(), '\\', '/');
-
-    str = result;
-
-    return (c == '\"') ? UserHeader : SystemHeader;
-}
-
-
 // Report that include is missing
 void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
 {
