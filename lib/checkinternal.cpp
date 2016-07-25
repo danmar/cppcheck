@@ -43,11 +43,11 @@ void CheckInternal::checkTokenMatchPatterns()
             const std::string& funcname = tok->strAt(2);
 
             // Get pattern string
-            const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-            if (!pattern_tok || pattern_tok->tokType() != Token::eString)
+            const Token *patternTok = tok->tokAt(4)->nextArgument();
+            if (!patternTok || patternTok->tokType() != Token::eString)
                 continue;
 
-            const std::string pattern = pattern_tok->strValue();
+            const std::string pattern = patternTok->strValue();
             if (pattern.empty()) {
                 simplePatternError(tok, pattern, funcname);
                 continue;
