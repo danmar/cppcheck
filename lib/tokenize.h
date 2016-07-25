@@ -470,10 +470,6 @@ public:
 
     void combineStrings();
 
-    void concatenateDoubleSharp();
-
-    void simplifyFileAndLineMacro();
-
     void simplifyNull();
 
     void concatenateNegativeNumberAndAnyPositive();

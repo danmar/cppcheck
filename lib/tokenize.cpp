@@ -1885,26 +1885,6 @@ void Tokenizer::combineStrings()
     }
 }
 
-void Tokenizer::concatenateDoubleSharp()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (Token::Match(tok, "%num%|%name% ## %num%|%name%")) {
-            tok->str(tok->str() + tok->strAt(2));
-            tok->deleteNext(2);
-        }
-    }
-}
-
-void Tokenizer::simplifyFileAndLineMacro()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "__FILE__")
-            tok->str("\"" + list.file(tok) + "\"");
-        else if (tok->str() == "__LINE__")
-            tok->str(MathLib::toString(tok->linenr()));
-    }
-}
-
 void Tokenizer::simplifyNull()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -3338,12 +3318,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // replace inline SQL with "asm()" (Oracle PRO*C). Ticket: #1959
     simplifySQL();
-
-    // replace __LINE__ macro with line number
-    simplifyFileAndLineMacro();
-
-    // Concatenate double sharp: 'a ## b' -> 'ab'
-    concatenateDoubleSharp();
 
     createLinks();
 

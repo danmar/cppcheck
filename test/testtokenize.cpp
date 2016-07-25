@@ -67,7 +67,6 @@ private:
         TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
 
         TEST_CASE(syntax_case_default);
-        TEST_CASE(simplifyFileAndLineMacro);  // tokenize "return - __LINE__;"
 
         TEST_CASE(foreach);     // #3690
 
@@ -200,13 +199,9 @@ private:
         TEST_CASE(file2);
         TEST_CASE(file3);
 
-        TEST_CASE(doublesharp);
-
         TEST_CASE(isZeroNumber);
         TEST_CASE(isOneNumber);
         TEST_CASE(isTwoNumber);
-
-        TEST_CASE(macrodoublesharp);
 
         TEST_CASE(simplifyFunctionParameters);
         TEST_CASE(simplifyFunctionParameters1); // #3721
@@ -832,11 +827,6 @@ private:
         //valid, when 'x' and 'y' are constexpr.
         tokenizeAndStringify("void f() {switch (n) { case sqrt(x+y): z(); break;}}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly
-        ASSERT_EQUALS("\"test.cpp\"", tokenizeAndStringify("__FILE__"));
-        ASSERT_EQUALS("return -1 ;", tokenizeAndStringify("return - __LINE__;"));
     }
 
     void foreach () {
@@ -2969,16 +2959,6 @@ private:
         tokenizer.tokenize(istr, "a.cpp");
 
         ASSERT_EQUALS(Path::toNativeSeparators("[c:\\a.h:1]"), tokenizer.list.fileLine(tokenizer.tokens()));
-    }
-
-    void doublesharp() {
-        const char code[] = "a##_##b TEST(var,val) var##_##val = val\n";
-        ASSERT_EQUALS("a_b TEST ( var , val ) var_val = val", tokenizeAndStringify(code));
-    }
-
-    void macrodoublesharp() {
-        const char code[] = "DBG(fmt,args...) printf(fmt, ## args)\n";
-        ASSERT_EQUALS("DBG ( fmt , args . . . ) printf ( fmt , ## args )", tokenizeAndStringify(code));
     }
 
     void simplifyFunctionParameters() {
