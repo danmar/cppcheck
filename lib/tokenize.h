@@ -74,8 +74,7 @@ public:
     bool createTokens(std::istream &code,
                       const std::string& FileName);
 
-    bool simplifyTokens1(const std::string &configuration,
-                         bool noSymbolDB_AST = false);
+    bool simplifyTokens1(const std::string &configuration);
     /**
      * Tokenize code
      * @param code input stream for code, e.g.
@@ -100,8 +99,7 @@ public:
      */
     bool tokenize(std::istream &code,
                   const char FileName[],
-                  const std::string &configuration = emptyString,
-                  bool noSymbolDB_AST = false);
+                  const std::string &configuration = emptyString);
 
     /** Set variable id */
     void setVarId();

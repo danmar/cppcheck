@@ -1290,7 +1290,7 @@ private:
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp", "", true);
+        tokenizer.tokenize(istr, "test.cpp", "");
 
         return TemplateSimplifier::templateParameters(tokenizer.tokens());
     }
@@ -1320,7 +1320,7 @@ private:
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp", emptyString, true);
+        tokenizer.tokenize(istr, "test.cpp", emptyString);
 
         const Token *_tok = tokenizer.tokens();
         for (unsigned i = 0 ; i < offset ; ++i)

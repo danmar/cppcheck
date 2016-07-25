@@ -1692,54 +1692,50 @@ bool Tokenizer::createTokens(std::istream &code,
     return list.createTokens(code, Path::getRelativePath(Path::simplifyPath(FileName), _settings->basePaths));
 }
 
-bool Tokenizer::simplifyTokens1(const std::string &configuration,
-                                bool noSymbolDB_AST)
+bool Tokenizer::simplifyTokens1(const std::string &configuration)
 {
     // Fill the map _typeSize..
     fillTypeSizes();
 
     _configuration = configuration;
 
-    if (simplifyTokenList1(list.getFiles()[0].c_str())) {
-        if (!noSymbolDB_AST) {
-            list.createAst();
-            list.validateAst();
+    if (!simplifyTokenList1(list.getFiles().front().c_str()))
+        return false;
 
-            createSymbolDatabase();
+    list.createAst();
+    list.validateAst();
 
-            // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
-            for (std::size_t i = 0; i < _symbolDatabase->getVariableListSize(); i++) {
-                const Variable* var = _symbolDatabase->getVariableFromVarId(i);
-                if (var && var->isRValueReference()) {
-                    Token* endTok = const_cast<Token*>(var->typeEndToken());
-                    endTok->str("&");
-                    endTok->astOperand1(nullptr);
-                    endTok->astOperand2(nullptr);
-                    endTok->insertToken("&");
-                    endTok->next()->scope(endTok->scope());
-                }
-            }
+    createSymbolDatabase();
 
-            SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings->defaultSign, &_settings->library);
-            ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
+    // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
+    for (std::size_t i = 0; i < _symbolDatabase->getVariableListSize(); i++) {
+        const Variable* var = _symbolDatabase->getVariableFromVarId(i);
+        if (var && var->isRValueReference()) {
+            Token* endTok = const_cast<Token*>(var->typeEndToken());
+            endTok->str("&");
+            endTok->astOperand1(nullptr);
+            endTok->astOperand2(nullptr);
+            endTok->insertToken("&");
+            endTok->next()->scope(endTok->scope());
         }
-
-        printDebugOutput(1);
-
-        return true;
     }
-    return false;
+
+    SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings->defaultSign, &_settings->library);
+    ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
+
+    printDebugOutput(1);
+
+    return true;
 }
 
 bool Tokenizer::tokenize(std::istream &code,
                          const char FileName[],
-                         const std::string &configuration,
-                         bool noSymbolDB_AST)
+                         const std::string &configuration)
 {
     if (!createTokens(code, FileName))
         return false;
 
-    return simplifyTokens1(configuration, noSymbolDB_AST);
+    return simplifyTokens1(configuration);
 }
 //---------------------------------------------------------------------------
 
