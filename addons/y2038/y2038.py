@@ -259,7 +259,7 @@ for dumpfile in dumpfiles:
                 # warn about _TIME_BITS not being defined
                 if time_bits_defined == False:
                     reportDirDiag(args.template,
-                        cfg, srcfile, srclinenr, directive, 'warning',
+                                  cfg, srcfile, srclinenr, directive, 'warning',
                                   '_USE_TIME_BITS64 is defined but _TIME_BITS was not')
             elif re_undef_use_time_bits64.match(directive.str):
                 unsafe = int(srclinenr)

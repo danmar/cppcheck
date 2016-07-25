@@ -65,7 +65,7 @@ class Token:
         isArithmeticalOp   Is this token a arithmetic operator
         isAssignmentOp     Is this token a assignment operator
         isComparisonOp     Is this token a comparison operator
-        isLogicalOp        Is this token a logical operator: && || 
+        isLogicalOp        Is this token a logical operator: && ||
         varId              varId for token, each variable has a unique non-zero id
         variable           Variable information for this token. See the Variable class.
         function           If this token points at a function call, this attribute has the Function
@@ -353,7 +353,7 @@ class ValueFlow:
     class Value:
         """
         Value class
-        
+
         Attributes:
             intvalue     integer value
             tokvalue     token value
@@ -394,7 +394,7 @@ class Configuration:
         scopes        List of Scope items
         functions     List of Function items
         variables     List of Variable items
-        valueflow     List of ValueFlow values    
+        valueflow     List of ValueFlow values
     """
 
     name = ''
