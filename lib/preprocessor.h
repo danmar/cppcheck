@@ -96,6 +96,7 @@ public:
 
     void removeComments();
 
+    void setPlatformInfo(simplecpp::TokenList *tokens) const;
 
     /**
      * Extract the code for each configuration

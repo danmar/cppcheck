@@ -103,6 +103,8 @@ private:
         TEST_CASE(error4);  // #2919 - wrong filename is reported
         TEST_CASE(error5);
 
+        TEST_CASE(setPlatformInfo);
+
         // Handling include guards (don't create extra configuration for it)
         TEST_CASE(includeguard1);
         TEST_CASE(includeguard2);
@@ -631,6 +633,31 @@ private:
         const std::string code("#error hello world!\n");
         preprocessor.getcode(code, "X", "test.c");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void setPlatformInfo() {
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
+
+        // read code with simplecpp..
+        const char filedata[] = "#if sizeof(long) == 4\n"
+                                "1\n"
+                                "#else\n"
+                                "2\n"
+                                "#endif\n";
+        std::istringstream istr(filedata);
+        std::vector<std::string> files;
+        simplecpp::TokenList tokens(istr, files, "test.c");
+
+        // preprocess code with unix32 platform..
+        settings.platform(Settings::PlatformType::Unix32);
+        preprocessor.setPlatformInfo(&tokens);
+        ASSERT_EQUALS("\n1", preprocessor.getcode(tokens, "", files, false));
+
+        // preprocess code with unix64 platform..
+        settings.platform(Settings::PlatformType::Unix64);
+        preprocessor.setPlatformInfo(&tokens);
+        ASSERT_EQUALS("\n\n\n2", preprocessor.getcode(tokens, "", files, false));
     }
 
     void includeguard1() {

@@ -440,6 +440,26 @@ void Preprocessor::removeComments()
     }
 }
 
+void Preprocessor::setPlatformInfo(simplecpp::TokenList *tokens) const
+{
+    tokens->sizeOfType["bool"]          = _settings.sizeof_bool;
+    tokens->sizeOfType["short"]         = _settings.sizeof_short;
+    tokens->sizeOfType["int"]           = _settings.sizeof_int;
+    tokens->sizeOfType["long"]          = _settings.sizeof_long;
+    tokens->sizeOfType["long long"]     = _settings.sizeof_long_long;
+    tokens->sizeOfType["float"]         = _settings.sizeof_float;
+    tokens->sizeOfType["double"]        = _settings.sizeof_double;
+    tokens->sizeOfType["long double"]   = _settings.sizeof_long_double;
+    tokens->sizeOfType["bool *"]        = _settings.sizeof_pointer;
+    tokens->sizeOfType["short *"]       = _settings.sizeof_pointer;
+    tokens->sizeOfType["int *"]         = _settings.sizeof_pointer;
+    tokens->sizeOfType["long *"]        = _settings.sizeof_pointer;
+    tokens->sizeOfType["long long *"]   = _settings.sizeof_pointer;
+    tokens->sizeOfType["float *"]       = _settings.sizeof_pointer;
+    tokens->sizeOfType["double *"]      = _settings.sizeof_pointer;
+    tokens->sizeOfType["long double *"] = _settings.sizeof_pointer;
+}
+
 std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations)
 {
     const std::string filename(files[0]);
