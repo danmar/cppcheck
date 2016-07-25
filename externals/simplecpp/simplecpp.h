@@ -143,6 +143,9 @@ public:
             tok = tok->next;
         return tok;
     }
+
+    void printAll() const;
+    void printOut() const;
 private:
     TokenString string;
 };
