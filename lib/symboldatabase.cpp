@@ -2191,7 +2191,7 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
 const std::string& Type::name() const
 {
     const Token* next = classDef->next();
-    if (isEnumType() && classScope && classScope->enumClass)
+    if (classScope && classScope->enumClass && isEnumType())
         return next->strAt(1);
     else if (next->isName())
         return next->str();
@@ -3495,11 +3495,11 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
         }
 
         // type has a namespace
-        else {
+        else if (type->enclosingScope) {
             bool match = true;
             const Scope *scope = type->enclosingScope;
             const Token *typeTok2 = typeTok->tokAt(-2);
-            while (match && scope && Token::Match(typeTok2, "%any% ::")) {
+            do {
                 // A::B..
                 if (typeTok2->isName() && typeTok2->str().find(":") == std::string::npos) {
                     match &= bool(scope->className == typeTok2->str());
@@ -3510,7 +3510,7 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
                     match &= bool(scope->type == Scope::eGlobal);
                     break;
                 }
-            }
+            } while (match && scope && Token::Match(typeTok2, "%any% ::"));
 
             if (match)
                 return &(*type);
