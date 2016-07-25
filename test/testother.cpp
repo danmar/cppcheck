@@ -4577,6 +4577,21 @@ private:
               "}", nullptr, false, false, false);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'i[2]' is reassigned a value before the old one has been used.\n", errout.str());
 
+        check("void f(int x) {\n"
+              "    int i[10];\n"
+              "    i[x] = 1;\n"
+              "    x=1;\n"
+              "    i[x] = 1;\n"
+              "}", nullptr, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const int x) {\n"
+              "    int i[10];\n"
+              "    i[x] = 1;\n"
+              "    i[x] = 1;\n"
+              "}", nullptr, false, false, false);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'i[x]' is reassigned a value before the old one has been used.\n", errout.str());
+
         // Testing different types
         check("void f() {\n"
               "    Foo& bar = foo();\n"

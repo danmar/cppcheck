@@ -501,9 +501,24 @@ void CheckOther::checkRedundantAssignment()
             } else if (tok->tokType() == Token::eVariable && !Token::Match(tok, "%name% (")) {
                 const Token *eq = nullptr;
                 for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                    if (Token::Match(tok2, "[([]"))
+                    if (Token::Match(tok2, "[([]")) {
+                        // bail out if there is a variable in rhs - we only track 1 variable
+                        bool bailout = false;
+                        for (const Token *tok3 = tok2->link(); tok3 != tok2; tok3 = tok3->previous()) {
+                            if (tok3->varId()) {
+                                if (!tok3->variable())
+                                    bailout = true;
+                                else {
+                                    const Variable *var = tok3->variable();
+                                    if (!var->isConst() || var->isReference() || var->isPointer())
+                                        bailout = true;
+                                }
+                            }
+                        }
+                        if (bailout)
+                            break;
                         tok2 = tok2->link();
-                    else if (Token::Match(tok2, "[)];,]"))
+                    } else if (Token::Match(tok2, "[)];,]"))
                         break;
                     else if (tok2->str() == "=") {
                         eq = tok2;
