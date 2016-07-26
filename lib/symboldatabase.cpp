@@ -4412,12 +4412,16 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, char defau
                 ValueType::Type type = ValueType::Type::INT;
                 if (MathLib::isIntHex(tok->str()))
                     sign = ValueType::Sign::UNSIGNED;
-                for (std::size_t pos = tok->str().size() - 1U; pos > 0U && std::isalpha(tok->str()[pos]); --pos) {
+                for (std::size_t pos = tok->str().size() - 1U; pos > 0U; --pos) {
                     const char suffix = tok->str()[pos];
                     if (suffix == 'u' || suffix == 'U')
                         sign = ValueType::Sign::UNSIGNED;
-                    if (suffix == 'l' || suffix == 'L')
+                    else if (suffix == 'l' || suffix == 'L')
                         type = (type == ValueType::Type::INT) ? ValueType::Type::LONG : ValueType::Type::LONGLONG;
+                    else if (pos > 2U && suffix == '4' && tok->str()[pos - 1] == '6' && tok->str()[pos - 2] == 'i') {
+                        type = ValueType::Type::LONGLONG;
+                        pos -= 2;
+                    } else break;
                 }
                 ::setValueType(tok, ValueType(sign, type, 0U), cpp, defsign, lib);
             }

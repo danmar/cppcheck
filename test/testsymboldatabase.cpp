@@ -3534,6 +3534,8 @@ private:
         ASSERT_EQUALS("unsigned long", typeOf("1UL", "1UL"));
         ASSERT_EQUALS("signed long long", typeOf("1LL", "1LL"));
         ASSERT_EQUALS("unsigned long long", typeOf("1ULL", "1ULL"));
+        ASSERT_EQUALS("signed long long", typeOf("1i64", "1i64"));
+        ASSERT_EQUALS("unsigned long long", typeOf("1ui64", "1ui64"));
         ASSERT_EQUALS("unsigned int", typeOf("1u", "1u"));
         ASSERT_EQUALS("signed long", typeOf("1l", "1l"));
         ASSERT_EQUALS("unsigned long", typeOf("1ul", "1ul"));

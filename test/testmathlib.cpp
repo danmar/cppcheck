@@ -177,7 +177,9 @@ private:
         ASSERT_EQUALS("2L",   MathLib::add("1L",   "1"));
         ASSERT_EQUALS("2UL",  MathLib::add("1UL",  "1"));
         ASSERT_EQUALS("2LL",  MathLib::add("1LL",  "1"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1i64", "1"));
         ASSERT_EQUALS("2ULL", MathLib::add("1ULL", "1"));
+        ASSERT_EQUALS("2ULL", MathLib::add("1ui64","1"));
 
         ASSERT_EQUALS("2U",   MathLib::add("1",    "1U"));
         ASSERT_EQUALS("2U",   MathLib::add("1U",   "1U"));
@@ -737,6 +739,9 @@ private:
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "i64";
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
+
+        value = "ui64";
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
     }
 
