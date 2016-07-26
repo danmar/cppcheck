@@ -95,11 +95,11 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
             const std::string& funcname = tok->strAt(2);
 
             // Get pattern string
-            const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-            if (!pattern_tok || pattern_tok->tokType() != Token::eString)
+            const Token *patternTok = tok->tokAt(4)->nextArgument();
+            if (!patternTok || patternTok->tokType() != Token::eString)
                 continue;
 
-            const std::string pattern = pattern_tok->strValue();
+            const std::string pattern = patternTok->strValue();
             if (pattern.empty()) {
                 complexPatternError(tok, pattern, funcname);
                 continue;
@@ -182,11 +182,11 @@ void CheckInternal::checkMissingPercentCharacter()
             const std::string& funcname = tok->strAt(2);
 
             // Get pattern string
-            const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-            if (!pattern_tok || pattern_tok->tokType() != Token::eString)
+            const Token *patternTok = tok->tokAt(4)->nextArgument();
+            if (!patternTok || patternTok->tokType() != Token::eString)
                 continue;
 
-            const std::string pattern = pattern_tok->strValue();
+            const std::string pattern = patternTok->strValue();
 
             std::set<std::string>::const_iterator magic, magics_end = magics.end();
             for (magic = magics.begin(); magic != magics_end; ++magic) {
@@ -242,11 +242,11 @@ void CheckInternal::checkUnknownPattern()
                 continue;
 
             // Get pattern string
-            const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-            if (!pattern_tok || pattern_tok->tokType() != Token::eString)
+            const Token *patternTok = tok->tokAt(4)->nextArgument();
+            if (!patternTok || patternTok->tokType() != Token::eString)
                 continue;
 
-            const std::string pattern = pattern_tok->strValue();
+            const std::string pattern = patternTok->strValue();
             bool inBrackets = false;
 
             for (std::string::size_type j = 0; j < pattern.length() - 1; j++) {
@@ -311,11 +311,11 @@ void CheckInternal::checkExtraWhitespace()
             const std::string& funcname = tok->strAt(2);
 
             // Get pattern string
-            const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-            if (!pattern_tok || pattern_tok->tokType() != Token::eString)
+            const Token *patternTok = tok->tokAt(4)->nextArgument();
+            if (!patternTok || patternTok->tokType() != Token::eString)
                 continue;
 
-            const std::string pattern = pattern_tok->strValue();
+            const std::string pattern = patternTok->strValue();
             if (!pattern.empty() && (pattern[0] == ' ' || *pattern.rbegin() == ' '))
                 extraWhitespaceError(tok, pattern, funcname);
 
