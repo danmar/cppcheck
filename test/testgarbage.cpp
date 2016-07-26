@@ -232,7 +232,6 @@ private:
         TEST_CASE(garbageCode181);
         TEST_CASE(garbageCode182); // #4195
         TEST_CASE(garbageCode183); // #7505
-        TEST_CASE(garbageCode184); // #7615
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1522,14 +1521,6 @@ private:
         ASSERT_THROW(checkCode("= { int } enum return { r = f() f(); }"), InternalError);
     }
 
-    // #7615 - crash in Symboldatabase::sizeOfType
-    void garbageCode184() {
-        checkCode("enum bar;"
-                  "void foo() {\n"
-                  "    bar cats[] = {A, B, C}\n"
-                  "        int *bla = cats[ARRAY_SIZE(cats)];\n"
-                  "    };\n");
-    }
 };
 
 REGISTER_TEST(TestGarbage)

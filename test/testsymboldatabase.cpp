@@ -253,6 +253,8 @@ private:
         TEST_CASE(enum6);
         TEST_CASE(enum7);
 
+        TEST_CASE(sizeOfType);
+
         TEST_CASE(isImplicitlyVirtual);
         TEST_CASE(isPure);
 
@@ -2603,6 +2605,17 @@ private:
         TEST(settings.sizeof_long);
         TEST(settings.sizeof_long_long);
         TEST(settings.sizeof_long_long);
+    }
+
+    void sizeOfType() {
+        // #7615 - crash in Symboldatabase::sizeOfType()
+        GET_SYMBOL_DB("enum e;\n"
+                      "void foo() {\n"
+                      "    e abc[] = {A,B,C};\n"
+                      "    int i = abc[ARRAY_SIZE(cats)];\n"
+                      "}");
+        const Token *e = Token::findsimplematch(tokenizer.tokens(), "e abc");
+        db->sizeOfType(e);  // <- don't crash
     }
 
     void isImplicitlyVirtual() {
