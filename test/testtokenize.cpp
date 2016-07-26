@@ -1148,7 +1148,8 @@ private:
 
     void ifAddBraces15() {
         // ticket #2616 - unknown macro before if
-        ASSERT_EQUALS("{ A if ( x ) { y ( ) ; } }", tokenizeAndStringify("{A if(x)y();}", false));
+        // TODO: Move to TestGarbage
+        ASSERT_THROW(tokenizeAndStringify("{A if(x)y();}", false), InternalError);
     }
 
     void ifAddBraces16() {

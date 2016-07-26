@@ -1229,7 +1229,7 @@ private:
     }
 
     void garbageCode151() { // #4175
-        checkCode(">{ x while (y) z int = }");
+        ASSERT_THROW(checkCode(">{ x while (y) z int = }"), InternalError);
         checkCode("void f() {\n" // #4911 - bad simplification => don't crash
                   "    int a;\n"
                   "    do { a=do_something() } while (a);\n"
@@ -1317,9 +1317,9 @@ private:
     void garbageAST() {
         checkCode("--"); // don't crash
 
-        checkCode("N 1024 float a[N], b[N + 3], c[N]; void N; (void) i;\n"
-                  "int #define for (i = avx_test i < c[i]; i++)\n"
-                  "b[i + 3] = a[i] * {}"); // Don't hang (#5787)
+        ASSERT_THROW(checkCode("N 1024 float a[N], b[N + 3], c[N]; void N; (void) i;\n"
+                               "int #define for (i = avx_test i < c[i]; i++)\n"
+                               "b[i + 3] = a[i] * {}"), InternalError); // Don't hang (#5787)
 
         checkCode("START_SECTION([EXTRA](bool isValid(const String &filename)))"); // Don't crash (#5991)
     }

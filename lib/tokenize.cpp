@@ -8087,7 +8087,7 @@ const Token * Tokenizer::findGarbageCode() const
 {
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|while|for|switch")) { // switch (EXPR) { ... }
-            if (!Token::Match(tok->previous(), ";|{|}|(|)|,|else"))
+            if (tok->previous() && !Token::Match(tok->previous(), ":|;|{|}|(|)|,|else|do"))
                 return tok;
             if (!Token::Match(tok->next(), "( !!)"))
                 return tok;
