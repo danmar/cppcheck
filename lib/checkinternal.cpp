@@ -153,7 +153,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 }
 
 namespace {
-    const std::set<std::string> magics = make_container< std::set<std::string> > ()
+    const std::set<std::string> knownPatterns = make_container< std::set<std::string> > ()
                                          << "%any%"
                                          << "%assign%"
                                          << "%bool%"
@@ -167,6 +167,7 @@ namespace {
                                          << "%str%"
                                          << "%type%"
                                          << "%name%"
+                                         << "%var%"
                                          << "%varid%";
 }
 
@@ -188,17 +189,17 @@ void CheckInternal::checkMissingPercentCharacter()
 
             const std::string pattern = patternTok->strValue();
 
-            std::set<std::string>::const_iterator magic, magics_end = magics.end();
-            for (magic = magics.begin(); magic != magics_end; ++magic) {
-                const std::string broken_magic = (*magic).substr(0, (*magic).size() - 1);
+            std::set<std::string>::const_iterator knownPattern, knownPatternsEnd = knownPatterns.end();
+            for (knownPattern = knownPatterns.begin(); knownPattern != knownPatternsEnd; ++knownPattern) {
+                const std::string brokenPattern = (*knownPattern).substr(0, (*knownPattern).size() - 1);
 
                 std::string::size_type pos = 0;
-                while ((pos = pattern.find(broken_magic, pos)) != std::string::npos) {
+                while ((pos = pattern.find(brokenPattern, pos)) != std::string::npos) {
                     // Check if it's the full pattern
-                    if (pattern.find(*magic, pos) != pos) {
+                    if (pattern.find(*knownPattern, pos) != pos) {
                         // Known whitelist of substrings
-                        if ((broken_magic == "%var" && pattern.find("%varid%", pos) == pos) ||
-                            (broken_magic == "%or" && pattern.find("%oror%", pos) == pos)) {
+                        if ((brokenPattern == "%var" && pattern.find("%varid%", pos) == pos) ||
+                            (brokenPattern == "%or" && pattern.find("%oror%", pos) == pos)) {
                             ++pos;
                             continue;
                         }
@@ -211,25 +212,6 @@ void CheckInternal::checkMissingPercentCharacter()
             }
         }
     }
-}
-
-namespace {
-    const std::set<std::string> knownPatterns = make_container< std::set<std::string> > ()
-            << "%any%"
-            << "%assign%"
-            << "%bool%"
-            << "%char%"
-            << "%comp%"
-            << "%name%"
-            << "%num%"
-            << "%op%"
-            << "%cop%"
-            << "%or%"
-            << "%oror%"
-            << "%str%"
-            << "%type%"
-            << "%var%"
-            << "%varid%";
 }
 
 void CheckInternal::checkUnknownPattern()
