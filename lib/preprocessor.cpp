@@ -25,12 +25,10 @@
 
 #include <algorithm>
 #include <sstream>
-#include <fstream>
 #include <cstdlib>
 #include <cctype>
 #include <vector>
 #include <set>
-#include <stack>
 
 /**
  * Remove heading and trailing whitespaces from the input parameter.
@@ -67,21 +65,6 @@ Preprocessor::~Preprocessor()
 {
     for (std::map<std::string, simplecpp::TokenList *>::iterator it = tokenlists.begin(); it != tokenlists.end(); ++it)
         delete it->second;
-}
-
-void Preprocessor::writeError(const std::string &fileName, const unsigned int linenr, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText)
-{
-    if (!errorLogger)
-        return;
-
-    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    ErrorLogger::ErrorMessage::FileLocation loc(fileName, linenr);
-    locationList.push_back(loc);
-    errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
-                           Severity::error,
-                           errorText,
-                           errorType,
-                           false));
 }
 
 
@@ -657,6 +640,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
         locationList.push_back(loc);
     }
     _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
+                            file0,
                             Severity::error,
                             msg,
                             "preprocessorErrorDirective",
@@ -685,13 +669,12 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
             loc.setfile(Path::toNativeSeparators(filename));
             locationList.push_back(loc);
         }
-        ErrorLogger::ErrorMessage errmsg(locationList, Severity::information,
+        ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information,
                                          (headerType==SystemHeader) ?
                                          "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
                                          "Include file: \"" + header + "\" not found.",
                                          (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
                                          false);
-        errmsg.file0 = file0;
         _errorLogger->reportInfo(errmsg);
     }
 }
@@ -763,7 +746,7 @@ void Preprocessor::validateCfgError(const std::string &cfg, const std::string &m
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     ErrorLogger::ErrorMessage::FileLocation loc(file0, 1);
     locationList.push_back(loc);
-    ErrorLogger::ErrorMessage errmsg(locationList, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
+    ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
     _errorLogger->reportInfo(errmsg);
 }
 

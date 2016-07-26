@@ -61,6 +61,7 @@ public:
                         ErrorLogger::ErrorMessage::FileLocation loc(msg.location.file(), msg.location.line);
                         locationList.push_back(loc);
                         errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
+                                               emptyString,
                                                Severity::error,
                                                msg.msg,
                                                "preprocessorError",

@@ -1981,6 +1981,7 @@ void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &
             ostr << "Array " << it->first << '[' << sz->second << "] accessed at index " << it->second.index << " which is out of bounds";
 
             const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                   emptyString,
                                                    Severity::error,
                                                    ostr.str(),
                                                    "arrayIndexOutOfBounds",

@@ -155,16 +155,6 @@ public:
     bool validateCfg(const std::string &code, const std::string &cfg);
     void validateCfgError(const std::string &cfg, const std::string &macro);
 
-    /**
-     * report error
-     * @param fileName name of file that the error was found in
-     * @param linenr linenr in file
-     * @param errorLogger Error logger to write error to
-     * @param errorType id string for error
-     * @param errorText Plain text
-     */
-    static void writeError(const std::string &fileName, const unsigned int linenr, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText);
-
 private:
 
     /**

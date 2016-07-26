@@ -48,9 +48,10 @@ ErrorLogger::ErrorMessage::ErrorMessage()
 {
 }
 
-ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive) :
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file0_, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive) :
     _callStack(callStack), // locations for this error message
     _id(id),               // set the message id
+    file0(file0_),
     _severity(severity),   // severity for this error message
     _cwe(0U),
     _inconclusive(inconclusive)
@@ -61,9 +62,10 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
 
 
 
-ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive) :
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file0_, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive) :
     _callStack(callStack), // locations for this error message
     _id(id),               // set the message id
+    file0(file0_),
     _severity(severity),   // severity for this error message
     _cwe(cwe.id),
     _inconclusive(inconclusive)
@@ -413,7 +415,7 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
 
         const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack = make_container< std::list<ErrorLogger::ErrorMessage::FileLocation> > ()
                 << ErrorLogger::ErrorMessage::FileLocation(i->file, i->line);
-        reportErr(ErrorLogger::ErrorMessage(callStack, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression", false));
+        reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression", false));
     }
 }
 

@@ -308,16 +308,17 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                     loc.setfile(fixedpath);
                 } else {
                     ErrorLogger::ErrorMessage::FileLocation loc2;
-                    loc2.setfile(Path::toNativeSeparators(filename.c_str()));
+                    loc2.setfile(Path::toNativeSeparators(filename));
                     locationList.push_back(loc2);
                     loc.setfile(_tokenizer.list.getSourceFilePath());
                 }
                 locationList.push_back(loc);
-                const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                       Severity::error,
-                                                       e.errorMessage,
-                                                       e.id,
-                                                       false);
+                ErrorLogger::ErrorMessage errmsg(locationList,
+                                                 _tokenizer.list.getSourceFilePath(),
+                                                 Severity::error,
+                                                 e.errorMessage,
+                                                 e.id,
+                                                 false);
 
                 reportErr(errmsg);
             }
@@ -360,6 +361,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
         callstack.push_back(loc1);
 
         ErrorLogger::ErrorMessage errmsg(callstack,
+                                         emptyString,
                                          Severity::information,
                                          fullmsg,
                                          "internalError",
@@ -557,6 +559,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
 
 
     ErrorLogger::ErrorMessage errmsg(loclist,
+                                     emptyString,
                                      Severity::information,
                                      msg.str(),
                                      "toomanyconfigs", CWE398,
@@ -567,7 +570,6 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
 
 void CppCheck::purgedConfigurationMessage(const std::string &file, const std::string& configuration)
 {
-
     tooManyConfigs = false;
 
     if (_settings.isEnabled("information") && file.empty())
@@ -581,6 +583,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
     }
 
     ErrorLogger::ErrorMessage errmsg(loclist,
+                                     emptyString,
                                      Severity::information,
                                      "The configuration '" + configuration + "' was not checked because its code equals another one.",
                                      "purgedConfiguration",

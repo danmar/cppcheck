@@ -82,8 +82,8 @@ static void execute(const Token *expr,
 static void bailout(TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what)
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-    callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(tok,tokenlist));
-    ErrorLogger::ErrorMessage errmsg(callstack, Severity::debug, "ValueFlow bailout: " + what, "valueFlowBailout", false);
+    callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(tok, tokenlist));
+    ErrorLogger::ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug, "ValueFlow bailout: " + what, "valueFlowBailout", false);
     errorLogger->reportErr(errmsg);
 }
 
