@@ -288,6 +288,7 @@ unsigned int ThreadExecutor::check()
                     std::list<ErrorLogger::ErrorMessage::FileLocation> locations;
                     locations.push_back(ErrorLogger::ErrorMessage::FileLocation(childname, 0));
                     const ErrorLogger::ErrorMessage errmsg(locations,
+                                                           emptyString,
                                                            Severity::error,
                                                            oss.str(),
                                                            "cppcheckError",

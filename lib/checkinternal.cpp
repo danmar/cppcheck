@@ -154,21 +154,21 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
 namespace {
     const std::set<std::string> knownPatterns = make_container< std::set<std::string> > ()
-                                         << "%any%"
-                                         << "%assign%"
-                                         << "%bool%"
-                                         << "%char%"
-                                         << "%comp%"
-                                         << "%num%"
-                                         << "%op%"
-                                         << "%cop%"
-                                         << "%or%"
-                                         << "%oror%"
-                                         << "%str%"
-                                         << "%type%"
-                                         << "%name%"
-                                         << "%var%"
-                                         << "%varid%";
+            << "%any%"
+            << "%assign%"
+            << "%bool%"
+            << "%char%"
+            << "%comp%"
+            << "%num%"
+            << "%op%"
+            << "%cop%"
+            << "%or%"
+            << "%oror%"
+            << "%str%"
+            << "%type%"
+            << "%name%"
+            << "%var%"
+            << "%varid%";
 }
 
 void CheckInternal::checkMissingPercentCharacter()
