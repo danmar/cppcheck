@@ -1,18 +1,46 @@
 version: 1.73.{build}
 
+clone_depth: 10
+
 environment:
-  VisualStudioVersion: 10.0
-
-configuration:
-  - Debug
-  - Release
-
-platform:
-  - Win32
+  matrix:
+    - VisualStudioVersion: 10.0
+      platform: "Win32"
+      configuration: "Debug"
+      vcvarsall_platform: "x86"
+      PlatformToolset: "v100"
+    - VisualStudioVersion: 10.0
+      platform: "Win32"
+      configuration: "Release"
+      vcvarsall_platform: "x86"
+      PlatformToolset: "v100"
+    - VisualStudioVersion: 10.0
+      platform: "x64"
+      configuration: "Debug"
+      vcvarsall_platform: "x64"
+      PlatformToolset: "v100"
+    - VisualStudioVersion: 10.0
+      platform: "x64"
+      configuration: "Release"
+      vcvarsall_platform: "x64"
+      PlatformToolset: "v100"
+    - VisualStudioVersion: 14.0
+      platform: "Win32"
+      configuration: "Debug"
+      vcvarsall_platform: "x86"
+      PlatformToolset: "v140"
+    - VisualStudioVersion: 14.0
+      platform: "x64"
+      configuration: "Debug"
+      vcvarsall_platform: "x64"
+      PlatformToolset: "v140"
 
 build_script:
-  - msbuild "cppcheck.sln" /m /verbosity:minimal /p:PlatformToolset=v100 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset
+  - 'IF "%VisualStudioVersion%" == "10.0" IF "%platform%" == "x64" CALL "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /%vcvarsall_platform% /%configuration%'
+  - 'CALL "C:\Program Files (x86)\Microsoft Visual Studio %VisualStudioVersion%\VC\vcvarsall.bat" %vcvarsall_platform%'
+  - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 test_script:
-  - if "%CONFIGURATION%" == "Release" bin\testrunner.exe
-  - if "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
+  - IF "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
+  - IF "%CONFIGURATION%" == "Release" bin\testrunner.exe
