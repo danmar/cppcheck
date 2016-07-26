@@ -1,18 +1,18 @@
 version: 1.73.{build}
 
 environment:
- VisualStudioVersion: 10.0
+  VisualStudioVersion: 10.0
 
 configuration:
-- Debug
-- Release
+  - Debug
+  - Release
 
 platform:
-- Win32
+  - Win32
 
 build_script:
-- msbuild "cppcheck.sln" /m /verbosity:minimal /p:PlatformToolset=v100 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - msbuild "cppcheck.sln" /m /verbosity:minimal /p:PlatformToolset=v100 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 test_script:
-- if "%CONFIGURATION%" == "Release" bin\testrunner.exe
-- if "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
+  - if "%CONFIGURATION%" == "Release" bin\testrunner.exe
+  - if "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
