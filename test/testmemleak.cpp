@@ -5978,6 +5978,7 @@ private:
 
         TEST_CASE(openfileNoLeak);
         TEST_CASE(returnValueNotUsed_tfopen_s);
+        TEST_CASE(sendMessage);
     }
 
     void openfileNoLeak() {
@@ -6010,6 +6011,14 @@ private:
               "  _tfopen_s(&fp, filename, _T(\"rb\"));\n"
               "}");
         TODO_ASSERT_EQUALS("[test.c:3]: (error) Resource leak: fp\n", "", errout.str());
+    }
+
+    void sendMessage() {
+        check("void SetFont() {\n"
+              "  HFONT hf = CreateFontIndirect(&lf);\n"
+              "  SendMessage(hwnd, WM_SETFONT, (WPARAM)hf, TRUE);\n" // We do not know what the handler for the message will do with 'hf', so it might be closed later
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
