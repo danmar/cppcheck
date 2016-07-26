@@ -469,6 +469,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         if (!re) {
             if (error) {
                 ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+                                                 emptyString,
                                                  Severity::error,
                                                  error,
                                                  "pcre_compile",
@@ -511,7 +512,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
                 summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
             else
                 summary = rule.summary;
-            const ErrorLogger::ErrorMessage errmsg(callStack, rule.severity, summary, rule.id, false);
+            const ErrorLogger::ErrorMessage errmsg(callStack, tokenizer.list.getSourceFilePath(), rule.severity, summary, rule.id, false);
 
             // Report error
             reportErr(errmsg);
