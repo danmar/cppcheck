@@ -580,8 +580,11 @@ private:
      */
     void validate() const;
 
-    /** Validate that expression is valid. If it's invalid a syntax error is reported. */
-    void validateExpr(const Token *start, const Token *end);
+    /** Detect garbage code */
+    const Token * findGarbageCode() const;
+
+    /** Detect garbage expression */
+    bool isGarbageExpr(const Token *start, const Token *end) const;
 
     /**
      * Remove __declspec()

@@ -3317,6 +3317,10 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     createLinks();
 
+    // Bail out if code is garbage
+    if (const Token *garbage = findGarbageCode())
+        syntaxError(garbage);
+
     // if (x) MACRO() ..
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "if (")) {
@@ -3371,20 +3375,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         if (Token::simpleMatch(tok, "> struct {") &&
             Token::simpleMatch(tok->linkAt(2), "} ;")) {
             syntaxError(tok);
-        }
-
-        if (tok->str() == "switch") { // switch (EXPR) { ... }
-            if (!Token::Match(tok->next(), "( !!)"))
-                syntaxError(tok->next());
-            if (!Token::simpleMatch(tok->linkAt(1),") {"))
-                syntaxError(tok->linkAt(1));
-            validateExpr(tok->next(), tok->linkAt(1));
-        }
-
-        if (Token::Match(tok, "if|while")) {
-            if (!Token::Match(tok->next(), "( !!)"))
-                syntaxError(tok->next());
-            validateExpr(tok->next(), tok->linkAt(1));
         }
     }
 
@@ -8092,7 +8082,27 @@ void Tokenizer::validate() const
         cppcheckError(lastTok);
 }
 
-void Tokenizer::validateExpr(const Token *start, const Token *end)
+
+const Token * Tokenizer::findGarbageCode() const
+{
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "if|while|for|switch")) { // switch (EXPR) { ... }
+            if (!Token::Match(tok->previous(), ";|{|}|(|)|,|else"))
+                return tok;
+            if (!Token::Match(tok->next(), "( !!)"))
+                return tok;
+            if (tok->str() == "switch" && !Token::simpleMatch(tok->linkAt(1),") {"))
+                return tok->linkAt(1);
+            if (tok->str() != "for") {
+                if (isGarbageExpr(tok->next(), tok->linkAt(1)))
+                    return tok;
+            }
+        }
+    }
+    return nullptr;
+}
+
+bool Tokenizer::isGarbageExpr(const Token *start, const Token *end) const
 {
     std::set<std::string> controlFlowKeywords;
     controlFlowKeywords.insert("goto");
@@ -8107,12 +8117,13 @@ void Tokenizer::validateExpr(const Token *start, const Token *end)
     controlFlowKeywords.insert("return");
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (controlFlowKeywords.find(tok->str()) != controlFlowKeywords.end())
-            syntaxError(tok);
+            return true;
         if (tok->str() == ";")
-            syntaxError(tok);
+            return true;
         if (tok->str() == "{")
             tok = tok->link();
     }
+    return false;
 }
 
 std::string Tokenizer::simplifyString(const std::string &source)
