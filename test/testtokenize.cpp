@@ -456,6 +456,10 @@ private:
         TEST_CASE(removeMacroInClassDef); // #6058
 
         TEST_CASE(sizeofAddParentheses);
+
+        // Make sure the Tokenizer::findGarbageCode() does not have false positives
+        // The TestGarbage ensures that there are true positives
+        TEST_CASE(findGarbageCode);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -8378,6 +8382,17 @@ private:
         ASSERT_EQUALS("sizeof ( a . b ) + 3 ;", tokenizeAndStringify("sizeof a.b+3;"));
         ASSERT_EQUALS("sizeof ( a [ 2 ] . b ) + 3 ;", tokenizeAndStringify("sizeof a[2].b+3;"));
         ASSERT_EQUALS("f ( 0 , sizeof ( ptr . bar ) ) ;", tokenizeAndStringify("f(0, sizeof ptr->bar );"));
+    }
+
+    void findGarbageCode() { // Make sure the Tokenizer::findGarbageCode() does not have FPs
+        // before if|for|while|switch
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() { do switch (a) {} while (1); }"))
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() { label: switch (a) {} }"));
+
+        // TODO ASSERT_NO_THROW(tokenizeAndStringify("void f() { MACRO(switch); }"));
+        // TODO ASSERT_NO_THROW(tokenizeAndStringify("void f() { MACRO(x,switch); }"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() { switch (a) int b; }"));
     }
 };
 

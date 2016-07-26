@@ -239,6 +239,18 @@ void TestFixture::assertThrowFail(const char *filename, unsigned int linenr) con
     }
 }
 
+void TestFixture::assertNoThrowFail(const char *filename, unsigned int linenr) const
+{
+    ++fails_counter;
+    if (gcc_style_errors) {
+        errmsg << filename << ':' << linenr << " Assertion failed. "
+               << "Unexpected exception was thrown" << std::endl;
+    } else {
+        errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
+               << "Unexpected exception was thrown" << std::endl << "_____" << std::endl;
+    }
+}
+
 void TestFixture::complainMissingLib(const char* libname) const
 {
     missingLibs.insert(libname);

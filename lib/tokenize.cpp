@@ -8086,13 +8086,13 @@ void Tokenizer::validate() const
 const Token * Tokenizer::findGarbageCode() const
 {
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "if|while|for|switch")) { // switch (EXPR) { ... }
+        if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
             if (tok->previous() && !Token::Match(tok->previous(), ":|;|{|}|(|)|,|else|do"))
                 return tok;
+            if (Token::Match(tok->previous(), "[(,]"))
+                continue;
             if (!Token::Match(tok->next(), "( !!)"))
                 return tok;
-            if (tok->str() == "switch" && !Token::simpleMatch(tok->linkAt(1),") {"))
-                return tok->linkAt(1);
             if (tok->str() != "for") {
                 if (isGarbageExpr(tok->next(), tok->linkAt(1)))
                     return tok;
