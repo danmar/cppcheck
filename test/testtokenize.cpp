@@ -1152,8 +1152,8 @@ private:
 
     void ifAddBraces15() {
         // ticket #2616 - unknown macro before if
-        // TODO: Move to TestGarbage
-        ASSERT_THROW(tokenizeAndStringify("{A if(x)y();}", false), InternalError);
+        // TODO: Remove "A" or change it to ";A;". Then cleanup Tokenizer::ifAddBraces().
+        ASSERT_EQUALS("{ A if ( x ) { y ( ) ; } }", tokenizeAndStringify("{A if(x)y();}", false));
     }
 
     void ifAddBraces16() {
@@ -8388,10 +8388,11 @@ private:
         // before if|for|while|switch
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { do switch (a) {} while (1); }"))
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { label: switch (a) {} }"));
-
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() { UNKNOWN_MACRO if (a) {} }"))
         // TODO ASSERT_NO_THROW(tokenizeAndStringify("void f() { MACRO(switch); }"));
         // TODO ASSERT_NO_THROW(tokenizeAndStringify("void f() { MACRO(x,switch); }"));
 
+        // after (expr)
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { switch (a) int b; }"));
     }
 };

@@ -1228,7 +1228,7 @@ private:
     }
 
     void garbageCode151() { // #4175
-        ASSERT_THROW(checkCode(">{ x while (y) z int = }"), InternalError);
+        checkCode(">{ x while (y) z int = }");
         checkCode("void f() {\n" // #4911 - bad simplification => don't crash
                   "    int a;\n"
                   "    do { a=do_something() } while (a);\n"
