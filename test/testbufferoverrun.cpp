@@ -43,10 +43,11 @@ private:
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyTokenList2();
 
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun;
+        checkBufferOverrun.runChecks(&tokenizer, &settings0, this);
+        tokenizer.simplifyTokenList2();
         checkBufferOverrun.runSimplifiedChecks(&tokenizer, &settings0, this);
     }
 

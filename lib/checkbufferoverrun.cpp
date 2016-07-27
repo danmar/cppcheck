@@ -383,7 +383,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
 {
     const std::list<Library::ArgumentChecks::MinSize> * const minsizes = _settings->library.argminsizes(&ftok, paramIndex);
 
-    if (minsizes && (!(Token::simpleMatch(ftok.previous(), ".") || Token::Match(ftok.tokAt(-2), "!!std ::")))) {
+    if (minsizes) {
         MathLib::bigint arraySize = arrayInfo.element_size();
         if (arraySize == 0)
             return;
@@ -1682,9 +1682,7 @@ void CheckBufferOverrun::checkStringArgument()
 
             unsigned int argnr = 1;
             for (const Token *argtok = tok->tokAt(2); argtok; argtok = argtok->nextArgument(), argnr++) {
-                if (!Token::Match(argtok, "%name%|%str% ,|)"))
-                    continue;
-                if (argtok->variable() && !argtok->variable()->isPointer())
+                if (!Token::Match(argtok, "%str% ,|)"))
                     continue;
                 const Token *strtoken = argtok->getValueTokenMinStrSize();
                 if (!strtoken)
