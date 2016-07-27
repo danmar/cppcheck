@@ -362,7 +362,7 @@ cppcheck -DA --force file.c</programlisting>
   &lt;errors&gt;
     &lt;error id="someError" severity="error" msg="short error text"
            verbose="long error text" inconclusive="true" cwe="312"&gt;
-      &lt;location file="file.c" line="1"/&gt;
+      &lt;location file0="file.c" file="file.h" line="1"/&gt;
     &lt;/error&gt;
   &lt;/errors&gt;
 &lt;/results&gt;</programlisting>
@@ -445,6 +445,14 @@ cppcheck -DA --force file.c</programlisting>
           <listitem>
             <para>filename. Both relative and absolute paths are
             possible</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag class="attribute">file0</sgmltag></term>
+
+          <listitem>
+            <para>name of the source file (optional)</para>
           </listitem>
         </varlistentry>
 
@@ -808,7 +816,7 @@ Checking pen1.c...
         <literal>default="value"</literal>. Specifying <literal>-1</literal> as the argument
         number is going to apply a check to all arguments of that function. The specifications
         for individual arguments override this setting.</para>
-        
+
         <section>
           <title>Uninitialized memory</title>
 
@@ -826,15 +834,18 @@ Checking pen1.c...
           <literal>Cppcheck</literal> assumes that it is fine to pass
           uninitialized variables to functions:</para>
 
-          <programlisting># cppcheck uninit.c 
+          <programlisting># cppcheck uninit.c
 Checking uninit.c...</programlisting>
 
           <para>If you provide a configuration file then Cppcheck detects
           the bug:</para>
 
-          <programlisting># cppcheck --library=windows.cfg uninit.c 
+          <programlisting># cppcheck --library=windows.cfg uninit.c
 Checking uninit.c...
 [uninit.c:5]: (error) Uninitialized variable: buffer2</programlisting>
+
+          <para>Note that this implies for pointers that the memory they point
+          at has to be initialized, too.</para>
 
           <para>Here is the minimal <literal>windows.cfg</literal>:</para>
 
@@ -865,15 +876,19 @@ Checking uninit.c...
           let's assume it's bad. Cppcheck assumes that it's ok to pass NULL to
           functions so no error is reported:</para>
 
-          <programlisting># cppcheck null.c 
+          <programlisting># cppcheck null.c
 Checking null.c...</programlisting>
 
-          <para>If you provide a windows configuration file then
+          <para>If you provide a configuration file then
           <literal>Cppcheck</literal> detects the bug:</para>
 
-          <programlisting>cppcheck --library=windows.cfg null.c 
+          <programlisting>cppcheck --library=windows.cfg null.c
 Checking null.c...
 [null.c:3]: (error) Null pointer dereference</programlisting>
+
+          <para>Note that this implies <literal>&lt;not-uninit&gt;</literal> as
+          far as values are concerned. Uninitialized memory might still be passed
+          do the function.</para>
 
           <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
 
@@ -902,7 +917,7 @@ Checking null.c...
 
           <para>No error is reported for that:</para>
 
-          <programlisting># cppcheck formatstring.c 
+          <programlisting># cppcheck formatstring.c
     Checking formatstring.c...</programlisting>
 
           <para>A configuration file can be created that says that the string is a
@@ -918,7 +933,7 @@ Checking null.c...
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
 
-          <programlisting>cppcheck --library=test.cfg formatstring.c 
+          <programlisting>cppcheck --library=test.cfg formatstring.c
 Checking formatstring.c...
 [formatstring.c:3]: (error) do_something format string requires 2 parameters but only 1 is given.</programlisting>
 
@@ -947,7 +962,7 @@ Checking formatstring.c...
 
           <para>No error is reported for that:</para>
 
-          <programlisting># cppcheck valuerange.c 
+          <programlisting># cppcheck valuerange.c
 Checking valuerange.c...</programlisting>
 
           <para>A configuration file can be created that says that 1024 is out of
@@ -962,7 +977,7 @@ Checking valuerange.c...</programlisting>
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
 
-          <programlisting>cppcheck --library=test.cfg range.c 
+          <programlisting>cppcheck --library=test.cfg range.c
 Checking range.c...
 [range.c:3]: (error) Invalid do_something() argument nr 1. The value is 1024 but the valid values are '0-1023'.</programlisting>
 
@@ -990,7 +1005,7 @@ Checking range.c...
 
           <para>No error is reported for that:</para>
 
-          <programlisting># cppcheck minsize.c 
+          <programlisting># cppcheck minsize.c
 Checking minsize.c...</programlisting>
 
           <para>A configuration file can for instance be created that says that
@@ -1075,13 +1090,13 @@ Checking minsize.c...
         <para>In theory, if <literal>ZeroMemory</literal> terminates the program
         then there is no bug. Cppcheck therefore reports no error:</para>
 
-        <programlisting># cppcheck noreturn.c 
+        <programlisting># cppcheck noreturn.c
 Checking noreturn.c...</programlisting>
 
         <para>However if you use <literal>--check-library</literal> and
         <literal>--enable=information</literal> you'll get this:</para>
 
-        <programlisting># cppcheck --check-library --enable=information noreturn.c 
+        <programlisting># cppcheck --check-library --enable=information noreturn.c
 Checking noreturn.c...
 [noreturn.c:7]: (information) --check-library: Function ZeroMemory() should have &lt;noreturn&gt; configuration
 </programlisting>
@@ -1089,7 +1104,7 @@ Checking noreturn.c...
         <para>If a proper <literal>windows.cfg</literal> is provided, the bug is
         detected:</para>
 
-        <programlisting># cppcheck --library=windows.cfg noreturn.c 
+        <programlisting># cppcheck --library=windows.cfg noreturn.c
 Checking noreturn.c...
 [noreturn.c:8]: (error) Uninitialized variable: data</programlisting>
 
@@ -1119,13 +1134,13 @@ Checking noreturn.c...
         assigning the result to one of the parameters passed to it, nothing bad
         would happen:</para>
 
-        <programlisting># cppcheck useretval.c 
+        <programlisting># cppcheck useretval.c
 Checking useretval.c...</programlisting>
 
         <para>If a proper <literal>lib.cfg</literal> is provided, the bug is
         detected:</para>
 
-        <programlisting># cppcheck --library=lib.cfg --enable=warning useretval.c 
+        <programlisting># cppcheck --library=lib.cfg --enable=warning useretval.c
 Checking useretval.c...
 [noreturn.c:3]: (warning) Return value of function strcmp() is not used.</programlisting>
 
@@ -1206,7 +1221,7 @@ Checking useretval.c...
 
       <para>No message about variable 'a' being unused is printed:</para>
 
-      <programlisting># cppcheck --enable=style unusedvar.cpp 
+      <programlisting># cppcheck --enable=style unusedvar.cpp
 Checking unusedvar.cpp...</programlisting>
 
       <para>If uint16_t is defined in a library as follows, the result
@@ -1221,7 +1236,7 @@ Checking unusedvar.cpp...</programlisting>
       the "sign" attribute are "s" (signed) and "u" (unsigned). Both
       attributes are optional. Using this library, cppcheck prints:</para>
 
-      <programlisting># cppcheck --library=lib.cfg --enable=style unusedvar.cpp 
+      <programlisting># cppcheck --library=lib.cfg --enable=style unusedvar.cpp
 Checking unusedvar.cpp...
 [unusedvar.cpp:2]: (style) Unused variable: a</programlisting>
     </section>
