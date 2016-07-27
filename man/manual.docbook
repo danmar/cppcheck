@@ -5,7 +5,7 @@
   <bookinfo>
     <title>Cppcheck 1.75 dev</title>
 
-    <date>2015-09-09</date>
+    <date>2016-07-27</date>
   </bookinfo>
 
   <chapter>
@@ -314,7 +314,7 @@ cppcheck --enable=all</programlisting>
     <para>You can use -D to change this. When you use -D, cppcheck will by
     default only check the given configuration and nothing else. This is how
     compilers work. But you can use <literal>--force</literal> or
-    <literal><literal>--max-configs</literal></literal> to override the number
+    <literal>--max-configs</literal> to override the number
     of configurations.</para>
 
     <programlisting># check all configurations
@@ -662,14 +662,17 @@ Checking test.c...
   <chapter>
     <title>Library configuration</title>
 
-    <para>When external libraries are used, such as windows/posix/gtk/qt/etc,
+    <para>When external libraries are used, such as WinAPI, POSIX, gtk, Qt, etc,
     <literal>Cppcheck</literal> doesn't know how the external functions
     behave. <literal>Cppcheck</literal> then fails to detect various problems
     such as leaks, buffer overflows, possible null pointer dereferences, etc.
     But this can be fixed with configuration files.</para>
 
-    <para>If you create a configuration file for a popular library, we would
-    appreciate if you upload it to us.</para>
+    <para>Cppcheck already contains configurations for several libraries. They
+    can be loaded as described below. Note that the configuration for the standard
+    libraries of C and C++, <literal>std.cfg</literal>, is always loaded by
+    cppcheck. If you create or update a configuration file for a
+    popular library, we would appreciate if you upload it to us.</para>
 
     <section>
       <title>Using your own custom .cfg file</title>
@@ -692,7 +695,9 @@ Checking test.c...
     <section>
       <title>Memory/resource leaks</title>
 
-      <para>Cppcheck has configurable checking for leaks.</para>
+      <para>Cppcheck has configurable checking for leaks, e.g. you can specify
+      which functions allocate and free memory or resources and which functions
+      do not affect the allocation at all.</para>
 
       <section>
         <title>alloc and dealloc</title>
@@ -705,14 +710,14 @@ Checking test.c...
 }</programlisting></para>
 
         <para>The code example above has a resource leak -
-        <literal>CreatePen()</literal> is a windows function that creates a
-        pen. However Cppcheck doesn't assume that return values from functions
+        <literal>CreatePen()</literal> is a WinAPI function that creates a
+        pen. However, Cppcheck doesn't assume that return values from functions
         must be freed. There is no error message:</para>
 
         <programlisting># cppcheck pen1.c
 Checking pen1.c...</programlisting>
 
-        <para>If you provide a windows configuration file then
+        <para>If you provide a configuration file then
         <literal>Cppcheck</literal> detects the bug:</para>
 
         <programlisting># cppcheck --library=windows.cfg pen1.c
@@ -729,6 +734,12 @@ Checking pen1.c...
   &lt;/resource&gt;
 &lt;/def&gt;</programlisting>
       </section>
+
+      <para>The allocation and deallocation functions are organized in groups.
+      Each group is defined in a <literal>&lt;resource&gt;</literal> or
+      <literal>&lt;memory&gt;</literal> tag and is identified by its <literal>&lt;dealloc&gt;</literal>
+      functions. This means, groups with overlapping <literal>&lt;dealloc&gt;</literal>
+      tags are merged.</para>
 
       <section>
         <title>leak-ignore and use</title>
@@ -747,14 +758,14 @@ Checking pen1.c...
         takes care of the memory so there is no memory leak.</para>
 
         <para>To specify that <literal>dostuff</literal> doesn't take care of
-        the memory in any way, use <literal>leak-ignore</literal>:</para>
+        the memory in any way, use <literal>leak-ignore</literal> in the
+        <literal>&lt;function&gt;</literal> tag (see next section):</para>
 
         <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="dostuff"&gt;
     &lt;leak-ignore/&gt;
     &lt;arg nr="1"/&gt;
-    &lt;arg nr="2"/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
 
@@ -764,13 +775,12 @@ Checking pen1.c...
         <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;memory&gt;
-    &lt;alloc&gt;malloc&lt;/alloc&gt;
     &lt;dealloc&gt;free&lt;/dealloc&gt;
     &lt;use&gt;dostuff&lt;/use&gt;
   &lt;/memory&gt;
 &lt;/def&gt;</programlisting>
 
-        <para>The <literal><literal>&lt;use&gt;</literal></literal>
+        <para>The <literal>&lt;use&gt;</literal>
         configuration has no logical purpose. You will get the same warnings
         without it. Use it to silence <literal>--check-library</literal>
         information messages.</para>
@@ -778,35 +788,57 @@ Checking pen1.c...
     </section>
 
     <section>
-      <title>Function argument: Uninitialized memory</title>
+      <title>Function behaviour</title>
 
-      <para>Here is an example program:</para>
+      <para>To specify the behaviour of functions and how they should be used,
+      <literal>&lt;function&gt;</literal> tags can be used. Functions are identified
+      by their name, specified in the <literal>name</literal> attribute and their
+      number of arguments. The name is a comma-separated list of function names.
+      For functions in namespaces or classes, just provide their fully qualified
+      name. For example: <literal>&lt;function name="memcpy,std::memcpy"&gt;</literal>.
+      </para>
 
-      <programlisting>void test()
+      <section>
+        <title>Function arguments</title>
+
+        <para>The arguments a function takes can be specified by <literal>&lt;arg&gt;</literal>
+        tags. Each of them takes the number of the argument (starting from 1) in the
+        <literal>nr</literal> attribute, or <literal>nr="any"</literal> for variadic arguments.
+        Optional arguments can be specified by providing a default value:
+        <literal>default="value"</literal>. Specifying <literal>-1</literal> as the argument
+        number is going to apply a check to all arguments of that function. The specifications
+        for individual arguments override this setting.</para>
+        
+        <section>
+          <title>Uninitialized memory</title>
+
+          <para>Here is an example program:</para>
+
+          <programlisting>void test()
 {
     char buffer1[1024];
     char buffer2[1024];
     CopyMemory(buffer1, buffer2, 1024);
 }</programlisting>
 
-      <para>The bug here is that buffer2 is uninitialized. The second argument
-      for CopyMemory needs to be initialized. However
-      <literal>Cppcheck</literal> assumes that it is fine to pass
-      uninitialized variables to functions:</para>
+          <para>The bug here is that buffer2 is uninitialized. The second argument
+          for CopyMemory needs to be initialized. However,
+          <literal>Cppcheck</literal> assumes that it is fine to pass
+          uninitialized variables to functions:</para>
 
-      <programlisting># cppcheck uninit.c 
+          <programlisting># cppcheck uninit.c 
 Checking uninit.c...</programlisting>
 
-      <para>If you provide a windows configuration file then Cppcheck detects
-      the bug:</para>
+          <para>If you provide a configuration file then Cppcheck detects
+          the bug:</para>
 
-      <programlisting># cppcheck --library=windows.cfg uninit.c 
+          <programlisting># cppcheck --library=windows.cfg uninit.c 
 Checking uninit.c...
 [uninit.c:5]: (error) Uninitialized variable: buffer2</programlisting>
 
-      <para>Here is the minimal <literal>windows.cfg</literal>:</para>
+          <para>Here is the minimal <literal>windows.cfg</literal>:</para>
 
-      <para><programlisting>&lt;?xml version="1.0"?&gt;
+          <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="CopyMemory"&gt;
     &lt;arg nr="1"/&gt;
@@ -816,36 +848,36 @@ Checking uninit.c...
     &lt;arg nr="3"/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting></para>
-    </section>
+        </section>
 
-    <section>
-      <title>Function Argument: Null pointers</title>
+        <section>
+          <title>Null pointers</title>
 
-      <para>Cppcheck assumes it's ok to pass NULL pointers to functions. Here
-      is an example program:</para>
+          <para>Cppcheck assumes it's ok to pass NULL pointers to functions. Here
+          is an example program:</para>
 
-      <programlisting>void test()
+          <programlisting>void test()
 {
     CopyMemory(NULL, NULL, 1024);
 }</programlisting>
 
-      <para>The MSDN documentation is not clear if that is ok or not. But
-      let's assume it's bad. Cppcheck assumes that it's ok to pass NULL to
-      functions so no error is reported:</para>
+          <para>The MSDN documentation is not clear if that is ok or not. But
+          let's assume it's bad. Cppcheck assumes that it's ok to pass NULL to
+          functions so no error is reported:</para>
 
-      <programlisting># cppcheck null.c 
+          <programlisting># cppcheck null.c 
 Checking null.c...</programlisting>
 
-      <para>If you provide a windows configuration file then
-      <literal>Cppcheck</literal> detects the bug:</para>
+          <para>If you provide a windows configuration file then
+          <literal>Cppcheck</literal> detects the bug:</para>
 
-      <programlisting>cppcheck --library=windows.cfg null.c 
+          <programlisting>cppcheck --library=windows.cfg null.c 
 Checking null.c...
 [null.c:3]: (error) Null pointer dereference</programlisting>
 
-      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+          <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
 
-      <programlisting>&lt;?xml version="1.0"?&gt;
+          <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="CopyMemory"&gt;
     &lt;arg nr="1"&gt;
@@ -855,28 +887,28 @@ Checking null.c...
     &lt;arg nr="3"/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
-    </section>
+        </section>
 
-    <section>
-      <title>Function Argument: Format string</title>
+        <section>
+          <title>Format string</title>
 
-      <para>You can define that a function takes a format string.
-      Example:</para>
+          <para>You can define that a function takes a format string.
+          Example:</para>
 
-      <programlisting>void test()
+          <programlisting>void test()
 {
     do_something("%i %i\n", 1024);
 }</programlisting>
 
-      <para>No error is reported for that:</para>
+          <para>No error is reported for that:</para>
 
-      <programlisting># cppcheck formatstring.c 
-Checking formatstring.c...</programlisting>
+          <programlisting># cppcheck formatstring.c 
+    Checking formatstring.c...</programlisting>
 
-      <para>A configuration file can be created that says that the string is a
-      format string. For instance:</para>
+          <para>A configuration file can be created that says that the string is a
+          format string. For instance:</para>
 
-      <para><programlisting>&lt;?xml version="1.0"?&gt;
+          <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="do_something"&gt;
     &lt;formatstr type="printf"/&gt;
@@ -886,42 +918,42 @@ Checking formatstring.c...</programlisting>
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
 
-      <programlisting>cppcheck --library=test.cfg formatstring.c 
+          <programlisting>cppcheck --library=test.cfg formatstring.c 
 Checking formatstring.c...
 [formatstring.c:3]: (error) do_something format string requires 2 parameters but only 1 is given.</programlisting>
 
-      <para>The <literal>type</literal> attribute can be either:</para>
+          <para>The <literal>type</literal> attribute can be either:</para>
 
-      <itemizedlist>
-        <listitem>
-          <para>printf - format string follows the printf rules</para>
-        </listitem>
+          <itemizedlist>
+            <listitem>
+              <para>printf - format string follows the printf rules</para>
+            </listitem>
 
-        <listitem>
-          <para>scanf - format string follows the scanf rules</para>
-        </listitem>
-      </itemizedlist>
-    </section>
+            <listitem>
+              <para>scanf - format string follows the scanf rules</para>
+            </listitem>
+          </itemizedlist>
+        </section>
 
-    <section>
-      <title>Function Argument: Value range</title>
+        <section>
+          <title>Value range</title>
 
-      <para>The valid values can be defined. Imagine:</para>
+          <para>The valid values can be defined. Imagine:</para>
 
-      <programlisting>void test()
+          <programlisting>void test()
 {
     do_something(1024);
 }</programlisting>
 
-      <para>No error is reported for that:</para>
+          <para>No error is reported for that:</para>
 
-      <programlisting># cppcheck valuerange.c 
+          <programlisting># cppcheck valuerange.c 
 Checking valuerange.c...</programlisting>
 
-      <para>A configuration file can be created that says that 1024 is out of
-      bounds. For instance:</para>
+          <para>A configuration file can be created that says that 1024 is out of
+          bounds. For instance:</para>
 
-      <para><programlisting>&lt;?xml version="1.0"?&gt;
+          <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="do_something"&gt;
     &lt;arg nr="1"&gt;
@@ -930,42 +962,42 @@ Checking valuerange.c...</programlisting>
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
 
-      <programlisting>cppcheck --library=test.cfg range.c 
+          <programlisting>cppcheck --library=test.cfg range.c 
 Checking range.c...
 [range.c:3]: (error) Invalid do_something() argument nr 1. The value is 1024 but the valid values are '0-1023'.</programlisting>
 
-      <para>Some example expressions you can use in the valid element:</para>
+          <para>Some example expressions you can use in the valid element:</para>
 
-      <programlisting>0,3,5  =&gt; only values 0, 3 and 5 are valid
+          <programlisting>0,3,5  =&gt; only values 0, 3 and 5 are valid
 -10:20  =&gt;  all values between -10 and 20 are valid
 :0  =&gt;  all values that are less or equal to 0 are valid
 0:  =&gt;  all values that are greater or equal to 0 are valid
 0,2:32  =&gt;  the value 0 and all values between 2 and 32 are valid </programlisting>
-    </section>
+        </section>
 
-    <section>
-      <title>Function Argument: minsize</title>
+        <section>
+          <title>minsize</title>
 
-      <para>Some function arguments take a buffer. With minsize you can
-      configure the min size of the buffer (in bytes, not elements).
-      Imagine:</para>
+          <para>Some function arguments take a buffer. With minsize you can
+          configure the min size of the buffer (in bytes, not elements).
+          Imagine:</para>
 
-      <programlisting>void test()
+          <programlisting>void test()
 {
     char str[5];
     do_something(str,"12345");
 }</programlisting>
 
-      <para>No error is reported for that:</para>
+          <para>No error is reported for that:</para>
 
-      <programlisting># cppcheck minsize.c 
+          <programlisting># cppcheck minsize.c 
 Checking minsize.c...</programlisting>
 
-      <para>A configuration file can for instance be created that says that
-      the size of the buffer in argument 1 must be larger than the strlen of
-      argument 2.For instance:</para>
+          <para>A configuration file can for instance be created that says that
+          the size of the buffer in argument 1 must be larger than the strlen of
+          argument 2.For instance:</para>
 
-      <para><programlisting>&lt;?xml version="1.0"?&gt;
+          <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="do_something"&gt;
     &lt;arg nr="1"&gt;
@@ -975,62 +1007,62 @@ Checking minsize.c...</programlisting>
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>Now Cppcheck will report this error:</para>
 
-      <programlisting>cppcheck --library=1.cfg minsize.c
+          <programlisting>cppcheck --library=1.cfg minsize.c
 Checking minsize.c...
 [minsize.c:4]: (error) Buffer is accessed out of bounds: str
 </programlisting>
 
-      <para>There are different types of minsizes:</para>
+          <para>There are different types of minsizes:</para>
 
-      <variablelist>
-        <varlistentry>
-          <term>strlen</term>
+          <variablelist>
+            <varlistentry>
+              <term>strlen</term>
 
-          <listitem>
-            <para>buffer size must be larger than other arguments string
-            length. Example: see strcpy configuration in std.cfg</para>
-          </listitem>
-        </varlistentry>
+              <listitem>
+                <para>buffer size must be larger than other arguments string
+                length. Example: see strcpy configuration in std.cfg</para>
+              </listitem>
+            </varlistentry>
 
-        <varlistentry>
-          <term>argvalue</term>
+            <varlistentry>
+              <term>argvalue</term>
 
-          <listitem>
-            <para>buffer size must be larger than value in other argument.
-            Example: see memset configuration in std.cfg</para>
-          </listitem>
-        </varlistentry>
+              <listitem>
+                <para>buffer size must be larger than value in other argument.
+                Example: see memset configuration in std.cfg</para>
+              </listitem>
+            </varlistentry>
 
-        <varlistentry>
-          <term>sizeof</term>
+            <varlistentry>
+              <term>sizeof</term>
 
-          <listitem>
-            <para>buffer size must be larger than other argument buffer size.
-            Example: see strncpy configuration in std.cfg</para>
-          </listitem>
-        </varlistentry>
+              <listitem>
+                <para>buffer size must be larger than other argument buffer size.
+                Example: see strncpy configuration in std.cfg</para>
+              </listitem>
+            </varlistentry>
 
-        <varlistentry>
-          <term>mul</term>
+            <varlistentry>
+              <term>mul</term>
 
-          <listitem>
-            <para>buffer size must be larger than multiplication result when
-            multiplying values given in two other arguments. Typically one
-            argument defines the element size and another element defines the
-            number of elements. Example: see fread configuration in
-            std.cfg</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
-    </section>
+              <listitem>
+                <para>buffer size must be larger than multiplication result when
+                multiplying values given in two other arguments. Typically one
+                argument defines the element size and another element defines the
+                number of elements. Example: see fread configuration in
+                std.cfg</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </section>
+      </section>
+      <section>
+        <title>noreturn</title>
 
-    <section>
-      <title>noreturn</title>
+        <para>Cppcheck doesn't assume that functions always return. Here is an
+        example code:</para>
 
-      <para>Cppcheck doesn't assume that functions always return. Here is an
-      example code:</para>
-
-      <programlisting>void test(int x)
+        <programlisting>void test(int x)
 {
     int data, buffer[1024];
     if (x == 1)
@@ -1040,71 +1072,109 @@ Checking minsize.c...
     buffer[0] = data;  // &lt;- error: data is uninitialized if x is not 1
 }</programlisting>
 
-      <para>In theory, if <literal>ZeroMemory</literal> terminates the program
-      then there is no bug. Cppcheck therefore reports no error:</para>
+        <para>In theory, if <literal>ZeroMemory</literal> terminates the program
+        then there is no bug. Cppcheck therefore reports no error:</para>
 
-      <programlisting># cppcheck noreturn.c 
+        <programlisting># cppcheck noreturn.c 
 Checking noreturn.c...</programlisting>
 
-      <para>However if you use <literal>--check-library</literal> and
-      <literal>--enable=information</literal> you'll get this:</para>
+        <para>However if you use <literal>--check-library</literal> and
+        <literal>--enable=information</literal> you'll get this:</para>
 
-      <programlisting># cppcheck --check-library --enable=information noreturn.c 
+        <programlisting># cppcheck --check-library --enable=information noreturn.c 
 Checking noreturn.c...
 [noreturn.c:7]: (information) --check-library: Function ZeroMemory() should have &lt;noreturn&gt; configuration
 </programlisting>
 
-      <para>If a proper <literal>windows.cfg</literal> is provided, the bug is
-      detected:</para>
+        <para>If a proper <literal>windows.cfg</literal> is provided, the bug is
+        detected:</para>
 
-      <programlisting># cppcheck --library=windows.cfg noreturn.c 
+        <programlisting># cppcheck --library=windows.cfg noreturn.c 
 Checking noreturn.c...
 [noreturn.c:8]: (error) Uninitialized variable: data</programlisting>
 
-      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+        <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
 
-      <programlisting>&lt;?xml version="1.0"?&gt;
+        <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="ZeroMemory"&gt;
     &lt;noreturn&gt;false&lt;/noreturn&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
-    </section>
+      </section>
 
-    <section>
-      <title>use-retval</title>
+      <section>
+        <title>use-retval</title>
 
-      <para>As long as nothing else is specified, cppcheck assumes that
-      ignoring the return value of a function is ok:</para>
+        <para>As long as nothing else is specified, cppcheck assumes that
+        ignoring the return value of a function is ok:</para>
 
-      <programlisting>bool test(const char* a, const char* b)
+        <programlisting>bool test(const char* a, const char* b)
 {
     strcmp(a, b);  // &lt;- bug: The call of strcmp does not have side-effects, but the return value is ignored.
     return true;
 }</programlisting>
 
-      <para>In case <literal>strcmp</literal> has side effects, such as
-      assigning the result to one of the parameters passed to it, nothing bad
-      would happen:</para>
+        <para>In case <literal>strcmp</literal> has side effects, such as
+        assigning the result to one of the parameters passed to it, nothing bad
+        would happen:</para>
 
-      <programlisting># cppcheck useretval.c 
+        <programlisting># cppcheck useretval.c 
 Checking useretval.c...</programlisting>
 
-      <para>If a proper <literal>lib.cfg</literal> is provided, the bug is
-      detected:</para>
+        <para>If a proper <literal>lib.cfg</literal> is provided, the bug is
+        detected:</para>
 
-      <programlisting># cppcheck --library=lib.cfg --enable=warning useretval.c 
+        <programlisting># cppcheck --library=lib.cfg --enable=warning useretval.c 
 Checking useretval.c...
 [noreturn.c:3]: (warning) Return value of function strcmp() is not used.</programlisting>
 
-      <para>Here is a minimal <literal>lib.cfg</literal> file:</para>
+        <para>Here is a minimal <literal>lib.cfg</literal> file:</para>
 
-      <programlisting>&lt;?xml version="1.0"?&gt;
+        <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="strcmp"&gt;
     &lt;use-retval/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
+      </section>
+
+      <section>
+        <title>Example configuration for strcpy()</title>
+
+        <para>The proper configuration for the standard strcpy() function would
+        be:</para>
+
+      <programlisting>  &lt;function name="strcpy"&gt;
+    &lt;leak-ignore/&gt;
+    &lt;noreturn&gt;false&lt;/noreturn&gt;
+    &lt;arg nr="1"&gt;
+      &lt;not-null/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="2"&gt;
+      &lt;not-null/&gt;
+      &lt;not-uninit/&gt;
+      &lt;strz/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;</programlisting>
+
+        <para>The <literal>&lt;leak-ignore/&gt;</literal> tells Cppcheck to
+        ignore this function call in the leaks checking. Passing allocated
+        memory to this function won't mean it will be deallocated.</para>
+
+        <para>The <literal>&lt;noreturn&gt;</literal> tells Cppcheck if this
+        function returns or not.</para>
+
+        <para>The first argument that the function takes is a pointer. It must
+        not be a null pointer, therefore <literal>&lt;not-null&gt;</literal> is
+        used.</para>
+
+        <para>The second argument the function takes is a pointer. It must not
+        be null. And it must point at initialized data. Using
+        <literal>&lt;not-null&gt;</literal> and
+        <literal>&lt;not-uninit&gt;</literal> is correct. Moreover it must point
+        at a zero-terminated string so &lt;strz&gt; is also used.</para>
+      </section>
     </section>
 
     <section>
@@ -1189,51 +1259,6 @@ Checking unusedvar.cpp...
     &lt;/access&gt;
   &lt;/container&gt;
 &lt;/def&gt;</programlisting>
-    </section>
-
-    <section>
-      <title>Example configuration for strcpy()</title>
-
-      <para>The proper configuration for the standard strcpy() function would
-      be:</para>
-
-      <programlisting>  &lt;function name="strcpy"&gt;
-    &lt;leak-ignore/&gt;
-    &lt;noreturn&gt;false&lt;/noreturn&gt;
-    &lt;arg nr="1"&gt;
-      &lt;not-null/&gt;
-    &lt;/arg&gt;
-    &lt;arg nr="2"&gt;
-      &lt;not-null/&gt;
-      &lt;not-uninit/&gt;
-      &lt;strz/&gt;
-    &lt;/arg&gt;
-  &lt;/function&gt;</programlisting>
-
-      <para>The <literal>&lt;leak-ignore/&gt;</literal> tells Cppcheck to
-      ignore this function call in the leaks checking. Passing allocated
-      memory to this function won't mean it will be deallocated.</para>
-
-      <para>The <literal>&lt;noreturn&gt;</literal> tells Cppcheck if this
-      function returns or not.</para>
-
-      <para>The first argument that the function takes is a pointer. It must
-      not be a null pointer, therefore <literal>&lt;not-null&gt;</literal> is
-      used.</para>
-
-      <para>The second argument the function takes is a pointer. It must not
-      be null. And it must point at initialized data. Using
-      <literal>&lt;not-null&gt;</literal> and
-      <literal>&lt;not-uninit&gt;</literal> is correct. Moreover it must point
-      at a zero-terminated string so &lt;strz&gt; is also used.</para>
-    </section>
-
-    <section>
-      <title>Specifications for all arguments</title>
-
-      <para>Specifying <literal>-1</literal> as the argument number is going
-      to apply a check to all arguments of that function. The specifications
-      for individual arguments override this setting.</para>
     </section>
   </chapter>
 
