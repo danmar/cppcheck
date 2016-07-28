@@ -1383,9 +1383,39 @@ void CheckOther::commaSeparatedReturnError(const Token *tok)
 }
 
 //---------------------------------------------------------------------------
-// Check for constant function parameters
+// Check for function parameters that should be passed by reference
 //---------------------------------------------------------------------------
-void CheckOther::checkConstantFunctionParameter()
+static std::size_t estimateSize(const Type* type, const Settings* settings, const SymbolDatabase* symbolDatabase, std::size_t recursionDepth = 0)
+{
+    if (recursionDepth > 20)
+        return 0;
+
+    std::size_t cumulatedSize = 0;
+    for (std::list<Variable>::const_iterator i = type->classScope->varlist.cbegin(); i != type->classScope->varlist.cend(); ++i) {
+        std::size_t size = 0;
+        if (i->isStatic())
+            continue;
+        if (i->isPointer() || i->isReference())
+            size = settings->sizeof_pointer;
+        else if (i->type() && i->type()->classScope)
+            size = estimateSize(i->type(), settings, symbolDatabase, recursionDepth+1);
+        else if (i->isStlStringType() || (i->isStlType() && Token::Match(i->typeStartToken(), "std :: %type% <") && !Token::simpleMatch(i->typeStartToken()->linkAt(3), "> ::")))
+            size = 16; // Just guess
+        else
+            size = symbolDatabase->sizeOfType(i->typeStartToken());
+
+        if (i->isArray())
+            cumulatedSize += size*i->dimension(0);
+        else
+            cumulatedSize += size;
+    }
+    for (std::vector<Type::BaseInfo>::const_iterator i = type->derivedFrom.cbegin(); i != type->derivedFrom.cend(); ++i)
+        if (i->type && i->type->classScope)
+            cumulatedSize += estimateSize(i->type, settings, symbolDatabase, recursionDepth+1);
+    return cumulatedSize;
+}
+
+void CheckOther::checkPassByReference()
 {
     if (!_settings->isEnabled("performance") || _tokenizer->isC())
         return;
@@ -1394,34 +1424,97 @@ void CheckOther::checkConstantFunctionParameter()
 
     for (unsigned int i = 1; i < symbolDatabase->getVariableListSize(); i++) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
-        if (!var || !var->isArgument() || !var->isClass() || !var->isConst() || var->isPointer() || var->isArray() || var->isReference() || var->isEnumType())
+        if (!var || !var->isArgument() || !var->isClass() || var->isPointer() || var->isArray() || var->isReference() || var->isEnumType())
             continue;
 
         if (var->scope() && var->scope()->function->arg->link()->strAt(-1) == ".")
             continue; // references could not be used as va_start parameters (#5824)
 
+        bool inconclusive = false;
+
         const Token* const tok = var->typeStartToken();
-        // TODO: False negatives. This pattern only checks for string.
-        //       Investigate if there are other classes in the std
-        //       namespace and add them to the pattern. There are
-        //       streams for example (however it seems strange with
-        //       const stream parameter).
         if (var->isStlStringType()) {
-            passedByValueError(tok, var->name());
+            ;
         } else if (var->isStlType() && Token::Match(tok, "std :: %type% <") && !Token::simpleMatch(tok->linkAt(3), "> ::")) {
-            passedByValueError(tok, var->name());
-        } else if (var->type()) {  // Check if type is a struct or class.
-            passedByValueError(tok, var->name());
+            ;
+        } else if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
+            // Ensure that it is a large object.
+            if (!var->type()->classScope)
+                inconclusive = true;
+            else if (estimateSize(var->type(), _settings, symbolDatabase) <= 8)
+                continue;
+        } else
+            continue;
+
+        if (inconclusive && !_settings->inconclusive)
+            continue;
+
+        bool isConst = var->isConst();
+        if (!isConst) {
+            // Check if variable could be const
+            if (!var->scope() || var->scope()->function->isVirtual())
+                continue;
+
+            isConst = true;
+            for (const Token* tok2 = var->scope()->classStart; tok2 != var->scope()->classEnd; tok2 = tok2->next()) {
+                if (tok2->varId() == var->declarationId()) {
+                    const Token* parent = tok2->astParent();
+                    if (!parent)
+                        ;
+                    else if (parent->str() == "<<" || parent->str() == ">>") {
+                        if (parent->str() == "<<" && parent->astOperand1() == tok2)
+                            isConst = false;
+                        else if (parent->str() == ">>" && parent->astOperand2() == tok2)
+                            isConst = false;
+                    } else if (parent->str() == "," || parent->str() == "(") { // function argument
+                        const Token* tok3 = tok2->previous();
+                        unsigned int argNr = 0;
+                        while (tok3 && tok3->str() != "(") {
+                            if (tok3->link() && Token::Match(tok3, ")|]|}|>"))
+                                tok3 = tok3->link();
+                            else if (tok->link())
+                                break;
+                            else if (tok3->str() == ";")
+                                break;
+                            else if (tok3->str() == ",")
+                                argNr++;
+                            tok3 = tok3->previous();
+                        }
+                        if (!tok3 || tok3->str() != "(" || !tok3->astOperand1() || !tok3->astOperand1()->function())
+                            isConst = false;
+                        else {
+                            const Variable* argVar = tok3->astOperand1()->function()->getArgumentVar(argNr);
+                            if (!argVar|| (!argVar->isConst() && argVar->isReference()))
+                                isConst = false;
+                        }
+                    } else if (parent->isConstOp())
+                        ;
+                    else if (Token::Match(tok2, "%var% . %name% (")) {
+                        const Function* func = tok2->tokAt(2)->function();
+                        if (func && (func->isConst() || func->isStatic()))
+                            ;
+                        else
+                            isConst = false;
+                    } else
+                        isConst = false;
+
+                    if (!isConst)
+                        break;
+                }
+            }
         }
+
+        if (isConst)
+            passedByValueError(tok, var->name(), inconclusive);
     }
 }
 
-void CheckOther::passedByValueError(const Token *tok, const std::string &parname)
+void CheckOther::passedByValueError(const Token *tok, const std::string &parname, bool inconclusive)
 {
     reportError(tok, Severity::performance, "passedByValue",
                 "Function parameter '" + parname + "' should be passed by reference.\n"
                 "Parameter '" +  parname + "' is passed by value. It could be passed "
-                "as a (const) reference which is usually faster and recommended in C++.", CWE398, false);
+                "as a (const) reference which is usually faster and recommended in C++.", CWE398, inconclusive);
 }
 
 //---------------------------------------------------------------------------

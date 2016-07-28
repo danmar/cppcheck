@@ -81,7 +81,7 @@ public:
         // Checks
         checkOther.clarifyCalculation();
         checkOther.clarifyStatement();
-        checkOther.checkConstantFunctionParameter();
+        checkOther.checkPassByReference();
         checkOther.checkIncompleteStatement();
         checkOther.checkCastIntToCharAndBack();
 
@@ -115,8 +115,8 @@ public:
     /** @brief %Check for comma separated statements in return */
     void checkCommaSeparatedReturn();
 
-    /** @brief %Check for constant function parameter */
-    void checkConstantFunctionParameter();
+    /** @brief %Check for function parameters that should be passed by reference */
+    void checkPassByReference();
 
     /** @brief Using char variable as array index / as operand in bit operation */
     void checkCharVariable();
@@ -212,7 +212,7 @@ private:
     void clarifyStatementError(const Token* tok);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
-    void passedByValueError(const Token *tok, const std::string &parname);
+    void passedByValueError(const Token *tok, const std::string &parname, bool inconclusive);
     void constStatementError(const Token *tok, const std::string &type);
     void signedCharArrayIndexError(const Token *tok);
     void unknownSignCharArrayIndexError(const Token *tok);
@@ -274,7 +274,7 @@ private:
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
         c.checkCastIntToCharAndBackError(nullptr, "func_name");
         c.cstyleCastError(nullptr);
-        c.passedByValueError(nullptr,  "parametername");
+        c.passedByValueError(nullptr,  "parametername", false);
         c.constStatementError(nullptr,  "type");
         c.signedCharArrayIndexError(nullptr);
         c.unknownSignCharArrayIndexError(nullptr);
@@ -335,6 +335,7 @@ private:
                // performance
                "- redundant data copying for const variable\n"
                "- subsequent assignment or copying to a variable or buffer\n"
+               "- passing parameter by value\n"
 
                // portability
                "- memset() with a float as the 2nd parameter\n"
@@ -343,7 +344,6 @@ private:
                // style
                "- C-style pointer cast in C++ code\n"
                "- casting between incompatible pointer types\n"
-               "- passing parameter by value\n"
                "- [Incomplete statement](IncompleteStatement)\n"
                "- [check how signed char variables are used](CharVar)\n"
                "- variable scope can be limited\n"

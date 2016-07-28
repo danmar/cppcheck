@@ -82,6 +82,7 @@ private:
         TEST_CASE(invalidPointerCast);
 
         TEST_CASE(passedByValue);
+        TEST_CASE(passedByValue_nonConst);
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchRedundantOperationTest);
@@ -1292,7 +1293,28 @@ private:
         check("void f(const std::string::size_type x) {}");
         ASSERT_EQUALS("", errout.str());
 
-        check("class Foo;\nvoid f(const Foo foo) {}");
+        check("class Foo;\nvoid f(const Foo foo) {}"); // Unknown class
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Function parameter 'foo' should be passed by reference.\n", errout.str());
+
+        check("class Foo { std::vector<int> v; };\nvoid f(const Foo foo) {}"); // Large class (STL member)
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by reference.\n", errout.str());
+
+        check("class Foo { int i; };\nvoid f(const Foo foo) {}"); // Small class
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Foo { int i[6]; };\nvoid f(const Foo foo) {}"); // Large class (array)
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by reference.\n", errout.str());
+
+        check("class Foo { std::string* s; };\nvoid f(const Foo foo) {}"); // Small class (pointer)
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Foo { static std::string s; };\nvoid f(const Foo foo) {}"); // Small class (static member)
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by reference.\n", errout.str());
+
+        check("class X { std::string s; }; class Foo : X { };\nvoid f(const Foo foo) {}"); // Large class (inherited)
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by reference.\n", errout.str());
+
+        check("class X { std::string s; }; class Foo { X x; };\nvoid f(const Foo foo) {}"); // Large class (inherited)
         ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by reference.\n", errout.str());
 
         check("void f(const std::string &str) {}");
@@ -1341,10 +1363,105 @@ private:
               "}; ");
         ASSERT_EQUALS("", errout.str());
 
+        check("class X {\n"
+              "    virtual void func(const std::string str) {}\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
+    }
+
+    void passedByValue_nonConst() {
+        check("void f(std::string str) {}");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
+
+        check("void f(std::string str) {\n"
+              "    return str + x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
+
+        check("void f(std::string str) {\n"
+              "    std::cout << str;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
+
+        check("void f(std::string str) {\n"
+              "    std::cin >> str;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string str) {\n"
+              "    foo(str);\n" // It could be that foo takes str as non-const-reference
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(const std::string& str);\n"
+              "void f(std::string str) {\n"
+              "    foo(str);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
+
+        check("void foo(std::string str);\n"
+              "void f(std::string str) {\n"
+              "    foo(str);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
+
+        check("void foo(std::string& str);\n"
+              "void f(std::string str) {\n"
+              "    foo(str);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int& i1, const std::string& str, int& i2);\n"
+              "void f(std::string str) {\n"
+              "    foo((a+b)*c, str, x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
+
+        check("std::string f(std::string str) {\n"
+              "    str += x;\n"
+              "    return str;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class X {\n"
+              "    std::string s;\n"
+              "    void func() const;\n"
+              "};\n"
+              "Y f(X x) {\n"
+              "    x.func();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by reference.\n", errout.str());
+
+        check("class X {\n"
+              "    void func();\n"
+              "};\n"
+              "Y f(X x) {\n"
+              "    x.func();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class X {\n"
+              "    void func(std::string str) {}\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
+
+        check("class X {\n"
+              "    virtual void func(std::string str) {}\n" // Do not warn about virtual functions, if 'str' is not declared as const
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class X {\n"
+              "    uint64_t i;\n"
+              "};\n"
+              "class Y : X {\n"
+              "    uint64_t j;\n"
+              "};\n"
+              "void f(X x, Y y) {\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Function parameter 'y' should be passed by reference.\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
-
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -3436,7 +3553,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
 
-        check("void foo(std::string a, std::string b) {\n"
+        check("void foo(const std::string& a, const std::string& b) {\n"
               "  return a.find(b+\"&\") || a.find(\"&\"+b);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
