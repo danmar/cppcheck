@@ -3,6 +3,8 @@ redundantNextPrevious:test/testtoken.cpp
 simplePatternError:test/testtoken.cpp
 uselessAssignmentPtrArg:build/checkstl.cpp
 uselessAssignmentPtrArg:build/tokenize.cpp
+passedByValue:build/symboldatabase.h
+passedByValue:build/library.h
 *:gui/test*
 *:test/test.cxx
 *:test/cfg*

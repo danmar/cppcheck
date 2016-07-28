@@ -1309,7 +1309,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("class Foo { static std::string s; };\nvoid f(const Foo foo) {}"); // Small class (static member)
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by reference.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("class X { std::string s; }; class Foo : X { };\nvoid f(const Foo foo) {}"); // Large class (inherited)
         ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by reference.\n", errout.str());
