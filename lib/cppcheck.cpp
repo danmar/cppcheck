@@ -137,35 +137,16 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
             if (it->tokenlist != "define")
                 continue;
 
-            for (const simplecpp::Token *tok = tokens1.cbegin(); tok; tok = tok->next) {
-                if (tok->op != '#')
+            const std::list<Directive> &directives = preprocessor.getDirectives();
+
+            for (std::list<Directive>::const_iterator dir = directives.begin(); dir != directives.end(); ++dir) {
+                if (dir->str.compare(0,8,"#define ") != 0)
                     continue;
-                if (tok->previous && tok->previous->location.sameline(tok->location))
-                    continue;
-
-                std::string directive;
-                for (const simplecpp::Token *tok2 = tok; tok2 && tok->location.sameline(tok2->location); tok2 = tok2->next) {
-                    if (tok2->comment)
-                        continue;
-                    while (directive.size() < tok2->location.col)
-                        directive += ' ';
-                    directive += tok2->str;
-                }
-
-                if (directive.compare(0,8,"#define ") != 0)
-                    continue;
-
-                const std::string code = "#line " +
-                                         MathLib::toString(tok->location.line) +
-                                         '\"' + tok->location.file() + "\'\n" +
-                                         directive;
-
                 Tokenizer tokenizer2(&_settings, this);
-                std::istringstream istr2(code);
-                tokenizer2.list.createTokens(istr2, tok->location.file());
+                std::istringstream istr2(std::string(std::min(1U,dir->linenr)-1U,'\n') + dir->str);
+                tokenizer2.list.createTokens(istr2, dir->file);
                 executeRules("define", tokenizer2);
             }
-            break;
         }
 
         if (!_settings.force && configurations.size() > _settings.maxConfigs) {

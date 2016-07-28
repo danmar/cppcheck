@@ -90,6 +90,11 @@ public:
 
     void setDirectives(const simplecpp::TokenList &tokens);
 
+    /** list of all directives met while preprocessing file */
+    const std::list<Directive> &getDirectives() const {
+        return directives;
+    }
+
     std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
 
     void loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
