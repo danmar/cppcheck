@@ -81,7 +81,9 @@ unsigned long long stringToULL(const std::string &s)
     return ret;
 }
 
-
+bool endsWith(const std::string &s, const std::string &e) {
+    return (s.size() >= e.size() && s.compare(s.size() - e.size(), e.size(), e) == 0);
+}
 
 bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2) {
     return tok1 && tok2 && tok1->location.sameline(tok2->location);
@@ -259,6 +261,12 @@ static unsigned char peekChar(std::istream &istr, unsigned int bom) {
     return ch;
 }
 
+static void ungetChar(std::istream &istr, unsigned int bom) {
+    istr.unget();
+    if (bom != 0)
+        istr.unget();
+}
+
 static unsigned short getAndSkipBOM(std::istream &istr) {
     const unsigned char ch1 = istr.peek();
 
@@ -341,7 +349,8 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 currentToken += ch;
                 ch = readChar(istr,bom);
             }
-            istr.unget();
+
+            ungetChar(istr,bom);
         }
 
         // comment
@@ -373,8 +382,33 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
         // string / char literal
         else if (ch == '\"' || ch == '\'') {
+            // C++11 raw string literal
+            if (ch == '\"' && cend() && cend()->op == 'R') {
+                std::string delim;
+                ch = readChar(istr,bom);
+                while (istr.good() && ch != '(' && ch != '\"' && ch != '\n') {
+                    delim += ch;
+                    ch = readChar(istr,bom);
+                }
+                if (!istr.good() || ch == '\"' || ch == '\n')
+                    // TODO report
+                    return;
+                currentToken = '\"';
+                const std::string endOfRawString(')' + delim + '\"');
+                while (istr.good() && !endsWith(currentToken, endOfRawString))
+                    currentToken += readChar(istr,bom);
+                if (!endsWith(currentToken, endOfRawString))
+                    // TODO report
+                    return;
+                currentToken.erase(currentToken.size() - endOfRawString.size(), endOfRawString.size() - 1U);
+                end()->setstr(currentToken);
+                location.col += currentToken.size() + 2U + 2 * delim.size();
+                continue;
+            }
+
             currentToken = readUntil(istr,location,ch,ch,outputList);
             if (currentToken.size() < 2U)
+                // TODO report
                 return;
         }
 
@@ -715,14 +749,17 @@ std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &
     return ret;
 }
 
-std::string simplecpp::TokenList::lastLine() const {
+std::string simplecpp::TokenList::lastLine(int maxsize) const {
     std::string ret;
+    int count = 0;
     for (const Token *tok = cend(); sameline(tok,cend()); tok = tok->previous) {
         if (tok->comment)
             continue;
         if (!ret.empty())
             ret = ' ' + ret;
         ret = (tok->str[0] == '\"' ? std::string("%str%") : tok->str) + ret;
+        if (++count > maxsize)
+            return "";
     }
     return ret;
 }
@@ -740,9 +777,9 @@ unsigned int simplecpp::TokenList::fileIndex(const std::string &filename) {
 namespace simplecpp {
 class Macro {
 public:
-    Macro(std::vector<std::string> &f) : nameToken(NULL), files(f), tokenListDefine(f) {}
+    explicit Macro(std::vector<std::string> &f) : nameToken(NULL), variadic(false), valueToken(NULL), endToken(NULL), files(f), tokenListDefine(f) {}
 
-    explicit Macro(const Token *tok, std::vector<std::string> &f) : nameToken(NULL), files(f), tokenListDefine(f) {
+    Macro(const Token *tok, std::vector<std::string> &f) : nameToken(NULL), files(f), tokenListDefine(f) {
         if (sameline(tok->previous, tok))
             throw std::runtime_error("bad macro syntax");
         if (tok->op != '#')
@@ -756,7 +793,7 @@ public:
         parseDefine(tok);
     }
 
-    explicit Macro(const std::string &name, const std::string &value, std::vector<std::string> &f) : nameToken(NULL), files(f), tokenListDefine(f) {
+    Macro(const std::string &name, const std::string &value, std::vector<std::string> &f) : nameToken(NULL), files(f), tokenListDefine(f) {
         const std::string def(name + ' ' + value);
         std::istringstream istr(def);
         tokenListDefine.readfile(istr);
@@ -1018,7 +1055,7 @@ private:
                     args.push_back(argtok->str);
                 argtok = argtok->next;
             }
-            valueToken = argtok->next;
+            valueToken = argtok ? argtok->next : NULL;
         } else {
             args.clear();
             valueToken = nameToken->next;
@@ -1444,9 +1481,6 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
 
         TokenList *tokens = new TokenList(f, fileNumbers, header2, outputList);
         ret[header2] = tokens;
-
-        //std::cout << "new " << (void*)tokens << ' ' << header2 << std::endl;
-
         if (tokens->cbegin())
             filelist.push_back(tokens->cbegin());
     }
@@ -1459,20 +1493,20 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     std::map<std::string, std::size_t> sizeOfType(rawtokens.sizeOfType);
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char"), sizeof(char)));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short"), sizeof(short)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short int"), sizeof(short int)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short int"), sizeOfType["short"]));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("int"), sizeof(int)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long int"), sizeof(long int)));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long"), sizeof(long)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long int"), sizeOfType["long"]));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long long"), sizeof(long long)));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("float"), sizeof(float)));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("double"), sizeof(double)));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long double"), sizeof(long double)));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char *"), sizeof(char *)));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short *"), sizeof(short *)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short int *"), sizeof(short int *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("short int *"), sizeOfType["short *"]));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("int *"), sizeof(int *)));
-    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long int *"), sizeof(long int *)));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long *"), sizeof(long *)));
+    sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long int *"), sizeOfType["long *"]));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("long long *"), sizeof(long long *)));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("float *"), sizeof(float *)));
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("double *"), sizeof(double *)));

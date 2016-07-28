@@ -248,7 +248,7 @@ private:
 
     std::string readUntil(std::istream &istr, const Location &location, const char start, const char end, OutputList *outputList);
 
-    std::string lastLine() const;
+    std::string lastLine(int maxsize=10) const;
 
     unsigned int fileIndex(const std::string &filename);
 
