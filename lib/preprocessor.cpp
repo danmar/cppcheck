@@ -231,7 +231,7 @@ static std::string cfg(const std::vector<std::string> &configs)
     return ret;
 }
 
-static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string> &defined, std::set<std::string> &ret)
+static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string> &defined, const std::set<std::string> &undefined, std::set<std::string> &ret)
 {
     std::vector<std::string> configs_if;
     std::vector<std::string> configs_ifndef;
@@ -253,13 +253,18 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             } else if (cmdtok->str == "if") {
                 config = readcondition(cmdtok, defined);
             }
+            if (undefined.find(config) != undefined.end())
+                config.clear();
             configs_if.push_back((cmdtok->str == "ifndef") ? std::string() : config);
             configs_ifndef.push_back((cmdtok->str == "ifndef") ? config : std::string());
             ret.insert(cfg(configs_if));
         } else if (cmdtok->str == "elif") {
             if (!configs_if.empty())
                 configs_if.pop_back();
-            configs_if.push_back(readcondition(cmdtok, defined));
+            std::string config = readcondition(cmdtok, defined);
+            if (undefined.find(config) != undefined.end())
+                config.clear();
+            configs_if.push_back(config);
             ret.insert(cfg(configs_if));
         } else if (cmdtok->str == "else") {
             if (!configs_if.empty())
@@ -290,10 +295,10 @@ std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &token
     std::set<std::string> defined;
     defined.insert("__cplusplus");
 
-    ::getConfigs(tokens, defined, ret);
+    ::getConfigs(tokens, defined, _settings.userUndefs, ret);
 
     for (std::map<std::string, simplecpp::TokenList*>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it)
-        ::getConfigs(*(it->second), defined, ret);
+        ::getConfigs(*(it->second), defined, _settings.userUndefs, ret);
 
     return ret;
 }
