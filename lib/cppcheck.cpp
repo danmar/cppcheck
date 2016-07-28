@@ -137,16 +137,17 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
             if (it->tokenlist != "define")
                 continue;
 
+            std::string code;
             const std::list<Directive> &directives = preprocessor.getDirectives();
-
             for (std::list<Directive>::const_iterator dir = directives.begin(); dir != directives.end(); ++dir) {
-                if (dir->str.compare(0,8,"#define ") != 0)
-                    continue;
-                Tokenizer tokenizer2(&_settings, this);
-                std::istringstream istr2(std::string(std::min(1U,dir->linenr)-1U,'\n') + dir->str);
-                tokenizer2.list.createTokens(istr2, dir->file);
-                executeRules("define", tokenizer2);
+                if (dir->str.compare(0,8,"#define ") == 0)
+                    code += "#line " + MathLib::toString(dir->linenr) + " \"" + dir->file + "\"\n" + dir->str + '\n';
             }
+            Tokenizer tokenizer2(&_settings, this);
+            std::istringstream istr2(code);
+            tokenizer2.list.createTokens(istr2);
+            executeRules("define", tokenizer2);
+            break;
         }
 
         if (!_settings.force && configurations.size() > _settings.maxConfigs) {
