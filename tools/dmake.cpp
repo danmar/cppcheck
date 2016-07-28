@@ -78,13 +78,14 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
 static void compilefiles(std::ostream &fout, const std::vector<std::string> &files, const std::string &args)
 {
     for (unsigned int i = 0; i < files.size(); ++i) {
+        bool external(files[i].compare(0,10,"externals/") == 0);
         fout << objfile(files[i]) << ": " << files[i];
         std::vector<std::string> depfiles;
         depfiles.push_back("lib/cxx11emu.h");
         getDeps(files[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS)" << (external?" -w":"") << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
     }
 }
 
