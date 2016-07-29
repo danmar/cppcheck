@@ -85,6 +85,7 @@ private:
         TEST_CASE(isNameGuarantees3)
         TEST_CASE(isNameGuarantees4)
         TEST_CASE(isNameGuarantees5)
+        TEST_CASE(isNameGuarantees6)
 
         TEST_CASE(canFindMatchingBracketsNeedsOpen);
         TEST_CASE(canFindMatchingBracketsInnerPair);
@@ -888,6 +889,11 @@ private:
         ASSERT_EQUALS(false, tok.isNumber());
     }
 
+    void isNameGuarantees6() const {
+        Token tok(nullptr);
+        tok.str("$f");
+        ASSERT_EQUALS(true, tok.isName());
+    }
 
     void canFindMatchingBracketsNeedsOpen() const {
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");

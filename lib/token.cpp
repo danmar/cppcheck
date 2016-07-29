@@ -65,7 +65,7 @@ void Token::update_property_info()
     if (!_str.empty()) {
         if (_str == "true" || _str == "false")
             _tokType = eBoolean;
-        else if (_str[0] == '_' || std::isalpha((unsigned char)_str[0])) { // Name
+        else if (std::isalpha((unsigned char)_str[0]) || _str[0] == '_' || _str[0] == '$') { // Name
             if (_varId)
                 _tokType = eVariable;
             else if (_tokType != eVariable && _tokType != eFunction && _tokType != eType && _tokType != eKeyword)
