@@ -175,7 +175,7 @@ public:
 
     void clear();
     bool empty() const {
-        return !cbegin();
+        return !frontToken;
     }
     void push_back(Token *token);
 
@@ -187,20 +187,20 @@ public:
 
     void removeComments();
 
-    Token *begin() {
-        return first;
+    Token *front() {
+        return frontToken;
     }
 
-    const Token *cbegin() const {
-        return first;
+    const Token *cfront() const {
+        return frontToken;
     }
 
-    Token *end() {
-        return last;
+    Token *back() {
+        return backToken;
     }
 
-    const Token *cend() const {
-        return last;
+    const Token *cback() const {
+        return backToken;
     }
 
     void deleteToken(Token *tok) {
@@ -212,24 +212,24 @@ public:
             prev->next = next;
         if (next)
             next->previous = prev;
-        if (first == tok)
-            first = next;
-        if (last == tok)
-            last = prev;
+        if (frontToken == tok)
+            frontToken = next;
+        if (backToken == tok)
+            backToken = prev;
         delete tok;
     }
 
     void takeTokens(TokenList &other) {
-        if (!other.first)
+        if (!other.frontToken)
             return;
-        if (!first) {
-            first = other.first;
+        if (!frontToken) {
+            frontToken = other.frontToken;
         } else {
-            last->next = other.first;
-            other.first->previous = last;
+            backToken->next = other.frontToken;
+            other.frontToken->previous = backToken;
         }
-        last = other.last;
-        other.first = other.last = NULL;
+        backToken = other.backToken;
+        other.frontToken = other.backToken = NULL;
     }
 
     /** sizeof(T) */
@@ -252,8 +252,8 @@ private:
 
     unsigned int fileIndex(const std::string &filename);
 
-    Token *first;
-    Token *last;
+    Token *frontToken;
+    Token *backToken;
     std::vector<std::string> &files;
 };
 
