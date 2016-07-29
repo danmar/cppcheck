@@ -96,7 +96,7 @@ void simplecpp::Location::adjust(const std::string &str) {
         return;
     }
 
-    for (unsigned int i = 0U; i < str.size(); ++i) {
+    for (std::size_t i = 0U; i < str.size(); ++i) {
         col++;
         if (str[i] == '\n' || str[i] == '\r') {
             col = 0;
@@ -288,6 +288,10 @@ static unsigned short getAndSkipBOM(std::istream &istr) {
     return 0;
 }
 
+bool isNameChar(unsigned char ch) {
+    return std::isalnum(ch) || ch == '_' || ch == '$';
+}   
+
 void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filename, OutputList *outputList)
 {
     std::stack<simplecpp::Location> loc;
@@ -344,8 +348,8 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         TokenString currentToken;
 
         // number or name
-        if (std::isalnum(ch) || ch == '_') {
-            while (istr.good() && (std::isalnum(ch) || ch == '_')) {
+        if (isNameChar(ch)) {
+            while (istr.good() && isNameChar(ch)) {
                 currentToken += ch;
                 ch = readChar(istr,bom);
             }
@@ -1440,7 +1444,7 @@ bool hasFile(const std::map<std::string, simplecpp::TokenList *> &filedata, cons
 }
 }
 
-std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::TokenList &rawtokens, std::vector<std::string> &fileNumbers, const struct simplecpp::DUI &dui, simplecpp::OutputList *outputList)
+std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::TokenList &rawtokens, std::vector<std::string> &fileNumbers, const simplecpp::DUI &dui, simplecpp::OutputList *outputList)
 {
     std::map<std::string, simplecpp::TokenList*> ret;
 
@@ -1487,7 +1491,7 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
     return ret;
 }
 
-void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, simplecpp::TokenList *> &filedata, const struct simplecpp::DUI &dui, simplecpp::OutputList *outputList, std::list<struct simplecpp::MacroUsage> *macroUsage)
+void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, simplecpp::TokenList *> &filedata, const simplecpp::DUI &dui, simplecpp::OutputList *outputList, std::list<simplecpp::MacroUsage> *macroUsage)
 {
     std::map<std::string, std::size_t> sizeOfType(rawtokens.sizeOfType);
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char"), sizeof(char)));
@@ -1562,7 +1566,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                     err.type = rawtok->str == ERROR ? Output::ERROR : Output::WARNING;
                     err.location = rawtok->location;
                     for (const Token *tok = rawtok->next; tok && sameline(rawtok,tok); tok = tok->next) {
-                        if (!err.msg.empty() && std::isalnum((unsigned char)tok->str[0]))
+                        if (!err.msg.empty() && isNameChar(tok->str[0]))
                             err.msg += ' ';
                         err.msg += tok->str;
                     }
@@ -1765,7 +1769,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             const Macro &macro = macroIt->second;
             const std::list<Location> &usage = macro.usage();
             for (std::list<Location>::const_iterator usageIt = usage.begin(); usageIt != usage.end(); ++usageIt) {
-                struct MacroUsage mu(usageIt->files);
+                MacroUsage mu(usageIt->files);
                 mu.macroName = macro.name();
                 mu.macroLocation = macro.defineLocation();
                 mu.useLocation = *usageIt;

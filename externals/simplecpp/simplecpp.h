@@ -105,9 +105,9 @@ public:
     }
 
     void flags() {
-        name = (str[0] == '_' || std::isalpha(str[0]));
+        name = (std::isalpha((unsigned char)str[0]) || str[0] == '_' || str[0] == '$');
         comment = (str.compare(0, 2, "//") == 0 || str.compare(0, 2, "/*") == 0);
-        number = std::isdigit(str[0]) || (str.size() > 1U && str[0] == '-' && std::isdigit(str[1]));
+        number = std::isdigit((unsigned char)str[0]) || (str.size() > 1U && str[0] == '-' && std::isdigit((unsigned char)str[1]));
         op = (str.size() == 1U) ? str[0] : '\0';
     }
 
@@ -120,9 +120,9 @@ public:
     bool startsWithOneOf(const char c[]) const;
     bool endsWithOneOf(const char c[]) const;
 
-    char op;
     const TokenString &str;
     TokenString macro;
+    char op;
     bool comment;
     bool name;
     bool number;
@@ -162,7 +162,7 @@ struct SIMPLECPP_LIB Output {
     std::string msg;
 };
 
-typedef std::list<struct Output> OutputList;
+typedef std::list<Output> OutputList;
 
 /** List of tokens. */
 class SIMPLECPP_LIB TokenList {
@@ -271,7 +271,7 @@ struct SIMPLECPP_LIB DUI {
     std::list<std::string> includePaths;
 };
 
-SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const struct DUI &dui, OutputList *outputList = 0);
+SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = 0);
 
 /**
  * Preprocess
@@ -287,7 +287,7 @@ SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens,
  *
  * @todo simplify interface
  */
-SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, TokenList*> &filedata, const struct DUI &dui, OutputList *outputList = 0, std::list<struct MacroUsage> *macroUsage = 0);
+SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, TokenList*> &filedata, const DUI &dui, OutputList *outputList = 0, std::list<MacroUsage> *macroUsage = 0);
 }
 
 #endif
