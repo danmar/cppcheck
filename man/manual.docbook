@@ -314,8 +314,8 @@ cppcheck --enable=all</programlisting>
     <para>You can use -D to change this. When you use -D, cppcheck will by
     default only check the given configuration and nothing else. This is how
     compilers work. But you can use <literal>--force</literal> or
-    <literal>--max-configs</literal> to override the number
-    of configurations.</para>
+    <literal>--max-configs</literal> to override the number of
+    configurations.</para>
 
     <programlisting># check all configurations
 cppcheck file.c
@@ -562,7 +562,7 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         <term>severity</term>
 
         <listitem>
-		<para>a type/rank of message</para>
+          <para>a type/rank of message</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -670,16 +670,16 @@ Checking test.c...
   <chapter>
     <title>Library configuration</title>
 
-    <para>When external libraries are used, such as WinAPI, POSIX, gtk, Qt, etc,
-    <literal>Cppcheck</literal> doesn't know how the external functions
+    <para>When external libraries are used, such as WinAPI, POSIX, gtk, Qt,
+    etc, <literal>Cppcheck</literal> doesn't know how the external functions
     behave. <literal>Cppcheck</literal> then fails to detect various problems
     such as leaks, buffer overflows, possible null pointer dereferences, etc.
     But this can be fixed with configuration files.</para>
 
     <para>Cppcheck already contains configurations for several libraries. They
-    can be loaded as described below. Note that the configuration for the standard
-    libraries of C and C++, <literal>std.cfg</literal>, is always loaded by
-    cppcheck. If you create or update a configuration file for a
+    can be loaded as described below. Note that the configuration for the
+    standard libraries of C and C++, <literal>std.cfg</literal>, is always
+    loaded by cppcheck. If you create or update a configuration file for a
     popular library, we would appreciate if you upload it to us.</para>
 
     <section>
@@ -704,23 +704,25 @@ Checking test.c...
       <title>Memory/resource leaks</title>
 
       <para>Cppcheck has configurable checking for leaks, e.g. you can specify
-      which functions allocate and free memory or resources and which functions
-      do not affect the allocation at all.</para>
+      which functions allocate and free memory or resources and which
+      functions do not affect the allocation at all.</para>
 
       <section>
         <title>alloc and dealloc</title>
 
         <para>Here is an example program:</para>
 
-        <para><programlisting>void test()
+        <para>
+          <programlisting>void test()
 {
     HPEN pen = CreatePen(PS_SOLID, 1, RGB(255,0,0));
-}</programlisting></para>
+}</programlisting>
+        </para>
 
         <para>The code example above has a resource leak -
         <literal>CreatePen()</literal> is a WinAPI function that creates a
-        pen. However, Cppcheck doesn't assume that return values from functions
-        must be freed. There is no error message:</para>
+        pen. However, Cppcheck doesn't assume that return values from
+        functions must be freed. There is no error message:</para>
 
         <programlisting># cppcheck pen1.c
 Checking pen1.c...</programlisting>
@@ -745,9 +747,9 @@ Checking pen1.c...
 
       <para>The allocation and deallocation functions are organized in groups.
       Each group is defined in a <literal>&lt;resource&gt;</literal> or
-      <literal>&lt;memory&gt;</literal> tag and is identified by its <literal>&lt;dealloc&gt;</literal>
-      functions. This means, groups with overlapping <literal>&lt;dealloc&gt;</literal>
-      tags are merged.</para>
+      <literal>&lt;memory&gt;</literal> tag and is identified by its
+      <literal>&lt;dealloc&gt;</literal> functions. This means, groups with
+      overlapping <literal>&lt;dealloc&gt;</literal> tags are merged.</para>
 
       <section>
         <title>leak-ignore and use</title>
@@ -788,10 +790,9 @@ Checking pen1.c...
   &lt;/memory&gt;
 &lt;/def&gt;</programlisting>
 
-        <para>The <literal>&lt;use&gt;</literal>
-        configuration has no logical purpose. You will get the same warnings
-        without it. Use it to silence <literal>--check-library</literal>
-        information messages.</para>
+        <para>The <literal>&lt;use&gt;</literal> configuration has no logical
+        purpose. You will get the same warnings without it. Use it to silence
+        <literal>--check-library</literal> information messages.</para>
       </section>
     </section>
 
@@ -799,23 +800,25 @@ Checking pen1.c...
       <title>Function behaviour</title>
 
       <para>To specify the behaviour of functions and how they should be used,
-      <literal>&lt;function&gt;</literal> tags can be used. Functions are identified
-      by their name, specified in the <literal>name</literal> attribute and their
-      number of arguments. The name is a comma-separated list of function names.
-      For functions in namespaces or classes, just provide their fully qualified
-      name. For example: <literal>&lt;function name="memcpy,std::memcpy"&gt;</literal>.
-      </para>
+      <literal>&lt;function&gt;</literal> tags can be used. Functions are
+      identified by their name, specified in the <literal>name</literal>
+      attribute and their number of arguments. The name is a comma-separated
+      list of function names. For functions in namespaces or classes, just
+      provide their fully qualified name. For example: <literal>&lt;function
+      name="memcpy,std::memcpy"&gt;</literal>.</para>
 
       <section>
         <title>Function arguments</title>
 
-        <para>The arguments a function takes can be specified by <literal>&lt;arg&gt;</literal>
-        tags. Each of them takes the number of the argument (starting from 1) in the
-        <literal>nr</literal> attribute, or <literal>nr="any"</literal> for variadic arguments.
-        Optional arguments can be specified by providing a default value:
-        <literal>default="value"</literal>. Specifying <literal>-1</literal> as the argument
-        number is going to apply a check to all arguments of that function. The specifications
-        for individual arguments override this setting.</para>
+        <para>The arguments a function takes can be specified by
+        <literal>&lt;arg&gt;</literal> tags. Each of them takes the number of
+        the argument (starting from 1) in the <literal>nr</literal> attribute,
+        or <literal>nr="any"</literal> for variadic arguments. Optional
+        arguments can be specified by providing a default value:
+        <literal>default="value"</literal>. Specifying <literal>-1</literal>
+        as the argument number is going to apply a check to all arguments of
+        that function. The specifications for individual arguments override
+        this setting.</para>
 
         <section>
           <title>Uninitialized memory</title>
@@ -829,16 +832,16 @@ Checking pen1.c...
     CopyMemory(buffer1, buffer2, 1024);
 }</programlisting>
 
-          <para>The bug here is that buffer2 is uninitialized. The second argument
-          for CopyMemory needs to be initialized. However,
+          <para>The bug here is that buffer2 is uninitialized. The second
+          argument for CopyMemory needs to be initialized. However,
           <literal>Cppcheck</literal> assumes that it is fine to pass
           uninitialized variables to functions:</para>
 
           <programlisting># cppcheck uninit.c
 Checking uninit.c...</programlisting>
 
-          <para>If you provide a configuration file then Cppcheck detects
-          the bug:</para>
+          <para>If you provide a configuration file then Cppcheck detects the
+          bug:</para>
 
           <programlisting># cppcheck --library=windows.cfg uninit.c
 Checking uninit.c...
@@ -864,8 +867,8 @@ Checking uninit.c...
         <section>
           <title>Null pointers</title>
 
-          <para>Cppcheck assumes it's ok to pass NULL pointers to functions. Here
-          is an example program:</para>
+          <para>Cppcheck assumes it's ok to pass NULL pointers to functions.
+          Here is an example program:</para>
 
           <programlisting>void test()
 {
@@ -886,9 +889,9 @@ Checking null.c...</programlisting>
 Checking null.c...
 [null.c:3]: (error) Null pointer dereference</programlisting>
 
-          <para>Note that this implies <literal>&lt;not-uninit&gt;</literal> as
-          far as values are concerned. Uninitialized memory might still be passed
-          do the function.</para>
+          <para>Note that this implies <literal>&lt;not-uninit&gt;</literal>
+          as far as values are concerned. Uninitialized memory might still be
+          passed do the function.</para>
 
           <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
 
@@ -920,8 +923,8 @@ Checking null.c...
           <programlisting># cppcheck formatstring.c
     Checking formatstring.c...</programlisting>
 
-          <para>A configuration file can be created that says that the string is a
-          format string. For instance:</para>
+          <para>A configuration file can be created that says that the string
+          is a format string. For instance:</para>
 
           <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
@@ -965,8 +968,8 @@ Checking formatstring.c...
           <programlisting># cppcheck valuerange.c
 Checking valuerange.c...</programlisting>
 
-          <para>A configuration file can be created that says that 1024 is out of
-          bounds. For instance:</para>
+          <para>A configuration file can be created that says that 1024 is out
+          of bounds. For instance:</para>
 
           <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
@@ -981,7 +984,8 @@ Checking valuerange.c...</programlisting>
 Checking range.c...
 [range.c:3]: (error) Invalid do_something() argument nr 1. The value is 1024 but the valid values are '0-1023'.</programlisting>
 
-          <para>Some example expressions you can use in the valid element:</para>
+          <para>Some example expressions you can use in the valid
+          element:</para>
 
           <programlisting>0,3,5  =&gt; only values 0, 3 and 5 are valid
 -10:20  =&gt;  all values between -10 and 20 are valid
@@ -1008,9 +1012,9 @@ Checking range.c...
           <programlisting># cppcheck minsize.c
 Checking minsize.c...</programlisting>
 
-          <para>A configuration file can for instance be created that says that
-          the size of the buffer in argument 1 must be larger than the strlen of
-          argument 2.For instance:</para>
+          <para>A configuration file can for instance be created that says
+          that the size of the buffer in argument 1 must be larger than the
+          strlen of argument 2.For instance:</para>
 
           <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
@@ -1052,8 +1056,8 @@ Checking minsize.c...
               <term>sizeof</term>
 
               <listitem>
-                <para>buffer size must be larger than other argument buffer size.
-                Example: see strncpy configuration in std.cfg</para>
+                <para>buffer size must be larger than other argument buffer
+                size. Example: see strncpy configuration in std.cfg</para>
               </listitem>
             </varlistentry>
 
@@ -1061,16 +1065,17 @@ Checking minsize.c...
               <term>mul</term>
 
               <listitem>
-                <para>buffer size must be larger than multiplication result when
-                multiplying values given in two other arguments. Typically one
-                argument defines the element size and another element defines the
-                number of elements. Example: see fread configuration in
-                std.cfg</para>
+                <para>buffer size must be larger than multiplication result
+                when multiplying values given in two other arguments.
+                Typically one argument defines the element size and another
+                element defines the number of elements. Example: see fread
+                configuration in std.cfg</para>
               </listitem>
             </varlistentry>
           </variablelist>
         </section>
       </section>
+
       <section>
         <title>noreturn</title>
 
@@ -1087,8 +1092,9 @@ Checking minsize.c...
     buffer[0] = data;  // &lt;- error: data is uninitialized if x is not 1
 }</programlisting>
 
-        <para>In theory, if <literal>ZeroMemory</literal> terminates the program
-        then there is no bug. Cppcheck therefore reports no error:</para>
+        <para>In theory, if <literal>ZeroMemory</literal> terminates the
+        program then there is no bug. Cppcheck therefore reports no
+        error:</para>
 
         <programlisting># cppcheck noreturn.c
 Checking noreturn.c...</programlisting>
@@ -1101,8 +1107,8 @@ Checking noreturn.c...
 [noreturn.c:7]: (information) --check-library: Function ZeroMemory() should have &lt;noreturn&gt; configuration
 </programlisting>
 
-        <para>If a proper <literal>windows.cfg</literal> is provided, the bug is
-        detected:</para>
+        <para>If a proper <literal>windows.cfg</literal> is provided, the bug
+        is detected:</para>
 
         <programlisting># cppcheck --library=windows.cfg noreturn.c
 Checking noreturn.c...
@@ -1131,8 +1137,8 @@ Checking noreturn.c...
 }</programlisting>
 
         <para>In case <literal>strcmp</literal> has side effects, such as
-        assigning the result to one of the parameters passed to it, nothing bad
-        would happen:</para>
+        assigning the result to one of the parameters passed to it, nothing
+        bad would happen:</para>
 
         <programlisting># cppcheck useretval.c
 Checking useretval.c...</programlisting>
@@ -1157,10 +1163,10 @@ Checking useretval.c...
       <section>
         <title>Example configuration for strcpy()</title>
 
-        <para>The proper configuration for the standard strcpy() function would
-        be:</para>
+        <para>The proper configuration for the standard strcpy() function
+        would be:</para>
 
-      <programlisting>  &lt;function name="strcpy"&gt;
+        <programlisting>  &lt;function name="strcpy"&gt;
     &lt;leak-ignore/&gt;
     &lt;noreturn&gt;false&lt;/noreturn&gt;
     &lt;arg nr="1"&gt;
@@ -1181,14 +1187,14 @@ Checking useretval.c...
         function returns or not.</para>
 
         <para>The first argument that the function takes is a pointer. It must
-        not be a null pointer, therefore <literal>&lt;not-null&gt;</literal> is
-        used.</para>
+        not be a null pointer, therefore <literal>&lt;not-null&gt;</literal>
+        is used.</para>
 
         <para>The second argument the function takes is a pointer. It must not
         be null. And it must point at initialized data. Using
         <literal>&lt;not-null&gt;</literal> and
-        <literal>&lt;not-uninit&gt;</literal> is correct. Moreover it must point
-        at a zero-terminated string so &lt;strz&gt; is also used.</para>
+        <literal>&lt;not-uninit&gt;</literal> is correct. Moreover it must
+        point at a zero-terminated string so &lt;strz&gt; is also used.</para>
       </section>
     </section>
 
