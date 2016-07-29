@@ -73,7 +73,7 @@ void Check64BitPortability::pointerassignment()
             if (!returnType)
                 continue;
 
-            if (retPointer && returnType->pointer == 0U)
+            if (retPointer && !returnType->typeScope && returnType->pointer == 0U)
                 returnIntegerError(tok);
 
             if (!retPointer && returnType->pointer >= 1U)

@@ -168,6 +168,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct Foo {};\n"
+              "\n"
+              "int* dostuff(Foo foo) {\n"
+              "  return foo;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("int foo(char* c) {\n"
               "    return c;\n"
               "}");
