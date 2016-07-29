@@ -72,7 +72,7 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_se
 {
     std::list<std::string> suppressionIDs;
 
-    for (const simplecpp::Token *tok = tokens.cbegin(); tok; tok = tok->next) {
+    for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (tok->comment) {
             std::istringstream iss(tok->str.substr(2));
             std::string word;
@@ -130,7 +130,7 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens1)
     }
 
     for (std::list<const simplecpp::TokenList *>::const_iterator it = list.begin(); it != list.end(); ++it) {
-        for (const simplecpp::Token *tok = (*it)->cbegin(); tok; tok = tok ? tok->next : nullptr) {
+        for (const simplecpp::Token *tok = (*it)->cfront(); tok; tok = tok ? tok->next : nullptr) {
             if ((tok->op != '#') || (tok->previous && tok->previous->location.line == tok->location.line))
                 continue;
             if (tok->next && tok->next->str == "endfile")
@@ -236,7 +236,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
     std::vector<std::string> configs_if;
     std::vector<std::string> configs_ifndef;
 
-    for (const simplecpp::Token *tok = tokens.cbegin(); tok; tok = tok->next) {
+    for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (tok->op != '#' || sameline(tok->previous, tok))
             continue;
         const simplecpp::Token *cmdtok = tok->next;
@@ -289,7 +289,7 @@ std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &token
 {
     std::set<std::string> ret;
     ret.insert("");
-    if (!tokens.cbegin())
+    if (!tokens.cfront())
         return ret;
 
     std::set<std::string> defined;
@@ -564,7 +564,7 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
     unsigned int prevfile = 0;
     unsigned int line = 1;
     std::ostringstream ret;
-    for (const simplecpp::Token *tok = tokens2.cbegin(); tok; tok = tok->next) {
+    for (const simplecpp::Token *tok = tokens2.cfront(); tok; tok = tok->next) {
         if (writeLocations && tok->location.fileIndex != prevfile) {
             ret << "\n#line " << tok->location.line << " \"" << tok->location.file() << "\"\n";
             prevfile = tok->location.fileIndex;
