@@ -291,6 +291,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
             // Append user-defined code to checked source code
             else if (std::strncmp(argv[i], "--append=", 9) == 0) {
+                // This is deprecated and will be removed in 1.80
+                PrintMessage("cppcheck: '--append' is deprecated and will be removed in version 1.80. To supply additional information to cppcheck, use --library or --include.");
+
                 const std::string filename = 9 + argv[i];
                 if (!_settings->append(filename)) {
                     PrintMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
@@ -781,8 +784,6 @@ void CmdLineParser::PrintHelp()
               "If a directory is given instead of a filename, *.cpp, *.cxx, *.cc, *.c++, *.c,\n"
               "*.tpp, and *.txx files are checked recursively from the given directory.\n\n"
               "Options:\n"
-              "    --append=<file>      This allows you to provide information about functions\n"
-              "                         by providing an implementation for them.\n"
               "    --check-config       Check cppcheck configuration. The normal code\n"
               "                         analysis is disabled by this flag.\n"
               "    --check-library      Show information messages when library files have\n"
