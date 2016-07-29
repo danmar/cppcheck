@@ -1604,10 +1604,25 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout.str());
 
+        check("void f(int w) {\n"
+              "    if((!w) & 0x8000) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f() {\n"
               "    if (x == foo() & 2) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout.str());
+
+        check("void f() {\n"
+              "    if (2 & x == foo()) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout.str());
+
+        check("void f() {\n"
+              "    if (2 & (x == foo())) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(std::list<int> &ints) { }");
         ASSERT_EQUALS("", errout.str());

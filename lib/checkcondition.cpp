@@ -860,6 +860,20 @@ void CheckCondition::moduloAlwaysTrueFalseError(const Token* tok, const std::str
                 "Comparison of modulo result is predetermined, because it is always less than " + maxVal + ".", CWE398, false);
 }
 
+static int countPar(const Token *tok1, const Token *tok2)
+{
+    int par = 0;
+    for (const Token *tok = tok1; tok && tok != tok2; tok = tok->next()) {
+        if (tok->str() == "(")
+            ++par;
+        else if (tok->str() == ")")
+            --par;
+        else if (tok->str() == ";")
+            return -1;
+    }
+    return par;
+}
+
 //---------------------------------------------------------------------------
 // Clarify condition '(x = a < 0)' into '((x = a) < 0)' or '(x = (a < 0))'
 // Clarify condition '(a & b == c)' into '((a & b) == c)' or '(a & (b == c))'
@@ -898,9 +912,9 @@ void CheckCondition::clarifyCondition()
                 // using boolean result in bitwise operation ! x [&|^]
                 const ValueType* vt1 = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
                 const ValueType* vt2 = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
-                if (vt1 && vt1->type == ValueType::BOOL && !Token::Match(tok->astOperand1(), "(|[|::|."))
+                if (vt1 && vt1->type == ValueType::BOOL && !Token::Match(tok->astOperand1(), "(|[|::|.") && countPar(tok->astOperand1(), tok) == 0)
                     clarifyConditionError(tok, false, true);
-                else if (vt2 && vt2->type == ValueType::BOOL && !Token::Match(tok->astOperand1(), "(|[|::|."))
+                else if (vt2 && vt2->type == ValueType::BOOL && !Token::Match(tok->astOperand1(), "(|[|::|.") && countPar(tok, tok->astOperand2()) == 0)
                     clarifyConditionError(tok, false, true);
             }
         }
