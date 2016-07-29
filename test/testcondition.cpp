@@ -78,6 +78,7 @@ private:
         TEST_CASE(clarifyCondition5);     // #3609 CWinTraits<WS_CHILD|WS_VISIBLE>..
         TEST_CASE(clarifyCondition6);     // #3818
         TEST_CASE(clarifyCondition7);
+        TEST_CASE(clarifyCondition8);
 
         TEST_CASE(alwaysTrue);
 
@@ -1596,7 +1597,7 @@ private:
                       "[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout.str());
     }
 
-// clarify condition that uses ! operator and then bitwise operator
+    // clarify condition that uses ! operator and then bitwise operator
     void clarifyCondition3() {
         check("void f(int w) {\n"
               "    if(!w & 0x8000) {}\n"
@@ -1660,6 +1661,33 @@ private:
         check("void f(bool error) {\n"
               "    bool & withoutSideEffects=found.first->second;\n" // Declaring a reference to a boolean; & is no operator at all
               "    execute(secondExpression, &programMemory, &result, &error);\n" // Unary &
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void clarifyCondition8() {
+        // don't warn when boolean result comes from function call, array index, etc
+        // the operator precedence is not unknown then
+        check("bool a();\n"
+              "bool f(bool b) {\n"
+              "    return (a() & b);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(bool *a, bool b) {\n"
+              "    return (a[10] & b);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { bool a; };\n"
+              "bool f(struct A a, bool b) {\n"
+              "    return (a.a & b);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { bool a; };\n"
+              "bool f(struct A a, bool b) {\n"
+              "    return (A::a & b);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

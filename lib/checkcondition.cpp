@@ -898,9 +898,9 @@ void CheckCondition::clarifyCondition()
                 // using boolean result in bitwise operation ! x [&|^]
                 const ValueType* vt1 = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
                 const ValueType* vt2 = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
-                if (vt1 && vt1->type == ValueType::BOOL)
+                if (vt1 && vt1->type == ValueType::BOOL && !Token::Match(tok->astOperand1(), "(|[|::|."))
                     clarifyConditionError(tok, false, true);
-                else if (vt2 && vt2->type == ValueType::BOOL)
+                else if (vt2 && vt2->type == ValueType::BOOL && !Token::Match(tok->astOperand1(), "(|[|::|."))
                     clarifyConditionError(tok, false, true);
             }
         }
