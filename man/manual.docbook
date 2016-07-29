@@ -690,6 +690,11 @@ Checking test.c...
       <literal>--enable=information</literal> to get hints about what you
       should configure.</para>
 
+      <para>It is recommended that you use the <literal>Library
+      Editor</literal> in the <literal>Cppcheck GUI</literal> to edit
+      configuration files. It is available in the <literal>View</literal>
+      menu. All settings are not documented in this manual.</para>
+
       <para>The command line cppcheck will try to load custom .cfg files from
       the working path - execute cppcheck from the path where the .cfg files
       are.</para>
@@ -805,7 +810,9 @@ Checking pen1.c...
       attribute and their number of arguments. The name is a comma-separated
       list of function names. For functions in namespaces or classes, just
       provide their fully qualified name. For example: <literal>&lt;function
-      name="memcpy,std::memcpy"&gt;</literal>.</para>
+      name="memcpy,std::memcpy"&gt;</literal>. If you have template functions
+      then provide their instantiated names <literal>&lt;function
+      name="dostuff&lt;int&gt;"&gt;</literal>.</para>
 
       <section>
         <title>Function arguments</title>
@@ -819,6 +826,43 @@ Checking pen1.c...
         as the argument number is going to apply a check to all arguments of
         that function. The specifications for individual arguments override
         this setting.</para>
+
+        <section>
+          <title>Not bool</title>
+
+          <para>Here is an example program with misplaced comparison:</para>
+
+          <programlisting>void test()
+{
+    if (MemCmp(buffer1, buffer2, 1024==0)) {}
+}</programlisting>
+
+          <para><literal>Cppcheck</literal> assumes that it is fine to pass
+          boolean values to functions:</para>
+
+          <programlisting># cppcheck notbool.c
+Checking notbool.c...</programlisting>
+
+          <para>If you provide a configuration file then Cppcheck detects the
+          bug:</para>
+
+          <programlisting># cppcheck --library=notbool.cfg notbool.c
+Checking notbool.c...
+[notbool.c:5]: (error) Invalid MemCmp() argument nr 3. A non-boolean value is required.</programlisting>
+
+          <para>Here is the minimal notbool.cfg</para>
+
+          <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="MemCmp"&gt;
+    &lt;arg nr="1"/&gt;
+    &lt;arg nr="2"/&gt;
+    &lt;arg nr="3"&gt;
+      &lt;not-bool/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting></para>
+        </section>
 
         <section>
           <title>Uninitialized memory</title>
@@ -1120,6 +1164,8 @@ Checking noreturn.c...
 &lt;def&gt;
   &lt;function name="ZeroMemory"&gt;
     &lt;noreturn&gt;false&lt;/noreturn&gt;
+    &lt;arg nr="1"/&gt;
+    &lt;arg nr="2"/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
       </section>
@@ -1148,7 +1194,7 @@ Checking useretval.c...</programlisting>
 
         <programlisting># cppcheck --library=lib.cfg --enable=warning useretval.c
 Checking useretval.c...
-[noreturn.c:3]: (warning) Return value of function strcmp() is not used.</programlisting>
+[useretval.c:3]: (warning) Return value of function strcmp() is not used.</programlisting>
 
         <para>Here is a minimal <literal>lib.cfg</literal> file:</para>
 
@@ -1156,6 +1202,47 @@ Checking useretval.c...
 &lt;def&gt;
   &lt;function name="strcmp"&gt;
     &lt;use-retval/&gt;
+    &lt;arg nr="1"/&gt;
+    &lt;arg nr="2"/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+      </section>
+
+      <section>
+        <title>pure</title>
+
+        <para>A function that is pure will calculate a return value and has no
+        side effects. If the same parameters are given twice then the same
+        return value will be calculated twice.</para>
+
+        <programlisting>void f(int x)
+{
+    if (calculate(x) == 213) {
+    
+    } else if (calculate(x) == 213) {
+         // unreachable code
+    }
+}</programlisting>
+
+        <para>Cppcheck reports no warning</para>
+
+        <programlisting># cppcheck pure.c
+Checking pure.c...</programlisting>
+
+        <para>If a proper <literal>lib.cfg</literal> is provided, the
+        unreachable code is detected:</para>
+
+        <programlisting># cppcheck --enable=style --library=pure pure.c 
+Checking pure.c...
+[pure.c:7]: (style) Expression is always false because 'else if' condition matches previous condition at line 5.</programlisting>
+
+        <para>Here is a minimal <literal>pure.cfg</literal> file:</para>
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="calculate"&gt;
+    &lt;pure/&gt;
+    &lt;arg nr="1"/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
       </section>
