@@ -128,7 +128,6 @@ private:
         TEST_CASE(if_cond12);
         TEST_CASE(if_cond13);
         TEST_CASE(if_cond14);
-        TEST_CASE(if_cond15); // #4456 - segfault
 
         TEST_CASE(if_or_1);
         TEST_CASE(if_or_2);
@@ -267,6 +266,22 @@ private:
         }
     }
 
+    std::string getConfigsStr(const char filedata[], const char *u1=NULL) {
+        Settings settings;
+        if (u1)
+            settings.userUndefs.insert(u1);
+        Preprocessor preprocessor(settings, this);
+        std::vector<std::string> files;
+        std::istringstream istr(filedata);
+        simplecpp::TokenList tokens(istr,files);
+        tokens.removeComments();
+        const std::set<std::string> configs = preprocessor.getConfigs(tokens);
+        std::string ret;
+        for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it)
+            ret += *it + '\n';
+        return ret;
+    }
+
     void Bug2190219() {
         const char filedata[] = "#ifdef __cplusplus\n"
                                 "cpp\n"
@@ -304,14 +319,7 @@ private:
                                 "    qwerty\n"
                                 "#endif  \n";
 
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\nqwerty", actual[""]);
-        ASSERT_EQUALS("\nabcdef", actual["WIN32"]);
+        ASSERT_EQUALS("\nWIN32\n", getConfigsStr(filedata));
     }
 
     void test2() {
@@ -320,15 +328,7 @@ private:
                                 "   #   else  \n"
                                 "    qwerty\n"
                                 "  # endif  \n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(2U, actual.size());
-        ASSERT_EQUALS("\n\" # ifdef WIN32\"", actual[""]);
-        ASSERT_EQUALS("\n\n\nqwerty", actual["WIN32"]);
+        ASSERT_EQUALS("\nWIN32\n", getConfigsStr(filedata));
     }
 
     void test3() {
@@ -340,15 +340,7 @@ private:
                                 "c\n"
                                 "#endif\n";
 
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("\na\n\n\n\nc", actual["ABC"]);
-        ASSERT_EQUALS("\na\n\nb\n\nc", actual["ABC;DEF"]);
+        ASSERT_EQUALS("\nABC\nABC;DEF\n", getConfigsStr(filedata));
     }
 
     void test4() {
@@ -358,15 +350,7 @@ private:
                                 "#ifdef ABC\n"
                                 "A\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("\nA\n\n\nA", actual["ABC"]);
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
     }
 
     void test5() {
@@ -378,16 +362,7 @@ private:
                                 "C\n"
                                 "#endif\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\nB", actual[""]);
-        ASSERT_EQUALS("\nA", actual["ABC"]);
-        ASSERT_EQUALS("\n\n\nB\n\nC", actual["DEF"]);
+        ASSERT_EQUALS("\nABC\nDEF\n", getConfigsStr(filedata));
     }
 
     void test7() {
@@ -397,20 +372,7 @@ private:
                                 "B\n"
                                 "#endif\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Make sure an error message is written..
-        TODO_ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
-                           "",
-                           errout.str());
-
-        // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("\nA\n\nB", actual["ABC"]);
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
 
         test7a();
         test7b();
@@ -425,17 +387,7 @@ private:
                                 "B\n"
                                 "#endif\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Make sure an error message is written..
-        TODO_ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed NOT to be defined\n",
-                           "", errout.str());
-
-        // Compare results..
-        // TODO Preprocessor::getConfigs ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 
     void test7b() {
@@ -445,17 +397,7 @@ private:
                                 "B\n"
                                 "#endif\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Make sure an error message is written..
-        TODO_ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed NOT to be defined\n",
-                           "", errout.str());
-
-        // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
     }
 
     void test7c() {
@@ -465,18 +407,7 @@ private:
                                 "B\n"
                                 "#endif\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Make sure an error message is written..
-        TODO_ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
-                           "",
-                           errout.str());
-
-        // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
     }
 
     void test7d() {
@@ -486,18 +417,7 @@ private:
                                 "B\n"
                                 "#endif\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Make sure an error message is written..
-        TODO_ASSERT_EQUALS("[file.c:3]: (error) ABC is already guaranteed to be defined\n",
-                           "",
-                           errout.str());
-
-        // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
     }
 
     void test7e() {
@@ -510,49 +430,21 @@ private:
                                 "#endif\n"
                                 "#endfile\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Make sure an error message is written..
-        ASSERT_EQUALS("", errout.str());
-
-        // Compare results..
-        ASSERT_EQUALS(2U, actual.size());
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
     }
 
     void test8() {
         const char filedata[] = "#if A == 1\n"
                                 "1\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // No error..
-        ASSERT_EQUALS("", errout.str());
-
-        // Compare results..
-        ASSERT_EQUALS(2U, actual.size());
-        ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("\n1", actual["A=1"]);
+        ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
     }
 
     void test9() {
         const char filedata[] = "#if\n"
                                 "#else\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        Settings settings;
-        settings.maxConfigs = 1;
-        settings.userDefines = "X";
-        Preprocessor preprocessor(settings, this);
-        preprocessor.preprocess(istr, actual, "file.c"); // <- don't crash
+        getConfigsStr(filedata); // <- don't crash
     }
 
     void test10() { // Ticket #5139
@@ -561,10 +453,7 @@ private:
                                 "#define baz bar+0\n"
                                 "#if 0\n"
                                 "#endif";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
+        ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 
     void error1() {
@@ -573,16 +462,7 @@ private:
                                 "#else\n"
                                 "#error abcd\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("\n;", actual["A"]);
-
+        ASSERT_EQUALS("\nA\n", getConfigsStr(filedata));
     }
 
     void error3() {
@@ -665,13 +545,7 @@ private:
                                 "#endfile\n"
                                 "#ifdef ABC\n"
                                 "#endif";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Expected configurations: "" and "ABC"
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
     }
 
     void includeguard2() {
@@ -682,15 +556,7 @@ private:
                                 "\n"
                                 "#endif\n"
                                 "#endfile\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Expected configurations: "" and "ABC"
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS(true, actual.find("") != actual.end());
-        ASSERT_EQUALS(true, actual.find("ABC") != actual.end());
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
     }
 
 
@@ -718,28 +584,14 @@ private:
                                 "#ifdef WIN32\n"
                                 "#endif\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 
     void if1() {
         const char filedata[] = " # if /* comment */  1 // comment\n"
                                 "ABC\n"
                                 " # endif \n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\nABC", actual[""]);
+        ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 
 
@@ -750,16 +602,7 @@ private:
                                     "#elif DEF2\n"
                                     "DEF\n"
                                     "#endif\n";
-
-            // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
-
-            // Compare results..
-            ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("", actual[""]);
-            ASSERT_EQUALS("\nABC", actual["DEF1"]);
-            ASSERT_EQUALS("\n\n\nDEF", actual["DEF2"]);
+            ASSERT_EQUALS("\nDEF1\nDEF2\n", getConfigsStr(filedata));
         }
 
         {
@@ -770,16 +613,7 @@ private:
                                     "#else\n"
                                     "GHI\n"
                                     "#endif\n";
-
-            // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
-
-            // Compare results..
-            ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\n\n\n\n\nGHI", actual[""]);
-            ASSERT_EQUALS("\nABC", actual["DEF1"]);
-            ASSERT_EQUALS("\n\n\nDEF", actual["DEF2"]);
+            ASSERT_EQUALS("\nDEF1\nDEF2\n", getConfigsStr(filedata));
         }
     }
 
@@ -789,18 +623,7 @@ private:
                                 "#else\n"
                                 "    B\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n"
-                      "\n"
-                      "\n"
-                      "B", actual[""]);
-        TODO_ASSERT_EQUALS("A", "", actual["LIBVER=101"]);
+        TODO_ASSERT_EQUALS("\nLIBVER=101\n", "\n", getConfigsStr(filedata));
     }
 
     void if_cond2() {
@@ -810,16 +633,8 @@ private:
                                 "#if defined(A) && defined(B)\n"
                                 "ab\n"
                                 "#endif\n";
+        ASSERT_EQUALS("\nA\nA;B\n", getConfigsStr(filedata));
 
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("\na", actual["A"]);
-        ASSERT_EQUALS("\na\n\n\nab", actual["A;B"]);
         if_cond2b();
         if_cond2c();
         if_cond2d();
@@ -835,16 +650,7 @@ private:
                                 "#else\n"
                                 "a\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n! a", actual[""]);
-        ASSERT_EQUALS("\n\n\n\n\n\na", actual["A"]);
-        ASSERT_EQUALS("\n! a\n\nb", actual["B"]);
+        TODO_ASSERT_EQUALS("\nA;B\n", "\nA\nB\n", getConfigsStr(filedata));
     }
 
     void if_cond2c() {
@@ -858,16 +664,7 @@ private:
                                 "#else\n"
                                 "a\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n! a\n\n\n\n! b", actual[""]);
-        ASSERT_EQUALS("\n\n\n\n\n\n\n\na", actual["A"]);
-        ASSERT_EQUALS("\n! a\n\nb", actual["B"]);
+        TODO_ASSERT_EQUALS("\nA\nA;B\n", "\nA\nB\n", getConfigsStr(filedata));
     }
 
     void if_cond2d() {
@@ -886,17 +683,7 @@ private:
                                 "!b\n"
                                 "#endif\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(4, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n! a\n\n\n\n! b", actual[""]);
-        ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\n\n\n! b", actual["A"]);
-        ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\nb", actual["A;B"]);
-        ASSERT_EQUALS("\n! a\n\nb", actual["B"]);
+        ASSERT_EQUALS("\nA\nA;B\nB\n", getConfigsStr(filedata));
     }
 
     void if_cond2e() {
@@ -905,22 +692,7 @@ private:
                                 "#elif !defined(B)\n"
                                 "!b\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        errout.str("");
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        Settings settings;
-        settings.debug = settings.debugwarnings = true;
-        Preprocessor preprocessor(settings, this);
-        preprocessor.preprocess(istr, actual, "file.c");
-
-        // Compare results..
-        TODO_ASSERT_EQUALS(3U, 1U, actual.size());
-        ASSERT_EQUALS("\n! a", actual[""]);
-        TODO_ASSERT_EQUALS("\n\n\n! b", "", actual["A"]);
-        ASSERT_EQUALS("", actual["A;B"]);
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("\nA\nA;B", "\n", getConfigsStr(filedata));
     }
 
     void if_cond3() {
@@ -930,16 +702,7 @@ private:
                                 "abc\n"
                                 "#endif\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("\na", actual["A"]);
-        ASSERT_EQUALS("\na\n\nabc", actual["A;B;C"]);
+        ASSERT_EQUALS("\nA\nA;B;C\n", getConfigsStr(filedata));
     }
 
     void if_cond4() {
@@ -949,14 +712,7 @@ private:
                                     "#if defined A || defined B\n"
                                     "ab\n"
                                     "#endif\n";
-
-            // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
-
-            // Compare results..
-            ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\n\n\nab", actual[""]);
+            ASSERT_EQUALS("\n", getConfigsStr(filedata));
         }
 
         {
@@ -967,16 +723,7 @@ private:
                                     "#endif\n"
                                     "}\n"
                                     "#endif\n";
-
-            // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
-
-            // Compare results..
-            ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("", actual[""]);
-            ASSERT_EQUALS("\n{\n\n\n\n}", actual["A"]);
-            ASSERT_EQUALS("\n{\n\nfoo ( ) ;\n\n}", actual["A;B"]);
+            ASSERT_EQUALS("\nA\nA;B\n", getConfigsStr(filedata));
         }
 
         {
@@ -985,43 +732,21 @@ private:
                                     "#if (defined A) || defined (B)\n"
                                     "ab\n"
                                     "#endif\n";
-
-            // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
-
-            // Compare results..
-            ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\n\n\nab", actual[""]);
+            ASSERT_EQUALS("\n", getConfigsStr(filedata));
         }
 
         {
             const char filedata[] = "#if (A)\n"
                                     "foo();\n"
                                     "#endif\n";
-
-            // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
-
-            // Compare results..
-            ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("", actual[""]);
-            ASSERT_EQUALS("\nfoo ( ) ;", actual["A"]);
+            ASSERT_EQUALS("\nA\n", getConfigsStr(filedata));
         }
 
         {
             const char filedata[] = "#if! A\n"
                                     "foo();\n"
                                     "#endif\n";
-
-            // Preprocess => actual result..
-            std::map<std::string, std::string> actual;
-            preprocess(filedata, actual);
-
-            // Compare results..
-            TODO_ASSERT_EQUALS(2, 1, static_cast<unsigned int>(actual.size()));
-            ASSERT_EQUALS("\nfoo ( ) ;", actual[""]);
+            ASSERT_EQUALS("\n", getConfigsStr(filedata));
         }
     }
 
@@ -1033,41 +758,20 @@ private:
                                 "#if defined(B) && defined(A)\n"
                                 "ef\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\ncd", actual[""]);
-        ASSERT_EQUALS("\nab\n\ncd\n\nef", actual["A;B"]);
+        ASSERT_EQUALS("\nA;B\n", getConfigsStr(filedata));
     }
 
     void if_cond6() {
         const char filedata[] = "\n"
                                 "#if defined(A) && defined(B))\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        // TODO ASSERT_EQUALS("[file.c:2]: (error) mismatching number of '(' and ')' in this line: defined(A)&&defined(B))\n", errout.str());
+        ASSERT_EQUALS("\nA;B\n", getConfigsStr(filedata));
     }
 
     void if_cond8() {
         const char filedata[] = "#if defined(A) + defined(B) + defined(C) != 1\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        // TODO Preprocessor::getConfig ASSERT_EQUALS(1U, actual.size());
-        ASSERT_EQUALS("", actual[""]);
+        TODO_ASSERT_EQUALS("\nA\n", "\nA;B;C\n", getConfigsStr(filedata));
     }
 
 
@@ -1075,14 +779,7 @@ private:
         const char filedata[] = "#if !defined _A\n"
                                 "abc\n"
                                 "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual);
-
-        // Compare results..
-        ASSERT_EQUALS(1, (int)actual.size());
-        ASSERT_EQUALS("\nabc", actual[""]);
+        ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 
     void if_cond10() {
@@ -1112,32 +809,21 @@ private:
                                 "#if A == 1\n"
                                 ";\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n\n;", preprocessor0.getcode(filedata,"",""));
+        ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 
     void if_cond13() {
         const char filedata[] = "#if ('A' == 0x41)\n"
                                 "123\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n123", preprocessor0.getcode(filedata,"",""));
+        ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 
     void if_cond14() {
         const char filedata[] = "#if !(A)\n"
                                 "123\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n123", preprocessor0.getcode(filedata,"",""));
-    }
-
-    void if_cond15() { // #4456 - segmentation fault
-        const char filedata[] = "#if ((A >= B) && (C != D))\n"
-                                "#if (E < F(1))\n"
-                                "#endif\n"
-                                "#endif\n";
-
-        // Preprocess => actual result..
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual); // <- don't crash in Preprocessor::getcfgs -> Tokenize -> number of template parameters
+        ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 
 
@@ -1146,39 +832,18 @@ private:
         const char filedata[] = "#if defined(DEF_10) || defined(DEF_11)\n"
                                 "a1;\n"
                                 "#endif\n";
-
-        errout.str("");
-        output.str("");
-
-        // Preprocess => actual result..
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        Settings settings;
-        settings.debug = settings.debugwarnings = true;
-        settings.addEnabled("missingInclude");
-        Preprocessor preprocessor(settings, this);
-        preprocessor.preprocess(istr, actual, "file.c");
-
-        // Compare results..
-        ASSERT_EQUALS(2U, actual.size());
-        ASSERT_EQUALS("", actual[""]);
-
-        // the "defined(DEF_10) || defined(DEF_11)" are not handled correctly..
-        ASSERT_EQUALS(2U, actual.size());
-        ASSERT_EQUALS("\na1 ;", actual["DEF_10;DEF_11"]);
-
+        ASSERT_EQUALS("\nDEF_10;DEF_11\n", getConfigsStr(filedata));
     }
 
     void if_or_2() {
-        const std::string code("#if X || Y\n"
-                               "a1;\n"
-                               "#endif\n");
-        ASSERT_EQUALS("\na1 ;", preprocessor0.getcode(code, "X", "test.c"));
-        ASSERT_EQUALS("\na1 ;", preprocessor0.getcode(code, "Y", "test.c"));
+        const char filedata[] = "#if X || Y\n"
+                                "a1;\n"
+                                "#endif\n";
+        TODO_ASSERT_EQUALS("\nX;Y\n", "\n", getConfigsStr(filedata));
     }
 
     void if_macro_eq_macro() {
-        const char* code = "#define A B\n"
+        const char *code = "#define A B\n"
                            "#define B 1\n"
                            "#define C 1\n"
                            "#if A == C\n"
@@ -1186,10 +851,7 @@ private:
                            "#else\n"
                            "Betty\n"
                            "#endif\n";
-        std::map<std::string, std::string> actual;
-        preprocess(code, actual);
-
-        ASSERT_EQUALS("\n\n\n\nWilma", actual[""]);
+        ASSERT_EQUALS("\n", getConfigsStr(code));
     }
 
     void ticket_3675() {
@@ -2420,22 +2082,6 @@ private:
         const char code[] = "#elif (){\n";
         const std::string actual = preprocessor0.getcode(code, "TEST", "test.c");
         ASSERT_EQUALS("", actual);
-    }
-
-    std::string getConfigsStr(const char filedata[], const char *u1=NULL) {
-        Settings settings;
-        if (u1)
-            settings.userUndefs.insert(u1);
-        Preprocessor preprocessor(settings, this);
-        std::vector<std::string> files;
-        std::istringstream istr(filedata);
-        simplecpp::TokenList tokens(istr,files);
-        tokens.removeComments();
-        const std::set<std::string> configs = preprocessor.getConfigs(tokens);
-        std::string ret;
-        for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it)
-            ret += *it + '\n';
-        return ret;
     }
 
     void undef1() {
