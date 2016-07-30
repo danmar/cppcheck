@@ -92,7 +92,7 @@ bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2) {
 
 void simplecpp::Location::adjust(const std::string &str) {
     if (str.find_first_of("\r\n") == std::string::npos) {
-        col += str.size() - 1U;
+        col += str.size();
         return;
     }
 
@@ -305,12 +305,11 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
     Location location(files);
     location.fileIndex = fileIndex(filename);
     location.line = 1U;
-    location.col  = 0U;
+    location.col  = 1U;
     while (istr.good()) {
         unsigned char ch = readChar(istr,bom);
         if (!istr.good())
             break;
-        location.col++;
 
         if (ch == '\n') {
             if (cback() && cback()->op == '\\') {
@@ -320,7 +319,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 location.line += multiline + 1;
                 multiline = 0U;
             }
-            location.col = 0;
+            location.col = 1;
 
             if (oldLastToken != cback()) {
                 oldLastToken = cback();
@@ -342,8 +341,10 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
             continue;
         }
 
-        if (std::isspace(ch))
+        if (std::isspace(ch)) {
+            location.col++;
             continue;
+        }
 
         TokenString currentToken;
 
@@ -364,8 +365,8 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 ch = readChar(istr, bom);
             }
             if (currentToken[currentToken.size() - 1U] == '\\') {
-                multiline = 1;
-                currentToken = currentToken.erase(currentToken.size() - 1U);
+                ++multiline;
+                currentToken.erase(currentToken.size() - 1U);
             } else {
                 istr.unget();
             }
@@ -378,9 +379,15 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
             ch = readChar(istr,bom);
             while (istr.good()) {
                 currentToken += ch;
-                if (currentToken.size() >= 4U && currentToken.substr(currentToken.size() - 2U) == "*/")
+                if (currentToken.size() >= 4U && endsWith(currentToken, "*/"))
                     break;
                 ch = readChar(istr,bom);
+            }
+            // multiline..
+            std::string::size_type pos = 0;
+            while ((pos = currentToken.find("\\\n",pos)) != std::string::npos) {
+                currentToken.erase(pos,2);
+                ++multiline;
             }
         }
 
