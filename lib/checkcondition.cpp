@@ -312,6 +312,13 @@ void CheckCondition::comparison()
                         const std::string& op(tok->str());
                         comparisonError(expr1, expr1->str(), num1, op, num2, false);
                     }
+                    //"(a | 7) > 6U" is always true for unsigned a
+                    if ((expr1->astOperand1()->valueType()) &&
+                        (expr1->astOperand1()->valueType()->sign == ValueType::Sign::UNSIGNED) &&
+                        (expr1->str() == "|") && (num1 > num2)) {
+                        const std::string& op(tok->str());
+                        comparisonError(expr1, expr1->str(), num1, op, num2, true);
+                    }
                 }
             }
         }
