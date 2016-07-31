@@ -88,6 +88,22 @@ bool endsWith(const std::string &s, const std::string &e) {
 bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2) {
     return tok1 && tok2 && tok1->location.sameline(tok2->location);
 }
+
+
+static bool isAlternativeBinaryOp(const simplecpp::Token *tok, const std::string &alt) {
+    return (tok->name &&
+            tok->str == alt &&
+            tok->previous &&
+            tok->next &&
+            (tok->previous->number || tok->previous->name || tok->previous->op == ')') &&
+            (tok->next->number || tok->next->name || tok->next->op == '('));
+}
+
+static bool isAlternativeUnaryOp(const simplecpp::Token *tok, const std::string &alt) {
+    return ((tok->name && tok->str == alt) &&
+            (!tok->previous || tok->previous->op == '(') &&
+            (tok->next && (tok->next->name || tok->next->number)));
+}
 }
 
 void simplecpp::Location::adjust(const std::string &str) {
@@ -533,7 +549,12 @@ void simplecpp::TokenList::combineOperators() {
 }
 
 void simplecpp::TokenList::constFoldUnaryNotPosNeg(simplecpp::Token *tok) {
+    const std::string NOT("not");
     for (; tok && tok->op != ')'; tok = tok->next) {
+        // "not" might be !
+        if (isAlternativeUnaryOp(tok, NOT))
+            tok->op = '!';
+
         if (tok->op == '!' && tok->next && tok->next->number) {
             tok->setstr(tok->next->str == "0" ? "1" : "0");
             deleteToken(tok->next);
@@ -612,7 +633,12 @@ void simplecpp::TokenList::constFoldAddSub(Token *tok) {
 }
 
 void simplecpp::TokenList::constFoldComparison(Token *tok) {
+    const std::string NOTEQ("not_eq");
+
     for (; tok && tok->op != ')'; tok = tok->next) {
+        if (isAlternativeBinaryOp(tok,NOTEQ))
+            tok->setstr("!=");
+
         if (!tok->startsWithOneOf("<>=!"))
             continue;
         if (!tok->previous || !tok->previous->number)
@@ -655,7 +681,7 @@ void simplecpp::TokenList::constFoldBitwise(Token *tok)
         else
             altop = "xor";
         for (tok = tok1; tok && tok->op != ')'; tok = tok->next) {
-            if (tok->op != *op && tok->str != altop)
+            if (tok->op != *op && !isAlternativeBinaryOp(tok, altop))
                 continue;
             if (!tok->previous || !tok->previous->number)
                 continue;
@@ -677,8 +703,17 @@ void simplecpp::TokenList::constFoldBitwise(Token *tok)
 }
 
 void simplecpp::TokenList::constFoldLogicalOp(Token *tok) {
+    const std::string AND("and");
+    const std::string OR("or");
+
     for (; tok && tok->op != ')'; tok = tok->next) {
-        if (tok->str != "&&" && tok->str != "||" && tok->str != "and" && tok->str != "or")
+        if (tok->name) {
+            if (isAlternativeBinaryOp(tok,AND))
+                tok->setstr("&&");
+            else if (isAlternativeBinaryOp(tok,OR))
+                tok->setstr("||");
+        }
+        if (tok->str != "&&" && tok->str != "||")
             continue;
         if (!tok->previous || !tok->previous->number)
             continue;
@@ -686,7 +721,7 @@ void simplecpp::TokenList::constFoldLogicalOp(Token *tok) {
             continue;
 
         int result;
-        if (tok->str == "||" || tok->str == "or")
+        if (tok->str == "||")
             result = (stringToLL(tok->previous->str) || stringToLL(tok->next->str));
         else /*if (tok->str == "&&")*/
             result = (stringToLL(tok->previous->str) && stringToLL(tok->next->str));
@@ -1147,8 +1182,6 @@ private:
                 if (variadic && strAB == "," && tok->previous->previous->str == "," && args.size() >= 1U && tok->next->str == args[args.size()-1U])
                     removeComma = true;
 
-                tok = tok->next->next;
-
                 output->deleteToken(A);
 
                 if (!removeComma) {
@@ -1157,6 +1190,8 @@ private:
                     // TODO: For functionLike macros, push the (...)
                     expandToken(output, loc, tokens.cfront(), macros, expandedmacros1, expandedmacros, parametertokens2);
                 }
+
+                tok = tok->next->next;
             } else {
                 // #123 => "123"
                 TokenList tokenListHash(files);
@@ -1389,15 +1424,18 @@ void simplifyName(simplecpp::TokenList &expr) {
     altop.insert("or");
     altop.insert("bitand");
     altop.insert("bitor");
+    altop.insert("not");
+    altop.insert("not_eq");
     altop.insert("xor");
     for (simplecpp::Token *tok = expr.front(); tok; tok = tok->next) {
         if (tok->name) {
             if (altop.find(tok->str) != altop.end()) {
-                bool alt = true;
-                if (!tok->previous || !tok->next)
-                    alt = false;
-                if (!(tok->previous->number || tok->previous->op == ')'))
-                    alt = false;
+                bool alt;
+                if (tok->str == "not") {
+                    alt = isAlternativeUnaryOp(tok,tok->str);
+                } else {
+                    alt = isAlternativeBinaryOp(tok,tok->str);
+                }
                 if (alt)
                     continue;
             }
@@ -1842,4 +1880,10 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             }
         }
     }
+}
+
+void simplecpp::cleanup(std::map<std::string, TokenList*> &filedata) {
+    for (std::map<std::string, TokenList*>::iterator it = filedata.begin(); it != filedata.end(); ++it)
+        delete it->second;
+    filedata.clear();
 }
