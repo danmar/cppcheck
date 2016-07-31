@@ -281,36 +281,55 @@ void CheckCondition::comparison()
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "==|!=|>")) {
-            const Token *expr1 = tok->astOperand1();
-            const Token *expr2 = tok->astOperand2();
-            if (!expr1 || !expr2)
+        if (!tok->isComparisonOp())
+            continue;
+
+        const Token *expr1 = tok->astOperand1();
+        const Token *expr2 = tok->astOperand2();
+        if (!expr1 || !expr2)
+            continue;
+        if (expr1->isNumber())
+            std::swap(expr1,expr2);
+        if (!expr2->isNumber())
+            continue;
+        const MathLib::bigint num2 = MathLib::toLongNumber(expr2->str());
+        if (num2 < 0)
+            continue;
+        if (!Token::Match(expr1,"[&|]"))
+            continue;
+        std::list<MathLib::bigint> numbers;
+        getnumchildren(expr1, numbers);
+        for (std::list<MathLib::bigint>::const_iterator num = numbers.begin(); num != numbers.end(); ++num) {
+            const MathLib::bigint num1 = *num;
+            if (num1 < 0)
                 continue;
-            if (expr1->isNumber())
-                std::swap(expr1,expr2);
-            if (!expr2->isNumber())
-                continue;
-            const MathLib::bigint num2 = MathLib::toLongNumber(expr2->str());
-            if (num2 < 0)
-                continue;
-            if (!Token::Match(expr1,"[&|]"))
-                continue;
-            std::list<MathLib::bigint> numbers;
-            getnumchildren(expr1, numbers);
-            for (std::list<MathLib::bigint>::const_iterator num = numbers.begin(); num != numbers.end(); ++num) {
-                const MathLib::bigint num1 = *num;
-                if (num1 < 0)
-                    continue;
-                if (Token::Match(tok, "==|!=")) {
-                    if ((expr1->str() == "&" && (num1 & num2) != num2) ||
-                        (expr1->str() == "|" && (num1 | num2) != num2)) {
-                        const std::string& op(tok->str());
-                        comparisonError(expr1, expr1->str(), num1, op, num2, op=="==" ? false : true);
-                    }
-                } else if (Token::simpleMatch(tok, ">")) {
-                    if ((expr1->str() == "&" && (num1 <= num2))) {
-                        const std::string& op(tok->str());
-                        comparisonError(expr1, expr1->str(), num1, op, num2, false);
+            if (Token::Match(tok, "==|!=")) {
+                if ((expr1->str() == "&" && (num1 & num2) != num2) ||
+                    (expr1->str() == "|" && (num1 | num2) != num2)) {
+                    const std::string& op(tok->str());
+                    comparisonError(expr1, expr1->str(), num1, op, num2, op=="==" ? false : true);
+                }
+            } else if (expr1->str() == "&") {
+                const bool or_equal = Token::Match(tok, ">=|<=");
+                const std::string& op(tok->str());
+                if ((Token::Match(tok, ">=|<")) && (num1 < num2)) {
+                    comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? false : true);
+                } else if ((Token::Match(tok, "<=|>")) && (num1 <= num2)) {
+                    comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? true : false);
+                }
+            } else if (expr1->str() == "|") {
+                if ((expr1->astOperand1()->valueType()) &&
+                    (expr1->astOperand1()->valueType()->sign == ValueType::Sign::UNSIGNED)) {
+                    const bool or_equal = Token::Match(tok, ">=|<=");
+                    const std::string& op(tok->str());
+                    if ((Token::Match(tok, ">=|<")) && (num1 >= num2)) {
+                        //"(a | 0x07) >= 7U" is always true for unsigned a
+                        //"(a | 0x07) < 7U" is always false for unsigned a
+                        comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? true : false);
+                    } else if ((Token::Match(tok, "<=|>")) && (num1 > num2)) {
+                        //"(a | 0x08) <= 7U" is always false for unsigned a
+                        //"(a | 0x07) > 6U" is always true for unsigned a
+                        comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? false : true);
                     }
                 }
             }
