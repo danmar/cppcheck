@@ -47,7 +47,7 @@ private:
 
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
-        TEST_CASE(compare);            // mismatching LHS/RHS in comparison
+        TEST_CASE(comparison);         // CheckCondition::comparison test cases
         TEST_CASE(multicompare);       // mismatching comparisons
         TEST_CASE(duplicateIf);        // duplicate conditions in if and else-if
 
@@ -318,30 +318,64 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void compare() {
-        check("void foo(int x)\n"
-              "{\n"
-              "    if ((x & 4) == 3);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
-
-        check("void foo(int x)\n"
-              "{\n"
-              "    if ((x | 4) == 3);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X | 0x4) == 0x3' is always false.\n", errout.str());
-
-        check("void foo(int x)\n"
-              "{\n"
-              "    if ((x | 4) != 3);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X | 0x4) != 0x3' is always true.\n", errout.str());
-
-        check("void foo(int x)\n"
-              "{\n"
-              "    if ((x & y & 4 & z ) == 3);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
+    void comparison() {
+        // CheckCondition::comparison test cases
+        // '=='
+        check("void f(int a) {\n assert( (a & 0x07) == 8U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) == 0x8' is always false.\n",errout.str());
+        check("void f(int a) {\n assert( (a & b & 4 & c ) == 3 );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
+        check("void f(int a) {\n assert( (a | 0x07) == 8U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) == 0x8' is always false.\n",errout.str());
+        check("void f(int a) {\n assert( (a & 0x07) == 7U );\n}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int a) {\n assert( (a | 0x01) == -15 );\n}");
+        ASSERT_EQUALS("", errout.str());
+        // '!='
+        check("void f(int a) {\n assert( (a & 0x07) != 8U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) != 0x8' is always true.\n",errout.str());
+        check("void f(int a) {\n assert( (a | 0x07) != 8U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) != 0x8' is always true.\n",errout.str());
+        check("void f(int a) {\n assert( (a & 0x07) != 7U );\n}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int a) {\n assert( (a | 0x07) != 7U );\n}");
+        ASSERT_EQUALS("", errout.str());
+        // '>='
+        check("void f(int a) {\n assert( (a & 0x07) >= 8U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) >= 0x8' is always false.\n",errout.str());
+        check("void f(unsigned int a) {\n assert( (a | 0x7) >= 7U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) >= 0x7' is always true.\n",errout.str());
+        check("void f(int a) {\n assert( (a & 0x07) >= 7U );\n}");
+        ASSERT_EQUALS("",errout.str());
+        check("void f(int a) {\n assert( (a | 0x07) >= 8U );\n}");
+        ASSERT_EQUALS("",errout.str()); //correct for negative 'a'
+        // '>'
+        check("void f(int a) {\n assert( (a & 0x07) > 7U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) > 0x7' is always false.\n",errout.str());
+        check("void f(unsigned int a) {\n assert( (a | 0x7) > 6U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) > 0x6' is always true.\n",errout.str());
+        check("void f(int a) {\n assert( (a & 0x07) > 6U );\n}");
+        ASSERT_EQUALS("",errout.str());
+        check("void f(int a) {\n assert( (a | 0x07) > 7U );\n}");
+        ASSERT_EQUALS("",errout.str()); //correct for negative 'a'
+        // '<='
+        check("void f(int a) {\n assert( (a & 0x07) <= 7U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) <= 0x7' is always true.\n",errout.str());
+        check("void f(unsigned int a) {\n assert( (a | 0x08) <= 7U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x8) <= 0x7' is always false.\n",errout.str());
+        check("void f(int a) {\n assert( (a & 0x07) <= 6U );\n}");
+        ASSERT_EQUALS("",errout.str());
+        check("void f(int a) {\n assert( (a | 0x08) <= 7U );\n}");
+        ASSERT_EQUALS("",errout.str()); //correct for negative 'a'
+        // '<'
+        check("void f(int a) {\n assert( (a & 0x07) < 8U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) < 0x8' is always true.\n",errout.str());
+        check("void f(unsigned int a) {\n assert( (a | 0x07) < 7U );\n}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) < 0x7' is always false.\n",errout.str());
+        check("void f(int a) {\n assert( (a & 0x07) < 3U );\n}");
+        ASSERT_EQUALS("",errout.str());
+        check("void f(int a) {\n assert( (a | 0x07) < 7U );\n}");
+        ASSERT_EQUALS("",errout.str()); //correct for negative 'a'
     }
 
     void multicompare() {
@@ -592,75 +626,6 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
-        //Various bitmask comparison checks
-        //#7428 false negative: condition '(a&7)>7U' is always false
-        //#7522 false positive: condition '(X|7)>=6' is correct
-
-        check("void f() {\n"
-              "assert( (a & 0x07) == 8U );\n" // statement always false
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) == 0x8' is always false.\n",
-                      errout.str());
-
-        check("void f() {\n"
-              "assert( (a & 0x07) == 7U );\n" // statement correct
-              "assert( (a & 0x07) == 6U );\n" // statement correct
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "assert( (a | 0x07) == 8U );\n" // statement always false
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) == 0x8' is always false.\n",
-                      errout.str());
-
-        check("void f() {\n"
-              "assert( (a | 0x07) == 7U );\n" // statement correct
-              "assert( (a | 0x07) == 23U );\n" // statement correct
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "assert( (a & 0x07) != 8U );\n" // statement always true
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) != 0x8' is always true.\n",
-                      errout.str());
-
-        check("void f() {\n"
-              "assert( (a & 0x07) != 7U );\n" // statement correct
-              "assert( (a & 0x07) != 0U );\n" // statement correct
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "assert( (a | 0x07) != 8U );\n" // statement always true
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) != 0x8' is always true.\n",
-                      errout.str());
-
-        check("void f() {\n"
-              "assert( (a | 0x07) != 7U );\n" // statement correct
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        //TRAC #7428 false negative: condition '(X&7)>7'  is always false
-        check("void f() {\n"
-              "assert( (a & 0x07) > 7U );\n" // statement always false
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) > 0x7' is always false.\n",
-                      errout.str());
-
-        check("void f() {\n"
-              "assert( (a & 0x07) > 6U );\n" // statement correct
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        //TRAC #7522 false positive: condition '(X|7)>=6' is correct (X can be negative)
-        check("void f() {\n"
-              "assert( (a | 0x07) >= 6U );\n" // statement correct (X can be negative)
-              "}");
-        ASSERT_EQUALS("",errout.str());
     }
 
 
