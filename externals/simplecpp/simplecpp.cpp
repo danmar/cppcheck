@@ -989,14 +989,14 @@ private:
         return ~0U;
     }
 
-    std::vector<const Token *> getMacroParameters(const Token *nameToken, bool def) const {
+    std::vector<const Token *> getMacroParameters(const Token *nameToken, bool calledInDefine) const {
         if (!nameToken->next || nameToken->next->op != '(' || !functionLike())
             return std::vector<const Token *>();
 
         std::vector<const Token *> parametertokens;
         parametertokens.push_back(nameToken->next);
         unsigned int par = 0U;
-        for (const Token *tok = nameToken->next->next; def ? sameline(tok,nameToken) : (tok != NULL); tok = tok->next) {
+        for (const Token *tok = nameToken->next->next; calledInDefine ? sameline(tok,nameToken) : (tok != NULL); tok = tok->next) {
             if (tok->op == '(')
                 ++par;
             else if (tok->op == ')') {
@@ -1056,7 +1056,10 @@ private:
             return nameToken->next;
         }
 
-        std::vector<const Token*> parametertokens1(getMacroParameters(nameToken, !expandedmacros1.empty()));
+        const bool calledInDefine = (loc.fileIndex != nameToken->location.fileIndex ||
+                                     loc.line < nameToken->location.line);
+
+        std::vector<const Token*> parametertokens1(getMacroParameters(nameToken, calledInDefine));
 
         if (functionLike()) {
             // No arguments => not macro expansion
@@ -1639,20 +1642,38 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 const bool systemheader = (rawtok->next->str[0] == '<');
                 const std::string header(rawtok->next->str.substr(1U, rawtok->next->str.size() - 2U));
                 const std::string header2 = getFileName(filedata, rawtok->location.file(), header, dui, systemheader);
-                if (!header2.empty() && pragmaOnce.find(header2) == pragmaOnce.end()) {
-                    includetokenstack.push(gotoNextLine(rawtok));
-                    const TokenList *includetokens = filedata.find(header2)->second;
-                    rawtok = includetokens ? includetokens->cfront() : 0;
-                    continue;
-                } else {
+                if (header2.empty()) {
                     simplecpp::Output output(files);
-                    output.type = Output::MISSING_INCLUDE;
+                    output.type = Output::MISSING_HEADER;
                     output.location = rawtok->location;
                     output.msg = "Header not found: " + rawtok->next->str;
                     if (outputList)
                         outputList->push_back(output);
+                } else if (includetokenstack.size() >= 400) {
+                    simplecpp::Output out(files);
+                    out.type = Output::INCLUDE_NESTED_TOO_DEEPLY;
+                    out.location = rawtok->location;
+                    out.msg = "#include nested too deeply";
+                    if (outputList)
+                        outputList->push_back(out);
+                } else if (pragmaOnce.find(header2) == pragmaOnce.end()) {
+                    includetokenstack.push(gotoNextLine(rawtok));
+                    const TokenList *includetokens = filedata.find(header2)->second;
+                    rawtok = includetokens ? includetokens->cfront() : 0;
+                    continue;
                 }
             } else if (rawtok->str == IF || rawtok->str == IFDEF || rawtok->str == IFNDEF || rawtok->str == ELIF) {
+                if (!sameline(rawtok,rawtok->next)) {
+                    simplecpp::Output out(files);
+                    out.type = Output::SYNTAX_ERROR;
+                    out.location = rawtok->location;
+                    out.msg = "Syntax error in #" + rawtok->str;
+                    if (outputList)
+                        outputList->push_back(out);
+                    output.clear();
+                    return;
+                }
+
                 bool conditionIsTrue;
                 if (ifstates.top() == ALWAYS_FALSE || (ifstates.top() == ELSE_IS_TRUE && rawtok->str != ELIF))
                     conditionIsTrue = false;
@@ -1691,7 +1712,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                                 it->second.expand(&value, tok, macros, files);
                             } catch (Macro::Error &err) {
                                 Output out(rawtok->location.files);
-                                out.type = Output::ERROR;
+                                out.type = Output::SYNTAX_ERROR;
                                 out.location = err.location;
                                 out.msg = "failed to expand \'" + tok->str + "\', " + err.what;
                                 if (outputList)

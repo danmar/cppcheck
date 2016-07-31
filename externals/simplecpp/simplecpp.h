@@ -156,7 +156,9 @@ struct SIMPLECPP_LIB Output {
     enum Type {
         ERROR, /* #error */
         WARNING, /* #warning */
-        MISSING_INCLUDE
+        MISSING_HEADER,
+        INCLUDE_NESTED_TOO_DEEPLY,
+        SYNTAX_ERROR
     } type;
     Location location;
     std::string msg;

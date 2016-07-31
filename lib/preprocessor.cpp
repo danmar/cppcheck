@@ -496,13 +496,17 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
             return "";
         case simplecpp::Output::WARNING:
             break;
-        case simplecpp::Output::MISSING_INCLUDE: {
+        case simplecpp::Output::MISSING_HEADER: {
             const std::string::size_type pos1 = it->msg.find_first_of("<\"");
             const std::string::size_type pos2 = it->msg.find_first_of(">\"", pos1 + 1U);
             if (pos1 < pos2 && pos2 != std::string::npos)
                 missingInclude(it->location.file(), it->location.line, it->msg.substr(pos1+1, pos2-pos1-1), it->msg[pos1] == '\"' ? UserHeader : SystemHeader);
         }
         break;
+        case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
+        case simplecpp::Output::SYNTAX_ERROR:
+            error(it->location.file(), it->location.line, it->msg);
+            return "";
         };
     }
 
@@ -620,11 +624,13 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
         switch (it->type) {
         case simplecpp::Output::ERROR:
+        case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
+        case simplecpp::Output::SYNTAX_ERROR:
             error(it->location.file(), it->location.line, it->msg);
             return "";
         case simplecpp::Output::WARNING:
             break;
-        case simplecpp::Output::MISSING_INCLUDE: {
+        case simplecpp::Output::MISSING_HEADER: {
             const std::string::size_type pos1 = it->msg.find_first_of("<\"");
             const std::string::size_type pos2 = it->msg.find_first_of(">\"", pos1 + 1U);
             if (pos1 < pos2 && pos2 != std::string::npos)
