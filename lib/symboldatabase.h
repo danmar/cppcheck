@@ -1071,7 +1071,7 @@ public:
     void validateVariables() const;
 
     /** Set valuetype in provided tokenlist */
-    static void setValueTypeInTokenList(Token *tokens, bool cpp, char defaultSignedness, const Library* lib);
+    static void setValueTypeInTokenList(Token *tokens, bool cpp, const Settings *settings);
 
     /**
      * Calculates sizeof value for given type.
@@ -1128,6 +1128,8 @@ public:
     bool isIntegral() const {
         return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
     }
+
+    bool fromLibraryType(const std::string &typestr, const Settings *settings);
 
     std::string str() const;
 };

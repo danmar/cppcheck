@@ -44,6 +44,8 @@ namespace tinyxml2 {
  * @brief Library definitions handling
  */
 class CPPCHECKLIB Library {
+    friend class TestSymbolDatabase; // For testing only
+
 public:
     Library();
 

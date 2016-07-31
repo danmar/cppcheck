@@ -4099,21 +4099,21 @@ unsigned int SymbolDatabase::sizeOfType(const Token *type) const
     return size;
 }
 
-static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness, const Library* lib);
-static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, ValueType::Sign defaultSignedness, const Library* lib);
+static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness, const Settings* settings);
+static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, ValueType::Sign defaultSignedness, const Settings* settings);
 
-static void setValueType(Token *tok, const Variable &var, bool cpp, ValueType::Sign defaultSignedness, const Library* lib)
+static void setValueType(Token *tok, const Variable &var, bool cpp, ValueType::Sign defaultSignedness, const Settings* settings)
 {
     if (var.isStlType())
         return;
     ValueType valuetype;
     valuetype.pointer = var.dimensions().size();
     valuetype.typeScope = var.typeScope();
-    if (parsedecl(var.typeStartToken(), &valuetype, defaultSignedness, lib))
-        setValueType(tok, valuetype, cpp, defaultSignedness, lib);
+    if (parsedecl(var.typeStartToken(), &valuetype, defaultSignedness, settings))
+        setValueType(tok, valuetype, cpp, defaultSignedness, settings);
 }
 
-static void setValueType(Token *tok, const Enumerator &enumerator, bool cpp, ValueType::Sign defaultSignedness, const Library* lib)
+static void setValueType(Token *tok, const Enumerator &enumerator, bool cpp, ValueType::Sign defaultSignedness, const Settings* settings)
 {
     ValueType valuetype;
     valuetype.typeScope = enumerator.scope;
@@ -4135,22 +4135,18 @@ static void setValueType(Token *tok, const Enumerator &enumerator, bool cpp, Val
         else if (type->str() == "long")
             valuetype.type = type->isLong() ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
         else if (type->isStandardType()) {
-            const Library::PodType* podtype = lib->podtype(type->str());
-            if (podtype && (podtype->sign == 's' || podtype->sign == 'u')) {
-                valuetype.type = ValueType::Type::UNKNOWN_INT;
-                valuetype.sign = (podtype->sign == 'u') ? ValueType::UNSIGNED : ValueType::SIGNED;
-            }
+            valuetype.fromLibraryType(type->str(), settings);
         }
 
-        setValueType(tok, valuetype, cpp, defaultSignedness, lib);
+        setValueType(tok, valuetype, cpp, defaultSignedness, settings);
     } else {
         valuetype.sign = ValueType::SIGNED;
         valuetype.type = ValueType::INT;
-        setValueType(tok, valuetype, cpp, defaultSignedness, lib);
+        setValueType(tok, valuetype, cpp, defaultSignedness, settings);
     }
 }
 
-static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, ValueType::Sign defaultSignedness, const Library* lib)
+static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, ValueType::Sign defaultSignedness, const Settings* settings)
 {
     tok->setValueType(new ValueType(valuetype));
     Token *parent = const_cast<Token *>(tok->astParent());
@@ -4164,32 +4160,32 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
 
     if (vt1 && Token::Match(parent, "<<|>>")) {
         if (!cpp || (vt2 && vt2->isIntegral()))
-            setValueType(parent, *vt1, cpp, defaultSignedness, lib);
+            setValueType(parent, *vt1, cpp, defaultSignedness, settings);
         return;
     }
 
     if (parent->isAssignmentOp()) {
         if (vt1)
-            setValueType(parent, *vt1, cpp, defaultSignedness, lib);
+            setValueType(parent, *vt1, cpp, defaultSignedness, settings);
         return;
     }
 
     if (parent->str() == "[" && (!cpp || parent->astOperand1() == tok) && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
         vt.pointer -= 1U;
-        setValueType(parent, vt, cpp, defaultSignedness, lib);
+        setValueType(parent, vt, cpp, defaultSignedness, settings);
         return;
     }
     if (parent->str() == "*" && !parent->astOperand2() && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
         vt.pointer -= 1U;
-        setValueType(parent, vt, cpp, defaultSignedness, lib);
+        setValueType(parent, vt, cpp, defaultSignedness, settings);
         return;
     }
     if (parent->str() == "&" && !parent->astOperand2()) {
         ValueType vt(valuetype);
         vt.pointer += 1U;
-        setValueType(parent, vt, cpp, defaultSignedness, lib);
+        setValueType(parent, vt, cpp, defaultSignedness, settings);
         return;
     }
 
@@ -4209,7 +4205,7 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
             }
         }
         if (var)
-            setValueType(parent, *var, cpp, defaultSignedness, lib);
+            setValueType(parent, *var, cpp, defaultSignedness, settings);
         return;
     }
 
@@ -4224,33 +4220,33 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
 
     if (ternary || parent->isArithmeticalOp() || parent->tokType() == Token::eIncDecOp) {
         if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
-            setValueType(parent, *vt1, cpp, defaultSignedness, lib);
+            setValueType(parent, *vt1, cpp, defaultSignedness, settings);
             return;
         }
 
         if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
-            setValueType(parent, *vt2, cpp, defaultSignedness, lib);
+            setValueType(parent, *vt2, cpp, defaultSignedness, settings);
             return;
         }
 
         if (vt1->pointer != 0U) {
             if (ternary || parent->tokType() == Token::eIncDecOp) // result is pointer
-                setValueType(parent, *vt1, cpp, defaultSignedness, lib);
+                setValueType(parent, *vt1, cpp, defaultSignedness, settings);
             else // result is pointer diff
-                setValueType(parent, ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0U, 0U, "ptrdiff_t"), cpp, defaultSignedness, lib);
+                setValueType(parent, ValueType(ValueType::Sign::SIGNED, ValueType::Type::INT, 0U, 0U, "ptrdiff_t"), cpp, defaultSignedness, settings);
             return;
         }
 
         if (vt1->type == ValueType::Type::LONGDOUBLE || (vt2 && vt2->type == ValueType::Type::LONGDOUBLE)) {
-            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::LONGDOUBLE, 0U), cpp, defaultSignedness, lib);
+            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::LONGDOUBLE, 0U), cpp, defaultSignedness, settings);
             return;
         }
         if (vt1->type == ValueType::Type::DOUBLE || (vt2 && vt2->type == ValueType::Type::DOUBLE)) {
-            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::DOUBLE, 0U), cpp, defaultSignedness, lib);
+            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::DOUBLE, 0U), cpp, defaultSignedness, settings);
             return;
         }
         if (vt1->type == ValueType::Type::FLOAT || (vt2 && vt2->type == ValueType::Type::FLOAT)) {
-            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 0U), cpp, defaultSignedness, lib);
+            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 0U), cpp, defaultSignedness, settings);
             return;
         }
     }
@@ -4284,12 +4280,12 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
             vt.originalTypeName.clear();
         }
 
-        setValueType(parent, vt, cpp, defaultSignedness, lib);
+        setValueType(parent, vt, cpp, defaultSignedness, settings);
         return;
     }
 }
 
-static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness, const Library* lib)
+static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness, const Settings* settings)
 {
     const unsigned int pointer0 = valuetype->pointer;
     while (Token::Match(type->previous(), "%name%"))
@@ -4333,13 +4329,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             return nullptr;
         else if (type->str() == "*")
             valuetype->pointer++;
-        else if (type->isStandardType()) {
-            const Library::PodType* podtype = lib->podtype(type->str());
-            if (podtype && (podtype->sign == 's' || podtype->sign == 'u')) {
-                valuetype->type = ValueType::Type::UNKNOWN_INT;
-                valuetype->sign = (podtype->sign == 'u') ? ValueType::UNSIGNED : ValueType::SIGNED;
-            }
-        }
+        else if (type->isStandardType())
+            valuetype->fromLibraryType(type->str(), settings);
         if (!type->originalName().empty())
             valuetype->originalTypeName = type->originalName();
         type = type->next();
@@ -4386,12 +4377,12 @@ static const Function *getOperatorFunction(const Token * const tok)
     return nullptr;
 }
 
-void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, char defaultSignedness, const Library* lib)
+void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Settings* settings)
 {
     ValueType::Sign defsign;
-    if (defaultSignedness == 's' || defaultSignedness == 'S')
+    if (settings->defaultSign == 's' || settings->defaultSign == 'S')
         defsign = ValueType::SIGNED;
-    else if (defaultSignedness == 'u' || defaultSignedness == 'U')
+    else if (settings->defaultSign == 'u' || settings->defaultSign == 'U')
         defsign = ValueType::UNSIGNED;
     else
         defsign = ValueType::UNKNOWN_SIGN;
@@ -4406,7 +4397,7 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, char defau
                 const char suffix = tok->str()[tok->str().size() - 1U];
                 if (suffix == 'f' || suffix == 'F')
                     type = ValueType::Type::FLOAT;
-                ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, type, 0U), cpp, defsign, lib);
+                ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, type, 0U), cpp, defsign, settings);
             } else if (MathLib::isInt(tok->str())) {
                 ValueType::Sign sign = ValueType::Sign::SIGNED;
                 ValueType::Type type = ValueType::Type::INT;
@@ -4423,69 +4414,115 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, char defau
                         pos -= 2;
                     } else break;
                 }
-                ::setValueType(tok, ValueType(sign, type, 0U), cpp, defsign, lib);
+                ::setValueType(tok, ValueType(sign, type, 0U), cpp, defsign, settings);
             }
         } else if (tok->isComparisonOp() || tok->tokType() == Token::eLogicalOp) {
             if (cpp && tok->isComparisonOp() && (getClassScope(tok->astOperand1()) || getClassScope(tok->astOperand2()))) {
                 const Function *function = getOperatorFunction(tok);
                 if (function) {
                     ValueType vt;
-                    parsedecl(function->retDef, &vt, defsign, lib);
-                    ::setValueType(tok, vt, cpp, defsign, lib);
+                    parsedecl(function->retDef, &vt, defsign, settings);
+                    ::setValueType(tok, vt, cpp, defsign, settings);
                     continue;
                 }
             }
-            ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U), cpp, defsign, lib);
+            ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U), cpp, defsign, settings);
         } else if (tok->tokType() == Token::eChar)
-            ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U), cpp, defsign, lib);
+            ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U), cpp, defsign, settings);
         else if (tok->tokType() == Token::eString) {
             ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U);
             if (tok->isLong()) {
                 valuetype.originalTypeName = "wchar_t";
                 valuetype.type = ValueType::Type::SHORT;
             }
-            ::setValueType(tok, valuetype, cpp, defsign, lib);
+            ::setValueType(tok, valuetype, cpp, defsign, settings);
         } else if (tok->str() == "(") {
             // cast
             if (!tok->astOperand2() && Token::Match(tok, "( %name%")) {
                 ValueType valuetype;
-                if (Token::simpleMatch(parsedecl(tok->next(), &valuetype, defsign, lib), ")"))
-                    ::setValueType(tok, valuetype, cpp, defsign, lib);
+                if (Token::simpleMatch(parsedecl(tok->next(), &valuetype, defsign, settings), ")"))
+                    ::setValueType(tok, valuetype, cpp, defsign, settings);
             }
 
             // C++ cast
             if (tok->astOperand2() && Token::Match(tok->astOperand1(), "static_cast|const_cast|dynamic_cast|reinterpret_cast < %name%") && tok->astOperand1()->linkAt(1)) {
                 ValueType valuetype;
-                if (Token::simpleMatch(parsedecl(tok->astOperand1()->tokAt(2), &valuetype, defsign, lib), ">"))
-                    ::setValueType(tok, valuetype, cpp, defsign, lib);
+                if (Token::simpleMatch(parsedecl(tok->astOperand1()->tokAt(2), &valuetype, defsign, settings), ">"))
+                    ::setValueType(tok, valuetype, cpp, defsign, settings);
             }
 
             // function
             else if (tok->previous() && tok->previous()->function() && tok->previous()->function()->retDef) {
                 ValueType valuetype;
-                if (parsedecl(tok->previous()->function()->retDef, &valuetype, defsign, lib))
-                    ::setValueType(tok, valuetype, cpp, defsign, lib);
+                if (parsedecl(tok->previous()->function()->retDef, &valuetype, defsign, settings))
+                    ::setValueType(tok, valuetype, cpp, defsign, settings);
             }
 
             else if (Token::simpleMatch(tok->previous(), "sizeof (")) {
                 // TODO: use specified size_t type
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
                 valuetype.originalTypeName = "size_t";
-                setValueType(tok, valuetype, cpp, defsign, lib);
+                setValueType(tok, valuetype, cpp, defsign, settings);
 
                 if (Token::Match(tok, "( %type% %type%| *| *| )")) {
                     ValueType vt;
-                    if (parsedecl(tok->next(), &vt, defsign, lib)) {
-                        setValueType(tok->next(), vt, cpp, defsign, lib);
+                    if (parsedecl(tok->next(), &vt, defsign, settings)) {
+                        setValueType(tok->next(), vt, cpp, defsign, settings);
                     }
                 }
             }
         } else if (tok->variable()) {
-            setValueType(tok, *tok->variable(), cpp, defsign, lib);
+            setValueType(tok, *tok->variable(), cpp, defsign, settings);
         } else if (tok->enumerator()) {
-            setValueType(tok, *tok->enumerator(), cpp, defsign, lib);
+            setValueType(tok, *tok->enumerator(), cpp, defsign, settings);
         }
     }
+}
+
+bool ValueType::fromLibraryType(const std::string &typestr, const Settings *settings)
+{
+    const Library::PodType* podtype = settings->library.podtype(typestr);
+    if (podtype && (podtype->sign == 's' || podtype->sign == 'u')) {
+        if (podtype->size == 1)
+            type = ValueType::Type::CHAR;
+        else if (podtype->size == settings->sizeof_int)
+            type = ValueType::Type::INT;
+        else if (podtype->size == settings->sizeof_short)
+            type = ValueType::Type::SHORT;
+        else if (podtype->size == settings->sizeof_long)
+            type = ValueType::Type::LONG;
+        else if (podtype->size == settings->sizeof_long_long)
+            type = ValueType::Type::LONGLONG;
+        else
+            type = ValueType::Type::UNKNOWN_INT;
+        sign = (podtype->sign == 'u') ? ValueType::UNSIGNED : ValueType::SIGNED;
+        return true;
+    }
+
+    const Library::PlatformType *platformType = settings->library.platform_type(typestr, settings->platformString());
+    if (platformType) {
+        if (platformType->_type == "char")
+            type = ValueType::Type::CHAR;
+        else if (platformType->_type == "short")
+            type = ValueType::Type::SHORT;
+        else if (platformType->_type == "int")
+            type = platformType->_long ? ValueType::Type::LONG : ValueType::Type::INT;
+        else if (platformType->_type == "long")
+            type = platformType->_long ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
+        if (platformType->_signed)
+            sign = ValueType::SIGNED;
+        else if (platformType->_unsigned)
+            sign = ValueType::UNSIGNED;
+        if (platformType->_pointer)
+            pointer = 1;
+        if (platformType->_ptr_ptr)
+            pointer = 2;
+        if (platformType->_const_ptr)
+            constness = 1;
+        return true;
+    }
+
+    return false;
 }
 
 std::string ValueType::str() const

@@ -3670,6 +3670,29 @@ private:
 
         // Pointer to unknown type
         ASSERT_EQUALS("*", typeOf("Bar* b;", "b"));
+
+        // Library types
+        {
+            // PodType
+            Settings s;
+            s.platformType = Settings::Win64;
+            const Library::PodType u32 = { 4, 'u' };
+            s.library.podtypes["u32"] = u32;
+            ValueType vt;
+            ASSERT_EQUALS(true, vt.fromLibraryType("u32", &s));
+            ASSERT_EQUALS(ValueType::Type::INT, vt.type);
+        }
+        {
+            // PlatformType
+            Settings s;
+            s.platformType = Settings::Unix32;
+            Library::PlatformType s32;
+            s32._type = "int";
+            s.library.platforms[s.platformString()]._platform_types["s32"] = s32;
+            ValueType vt;
+            ASSERT_EQUALS(true, vt.fromLibraryType("s32", &s));
+            ASSERT_EQUALS(ValueType::Type::INT, vt.type);
+        }
     }
 };
 
