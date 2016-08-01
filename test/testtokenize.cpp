@@ -292,6 +292,7 @@ private:
         TEST_CASE(simplifyStdType); // #4947, #4950, #4951
 
         TEST_CASE(createLinks);
+        TEST_CASE(createLinks2);
         TEST_CASE(signed1);
 
         TEST_CASE(simplifyString);
@@ -4520,6 +4521,19 @@ private:
             ASSERT_EQUALS(true, tok->linkAt(17) == tok->tokAt(21)); // <R()>
             ASSERT_EQUALS(true, tok->linkAt(19) == tok->tokAt(20)); // ()
             ASSERT_EQUALS(true, tok->linkAt(22) == tok->tokAt(23)); // {}
+        }
+    }
+
+    void createLinks2() {
+        { // #7158
+            const char code[] = "enum { value = boost::mpl::at_c<B, C> };";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = Token::findsimplematch(tokenizer.tokens(), "<");
+            ASSERT_EQUALS(true, tok->link() == tok->tokAt(4));
+            ASSERT_EQUALS(true, tok->linkAt(4) == tok);
         }
     }
 
