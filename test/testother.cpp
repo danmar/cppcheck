@@ -3815,6 +3815,11 @@ private:
               "    return A ? x : z;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(unsigned char c) {\n"
+              "  x = y ? (signed char)c : (unsigned char)c;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkSignOfUnsignedVariable() {

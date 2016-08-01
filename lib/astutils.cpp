@@ -178,7 +178,12 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (tok1->str() == "(" && tok1->previous() && !tok1->previous()->isName()) { // cast => assert that the casts are equal
         const Token *t1 = tok1->next();
         const Token *t2 = tok2->next();
-        while (t1 && t2 && t1->str() == t2->str() && (t1->isName() || t1->str() == "*")) {
+        while (t1 && t2 &&
+               t1->str() == t2->str() &&
+               t1->isLong() == t2->isLong() &&
+               t1->isUnsigned() == t2->isUnsigned() &&
+               t1->isSigned() == t2->isSigned() &&
+               (t1->isName() || t1->str() == "*")) {
             t1 = t1->next();
             t2 = t2->next();
         }
