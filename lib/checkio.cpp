@@ -428,8 +428,7 @@ void CheckIO::invalidScanfError(const Token *tok)
     reportError(tok, Severity::warning,
                 "invalidscanf", fname + "() without field width limits can crash with huge input data.\n" +
                 fname + "() without field width limits can crash with huge input data. Add a field width "
-                "specifier to fix this problem:\n"
-                "    %s => %20s\n"
+                "specifier to fix this problem.\n"
                 "\n"
                 "Sample program that can crash:\n"
                 "\n"
