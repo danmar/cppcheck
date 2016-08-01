@@ -34,13 +34,13 @@ namespace {
 }
 
 // CVE ID used:
-static const CWE CWE119(119U);	// Improper Restriction of Operations within the Bounds of a Memory Buffer
+static const CWE CWE119(119U);  // Improper Restriction of Operations within the Bounds of a Memory Buffer
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
-static const CWE CWE664(664U);	// Improper Control of a Resource Through its Lifetime
-static const CWE CWE685(685U);	// Function Call With Incorrect Number of Arguments
-static const CWE CWE686(686U);	// Function Call With Incorrect Argument Type
-static const CWE CWE687(687U);	// Function Call With Incorrectly Specified Argument Value
-static const CWE CWE910(910U);	// Use of Expired File Descriptor
+static const CWE CWE664(664U);  // Improper Control of a Resource Through its Lifetime
+static const CWE CWE685(685U);  // Function Call With Incorrect Number of Arguments
+static const CWE CWE686(686U);  // Function Call With Incorrect Argument Type
+static const CWE CWE687(687U);  // Function Call With Incorrectly Specified Argument Value
+static const CWE CWE910(910U);  // Use of Expired File Descriptor
 
 //---------------------------------------------------------------------------
 //    std::cout << std::cout;
@@ -446,7 +446,7 @@ void CheckIO::invalidScanfError(const Token *tok)
                 "terminating null byte.\n"
                 "Source: http://linux.die.net/man/3/scanf\n"
                 "Source: http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/libkern/stdio/scanf.c",
-               CWE119, false);
+                CWE119, false);
 }
 
 //---------------------------------------------------------------------------
