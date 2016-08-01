@@ -511,28 +511,8 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
     }
 
     // ensure that guessed define macros without value are not used in the code
-    for (std::list<std::string>::const_iterator defineIt = dui.defines.begin(); defineIt != dui.defines.end(); ++defineIt) {
-        if (defineIt->find("=") != std::string::npos)
-            continue;
-        const std::string macroName = defineIt->substr(0, std::min(defineIt->find("="), defineIt->find("(")));
-        for (std::list<simplecpp::MacroUsage>::const_iterator usageIt = macroUsage.begin(); usageIt != macroUsage.end(); ++usageIt) {
-            const simplecpp::MacroUsage &mu = *usageIt;
-            if (mu.macroName != macroName)
-                continue;
-            bool directiveLocation = false;
-            for (std::list<Directive>::const_iterator dirIt = directives.begin(); dirIt != directives.end(); ++dirIt) {
-                if (mu.useLocation.file() == dirIt->file && mu.useLocation.line == dirIt->linenr) {
-                    directiveLocation = true;
-                    break;
-                }
-            }
-            if (!directiveLocation) {
-                if (_settings.isEnabled("information"))
-                    validateCfgError(cfg, macroName);
-                return "";
-            }
-        }
-    }
+    if (!validateCfg(cfg, macroUsage))
+        return "";
 
     // assembler code locations..
     std::set<simplecpp::Location> assemblerLocations;
@@ -690,72 +670,42 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     }
 }
 
-bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
+bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp::MacroUsage> &macroUsageList)
 {
-    const bool printInformation = _settings.isEnabled("information");
-
-    // fill up "macros" with empty configuration macros
-    std::set<std::string> macros;
-    for (std::string::size_type pos = 0; pos < cfg.size();) {
-        const std::string::size_type pos2 = cfg.find_first_of(";=", pos);
-        if (pos2 == std::string::npos) {
-            macros.insert(cfg.substr(pos));
-            break;
-        }
-        if (cfg[pos2] == ';')
-            macros.insert(cfg.substr(pos, pos2-pos));
-        pos = cfg.find(';', pos2);
-        if (pos != std::string::npos)
-            ++pos;
-    }
-
-    // check if any empty macros are used in code
-    for (std::set<std::string>::const_iterator it = macros.begin(); it != macros.end(); ++it) {
-        const std::string &macro = *it;
-        std::string::size_type pos = 0;
-        while ((pos = code.find_first_of(std::string("#\"'")+macro[0], pos)) != std::string::npos) {
-            const std::string::size_type pos1 = pos;
-            const std::string::size_type pos2 = pos + macro.size();
-            pos++;
-
-            // skip string..
-            if (code[pos1] == '\"' || code[pos1] == '\'') {
-                while (pos < code.size() && code[pos] != code[pos1]) {
-                    if (code[pos] == '\\')
-                        ++pos;
-                    ++pos;
+    bool ret = true;
+    std::list<std::string> defines;
+    splitcfg(cfg, defines, std::string());
+    for (std::list<std::string>::const_iterator defineIt = defines.begin(); defineIt != defines.end(); ++defineIt) {
+        if (defineIt->find("=") != std::string::npos)
+            continue;
+        const std::string macroName(defineIt->substr(0, defineIt->find("(")));
+        for (std::list<simplecpp::MacroUsage>::const_iterator usageIt = macroUsageList.begin(); usageIt != macroUsageList.end(); ++usageIt) {
+            const simplecpp::MacroUsage &mu = *usageIt;
+            if (mu.macroName != macroName)
+                continue;
+            bool directiveLocation = false;
+            for (std::list<Directive>::const_iterator dirIt = directives.begin(); dirIt != directives.end(); ++dirIt) {
+                if (mu.useLocation.file() == dirIt->file && mu.useLocation.line == dirIt->linenr) {
+                    directiveLocation = true;
+                    break;
                 }
-                ++pos;
             }
-
-            // skip preprocessor statement..
-            else if (code[pos1] == '#') {
-                if (pos1 == 0 || code[pos1-1] == '\n')
-                    pos = code.find('\n', pos);
-            }
-
-            // is macro used in code?
-            else if (code.compare(pos1,macro.size(),macro) == 0) {
-                if (pos1 > 0 && (std::isalnum((unsigned char)code[pos1-1U]) || code[pos1-1U] == '_'))
-                    continue;
-                if (pos2 < code.size() && (std::isalnum((unsigned char)code[pos2]) || code[pos2] == '_'))
-                    continue;
-                // macro is used in code, return false
-                if (printInformation)
-                    validateCfgError(cfg, macro);
-                return false;
+            if (!directiveLocation) {
+                if (_settings.isEnabled("information"))
+                    validateCfgError(mu.useLocation.file(), mu.useLocation.line, cfg, macroName);
+                ret = false;
             }
         }
     }
 
-    return true;
+    return ret;
 }
 
-void Preprocessor::validateCfgError(const std::string &cfg, const std::string &macro)
+void Preprocessor::validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro)
 {
     const std::string id = "ConfigurationNotChecked";
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    ErrorLogger::ErrorMessage::FileLocation loc(file0, 1);
+    ErrorLogger::ErrorMessage::FileLocation loc(file, line);
     locationList.push_back(loc);
     ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
     _errorLogger->reportInfo(errmsg);
@@ -768,7 +718,7 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
     settings2.checkConfiguration=true;
     preprocessor.missingInclude("", 1, "", UserHeader);
     preprocessor.missingInclude("", 1, "", SystemHeader);
-    preprocessor.validateCfgError("X", "X");
+    preprocessor.validateCfgError("", 1, "X", "X");
     preprocessor.error("", 1, "#error message");   // #error ..
 }
 

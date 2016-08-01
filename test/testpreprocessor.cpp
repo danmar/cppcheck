@@ -2114,37 +2114,20 @@ private:
         Settings settings;
         Preprocessor preprocessor(settings, this);
 
-        ASSERT_EQUALS(true, preprocessor.validateCfg("", "X=42"));  // don't hang when parsing cfg
-        ASSERT_EQUALS(false, preprocessor.validateCfg("int y=Y;", "X=42;Y"));
-        ASSERT_EQUALS(false, preprocessor.validateCfg("int x=X;", "X"));
-        ASSERT_EQUALS(false, preprocessor.validateCfg("X=1;", "X"));
-        ASSERT_EQUALS(true, preprocessor.validateCfg("int x=X;", "Y"));
-        ASSERT_EQUALS(true, preprocessor.validateCfg("FOO_DEBUG()", "DEBUG"));
-        ASSERT_EQUALS(true, preprocessor.validateCfg("\"DEBUG()\"", "DEBUG"));
-        ASSERT_EQUALS(true, preprocessor.validateCfg("\"\\\"DEBUG()\"", "DEBUG"));
-        ASSERT_EQUALS(false, preprocessor.validateCfg("\"DEBUG()\" DEBUG", "DEBUG"));
-        ASSERT_EQUALS(true, preprocessor.validateCfg("#undef DEBUG", "DEBUG"));
+        std::list<simplecpp::MacroUsage> macroUsageList;
+        std::vector<std::string> files;
+        files.push_back("test.c");
+        simplecpp::MacroUsage macroUsage(files);
+        macroUsage.useLocation.fileIndex = 0;
+        macroUsage.useLocation.line = 1;
+        macroUsage.macroName = "X";
+        macroUsageList.push_back(macroUsage);
 
-        // #4301:
-        // #ifdef A
-        // int a = A;  // <- using macro. must use -D so "A" will get a proper value
-        errout.str("");
-        settings.addEnabled("all");
-        preprocessor.setFile0("test.c");
-        ASSERT_EQUALS(false, preprocessor.validateCfg("int a=A;", "A"));
-        ASSERT_EQUALS("[test.c:1]: (information) Skipping configuration 'A' since the value of 'A' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.\n", errout.str());
-
-        // #4949:
-        // #ifdef A
-        // a |= A;  // <- using macro. must use -D so "A" will get a proper value
-        errout.str("");
-        Settings settings1;
-        settings = settings1;
-        ASSERT_EQUALS("", preprocessor.getcode("if (x) a|=A;", "A", "test.c"));
-        ASSERT_EQUALS("", errout.str());
-        settings.addEnabled("information");
-        ASSERT_EQUALS("", preprocessor.getcode("if (x) a|=A;", "A", "test.c"));
-        ASSERT_EQUALS("[test.c:1]: (information) Skipping configuration 'A' since the value of 'A' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.\n", errout.str());
+        ASSERT_EQUALS(true, preprocessor.validateCfg("", macroUsageList));
+        ASSERT_EQUALS(false, preprocessor.validateCfg("X",macroUsageList));
+        ASSERT_EQUALS(false, preprocessor.validateCfg("A=42;X", macroUsageList));
+        ASSERT_EQUALS(true, preprocessor.validateCfg("X=1", macroUsageList));
+        ASSERT_EQUALS(true, preprocessor.validateCfg("Y", macroUsageList));
     }
 
     void if_sizeof() { // #4071
