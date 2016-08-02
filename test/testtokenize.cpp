@@ -4525,7 +4525,8 @@ private:
     }
 
     void createLinks2() {
-        { // #7158
+        {
+            // #7158
             const char code[] = "enum { value = boost::mpl::at_c<B, C> };";
             errout.str("");
             Tokenizer tokenizer(&settings0, this);
