@@ -48,6 +48,7 @@ private:
         TEST_CASE(structmember10);
         TEST_CASE(structmember11); // #4168 - initialization with {} / passed by address to unknown function
         TEST_CASE(structmember12); // #7179 - FP unused structmember
+        TEST_CASE(structmember_sizeof);
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -459,6 +460,22 @@ private:
                                "    ab.b = 0;\n"
                                "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'AB::a' is never used.\n", errout.str());
+    }
+
+    void structmember_sizeof() {
+        checkStructMemberUsage("struct Header {\n"
+                               "  uint8_t message_type;\n"
+                               "}\n"
+                               "\n"
+                               "input.skip(sizeof(Header));");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct Header {\n"
+                               "  uint8_t message_type;\n"
+                               "}\n"
+                               "\n"
+                               "input.skip(sizeof(struct Header));");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionVariableUsage(const char code[], const char filename[]="test.cpp") {

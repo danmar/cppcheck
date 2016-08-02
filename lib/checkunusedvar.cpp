@@ -1270,6 +1270,16 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (Token::findmatch(scope->classEnd, castPattern.c_str()))
             continue;
 
+        // Bail out if struct is used in sizeof..
+        for (const Token *tok = scope->classEnd; nullptr != (tok = Token::findsimplematch(tok, "sizeof ("));) {
+            if (Token::Match(tok->tokAt(2), ("struct| " + scope->className).c_str())) {
+                bailout = true;
+                break;
+            }
+        }
+        if (bailout)
+            continue;
+
         // Try to prevent false positives when struct members are not used directly.
         if (Token::findmatch(scope->classEnd, (scope->className + " %type%| *").c_str()))
             continue;
