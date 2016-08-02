@@ -3697,7 +3697,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             // check for a match with a string literal
             else if (Token::Match(arguments[j], "%str% ,|)") &&
                      funcarg->typeStartToken() != funcarg->typeEndToken() &&
-                     Token::Match(funcarg->typeStartToken(), "char|wchar_t *")) {
+                     ((!arguments[j]->isLong() && Token::simpleMatch(funcarg->typeStartToken(), "char *")) ||
+                      (arguments[j]->isLong() && Token::simpleMatch(funcarg->typeStartToken(), "wchar_t *")))) {
                 same++;
             }
 

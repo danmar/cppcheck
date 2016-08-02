@@ -296,6 +296,7 @@ private:
         TEST_CASE(valuetype);
 
         TEST_CASE(variadic); // # 7453
+        TEST_CASE(variadic2);
     }
 
     void array() {
@@ -3725,6 +3726,37 @@ private:
             ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2);
             f = Token::findsimplematch(tokenizer.tokens(), "create ( ot");
             ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 1);
+        }
+    }
+
+    void variadic2() {
+        {
+            GET_SYMBOL_DB("CBase* create(const char *c1, ...);\n"
+                          "CBase* create(const wchar_t *c1, ...);\n"
+                          "int foo(COther & ot)\n"
+                          "{\n"
+                          "   CBase* cp1 = create(\"AAAA\", 44, (char*)0);\n"
+                          "   CBase* cp2 = create(L\"AAAA\", 44, (char*)0);\n"
+                          "}");
+
+            const Token *f = Token::findsimplematch(tokenizer.tokens(), "cp1 = create (");
+            ASSERT_EQUALS(true, db && f && f->tokAt(2) && f->tokAt(2)->function() && f->tokAt(2)->function()->tokenDef->linenr() == 1);
+            f = Token::findsimplematch(tokenizer.tokens(), "cp2 = create (");
+            ASSERT_EQUALS(true, db && f && f->tokAt(2) && f->tokAt(2)->function() && f->tokAt(2)->function()->tokenDef->linenr() == 2);
+        }
+        {
+            GET_SYMBOL_DB("CBase* create(const wchar_t *c1, ...);\n"
+                          "CBase* create(const char *c1, ...);\n"
+                          "int foo(COther & ot)\n"
+                          "{\n"
+                          "   CBase* cp1 = create(\"AAAA\", 44, (char*)0);\n"
+                          "   CBase* cp2 = create(L\"AAAA\", 44, (char*)0);\n"
+                          "}");
+
+            const Token *f = Token::findsimplematch(tokenizer.tokens(), "cp1 = create (");
+            ASSERT_EQUALS(true, db && f && f->tokAt(2) && f->tokAt(2)->function() && f->tokAt(2)->function()->tokenDef->linenr() == 2);
+            f = Token::findsimplematch(tokenizer.tokens(), "cp2 = create (");
+            ASSERT_EQUALS(true, db && f && f->tokAt(2) && f->tokAt(2)->function() && f->tokAt(2)->function()->tokenDef->linenr() == 1);
         }
     }
 };
