@@ -182,6 +182,7 @@ private:
         TEST_CASE(functionArgs2);
         TEST_CASE(functionArgs3);
         TEST_CASE(functionArgs4);
+        TEST_CASE(functionArgs5); // #7650
 
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
@@ -1571,6 +1572,27 @@ private:
             ASSERT_EQUALS(0UL, second->name().size());
             ASSERT_EQUALS(1UL, second->dimensions().size());
             ASSERT_EQUALS(10UL, second->dimension(0));
+        }
+    }
+
+    void functionArgs5() { // #7650
+        GET_SYMBOL_DB("class ABC {};\n"
+                      "class Y {\n"
+                      "  enum ABC {A,B,C};\n"
+                      "  void f(enum ABC abc) {}\n"
+                      "};");
+        ASSERT_EQUALS(true, db != nullptr);
+        if (db) {
+            const Token *f = Token::findsimplematch(tokenizer.tokens(), "f ( enum");
+            ASSERT_EQUALS(true, f && f->function());
+            if (f && f->function()) {
+                const Function *func = f->function();
+                ASSERT_EQUALS(true, func->argumentList.size() == 1 && func->argumentList.front().type());
+                if (func->argumentList.size() == 1 && func->argumentList.front().type()) {
+                    const Type * type = func->argumentList.front().type();
+                    ASSERT_EQUALS(true, type->classDef->str() == "enum");
+                }
+            }
         }
     }
 

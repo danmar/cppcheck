@@ -3496,8 +3496,16 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
                     break;
             }
 
-            if (type->enclosingScope == parent)
-                return &(*type);
+            if (type->enclosingScope == parent) {
+                if (typeTok->strAt(-1) == "enum") {
+                    if (type->classDef->str() == "enum")
+                        return &(*type);
+                } else if (typeTok->strAt(-1) == "struct") {
+                    if (type->classDef->str() == "struct")
+                        return &(*type);
+                } else
+                    return &(*type);
+            }
         }
 
         // type has a namespace
