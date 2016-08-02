@@ -296,8 +296,9 @@ private:
 
         TEST_CASE(valuetype);
 
-        TEST_CASE(variadic); // # 7453
-        TEST_CASE(variadic2);
+        TEST_CASE(variadic1); // #7453
+        TEST_CASE(variadic2); // #7649
+        TEST_CASE(variadic3); // #7387
     }
 
     void array() {
@@ -3720,7 +3721,7 @@ private:
         }
     }
 
-    void variadic() { // #7453
+    void variadic1() { // #7453
         {
             GET_SYMBOL_DB("CBase* create(const char *c1, ...);\n"
                           "int    create(COther& ot, const char *c1, ...);\n"
@@ -3751,7 +3752,7 @@ private:
         }
     }
 
-    void variadic2() {
+    void variadic2() { // #7649
         {
             GET_SYMBOL_DB("CBase* create(const char *c1, ...);\n"
                           "CBase* create(const wchar_t *c1, ...);\n"
@@ -3779,6 +3780,33 @@ private:
             ASSERT_EQUALS(true, db && f && f->tokAt(2) && f->tokAt(2)->function() && f->tokAt(2)->function()->tokenDef->linenr() == 2);
             f = Token::findsimplematch(tokenizer.tokens(), "cp2 = create (");
             ASSERT_EQUALS(true, db && f && f->tokAt(2) && f->tokAt(2)->function() && f->tokAt(2)->function()->tokenDef->linenr() == 1);
+        }
+    }
+
+    void variadic3() { // #7387
+        {
+            GET_SYMBOL_DB("int zdcalc(const XYZ & per, short rs = 0);\n"
+                          "double zdcalc(long& length, const XYZ * per);\n"
+                          "long mycalc( ) {\n"
+                          "    long length;\n"
+                          "    XYZ per;\n"
+                          "    zdcalc(length, &per);\n"
+                          "}");
+
+            const Token *f = Token::findsimplematch(tokenizer.tokens(), "zdcalc ( length");
+            ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2);
+        }
+        {
+            GET_SYMBOL_DB("double zdcalc(long& length, const XYZ * per);\n"
+                          "int zdcalc(const XYZ & per, short rs = 0);\n"
+                          "long mycalc( ) {\n"
+                          "    long length;\n"
+                          "    XYZ per;\n"
+                          "    zdcalc(length, &per);\n"
+                          "}");
+
+            const Token *f = Token::findsimplematch(tokenizer.tokens(), "zdcalc ( length");
+            ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 1);
         }
     }
 };

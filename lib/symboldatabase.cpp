@@ -3630,6 +3630,25 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 }
             }
 
+            // check for a match with address of a variable
+            else if (Token::Match(arguments[j], "& %var% ,|)")) {
+                const Variable * callarg = check->getVariableFromVarId(arguments[j]->next()->varId());
+                if (callarg) {
+                    if (funcarg->typeEndToken()->str() == "*" &&
+                        (funcarg->typeStartToken()->str() == "void" ||
+                         (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
+                          callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
+                          callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong()))) {
+                        same++;
+                    } else {
+                        // can't match so remove this function from possible matches
+                        matches.erase(matches.begin() + i);
+                        erased = true;
+                        break;
+                    }
+                }
+            }
+
             // check for a match with a numeric literal
             else if (Token::Match(arguments[j], "%num% ,|)")) {
                 if (MathLib::isInt(arguments[j]->str())) {
