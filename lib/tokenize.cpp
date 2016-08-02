@@ -5579,17 +5579,14 @@ void Tokenizer::simplifyPlatformTypes()
     enum { isLongLong, isLong, isInt } type;
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
-    if (_settings->sizeof_size_t == 8) {
-        if (_settings->sizeof_long == 8)
-            type = isLong;
-        else
-            type = isLongLong;
-    } else if (_settings->sizeof_size_t == 4) {
-        if (_settings->sizeof_long == 4)
-            type = isLong;
-        else
-            type = isInt;
-    } else
+
+    if (_settings->sizeof_size_t == _settings->sizeof_long)
+        type = isLong;
+    else if (_settings->sizeof_size_t == _settings->sizeof_long_long)
+        type = isLongLong;
+    else if (_settings->sizeof_size_t == _settings->sizeof_int)
+        type = isInt;
+    else
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -5636,52 +5633,50 @@ void Tokenizer::simplifyPlatformTypes()
         }
     }
 
-    if (_settings->isWindowsPlatform()) {
-        std::string platform_type(_settings->platformString());
+    const std::string platform_type(_settings->platformString());
 
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)
-                continue;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)
+            continue;
 
-            const Library::PlatformType * const platformtype = _settings->library.platform_type(tok->str(), platform_type);
+        const Library::PlatformType * const platformtype = _settings->library.platform_type(tok->str(), platform_type);
 
-            if (platformtype) {
-                // check for namespace
-                if (tok->strAt(-1) == "::") {
-                    const Token * tok1 = tok->tokAt(-2);
-                    // skip when non-global namespace defined
-                    if (tok1 && tok1->tokType() == Token::eName)
-                        continue;
-                    tok = tok->tokAt(-1);
-                    tok->deleteThis();
-                }
-                Token *typeToken;
-                if (platformtype->_const_ptr) {
-                    tok->str("const");
-                    tok->insertToken("*");
-                    tok->insertToken(platformtype->_type);
-                    typeToken = tok;
-                } else if (platformtype->_pointer) {
-                    tok->str(platformtype->_type);
-                    typeToken = tok;
-                    tok->insertToken("*");
-                } else if (platformtype->_ptr_ptr) {
-                    tok->str(platformtype->_type);
-                    typeToken = tok;
-                    tok->insertToken("*");
-                    tok->insertToken("*");
-                } else {
-                    tok->originalName(tok->str());
-                    tok->str(platformtype->_type);
-                    typeToken = tok;
-                }
-                if (platformtype->_signed)
-                    typeToken->isSigned(true);
-                if (platformtype->_unsigned)
-                    typeToken->isUnsigned(true);
-                if (platformtype->_long)
-                    typeToken->isLong(true);
+        if (platformtype) {
+            // check for namespace
+            if (tok->strAt(-1) == "::") {
+                const Token * tok1 = tok->tokAt(-2);
+                // skip when non-global namespace defined
+                if (tok1 && tok1->tokType() == Token::eName)
+                    continue;
+                tok = tok->tokAt(-1);
+                tok->deleteThis();
             }
+            Token *typeToken;
+            if (platformtype->_const_ptr) {
+                tok->str("const");
+                tok->insertToken("*");
+                tok->insertToken(platformtype->_type);
+                typeToken = tok;
+            } else if (platformtype->_pointer) {
+                tok->str(platformtype->_type);
+                typeToken = tok;
+                tok->insertToken("*");
+            } else if (platformtype->_ptr_ptr) {
+                tok->str(platformtype->_type);
+                typeToken = tok;
+                tok->insertToken("*");
+                tok->insertToken("*");
+            } else {
+                tok->originalName(tok->str());
+                tok->str(platformtype->_type);
+                typeToken = tok;
+            }
+            if (platformtype->_signed)
+                typeToken->isSigned(true);
+            if (platformtype->_unsigned)
+                typeToken->isUnsigned(true);
+            if (platformtype->_long)
+                typeToken->isLong(true);
         }
     }
 }
