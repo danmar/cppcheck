@@ -2548,7 +2548,7 @@ static const std::set<std::string> notstart_c = make_container< std::set<std::st
         << "goto" << "NOT" << "return" << "sizeof"<< "typedef";
 static const std::set<std::string> notstart_cpp = make_container< std::set<std::string> > ()
         << notstart_c
-        << "delete" << "friend" << "new" << "throw" << "using" << "virtual" << "explicit" << "const_cast" << "dynamic_cast" << "reinterpret_cast" << "static_cast" ;
+        << "delete" << "friend" << "new" << "throw" << "using" << "virtual" << "explicit" << "const_cast" << "dynamic_cast" << "reinterpret_cast" << "static_cast" << "template";
 
 void Tokenizer::setVarIdPass1()
 {
