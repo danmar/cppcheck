@@ -5637,8 +5637,7 @@ void Tokenizer::simplifyPlatformTypes()
     }
 
     if (_settings->isWindowsPlatform()) {
-        std::string platform_type = _settings->platformType == Settings::Win32A ? "win32A" :
-                                    _settings->platformType == Settings::Win32W ? "win32W" : "win64";
+        std::string platform_type(_settings->platformString());
 
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)
