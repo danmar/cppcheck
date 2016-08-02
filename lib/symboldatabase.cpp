@@ -2466,6 +2466,7 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isOperator: " << func->isOperator() << std::endl;
             std::cout << "        hasLvalRefQual: " << func->hasLvalRefQualifier() << std::endl;
             std::cout << "        hasRvalRefQual: " << func->hasRvalRefQualifier() << std::endl;
+            std::cout << "        isVariadic: " << func->isVariadic() << std::endl;
             std::cout << "        attributes:";
             if (func->isAttributeConst())
                 std::cout << " const ";
@@ -2820,8 +2821,13 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, argType, functionScope, &symbolDatabase->_settings->library));
 
-            if (tok->str() == ")")
+            if (tok->str() == ")") {
+                // check for a variadic function
+                if (Token::simpleMatch(startTok, ". . ."))
+                    isVariadic(true);
+
                 break;
+            }
         }
 
         // count default arguments
@@ -3584,7 +3590,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
     const std::size_t args = arguments.size();
     for (std::multimap<std::string, const Function *>::const_iterator it = functionMap.find(tok->str()); it != functionMap.end() && it->first == tok->str(); ++it) {
         const Function *func = it->second;
-        if (args == func->argCount() || (args < func->argCount() && args >= func->minArgCount())) {
+        if (args == func->argCount() ||
+            (func->isVariadic() && args >= (func->argCount() - 1)) ||
+            (args < func->argCount() && args >= func->minArgCount())) {
             matches.push_back(func);
         }
     }
@@ -3598,6 +3606,10 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         const Function * func = matches[i];
         size_t same = 0;
         for (std::size_t j = 0; j < args; ++j) {
+            // don't check variadic arguments
+            if (func->isVariadic() && j > (func->argCount() - 1)) {
+                break;
+            }
             const Variable *funcarg = func->getArgumentVar(j);
             // check for a match with a variable
             if (Token::Match(arguments[j], "%var% ,|)")) {
@@ -3682,6 +3694,13 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 }
             }
 
+            // check for a match with a string literal
+            else if (Token::Match(arguments[j], "%str% ,|)") &&
+                     funcarg->typeStartToken() != funcarg->typeEndToken() &&
+                     Token::Match(funcarg->typeStartToken(), "char|wchar *")) {
+                same++;
+            }
+
             // check that function argument type is not mismatching
             else if (arguments[j]->str() == "&" && funcarg && funcarg->isReference()) {
                 // can't match so remove this function from possible matches
@@ -3692,7 +3711,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         }
 
         // check if all arguments matched
-        if (same == args) {
+        if ((func->isVariadic() && same == (func->argCount() - 1)) ||
+            (!func->isVariadic() && same == args)) {
             if (requireConst && func->isConst())
                 return func;
 
