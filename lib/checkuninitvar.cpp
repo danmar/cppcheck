@@ -918,8 +918,11 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
 
         if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,=?:]")) {
             if (alloc != NO_ALLOC && vartok->previous()->str() == "*") {
+                // TestUninitVar::isVariableUsageDeref()
                 const Token *parent = vartok->previous()->astParent();
                 if (parent && parent->str() == "=" && parent->astOperand1() == vartok->previous())
+                    return false;
+                if (vartok->variable() && vartok->variable()->dimensions().size() >= 2)
                     return false;
                 return true;
             }
