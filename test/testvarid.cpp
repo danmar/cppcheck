@@ -2030,10 +2030,10 @@ private:
     void varid_templateUsing() { // #5781 #7273
         const char code[] = "template<class T> using X = Y<T>;\n"
                             "X<int> x;";
-
-        ASSERT_EQUALS("1: template < class T > using X ; X = Y < T > ;\n" // TODO: "1: \n"
-                      "2: X < int > x@1 ;\n",  // TODO: "2: Y<int> x@1 ;"
-                      tokenize(code));
+        TODO_ASSERT_EQUALS("\nY<int> x@1;\n",
+                           "1: template < class T > using X ; X = Y < T > ;\n"
+                           "2: X < int > x@1 ;\n",
+                           tokenize(code));
     }
 
     void varid_cppcast() {
