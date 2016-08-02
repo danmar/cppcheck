@@ -1779,6 +1779,25 @@ private:
                               "    x(a, b=2);\n"  // <- if param2 is passed-by-reference then b might be used in x
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n" // ticket #6147
+                              "    int a = 0;\n"
+                              "    bar(a=a+2);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n" // ticket #6147
+                              "    int a = 0;\n"
+                              "    bar(a=2);\n"
+                              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        functionVariableUsage("void bar(int);\n"
+                              "int foo() {\n"
+                              "    int a = 0;\n"
+                              "    bar(a=a+2);\n"
+                              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     void localvar37() { // ticket #3078
