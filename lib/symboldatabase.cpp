@@ -1088,19 +1088,19 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         if (start != end && start->next() != end) {
             for (Token* tok = start->next(); tok != end; tok = tok->next()) {
                 if (tok->str() == "{") {
-                    bool break2 = false;
+                    bool isEndOfScope = false;
                     for (std::list<Scope*>::const_iterator innerScope = it->nestedList.begin(); innerScope != it->nestedList.end(); ++innerScope) {
                         if (tok == (*innerScope)->classStart) { // Is begin of inner scope
                             tok = tok->link();
                             if (!tok || tok->next() == end || !tok->next()) {
-                                break2 = true;
+                                isEndOfScope = true;
                                 break;
                             }
                             tok = tok->next();
                             break;
                         }
                     }
-                    if (break2)
+                    if (isEndOfScope)
                         break;
                 }
                 tok->scope(&*it);
