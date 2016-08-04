@@ -1817,9 +1817,9 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         second = second->next();
 
         // skip "struct"
-        if (first->str() == "struct")
+        if (first->str() == "struct" || first->str() == "enum")
             first = first->next();
-        if (second->str() == "struct")
+        if (second->str() == "struct" || second->str() == "enum")
             second = second->next();
 
         // skip const on type passed by value
@@ -2402,7 +2402,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "    isStlType: " << var->isStlType() << std::endl;
     std::cout << indent << "_type: ";
     if (var->type()) {
-        std::cout << var->type()->name();
+        std::cout << var->type()->type() << " " << var->type()->name();
         std::cout << " " << _tokenizer->list.fileLine(var->type()->classDef);
         std::cout << " " << var->type() << std::endl;
     } else
@@ -2819,6 +2819,10 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                 } while (tok->str() != "," && tok->str() != ")");
             }
 
+            // skip over stuff before type
+            while (Token::Match(startTok, "enum|struct|const"))
+                startTok = startTok->next();
+
             argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, argType, functionScope, &symbolDatabase->_settings->library));
 
             if (tok->str() == ")") {
@@ -3183,6 +3187,10 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
             const_cast<Token *>(typetok)->type(vType);
         }
 
+        // skip "enum" or "struct"
+        if (Token::Match(typestart, "enum|struct"))
+            typestart = typestart->next();
+
         addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, lib);
     }
 
@@ -3468,10 +3476,17 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
             }
         }
 
-        const Type * type = findVariableTypeInBase(scope, typeTok);
+        if (scope) {
+            const Type * type = scope->findType(typeTok->str());
 
-        if (type)
-            return type;
+            if (type)
+                return type;
+
+            type = findVariableTypeInBase(scope, typeTok);
+
+            if (type)
+                return type;
+        }
     }
 
     std::list<Type>::const_iterator type;
@@ -3497,13 +3512,24 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
             }
 
             if (type->enclosingScope == parent) {
+                // check if "enum" specified and type is enum
                 if (typeTok->strAt(-1) == "enum") {
-                    if (type->classDef->str() == "enum")
+                    if (type->isEnumType())
                         return &(*type);
-                } else if (typeTok->strAt(-1) == "struct") {
-                    if (type->classDef->str() == "struct")
+                    else // not an enum
+                        continue;
+                }
+
+                // check if "struct" specified and type is struct
+                else if (typeTok->strAt(-1) == "struct") {
+                    if (type->isStructType())
                         return &(*type);
-                } else
+                    else // not a struct
+                        continue;
+                }
+
+                // "enum" or "struct" not specified so assume match
+                else
                     return &(*type);
             }
         }

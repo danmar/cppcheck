@@ -109,8 +109,20 @@ public:
 
     const std::string& name() const;
 
+    const std::string& type() const {
+        return classDef ? classDef->str() : emptyString;
+    }
+
+    bool isClassType() const {
+        return classDef && classDef->str() == "class";
+    }
+
     bool isEnumType() const {
         return classDef && classDef->str() == "enum";
+    }
+
+    bool isStructType() const {
+        return classDef && classDef->str() == "struct";
     }
 
     const Token *initBaseInfo(const Token *tok, const Token *tok1);
