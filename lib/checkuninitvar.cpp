@@ -101,6 +101,10 @@ void CheckUninitVar::checkScope(const Scope* scope)
         if (!tok)
             continue;
 
+        if (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "for (") &&
+            checkLoopBody(tok->astParent()->link()->next(), *i, i->isArray() ? ARRAY : NO_ALLOC, "", true))
+            continue;
+
         if (i->isArray()) {
             Alloc alloc = ARRAY;
             checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, "");

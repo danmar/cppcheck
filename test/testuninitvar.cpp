@@ -3541,6 +3541,19 @@ private:
                        "  }\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6646 - init in for loop
+        checkUninitVar("void f() {\n" // No FP
+                       "  for (int i;;i++)\n"
+                       "    dostuff(&i);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n" // No FN
+                       "  for (int i;;i++)\n"
+                       "    a=i;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: i\n", errout.str());
     }
 
     void uninitvar2_4494() {
