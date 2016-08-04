@@ -33,7 +33,7 @@ namespace {
 }
 
 static const CWE CWE252(252U);  // Unchecked Return Value
-static const CWE CWE466(447U);  // Use of Obsolete Functions
+static const CWE CWE477(477U);  // Use of Obsolete Functions
 static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const CWE CWE628(628U);  // Function Call with Incorrectly Specified Arguments
 
@@ -68,7 +68,7 @@ void CheckFunctions::checkProhibitedFunctions()
                     const Library::WarnInfo* wi = _settings->library.getWarnInfo(tok);
                     if (wi) {
                         if (_settings->isEnabled(Severity::toString(wi->severity)) && _settings->standards.c >= wi->standards.c && _settings->standards.cpp >= wi->standards.cpp) {
-                            reportError(tok, wi->severity, tok->str() + "Called", wi->message);
+                            reportError(tok, wi->severity, tok->str() + "Called", wi->message, CWE477, false);
                         }
                     }
                 }
