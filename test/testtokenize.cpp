@@ -308,6 +308,7 @@ private:
         TEST_CASE(functionpointer6);
         TEST_CASE(functionpointer7);
         TEST_CASE(functionpointer8); // #7410 - throw
+        TEST_CASE(functionpointer9); // #6113 - function call with function pointer
 
         TEST_CASE(removeRedundantAssignment);
 
@@ -4694,6 +4695,20 @@ private:
         const char code1[] = "int (*f)() throw(int);";
         const char expected1[] = "1: int * f@1 ;\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
+    }
+
+    void functionpointer9() { // function call with function pointer
+        const char code1[] = "int f() { (*f)(); }";
+        const char expected1[] = "1: int f ( ) { ( * f ) ( ) ; }\n";
+        ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
+
+        const char code2[] = "int f() { return (*f)(); }";
+        const char expected2[] = "1: int f ( ) { return ( * f ) ( ) ; }\n";
+        ASSERT_EQUALS(expected2, tokenizeDebugListing(code2, false));
+
+        const char code3[] = "int f() { throw (*f)(); }";
+        const char expected3[] = "1: int f ( ) { throw ( * f ) ( ) ; }\n";
+        ASSERT_EQUALS(expected3, tokenizeDebugListing(code3, false));
     }
 
     void removeRedundantAssignment() {

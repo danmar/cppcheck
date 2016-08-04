@@ -5207,6 +5207,9 @@ void Tokenizer::simplifyFunctionPointers()
         else if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|,|(|public:|protected:|private:"))
             continue;
 
+        if (Token::Match(tok, "delete|else|return|throw|typedef"))
+            continue;
+
         while (Token::Match(tok, "%type%|:: %type%|::"))
             tok = tok->next();
 
