@@ -7570,10 +7570,14 @@ void Tokenizer::syntaxError(const Token *tok) const
 void Tokenizer::syntaxError(const Token *tok, char c) const
 {
     printDebugOutput(0);
-    throw InternalError(tok,
-                        std::string("Invalid number of character '") + c + "' " +
-                        "when these macros are defined: '" + _configuration + "'.",
-                        InternalError::SYNTAX);
+    if (_configuration.empty())
+        throw InternalError(tok,
+                            std::string("Invalid number of character '") + c + "' when no macros are defined.",
+                            InternalError::SYNTAX);
+    else
+        throw InternalError(tok,
+                            std::string("Invalid number of character '") + c + "' when these macros are defined: '" + _configuration + "'.",
+                            InternalError::SYNTAX);
 }
 
 void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
