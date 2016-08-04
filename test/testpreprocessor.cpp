@@ -1446,7 +1446,7 @@ private:
     void stringify5() const {
         const char filedata[] = "#define A(x) a(#x,x)\n"
                                 "A(foo(\"\\\"\"))\n";
-        ASSERT_EQUALS("\na ( \"foo(\"\\\"\")\" , foo ( \"\\\"\" ) )", OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\na ( \"foo(\\\"\\\\\\\"\\\")\" , foo ( \"\\\"\" ) )", OurPreprocessor::expandMacros(filedata));
     }
 
     void pragma() {

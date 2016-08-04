@@ -1058,16 +1058,26 @@ private:
         unsigned int par = 0;
         const Token *tok = lpar;
         while (sameline(lpar, tok)) {
-            if (!expandArg(tokens, tok, tok->location, macros, expandedmacros1, expandedmacros, parametertokens))
-                tokens->push_back(new Token(*tok));
-            if (tok->op == '(')
-                ++par;
-            else if (tok->op == ')') {
-                --par;
-                if (par == 0U)
-                    break;
+            if (tok->op == '#' && sameline(tok,tok->next) && tok->next->op == '#' && sameline(tok,tok->next->next)) {
+                // A##B => AB
+                const std::string strB(expandArgStr(tok->next->next, parametertokens));
+                if (variadic && strB.empty() && tok->previous->op == ',')
+                    tokens->deleteToken(tokens->back());
+                else
+                    tokens->back()->setstr(tokens->back()->str + strB);
+                tok = tok->next->next->next;
+            } else {
+                if (!expandArg(tokens, tok, tok->location, macros, expandedmacros1, expandedmacros, parametertokens))
+                    tokens->push_back(new Token(*tok));
+                if (tok->op == '(')
+                    ++par;
+                else if (tok->op == ')') {
+                    --par;
+                    if (par == 0U)
+                        break;
+                }
+                tok = tok->next;
             }
-            tok = tok->next;
         }
         return sameline(lpar,tok) ? tok : NULL;
     }
@@ -1196,10 +1206,16 @@ private:
                 // #123 => "123"
                 TokenList tokenListHash(files);
                 tok = expandToken(&tokenListHash, loc, tok, macros, expandedmacros1, expandedmacros, parametertokens2);
-                std::string s;
-                for (const Token *hashtok = tokenListHash.cfront(); hashtok; hashtok = hashtok->next)
-                    s += hashtok->str;
-                output->push_back(newMacroToken('\"' + s + '\"', loc, expandedmacros1.empty()));
+                std::ostringstream ostr;
+                for (const Token *hashtok = tokenListHash.cfront(); hashtok; hashtok = hashtok->next) {
+                    for (unsigned int i = 0; i < hashtok->str.size(); i++) {
+                        unsigned char c = hashtok->str[i];
+                        if (c == '\"' || c == '\\' || c == '\'')
+                            ostr << '\\';
+                        ostr << c;
+                    }
+                }
+                output->push_back(newMacroToken('\"' + ostr.str() + '\"', loc, expandedmacros1.empty()));
             }
         }
 
