@@ -1472,7 +1472,7 @@ void CheckOther::checkPassByReference()
                         while (tok3 && tok3->str() != "(") {
                             if (tok3->link() && Token::Match(tok3, ")|]|}|>"))
                                 tok3 = tok3->link();
-                            else if (tok->link())
+                            else if (tok3->link())
                                 break;
                             else if (tok3->str() == ";")
                                 break;
