@@ -474,11 +474,14 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                     _ignoredPaths.push_back(path);
                 }
             }
-
             // --library
             else if (std::strncmp(argv[i], "--library=", 10) == 0) {
                 if (!CppCheckExecutor::tryLoadLibrary(_settings->library, argv[0], argv[i]+10))
                     return false;
+            }
+            // experimental --project
+            else if (std::strncmp(argv[i], "--project=", 10) == 0) {
+                _settings.project(argv[i]+10);
             }
 
             // Report progress
