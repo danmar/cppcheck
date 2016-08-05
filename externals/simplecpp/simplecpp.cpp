@@ -88,6 +88,22 @@ bool endsWith(const std::string &s, const std::string &e) {
 bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2) {
     return tok1 && tok2 && tok1->location.sameline(tok2->location);
 }
+
+
+static bool isAlternativeBinaryOp(const simplecpp::Token *tok, const std::string &alt) {
+    return (tok->name &&
+            tok->str == alt &&
+            tok->previous &&
+            tok->next &&
+            (tok->previous->number || tok->previous->name || tok->previous->op == ')') &&
+            (tok->next->number || tok->next->name || tok->next->op == '('));
+}
+
+static bool isAlternativeUnaryOp(const simplecpp::Token *tok, const std::string &alt) {
+    return ((tok->name && tok->str == alt) &&
+            (!tok->previous || tok->previous->op == '(') &&
+            (tok->next && (tok->next->name || tok->next->number)));
+}
 }
 
 void simplecpp::Location::adjust(const std::string &str) {
@@ -533,7 +549,12 @@ void simplecpp::TokenList::combineOperators() {
 }
 
 void simplecpp::TokenList::constFoldUnaryNotPosNeg(simplecpp::Token *tok) {
+    const std::string NOT("not");
     for (; tok && tok->op != ')'; tok = tok->next) {
+        // "not" might be !
+        if (isAlternativeUnaryOp(tok, NOT))
+            tok->op = '!';
+
         if (tok->op == '!' && tok->next && tok->next->number) {
             tok->setstr(tok->next->str == "0" ? "1" : "0");
             deleteToken(tok->next);
@@ -612,7 +633,12 @@ void simplecpp::TokenList::constFoldAddSub(Token *tok) {
 }
 
 void simplecpp::TokenList::constFoldComparison(Token *tok) {
+    const std::string NOTEQ("not_eq");
+
     for (; tok && tok->op != ')'; tok = tok->next) {
+        if (isAlternativeBinaryOp(tok,NOTEQ))
+            tok->setstr("!=");
+
         if (!tok->startsWithOneOf("<>=!"))
             continue;
         if (!tok->previous || !tok->previous->number)
@@ -655,7 +681,7 @@ void simplecpp::TokenList::constFoldBitwise(Token *tok)
         else
             altop = "xor";
         for (tok = tok1; tok && tok->op != ')'; tok = tok->next) {
-            if (tok->op != *op && tok->str != altop)
+            if (tok->op != *op && !isAlternativeBinaryOp(tok, altop))
                 continue;
             if (!tok->previous || !tok->previous->number)
                 continue;
@@ -677,8 +703,17 @@ void simplecpp::TokenList::constFoldBitwise(Token *tok)
 }
 
 void simplecpp::TokenList::constFoldLogicalOp(Token *tok) {
+    const std::string AND("and");
+    const std::string OR("or");
+
     for (; tok && tok->op != ')'; tok = tok->next) {
-        if (tok->str != "&&" && tok->str != "||" && tok->str != "and" && tok->str != "or")
+        if (tok->name) {
+            if (isAlternativeBinaryOp(tok,AND))
+                tok->setstr("&&");
+            else if (isAlternativeBinaryOp(tok,OR))
+                tok->setstr("||");
+        }
+        if (tok->str != "&&" && tok->str != "||")
             continue;
         if (!tok->previous || !tok->previous->number)
             continue;
@@ -686,7 +721,7 @@ void simplecpp::TokenList::constFoldLogicalOp(Token *tok) {
             continue;
 
         int result;
-        if (tok->str == "||" || tok->str == "or")
+        if (tok->str == "||")
             result = (stringToLL(tok->previous->str) || stringToLL(tok->next->str));
         else /*if (tok->str == "&&")*/
             result = (stringToLL(tok->previous->str) && stringToLL(tok->next->str));
@@ -989,14 +1024,14 @@ private:
         return ~0U;
     }
 
-    std::vector<const Token *> getMacroParameters(const Token *nameToken, bool def) const {
+    std::vector<const Token *> getMacroParameters(const Token *nameToken, bool calledInDefine) const {
         if (!nameToken->next || nameToken->next->op != '(' || !functionLike())
             return std::vector<const Token *>();
 
         std::vector<const Token *> parametertokens;
         parametertokens.push_back(nameToken->next);
         unsigned int par = 0U;
-        for (const Token *tok = nameToken->next->next; def ? sameline(tok,nameToken) : (tok != NULL); tok = tok->next) {
+        for (const Token *tok = nameToken->next->next; calledInDefine ? sameline(tok,nameToken) : (tok != NULL); tok = tok->next) {
             if (tok->op == '(')
                 ++par;
             else if (tok->op == ')') {
@@ -1023,16 +1058,26 @@ private:
         unsigned int par = 0;
         const Token *tok = lpar;
         while (sameline(lpar, tok)) {
-            if (!expandArg(tokens, tok, tok->location, macros, expandedmacros1, expandedmacros, parametertokens))
-                tokens->push_back(new Token(*tok));
-            if (tok->op == '(')
-                ++par;
-            else if (tok->op == ')') {
-                --par;
-                if (par == 0U)
-                    break;
+            if (tok->op == '#' && sameline(tok,tok->next) && tok->next->op == '#' && sameline(tok,tok->next->next)) {
+                // A##B => AB
+                const std::string strB(expandArgStr(tok->next->next, parametertokens));
+                if (variadic && strB.empty() && tok->previous->op == ',')
+                    tokens->deleteToken(tokens->back());
+                else
+                    tokens->back()->setstr(tokens->back()->str + strB);
+                tok = tok->next->next->next;
+            } else {
+                if (!expandArg(tokens, tok, tok->location, macros, expandedmacros1, expandedmacros, parametertokens))
+                    tokens->push_back(new Token(*tok));
+                if (tok->op == '(')
+                    ++par;
+                else if (tok->op == ')') {
+                    --par;
+                    if (par == 0U)
+                        break;
+                }
+                tok = tok->next;
             }
-            tok = tok->next;
         }
         return sameline(lpar,tok) ? tok : NULL;
     }
@@ -1056,7 +1101,10 @@ private:
             return nameToken->next;
         }
 
-        std::vector<const Token*> parametertokens1(getMacroParameters(nameToken, !expandedmacros1.empty()));
+        const bool calledInDefine = (loc.fileIndex != nameToken->location.fileIndex ||
+                                     loc.line < nameToken->location.line);
+
+        std::vector<const Token*> parametertokens1(getMacroParameters(nameToken, calledInDefine));
 
         if (functionLike()) {
             // No arguments => not macro expansion
@@ -1144,8 +1192,6 @@ private:
                 if (variadic && strAB == "," && tok->previous->previous->str == "," && args.size() >= 1U && tok->next->str == args[args.size()-1U])
                     removeComma = true;
 
-                tok = tok->next->next;
-
                 output->deleteToken(A);
 
                 if (!removeComma) {
@@ -1154,14 +1200,22 @@ private:
                     // TODO: For functionLike macros, push the (...)
                     expandToken(output, loc, tokens.cfront(), macros, expandedmacros1, expandedmacros, parametertokens2);
                 }
+
+                tok = tok->next->next;
             } else {
                 // #123 => "123"
                 TokenList tokenListHash(files);
                 tok = expandToken(&tokenListHash, loc, tok, macros, expandedmacros1, expandedmacros, parametertokens2);
-                std::string s;
-                for (const Token *hashtok = tokenListHash.cfront(); hashtok; hashtok = hashtok->next)
-                    s += hashtok->str;
-                output->push_back(newMacroToken('\"' + s + '\"', loc, expandedmacros1.empty()));
+                std::ostringstream ostr;
+                for (const Token *hashtok = tokenListHash.cfront(); hashtok; hashtok = hashtok->next) {
+                    for (unsigned int i = 0; i < hashtok->str.size(); i++) {
+                        unsigned char c = hashtok->str[i];
+                        if (c == '\"' || c == '\\' || c == '\'')
+                            ostr << '\\';
+                        ostr << c;
+                    }
+                }
+                output->push_back(newMacroToken('\"' + ostr.str() + '\"', loc, expandedmacros1.empty()));
             }
         }
 
@@ -1386,15 +1440,18 @@ void simplifyName(simplecpp::TokenList &expr) {
     altop.insert("or");
     altop.insert("bitand");
     altop.insert("bitor");
+    altop.insert("not");
+    altop.insert("not_eq");
     altop.insert("xor");
     for (simplecpp::Token *tok = expr.front(); tok; tok = tok->next) {
         if (tok->name) {
             if (altop.find(tok->str) != altop.end()) {
-                bool alt = true;
-                if (!tok->previous || !tok->next)
-                    alt = false;
-                if (!(tok->previous->number || tok->previous->op == ')'))
-                    alt = false;
+                bool alt;
+                if (tok->str == "not") {
+                    alt = isAlternativeUnaryOp(tok,tok->str);
+                } else {
+                    alt = isAlternativeBinaryOp(tok,tok->str);
+                }
                 if (alt)
                     continue;
             }
@@ -1639,20 +1696,38 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 const bool systemheader = (rawtok->next->str[0] == '<');
                 const std::string header(rawtok->next->str.substr(1U, rawtok->next->str.size() - 2U));
                 const std::string header2 = getFileName(filedata, rawtok->location.file(), header, dui, systemheader);
-                if (!header2.empty() && pragmaOnce.find(header2) == pragmaOnce.end()) {
-                    includetokenstack.push(gotoNextLine(rawtok));
-                    const TokenList *includetokens = filedata.find(header2)->second;
-                    rawtok = includetokens ? includetokens->cfront() : 0;
-                    continue;
-                } else {
+                if (header2.empty()) {
                     simplecpp::Output output(files);
-                    output.type = Output::MISSING_INCLUDE;
+                    output.type = Output::MISSING_HEADER;
                     output.location = rawtok->location;
                     output.msg = "Header not found: " + rawtok->next->str;
                     if (outputList)
                         outputList->push_back(output);
+                } else if (includetokenstack.size() >= 400) {
+                    simplecpp::Output out(files);
+                    out.type = Output::INCLUDE_NESTED_TOO_DEEPLY;
+                    out.location = rawtok->location;
+                    out.msg = "#include nested too deeply";
+                    if (outputList)
+                        outputList->push_back(out);
+                } else if (pragmaOnce.find(header2) == pragmaOnce.end()) {
+                    includetokenstack.push(gotoNextLine(rawtok));
+                    const TokenList *includetokens = filedata.find(header2)->second;
+                    rawtok = includetokens ? includetokens->cfront() : 0;
+                    continue;
                 }
             } else if (rawtok->str == IF || rawtok->str == IFDEF || rawtok->str == IFNDEF || rawtok->str == ELIF) {
+                if (!sameline(rawtok,rawtok->next)) {
+                    simplecpp::Output out(files);
+                    out.type = Output::SYNTAX_ERROR;
+                    out.location = rawtok->location;
+                    out.msg = "Syntax error in #" + rawtok->str;
+                    if (outputList)
+                        outputList->push_back(out);
+                    output.clear();
+                    return;
+                }
+
                 bool conditionIsTrue;
                 if (ifstates.top() == ALWAYS_FALSE || (ifstates.top() == ELSE_IS_TRUE && rawtok->str != ELIF))
                     conditionIsTrue = false;
@@ -1691,7 +1766,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                                 it->second.expand(&value, tok, macros, files);
                             } catch (Macro::Error &err) {
                                 Output out(rawtok->location.files);
-                                out.type = Output::ERROR;
+                                out.type = Output::SYNTAX_ERROR;
                                 out.location = err.location;
                                 out.msg = "failed to expand \'" + tok->str + "\', " + err.what;
                                 if (outputList)
@@ -1821,4 +1896,10 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             }
         }
     }
+}
+
+void simplecpp::cleanup(std::map<std::string, TokenList*> &filedata) {
+    for (std::map<std::string, TokenList*>::iterator it = filedata.begin(); it != filedata.end(); ++it)
+        delete it->second;
+    filedata.clear();
 }

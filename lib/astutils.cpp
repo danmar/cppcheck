@@ -178,35 +178,40 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (tok1->str() == "(" && tok1->previous() && !tok1->previous()->isName()) { // cast => assert that the casts are equal
         const Token *t1 = tok1->next();
         const Token *t2 = tok2->next();
-        while (t1 && t2 && t1->str() == t2->str() && (t1->isName() || t1->str() == "*")) {
+        while (t1 && t2 &&
+               t1->str() == t2->str() &&
+               t1->isLong() == t2->isLong() &&
+               t1->isUnsigned() == t2->isUnsigned() &&
+               t1->isSigned() == t2->isSigned() &&
+               (t1->isName() || t1->str() == "*")) {
             t1 = t1->next();
             t2 = t2->next();
         }
         if (!t1 || !t2 || t1->str() != ")" || t2->str() != ")")
             return false;
     }
-    bool noncommuative_equals =
+    bool noncommutativeEquals =
         isSameExpression(cpp, macro, tok1->astOperand1(), tok2->astOperand1(), constFunctions);
-    noncommuative_equals = noncommuative_equals &&
+    noncommutativeEquals = noncommutativeEquals &&
                            isSameExpression(cpp, macro, tok1->astOperand2(), tok2->astOperand2(), constFunctions);
 
-    if (noncommuative_equals)
+    if (noncommutativeEquals)
         return true;
 
     const bool commutative = tok1->astOperand1() && tok1->astOperand2() && Token::Match(tok1, "%or%|%oror%|+|*|&|&&|^|==|!=");
-    bool commuative_equals = commutative &&
+    bool commutativeEquals = commutative &&
                              isSameExpression(cpp, macro, tok1->astOperand2(), tok2->astOperand1(), constFunctions);
-    commuative_equals = commuative_equals &&
+    commutativeEquals = commutativeEquals &&
                         isSameExpression(cpp, macro, tok1->astOperand1(), tok2->astOperand2(), constFunctions);
 
     // in c++, "a"+b might be different to b+"a"
-    if (cpp && commuative_equals && tok1->str() == "+" &&
+    if (cpp && commutativeEquals && tok1->str() == "+" &&
         (tok1->astOperand1()->tokType() == Token::eString || tok1->astOperand2()->tokType() == Token::eString)) {
         const Token * const other = tok1->astOperand1()->tokType() != Token::eString ? tok1->astOperand1() : tok1->astOperand2();
         return other && astIsIntegral(other,false);
     }
 
-    return commuative_equals;
+    return commutativeEquals;
 }
 
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions)

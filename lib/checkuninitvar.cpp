@@ -101,6 +101,10 @@ void CheckUninitVar::checkScope(const Scope* scope)
         if (!tok)
             continue;
 
+        if (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "for (") &&
+            checkLoopBody(tok->astParent()->link()->next(), *i, i->isArray() ? ARRAY : NO_ALLOC, "", true))
+            continue;
+
         if (i->isArray()) {
             Alloc alloc = ARRAY;
             checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, "");
@@ -117,12 +121,12 @@ void CheckUninitVar::checkScope(const Scope* scope)
     if (scope->function) {
         for (unsigned int i = 0; i < scope->function->argCount(); i++) {
             const Variable *arg = scope->function->getArgumentVar(i);
-            if (arg && arg->declarationId() && Token::Match(arg->typeStartToken(), "struct| %type% * %name% [,)]")) {
+            if (arg && arg->declarationId() && Token::Match(arg->typeStartToken(), "%type% * %name% [,)]")) {
                 // Treat the pointer as initialized until it is assigned by malloc
                 for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
                     if (Token::Match(tok, "[;{}] %varid% = %name% (", arg->declarationId()) &&
                         _settings->library.returnuninitdata.count(tok->strAt(3)) == 1U) {
-                        if (arg->typeStartToken()->str() == "struct")
+                        if (arg->typeStartToken()->strAt(-1) == "struct" || (arg->type() && arg->type()->isStructType()))
                             checkStruct(tok, *arg);
                         else if (arg->typeStartToken()->isStandardType() || arg->typeStartToken()->isEnumType()) {
                             Alloc alloc = NO_ALLOC;
@@ -138,8 +142,6 @@ void CheckUninitVar::checkScope(const Scope* scope)
 void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
 {
     const Token *typeToken = structvar.typeStartToken();
-    if (typeToken->str() == "struct")
-        typeToken = typeToken->next();
     const SymbolDatabase * symbolDatabase = _tokenizer->getSymbolDatabase();
     for (std::size_t j = 0U; j < symbolDatabase->classAndStructScopes.size(); ++j) {
         const Scope *scope2 = symbolDatabase->classAndStructScopes[j];
@@ -918,8 +920,11 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
 
         if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,=?:]")) {
             if (alloc != NO_ALLOC && vartok->previous()->str() == "*") {
+                // TestUninitVar::isVariableUsageDeref()
                 const Token *parent = vartok->previous()->astParent();
                 if (parent && parent->str() == "=" && parent->astOperand1() == vartok->previous())
+                    return false;
+                if (vartok->variable() && vartok->variable()->dimensions().size() >= 2)
                     return false;
                 return true;
             }
@@ -1014,9 +1019,9 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
             const Variable *arg = func->getArgumentVar(argumentNumber);
             if (arg) {
                 const Token *argStart = arg->typeStartToken();
-                if (!address && !array && Token::Match(argStart, "struct| %type% %name%| [,)]"))
+                if (!address && !array && Token::Match(argStart, "%type% %name%| [,)]"))
                     return 1;
-                if (pointer && !address && alloc == NO_ALLOC && Token::Match(argStart, "struct| %type% * %name% [,)]"))
+                if (pointer && !address && alloc == NO_ALLOC && Token::Match(argStart,  "%type% * %name% [,)]"))
                     return 1;
                 while (argStart->previous() && argStart->previous()->isName())
                     argStart = argStart->previous();

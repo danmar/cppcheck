@@ -109,8 +109,20 @@ public:
 
     const std::string& name() const;
 
+    const std::string& type() const {
+        return classDef ? classDef->str() : emptyString;
+    }
+
+    bool isClassType() const {
+        return classDef && classDef->str() == "class";
+    }
+
     bool isEnumType() const {
         return classDef && classDef->str() == "enum";
+    }
+
+    bool isStructType() const {
+        return classDef && classDef->str() == "struct";
     }
 
     const Token *initBaseInfo(const Token *tok, const Token *tok1);
@@ -628,7 +640,8 @@ class CPPCHECKLIB Function {
         fIsThrow        = (1 << 13), /** @brief is throw */
         fIsOperator     = (1 << 14), /** @brief is operator */
         fHasLvalRefQual = (1 << 15), /** @brief has & lvalue ref-qualifier */
-        fHasRvalRefQual = (1 << 16)  /** @brief has && rvalue ref-qualifier */
+        fHasRvalRefQual = (1 << 16), /** @brief has && rvalue ref-qualifier */
+        fIsVariadic     = (1 << 17)  /** @brief is variadic */
     };
 
     /**
@@ -766,6 +779,9 @@ public:
     bool hasRvalRefQualifier() const {
         return getFlag(fHasRvalRefQual);
     }
+    bool isVariadic() const {
+        return getFlag(fIsVariadic);
+    }
 
     void hasBody(bool state) {
         setFlag(fHasBody, state);
@@ -817,6 +833,9 @@ public:
     }
     void hasRvalRefQualifier(bool state) {
         setFlag(fHasRvalRefQual, state);
+    }
+    void isVariadic(bool state) {
+        setFlag(fIsVariadic, state);
     }
 
     const Token *tokenDef; // function name token in class definition
@@ -1071,7 +1090,7 @@ public:
     void validateVariables() const;
 
     /** Set valuetype in provided tokenlist */
-    static void setValueTypeInTokenList(Token *tokens, bool cpp, char defaultSignedness, const Library* lib);
+    static void setValueTypeInTokenList(Token *tokens, bool cpp, const Settings *settings);
 
     /**
      * Calculates sizeof value for given type.
@@ -1128,6 +1147,8 @@ public:
     bool isIntegral() const {
         return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
     }
+
+    bool fromLibraryType(const std::string &typestr, const Settings *settings);
 
     std::string str() const;
 };

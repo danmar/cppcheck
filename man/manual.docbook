@@ -695,6 +695,10 @@ Checking test.c...
       configuration files. It is available in the <literal>View</literal>
       menu. All settings are not documented in this manual.</para>
 
+      <para>If you have a question about the <literal>.cfg</literal> file
+      format it is recommended you ask in the forum
+      (http://sourceforge.net/p/cppcheck/discussion/).</para>
+
       <para>The command line cppcheck will try to load custom .cfg files from
       the working path - execute cppcheck from the path where the .cfg files
       are.</para>
@@ -1118,6 +1122,23 @@ Checking minsize.c...
             </varlistentry>
           </variablelist>
         </section>
+
+        <section>
+          <title>strz</title>
+
+          <para>This setting is not used by Cppcheck currently. But with this
+          you can say that an argument must be a zero-terminated
+          string.</para>
+
+          <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="do_something"&gt;
+    &lt;arg nr="1"&gt;
+      &lt;strz/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting></para>
+        </section>
       </section>
 
       <section>
@@ -1209,11 +1230,19 @@ Checking useretval.c...
       </section>
 
       <section>
-        <title>pure</title>
+        <title>pure and const</title>
 
-        <para>A function that is pure will calculate a return value and has no
-        side effects. If the same parameters are given twice then the same
-        return value will be calculated twice.</para>
+        <para>These correspond to the GCC function attributes pure and
+        const.</para>
+
+        <para>A pure function has no effects except to return a value, and its
+        return value depends only on the parameters and global
+        variables.</para>
+
+        <para>A const function has no effects except to return a value, and
+        its return value depends only on the parameters.</para>
+
+        <para>Here is an example code:</para>
 
         <programlisting>void f(int x)
 {
@@ -1224,24 +1253,29 @@ Checking useretval.c...
     }
 }</programlisting>
 
-        <para>Cppcheck reports no warning</para>
+        <para>If <literal>calculate()</literal> is a const function then the
+        result of <literal>calculate(x)</literal> will be the same in both
+        conditions, since the same parameter value is used.</para>
 
-        <programlisting># cppcheck pure.c
-Checking pure.c...</programlisting>
+        <para>Cppcheck normally assumes that the result might be different,
+        and reports no warning for the code:</para>
 
-        <para>If a proper <literal>lib.cfg</literal> is provided, the
+        <programlisting># cppcheck const.c
+Checking const.c...</programlisting>
+
+        <para>If a proper <literal>const.cfg</literal> is provided, the
         unreachable code is detected:</para>
 
-        <programlisting># cppcheck --enable=style --library=pure pure.c 
-Checking pure.c...
-[pure.c:7]: (style) Expression is always false because 'else if' condition matches previous condition at line 5.</programlisting>
+        <programlisting># cppcheck --enable=style --library=const const.c 
+Checking const.c...
+[const.c:7]: (style) Expression is always false because 'else if' condition matches previous condition at line 5.</programlisting>
 
-        <para>Here is a minimal <literal>pure.cfg</literal> file:</para>
+        <para>Here is a minimal <literal>const.cfg</literal> file:</para>
 
         <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="calculate"&gt;
-    &lt;pure/&gt;
+    &lt;const/&gt;
     &lt;arg nr="1"/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>

@@ -34,11 +34,13 @@ namespace {
 }
 
 // CVE ID used:
+static const CWE CWE119(119U);  // Improper Restriction of Operations within the Bounds of a Memory Buffer
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
-static const CWE CWE664(664U);
-static const CWE CWE685(685U);
-static const CWE CWE687(687U);
-static const CWE CWE910(910U);
+static const CWE CWE664(664U);  // Improper Control of a Resource Through its Lifetime
+static const CWE CWE685(685U);  // Function Call With Incorrect Number of Arguments
+static const CWE CWE686(686U);  // Function Call With Incorrect Argument Type
+static const CWE CWE687(687U);  // Function Call With Incorrectly Specified Argument Value
+static const CWE CWE910(910U);  // Use of Expired File Descriptor
 
 //---------------------------------------------------------------------------
 //    std::cout << std::cout;
@@ -426,8 +428,7 @@ void CheckIO::invalidScanfError(const Token *tok)
     reportError(tok, Severity::warning,
                 "invalidscanf", fname + "() without field width limits can crash with huge input data.\n" +
                 fname + "() without field width limits can crash with huge input data. Add a field width "
-                "specifier to fix this problem:\n"
-                "    %s => %20s\n"
+                "specifier to fix this problem.\n"
                 "\n"
                 "Sample program that can crash:\n"
                 "\n"
@@ -443,8 +444,8 @@ void CheckIO::invalidScanfError(const Token *tok)
                 "here is 'scanf(\"%4s\", c);', as the maximum field width does not include the "
                 "terminating null byte.\n"
                 "Source: http://linux.die.net/man/3/scanf\n"
-                "Source: http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/libkern/stdio/scanf.c"
-               );
+                "Source: http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/libkern/stdio/scanf.c",
+                CWE119, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1779,7 +1780,7 @@ void CheckIO::wrongPrintfScanfPosixParameterPositionError(const Token* tok, cons
     } else {
         errmsg << "referencing parameter " << index << " while " << numFunction << " arguments given";
     }
-    reportError(tok, Severity::warning, "wrongPrintfScanfParameterPositionError", errmsg.str());
+    reportError(tok, Severity::warning, "wrongPrintfScanfParameterPositionError", errmsg.str(), CWE685, false);
 }
 
 void CheckIO::invalidScanfArgTypeError_s(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
@@ -1795,7 +1796,7 @@ void CheckIO::invalidScanfArgTypeError_s(const Token* tok, unsigned int numForma
     errmsg << " *\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidScanfArgType_s", errmsg.str());
+    reportError(tok, Severity::warning, "invalidScanfArgType_s", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidScanfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo, bool isUnsigned)
 {
@@ -1839,7 +1840,7 @@ void CheckIO::invalidScanfArgTypeError_int(const Token* tok, unsigned int numFor
     errmsg << " *\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidScanfArgType_int", errmsg.str());
+    reportError(tok, Severity::warning, "invalidScanfArgType_int", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidScanfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
@@ -1856,7 +1857,7 @@ void CheckIO::invalidScanfArgTypeError_float(const Token* tok, unsigned int numF
     errmsg << " *\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidScanfArgType_float", errmsg.str());
+    reportError(tok, Severity::warning, "invalidScanfArgType_float", errmsg.str(), CWE686, false);
 }
 
 void CheckIO::invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo)
@@ -1867,7 +1868,7 @@ void CheckIO::invalidPrintfArgTypeError_s(const Token* tok, unsigned int numForm
     errmsg << "%s in format string (no. " << numFormat << ") requires \'char *\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_s", errmsg.str());
+    reportError(tok, Severity::warning, "invalidPrintfArgType_s", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo)
 {
@@ -1877,7 +1878,7 @@ void CheckIO::invalidPrintfArgTypeError_n(const Token* tok, unsigned int numForm
     errmsg << "%n in format string (no. " << numFormat << ") requires \'int *\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_n", errmsg.str());
+    reportError(tok, Severity::warning, "invalidPrintfArgType_n", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo)
 {
@@ -1887,7 +1888,7 @@ void CheckIO::invalidPrintfArgTypeError_p(const Token* tok, unsigned int numForm
     errmsg << "%p in format string (no. " << numFormat << ") requires an address but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_p", errmsg.str());
+    reportError(tok, Severity::warning, "invalidPrintfArgType_p", errmsg.str(), CWE686, false);
 }
 static void printfFormatType(std::ostream& os, const std::string& specifier, bool isUnsigned)
 {
@@ -1944,7 +1945,7 @@ void CheckIO::invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numF
     errmsg << " but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_uint", errmsg.str());
+    reportError(tok, Severity::warning, "invalidPrintfArgType_uint", errmsg.str(), CWE686, false);
 }
 
 void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
@@ -1957,7 +1958,7 @@ void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numF
     errmsg << " but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_sint", errmsg.str());
+    reportError(tok, Severity::warning, "invalidPrintfArgType_sint", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
@@ -1970,7 +1971,7 @@ void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int num
     errmsg << "double\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_float", errmsg.str());
+    reportError(tok, Severity::warning, "invalidPrintfArgType_float", errmsg.str(), CWE686, false);
 }
 
 void CheckIO::argumentType(std::ostream& os, const ArgumentInfo * argInfo)

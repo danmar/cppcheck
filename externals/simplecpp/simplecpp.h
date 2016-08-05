@@ -156,7 +156,9 @@ struct SIMPLECPP_LIB Output {
     enum Type {
         ERROR, /* #error */
         WARNING, /* #warning */
-        MISSING_INCLUDE
+        MISSING_HEADER,
+        INCLUDE_NESTED_TOO_DEEPLY,
+        SYNTAX_ERROR
     } type;
     Location location;
     std::string msg;
@@ -275,19 +277,21 @@ SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens,
 
 /**
  * Preprocess
- *
- * Preprocessing is done in two steps currently:
- *   const simplecpp::TokenList tokens1 = simplecpp::TokenList(f);
- *   const simplecpp::TokenList tokens2 = simplecpp::preprocess(tokens1, defines);
- *
- * The "tokens1" will contain tokens for comments and for preprocessor directives. And there is no preprocessing done.
- * This "tokens1" can be used if you need to see what comments/directives there are. Or what code is hidden in #if.
- *
- * The "tokens2" will have normal preprocessor output. No comments nor directives are seen.
- *
  * @todo simplify interface
+ * @param output TokenList that receives the preprocessing output
+ * @param rawtokens Raw tokenlist for top sourcefile
+ * @param files internal data of simplecpp
+ * @param filedata output from simplecpp::load()
+ * @param dui defines, undefs, and include paths
+ * @param outputList output: list that will receive output messages
+ * @param macroUsage output: macro usage
  */
 SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, TokenList*> &filedata, const DUI &dui, OutputList *outputList = 0, std::list<MacroUsage> *macroUsage = 0);
+
+/**
+ * Deallocate data
+ */
+SIMPLECPP_LIB void cleanup(std::map<std::string, TokenList*> &filedata);
 }
 
 #endif

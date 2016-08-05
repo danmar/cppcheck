@@ -165,6 +165,20 @@ void CheckStl::iterators()
                     if (itTok->previous()->str() == "*")
                         continue;
 
+                    // inserting iterator range..
+                    if (tok2->strAt(2) == "insert") {
+                        const Token *par2 = itTok->nextArgument();
+                        while (par2 && par2->str() != ")") {
+                            if (par2->varId() == container->declarationId())
+                                break;
+                            if (par2->str() == "(")
+                                par2 = par2->link();
+                            par2 = par2->next();
+                        }
+                        if (par2->varId() == container->declarationId())
+                            continue;
+                    }
+
                     // Show error message, mismatching iterator is used.
                     iteratorsError(tok2, container->name(), tok2->str());
                 }

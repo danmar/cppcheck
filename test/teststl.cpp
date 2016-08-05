@@ -201,6 +201,14 @@ private:
               "    l2.insert(it, 0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+
+        check("void foo() {\n" // #5803
+              "    list<int> l1;\n"
+              "    list<int> l2;\n"
+              "    list<int>::iterator it = l1.begin();\n"
+              "    l2.insert(it, l1.end());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void iterator4() {

@@ -293,6 +293,23 @@ public:
                platformType == Win64;
     }
 
+    const char *platformString() const {
+        switch (platformType) {
+        case Unix32:
+            return "unix32";
+        case Unix64:
+            return "unix64";
+        case Win32A:
+            return "win32A";
+        case Win32W:
+            return "win32W";
+        case Win64:
+            return "win64";
+        default:
+            return "unknown";
+        }
+    }
+
     /**
      * @brief return true if a file is to be excluded from configuration checking
      * @return true for the file to be excluded.

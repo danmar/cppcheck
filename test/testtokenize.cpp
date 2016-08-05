@@ -292,6 +292,7 @@ private:
         TEST_CASE(simplifyStdType); // #4947, #4950, #4951
 
         TEST_CASE(createLinks);
+        TEST_CASE(createLinks2);
         TEST_CASE(signed1);
 
         TEST_CASE(simplifyString);
@@ -307,6 +308,7 @@ private:
         TEST_CASE(functionpointer6);
         TEST_CASE(functionpointer7);
         TEST_CASE(functionpointer8); // #7410 - throw
+        TEST_CASE(functionpointer9); // #6113 - function call with function pointer
 
         TEST_CASE(removeRedundantAssignment);
 
@@ -4523,6 +4525,20 @@ private:
         }
     }
 
+    void createLinks2() {
+        {
+            // #7158
+            const char code[] = "enum { value = boost::mpl::at_c<B, C> };";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = Token::findsimplematch(tokenizer.tokens(), "<");
+            ASSERT_EQUALS(true, tok->link() == tok->tokAt(4));
+            ASSERT_EQUALS(true, tok->linkAt(4) == tok);
+        }
+    }
+
     void simplifyString() {
         errout.str("");
         Tokenizer tokenizer(&settings0, this);
@@ -4679,6 +4695,20 @@ private:
         const char code1[] = "int (*f)() throw(int);";
         const char expected1[] = "1: int * f@1 ;\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
+    }
+
+    void functionpointer9() { // function call with function pointer
+        const char code1[] = "int f() { (*f)(); }";
+        const char expected1[] = "1: int f ( ) { ( * f ) ( ) ; }\n";
+        ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
+
+        const char code2[] = "int f() { return (*f)(); }";
+        const char expected2[] = "1: int f ( ) { return ( * f ) ( ) ; }\n";
+        ASSERT_EQUALS(expected2, tokenizeDebugListing(code2, false));
+
+        const char code3[] = "int f() { throw (*f)(); }";
+        const char expected3[] = "1: int f ( ) { throw ( * f ) ( ) ; }\n";
+        ASSERT_EQUALS(expected3, tokenizeDebugListing(code3, false));
     }
 
     void removeRedundantAssignment() {

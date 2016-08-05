@@ -74,21 +74,28 @@ Library::Error Library::load(const char exename[], const char path[])
                 absolute_path = Path::getAbsoluteFilePath(fullfilename);
         }
 
-        if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
-            // Try to locate the library configuration in the installation folder..
+        std::list<std::string> cfgfolders;
 #ifdef CFGDIR
-            const std::string cfgfolder(CFGDIR);
-#else
-            if (!exename)
-                return Error(FILE_NOT_FOUND);
-            const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(exename)) + "cfg");
+        cfgfolders.push_back(CFGDIR);
 #endif
+        if (exename) {
+            const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(exename)));
+            cfgfolders.push_back(exepath + "cfg");
+            cfgfolders.push_back(exepath);
+        }
+
+        while (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND && !cfgfolders.empty()) {
+            const std::string cfgfolder(cfgfolders.front());
+            cfgfolders.pop_front();
             const char *sep = (!cfgfolder.empty() && cfgfolder[cfgfolder.size()-1U]=='/' ? "" : "/");
             const std::string filename(cfgfolder + sep + fullfilename);
             error = doc.LoadFile(filename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
                 absolute_path = Path::getAbsoluteFilePath(filename);
         }
+
+        if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+            return Error(FILE_NOT_FOUND);
     } else
         absolute_path = Path::getAbsoluteFilePath(path);
 

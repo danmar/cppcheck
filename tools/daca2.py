@@ -177,16 +177,26 @@ def scanarchive(filepath, jobs):
 FOLDER = None
 JOBS = '-j1'
 REV = None
+SKIP = []
+WORKDIR = os.path.expanduser('~/daca2');
 for arg in sys.argv[1:]:
     if arg[:6] == '--rev=':
         REV = arg[6:]
     elif arg[:2] == '-j':
         JOBS = arg
+    elif arg[:7] == '--skip=':
+        SKIP.append(arg[7:])
+    elif arg[:10] == '--workdir=':
+        WORKDIR = arg[10:]
     else:
         FOLDER = arg
 
 if not FOLDER:
     print('no folder given')
+    sys.exit(1)
+
+if not os.path.isdir(WORKDIR):
+    print('workdir \'' + WORKDIR + '\' is not a folder')
     sys.exit(1)
 
 archives = getpackages(FOLDER)
@@ -197,12 +207,13 @@ if len(archives) == 0:
 print('Sleep for 10 seconds..')
 time.sleep(10)
 
-workdir = os.path.expanduser('~/daca2/')
+if not WORKDIR.endswith('/'):
+    WORKDIR = WORKDIR + '/'
 
 print('~/daca2/' + FOLDER)
-if not os.path.isdir(workdir + FOLDER):
-    os.makedirs(workdir + FOLDER)
-os.chdir(workdir + FOLDER)
+if not os.path.isdir(WORKDIR + FOLDER):
+    os.makedirs(WORKDIR + FOLDER)
+os.chdir(WORKDIR + FOLDER)
 
 try:
     results = open('results.txt', 'wt')
@@ -214,6 +225,11 @@ try:
     results.close()
 
     for archive in archives:
+        if len(SKIP) > 0:
+            a = archive[:archive.rfind('/')]
+            a = a[a.rfind('/')+1:]
+            if a in SKIP:
+                continue
         scanarchive(archive, JOBS)
 
     results = open('results.txt', 'at')

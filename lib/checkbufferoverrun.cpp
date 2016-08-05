@@ -1777,7 +1777,7 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const SymbolDataba
         _num.push_back(var->dimension(i));
     if (var->typeEndToken()->str() == "*")
         _element_size = symDb->sizeOfType(var->typeEndToken());
-    else if (var->typeStartToken()->str() == "struct")
+    else if (var->typeStartToken()->strAt(-1) == "struct")
         _element_size = 100;
     else {
         _element_size = symDb->sizeOfType(var->typeEndToken());

@@ -1073,7 +1073,7 @@ private:
                 tokenizer.tokenize(istr, "test.cpp");
                 assertThrowFail(__FILE__, __LINE__);
             } catch (InternalError& e) {
-                ASSERT_EQUALS("Invalid number of character '(' when these macros are defined: ''.", e.errorMessage);
+                ASSERT_EQUALS("Invalid number of character '(' when no macros are defined.", e.errorMessage);
                 ASSERT_EQUALS("syntaxError", e.id);
                 ASSERT_EQUALS(2, e.token->linenr());
             }

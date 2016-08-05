@@ -134,6 +134,7 @@ private:
         TEST_CASE(varid_templateNamespaceFuncPtr); // #4172
         TEST_CASE(varid_templateArray);
         TEST_CASE(varid_templateParameter); // #7046 set varid for "X":  std::array<int,X> Y;
+        TEST_CASE(varid_templateUsing); // #5781 #7273
         TEST_CASE(varid_cppcast); // #6190
         TEST_CASE(varid_variadicFunc);
         TEST_CASE(varid_typename); // #4644
@@ -2024,6 +2025,15 @@ private:
         ASSERT_EQUALS("1: const int X@1 = 0 ;\n"
                       "2: std :: array < int , X@1 > Y@2 ;\n",
                       tokenize(code));
+    }
+
+    void varid_templateUsing() { // #5781 #7273
+        const char code[] = "template<class T> using X = Y<T>;\n"
+                            "X<int> x;";
+        TODO_ASSERT_EQUALS("\nY<int> x@1;\n",
+                           "1: template < class T > using X ; X = Y < T > ;\n"
+                           "2: X < int > x@1 ;\n",
+                           tokenize(code));
     }
 
     void varid_cppcast() {

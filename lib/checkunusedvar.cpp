@@ -1072,6 +1072,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         } else if (Token::Match(tok, "[(,] (") &&
                    Token::Match(tok->next()->link(), ") %var% [,)]")) {
             variables.use(tok->next()->link()->next()->varId(), tok);   // use = read + write
+        } else if (Token::Match(tok, "[(,] *| %var% =")) {
+            tok = tok->next();
+            if (tok->str() == "*")
+                tok = tok->next();
+            variables.use(tok->varId(), tok);
         }
 
         // function
@@ -1263,6 +1268,17 @@ void CheckUnusedVar::checkStructMemberUsage()
         // Bail out if some data is casted to struct..
         const std::string castPattern("( struct| " + scope->className + " * ) & %name% [");
         if (Token::findmatch(scope->classEnd, castPattern.c_str()))
+            continue;
+
+        // Bail out if struct is used in sizeof..
+        for (const Token *tok = scope->classEnd; nullptr != (tok = Token::findsimplematch(tok, "sizeof ("));) {
+            tok = tok->tokAt(2);
+            if (Token::Match(tok, ("struct| " + scope->className).c_str())) {
+                bailout = true;
+                break;
+            }
+        }
+        if (bailout)
             continue;
 
         // Try to prevent false positives when struct members are not used directly.

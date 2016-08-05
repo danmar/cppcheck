@@ -153,12 +153,12 @@ public:
 
     /**
      * make sure empty configuration macros are not used in code. the given code must be a single configuration
-     * @param code The input code
      * @param cfg configuration
+     * @param macroUsageList macro usage list
      * @return true => configuration is valid
      */
-    bool validateCfg(const std::string &code, const std::string &cfg);
-    void validateCfgError(const std::string &cfg, const std::string &macro);
+    bool validateCfg(const std::string &cfg, const std::list<simplecpp::MacroUsage> &macroUsageList);
+    void validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro);
 
 private:
 

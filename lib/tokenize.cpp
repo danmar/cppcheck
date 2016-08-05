@@ -1720,7 +1720,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         }
     }
 
-    SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings->defaultSign, &_settings->library);
+    SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings);
     ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
 
     printDebugOutput(1);
@@ -2548,7 +2548,7 @@ static const std::set<std::string> notstart_c = make_container< std::set<std::st
         << "goto" << "NOT" << "return" << "sizeof"<< "typedef";
 static const std::set<std::string> notstart_cpp = make_container< std::set<std::string> > ()
         << notstart_c
-        << "delete" << "friend" << "new" << "throw" << "using" << "virtual" << "explicit" << "const_cast" << "dynamic_cast" << "reinterpret_cast" << "static_cast" ;
+        << "delete" << "friend" << "new" << "throw" << "using" << "virtual" << "explicit" << "const_cast" << "dynamic_cast" << "reinterpret_cast" << "static_cast" << "template";
 
 void Tokenizer::setVarIdPass1()
 {
@@ -3049,7 +3049,7 @@ void Tokenizer::createLinks2()
         } else if (token->str() == ">") {
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
-            if (token->next() && !Token::Match(token->next(), "%name%|>|&|*|::|,|(|)|{|;|[|:"))
+            if (token->next() && !Token::Match(token->next(), "%name%|>|&|*|::|,|(|)|{|}|;|[|:"))
                 continue;
 
             // if > is followed by [ .. "new a<b>[" is expected
@@ -3767,7 +3767,7 @@ bool Tokenizer::simplifyTokenList2()
 
     // Create symbol database and then remove const keywords
     createSymbolDatabase();
-    SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings->defaultSign, &_settings->library);
+    SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings);
 
     ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
 
@@ -5207,6 +5207,9 @@ void Tokenizer::simplifyFunctionPointers()
         else if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|,|(|public:|protected:|private:"))
             continue;
 
+        if (Token::Match(tok, "delete|else|return|throw|typedef"))
+            continue;
+
         while (Token::Match(tok, "%type%|:: %type%|::"))
             tok = tok->next();
 
@@ -5579,17 +5582,14 @@ void Tokenizer::simplifyPlatformTypes()
     enum { isLongLong, isLong, isInt } type;
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
-    if (_settings->sizeof_size_t == 8) {
-        if (_settings->sizeof_long == 8)
-            type = isLong;
-        else
-            type = isLongLong;
-    } else if (_settings->sizeof_size_t == 4) {
-        if (_settings->sizeof_long == 4)
-            type = isLong;
-        else
-            type = isInt;
-    } else
+
+    if (_settings->sizeof_size_t == _settings->sizeof_long)
+        type = isLong;
+    else if (_settings->sizeof_size_t == _settings->sizeof_long_long)
+        type = isLongLong;
+    else if (_settings->sizeof_size_t == _settings->sizeof_int)
+        type = isInt;
+    else
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -5636,53 +5636,50 @@ void Tokenizer::simplifyPlatformTypes()
         }
     }
 
-    if (_settings->isWindowsPlatform()) {
-        std::string platform_type = _settings->platformType == Settings::Win32A ? "win32A" :
-                                    _settings->platformType == Settings::Win32W ? "win32W" : "win64";
+    const std::string platform_type(_settings->platformString());
 
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)
-                continue;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)
+            continue;
 
-            const Library::PlatformType * const platformtype = _settings->library.platform_type(tok->str(), platform_type);
+        const Library::PlatformType * const platformtype = _settings->library.platform_type(tok->str(), platform_type);
 
-            if (platformtype) {
-                // check for namespace
-                if (tok->strAt(-1) == "::") {
-                    const Token * tok1 = tok->tokAt(-2);
-                    // skip when non-global namespace defined
-                    if (tok1 && tok1->tokType() == Token::eName)
-                        continue;
-                    tok = tok->tokAt(-1);
-                    tok->deleteThis();
-                }
-                Token *typeToken;
-                if (platformtype->_const_ptr) {
-                    tok->str("const");
-                    tok->insertToken("*");
-                    tok->insertToken(platformtype->_type);
-                    typeToken = tok;
-                } else if (platformtype->_pointer) {
-                    tok->str(platformtype->_type);
-                    typeToken = tok;
-                    tok->insertToken("*");
-                } else if (platformtype->_ptr_ptr) {
-                    tok->str(platformtype->_type);
-                    typeToken = tok;
-                    tok->insertToken("*");
-                    tok->insertToken("*");
-                } else {
-                    tok->originalName(tok->str());
-                    tok->str(platformtype->_type);
-                    typeToken = tok;
-                }
-                if (platformtype->_signed)
-                    typeToken->isSigned(true);
-                if (platformtype->_unsigned)
-                    typeToken->isUnsigned(true);
-                if (platformtype->_long)
-                    typeToken->isLong(true);
+        if (platformtype) {
+            // check for namespace
+            if (tok->strAt(-1) == "::") {
+                const Token * tok1 = tok->tokAt(-2);
+                // skip when non-global namespace defined
+                if (tok1 && tok1->tokType() == Token::eName)
+                    continue;
+                tok = tok->tokAt(-1);
+                tok->deleteThis();
             }
+            Token *typeToken;
+            if (platformtype->_const_ptr) {
+                tok->str("const");
+                tok->insertToken("*");
+                tok->insertToken(platformtype->_type);
+                typeToken = tok;
+            } else if (platformtype->_pointer) {
+                tok->str(platformtype->_type);
+                typeToken = tok;
+                tok->insertToken("*");
+            } else if (platformtype->_ptr_ptr) {
+                tok->str(platformtype->_type);
+                typeToken = tok;
+                tok->insertToken("*");
+                tok->insertToken("*");
+            } else {
+                tok->originalName(tok->str());
+                tok->str(platformtype->_type);
+                typeToken = tok;
+            }
+            if (platformtype->_signed)
+                typeToken->isSigned(true);
+            if (platformtype->_unsigned)
+                typeToken->isUnsigned(true);
+            if (platformtype->_long)
+                typeToken->isLong(true);
         }
     }
 }
@@ -7576,10 +7573,14 @@ void Tokenizer::syntaxError(const Token *tok) const
 void Tokenizer::syntaxError(const Token *tok, char c) const
 {
     printDebugOutput(0);
-    throw InternalError(tok,
-                        std::string("Invalid number of character '") + c + "' " +
-                        "when these macros are defined: '" + _configuration + "'.",
-                        InternalError::SYNTAX);
+    if (_configuration.empty())
+        throw InternalError(tok,
+                            std::string("Invalid number of character '") + c + "' when no macros are defined.",
+                            InternalError::SYNTAX);
+    else
+        throw InternalError(tok,
+                            std::string("Invalid number of character '") + c + "' when these macros are defined: '" + _configuration + "'.",
+                            InternalError::SYNTAX);
 }
 
 void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
