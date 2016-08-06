@@ -266,17 +266,16 @@ static unsigned char peekChar(std::istream &istr, unsigned int bom) {
     // For UTF-16 encoded files the BOM is 0xfeff/0xfffe. If the
     // character is non-ASCII character then replace it with 0xff
     if (bom == 0xfeff || bom == 0xfffe) {
+        (void)istr.get();
         const unsigned char ch2 = (unsigned char)istr.peek();
+        istr.unget();
         const int ch16 = (bom == 0xfeff) ? (ch<<8 | ch2) : (ch2<<8 | ch);
         ch = (unsigned char)((ch16 >= 0x80) ? 0xff : ch16);
     }
 
     // Handling of newlines..
-    if (ch == '\r') {
+    if (ch == '\r')
         ch = '\n';
-        if (bom != 0)
-            (void)istr.peek();
-    }
 
     return ch;
 }
