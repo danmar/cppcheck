@@ -184,9 +184,10 @@ public:
      */
     void dump(std::ostream &out) const;
 
+    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
+
 private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
-
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
     Settings& _settings;

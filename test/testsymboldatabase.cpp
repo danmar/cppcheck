@@ -186,6 +186,7 @@ private:
         TEST_CASE(functionArgs6); // #7651
         TEST_CASE(functionArgs7); // #7652
         TEST_CASE(functionArgs8); // #7653
+        TEST_CASE(functionArgs9); // #7657
 
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
@@ -1727,6 +1728,28 @@ private:
                 if (func->argumentList.size() == 1 && func->argumentList.front().type()) {
                     const Type * type = func->argumentList.front().type();
                     ASSERT_EQUALS(true, type->isStructType());
+                }
+            }
+        }
+    }
+
+    void functionArgs9() { // #7657
+        GET_SYMBOL_DB("struct A {\n"
+                      "  struct B {\n"
+                      "    enum C { };\n"
+                      "  };\n"
+                      "};\n"
+                      "void foo(A::B::C c) { }");
+        ASSERT_EQUALS(true, db != nullptr);
+        if (db) {
+            const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo (");
+            ASSERT_EQUALS(true, f && f->function());
+            if (f && f->function()) {
+                const Function *func = f->function();
+                ASSERT_EQUALS(true, func->argumentList.size() == 1 && func->argumentList.front().type());
+                if (func->argumentList.size() == 1 && func->argumentList.front().type()) {
+                    const Type * type = func->argumentList.front().type();
+                    ASSERT_EQUALS(true, type->isEnumType());
                 }
             }
         }

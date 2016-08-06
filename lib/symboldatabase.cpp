@@ -2781,10 +2781,12 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                     return;
             } while (tok->str() != "," && tok->str() != ")" && tok->str() != "=");
 
-            const Token *typeTok = startTok->tokAt(startTok->str() == "const" ? 1 : 0);
-            if (typeTok->str() == "struct" || typeTok->str() == "enum")
+            const Token *typeTok = startTok;
+            // skip over stuff to get to type
+            while (Token::Match(typeTok, "const|enum|struct|::"))
                 typeTok = typeTok->next();
-            if (Token::Match(typeTok, "%type% ::"))
+            // skip over qualification
+            while (Token::Match(typeTok, "%type% ::"))
                 typeTok = typeTok->tokAt(2);
 
             // check for argument with no name or missing varid

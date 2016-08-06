@@ -271,6 +271,7 @@ struct SIMPLECPP_LIB DUI {
     std::list<std::string> defines;
     std::set<std::string> undefined;
     std::list<std::string> includePaths;
+    std::list<std::string> includes;
 };
 
 SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = 0);

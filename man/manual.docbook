@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.75 dev</title>
+    <title>Cppcheck 1.75</title>
 
     <date>2016-07-27</date>
   </bookinfo>
@@ -752,13 +752,13 @@ Checking pen1.c...
     &lt;dealloc&gt;DeleteObject&lt;/dealloc&gt;
   &lt;/resource&gt;
 &lt;/def&gt;</programlisting>
-      </section>
 
       <para>The allocation and deallocation functions are organized in groups.
       Each group is defined in a <literal>&lt;resource&gt;</literal> or
       <literal>&lt;memory&gt;</literal> tag and is identified by its
       <literal>&lt;dealloc&gt;</literal> functions. This means, groups with
       overlapping <literal>&lt;dealloc&gt;</literal> tags are merged.</para>
+      </section>
 
       <section>
         <title>leak-ignore and use</title>

@@ -168,7 +168,9 @@ void CheckStl::iterators()
                     // inserting iterator range..
                     if (tok2->strAt(2) == "insert") {
                         const Token *par2 = itTok->nextArgument();
-                        while (par2 && par2->str() != ")") {
+                        if (!par2 || par2->nextArgument())
+                            continue;
+                        while (par2->str() != ")") {
                             if (par2->varId() == container->declarationId())
                                 break;
                             if (par2->str() == "(")

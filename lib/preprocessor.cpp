@@ -382,14 +382,13 @@ static void splitcfg(const std::string &cfg, std::list<std::string> &defines, co
     }
 }
 
-void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
+static simplecpp::DUI createDUI(const Settings &_settings, const std::string &cfg, const std::string &filename)
 {
-    const std::string filename(files[0]);
-
-    // Create a map for the cfg for faster access to defines
     simplecpp::DUI dui;
 
     splitcfg(_settings.userDefines, dui.defines, "1");
+    if (!cfg.empty())
+        splitcfg(cfg, dui.defines, "");
 
     for (std::vector<std::string>::const_iterator it = _settings.library.defines.begin(); it != _settings.library.defines.end(); ++it) {
         if (it->compare(0,8,"#define ")!=0)
@@ -411,9 +410,32 @@ void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
     if (Path::isCPP(filename))
         dui.defines.push_back("__cplusplus");
 
-    dui.undefined = _settings.userUndefs;
+    dui.undefined = _settings.userUndefs; // -U
+    dui.includePaths = _settings.includePaths; // -I
+    dui.includes = _settings.userIncludes;  // --include
+    return dui;
+}
 
-    dui.includePaths = _settings.includePaths;
+static bool hasErrors(const simplecpp::OutputList &outputList)
+{
+    for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
+        switch (it->type) {
+        case simplecpp::Output::ERROR:
+        case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
+        case simplecpp::Output::SYNTAX_ERROR:
+            return true;
+        case simplecpp::Output::WARNING:
+        case simplecpp::Output::MISSING_HEADER:
+            break;
+        };
+    }
+    return false;
+}
+
+
+void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
+{
+    const simplecpp::DUI dui = createDUI(_settings, "", files[0]);
 
     simplecpp::OutputList outputList;
 
@@ -452,35 +474,7 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
 {
     const std::string filename(files[0]);
 
-    // Create a map for the cfg for faster access to defines
-    simplecpp::DUI dui;
-
-    splitcfg(_settings.userDefines, dui.defines, "1");
-    splitcfg(cfg, dui.defines, "");
-
-    for (std::vector<std::string>::const_iterator it = _settings.library.defines.begin(); it != _settings.library.defines.end(); ++it) {
-        if (it->compare(0,8,"#define ")!=0)
-            continue;
-        std::string s = it->substr(8);
-        std::string::size_type pos = s.find_first_of(" (");
-        if (pos == std::string::npos) {
-            dui.defines.push_back(s);
-            continue;
-        }
-        if (s[pos] == ' ') {
-            s[pos] = '=';
-        } else {
-            s[s.find(")")+1] = '=';
-        }
-        dui.defines.push_back(s);
-    }
-
-    if (Path::isCPP(filename))
-        dui.defines.push_back("__cplusplus");
-
-    dui.undefined = _settings.userUndefs;
-
-    dui.includePaths = _settings.includePaths;
+    const simplecpp::DUI dui = createDUI(_settings, cfg, filename);
 
     simplecpp::OutputList outputList;
     std::list<simplecpp::MacroUsage> macroUsage;
@@ -488,27 +482,9 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
     simplecpp::preprocess(tokens2, tokens1, files, tokenlists, dui, &outputList, &macroUsage);
 
     bool showerror = (!_settings.userDefines.empty() && !_settings.force);
-    for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
-        switch (it->type) {
-        case simplecpp::Output::ERROR:
-            if (it->msg.compare(0,6,"#error")!=0 || showerror)
-                error(it->location.file(), it->location.line, it->msg);
-            return "";
-        case simplecpp::Output::WARNING:
-            break;
-        case simplecpp::Output::MISSING_HEADER: {
-            const std::string::size_type pos1 = it->msg.find_first_of("<\"");
-            const std::string::size_type pos2 = it->msg.find_first_of(">\"", pos1 + 1U);
-            if (pos1 < pos2 && pos2 != std::string::npos)
-                missingInclude(it->location.file(), it->location.line, it->msg.substr(pos1+1, pos2-pos1-1), it->msg[pos1] == '\"' ? UserHeader : SystemHeader);
-        }
-        break;
-        case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-        case simplecpp::Output::SYNTAX_ERROR:
-            error(it->location.file(), it->location.line, it->msg);
-            return "";
-        };
-    }
+    reportOutput(outputList, showerror);
+    if (hasErrors(outputList))
+        return "";
 
     // ensure that guessed define macros without value are not used in the code
     if (!validateCfg(cfg, macroUsage))
@@ -601,13 +577,22 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     removeComments();
     setDirectives(tokens1);
 
+    reportOutput(outputList, true);
+
+    if (hasErrors(outputList))
+        return "";
+
+    return getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
+}
+
+void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool showerror)
+{
     for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
         switch (it->type) {
         case simplecpp::Output::ERROR:
-        case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-        case simplecpp::Output::SYNTAX_ERROR:
-            error(it->location.file(), it->location.line, it->msg);
-            return "";
+            if (it->msg.compare(0,6,"#error")!=0 || showerror)
+                error(it->location.file(), it->location.line, it->msg);
+            break;
         case simplecpp::Output::WARNING:
             break;
         case simplecpp::Output::MISSING_HEADER: {
@@ -617,10 +602,12 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
                 missingInclude(it->location.file(), it->location.line, it->msg.substr(pos1+1, pos2-pos1-1), it->msg[pos1] == '\"' ? UserHeader : SystemHeader);
         }
         break;
+        case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
+        case simplecpp::Output::SYNTAX_ERROR:
+            error(it->location.file(), it->location.line, it->msg);
+            break;
         };
     }
-
-    return getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
 }
 
 void Preprocessor::error(const std::string &filename, unsigned int linenr, const std::string &msg)

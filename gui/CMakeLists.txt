@@ -21,7 +21,7 @@ if (BUILD_GUI)
     QT4_ADD_RESOURCES(resources "gui.qrc")
     QT4_ADD_TRANSLATION(qms ${tss})
     
-    add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:tinyxml_objs>)
+    add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:tinyxml_objs> $<TARGET_OBJECTS:simplecpp_objs>)
     target_link_libraries(cppcheck-gui ${QT_LIBRARIES})
     if (HAVE_RULES)
         target_link_libraries(cppcheck-gui pcre)

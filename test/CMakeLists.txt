@@ -2,11 +2,12 @@ if (BUILD_TESTS)
 
     include_directories(${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/cli/)
     include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml)
+    include_directories(${PROJECT_SOURCE_DIR}/externals/simplecpp/)
 
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
 
-    add_executable(testrunner ${hdrs} ${srcs} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:cli_objs> $<TARGET_OBJECTS:tinyxml_objs>)
+    add_executable(testrunner ${hdrs} ${srcs} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:cli_objs> $<TARGET_OBJECTS:tinyxml_objs> $<TARGET_OBJECTS:simplecpp_objs>)
     if (HAVE_RULES)
         target_link_libraries(testrunner pcre)
     endif()
