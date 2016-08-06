@@ -298,11 +298,15 @@ static unsigned short getAndSkipBOM(std::istream &istr) {
         return 0;
     }
 
-    if (ch1 == 0xef && istr.peek() == 0xbb && istr.peek() == 0xbf) {
-        // Skip BOM 0xefbbbf
-        (void)istr.get();
-        (void)istr.get();
-        (void)istr.get();
+    // Skip UTF-8 BOM 0xefbbbf
+    if (ch1 == 0xef) {
+        istr.get();
+        if (istr.get() == 0xbb && istr.peek() == 0xbf) {
+            (void)istr.get();
+        } else {
+            istr.unget();
+            istr.unget();
+        }
     }
 
     return 0;
@@ -339,7 +343,8 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 location.line += multiline + 1;
                 multiline = 0U;
             }
-            location.col = 1;
+            if (!multiline)
+                location.col = 1;
 
             if (oldLastToken != cback()) {
                 oldLastToken = cback();
@@ -462,7 +467,11 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         }
 
         push_back(new Token(currentToken, location));
-        location.adjust(currentToken);
+
+        if (multiline)
+            location.col += currentToken.size();
+        else
+            location.adjust(currentToken);
     }
 
     combineOperators();
