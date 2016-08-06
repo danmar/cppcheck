@@ -322,6 +322,19 @@ public:
         }
         return false;
     }
+
+    /** File settings */
+    struct FileSettings {
+        std::string filename;
+        std::string defines;
+        std::string undefs;
+        std::string includes;
+    };
+    std::list<FileSettings> fileSettings;
+
+    void importProject(const std::string &filename);
+private:
+    void importCompileCommands(std::istream &istr);
 };
 
 /// @}

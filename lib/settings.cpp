@@ -20,6 +20,8 @@
 #include "preprocessor.h"       // Preprocessor
 #include "utils.h"
 #include "tinyxml2.h"
+#include "path.h"
+#include "tokenlist.h"
 
 #include <fstream>
 #include <set>
@@ -321,3 +323,58 @@ bool Settings::platformFile(const std::string &filename)
 
     return true;
 }
+
+void Settings::importProject(const std::string &filename) {
+    std::ifstream fin(filename);
+    if (!fin.is_open())
+        return;
+    if (filename == "compile_commands.json") {
+        importCompileCommands(fin);
+    }
+}
+
+void Settings::importCompileCommands(std::istream &istr) {
+    std::map<std::string, std::string> values;
+
+    TokenList tokenList(this);
+    tokenList.createTokens(istr);
+    for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
+      if (Token::Match(tok, "%str% : %str% [,}]")) {
+        std::string key = tok->str();
+        std::string value = tok->strAt(2);
+        values[key.substr(1, key.size() - 2U)] = value.substr(1, value.size() - 2U);
+      }
+
+      else if (tok->str() == "}") {
+            if (!values["file"].empty() && !values["command"].empty()) {
+                struct FileSettings fs;
+                fs.filename = Path::fromNativeSeparators(values["file"]);
+                std::string command = values["command"];
+                std::string::size_type pos = 0;
+                while (std::string::npos != (pos = command.find(" ",pos))) {
+                    pos++;
+                    if (pos >= command.size())
+                        break;
+                    if (command[pos] != '/' && command[pos] != '-')
+                        continue;
+                    pos++;
+                    if (pos >= command.size())
+                      break;
+                    char F = command[pos++];
+                    std::string fval;
+                    while (pos < command.size() && command[pos] != ' ')
+                        fval += command[pos++];
+                    if (F=='D')
+                        fs.defines += fval + ";";
+                    else if (F=='U')
+                        fs.undefs += fval + ";";
+                    else if (F=='I')
+                        fs.includes += fval + ";";
+                }
+                fileSettings.push_back(fs);
+            }
+            values.clear();
+        }
+    }
+}
+

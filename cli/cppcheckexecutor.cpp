@@ -154,7 +154,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter), _settings->library.markupExtensions(), matcher);
     }
 
-    if (_files.empty()) {
+    if (_files.empty() && settings.fileSettings.empty()) {
         std::cout << "cppcheck: error: could not find or open any of the paths given." << std::endl;
         if (!ignored.empty())
             std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
