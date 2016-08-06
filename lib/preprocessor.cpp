@@ -578,7 +578,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     setDirectives(tokens1);
 
     reportOutput(outputList, true);
-    
+
     if (hasErrors(outputList))
         return "";
 

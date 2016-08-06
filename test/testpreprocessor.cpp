@@ -53,21 +53,9 @@ public:
             simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI(), &outputList);
 
             if (errorLogger) {
-                for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
-                    const simplecpp::Output &msg = *it;
-                    if (msg.type == simplecpp::Output::ERROR) {
-
-                        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                        ErrorLogger::ErrorMessage::FileLocation loc(msg.location.file(), msg.location.line);
-                        locationList.push_back(loc);
-                        errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
-                                               emptyString,
-                                               Severity::error,
-                                               msg.msg,
-                                               "preprocessorError",
-                                               false));
-                    }
-                }
+                Settings settings;
+                Preprocessor p(settings, errorLogger);
+                p.reportOutput(outputList, true);
             }
 
             return tokens2.stringify();
@@ -1661,7 +1649,7 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("[file.c:6]: (error) Syntax error. Wrong number of parameters for macro 'BC'.\n", errout.str());
+        ASSERT_EQUALS("[file.c:6]: (error) Wrong number of parameters for macro 'BC'.\n", errout.str());
     }
 
     void newline_in_macro() {
