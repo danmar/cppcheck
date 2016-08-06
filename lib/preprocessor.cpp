@@ -416,7 +416,7 @@ static simplecpp::DUI createDUI(const Settings &_settings, const std::string &cf
     return dui;
 }
 
-bool hasErrors(const simplecpp::OutputList &outputList)
+static bool hasErrors(const simplecpp::OutputList &outputList)
 {
     for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
         switch (it->type) {
