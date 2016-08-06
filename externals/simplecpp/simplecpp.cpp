@@ -81,6 +81,10 @@ unsigned long long stringToULL(const std::string &s)
     return ret;
 }
 
+bool startsWith(const std::string &str, const std::string &s) {
+    return (str.size() >= s.size() && str.compare(0, s.size(), s) == 0);
+}
+
 bool endsWith(const std::string &s, const std::string &e) {
     return (s.size() >= e.size() && s.compare(s.size() - e.size(), e.size(), e) == 0);
 }
@@ -400,10 +404,18 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 ch = readChar(istr,bom);
             }
             // multiline..
+
             std::string::size_type pos = 0;
             while ((pos = currentToken.find("\\\n",pos)) != std::string::npos) {
                 currentToken.erase(pos,2);
                 ++multiline;
+            }
+            if (multiline || startsWith(lastLine(10),"# ")) {
+                pos = 0;
+                while ((pos = currentToken.find("\n",pos)) != std::string::npos) {
+                    currentToken.erase(pos,1);
+                    ++multiline;
+                }
             }
         }
 
