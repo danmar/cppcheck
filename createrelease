@@ -42,14 +42,6 @@
 #
 # Update download link on index.php main page
 #
-# Generate the manual.pdf, manual.html and version.txt
-# make
-# ./cppcheck --version > version.txt
-# docbook2pdf man/manual.docbook
-# xsltproc -o manual.html /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl man/manual.docbook
-#
-# Upload manual.pdf , manual.html and version.txt...
-# sftp danielmarjamaki,cppcheck@web.sourceforge.net
 #
 # write a news
 #
@@ -72,4 +64,13 @@ git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
 git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
 
-scp ../$releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+scp ~/$releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+
+# Generate the manual.pdf, manual.html and version.txt
+make
+./cppcheck --version > version.txt
+scp version.txt danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
+docbook2pdf man/manual.docbook
+scp manual.pdf danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
+xsltproc -o manual.html /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl man/manual.docbook
+scp manual.html danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
