@@ -861,6 +861,15 @@ public:
         }
     }
 
+    /**
+     * Expand macro. This will recursively expand inner macros.
+     * @param output   destination tokenlist
+     * @param rawtok   macro token
+     * @param macros   list of macros
+     * @param files    the files
+     * @return token after macro
+     * @throw Can throw wrongNumberOfParameters or invalidHashHash
+     */
     const Token * expand(TokenList * const output,
                          const Token * rawtok,
                          const std::map<TokenString,Macro> &macros,
@@ -924,18 +933,22 @@ public:
         return rawtok;
     }
 
+    /** macro name */
     const TokenString &name() const {
         return nameToken->str;
     }
 
+    /** location for macro definition */
     const Location &defineLocation() const {
         return nameToken->location;
     }
 
+    /** how has this macro been used so far */
     const std::list<Location> &usage() const {
         return usageList;
     }
 
+    /** is this a function like macro */
     bool functionLike() const {
         return nameToken->next &&
                nameToken->next->op == '(' &&
@@ -943,34 +956,29 @@ public:
                nameToken->next->location.col == nameToken->location.col + nameToken->str.size();
     }
 
+    /** base class for errors */
     struct Error {
         Error(const Location &loc, const std::string &s) : location(loc), what(s) {}
         Location location;
         std::string what;
     };
 
+    /** Struct that is thrown when macro is expanded with wrong number of parameters */
     struct wrongNumberOfParameters : public Error {
         wrongNumberOfParameters(const Location &loc, const std::string &macroName) : Error(loc, "Syntax error. Wrong number of parameters for macro \'" + macroName + "\'.") {}
     };
 
+    /** Struct that is thrown when there is invalid ## usage */
     struct invalidHashHash : public Error {
         invalidHashHash(const Location &loc, const std::string &macroName) : Error(loc, "Syntax error. Invalid ## usage when expanding \'" + macroName + "\'.") {}
     };
 private:
-    Token *newMacroToken(const TokenString &str, const Location &loc, bool rawCode) const {
+    /** Create new token where Token::macro is set for replaced tokens */
+    Token *newMacroToken(const TokenString &str, const Location &loc, bool replaced) const {
         Token *tok = new Token(str,loc);
-        if (!rawCode)
+        if (replaced)
             tok->macro = nameToken->str;
         return tok;
-    }
-
-    void setMacroName(TokenList *output, Token *token1, const std::set<std::string> &expandedmacros1) const {
-        if (!expandedmacros1.empty())
-            return;
-        for (Token *tok = token1 ? token1->next : output->front(); tok; tok = tok->next) {
-            if (!tok->macro.empty())
-                tok->macro = nameToken->str;
-        }
     }
 
     void parseDefine(const Token *nametoken) {
@@ -1050,7 +1058,6 @@ private:
     const Token *appendTokens(TokenList *tokens,
                               const Token *lpar,
                               const std::map<TokenString,Macro> &macros,
-                              const std::set<TokenString> &expandedmacros1,
                               const std::set<TokenString> &expandedmacros,
                               const std::vector<const Token*> &parametertokens) const {
         if (!lpar || lpar->op != '(')
@@ -1060,14 +1067,11 @@ private:
         while (sameline(lpar, tok)) {
             if (tok->op == '#' && sameline(tok,tok->next) && tok->next->op == '#' && sameline(tok,tok->next->next)) {
                 // A##B => AB
-                const std::string strB(expandArgStr(tok->next->next, parametertokens));
-                if (variadic && strB.empty() && tok->previous->op == ',')
-                    tokens->deleteToken(tokens->back());
-                else
-                    tokens->back()->setstr(tokens->back()->str + strB);
-                tok = tok->next->next->next;
+                tok = expandHashHash(tokens, tok->location, tok, macros, expandedmacros, parametertokens);
+            } else if (tok->op == '#' && sameline(tok, tok->next) && tok->next->op != '#') {
+                tok = expandHash(tokens, tok->location, tok, macros, expandedmacros, parametertokens);
             } else {
-                if (!expandArg(tokens, tok, tok->location, macros, expandedmacros1, expandedmacros, parametertokens))
+                if (!expandArg(tokens, tok, tok->location, macros, expandedmacros, parametertokens))
                     tokens->push_back(new Token(*tok));
                 if (tok->op == '(')
                     ++par;
@@ -1083,7 +1087,6 @@ private:
     }
 
     const Token * expand(TokenList * const output, const Location &loc, const Token * const nameToken, const std::map<TokenString,Macro> &macros, std::set<TokenString> expandedmacros) const {
-        const std::set<TokenString> expandedmacros1(expandedmacros);
         expandedmacros.insert(nameToken->str);
 
         usageList.push_back(loc);
@@ -1165,10 +1168,10 @@ private:
             if (tok->op != '#') {
                 // A##B => AB
                 if (tok->next && tok->next->op == '#' && tok->next->next && tok->next->next->op == '#') {
-                    output->push_back(newMacroToken(expandArgStr(tok, parametertokens2), loc, !expandedmacros1.empty()));
+                    output->push_back(newMacroToken(expandArgStr(tok, parametertokens2), loc, isReplaced(expandedmacros)));
                     tok = tok->next;
                 } else {
-                    tok = expandToken(output, loc, tok, macros, expandedmacros1, expandedmacros, parametertokens2);
+                    tok = expandToken(output, loc, tok, macros, expandedmacros, parametertokens2);
                 }
                 continue;
             }
@@ -1180,47 +1183,18 @@ private:
             }
             if (tok->op == '#') {
                 // A##B => AB
-                Token *A = output->back();
-                if (!A)
-                    throw invalidHashHash(tok->location, name());
-                if (!sameline(tok, tok->next))
-                    throw invalidHashHash(tok->location, name());
-
-                std::string strAB = A->str + expandArgStr(tok->next, parametertokens2);
-
-                bool removeComma = false;
-                if (variadic && strAB == "," && tok->previous->previous->str == "," && args.size() >= 1U && tok->next->str == args[args.size()-1U])
-                    removeComma = true;
-
-                output->deleteToken(A);
-
-                if (!removeComma) {
-                    TokenList tokens(files);
-                    tokens.push_back(new Token(strAB, tok->location));
-                    // TODO: For functionLike macros, push the (...)
-                    expandToken(output, loc, tokens.cfront(), macros, expandedmacros1, expandedmacros, parametertokens2);
-                }
-
-                tok = tok->next->next;
+                tok = expandHashHash(output, loc, tok->previous, macros, expandedmacros, parametertokens2);
             } else {
                 // #123 => "123"
-                TokenList tokenListHash(files);
-                tok = expandToken(&tokenListHash, loc, tok, macros, expandedmacros1, expandedmacros, parametertokens2);
-                std::ostringstream ostr;
-                for (const Token *hashtok = tokenListHash.cfront(); hashtok; hashtok = hashtok->next) {
-                    for (unsigned int i = 0; i < hashtok->str.size(); i++) {
-                        unsigned char c = hashtok->str[i];
-                        if (c == '\"' || c == '\\' || c == '\'')
-                            ostr << '\\';
-                        ostr << c;
-                    }
-                }
-                output->push_back(newMacroToken('\"' + ostr.str() + '\"', loc, expandedmacros1.empty()));
+                tok = expandHash(output, loc, tok->previous, macros, expandedmacros, parametertokens2);
             }
         }
 
-        if (!functionLike())
-            setMacroName(output, output_end_1, expandedmacros1);
+        if (!functionLike()) {
+            for (Token *tok = output_end_1 ? output_end_1->next : output->front(); tok; tok = tok->next) {
+                tok->macro = nameToken->str;
+            }
+        }
 
         if (!parametertokens1.empty())
             parametertokens1.swap(parametertokens2);
@@ -1228,17 +1202,17 @@ private:
         return functionLike() ? parametertokens2.back()->next : nameToken->next;
     }
 
-    const Token *expandToken(TokenList *output, const Location &loc, const Token *tok, const std::map<TokenString,Macro> &macros, const std::set<TokenString> &expandedmacros1, const std::set<TokenString> &expandedmacros, const std::vector<const Token*> &parametertokens) const {
+    const Token *expandToken(TokenList *output, const Location &loc, const Token *tok, const std::map<TokenString,Macro> &macros, const std::set<TokenString> &expandedmacros, const std::vector<const Token*> &parametertokens) const {
         // Not name..
         if (!tok->name) {
-            output->push_back(newMacroToken(tok->str, loc, false));
+            output->push_back(newMacroToken(tok->str, loc, true));
             return tok->next;
         }
 
         // Macro parameter..
         {
             TokenList temp(files);
-            if (expandArg(&temp, tok, loc, macros, expandedmacros1, expandedmacros, parametertokens)) {
+            if (expandArg(&temp, tok, loc, macros, expandedmacros, parametertokens)) {
                 if (!(temp.cback() && temp.cback()->name && tok->next && tok->next->op == '(')) {
                     output->takeTokens(temp);
                     return tok->next;
@@ -1259,7 +1233,7 @@ private:
                 TokenList temp2(files);
                 temp2.push_back(new Token(temp.cback()->str, tok->location));
 
-                const Token *tok2 = appendTokens(&temp2, tok->next, macros, expandedmacros1, expandedmacros, parametertokens);
+                const Token *tok2 = appendTokens(&temp2, tok->next, macros, expandedmacros, parametertokens);
                 if (!tok2)
                     return tok->next;
 
@@ -1278,21 +1252,21 @@ private:
             if (!calledMacro.functionLike())
                 return calledMacro.expand(output, loc, tok, macros, expandedmacros);
             if (!sameline(tok, tok->next) || tok->next->op != '(') {
-                output->push_back(newMacroToken(tok->str, loc, false));
+                output->push_back(newMacroToken(tok->str, loc, true));
                 return tok->next;
             }
             TokenList tokens(files);
             tokens.push_back(new Token(*tok));
-            const Token *tok2 = appendTokens(&tokens, tok->next, macros, expandedmacros1, expandedmacros, parametertokens);
+            const Token *tok2 = appendTokens(&tokens, tok->next, macros, expandedmacros, parametertokens);
             if (!tok2) {
-                output->push_back(newMacroToken(tok->str, loc, false));
+                output->push_back(newMacroToken(tok->str, loc, true));
                 return tok->next;
             }
             calledMacro.expand(output, loc, tokens.cfront(), macros, expandedmacros);
             return tok2->next;
         }
 
-        output->push_back(newMacroToken(tok->str, loc, false));
+        output->push_back(newMacroToken(tok->str, loc, true));
         return tok->next;
     }
 
@@ -1314,7 +1288,7 @@ private:
         return true;
     }
 
-    bool expandArg(TokenList *output, const Token *tok, const Location &loc, const std::map<TokenString, Macro> &macros, const std::set<TokenString> &expandedmacros1, const std::set<TokenString> &expandedmacros, const std::vector<const Token*> &parametertokens) const {
+    bool expandArg(TokenList *output, const Token *tok, const Location &loc, const std::map<TokenString, Macro> &macros, const std::set<TokenString> &expandedmacros, const std::vector<const Token*> &parametertokens) const {
         if (!tok->name)
             return false;
         const unsigned int argnr = getArgNum(tok->str);
@@ -1324,16 +1298,22 @@ private:
             return true;
         for (const Token *partok = parametertokens[argnr]->next; partok != parametertokens[argnr + 1U];) {
             const std::map<TokenString, Macro>::const_iterator it = macros.find(partok->str);
-            if (it != macros.end() && expandedmacros1.find(partok->str) == expandedmacros1.end())
+            if (it != macros.end() && (partok->str == name() || expandedmacros.find(partok->str) == expandedmacros.end()))
                 partok = it->second.expand(output, loc, partok, macros, expandedmacros);
             else {
-                output->push_back(newMacroToken(partok->str, loc, expandedmacros1.empty()));
+                output->push_back(newMacroToken(partok->str, loc, isReplaced(expandedmacros)));
                 partok = partok->next;
             }
         }
         return true;
     }
 
+    /**
+     * Get string for token. If token is argument, the expanded string is returned.
+     * @param tok              The token
+     * @param parametertokens  parameters given when expanding this macro
+     * @return string
+     */
     std::string expandArgStr(const Token *tok, const std::vector<const Token *> &parametertokens) const {
         TokenList tokens(files);
         if (expandArg(&tokens, tok, parametertokens)) {
@@ -1345,27 +1325,110 @@ private:
         return tok->str;
     }
 
-    void setMacro(Token *tok) const {
-        while (tok) {
-            if (!tok->macro.empty())
-                tok->macro = nameToken->str;
-            tok = tok->next;
+    /**
+     * Expand #X => "X"
+     * @param output  destination tokenlist
+     * @param loc     location for expanded token
+     * @param tok     The # token
+     * @param macros  all macros
+     * @param expandedmacros   set with expanded macros, with this macro
+     * @param parametertokens  parameters given when expanding this macro
+     * @return token after the X
+     */
+    const Token *expandHash(TokenList *output, const Location &loc, const Token *tok, const std::map<TokenString, Macro> &macros, const std::set<TokenString> &expandedmacros, const std::vector<const Token*> &parametertokens) const {
+        TokenList tokenListHash(files);
+        tok = expandToken(&tokenListHash, loc, tok->next, macros, expandedmacros, parametertokens);
+        std::ostringstream ostr;
+        for (const Token *hashtok = tokenListHash.cfront(); hashtok; hashtok = hashtok->next) {
+            for (unsigned int i = 0; i < hashtok->str.size(); i++) {
+                unsigned char c = hashtok->str[i];
+                if (c == '\"' || c == '\\' || c == '\'')
+                    ostr << '\\';
+                ostr << c;
+            }
         }
+        output->push_back(newMacroToken('\"' + ostr.str() + '\"', loc, isReplaced(expandedmacros)));
+        return tok;
     }
 
+    /**
+     * Expand A##B => AB
+     * The A should already be expanded. Call this when you reach the first # token
+     * @param output  destination tokenlist
+     * @param loc     location for expanded token
+     * @param tok     first # token
+     * @param macros  all macros
+     * @param expandedmacros   set with expanded macros, with this macro
+     * @param parametertokens  parameters given when expanding this macro
+     * @return token after B
+     */
+    const Token *expandHashHash(TokenList *output, const Location &loc, const Token *tok, const std::map<TokenString, Macro> &macros, const std::set<TokenString> &expandedmacros, const std::vector<const Token*> &parametertokens) const {
+        Token *A = output->back();
+        if (!A)
+            throw invalidHashHash(tok->location, name());
+        if (!sameline(tok, tok->next))
+            throw invalidHashHash(tok->location, name());
+
+        Token *B = tok->next->next;
+        const std::string strAB = A->str + expandArgStr(B, parametertokens);
+
+        bool removeComma = false;
+        if (variadic && strAB == "," && tok->previous->str == "," && args.size() >= 1U && B->str == args[args.size()-1U])
+            removeComma = true;
+
+        output->deleteToken(A);
+
+        if (!removeComma) {
+            TokenList tokens(files);
+            tokens.push_back(new Token(strAB, tok->location));
+            // TODO: For functionLike macros, push the (...)
+            expandToken(output, loc, tokens.cfront(), macros, expandedmacros, parametertokens);
+        }
+
+        return B->next;
+    }
+
+    bool isReplaced(const std::set<std::string> &expandedmacros) const {
+        // return true if size > 1
+        std::set<std::string>::const_iterator it = expandedmacros.begin();
+        if (it == expandedmacros.end())
+            return false;
+        ++it;
+        return (it != expandedmacros.end());
+    }
+
+    /** name token in definition */
     const Token *nameToken;
+
+    /** arguments for macro */
     std::vector<TokenString> args;
+
+    /** is macro variadic? */
     bool variadic;
+
+    /** first token in replacement string */
     const Token *valueToken;
+
+    /** token after replacement string */
     const Token *endToken;
+
+    /** files */
     std::vector<std::string> &files;
+
+    /** this is used for -D where the definition is not seen anywhere in code */
     TokenList tokenListDefine;
+
+    /** usage of this macro */
     mutable std::list<Location> usageList;
 };
 }
 
 
 namespace simplecpp {
+
+/**
+ * perform path simplifications for . and ..
+ */
 std::string simplifyPath(std::string path) {
     std::string::size_type pos;
 
@@ -1399,6 +1462,7 @@ std::string simplifyPath(std::string path) {
 }
 
 namespace {
+/** Evaluate sizeof(type) */
 void simplifySizeof(simplecpp::TokenList &expr, const std::map<std::string, std::size_t> &sizeOfType) {
     for (simplecpp::Token *tok = expr.front(); tok; tok = tok->next) {
         if (tok->str != "sizeof")
@@ -1551,6 +1615,25 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
 
     std::list<const Token *> filelist;
 
+    // -include files
+    for (std::list<std::string>::const_iterator it = dui.includes.begin(); it != dui.includes.end(); ++it) {
+        if (ret.find(*it) != ret.end())
+            continue;
+
+        std::ifstream fin(it->c_str());
+        if (!fin.is_open())
+            continue;
+
+        TokenList *tokenlist = new TokenList(fin, fileNumbers, *it, outputList);
+        if (!tokenlist->front()) {
+            delete tokenlist;
+            continue;
+        }
+
+        ret[*it] = tokenlist;
+        filelist.push_back(tokenlist->front());
+    }
+
     for (const Token *rawtok = rawtokens.cfront(); rawtok || !filelist.empty(); rawtok = rawtok ? rawtok->next : NULL) {
         if (rawtok == NULL) {
             rawtok = filelist.back();
@@ -1646,7 +1729,14 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
 
     std::set<std::string> pragmaOnce;
 
-    for (const Token *rawtok = rawtokens.cfront(); rawtok || !includetokenstack.empty();) {
+    includetokenstack.push(rawtokens.cfront());
+    for (std::list<std::string>::const_iterator it = dui.includes.begin(); it != dui.includes.end(); ++it) {
+        const std::map<std::string, TokenList*>::const_iterator f = filedata.find(*it);
+        if (f != filedata.end())
+            includetokenstack.push(f->second->cfront());
+    }
+
+    for (const Token *rawtok = NULL; rawtok || !includetokenstack.empty();) {
         if (rawtok == NULL) {
             rawtok = includetokenstack.top();
             includetokenstack.pop();
