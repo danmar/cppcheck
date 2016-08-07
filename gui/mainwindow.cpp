@@ -1064,6 +1064,9 @@ void MainWindow::Save()
     if (!selectedFile.isEmpty()) {
         Report::Type type = Report::TXT;
         if (selectedFilter == tr("XML files version 1 (*.xml)")) {
+            QMessageBox msgBox(QMessageBox::Icon::Warning, tr("Deprecated XML format"), tr("XML format 1 is deprecated and will be removed in cppcheck 1.81."), QMessageBox::StandardButton::Ok);
+            msgBox.exec();
+
             type = Report::XML;
             if (!selectedFile.endsWith(".xml", Qt::CaseInsensitive))
                 selectedFile += ".xml";

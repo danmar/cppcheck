@@ -750,9 +750,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 
-    if (_settings->inconclusive && _settings->xml && _settings->xml_version == 1U) {
-        PrintMessage("cppcheck: inconclusive messages will not be shown, because the old xml format is not compatible. It's recommended to use the new xml format (use --xml-version=2).");
-    }
+    // Warn about XML format 1, which will be removed in cppcheck 1.81
+    if (_settings->xml_version == 1U)
+        PrintMessage("cppcheck: XML format version 1 is deprecated and will be removed in cppcheck 1.81. Use '--xml-version=2'.");
+    if (_settings->inconclusive && _settings->xml && _settings->xml_version == 1U)
+        PrintMessage("cppcheck: inconclusive messages will not be shown, because the old xml format is not compatible.");
 
     if (argc <= 1) {
         _showHelp = true;
