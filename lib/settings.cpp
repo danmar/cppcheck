@@ -381,8 +381,8 @@ void Settings::importCompileCommands(std::istream &istr) {
 }
 
 namespace {
-  struct ProgramConfiguration {
-    ProgramConfiguration(const tinyxml2::XMLElement *cfg) {
+  struct ProjectConfiguration {
+    ProjectConfiguration(const tinyxml2::XMLElement *cfg) {
         for (const tinyxml2::XMLElement *e = cfg->FirstChildElement(); e; e = e->NextSiblingElement()) {
             if (std::strcmp(e->Name(),"Configuration")==0)
                 configuration = e->GetText();
@@ -396,7 +396,9 @@ namespace {
 
   struct ItemDefinitionGroup {
     ItemDefinitionGroup(const tinyxml2::XMLElement *idg) {
-      condition = idg->Attribute("condition");
+      const char *condAttr = idg->Attribute("Condition");
+      if (condAttr)
+          condition = condAttr;
       for (const tinyxml2::XMLElement *e1 = idg->FirstChildElement(); e1; e1 = e1->NextSiblingElement()) {
             if (std::strcmp(e1->Name(), "ClCompile") != 0)
                 continue;
@@ -408,7 +410,7 @@ namespace {
             }
         }
     }
-    bool conditionIsTrue(const ProgramConfiguration &p) const {
+    bool conditionIsTrue(const ProjectConfiguration &p) const {
         std::string c = condition;
         std::string::size_type pos = 0;
         while ((pos = c.find("$(Configuration)")) != std::string::npos) {
@@ -454,7 +456,7 @@ static std::list<std::string> toStringList(const std::string &s) {
 
 void Settings::importVcxproj(const std::string &filename)
 {
-    std::list<ProgramConfiguration> programConfigurationList;
+    std::list<ProjectConfiguration> projectConfigurationList;
     std::list<std::string> compileList;
     std::list<ItemDefinitionGroup> itemDefinitionGroupList;
 
@@ -467,14 +469,14 @@ void Settings::importVcxproj(const std::string &filename)
       return;
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (std::strcmp(node->Name(), "ItemGroup") == 0) {
-            if (node->Attribute("Label") && std::strcmp(node->Attribute("Label"), "ProgramConfigurations") == 0) {
+            if (node->Attribute("Label") && std::strcmp(node->Attribute("Label"), "ProjectConfigurations") == 0) {
                 for (const tinyxml2::XMLElement *cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
-                    if (std::strcmp(cfg->Name(), "ProgramConfiguration") == 0)
-                        programConfigurationList.push_back(ProgramConfiguration(cfg));
+                    if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0)
+                        projectConfigurationList.push_back(ProjectConfiguration(cfg));
                 }
             } else {
               for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                if (std::strcmp(e->Name(), "clCompile") == 0)
+                if (std::strcmp(e->Name(), "ClCompile") == 0)
                   compileList.push_back(e->Attribute("Include"));
               }
             }
@@ -483,16 +485,13 @@ void Settings::importVcxproj(const std::string &filename)
         }
     }
 
-    //std::list<ProgramConfiguration> programConfigurationList;
-    //std::list<std::string> compileList;
-    //std::list<ItemDefinitionGroup> itemDefinitionGroupList;
     for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
-        for (std::list<ProgramConfiguration>::const_iterator p = programConfigurationList.begin(); p != programConfigurationList.end(); ++p) {
+        for (std::list<ProjectConfiguration>::const_iterator p = projectConfigurationList.begin(); p != projectConfigurationList.end(); ++p) {
             for (std::list<ItemDefinitionGroup>::const_iterator i = itemDefinitionGroupList.begin(); i != itemDefinitionGroupList.end(); ++i) {
                 if (!i->conditionIsTrue(*p))
                     continue;
                      FileSettings fs;
-                     fs.filename = *c;
+                     fs.filename = Path::simplifyPath(Path::getPathFromFilename(filename) + *c);
                      fs.defines  = i->preprocessorDefinitions;
                      fs.includePaths = toStringList(i->additionalIncludePaths);
                      if (p->platform == "Win32")
