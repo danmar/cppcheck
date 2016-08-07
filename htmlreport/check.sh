@@ -17,11 +17,6 @@ xmllint --noout gui_test.xml
 echo -e "\n"
 
 
-../cppcheck --errorlist > errorlist.xml
-xmllint --noout errorlist.xml
-./cppcheck-htmlreport --file ./errorlist.xml --title "errorlist" --report-dir .
-echo ""
-
 ../cppcheck --errorlist --inconclusive --xml-version=2 > errorlist.xml
 xmllint --noout errorlist.xml
 ./cppcheck-htmlreport --file ./errorlist.xml --title "errorlist" --report-dir .
