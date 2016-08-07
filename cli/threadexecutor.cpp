@@ -352,11 +352,10 @@ unsigned int ThreadExecutor::check()
     HANDLE *threadHandles = new HANDLE[_settings.jobs];
 
     _itNextFile = _files.begin();
-    _itNextFileSettings = _settings.project.fileSettings.begin();
 
     _processedFiles = 0;
     _processedSize = 0;
-    _totalFiles = _files.size() + _settings.project.fileSettings.size();
+    _totalFiles = _files.size();
     _totalFileSize = 0;
     for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
         _totalFileSize += i->second;
@@ -416,8 +415,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
     unsigned int result = 0;
 
     ThreadExecutor *threadExecutor = static_cast<ThreadExecutor*>(args);
-    std::map<std::string, std::size_t>::const_iterator &itFile = threadExecutor->_itNextFile;
-    std::list<Project::FileSettings>::const_iterator &itFileSettings = threadExecutor->_itNextFileSettings;
+    std::map<std::string, std::size_t>::const_iterator &it = threadExecutor->_itNextFile;
 
     // guard static members of CppCheck against concurrent access
     EnterCriticalSection(&threadExecutor->_fileSync);
@@ -426,32 +424,24 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
     fileChecker.settings() = threadExecutor->_settings;
 
     for (;;) {
-        if (itFile == threadExecutor->_files.end() && itFileSettings == threadExecutor->_settings.project.fileSettings.end()) {
+        if (it == threadExecutor->_files.end()) {
             LeaveCriticalSection(&threadExecutor->_fileSync);
             break;
+
         }
+        const std::string &file = it->first;
+        const std::size_t fileSize = it->second;
+        ++it;
 
-        std::size_t fileSize = 0;
-        if (itFile != threadExecutor->_files.end()) {
-            const std::string &file = itFile->first;
-            fileSize = itFile->second;
-            ++itFile;
+        LeaveCriticalSection(&threadExecutor->_fileSync);
 
-            LeaveCriticalSection(&threadExecutor->_fileSync);
-
-            std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->_fileContents.find(file);
-            if (fileContent != threadExecutor->_fileContents.end()) {
-                // File content was given as a string
-                result += fileChecker.check(file, fileContent->second);
-            } else {
-                // Read file from a file
-                result += fileChecker.check(file);
-            }
-        } else { // file settings..
-            const Project::FileSettings &fs = *itFileSettings;
-            ++itFileSettings;
-            LeaveCriticalSection(&threadExecutor->_fileSync);
-            result += fileChecker.check(fs);
+        std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->_fileContents.find(file);
+        if (fileContent != threadExecutor->_fileContents.end()) {
+            // File content was given as a string
+            result += fileChecker.check(file, fileContent->second);
+        } else {
+            // Read file from a file
+            result += fileChecker.check(file);
         }
 
         EnterCriticalSection(&threadExecutor->_fileSync);

@@ -23,7 +23,6 @@
 #include <string>
 #include <list>
 #include "errorlogger.h"
-#include "project.h"
 
 #if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 #define THREADING_MODEL_FORK
@@ -110,7 +109,6 @@ private:
 
     std::map<std::string, std::string> _fileContents;
     std::map<std::string, std::size_t>::const_iterator _itNextFile;
-    std::list<Project::FileSettings>::const_iterator _itNextFileSettings;
     std::size_t _processedFiles;
     std::size_t _totalFiles;
     std::size_t _processedSize;

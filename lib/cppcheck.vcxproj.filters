@@ -143,12 +143,6 @@
     <ClCompile Include="..\externals\simplecpp\simplecpp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="project.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="platform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -290,12 +284,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\externals\simplecpp\simplecpp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="project.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

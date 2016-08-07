@@ -80,18 +80,6 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
     return processFile(path, iss);
 }
 
-unsigned int CppCheck::check(const Project::FileSettings &fs)
-{
-    CppCheck temp(*this, _useGlobalSuppressions);
-    temp._settings.userDefines = fs.defines;
-    temp._settings.userIncludes = fs.includePaths;
-    // TODO: temp._settings.userUndefs = fs.undefs;
-    if (fs.platformType != Settings::Unspecified) {
-        temp._settings.platformType = fs.platformType;
-    }
-    return temp.check(fs.filename);
-}
-
 unsigned int CppCheck::processFile(const std::string& filename, std::istream& fileStream)
 {
     exitcode = 0;
