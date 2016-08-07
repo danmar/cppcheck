@@ -23,7 +23,7 @@
 #include <string>
 #include <list>
 #include "errorlogger.h"
-#include "settings.h" // Project::FileSettings
+#include "project.h"
 
 #if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 #define THREADING_MODEL_FORK

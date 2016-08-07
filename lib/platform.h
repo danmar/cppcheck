@@ -27,9 +27,7 @@
 /// @{
 
 /**
-* @brief This is just a container for general settings so that we don't need
-* to pass individual values to functions or constructors now or in the
-* future when we might have even more detailed settings.
+* @brief Platform settings
 */
 struct CPPCHECKLIB Platform {
 public:

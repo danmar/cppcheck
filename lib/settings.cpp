@@ -19,8 +19,6 @@
 #include "settings.h"
 #include "preprocessor.h"       // Preprocessor
 #include "utils.h"
-#include "path.h"
-#include "tokenlist.h"
 
 #include <fstream>
 #include <set>
