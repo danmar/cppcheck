@@ -325,16 +325,19 @@ public:
 
     /** File settings */
     struct FileSettings {
+        FileSettings() : platformType(Unspecified) {}
         std::string filename;
         std::string defines;
-        std::string undefs;
-        std::string includes;
+        std::set<std::string> undefs;
+        std::list<std::string> includePaths;
+        PlatformType platformType;
     };
     std::list<FileSettings> fileSettings;
 
     void importProject(const std::string &filename);
 private:
     void importCompileCommands(std::istream &istr);
+    void importVcxproj(const std::string &filename);
 };
 
 /// @}

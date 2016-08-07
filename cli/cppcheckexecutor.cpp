@@ -825,6 +825,15 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
             }
         }
 
+        // filesettings
+        c = 0;
+        for (std::list<Settings::FileSettings>::const_iterator fs = settings.fileSettings.begin(); fs != settings.fileSettings.end(); ++fs) {
+          returnValue += cppcheck.check(*fs);
+          ++c;
+          if (!settings.quiet)
+            reportStatus(c, settings.fileSettings.size(), c, settings.fileSettings.size());
+        }
+
         // second loop to parse all markup files which may not work until all
         // c/cpp files have been parsed and checked
         for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {

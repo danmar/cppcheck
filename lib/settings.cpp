@@ -330,6 +330,8 @@ void Settings::importProject(const std::string &filename) {
         return;
     if (filename == "compile_commands.json") {
         importCompileCommands(fin);
+    } else if (filename.find(".vcxproj") != std::string::npos) {
+        importVcxproj(filename);
     }
 }
 
@@ -367,9 +369,9 @@ void Settings::importCompileCommands(std::istream &istr) {
                     if (F=='D')
                         fs.defines += fval + ";";
                     else if (F=='U')
-                        fs.undefs += fval + ";";
+                        fs.undefs.insert(fval);
                     else if (F=='I')
-                        fs.includes += fval + ";";
+                        fs.includePaths.push_back(fval);
                 }
                 fileSettings.push_back(fs);
             }
@@ -378,3 +380,127 @@ void Settings::importCompileCommands(std::istream &istr) {
     }
 }
 
+namespace {
+  struct ProgramConfiguration {
+    ProgramConfiguration(const tinyxml2::XMLElement *cfg) {
+        for (const tinyxml2::XMLElement *e = cfg->FirstChildElement(); e; e = e->NextSiblingElement()) {
+            if (std::strcmp(e->Name(),"Configuration")==0)
+                configuration = e->GetText();
+            else if (std::strcmp(e->Name(),"Platform")==0)
+                platform = e->GetText();
+        }
+    }
+    std::string configuration;
+    std::string platform;
+  };
+
+  struct ItemDefinitionGroup {
+    ItemDefinitionGroup(const tinyxml2::XMLElement *idg) {
+      condition = idg->Attribute("condition");
+      for (const tinyxml2::XMLElement *e1 = idg->FirstChildElement(); e1; e1 = e1->NextSiblingElement()) {
+            if (std::strcmp(e1->Name(), "ClCompile") != 0)
+                continue;
+            for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
+                if (std::strcmp(e->Name(), "PreprocessorDefinitions") == 0)
+                    preprocessorDefinitions = e->GetText();
+                else if (std::strcmp(e->Name(), "AdditionalIncludeDirectories") == 0)
+                    additionalIncludePaths = e->GetText();
+            }
+        }
+    }
+    bool conditionIsTrue(const ProgramConfiguration &p) const {
+        std::string c = condition;
+        std::string::size_type pos = 0;
+        while ((pos = c.find("$(Configuration)")) != std::string::npos) {
+            c.erase(pos,16);
+            c.insert(pos,p.configuration);
+        }
+        while ((pos = c.find("$(Platform)")) != std::string::npos) {
+          c.erase(pos, 11);
+          c.insert(pos, p.platform);
+        }
+        // TODO : Better evaluation
+        Settings s;
+        std::istringstream istr(c);
+        TokenList tokens(&s);
+        tokens.createTokens(istr);
+        tokens.createAst();
+        for (const Token *tok = tokens.front(); tok; tok = tok->next()) {
+            if (tok->str() == "==" && tok->astOperand1() && tok->astOperand2() && tok->astOperand1()->str() == tok->astOperand2()->str())
+                return true;
+        }
+        return false;
+    }
+    std::string condition;
+    std::string preprocessorDefinitions;
+    std::string additionalIncludePaths;
+  };
+};
+
+static std::list<std::string> toStringList(const std::string &s) {
+    std::list<std::string> ret;
+    std::string::size_type pos1 = 0;
+    std::string::size_type pos2;
+    while ((pos2 = s.find(";",pos1)) != std::string::npos) {
+        ret.push_back(s.substr(pos1, pos2-pos1));
+        pos1 = pos2 + 1;
+        if (pos1 >= s.size())
+            break;
+    }
+    if (pos1 < s.size())
+        ret.push_back(s.substr(pos1));
+    return ret;
+}
+
+void Settings::importVcxproj(const std::string &filename)
+{
+    std::list<ProgramConfiguration> programConfigurationList;
+    std::list<std::string> compileList;
+    std::list<ItemDefinitionGroup> itemDefinitionGroupList;
+
+    tinyxml2::XMLDocument doc;
+    tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
+    if (error != tinyxml2::XML_SUCCESS)
+        return;
+    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
+    if (rootnode == nullptr)
+      return;
+    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+        if (std::strcmp(node->Name(), "ItemGroup") == 0) {
+            if (node->Attribute("Label") && std::strcmp(node->Attribute("Label"), "ProgramConfigurations") == 0) {
+                for (const tinyxml2::XMLElement *cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
+                    if (std::strcmp(cfg->Name(), "ProgramConfiguration") == 0)
+                        programConfigurationList.push_back(ProgramConfiguration(cfg));
+                }
+            } else {
+              for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
+                if (std::strcmp(e->Name(), "clCompile") == 0)
+                  compileList.push_back(e->Attribute("Include"));
+              }
+            }
+        } else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
+            itemDefinitionGroupList.push_back(ItemDefinitionGroup(node));
+        }
+    }
+
+    //std::list<ProgramConfiguration> programConfigurationList;
+    //std::list<std::string> compileList;
+    //std::list<ItemDefinitionGroup> itemDefinitionGroupList;
+    for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
+        for (std::list<ProgramConfiguration>::const_iterator p = programConfigurationList.begin(); p != programConfigurationList.end(); ++p) {
+            for (std::list<ItemDefinitionGroup>::const_iterator i = itemDefinitionGroupList.begin(); i != itemDefinitionGroupList.end(); ++i) {
+                if (!i->conditionIsTrue(*p))
+                    continue;
+                     FileSettings fs;
+                     fs.filename = *c;
+                     fs.defines  = i->preprocessorDefinitions;
+                     fs.includePaths = toStringList(i->additionalIncludePaths);
+                     if (p->platform == "Win32")
+                         fs.platformType = Win32W;
+                     else if (p->platform == "x64")
+                         fs.platformType = Win64;
+                     fileSettings.push_back(fs);
+            }
+        }
+    }
+}
