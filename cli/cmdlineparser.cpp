@@ -481,7 +481,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
             // experimental --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
-                _settings->importProject(argv[i]+10);
+                _settings->project.load(argv[i]+10);
             }
 
             // Report progress
@@ -765,7 +765,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
     }
 
     // Print error only if we have "real" command and expect files
-    if (!_exitAfterPrint && _pathnames.empty() && _settings->fileSettings.empty()) {
+    if (!_exitAfterPrint && _pathnames.empty() && _settings->project.fileSettings.empty()) {
         PrintMessage("cppcheck: No C or C++ source files found.");
         return false;
     }

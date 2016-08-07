@@ -352,11 +352,11 @@ unsigned int ThreadExecutor::check()
     HANDLE *threadHandles = new HANDLE[_settings.jobs];
 
     _itNextFile = _files.begin();
-    _itNextFileSettings = _settings.fileSettings.begin();
+    _itNextFileSettings = _settings.project.fileSettings.begin();
 
     _processedFiles = 0;
     _processedSize = 0;
-    _totalFiles = _files.size() + _settings.fileSettings.size();
+    _totalFiles = _files.size() + _settings.project.fileSettings.size();
     _totalFileSize = 0;
     for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
         _totalFileSize += i->second;
@@ -417,7 +417,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
 
     ThreadExecutor *threadExecutor = static_cast<ThreadExecutor*>(args);
     std::map<std::string, std::size_t>::const_iterator &itFile = threadExecutor->_itNextFile;
-    std::list<Settings::FileSettings>::const_iterator &itFileSettings = threadExecutor->_itNextFileSettings;
+    std::list<Project::FileSettings>::const_iterator &itFileSettings = threadExecutor->_itNextFileSettings;
 
     // guard static members of CppCheck against concurrent access
     EnterCriticalSection(&threadExecutor->_fileSync);
@@ -426,7 +426,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
     fileChecker.settings() = threadExecutor->_settings;
 
     for (;;) {
-        if (itFile == threadExecutor->_files.end() && itFileSettings == threadExecutor->_settings.fileSettings.end()) {
+        if (itFile == threadExecutor->_files.end() && itFileSettings == threadExecutor->_settings.project.fileSettings.end()) {
             LeaveCriticalSection(&threadExecutor->_fileSync);
             break;
         }
@@ -448,7 +448,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
                 result += fileChecker.check(file);
             }
         } else { // file settings..
-            const Settings::FileSettings &fs = *itFileSettings;
+            const Project::FileSettings &fs = *itFileSettings;
             ++itFileSettings;
             LeaveCriticalSection(&threadExecutor->_fileSync);
             result += fileChecker.check(fs);

@@ -80,7 +80,7 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
     return processFile(path, iss);
 }
 
-unsigned int CppCheck::check(const Settings::FileSettings &fs)
+unsigned int CppCheck::check(const Project::FileSettings &fs)
 {
     CppCheck temp(*this, _useGlobalSuppressions);
     temp._settings.userDefines = fs.defines;
