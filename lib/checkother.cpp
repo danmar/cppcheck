@@ -627,8 +627,8 @@ void CheckOther::checkRedundantAssignment()
                 if (memfunc && tok->strAt(-1) != "(" && tok->strAt(-1) != "=") {
                     const Token* param1 = tok->tokAt(2);
                     writtenArgumentsEnd = param1->next();
-                    if (param1->varId() && param1->strAt(1) == "," && !Token::Match(tok, "strcat|strncat|wcscat|wcsncat")) {
-                        if (tok->str() == "memset" && initialized.find(param1->varId()) == initialized.end() && param1->variable() && param1->variable()->isLocal() && param1->variable()->isArray())
+                    if (param1->varId() && param1->strAt(1) == "," && !Token::Match(tok, "strcat|strncat|wcscat|wcsncat") && param1->variable() && param1->variable()->isLocal() && param1->variable()->isArray()) {
+                        if (tok->str() == "memset" && initialized.find(param1->varId()) == initialized.end())
                             initialized.insert(param1->varId());
                         else {
                             const std::map<unsigned int, const Token*>::const_iterator it = memAssignments.find(param1->varId());

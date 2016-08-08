@@ -1637,8 +1637,8 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
 
-        check("void foo(char *str, int a)\n"
-              "{\n"
+        check("void foo(int a) {\n"
+              "    char str[10];\n"
               "    switch (a)\n"
               "    {\n"
               "    case 2:\n"
@@ -1649,8 +1649,8 @@ private:
               "}", 0, false, false, false);
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (warning) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
 
-        check("void foo(char *str, int a)\n"
-              "{\n"
+        check("void foo(int a) {\n"
+              "    char str[10];\n"
               "    switch (a)\n"
               "    {\n"
               "    case 2:\n"
@@ -1661,8 +1661,8 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (warning) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
 
-        check("void foo(char *str, int a)\n"
-              "{\n"
+        check("void foo(int a) {\n"
+              "    char str[10];\n"
               "    int z = 0;\n"
               "    switch (a)\n"
               "    {\n"
@@ -1676,8 +1676,8 @@ private:
               "}", nullptr, false, false, false);
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (warning) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
 
-        check("void foo(char *str, int a)\n"
-              "{\n"
+        check("void foo(int a) {\n"
+              "    char str[10];\n"
               "    switch (a)\n"
               "    {\n"
               "    case 2:\n"
@@ -1690,8 +1690,8 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(char *str, int a)\n"
-              "{\n"
+        check("void foo(int a) {\n"
+              "    char str[10];\n"
               "    switch (a)\n"
               "    {\n"
               "    case 2:\n"
@@ -5089,25 +5089,34 @@ private:
 
     void redundantMemWrite() {
         // Simple tests
-        check("void f(void* a) {\n"
+        check("void f() {\n"
+              "    char a[10];\n"
               "    memcpy(a, foo, bar);\n"
               "    memset(a, 0, bar);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
-        check("void* a;\n"
-              "void f() {\n"
+        check("void f() {\n"
+              "    char a[10];\n"
               "    strcpy(a, foo);\n"
               "    strncpy(a, 0, bar);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
         check("void f() {\n"
-              "    void* a = foo();\n"
-              "    sprintf(a, foo);\n"
+              "    char a[10];\n"
+              "    sprintf(a, \"foo\");\n"
               "    memmove(a, 0, bar);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+
+        check("void f(char *filename) {\n"
+              "    char *p = strrchr(filename,'.');\n"
+              "    strcpy(p, \"foo\");\n"
+              "    dostuff(filename);\n"
+              "    strcpy(p, \"foo\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         // Writing to different parts of a buffer
         check("void f(void* a) {\n"
@@ -5125,20 +5134,22 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // strcat is special
-        check("void f(void* a) {\n"
+        check("void f() {\n"
+              "    char a[10];\n"
               "    strcpy(a, foo);\n"
               "    strcat(a, bar);\n" // Not redundant
               "    strcpy(a, x);\n" // Redundant
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
         // Tests with function call between copy
-        check("void f(void* a) {\n"
+        check("void f() {\n"
+              "    char a[10];\n"
               "    snprintf(a, foo, bar);\n"
               "    bar();\n"
               "    memset(a, 0, size);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
 
         check("void* a;\n"
               "void f() {\n"
@@ -5149,12 +5160,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
-              "    void* a = foo();\n"
+              "    char a[10];\n"
               "    memset(a, 0, size);\n"
               "    bar();\n"
               "    memset(a, 0, size);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Buffer 'a' is being written before its old content has been used.\n", "", errout.str());
 
         check("void bar(void* a) {}\n"
               "void f(void* a) {\n"
