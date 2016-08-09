@@ -187,6 +187,8 @@ private:
         TEST_CASE(functionArgs7); // #7652
         TEST_CASE(functionArgs8); // #7653
         TEST_CASE(functionArgs9); // #7657
+        TEST_CASE(functionArgs10);
+        TEST_CASE(functionArgs11);
 
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
@@ -1750,6 +1752,54 @@ private:
                 if (func->argumentList.size() == 1 && func->argumentList.front().type()) {
                     const Type * type = func->argumentList.front().type();
                     ASSERT_EQUALS(true, type->isEnumType());
+                }
+            }
+        }
+    }
+
+    void functionArgs10() {
+        GET_SYMBOL_DB("class Fred {\n"
+                      "public:\n"
+                      "  Fred(Whitespace = PRESERVE_WHITESPACE);\n"
+                      "};\n"
+                      "Fred::Fred(Whitespace whitespace) { }");
+        ASSERT_EQUALS(true, db != nullptr);
+        if (db) {
+            ASSERT_EQUALS(3, db->scopeList.size());
+            if (db->scopeList.size() == 3) {
+                std::list<Scope>::const_iterator scope = db->scopeList.begin();
+                ++scope;
+                ASSERT_EQUALS((unsigned int)Scope::eClass, (unsigned int)scope->type);
+                ASSERT_EQUALS(1, scope->functionList.size());
+                ASSERT(scope->functionList.begin()->functionScope != nullptr);
+                if (scope->functionList.begin()->functionScope) {
+                    const Scope * functionScope = scope->functionList.begin()->functionScope;
+                    ++scope;
+                    ASSERT(functionScope == &*scope);
+                }
+            }
+        }
+    }
+
+    void functionArgs11() {
+        GET_SYMBOL_DB("class Fred {\n"
+                      "public:\n"
+                      "  void foo(char a[16]);\n"
+                      "};\n"
+                      "void Fred::foo(char b[16]) { }");
+        ASSERT_EQUALS(true, db != nullptr);
+        if (db) {
+            ASSERT_EQUALS(3, db->scopeList.size());
+            if (db->scopeList.size() == 3) {
+                std::list<Scope>::const_iterator scope = db->scopeList.begin();
+                ++scope;
+                ASSERT_EQUALS((unsigned int)Scope::eClass, (unsigned int)scope->type);
+                ASSERT_EQUALS(1, scope->functionList.size());
+                ASSERT(scope->functionList.begin()->functionScope != nullptr);
+                if (scope->functionList.begin()->functionScope) {
+                    const Scope * functionScope = scope->functionList.begin()->functionScope;
+                    ++scope;
+                    ASSERT(functionScope == &*scope);
                 }
             }
         }

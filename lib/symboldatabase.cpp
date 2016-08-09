@@ -1725,7 +1725,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
                     return !first && !second;
                 }
             } else if (!first) { // End of argument list (first)
-                return second->next() && second->next()->str() == ")";
+                return !second->nextArgument(); // End of argument list (second)
             }
         } else if (second->next()->str() == "=") {
             second = second->nextArgument();
@@ -1767,8 +1767,8 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             break;
 
         // variable names are different
-        else if ((Token::Match(first->next(), "%name% ,|)|=") &&
-                  Token::Match(second->next(), "%name% ,|)")) &&
+        else if ((Token::Match(first->next(), "%name% ,|)|=|[") &&
+                  Token::Match(second->next(), "%name% ,|)|[")) &&
                  (first->next()->str() != second->next()->str())) {
             // skip variable names
             first = first->next();
