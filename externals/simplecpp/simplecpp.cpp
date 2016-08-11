@@ -213,6 +213,11 @@ std::string simplecpp::TokenList::stringify() const {
     std::ostringstream ret;
     Location loc(files);
     for (const Token *tok = cfront(); tok; tok = tok->next) {
+        if (tok->location.line < loc.line || tok->location.fileIndex != loc.fileIndex) {
+            ret << "\n#line " << tok->location.line << " \"" << tok->location.file() << "\"\n";
+            loc = tok->location;
+        }
+
         while (tok->location.line > loc.line) {
             ret << '\n';
             loc.line++;
@@ -313,6 +318,19 @@ static unsigned short getAndSkipBOM(std::istream &istr) {
 
 bool isNameChar(unsigned char ch) {
     return std::isalnum(ch) || ch == '_' || ch == '$';
+}
+
+static std::string escapeString(const std::string &str) {
+    std::ostringstream ostr;
+    ostr << '\"';
+    for (std::size_t i = 1U; i < str.size() - 1; ++i) {
+        char c = str[i];
+        if (c == '\\' || c == '\"' || c == '\'')
+            ostr << '\\';
+        ostr << c;
+    }
+    ostr << '\"';
+    return ostr.str();
 }
 
 void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filename, OutputList *outputList)
@@ -444,7 +462,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                     // TODO report
                     return;
                 currentToken.erase(currentToken.size() - endOfRawString.size(), endOfRawString.size() - 1U);
-                back()->setstr(currentToken);
+                back()->setstr(escapeString(currentToken));
                 location.col += currentToken.size() + 2U + 2 * delim.size();
                 continue;
             }
@@ -536,6 +554,11 @@ void simplecpp::TokenList::combineOperators() {
 
         if (tok->op == '\0' || !tok->next || tok->next->op == '\0')
             continue;
+        if (!sameline(tok,tok->next))
+            continue;
+        if (tok->location.col + 1U != tok->next->location.col)
+            continue;
+
         if (tok->next->op == '=' && tok->isOneOf("=!<>+-*/%&|^")) {
             tok->setstr(tok->str + "=");
             deleteToken(tok->next);
@@ -1382,15 +1405,11 @@ private:
         TokenList tokenListHash(files);
         tok = expandToken(&tokenListHash, loc, tok->next, macros, expandedmacros, parametertokens);
         std::ostringstream ostr;
-        for (const Token *hashtok = tokenListHash.cfront(); hashtok; hashtok = hashtok->next) {
-            for (unsigned int i = 0; i < hashtok->str.size(); i++) {
-                unsigned char c = hashtok->str[i];
-                if (c == '\"' || c == '\\' || c == '\'')
-                    ostr << '\\';
-                ostr << c;
-            }
-        }
-        output->push_back(newMacroToken('\"' + ostr.str() + '\"', loc, isReplaced(expandedmacros)));
+        ostr << '\"';
+        for (const Token *hashtok = tokenListHash.cfront(); hashtok; hashtok = hashtok->next)
+            ostr << hashtok->str;
+        ostr << '\"';
+        output->push_back(newMacroToken(escapeString(ostr.str()), loc, isReplaced(expandedmacros)));
         return tok;
     }
 
@@ -1807,8 +1826,10 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                     err.msg = '#' + rawtok->str + ' ' + err.msg;
                     outputList->push_back(err);
                 }
-                output.clear();
-                return;
+                if (rawtok->str == ERROR) {
+                    output.clear();
+                    return;
+                }
             }
 
             if (rawtok->str == DEFINE) {
