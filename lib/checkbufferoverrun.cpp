@@ -44,10 +44,13 @@ namespace {
 //---------------------------------------------------------------------------
 
 // CWE ids used:
-static const CWE CWE131(131U);
-static const CWE CWE398(398U);
-static const CWE CWE786(786U);
-static const CWE CWE788(788U);
+static const CWE CWE131(131U);	// Incorrect Calculation of Buffer Size
+static const CWE CWE170(170U);	// Improper Null Termination
+static const CWE CWE398(398U);	// Indicator of Poor Code Quality
+static const CWE CWE682(682U);	// Incorrect Calculation
+static const CWE CWE758(758U);	// Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE786(786U);	// Access of Memory Location Before Start of Buffer
+static const CWE CWE788(788U);	// Access of Memory Location After End of Buffer
 
 //---------------------------------------------------------------------------
 
@@ -174,7 +177,7 @@ void CheckBufferOverrun::strncatUsageError(const Token *tok)
                 "At most, strncat appends the 3rd parameter's amount of characters and adds a terminating null byte.\n"
                 "The safe way to use strncat is to subtract one from the remaining space in the buffer and use it as 3rd parameter."
                 "Source: http://www.cplusplus.com/reference/cstring/strncat/\n"
-                "Source: http://www.opensource.apple.com/source/Libc/Libc-167/gen.subproj/i386.subproj/strncat.c");
+                "Source: http://www.opensource.apple.com/source/Libc/Libc-167/gen.subproj/i386.subproj/strncat.c", CWE119, false);
 }
 
 void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &what, const bool show_size_info, const MathLib::bigint &supplied_size, const MathLib::bigint &actual_size)
@@ -219,7 +222,7 @@ void CheckBufferOverrun::sizeArgumentAsCharError(const Token *tok)
 {
     if (_settings && !_settings->isEnabled("warning"))
         return;
-    reportError(tok, Severity::warning, "sizeArgumentAsChar", "The size argument is given as a char constant.");
+    reportError(tok, Severity::warning, "sizeArgumentAsChar", "The size argument is given as a char constant.", CWE682, false);
 }
 
 
@@ -229,7 +232,7 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::stri
                 "The buffer '" + varname + "' may not be null-terminated after the call to strncpy().\n"
                 "If the source string's size fits or exceeds the given size, strncpy() does not add a "
                 "zero at the end of the buffer. This causes bugs later in the code if the code "
-                "assumes buffer is null-terminated.", CWE(0U), true);
+                "assumes buffer is null-terminated.", CWE170, true);
 }
 
 void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
@@ -243,7 +246,7 @@ void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const st
                                "The buffer '" + varname + "' is not null-terminated after the call to " + function + "(). "
                                "This will cause bugs later in the code if the code assumes the buffer is null-terminated.";
 
-    reportError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg, CWE(0U), true);
+    reportError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg, CWE170, true);
 }
 
 void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname)
@@ -1084,7 +1087,7 @@ void CheckBufferOverrun::negativeArraySize()
 void CheckBufferOverrun::negativeArraySizeError(const Token *tok)
 {
     reportError(tok, Severity::error, "negativeArraySize",
-                "Declaration of array '" + (tok ? tok->str() : std::string()) + "' with negative size is undefined behaviour");
+                "Declaration of array '" + (tok ? tok->str() : std::string()) + "' with negative size is undefined behaviour", CWE758, false);
 }
 
 //---------------------------------------------------------------------------

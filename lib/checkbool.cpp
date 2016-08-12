@@ -32,6 +32,7 @@ namespace {
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 static const CWE CWE571(571U);  // Expression is Always True
 static const CWE CWE587(587U);  // Assignment of a Fixed Address to a Pointer
+static const CWE CWE704(704U);	// Incorrect Type Conversion or Cast
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -461,5 +462,5 @@ void CheckBool::checkAssignBoolToFloat()
 void CheckBool::assignBoolToFloatError(const Token *tok)
 {
     reportError(tok, Severity::style, "assignBoolToFloat",
-                "Boolean value assigned to floating point variable.");
+                "Boolean value assigned to floating point variable.", CWE704, false);
 }
