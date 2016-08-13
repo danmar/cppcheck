@@ -189,6 +189,7 @@ private:
         TEST_CASE(functionArgs9); // #7657
         TEST_CASE(functionArgs10);
         TEST_CASE(functionArgs11);
+        TEST_CASE(functionArgs12); // #7661
 
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
@@ -1800,6 +1801,30 @@ private:
                     const Scope * functionScope = scope->functionList.begin()->functionScope;
                     ++scope;
                     ASSERT(functionScope == &*scope);
+                }
+            }
+        }
+    }
+
+    void functionArgs12() { // #7661
+        GET_SYMBOL_DB("struct A {\n"
+                      "    enum E { };\n"
+                      "    int a[10];\n"
+                      "};\n"
+                      "struct B : public A {\n"
+                      "    void foo(B::E e) { }\n"
+                      "};");
+
+        ASSERT_EQUALS(true, db != nullptr);
+        if (db) {
+            const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo (");
+            ASSERT_EQUALS(true, f && f->function());
+            if (f && f->function()) {
+                const Function *func = f->function();
+                ASSERT_EQUALS(true, func->argumentList.size() == 1 && func->argumentList.front().type());
+                if (func->argumentList.size() == 1 && func->argumentList.front().type()) {
+                    const Type * type = func->argumentList.front().type();
+                    ASSERT_EQUALS(true, type->isEnumType());
                 }
             }
         }
