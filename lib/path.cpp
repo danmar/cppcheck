@@ -60,17 +60,11 @@ std::string Path::fromNativeSeparators(std::string path)
 
 std::string Path::simplifyPath(std::string originalPath)
 {
-    const bool isUnc = originalPath.size() > 2 && originalPath[0] == '/' && originalPath[1] == '/';
+    const bool isUnc = originalPath.compare(0,2,"//") == 0;
 
     // Remove ./, .//, ./// etc. at the beginning
-    while (originalPath.size() > 2 && originalPath[0] == '.' && originalPath[1] == '/') { // remove "./././"
-        size_t toErase = 2;
-        for (std::size_t i = 2; i < originalPath.size(); i++) {
-            if (originalPath[i] == '/')
-                toErase++;
-            else
-                break;
-        }
+    while (originalPath.compare(0,2,"./") == 0) { // remove "./././"
+        size_t toErase = originalPath.find_first_not_of("/",2);
         originalPath = originalPath.erase(0, toErase);
     }
 
