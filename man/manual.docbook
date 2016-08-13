@@ -5,7 +5,7 @@
   <bookinfo>
     <title>Cppcheck 1.75</title>
 
-    <date>2016-07-27</date>
+    <date>2016-08-13</date>
   </bookinfo>
 
   <chapter>
@@ -90,6 +90,27 @@ Checking path/file2.cpp...
     </section>
 
     <section>
+      <title>Check files manually or use project file</title>
+
+      <para>With Cppcheck you can check files manually, by specifying
+      files/paths to check and settings. Or you can use a project file
+      (cmake/visual studio).</para>
+
+      <para>Using the project file is quicker since it requires very little
+      configuration from you.</para>
+
+      <para>Checking files manually gives you better control of the
+      analysis.</para>
+
+      <para>We don't know which approach will give you the best results. It is
+      recommended that you try both. It is possible that you will get
+      different results so that to find most bugs you need to use both
+      approaches.</para>
+
+      <para>Later chapters will describe this in more detail.</para>
+    </section>
+
+    <section>
       <title>Excluding a file or folder from checking</title>
 
       <para>To exclude a file or folder, there are two options. The first
@@ -106,27 +127,6 @@ Checking path/file2.cpp...
       class="directory">src/c</filename> are checked:</para>
 
       <programlisting>cppcheck -isrc/c src</programlisting>
-    </section>
-
-    <section>
-      <title>Include paths</title>
-
-      <para>To add an include path, use <parameter
-      class="command">-I</parameter>, followed by the path.</para>
-
-      <para>Cppcheck's preprocessor basically handles includes like any other
-      preprocessor. However, while other preprocessors stop working when they
-      encounter a missing header, cppcheck will just print an information
-      message and continues parsing the code.</para>
-
-      <para>The purpose of this behaviour is that cppcheck is meant to work
-      without necessarily seeing the entire code. Actually, it is recommended
-      to not give all include paths. While it is useful for cppcheck to see
-      the declaration of a class when checking the implementation of its
-      members, passing standard library headers is highly discouraged because
-      it will result in worse results and longer checking time. For such
-      cases, .cfg files (see below) are the better way to provide information
-      about the implementation of functions and types to cppcheck.</para>
     </section>
 
     <section>
@@ -305,19 +305,85 @@ cppcheck --enable=all</programlisting>
     </section>
   </chapter>
 
+  <chapter>
+    <title>Project</title>
+
+    <para>When you use CMake or Visual Studio you can use
+    <literal>--project</literal> to analyse your project.</para>
+
+    <para>It will give you quick and easy results. There is not much
+    configuration you need to do. But it is hard to say if this will give you
+    the best results, it is recommended that you try it and also try to
+    analyse your source code without <literal>--project</literal> and see
+    which option works best for you.</para>
+
+    <section>
+      <title>CMake</title>
+
+      <para>Cppcheck can understand compile databases. You can generate these
+      with CMake.</para>
+
+      <para>Example:</para>
+
+      <programlisting>$ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .</programlisting>
+
+      <para>The file <literal>compile_commands.json</literal> is created in
+      the current folder.</para>
+
+      <para>Now run Cppcheck like this:</para>
+
+      <programlisting>$ cppcheck --project=compile_commands.json</programlisting>
+    </section>
+
+    <section>
+      <title>Visual Studio</title>
+
+      <para>You can run Cppcheck on individual project files (*.vcxproj) or on
+      a whole solution (*.sln)</para>
+
+      <programlisting># run cppcheck on a whole solution
+$ cppcheck --project=foobar.sln
+
+# run cppcheck on a individual project
+$ cppcheck --project=foobar.vcxproj</programlisting>
+
+      <para>Please note that there is also a Visual Studio plugin that allows
+      you to run cppcheck inside Visual Studio.</para>
+    </section>
+  </chapter>
+
   <chapter id="preprocessor-configurations">
-    <title>Preprocessor configurations</title>
+    <title>Preprocessor settings</title>
 
-    <para>By default Cppcheck will check all preprocessor configurations
-    (except those that have #error in them).</para>
+    <para>If you use <literal>--project</literal> then Cppcheck will use the
+    preprocessor settings from the project file.</para>
 
-    <para>You can use -D to change this. When you use -D, cppcheck will by
-    default only check the given configuration and nothing else. This is how
-    compilers work. But you can use <literal>--force</literal> or
-    <literal>--max-configs</literal> to override the number of
-    configurations.</para>
+    <para>Otherwise you'll probably want to configure the include paths,
+    defines etc.</para>
 
-    <programlisting># check all configurations
+    <section>
+      <title>Defines</title>
+
+      <para>Here is a file that has 2 configurations (with A defined and
+      without A):</para>
+
+      <programlisting>#ifdef A
+    x = y;
+#else
+    x = z;
+#endif</programlisting>
+
+      <para>By default Cppcheck will check all preprocessor configurations
+      (except those that have #error in them). So the above code will be
+      analysed both when A is defined and when it is not.</para>
+
+      <para>You can use -D to change this. When you use -D, cppcheck will by
+      default only check the given configuration and nothing else. This is how
+      compilers work. But you can use <literal>--force</literal> or
+      <literal>--max-configs</literal> to override the number of
+      configurations.</para>
+
+      <programlisting># check all configurations
 cppcheck file.c
 
 # only check the configuration A
@@ -326,13 +392,35 @@ cppcheck -DA file.c
 # check all configurations when macro A is defined
 cppcheck -DA --force file.c</programlisting>
 
-    <para>Another useful flag might be -U. It undefines a symbol. Example
-    usage:</para>
+      <para>Another useful flag might be -U. It undefines a symbol. Example
+      usage:</para>
 
-    <programlisting>cppcheck -UX file.c</programlisting>
+      <programlisting>cppcheck -UX file.c</programlisting>
 
-    <para>That will mean that X is not defined. Cppcheck will not check what
-    happens when X is defined.</para>
+      <para>That will mean that X is not defined. Cppcheck will not check what
+      happens when X is defined.</para>
+    </section>
+
+    <section>
+      <title>Include paths</title>
+
+      <para>To add an include path, use <parameter
+      class="command">-I</parameter>, followed by the path.</para>
+
+      <para>Cppcheck's preprocessor basically handles includes like any other
+      preprocessor. However, while other preprocessors stop working when they
+      encounter a missing header, cppcheck will just print an information
+      message and continues parsing the code.</para>
+
+      <para>The purpose of this behaviour is that cppcheck is meant to work
+      without necessarily seeing the entire code. Actually, it is recommended
+      to not give all include paths. While it is useful for cppcheck to see
+      the declaration of a class when checking the implementation of its
+      members, passing standard library headers is highly discouraged because
+      it will result in worse results and longer checking time. For such
+      cases, .cfg files (see below) are the better way to provide information
+      about the implementation of functions and types to cppcheck.</para>
+    </section>
   </chapter>
 
   <chapter>
@@ -721,12 +809,10 @@ Checking test.c...
 
         <para>Here is an example program:</para>
 
-        <para>
-          <programlisting>void test()
+        <para><programlisting>void test()
 {
     HPEN pen = CreatePen(PS_SOLID, 1, RGB(255,0,0));
-}</programlisting>
-        </para>
+}</programlisting></para>
 
         <para>The code example above has a resource leak -
         <literal>CreatePen()</literal> is a WinAPI function that creates a
@@ -753,11 +839,11 @@ Checking pen1.c...
   &lt;/resource&gt;
 &lt;/def&gt;</programlisting>
 
-      <para>The allocation and deallocation functions are organized in groups.
-      Each group is defined in a <literal>&lt;resource&gt;</literal> or
-      <literal>&lt;memory&gt;</literal> tag and is identified by its
-      <literal>&lt;dealloc&gt;</literal> functions. This means, groups with
-      overlapping <literal>&lt;dealloc&gt;</literal> tags are merged.</para>
+        <para>The allocation and deallocation functions are organized in
+        groups. Each group is defined in a <literal>&lt;resource&gt;</literal>
+        or <literal>&lt;memory&gt;</literal> tag and is identified by its
+        <literal>&lt;dealloc&gt;</literal> functions. This means, groups with
+        overlapping <literal>&lt;dealloc&gt;</literal> tags are merged.</para>
       </section>
 
       <section>
