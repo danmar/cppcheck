@@ -175,11 +175,12 @@ unsigned int ThreadExecutor::check()
     std::map<pid_t, std::string> childFile;
     std::map<int, std::string> pipeFile;
     std::size_t processedsize = 0;
-    std::map<std::string, std::size_t>::const_iterator i = _files.begin();
+    std::map<std::string, std::size_t>::const_iterator iFile = _files.begin();
+    std::list<ImportProject::FileSettings>::const_iterator iFileSettings = _settings.project.fileSettings.begin();
     for (;;) {
         // Start a new child
         size_t nchildren = rpipes.size();
-        if (i != _files.end() && nchildren < _settings.jobs && checkLoadAverage(nchildren)) {
+        if ((iFile != _files.end() || iFileSettings != _settings.project.fileSettings.end()) && nchildren < _settings.jobs && checkLoadAverage(nchildren)) {
             int pipes[2];
             if (pipe(pipes) == -1) {
                 std::cerr << "pipe() failed: "<< std::strerror(errno) << std::endl;
@@ -210,12 +211,14 @@ unsigned int ThreadExecutor::check()
                 fileChecker.settings() = _settings;
                 unsigned int resultOfCheck = 0;
 
-                if (!_fileContents.empty() && _fileContents.find(i->first) != _fileContents.end()) {
+                if (iFileSettings != _settings.project.fileSettings.end()) {
+                    resultOfCheck = fileChecker.check(*iFileSettings);
+                } else if (!_fileContents.empty() && _fileContents.find(iFile->first) != _fileContents.end()) {
                     // File content was given as a string
-                    resultOfCheck = fileChecker.check(i->first, _fileContents[ i->first ]);
+                    resultOfCheck = fileChecker.check(iFile->first, _fileContents[ iFile->first ]);
                 } else {
                     // Read file from a file
-                    resultOfCheck = fileChecker.check(i->first);
+                    resultOfCheck = fileChecker.check(iFile->first);
                 }
 
                 std::ostringstream oss;
@@ -226,10 +229,15 @@ unsigned int ThreadExecutor::check()
 
             close(pipes[1]);
             rpipes.push_back(pipes[0]);
-            childFile[pid] = i->first;
-            pipeFile[pipes[0]] = i->first;
-
-            ++i;
+            if (iFileSettings != _settings.project.fileSettings.end()) {
+                childFile[pid] = iFileSettings->filename + ' ' + iFileSettings->cfg;
+                pipeFile[pipes[0]] = iFileSettings->filename + ' ' + iFileSettings->cfg;
+                ++iFileSettings;
+            } else {
+                childFile[pid] = iFile->first;
+                pipeFile[pipes[0]] = iFile->first;
+                ++iFile;
+            }
         } else if (!rpipes.empty()) {
             fd_set rfds;
             FD_ZERO(&rfds);
@@ -260,7 +268,7 @@ unsigned int ThreadExecutor::check()
                             _fileCount++;
                             processedsize += size;
                             if (!_settings.quiet)
-                                CppCheckExecutor::reportStatus(_fileCount, _files.size(), processedsize, totalfilesize);
+                                CppCheckExecutor::reportStatus(_fileCount, _files.size() + _settings.project.fileSettings.size(), processedsize, totalfilesize);
 
                             close(*rp);
                             rp = rpipes.erase(rp);
@@ -352,10 +360,11 @@ unsigned int ThreadExecutor::check()
     HANDLE *threadHandles = new HANDLE[_settings.jobs];
 
     _itNextFile = _files.begin();
+    _itNextFileSettings = _settings.project.fileSettings.begin();
 
     _processedFiles = 0;
     _processedSize = 0;
-    _totalFiles = _files.size();
+    _totalFiles = _files.size() + _settings.project.fileSettings.size();
     _totalFileSize = 0;
     for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
         _totalFileSize += i->second;
@@ -415,7 +424,8 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
     unsigned int result = 0;
 
     ThreadExecutor *threadExecutor = static_cast<ThreadExecutor*>(args);
-    std::map<std::string, std::size_t>::const_iterator &it = threadExecutor->_itNextFile;
+    std::map<std::string, std::size_t>::const_iterator &itFile = threadExecutor->_itNextFile;
+    std::list<ImportProject::FileSettings>::const_iterator &itFileSettings = threadExecutor->_itNextFileSettings;
 
     // guard static members of CppCheck against concurrent access
     EnterCriticalSection(&threadExecutor->_fileSync);
@@ -424,24 +434,32 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
     fileChecker.settings() = threadExecutor->_settings;
 
     for (;;) {
-        if (it == threadExecutor->_files.end()) {
+        if (itFile == threadExecutor->_files.end() && itFileSettings == threadExecutor->_settings.project.fileSettings.end()) {
             LeaveCriticalSection(&threadExecutor->_fileSync);
             break;
-
         }
-        const std::string &file = it->first;
-        const std::size_t fileSize = it->second;
-        ++it;
 
-        LeaveCriticalSection(&threadExecutor->_fileSync);
+        std::size_t fileSize = 0;
+        if (itFile != threadExecutor->_files.end()) {
+            const std::string &file = itFile->first;
+            fileSize = itFile->second;
+            ++itFile;
 
-        std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->_fileContents.find(file);
-        if (fileContent != threadExecutor->_fileContents.end()) {
-            // File content was given as a string
-            result += fileChecker.check(file, fileContent->second);
-        } else {
-            // Read file from a file
-            result += fileChecker.check(file);
+            LeaveCriticalSection(&threadExecutor->_fileSync);
+
+            std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->_fileContents.find(file);
+            if (fileContent != threadExecutor->_fileContents.end()) {
+                // File content was given as a string
+                result += fileChecker.check(file, fileContent->second);
+            } else {
+                // Read file from a file
+                result += fileChecker.check(file);
+            }
+        } else { // file settings..
+            const ImportProject::FileSettings &fs = *itFileSettings;
+            ++itFileSettings;
+            LeaveCriticalSection(&threadExecutor->_fileSync);
+            result += fileChecker.check(fs);
         }
 
         EnterCriticalSection(&threadExecutor->_fileSync);

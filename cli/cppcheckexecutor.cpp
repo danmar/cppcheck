@@ -154,7 +154,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter), _settings->library.markupExtensions(), matcher);
     }
 
-    if (_files.empty()) {
+    if (_files.empty() && settings.project.fileSettings.empty()) {
         std::cout << "cppcheck: error: could not find or open any of the paths given." << std::endl;
         if (!ignored.empty())
             std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
@@ -823,6 +823,15 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                     reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
                 c++;
             }
+        }
+
+        // filesettings
+        c = 0;
+        for (std::list<ImportProject::FileSettings>::const_iterator fs = settings.project.fileSettings.begin(); fs != settings.project.fileSettings.end(); ++fs) {
+            returnValue += cppcheck.check(*fs);
+            ++c;
+            if (!settings.quiet)
+                reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
         }
 
         // second loop to parse all markup files which may not work until all

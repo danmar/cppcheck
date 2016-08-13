@@ -481,6 +481,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                     return false;
             }
 
+            // --project
+            else if (std::strncmp(argv[i], "--project=", 10) == 0) {
+                _settings->project.import(argv[i]+10);
+                if (std::strstr(argv[i], ".sln") || std::strstr(argv[i], ".vcxproj"))
+                    CppCheckExecutor::tryLoadLibrary(_settings->library, argv[0], "windows");
+            }
+
             // Report progress
             else if (std::strcmp(argv[i], "--report-progress") == 0) {
                 _settings->reportProgress = true;
@@ -737,6 +744,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
     }
 
+    _settings->project.ignorePaths(_ignoredPaths);
+
     if (_settings->force)
         _settings->maxConfigs = ~0U;
 
@@ -766,7 +775,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
     }
 
     // Print error only if we have "real" command and expect files
-    if (!_exitAfterPrint && _pathnames.empty()) {
+    if (!_exitAfterPrint && _pathnames.empty() && _settings->project.fileSettings.empty()) {
         PrintMessage("cppcheck: No C or C++ source files found.");
         return false;
     }
@@ -890,14 +899,19 @@ void CmdLineParser::PrintHelp()
               "    --language=<language>, -x <language>\n"
               "                         Forces cppcheck to check all files as the given\n"
               "                         language. Valid values are: c, c++\n"
-              "    --library=<cfg>\n"
-              "                         Load file <cfg> that contains information about types\n"
+              "    --library=<cfg>      Load file <cfg> that contains information about types\n"
               "                         and functions. With such information Cppcheck\n"
               "                         understands your your code better and therefore you\n"
               "                         get better results. The std.cfg file that is\n"
               "                         distributed with Cppcheck is loaded automatically.\n"
               "                         For more information about library files, read the\n"
               "                         manual.\n"
+              "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
+              "                         Studio Solution (*.sln), Visual Studio Project\n"
+              "                         (*.vcxproj), or compile database\n"
+              "                         (compile_commands.json). The files to analyse,\n"
+              "                         include paths, defines, platform and undefines in\n"
+              "                         the specified file will be used.\n"
               "    --max-configs=<limit>\n"
               "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is '12'. If used together\n"

@@ -21,6 +21,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testfilelister.cpp \
            $${BASEPATH}/testfunctions.cpp \
            $${BASEPATH}/testgarbage.cpp \
+           $${BASEPATH}/testimportproject.cpp \
            $${BASEPATH}/testincompletestatement.cpp \
            $${BASEPATH}/testinternal.cpp \
            $${BASEPATH}/testio.cpp \

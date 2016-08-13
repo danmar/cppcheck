@@ -68,6 +68,7 @@ public:
       *  settings()).
       */
     unsigned int check(const std::string &path);
+    unsigned int check(const ImportProject::FileSettings &fs);
 
     /**
       * @brief Check the file.
@@ -139,10 +140,11 @@ private:
     /**
      * @brief Process one file.
      * @param filename file name
+     * @param cfgname  cfg name
      * @param fileStream stream the file content can be read from
      * @return amount of errors found
      */
-    unsigned int processFile(const std::string& filename, std::istream& fileStream);
+    unsigned int processFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream);
 
     /**
      * @brief Check raw tokens
