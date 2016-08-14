@@ -72,6 +72,41 @@ static const Token *skipMembers(const Token *tok)
     return tok;
 }
 
+bool CheckStl::isIterator(const Variable *var) const
+{
+
+    // Check that its an iterator
+    if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator|auto"))
+        return false;
+
+    if (var->typeEndToken()->str() == "auto") {
+        if (Token::Match(var->typeEndToken(), "auto %name% ; %name% = %var% . %name% ( )")) {
+            const Token* containertok = var->typeEndToken()->tokAt(5);
+            if (!containertok->variable())
+                return false;
+
+            const Library::Container* container = _settings->library.detectContainer(containertok->variable()->typeStartToken());
+            if (!container)
+                return false;
+
+            Library::Container::Yield yield = container->getYield(containertok->strAt(2));
+            if (yield != Library::Container::END_ITERATOR && yield != Library::Container::START_ITERATOR && yield != Library::Container::ITERATOR)
+                return false;
+        } else
+            return false;
+    }
+
+    if (var->type()) { // If it is defined, ensure that it is defined like an iterator
+        // look for operator* and operator++
+        const Function* end = var->type()->getFunction("operator*");
+        const Function* incOperator = var->type()->getFunction("operator++");
+        if (!end || end->argCount() > 0 || !incOperator)
+            return false;
+    }
+
+    return true;
+}
+
 void CheckStl::iterators()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -79,34 +114,8 @@ void CheckStl::iterators()
     for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
         const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
 
-        // Check that its an iterator
-        if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator|auto"))
+        if (!isIterator(var))
             continue;
-
-        if (var->typeEndToken()->str() == "auto") {
-            if (Token::Match(var->typeEndToken(), "auto %name% ; %name% = %var% . %name% ( )")) {
-                const Token* containertok = var->typeEndToken()->tokAt(5);
-                if (!containertok->variable())
-                    continue;
-
-                const Library::Container* container = _settings->library.detectContainer(containertok->variable()->typeStartToken());
-                if (!container)
-                    continue;
-
-                Library::Container::Yield yield = container->getYield(containertok->strAt(2));
-                if (yield != Library::Container::END_ITERATOR && yield != Library::Container::START_ITERATOR && yield != Library::Container::ITERATOR)
-                    continue;
-            } else
-                continue;
-        }
-
-        if (var->type()) { // If it is defined, ensure that it is defined like an iterator
-            // look for operator* and operator++
-            const Function* end = var->type()->getFunction("operator*");
-            const Function* incOperator = var->type()->getFunction("operator++");
-            if (!end || end->argCount() > 0 || !incOperator)
-                continue;
-        }
 
         // the validIterator flag says if the iterator has a valid value or not
         bool validIterator = Token::Match(var->nameToken()->next(), "[(=:]");
@@ -173,11 +182,13 @@ void CheckStl::iterators()
                         while (par2->str() != ")") {
                             if (par2->varId() == container->declarationId())
                                 break;
+                            if (isIterator(par2->variable()))
+                                break;  // TODO: check if iterator points at same container
                             if (par2->str() == "(")
                                 par2 = par2->link();
                             par2 = par2->next();
                         }
-                        if (par2->varId() == container->declarationId())
+                        if (par2->str() != ")")
                             continue;
                     }
 

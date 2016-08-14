@@ -151,6 +151,8 @@ public:
     void readingEmptyStlContainer();
 
 private:
+    bool isIterator(const Variable *var) const;
+
     void readingEmptyStlContainer_parseUsage(const Token* tok, const Library::Container* container, std::map<unsigned int, const Library::Container*>& empty, bool noerror);
 
     void missingComparisonError(const Token *incrementToken1, const Token *incrementToken2);
