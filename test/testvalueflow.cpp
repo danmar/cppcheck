@@ -336,6 +336,15 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.back().intvalue);
 
+        // unary minus
+        code  = "void f(int x) {\n"
+                "    a = -x;\n"
+                "    if (x==10) {}\n"
+                "}";
+        values = tokenValues(code,"-");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(-10, values.back().intvalue);
+
         // function call => calculation
         code  = "void f(int x) {\n"
                 "    a = x + 8;\n"

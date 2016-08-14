@@ -521,6 +521,18 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         }
     }
 
+    // unary minus
+    else if (parent->str() == "-" && !parent->astOperand2()) {
+        std::list<ValueFlow::Value>::const_iterator it;
+        for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+            if (it->tokvalue)
+                continue;
+            ValueFlow::Value v(*it);
+            v.intvalue = -v.intvalue;
+            setTokenValue(parent, v);
+        }
+    }
+
     // Array element
     else if (parent->str() == "[" && parent->astOperand1() && parent->astOperand2()) {
         std::list<ValueFlow::Value>::const_iterator value1, value2;
