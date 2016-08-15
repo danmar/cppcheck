@@ -802,7 +802,7 @@ void CheckClass::noExplicitConstructorError(const Token *tok, const std::string 
 {
     const std::string message(std::string(isStruct ? "Struct" : "Class") + " '" + classname + "' has a constructor with 1 argument that is not explicit.");
     const std::string verbose(message + " Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided.");
-    reportError(tok, Severity::style, "noExplicitConstructor", message + "\n" + verbose);
+    reportError(tok, Severity::style, "noExplicitConstructor", message + "\n" + verbose, CWE398, false);
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
@@ -1642,7 +1642,7 @@ void CheckClass::virtualDestructorError(const Token *tok, const std::string &Bas
                     "Class '" + Base + "' which is inherited by class '" + Derived + "' does not have a virtual destructor. "
                     "If you destroy instances of the derived class by deleting a pointer that points to the base class, only "
                     "the destructor of the base class is executed. Thus, dynamic memory that is managed by the derived class "
-                    "could leak. This can be avoided by adding a virtual destructor to the base class.");
+                    "could leak. This can be avoided by adding a virtual destructor to the base class.", CWE404, false);
 }
 
 //---------------------------------------------------------------------------
