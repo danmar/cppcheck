@@ -44,13 +44,13 @@ namespace {
 //---------------------------------------------------------------------------
 
 // CWE ids used:
-static const CWE CWE131(131U);	// Incorrect Calculation of Buffer Size
-static const CWE CWE170(170U);	// Improper Null Termination
-static const CWE CWE398(398U);	// Indicator of Poor Code Quality
-static const CWE CWE682(682U);	// Incorrect Calculation
-static const CWE CWE758(758U);	// Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const CWE CWE786(786U);	// Access of Memory Location Before Start of Buffer
-static const CWE CWE788(788U);	// Access of Memory Location After End of Buffer
+static const CWE CWE131(131U);  // Incorrect Calculation of Buffer Size
+static const CWE CWE170(170U);  // Improper Null Termination
+static const CWE CWE398(398U);  // Indicator of Poor Code Quality
+static const CWE CWE682(682U);  // Incorrect Calculation
+static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE786(786U);  // Access of Memory Location Before Start of Buffer
+static const CWE CWE788(788U);  // Access of Memory Location After End of Buffer
 
 //---------------------------------------------------------------------------
 
