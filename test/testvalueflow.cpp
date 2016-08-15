@@ -327,6 +327,11 @@ private:
         ASSERT_EQUALS(2, values.front().intvalue);
         ASSERT_EQUALS(3, values.back().intvalue);
 
+        code = "x = (2<5) ? 2 : 3;\n";
+        values = tokenValues(code, "?");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(2, values.front().intvalue);
+
         // !
         code  = "void f(int x) {\n"
                 "    a = !x;\n"
