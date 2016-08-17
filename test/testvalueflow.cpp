@@ -332,6 +332,11 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(2, values.front().intvalue);
 
+        code = "x = 123 ? : 456;\n";
+        values = tokenValues(code, "?");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(123, values.empty() ? 0 : values.front().intvalue);
+
         // !
         code  = "void f(int x) {\n"
                 "    a = !x;\n"

@@ -367,9 +367,14 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         if (parent->astOperand1()->values.size() == 1U && parent->astOperand1()->values.front().isKnown()) {
             const ValueFlow::Value &condvalue = parent->astOperand1()->values.front();
             const bool cond(condvalue.tokvalue || condvalue.intvalue != 0);
-            const std::list<ValueFlow::Value> &values = cond ? tok->astOperand1()->values : tok->astOperand2()->values;
-            if (std::find(values.begin(), values.end(), value) != values.end())
-                setTokenValue(parent, value);
+            if (cond && !tok->astOperand1()) { // true condition, no second operator
+                setTokenValue(parent, condvalue);
+            } else {
+                const Token *op = cond ? tok->astOperand1() : tok->astOperand2();
+                const std::list<ValueFlow::Value> &values = op->values;
+                if (std::find(values.begin(), values.end(), value) != values.end())
+                    setTokenValue(parent, value);
+            }
         } else {
             // is condition only depending on 1 variable?
             std::stack<const Token*> tokens;
