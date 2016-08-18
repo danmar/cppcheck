@@ -25,6 +25,7 @@
 #include <QDateTime>
 #include <set>
 #include "threadresult.h"
+#include "importproject.h"
 
 class ResultsView;
 class CheckThread;
@@ -82,6 +83,13 @@ public:
     * @param files files to check
     */
     void SetFiles(const QStringList &files);
+
+    /**
+    * @brief Set project to check
+    *
+    * @param prj project to check
+    */
+    void SetProject(const ImportProject &prj);
 
     /**
     * @brief Start the threads to check the files

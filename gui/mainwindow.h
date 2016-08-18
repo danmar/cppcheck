@@ -372,6 +372,13 @@ private:
     QStringList SelectFilesToCheck(QFileDialog::FileMode mode);
 
     /**
+    * @brief Check project
+    *
+    * @param p imported project
+    */
+    void DoCheckProject(ImportProject p);
+
+    /**
     * @brief Check all files specified in parameter files
     *
     * @param files List of files and/or directories to check

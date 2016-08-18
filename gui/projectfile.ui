@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>467</width>
-    <height>329</height>
+    <width>615</width>
+    <height>357</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,28 +23,7 @@
       <attribute name="title">
        <string>Project</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Defines:</string>
-           </property>
-           <property name="buddy">
-            <cstring>mEditDefines</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="mEditDefines">
-           <property name="toolTip">
-            <string>Defines must be separated by a semicolon ';'</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
+      <layout class="QVBoxLayout" name="verticalLayout_12">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
@@ -61,6 +40,19 @@
           <widget class="QLineEdit" name="mEditProjectRoot"/>
          </item>
         </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_10">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>97</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <layout class="QHBoxLayout" name="librariesLayout">
@@ -83,6 +75,120 @@
          </property>
         </widget>
        </item>
+       <item>
+        <spacer name="verticalSpacer_9">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>96</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Visual Studio</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Visual Studio
+
+Cppcheck can import visual studio solutions and projects.
+
+Files to check, include paths, configurations, defines, platform settings are imported.
+
+Library settings are not imported.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QLineEdit" name="mEditVisualStudio"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="mBrowseVisualStudio">
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>149</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_5">
+      <attribute name="title">
+       <string>CMake</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <widget class="QLabel" name="label_11">
+         <property name="text">
+          <string>Compile database
+
+Cppcheck can import files to analyse, include paths, defines from the compile database.
+
+Platform settings are not provided in compile database and must be configured.
+
+Library settings are not provided in compile database, be careful about this configuration also.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QLineEdit" name="mEditCompileDatabase"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="mBrowseCompileDatabase">
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>149</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_6">
+      <attribute name="title">
+       <string>Other</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
@@ -152,22 +258,53 @@
          </item>
         </layout>
        </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_2">
-      <attribute name="title">
-       <string>Includes</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Include directories:</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Defines:</string>
+           </property>
+           <property name="buddy">
+            <cstring>mEditDefines</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="mEditDefines">
+           <property name="toolTip">
+            <string>Defines must be separated by a semicolon ';'</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_11">
+           <item>
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string>Include Paths:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_6">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
          <item>
           <widget class="QListWidget" name="mListIncludeDirs">
            <property name="selectionBehavior">
@@ -228,6 +365,19 @@
           </layout>
          </item>
         </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_8">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
@@ -354,19 +504,7 @@
  </widget>
  <tabstops>
   <tabstop>mButtons</tabstop>
-  <tabstop>tabWidget</tabstop>
-  <tabstop>mEditDefines</tabstop>
   <tabstop>mEditProjectRoot</tabstop>
-  <tabstop>mListPaths</tabstop>
-  <tabstop>mBtnAddPath</tabstop>
-  <tabstop>mBtnEditPath</tabstop>
-  <tabstop>mBtnRemovePath</tabstop>
-  <tabstop>mListIncludeDirs</tabstop>
-  <tabstop>mBtnAddInclude</tabstop>
-  <tabstop>mBtnEditInclude</tabstop>
-  <tabstop>mBtnRemoveInclude</tabstop>
-  <tabstop>mBtnIncludeUp</tabstop>
-  <tabstop>mBtnIncludeDown</tabstop>
   <tabstop>mListExcludedPaths</tabstop>
   <tabstop>mBtnAddIgnorePath</tabstop>
   <tabstop>mBtnEditIgnorePath</tabstop>
@@ -381,8 +519,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>266</x>
-     <y>319</y>
+     <x>270</x>
+     <y>352</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -397,8 +535,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>334</x>
-     <y>319</y>
+     <x>338</x>
+     <y>352</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

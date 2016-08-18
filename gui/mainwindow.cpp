@@ -353,6 +353,43 @@ void MainWindow::SaveSettings() const
     mUI.mResults->SaveSettings(mSettings);
 }
 
+void MainWindow::DoCheckProject(ImportProject p)
+{
+    ClearResults();
+
+    mIsLogfileLoaded = false;
+    if (mProject) {
+        std::vector<std::string> v;
+        foreach (const QString &s, mProject->GetProjectFile()->GetExcludedPaths()) {
+            v.push_back(s.toStdString());
+        }
+        p.ignorePaths(v);
+    } else {
+        EnableProjectActions(false);
+    }
+
+    mUI.mResults->Clear(true);
+    mThread->ClearFiles();
+
+    mUI.mResults->CheckingStarted(p.fileSettings.size());
+
+    mThread->SetProject(p);
+    QDir inf(mCurrentDirectory);
+    const QString checkPath = inf.canonicalPath();
+    SetPath(SETTINGS_LAST_CHECK_PATH, checkPath);
+
+    CheckLockDownUI(); // lock UI while checking
+
+    mUI.mResults->SetCheckDirectory(checkPath);
+    Settings checkSettings = GetCppcheckSettings();
+
+    if (mProject)
+        qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
+
+    //mThread->SetCheckProject(true);
+    mThread->Check(checkSettings, true);
+}
+
 void MainWindow::DoCheckFiles(const QStringList &files)
 {
     if (files.isEmpty()) {
@@ -695,6 +732,8 @@ Settings MainWindow::GetCppcheckSettings()
     result.quiet = false;
     result.verbose = true;
     result.force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
+    if (mProject && !mProject->GetProjectFile()->GetImportProject().isEmpty())
+        result.force = false;
     result.xml = false;
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
@@ -1229,6 +1268,14 @@ void MainWindow::CheckProject(Project *project)
         mCurrentDirectory = inf.canonicalPath() + rootpath.mid(1);
     else
         mCurrentDirectory = rootpath;
+
+    if (!project->GetProjectFile()->GetImportProject().isEmpty()) {
+        ImportProject p;
+        QString prjfile = inf.canonicalPath() + '/' + project->GetProjectFile()->GetImportProject();
+        p.import(prjfile.toStdString());
+        DoCheckProject(p);
+        return;
+    }
 
     QStringList paths = project->GetProjectFile()->GetCheckPaths();
 

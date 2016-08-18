@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QStringList>
 #include "errorlogger.h"
+#include "importproject.h"
 
 class ErrorItem;
 
@@ -46,11 +47,15 @@ public:
     */
     QString GetNextFile();
 
+    ImportProject::FileSettings GetNextFileSettings();
+
     /**
     * @brief Set list of files to check
     * @param files List of files to check
     */
     void SetFiles(const QStringList &files);
+
+    void SetProject(const ImportProject &prj);
 
     /**
     * @brief Clear files to check
@@ -119,6 +124,8 @@ protected:
     *
     */
     QStringList mFiles;
+
+    std::list<ImportProject::FileSettings> mFileSettings;
 
     /**
     * @brief Max progress

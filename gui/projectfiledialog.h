@@ -47,6 +47,8 @@ public:
     */
     QString GetRootPath() const;
 
+    QString GetImportProject() const;
+
     /**
     * @brief Return include paths from the dialog control.
     * @return List of include paths.
@@ -89,6 +91,8 @@ public:
     */
     void SetRootPath(const QString &root);
 
+    void SetImportProject(const QString &importProject);
+
     /**
     * @brief Set include paths to dialog control.
     * @param includes List of include paths to set to dialog control.
@@ -126,6 +130,17 @@ public:
     void SetSuppressions(const QStringList &suppressions);
 
 protected slots:
+
+    /**
+    * @brief Browse for Visual Studio solution/project.
+    */
+    void BrowseVisualStudio();
+
+    /**
+    * @brief Browse for Compile Database.
+    */
+    void BrowseCompileDatabase();
+
     /**
     * @brief Browse for include directory.
     * Allow user to add new include directory to the list.

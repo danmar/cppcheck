@@ -51,6 +51,12 @@ void ThreadHandler::SetFiles(const QStringList &files)
     mLastFiles = files;
 }
 
+void ThreadHandler::SetProject(const ImportProject &prj)
+{
+    mResults.SetProject(prj);
+    mLastFiles.clear();
+}
+
 void ThreadHandler::SetCheckFiles(bool all)
 {
     if (mRunningThreadCount == 0) {

@@ -27,6 +27,7 @@
 static const char ProjectElementName[] = "project";
 static const char ProjectVersionAttrib[] = "version";
 static const char ProjectFileVersion[] = "1";
+static const char ImportProjectElementName[] = "importproject";
 static const char IncludeDirElementName[] = "includedir";
 static const char DirElementName[] = "dir";
 static const char DirNameAttrib[] = "name";
@@ -86,6 +87,9 @@ bool ProjectFile::Read(const QString &filename)
             // Find paths to check from inside project element
             if (insideProject && xmlReader.name() == PathsElementName)
                 ReadCheckPaths(xmlReader);
+
+            if (insideProject && xmlReader.name() == ImportProjectElementName)
+                ReadImportProject(xmlReader);
 
             // Find include directory from inside project element
             if (insideProject && xmlReader.name() == IncludeDirElementName)
@@ -196,6 +200,31 @@ void ProjectFile::ReadRootPath(QXmlStreamReader &reader)
     QString name = attribs.value("", RootPathNameAttrib).toString();
     if (!name.isEmpty())
         mRootPath = name;
+}
+
+void ProjectFile::ReadImportProject(QXmlStreamReader &reader)
+{
+    mImportProject.clear();
+    do {
+        const QXmlStreamReader::TokenType type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::Characters:
+            mImportProject = reader.text().toString();
+        case QXmlStreamReader::EndElement:
+            return;
+        // Not handled
+        case QXmlStreamReader::StartElement:
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (1);
 }
 
 void ProjectFile::ReadIncludeDirs(QXmlStreamReader &reader)
@@ -444,6 +473,12 @@ bool ProjectFile::Write(const QString &filename)
     if (!mRootPath.isEmpty()) {
         xmlWriter.writeStartElement(RootPathName);
         xmlWriter.writeAttribute(RootPathNameAttrib, mRootPath);
+        xmlWriter.writeEndElement();
+    }
+
+    if (!mImportProject.isEmpty()) {
+        xmlWriter.writeStartElement(ImportProjectElementName);
+        xmlWriter.writeCharacters(mImportProject);
         xmlWriter.writeEndElement();
     }
 

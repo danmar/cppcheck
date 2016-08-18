@@ -104,6 +104,7 @@ bool Project::Edit()
     if (rv == QDialog::Accepted) {
         QString root = dlg.GetRootPath();
         mPFile->SetRootPath(root);
+        mPFile->SetImportProject(dlg.GetImportProject());
         QStringList includes = dlg.GetIncludePaths();
         mPFile->SetIncludes(includes);
         QStringList defines = dlg.GetDefines();

@@ -54,6 +54,10 @@ public:
         return mRootPath;
     }
 
+    QString GetImportProject() const {
+        return mImportProject;
+    }
+
     /**
     * @brief Get list of include directories.
     * @return list of directories.
@@ -104,6 +108,10 @@ public:
     */
     void SetRootPath(const QString &rootpath) {
         mRootPath = rootpath;
+    }
+
+    void SetImportProject(const QString &importProject) {
+        mImportProject = importProject;
     }
 
     /**
@@ -174,6 +182,12 @@ protected:
     void ReadRootPath(QXmlStreamReader &reader);
 
     /**
+    * @brief Read importproject from XML.
+    * @param reader XML stream reader.
+    */
+    void ReadImportProject(QXmlStreamReader &reader);
+
+    /**
     * @brief Read list of include directories from XML.
     * @param reader XML stream reader.
     */
@@ -219,6 +233,8 @@ private:
     * to project file's path.
     */
     QString mRootPath;
+
+    QString mImportProject;
 
     /**
     * @brief List of include directories used to search include files.
