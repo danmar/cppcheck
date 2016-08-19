@@ -365,34 +365,34 @@ private:
     }
 
     void function_method() const {
-      const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                             "<def>\n"
-                             "  <function name=\"CString::Format\">\n"
-                             "    <noreturn>false</noreturn>\n"
-                             "  </function>\n"
-                             "</def>";
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"CString::Format\">\n"
+                               "    <noreturn>false</noreturn>\n"
+                               "  </function>\n"
+                               "</def>";
 
-      Library library;
-      readLibrary(library, xmldata);
-      ASSERT(library.use.empty());
-      ASSERT(library.leakignore.empty());
-      ASSERT(library.argumentChecks.empty());
+        Library library;
+        readLibrary(library, xmldata);
+        ASSERT(library.use.empty());
+        ASSERT(library.leakignore.empty());
+        ASSERT(library.argumentChecks.empty());
 
-      {
-          Settings settings;
-          Tokenizer tokenizer(&settings, nullptr);
-          std::istringstream istr("CString str; str.Format();");
-          tokenizer.tokenize(istr, "test.cpp");
-          ASSERT(library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
-      }
+        {
+            Settings settings;
+            Tokenizer tokenizer(&settings, nullptr);
+            std::istringstream istr("CString str; str.Format();");
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
+        }
 
-      {
-          Settings settings;
-          Tokenizer tokenizer(&settings, nullptr);
-          std::istringstream istr("HardDrive hd; hd.Format();");
-          tokenizer.tokenize(istr, "test.cpp");
-          ASSERT(!library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
-      }
+        {
+            Settings settings;
+            Tokenizer tokenizer(&settings, nullptr);
+            std::istringstream istr("HardDrive hd; hd.Format();");
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(!library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
+        }
     }
 
     void function_warn() const {
