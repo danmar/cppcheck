@@ -190,6 +190,7 @@ private:
         TEST_CASE(functionArgs10);
         TEST_CASE(functionArgs11);
         TEST_CASE(functionArgs12); // #7661
+        TEST_CASE(functionArgs13); // #7697
 
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
@@ -1825,6 +1826,43 @@ private:
                 if (func->argumentList.size() == 1 && func->argumentList.front().type()) {
                     const Type * type = func->argumentList.front().type();
                     ASSERT_EQUALS(true, type->isEnumType());
+                }
+            }
+        }
+    }
+
+    void functionArgs13() { // #7697
+        GET_SYMBOL_DB("struct A {\n"
+                      "    enum E { };\n"
+                      "    struct S { };\n"
+                      "};\n"
+                      "struct B : public A {\n"
+                      "    B(E e);\n"
+                      "    B(S s);\n"
+                      "};\n"
+                      "B::B(A::E e) { }\n"
+                      "B::B(A::S s) { }");
+
+        ASSERT_EQUALS(true, db != nullptr);
+        if (db) {
+            const Token *f = Token::findsimplematch(tokenizer.tokens(), "B ( A :: E");
+            ASSERT_EQUALS(true, f && f->function());
+            if (f && f->function()) {
+                const Function *func = f->function();
+                ASSERT_EQUALS(true, func->argumentList.size() == 1 && func->argumentList.front().type());
+                if (func->argumentList.size() == 1 && func->argumentList.front().type()) {
+                    const Type * type = func->argumentList.front().type();
+                    ASSERT_EQUALS(true, type->isEnumType() && type->name() == "E");
+                }
+            }
+            f = Token::findsimplematch(tokenizer.tokens(), "B ( A :: S");
+            ASSERT_EQUALS(true, f && f->function());
+            if (f && f->function()) {
+                const Function *func = f->function();
+                ASSERT_EQUALS(true, func->argumentList.size() == 1 && func->argumentList.front().type());
+                if (func->argumentList.size() == 1 && func->argumentList.front().type()) {
+                    const Type * type = func->argumentList.front().type();
+                    ASSERT_EQUALS(true, type->isStructType() && type->name() == "S");
                 }
             }
         }

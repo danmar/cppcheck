@@ -1791,10 +1791,12 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             }
         }
 
-        // nested class variable
+        // nested or base class variable
         else if (depth == 0 && Token::Match(first->next(), "%name%") &&
-                 second->next()->str() == scope->className && second->strAt(2) == "::" &&
-                 first->next()->str() == second->strAt(3)) {
+                 Token::Match(second->next(), "%name% :: %name%") &&
+                 ((second->next()->str() == scope->className) ||
+                  (scope->definedType && scope->definedType->isDerivedFrom(second->next()->str()))) &&
+                 (first->next()->str() == second->strAt(3))) {
             second = second->tokAt(2);
         }
 
@@ -2244,6 +2246,17 @@ bool Type::findDependency(const Type* ancestor) const
         return true;
     for (std::vector<BaseInfo>::const_iterator parent=derivedFrom.begin(); parent!=derivedFrom.end(); ++parent) {
         if (parent->type && parent->type->findDependency(ancestor))
+            return true;
+    }
+    return false;
+}
+
+bool Type::isDerivedFrom(const std::string & ancestor) const
+{
+    for (std::vector<BaseInfo>::const_iterator parent=derivedFrom.begin(); parent!=derivedFrom.end(); ++parent) {
+        if (parent->name == ancestor)
+            return true;
+        if (parent->type && parent->type->isDerivedFrom(ancestor))
             return true;
     }
     return false;

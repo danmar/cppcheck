@@ -142,6 +142,8 @@ public:
     * @return true if there is a dependency
     */
     bool findDependency(const Type* ancestor) const;
+
+    bool isDerivedFrom(const std::string & ancestor) const;
 };
 
 class CPPCHECKLIB Enumerator {
