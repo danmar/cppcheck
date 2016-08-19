@@ -17,8 +17,10 @@
  */
 
 #include "library.h"
+#include "settings.h"
 #include "token.h"
 #include "tokenlist.h"
+#include "tokenize.h"
 #include "testsuite.h"
 #include <tinyxml2.h>
 
@@ -41,6 +43,7 @@ private:
         TEST_CASE(function_arg_valid);
         TEST_CASE(function_arg_minsize);
         TEST_CASE(function_namespace);
+        TEST_CASE(function_method);
         TEST_CASE(function_warn);
         TEST_CASE(memory);
         TEST_CASE(memory2); // define extra "free" allocation functions
@@ -359,6 +362,37 @@ private:
             tokenList.createTokens(istr);
             ASSERT(library.isnotnoreturn(tokenList.front()));
         }
+    }
+
+    void function_method() const {
+      const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                             "<def>\n"
+                             "  <function name=\"CString::Format\">\n"
+                             "    <noreturn>false</noreturn>\n"
+                             "  </function>\n"
+                             "</def>";
+
+      Library library;
+      readLibrary(library, xmldata);
+      ASSERT(library.use.empty());
+      ASSERT(library.leakignore.empty());
+      ASSERT(library.argumentChecks.empty());
+
+      {
+          Settings settings;
+          Tokenizer tokenizer(&settings, nullptr);
+          std::istringstream istr("CString str; str.Format();");
+          tokenizer.tokenize(istr, "test.cpp");
+          ASSERT(library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
+      }
+
+      {
+          Settings settings;
+          Tokenizer tokenizer(&settings, nullptr);
+          std::istringstream istr("HardDrive hd; hd.Format();");
+          tokenizer.tokenize(istr, "test.cpp");
+          ASSERT(!library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
+      }
     }
 
     void function_warn() const {
