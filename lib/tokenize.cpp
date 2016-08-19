@@ -8299,13 +8299,13 @@ void Tokenizer::simplifyStructDecl()
             continue;
         // check for anonymous struct/union
         if (Token::Match(tok, "struct|union {")) {
-            if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[")) {
+            if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[|(|{")) {
                 tok->insertToken("Anonymous" + MathLib::toString(count++));
             }
         }
         // check for anonymous enum
-        else if ((Token::simpleMatch(tok, "enum {") && Token::Match(tok->next()->link(), "} %type%| ,|;|[")) ||
-                 (Token::Match(tok, "enum : %type% {") && Token::Match(tok->linkAt(3), "} %type%| ,|;|["))) {
+        else if ((Token::simpleMatch(tok, "enum {") && Token::Match(tok->next()->link(), "} %type%| ,|;|[|(|{")) ||
+                 (Token::Match(tok, "enum : %type% {") && Token::Match(tok->linkAt(3), "} %type%| ,|;|[|(|{"))) {
             tok->insertToken("Anonymous" + MathLib::toString(count++));
         }
     }
@@ -8339,7 +8339,7 @@ void Tokenizer::simplifyStructDecl()
             Token *restart = next;
 
             // check for named type
-            if (Token::Match(tok->next(), "*|&| %type% ,|;|[|=")) {
+            if (Token::Match(tok->next(), "*|&| %type% ,|;|[|=|(|{")) {
                 tok->insertToken(";");
                 tok = tok->next();
                 while (!Token::Match(start, "struct|class|union|enum")) {
@@ -8350,8 +8350,25 @@ void Tokenizer::simplifyStructDecl()
                 if (!tok)
                     break; // see #4869 segmentation fault in Tokenizer::simplifyStructDecl (invalid code)
                 tok->insertToken(type->str());
-                if (start->str() != "class")
+                if (start->str() != "class") {
                     tok->insertToken(start->str());
+                    tok = tok->next();
+                }
+
+                tok = tok->tokAt(2);
+
+                // check for initialization
+                if (tok && (tok->next()->str() == "(" || tok->next()->str() == "{")) {
+                    tok->insertToken("=");
+                    tok = tok->next();
+
+                    if (start->str() == "enum") {
+                        if (tok->next()->str() == "{") {
+                            tok->next()->str("(");
+                            tok->linkAt(1)->str(")");
+                        }
+                    }
+                }
             }
 
             tok = restart;
