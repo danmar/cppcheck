@@ -934,6 +934,33 @@ const Library::WarnInfo* Library::getWarnInfo(const Token* ftok) const
     return &i->second;
 }
 
+bool Library::formatstr_function(const Token* ftok) const
+{
+    return (!isNotLibraryFunction(ftok) &&
+            _formatstr.find(functionName(ftok)) != _formatstr.cend());
+}
+
+int Library::formatstr_argno(const Token* ftok) const
+{
+    const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = argumentChecks.at(functionName(ftok));
+    for (std::map<int, Library::ArgumentChecks>::const_iterator i = argumentChecksFunc.cbegin(); i != argumentChecksFunc.cend(); ++i) {
+        if (i->second.formatstr) {
+            return i->first - 1;
+        }
+    }
+    return -1;
+}
+
+bool Library::formatstr_scan(const Token* ftok) const
+{
+    return _formatstr.at(functionName(ftok)).first;
+}
+
+bool Library::formatstr_secure(const Token* ftok) const
+{
+    return _formatstr.at(functionName(ftok)).second;
+}
+
 bool Library::isUseRetVal(const Token* ftok) const
 {
     return (!isNotLibraryFunction(ftok) &&

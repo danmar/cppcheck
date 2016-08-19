@@ -137,17 +137,13 @@ public:
         return ((func->groupId > 0) && ((func->groupId & 1) == 1));
     }
 
-    bool formatstr_function(const std::string& funcname) const {
-        return _formatstr.find(funcname) != _formatstr.cend();
-    }
+    bool formatstr_function(const Token* ftok) const;
 
-    bool formatstr_scan(const std::string& funcname) const {
-        return _formatstr.at(funcname).first;
-    }
+    int formatstr_argno(const Token* ftok) const;
 
-    bool formatstr_secure(const std::string& funcname) const {
-        return _formatstr.at(funcname).second;
-    }
+    bool formatstr_scan(const Token* ftok) const;
+
+    bool formatstr_secure(const Token* ftok) const;
 
     std::set<std::string> use;
     std::set<std::string> leakignore;

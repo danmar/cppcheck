@@ -2474,9 +2474,11 @@ private:
               "    CString string;\n"
               "    string.Format(\"%I32d\", u32);\n"
               "    string.AppendFormat(\"%I32d\", u32);\n"
+              "    CString::Format(\"%I32d\", u32);\n"
               "}", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:4]: (warning) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
-                      "[test.cpp:5]: (warning) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n", errout.str());
+                      "[test.cpp:5]: (warning) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
+                      "[test.cpp:6]: (warning) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n", errout.str());
     }
 
     void testMicrosoftSecurePrintfArgument() {

@@ -505,28 +505,15 @@ void CheckIO::checkWrongPrintfScanfArguments()
             bool scanf_s = false;
             int formatStringArgNo = -1;
 
-            if (tok->strAt(1) == "(" && _settings->library.formatstr_function(tok->str())) {
-                const std::map<int, Library::ArgumentChecks>& argumentChecks = _settings->library.argumentChecks.at(tok->str());
-                for (std::map<int, Library::ArgumentChecks>::const_iterator i = argumentChecks.cbegin(); i != argumentChecks.cend(); ++i) {
-                    if (i->second.formatstr) {
-                        formatStringArgNo = i->first - 1;
-                        break;
-                    }
-                }
-
-                scan = _settings->library.formatstr_scan(tok->str());
-                scanf_s = _settings->library.formatstr_secure(tok->str());
+            if (tok->strAt(1) == "(" && _settings->library.formatstr_function(tok)) {
+                formatStringArgNo = _settings->library.formatstr_argno(tok);
+                scan = _settings->library.formatstr_scan(tok);
+                scanf_s = _settings->library.formatstr_secure(tok);
             }
 
             if (formatStringArgNo >= 0) {
                 // formatstring found in library. Find format string and first argument belonging to format string.
                 if (!findFormat(static_cast<unsigned int>(formatStringArgNo), tok->tokAt(2), &formatStringTok, &argListTok))
-                    continue;
-            } else if (isWindows && Token::Match(tok, "Format|AppendFormat (") &&
-                       Token::Match(tok->tokAt(-2), "%var% .") && tok->tokAt(-2)->variable() &&
-                       tok->tokAt(-2)->variable()->typeStartToken()->str() == "CString") {
-                // Find second parameter and format string
-                if (!findFormat(0, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
             } else if (Token::simpleMatch(tok, "swprintf (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) {
                 // Find third parameter and format string
