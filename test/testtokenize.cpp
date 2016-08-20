@@ -5625,6 +5625,16 @@ private:
 
         ASSERT_EQUALS(result3, tokenizeAndStringify(code3,false));
         ASSERT_EQUALS("", errout.str());
+
+        const char code4[] = "class MyObject : public QObject {"
+                             "    Q_OBJECT "
+                             "public slots:"
+                             "};";
+        const char result4[] = "class MyObject : public QObject { "
+                               "public: "
+                               "} ;";
+
+        ASSERT_EQUALS(result4, tokenizeAndStringify(code4,false));
     }
 
     void simplifySQL() {

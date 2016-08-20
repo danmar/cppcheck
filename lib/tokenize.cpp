@@ -9215,10 +9215,10 @@ void Tokenizer::simplifyQtSignalsSlots()
                 else
                     --indentlevel;
             }
-
-            if (tok2->strAt(1) == "Q_OBJECT") {
+            if (tok2->strAt(1) == "Q_OBJECT")
                 tok2->deleteNext();
-            } else if (Token::Match(tok2->next(), "public|protected|private slots|Q_SLOTS :")) {
+
+            if (Token::Match(tok2->next(), "public|protected|private slots|Q_SLOTS :")) {
                 tok2 = tok2->next();
                 tok2->str(tok2->str() + ":");
                 tok2->deleteNext(2);
