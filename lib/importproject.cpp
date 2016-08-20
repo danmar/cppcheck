@@ -19,7 +19,7 @@
 #include "importproject.h"
 #include "path.h"
 #include "settings.h"
-#include "tokenlist.h"
+#include "tokenize.h"
 #include "token.h"
 #include "tinyxml2.h"
 #include <fstream>
@@ -221,24 +221,30 @@ namespace {
                 }
             }
         }
+
+        static void replaceAll(std::string &c, const std::string &from, const std::string &to) {
+            std::string::size_type pos;
+            while ((pos = c.find(from)) != std::string::npos) {
+                c.erase(pos,from.size());
+                c.insert(pos,to);
+            }
+        }
+
         bool conditionIsTrue(const ProjectConfiguration &p) const {
             std::string c = condition;
-            std::string::size_type pos = 0;
-            while ((pos = c.find("$(Configuration)")) != std::string::npos) {
-                c.erase(pos,16);
-                c.insert(pos,p.configuration);
-            }
-            while ((pos = c.find("$(Platform)")) != std::string::npos) {
-                c.erase(pos, 11);
-                c.insert(pos, p.platform);
-            }
+            replaceAll(c, "$(Configuration)", p.configuration);
+            replaceAll(c, "$(Platform)", p.platform);
+
             // TODO : Better evaluation
             Settings s;
             std::istringstream istr(c);
-            TokenList tokens(&s);
-            tokens.createTokens(istr);
-            tokens.createAst();
-            for (const Token *tok = tokens.front(); tok; tok = tok->next()) {
+            Tokenizer tokenizer(&s, nullptr);
+            tokenizer.tokenize(istr,"vcxproj");
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+                if (tok->str() == "(" && tok->astOperand1() && tok->astOperand2()) {
+                    if (tok->astOperand1()->expressionString() == "Configuration.Contains")
+                        return ('\'' + p.configuration + '\'') == tok->astOperand2()->str();
+                }
                 if (tok->str() == "==" && tok->astOperand1() && tok->astOperand2() && tok->astOperand1()->str() == tok->astOperand2()->str())
                     return true;
             }
@@ -312,7 +318,7 @@ void ImportProject::importVcxproj(const std::string &filename)
                 FileSettings fs;
                 fs.filename = Path::simplifyPath(Path::getPathFromFilename(filename) + *c);
                 fs.cfg = p->name;
-                fs.defines = "_MSC_VER=1700;_WIN32=1;" + i->preprocessorDefinitions;
+                fs.defines = "_MSC_VER=1900;_WIN32=1;" + i->preprocessorDefinitions;
                 if (p->platform == "Win32")
                     fs.platformType = cppcheck::Platform::Win32W;
                 else if (p->platform == "x64") {
