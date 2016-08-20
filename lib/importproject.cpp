@@ -272,6 +272,8 @@ void ImportProject::importVcxproj(const std::string &filename)
     std::list<std::string> compileList;
     std::list<ItemDefinitionGroup> itemDefinitionGroupList;
 
+    bool useOfMfc = false;
+
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
     if (error != tinyxml2::XML_SUCCESS)
@@ -294,6 +296,11 @@ void ImportProject::importVcxproj(const std::string &filename)
             }
         } else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
             itemDefinitionGroupList.push_back(ItemDefinitionGroup(node));
+        } else if (std::strcmp(node->Name(), "PropertyGroup") == 0) {
+            for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
+                if (std::strcmp(e->Name(), "UseOfMfc") == 0)
+                    useOfMfc = true;
+            }
         }
     }
 
@@ -312,6 +319,8 @@ void ImportProject::importVcxproj(const std::string &filename)
                     fs.platformType = cppcheck::Platform::Win64;
                     fs.defines += ";_WIN64=1";
                 }
+                if (useOfMfc)
+                    fs.defines += ";__AFXWIN_H__";
                 fs.setDefines(fs.defines);
                 fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(i->additionalIncludePaths));
                 fileSettings.push_back(fs);
