@@ -93,6 +93,8 @@ bool Project::Edit()
     dlg.SetDefines(defines);
     QStringList paths = mPFile->GetCheckPaths();
     dlg.SetPaths(paths);
+    QString importProject = mPFile->GetImportProject();
+    dlg.SetImportProject(importProject);
     QStringList ignorepaths = mPFile->GetExcludedPaths();
     dlg.SetExcludedPaths(ignorepaths);
     QStringList libraries = mPFile->GetLibraries();
