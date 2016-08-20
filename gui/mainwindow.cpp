@@ -373,7 +373,6 @@ void MainWindow::DoCheckProject(ImportProject p)
 
     mUI.mResults->CheckingStarted(p.fileSettings.size());
 
-    mThread->SetProject(p);
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
     SetPath(SETTINGS_LAST_CHECK_PATH, checkPath);
@@ -384,10 +383,14 @@ void MainWindow::DoCheckProject(ImportProject p)
     Settings checkSettings = GetCppcheckSettings();
     checkSettings.force = false;
 
+    if (checkSettings.isWindowsPlatform())
+        p.ignoreOtherPlatforms(checkSettings.platformType);
+
     if (mProject)
         qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
 
     //mThread->SetCheckProject(true);
+    mThread->SetProject(p);
     mThread->Check(checkSettings, true);
 }
 

@@ -52,6 +52,7 @@ public:
     std::list<FileSettings> fileSettings;
 
     void ignorePaths(std::vector<std::string> &ipaths);
+    void ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType);
 
     void import(const std::string &filename);
 private:

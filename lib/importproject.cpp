@@ -43,6 +43,16 @@ void ImportProject::ignorePaths(std::vector<std::string> &ipaths)
     }
 }
 
+void ImportProject::ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType)
+{
+    for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
+        if (it->platformType != cppcheck::Platform::Unspecified && it->platformType != platformType)
+            fileSettings.erase(it++);
+        else
+            ++it;
+    }
+}
+
 void ImportProject::FileSettings::setDefines(std::string defs)
 {
     while (defs.find(";%(") != std::string::npos) {
