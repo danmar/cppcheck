@@ -1751,6 +1751,13 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         else if (second->str() == ")")
             break;
 
+        // const after *
+        else if (first->next()->str() == "*" && first->strAt(2) != "const" &&
+                 second->next()->str() == "*" && second->strAt(2) == "const") {
+            first = first->next();
+            second = second->tokAt(2);
+        }
+
         // variable names are different
         else if ((Token::Match(first->next(), "%name% ,|)|=|[") &&
                   Token::Match(second->next(), "%name% ,|)|[")) &&
