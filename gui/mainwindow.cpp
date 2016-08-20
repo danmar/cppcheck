@@ -382,6 +382,7 @@ void MainWindow::DoCheckProject(ImportProject p)
 
     mUI.mResults->SetCheckDirectory(checkPath);
     Settings checkSettings = GetCppcheckSettings();
+    checkSettings.force = false;
 
     if (mProject)
         qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
@@ -487,7 +488,7 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
         selected = QFileDialog::getOpenFileNames(this,
                    tr("Select files to check"),
                    GetPath(SETTINGS_LAST_CHECK_PATH),
-                   tr("C/C++ Source (%1)").arg(FileList::GetDefaultFilters().join(" ")));
+                   tr("C/C++ Source, Visual Studio, Compile database (%1 *.sln *.vcxproj compile_database.json)").arg(FileList::GetDefaultFilters().join(" ")));
         if (selected.isEmpty())
             mCurrentDirectory.clear();
         else {
@@ -515,7 +516,17 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
 
 void MainWindow::CheckFiles()
 {
-    DoCheckFiles(SelectFilesToCheck(QFileDialog::ExistingFiles));
+    QStringList selected = SelectFilesToCheck(QFileDialog::ExistingFiles);
+
+    const QString file0 = (selected.size() ? selected[0].toLower() : "");
+    if (file0.endsWith(".sln") || file0.endsWith(".vcxproj") || file0.endsWith("compile_database.json")) {
+        ImportProject p;
+        p.import(selected[0].toStdString());
+        DoCheckProject(p);
+        return;
+    }
+
+    DoCheckFiles(selected);
 }
 
 void MainWindow::CheckDirectory()
@@ -732,8 +743,6 @@ Settings MainWindow::GetCppcheckSettings()
     result.quiet = false;
     result.verbose = true;
     result.force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
-    if (mProject && !mProject->GetProjectFile()->GetImportProject().isEmpty())
-        result.force = false;
     result.xml = false;
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
