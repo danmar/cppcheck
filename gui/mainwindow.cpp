@@ -383,9 +383,6 @@ void MainWindow::DoCheckProject(ImportProject p)
     Settings checkSettings = GetCppcheckSettings();
     checkSettings.force = false;
 
-    if (checkSettings.isWindowsPlatform())
-        p.ignoreOtherPlatforms(checkSettings.platformType);
-
     if (mProject)
         qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
 
