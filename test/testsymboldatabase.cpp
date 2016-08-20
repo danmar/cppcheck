@@ -3842,6 +3842,7 @@ private:
         ASSERT_EQUALS("unsigned long", typeOf("1UL", "1UL"));
         ASSERT_EQUALS("signed long long", typeOf("1LL", "1LL"));
         ASSERT_EQUALS("unsigned long long", typeOf("1ULL", "1ULL"));
+        ASSERT_EQUALS("unsigned long long", typeOf("1LLU", "1LLU"));
         ASSERT_EQUALS("signed long long", typeOf("1i64", "1i64"));
         ASSERT_EQUALS("unsigned long long", typeOf("1ui64", "1ui64"));
         ASSERT_EQUALS("unsigned int", typeOf("1u", "1u"));
@@ -3849,9 +3850,12 @@ private:
         ASSERT_EQUALS("unsigned long", typeOf("1ul", "1ul"));
         ASSERT_EQUALS("signed long long", typeOf("1ll", "1ll"));
         ASSERT_EQUALS("unsigned long long", typeOf("1ull", "1ull"));
+        ASSERT_EQUALS("unsigned long long", typeOf("1llu", "1llu"));
         ASSERT_EQUALS("float", typeOf("1.0F", "1.0F"));
         ASSERT_EQUALS("float", typeOf("1.0f", "1.0f"));
         ASSERT_EQUALS("double", typeOf("1.0", "1.0"));
+        ASSERT_EQUALS("double", typeOf("1E3", "1E3"));
+        ASSERT_EQUALS("long double", typeOf("1.23L", "1.23L"));
 
         // Constant calculations
         ASSERT_EQUALS("signed int", typeOf("1 + 2", "+"));
