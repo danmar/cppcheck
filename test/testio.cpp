@@ -32,6 +32,7 @@ private:
     void run() {
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "windows.cfg");
+        LOAD_LIB_2(settings.library, "qt.cfg");
 
         TEST_CASE(coutCerrMisusage);
 
@@ -56,6 +57,8 @@ private:
         TEST_CASE(testMicrosoftCStringFormatArguments); // ticket #4920
         TEST_CASE(testMicrosoftSecurePrintfArgument);
         TEST_CASE(testMicrosoftSecureScanfArgument);
+
+        TEST_CASE(testQStringFormatArguments);
 
         TEST_CASE(testTernary); // ticket #6182
         TEST_CASE(testUnsignedConst); // ticket #6132
@@ -2817,6 +2820,14 @@ private:
               "    wscanf_s(L\"%4[^-]\", msStr1, _countof(msStr1));\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testQStringFormatArguments() {
+        check("void foo(float f) {\n"
+              "    QString string;\n"
+              "    string.sprintf(\"%d\", f);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'float'.\n", errout.str());
     }
 
     void testTernary() {  // ticket #6182
