@@ -960,6 +960,62 @@ private:
                             "A::B::C::INT_C A::B::C::funC() { return c; }"
                             "A::B::C::D::LONG_D A::B::C::D::funD() { return d; }";
 
+        const char codeFullSpecified[] = "class A {\n"
+                                         "public:\n"
+                                         "    typedef char CHAR_A;\n"
+                                         "    A::CHAR_A funA();\n"
+                                         "    class B {\n"
+                                         "    public:\n"
+                                         "        typedef short SHRT_B;\n"
+                                         "        A::B::SHRT_B funB();\n"
+                                         "        class C {\n"
+                                         "        public:\n"
+                                         "            typedef int INT_C;\n"
+                                         "            A::B::C::INT_C funC();\n"
+                                         "            struct D {\n"
+                                         "                typedef long LONG_D;\n"
+                                         "                A::B::C::D::LONG_D funD();\n"
+                                         "                A::B::C::D::LONG_D d;\n"
+                                         "            };\n"
+                                         "            A::B::C::INT_C c;\n"
+                                         "        };\n"
+                                         "        A::B::SHRT_B b;\n"
+                                         "    };\n"
+                                         "    A::CHAR_A a;\n"
+                                         "};\n"
+                                         "A::CHAR_A A::funA() { return a; }\n"
+                                         "A::B::SHRT_B A::B::funB() { return b; }\n"
+                                         "A::B::C::INT_C A::B::C::funC() { return c; }"
+                                         "A::B::C::D::LONG_D A::B::C::D::funD() { return d; }";
+
+        const char codePartialSpecified[] = "class A {\n"
+                                            "public:\n"
+                                            "    typedef char CHAR_A;\n"
+                                            "    CHAR_A funA();\n"
+                                            "    class B {\n"
+                                            "    public:\n"
+                                            "        typedef short SHRT_B;\n"
+                                            "        B::SHRT_B funB();\n"
+                                            "        class C {\n"
+                                            "        public:\n"
+                                            "            typedef int INT_C;\n"
+                                            "            C::INT_C funC();\n"
+                                            "            struct D {\n"
+                                            "                typedef long LONG_D;\n"
+                                            "                D::LONG_D funD();\n"
+                                            "                C::D::LONG_D d;\n"
+                                            "            };\n"
+                                            "            B::C::INT_C c;\n"
+                                            "        };\n"
+                                            "        B::SHRT_B b;\n"
+                                            "    };\n"
+                                            "    CHAR_A a;\n"
+                                            "};\n"
+                                            "A::CHAR_A A::funA() { return a; }\n"
+                                            "A::B::SHRT_B A::B::funB() { return b; }\n"
+                                            "A::B::C::INT_C A::B::C::funC() { return c; }"
+                                            "A::B::C::D::LONG_D A::B::C::D::funD() { return d; }";
+
         const char expected[] =
             "class A { "
             "public: "
@@ -990,6 +1046,8 @@ private:
             "long A :: B :: C :: D :: funD ( ) { return d ; }";
 
         ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(codePartialSpecified, false));
+        ASSERT_EQUALS(expected, tok(codeFullSpecified, false));
     }
 
     void simplifyTypedef34() {
