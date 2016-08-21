@@ -1499,7 +1499,7 @@ namespace simplecpp {
 #ifdef SIMPLECPP_WINDOWS
 std::string realFilename(const std::string &f) {
     WIN32_FIND_DATA FindFileData;
-    TCHAR buf[f.size()+1] = {0};
+    TCHAR buf[4096] = {0};
     for (unsigned int i = 0; i < f.size(); ++i)
         buf[i] = f[i];
     HANDLE hFind = FindFirstFile(buf, &FindFileData);
