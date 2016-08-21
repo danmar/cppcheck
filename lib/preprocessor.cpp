@@ -231,6 +231,23 @@ static std::string cfg(const std::vector<std::string> &configs)
     return ret;
 }
 
+static bool isUndefined(const std::string &cfg, const std::set<std::string> &undefined)
+{
+    for (std::string::size_type pos1 = 0U; pos1 < cfg.size();) {
+        const std::string::size_type pos2 = cfg.find(";",pos1);
+        const std::string def = (pos2 == std::string::npos) ? cfg.substr(pos1) : cfg.substr(pos1, pos2 - pos1);
+
+        std::string::size_type eq = def.find("=");
+        if (eq == std::string::npos && undefined.find(def) != undefined.end())
+            return true;
+        if (eq != std::string::npos && undefined.find(def.substr(0,eq)) != undefined.end() && def.substr(eq) != "=0")
+            return true;
+
+        pos1 = (pos2 == std::string::npos) ? pos2 : pos2 + 1U;
+    }
+    return false;
+}
+
 static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string> &defined, const std::set<std::string> &undefined, std::set<std::string> &ret)
 {
     std::vector<std::string> configs_if;
@@ -253,8 +270,11 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             } else if (cmdtok->str == "if") {
                 config = readcondition(cmdtok, defined);
             }
-            if (undefined.find(config) != undefined.end())
+
+            // skip undefined configurations..
+            if (isUndefined(config, undefined))
                 config.clear();
+
             configs_if.push_back((cmdtok->str == "ifndef") ? std::string() : config);
             configs_ifndef.push_back((cmdtok->str == "ifndef") ? config : std::string());
             ret.insert(cfg(configs_if));

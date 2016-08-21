@@ -220,6 +220,9 @@ private:
         TEST_CASE(undef1);
         TEST_CASE(undef2);
         TEST_CASE(undef3);
+        TEST_CASE(undef4);
+        TEST_CASE(undef5);
+        TEST_CASE(undef6);
 
         TEST_CASE(validateCfg);
 
@@ -2087,8 +2090,6 @@ private:
     }
 
     void undef3() {
-        Settings settings;
-
         const char filedata[] = "#ifndef X\n"
                                 "Fred & Wilma\n"
                                 "#else\n"
@@ -2096,6 +2097,28 @@ private:
                                 "#endif\n";
         ASSERT_EQUALS("\n", getConfigsStr(filedata, "X"));
         ASSERT_EQUALS("\nX\n", getConfigsStr(filedata));
+    }
+
+    void undef4() {
+        const char filedata[] = "#if defined(X) || defined(Y) || defined(Z)\n"
+                                "#else\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, "X"));
+        ASSERT_EQUALS("\nX;Y;Z\n", getConfigsStr(filedata));
+    }
+
+    void undef5() {
+        const char filedata[] = "#if X==1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, "X"));
+        ASSERT_EQUALS("\nX=1\n", getConfigsStr(filedata));
+    }
+
+    void undef6() {
+        const char filedata[] = "#if X==0\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nX=0\n", getConfigsStr(filedata, "X"));
+        ASSERT_EQUALS("\nX=0\n", getConfigsStr(filedata));
     }
 
     void validateCfg() {
