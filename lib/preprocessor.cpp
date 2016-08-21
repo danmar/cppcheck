@@ -215,7 +215,22 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
     return cfg;
 }
 
-static std::string cfg(const std::vector<std::string> &configs)
+static bool hasDefine(const std::string &userDefines, const std::string &cfg)
+{
+    std::string::size_type pos = 0;
+    while (pos < userDefines.size()) {
+        pos = userDefines.find(cfg, pos);
+        if (pos == std::string::npos)
+            break;
+        const std::string::size_type pos2 = pos + cfg.size();
+        if ((pos == 0 || userDefines[pos-1U] == ';') && (pos2 == userDefines.size() || userDefines[pos2] == '='))
+            return true;
+        pos = pos2;
+    }
+    return false;
+}
+
+static std::string cfg(const std::vector<std::string> &configs, const std::string &userDefines)
 {
     std::set<std::string> configs2(configs.begin(), configs.end());
     std::string ret;
@@ -224,6 +239,8 @@ static std::string cfg(const std::vector<std::string> &configs)
             continue;
         if (*it == "0")
             return "";
+        if (hasDefine(userDefines, *it))
+            continue;
         if (!ret.empty())
             ret += ';';
         ret += *it;
@@ -248,7 +265,33 @@ static bool isUndefined(const std::string &cfg, const std::set<std::string> &und
     return false;
 }
 
-static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string> &defined, const std::set<std::string> &undefined, std::set<std::string> &ret)
+static bool getConfigsElseIsFalse(const std::vector<std::string> &configs_if, const std::string &userDefines)
+{
+    for (unsigned int i = 0; i < configs_if.size(); ++i) {
+        if (hasDefine(userDefines, configs_if[i]))
+            return true;
+    }
+    return false;
+}
+
+static const simplecpp::Token *gotoEndIf(const simplecpp::Token *cmdtok)
+{
+    int level = 0;
+    while (nullptr != (cmdtok = cmdtok->next)) {
+        if (cmdtok->op == '#' && !sameline(cmdtok->previous,cmdtok) && sameline(cmdtok, cmdtok->next)) {
+            if (cmdtok->next->str.compare(0,2,"if")==0)
+                ++level;
+            else if (cmdtok->next->str == "endif") {
+                --level;
+                if (level < 0)
+                    return cmdtok;
+            }
+        }
+    }
+    return nullptr;
+}
+
+static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string> &defined, const std::string &userDefines, const std::set<std::string> &undefined, std::set<std::string> &ret)
 {
     std::vector<std::string> configs_if;
     std::vector<std::string> configs_ifndef;
@@ -277,21 +320,26 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
 
             configs_if.push_back((cmdtok->str == "ifndef") ? std::string() : config);
             configs_ifndef.push_back((cmdtok->str == "ifndef") ? config : std::string());
-            ret.insert(cfg(configs_if));
-        } else if (cmdtok->str == "elif") {
+            ret.insert(cfg(configs_if,userDefines));
+        } else if (cmdtok->str == "elif" || cmdtok->str == "else") {
+            if (getConfigsElseIsFalse(configs_if,userDefines)) {
+                tok = gotoEndIf(tok);
+                if (!tok)
+                    break;
+                tok = tok->previous;
+                continue;
+            }
             if (!configs_if.empty())
                 configs_if.pop_back();
-            std::string config = readcondition(cmdtok, defined);
-            if (undefined.find(config) != undefined.end())
-                config.clear();
-            configs_if.push_back(config);
-            ret.insert(cfg(configs_if));
-        } else if (cmdtok->str == "else") {
-            if (!configs_if.empty())
-                configs_if.pop_back();
-            if (!configs_ifndef.empty()) {
+            if (cmdtok->str == "elif") {
+                std::string config = readcondition(cmdtok, defined);
+                if (isUndefined(config,undefined))
+                    config.clear();
+                configs_if.push_back(config);
+                ret.insert(cfg(configs_if, userDefines));
+            } else if (!configs_ifndef.empty()) {
                 configs_if.push_back(configs_ifndef.back());
-                ret.insert(cfg(configs_if));
+                ret.insert(cfg(configs_if, userDefines));
             }
         } else if (cmdtok->str == "endif" && !sameline(tok, cmdtok->next)) {
             if (!configs_if.empty())
@@ -315,10 +363,10 @@ std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &token
     std::set<std::string> defined;
     defined.insert("__cplusplus");
 
-    ::getConfigs(tokens, defined, _settings.userUndefs, ret);
+    ::getConfigs(tokens, defined, _settings.userDefines, _settings.userUndefs, ret);
 
     for (std::map<std::string, simplecpp::TokenList*>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it)
-        ::getConfigs(*(it->second), defined, _settings.userUndefs, ret);
+        ::getConfigs(*(it->second), defined, _settings.userDefines, _settings.userUndefs, ret);
 
     return ret;
 }

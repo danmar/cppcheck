@@ -28,6 +28,7 @@
 #include "settings.h"
 #include "simplecpp.h"
 
+#include <cstring>
 #include <map>
 #include <string>
 #include <set>
@@ -215,6 +216,8 @@ private:
         TEST_CASE(getConfigs8);  // #if A==1  => cfg: A=1
         TEST_CASE(getConfigs10); // #5139
 
+        TEST_CASE(getConfigsD1);
+
         TEST_CASE(getConfigsU1);
         TEST_CASE(getConfigsU2);
         TEST_CASE(getConfigsU3);
@@ -255,10 +258,12 @@ private:
         }
     }
 
-    std::string getConfigsStr(const char filedata[], const char *u1=NULL) {
+    std::string getConfigsStr(const char filedata[], const char *arg=NULL) {
         Settings settings;
-        if (u1)
-            settings.userUndefs.insert(u1);
+        if (arg && std::strncmp(arg,"-D",2)==0)
+            settings.userDefines = arg + 2;
+        if (arg && std::strncmp(arg,"-U",2)==0)
+            settings.userUndefs.insert(arg+2);
         Preprocessor preprocessor(settings, this);
         std::vector<std::string> files;
         std::istringstream istr(filedata);
@@ -2060,17 +2065,27 @@ private:
         ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 
+    void getConfigsD1() {
+        const char filedata[] = "#ifdef X\n"
+                                "#else\n"
+                                "#ifdef Y\n"
+                                "#endif\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, "-DX"));
+        ASSERT_EQUALS("\nX\nY\n", getConfigsStr(filedata));
+    }
+
     void getConfigsU1() {
         const char filedata[] = "#ifdef X\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n", getConfigsStr(filedata, "X"));
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, "-UX"));
         ASSERT_EQUALS("\nX\n", getConfigsStr(filedata));
     }
 
     void getConfigsU2() {
         const char filedata[] = "#ifndef X\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n", getConfigsStr(filedata, "X"));
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, "-UX"));
         ASSERT_EQUALS("\n", getConfigsStr(filedata));  // no #else
     }
 
@@ -2080,7 +2095,7 @@ private:
                                 "#else\n"
                                 "Barney & Betty\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n", getConfigsStr(filedata, "X"));
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, "-UX"));
         ASSERT_EQUALS("\nX\n", getConfigsStr(filedata));
     }
 
@@ -2088,21 +2103,21 @@ private:
         const char filedata[] = "#if defined(X) || defined(Y) || defined(Z)\n"
                                 "#else\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n", getConfigsStr(filedata, "X"));
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, "-UX"));
         ASSERT_EQUALS("\nX;Y;Z\n", getConfigsStr(filedata));
     }
 
     void getConfigsU5() {
         const char filedata[] = "#if X==1\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n", getConfigsStr(filedata, "X"));
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, "-UX"));
         ASSERT_EQUALS("\nX=1\n", getConfigsStr(filedata));
     }
 
     void getConfigsU6() {
         const char filedata[] = "#if X==0\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\nX=0\n", getConfigsStr(filedata, "X"));
+        ASSERT_EQUALS("\nX=0\n", getConfigsStr(filedata, "-UX"));
         ASSERT_EQUALS("\nX=0\n", getConfigsStr(filedata));
     }
 
