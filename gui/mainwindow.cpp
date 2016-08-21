@@ -26,6 +26,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QFile>
+#include <QInputDialog>
 #include "mainwindow.h"
 #include "cppcheck.h"
 #include "applicationlist.h"
@@ -522,6 +523,23 @@ void MainWindow::CheckFiles()
     if (file0.endsWith(".sln") || file0.endsWith(".vcxproj") || file0.endsWith("compile_database.json")) {
         ImportProject p;
         p.import(selected[0].toStdString());
+
+        if (file0.endsWith(".sln")) {
+            QStringList configs;
+            for (std::list<ImportProject::FileSettings>::const_iterator it = p.fileSettings.begin(); it != p.fileSettings.end(); ++it) {
+                const QString cfg(QString::fromStdString(it->cfg));
+                if (!configs.contains(cfg))
+                    configs.push_back(cfg);
+            }
+            configs.sort();
+
+            bool ok = false;
+            const QString cfg = QInputDialog::getItem(this, tr("Select configuration"), tr("Select the configuration that will be checked"), configs, 0, false, &ok);
+            if (!ok)
+                return;
+            p.ignoreOtherConfigs(cfg.toStdString());
+        }
+
         DoCheckProject(p);
         return;
     }

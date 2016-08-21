@@ -43,6 +43,16 @@ void ImportProject::ignorePaths(std::vector<std::string> &ipaths)
     }
 }
 
+void ImportProject::ignoreOtherConfigs(const std::string &cfg)
+{
+    for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
+        if (it->cfg != cfg)
+            fileSettings.erase(it++);
+        else
+            ++it;
+    }
+}
+
 void ImportProject::ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
