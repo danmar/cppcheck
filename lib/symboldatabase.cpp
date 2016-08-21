@@ -4037,7 +4037,7 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
         startTok = startTok->next();
 
     // type same as scope
-    if (startTok->str() == startScope->className && startScope->isClassOrStruct())
+    if (startTok->str() == startScope->className && startScope->isClassOrStruct() && startTok->strAt(1) != "::")
         return startScope->definedType;
 
     // absolute path - directly start in global scope
