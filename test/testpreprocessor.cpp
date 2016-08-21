@@ -71,22 +71,6 @@ private:
         // The bug that started the whole work with the new preprocessor
         TEST_CASE(Bug2190219);
 
-        TEST_CASE(test1);
-        TEST_CASE(test2);
-        TEST_CASE(test3);
-        TEST_CASE(test4);
-        TEST_CASE(test5);
-        TEST_CASE(test7);
-        TEST_CASE(test7a);
-        TEST_CASE(test7b);
-        TEST_CASE(test7c);
-        TEST_CASE(test7d);
-        TEST_CASE(test7e);
-        TEST_CASE(test8);  // #if A==1  => cfg: A=1
-        TEST_CASE(test9);  // Don't crash for invalid code
-        TEST_CASE(test10); // Ticket #5139
-
-
         TEST_CASE(error1); // #error => don't extract any code
         TEST_CASE(error3);
         TEST_CASE(error4);  // #2919 - wrong filename is reported
@@ -216,13 +200,27 @@ private:
 
         TEST_CASE(invalidElIf); // #2942 segfault
 
-        // Using -U to undefine symbols
-        TEST_CASE(undef1);
-        TEST_CASE(undef2);
-        TEST_CASE(undef3);
-        TEST_CASE(undef4);
-        TEST_CASE(undef5);
-        TEST_CASE(undef6);
+        // Preprocessor::getConfigs
+        TEST_CASE(getConfigs1);
+        TEST_CASE(getConfigs2);
+        TEST_CASE(getConfigs3);
+        TEST_CASE(getConfigs4);
+        TEST_CASE(getConfigs5);
+        TEST_CASE(getConfigs7);
+        TEST_CASE(getConfigs7a);
+        TEST_CASE(getConfigs7b);
+        TEST_CASE(getConfigs7c);
+        TEST_CASE(getConfigs7d);
+        TEST_CASE(getConfigs7e);
+        TEST_CASE(getConfigs8);  // #if A==1  => cfg: A=1
+        TEST_CASE(getConfigs10); // #5139
+
+        TEST_CASE(getConfigsU1);
+        TEST_CASE(getConfigsU2);
+        TEST_CASE(getConfigsU3);
+        TEST_CASE(getConfigsU4);
+        TEST_CASE(getConfigsU5);
+        TEST_CASE(getConfigsU6);
 
         TEST_CASE(validateCfg);
 
@@ -300,151 +298,6 @@ private:
             ASSERT_EQUALS(1U, actual.size());
             ASSERT_EQUALS("\n\n\nc", actual[""]);
         }
-    }
-
-
-    void test1() {
-        const char filedata[] = "#ifdef  WIN32 \n"
-                                "    abcdef\n"
-                                "#else  \n"
-                                "    qwerty\n"
-                                "#endif  \n";
-
-        ASSERT_EQUALS("\nWIN32\n", getConfigsStr(filedata));
-    }
-
-    void test2() {
-        const char filedata[] = "# ifndef WIN32\n"
-                                "    \" # ifdef WIN32\" // a comment\n"
-                                "   #   else  \n"
-                                "    qwerty\n"
-                                "  # endif  \n";
-        ASSERT_EQUALS("\nWIN32\n", getConfigsStr(filedata));
-    }
-
-    void test3() {
-        const char filedata[] = "#ifdef ABC\n"
-                                "a\n"
-                                "#ifdef DEF\n"
-                                "b\n"
-                                "#endif\n"
-                                "c\n"
-                                "#endif\n";
-
-        ASSERT_EQUALS("\nABC\nABC;DEF\n", getConfigsStr(filedata));
-    }
-
-    void test4() {
-        const char filedata[] = "#ifdef ABC\n"
-                                "A\n"
-                                "#endif\t\n"
-                                "#ifdef ABC\n"
-                                "A\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
-    }
-
-    void test5() {
-        const char filedata[] = "#ifdef ABC\n"
-                                "A\n"
-                                "#else\n"
-                                "B\n"
-                                "#ifdef DEF\n"
-                                "C\n"
-                                "#endif\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nABC\nDEF\n", getConfigsStr(filedata));
-    }
-
-    void test7() {
-        const char filedata[] = "#ifdef ABC\n"
-                                "A\n"
-                                "#ifdef ABC\n"
-                                "B\n"
-                                "#endif\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
-
-        test7a();
-        test7b();
-        test7c();
-        test7d();
-    }
-
-    void test7a() {
-        const char filedata[] = "#ifndef ABC\n"
-                                "A\n"
-                                "#ifndef ABC\n"
-                                "B\n"
-                                "#endif\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\n", getConfigsStr(filedata));
-    }
-
-    void test7b() {
-        const char filedata[] = "#ifndef ABC\n"
-                                "A\n"
-                                "#ifdef ABC\n"
-                                "B\n"
-                                "#endif\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
-    }
-
-    void test7c() {
-        const char filedata[] = "#ifdef ABC\n"
-                                "A\n"
-                                "#ifndef ABC\n"
-                                "B\n"
-                                "#endif\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
-    }
-
-    void test7d() {
-        const char filedata[] = "#if defined(ABC)\n"
-                                "A\n"
-                                "#if defined(ABC)\n"
-                                "B\n"
-                                "#endif\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
-    }
-
-    void test7e() {
-        const char filedata[] = "#ifdef ABC\n"
-                                "#file \"test.h\"\n"
-                                "#ifndef test_h\n"
-                                "#define test_h\n"
-                                "#ifdef ABC\n"
-                                "#endif\n"
-                                "#endif\n"
-                                "#endfile\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
-    }
-
-    void test8() {
-        const char filedata[] = "#if A == 1\n"
-                                "1\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
-    }
-
-    void test9() {
-        const char filedata[] = "#if\n"
-                                "#else\n"
-                                "#endif\n";
-        getConfigsStr(filedata); // <- don't crash
-    }
-
-    void test10() { // Ticket #5139
-        const char filedata[] = "#define foo a.foo\n"
-                                "#define bar foo\n"
-                                "#define baz bar+0\n"
-                                "#if 0\n"
-                                "#endif";
-        ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 
     void error1() {
@@ -2075,21 +1928,153 @@ private:
         ASSERT_EQUALS("", actual);
     }
 
-    void undef1() {
+    void getConfigs1() {
+        const char filedata[] = "#ifdef  WIN32 \n"
+                                "    abcdef\n"
+                                "#else  \n"
+                                "    qwerty\n"
+                                "#endif  \n";
+
+        ASSERT_EQUALS("\nWIN32\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs2() {
+        const char filedata[] = "# ifndef WIN32\n"
+                                "    \" # ifdef WIN32\" // a comment\n"
+                                "   #   else  \n"
+                                "    qwerty\n"
+                                "  # endif  \n";
+        ASSERT_EQUALS("\nWIN32\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs3() {
+        const char filedata[] = "#ifdef ABC\n"
+                                "a\n"
+                                "#ifdef DEF\n"
+                                "b\n"
+                                "#endif\n"
+                                "c\n"
+                                "#endif\n";
+
+        ASSERT_EQUALS("\nABC\nABC;DEF\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs4() {
+        const char filedata[] = "#ifdef ABC\n"
+                                "A\n"
+                                "#endif\t\n"
+                                "#ifdef ABC\n"
+                                "A\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs5() {
+        const char filedata[] = "#ifdef ABC\n"
+                                "A\n"
+                                "#else\n"
+                                "B\n"
+                                "#ifdef DEF\n"
+                                "C\n"
+                                "#endif\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nABC\nDEF\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs7() {
+        const char filedata[] = "#ifdef ABC\n"
+                                "A\n"
+                                "#ifdef ABC\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs7a() {
+        const char filedata[] = "#ifndef ABC\n"
+                                "A\n"
+                                "#ifndef ABC\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs7b() {
+        const char filedata[] = "#ifndef ABC\n"
+                                "A\n"
+                                "#ifdef ABC\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs7c() {
+        const char filedata[] = "#ifdef ABC\n"
+                                "A\n"
+                                "#ifndef ABC\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs7d() {
+        const char filedata[] = "#if defined(ABC)\n"
+                                "A\n"
+                                "#if defined(ABC)\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs7e() {
+        const char filedata[] = "#ifdef ABC\n"
+                                "#file \"test.h\"\n"
+                                "#ifndef test_h\n"
+                                "#define test_h\n"
+                                "#ifdef ABC\n"
+                                "#endif\n"
+                                "#endif\n"
+                                "#endfile\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nABC\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs8() {
+        const char filedata[] = "#if A == 1\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs10() { // Ticket #5139
+        const char filedata[] = "#define foo a.foo\n"
+                                "#define bar foo\n"
+                                "#define baz bar+0\n"
+                                "#if 0\n"
+                                "#endif";
+        ASSERT_EQUALS("\n", getConfigsStr(filedata));
+    }
+
+    void getConfigsU1() {
         const char filedata[] = "#ifdef X\n"
                                 "#endif\n";
         ASSERT_EQUALS("\n", getConfigsStr(filedata, "X"));
         ASSERT_EQUALS("\nX\n", getConfigsStr(filedata));
     }
 
-    void undef2() {
+    void getConfigsU2() {
         const char filedata[] = "#ifndef X\n"
                                 "#endif\n";
         ASSERT_EQUALS("\n", getConfigsStr(filedata, "X"));
         ASSERT_EQUALS("\n", getConfigsStr(filedata));  // no #else
     }
 
-    void undef3() {
+    void getConfigsU3() {
         const char filedata[] = "#ifndef X\n"
                                 "Fred & Wilma\n"
                                 "#else\n"
@@ -2099,7 +2084,7 @@ private:
         ASSERT_EQUALS("\nX\n", getConfigsStr(filedata));
     }
 
-    void undef4() {
+    void getConfigsU4() {
         const char filedata[] = "#if defined(X) || defined(Y) || defined(Z)\n"
                                 "#else\n"
                                 "#endif\n";
@@ -2107,14 +2092,14 @@ private:
         ASSERT_EQUALS("\nX;Y;Z\n", getConfigsStr(filedata));
     }
 
-    void undef5() {
+    void getConfigsU5() {
         const char filedata[] = "#if X==1\n"
                                 "#endif\n";
         ASSERT_EQUALS("\n", getConfigsStr(filedata, "X"));
         ASSERT_EQUALS("\nX=1\n", getConfigsStr(filedata));
     }
 
-    void undef6() {
+    void getConfigsU6() {
         const char filedata[] = "#if X==0\n"
                                 "#endif\n";
         ASSERT_EQUALS("\nX=0\n", getConfigsStr(filedata, "X"));
