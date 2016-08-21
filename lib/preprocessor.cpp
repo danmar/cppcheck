@@ -156,7 +156,7 @@ static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
     return tok1 && tok2 && tok1->location.sameline(tok2->location);
 }
 
-static std::string readcondition(const simplecpp::Token *iftok, const std::set<std::string> &defined)
+static std::string readcondition(const simplecpp::Token *iftok, const std::set<std::string> &defined, const std::set<std::string> &undefined)
 {
     const simplecpp::Token *cond = iftok->next;
     if (!sameline(iftok,cond))
@@ -183,7 +183,7 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
     }
 
     if (len == 3 && cond->op == '(' && next1->name && next2->op == ')') {
-        if (defined.find(next1->str) == defined.end())
+        if (defined.find(next1->str) == defined.end() && undefined.find(next1->str) == undefined.end())
             return next1->str;
     }
 
@@ -203,7 +203,7 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
             break;
         if (dtok->op == '(')
             dtok = dtok->next;
-        if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str) == defined.end())
+        if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str) == defined.end() && undefined.find(dtok->str) == undefined.end())
             configset.insert(dtok->str);
     }
     std::string cfg;
@@ -311,7 +311,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 if (defined.find(config) != defined.end())
                     config.clear();
             } else if (cmdtok->str == "if") {
-                config = readcondition(cmdtok, defined);
+                config = readcondition(cmdtok, defined, undefined);
             }
 
             // skip undefined configurations..
@@ -332,7 +332,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             if (!configs_if.empty())
                 configs_if.pop_back();
             if (cmdtok->str == "elif") {
-                std::string config = readcondition(cmdtok, defined);
+                std::string config = readcondition(cmdtok, defined, undefined);
                 if (isUndefined(config,undefined))
                     config.clear();
                 configs_if.push_back(config);

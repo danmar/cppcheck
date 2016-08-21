@@ -2103,7 +2103,7 @@ private:
         const char filedata[] = "#if defined(X) || defined(Y) || defined(Z)\n"
                                 "#else\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n", getConfigsStr(filedata, "-UX"));
+        ASSERT_EQUALS("\nY;Z\n", getConfigsStr(filedata, "-UX"));
         ASSERT_EQUALS("\nX;Y;Z\n", getConfigsStr(filedata));
     }
 
