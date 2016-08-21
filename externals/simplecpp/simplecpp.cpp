@@ -33,6 +33,15 @@
 #include <iostream>
 #include <stack>
 
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
+#include <windows.h>
+#undef min
+#undef max
+#undef ERROR
+#undef TRUE
+#define SIMPLECPP_WINDOWS
+#endif
+
 namespace {
 const simplecpp::TokenString DEFINE("define");
 const simplecpp::TokenString UNDEF("undef");
@@ -1487,14 +1496,24 @@ private:
 
 
 namespace simplecpp {
-
-#if defined(__linux__) || defined(__sun) || defined(__hpux)
-#define windowsLowerCase(f)  f
-#else
-std::string windowsLowerCase(std::string f) {
-    std::transform(f.begin(), f.end(), f.begin(), static_cast<int(*)(int)>(std::tolower));
-    return f;
+#ifdef SIMPLECPP_WINDOWS
+std::string realFilename(const std::string &f) {
+    WIN32_FIND_DATA FindFileData;
+    TCHAR buf[f.size()+1] = {0};
+    for (unsigned int i = 0; i < f.size(); ++i)
+        buf[i] = f[i];
+    HANDLE hFind = FindFirstFile(buf, &FindFileData);
+    if (hFind == INVALID_HANDLE_VALUE)
+        return f;
+    std::ostringstream ostr;
+    for (const TCHAR *c = FindFileData.cFileName; *c; c++) {
+        ostr << (char)*c;
+    }
+    FindClose(hFind);
+    return ostr.str();
 }
+#else
+#define realFilename(f)  f
 #endif
 
 /**
@@ -1528,7 +1547,7 @@ std::string simplifyPath(std::string path) {
         }
     }
 
-    return windowsLowerCase(path);
+    return realFilename(path);
 }
 }
 
@@ -1688,7 +1707,7 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
 
     // -include files
     for (std::list<std::string>::const_iterator it = dui.includes.begin(); it != dui.includes.end(); ++it) {
-        const std::string &filename = windowsLowerCase(*it);
+        const std::string &filename = realFilename(*it);
 
         if (ret.find(filename) != ret.end())
             continue;
@@ -1728,7 +1747,7 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
 
         bool systemheader = (htok->str[0] == '<');
 
-        const std::string header(windowsLowerCase(htok->str.substr(1U, htok->str.size() - 2U)));
+        const std::string header(realFilename(htok->str.substr(1U, htok->str.size() - 2U)));
         if (hasFile(ret, sourcefile, header, dui, systemheader))
             continue;
 
@@ -1859,7 +1878,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 }
             } else if (ifstates.top() == TRUE && rawtok->str == INCLUDE) {
                 const bool systemheader = (rawtok->next->str[0] == '<');
-                const std::string header(windowsLowerCase(rawtok->next->str.substr(1U, rawtok->next->str.size() - 2U)));
+                const std::string header(realFilename(rawtok->next->str.substr(1U, rawtok->next->str.size() - 2U)));
                 const std::string header2 = getFileName(filedata, rawtok->location.file(), header, dui, systemheader);
                 if (header2.empty()) {
                     simplecpp::Output output(files);
