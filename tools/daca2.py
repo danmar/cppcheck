@@ -73,37 +73,35 @@ def handleRemoveReadonly(func, path, exc):
 
 
 def removeAllExceptResults():
-    count = 5
-    while count > 0:
-        count = count - 1
+    filenames = []
+    for g in glob.glob('[A-Za-z0-9]*'):
+        filenames.append(g)
+    for g in glob.glob('.[a-z]*'):
+        filenames.append(g)
 
-        filenames = []
-        for g in glob.glob('[A-Za-z0-9]*'):
-            filenames.append(g)
-        for g in glob.glob('.[a-z]*'):
-            filenames.append(g)
+    for filename in filenames:
+        count = 5
+        while count > 0:
+            count = count - 1
 
-        try:
-            for filename in filenames:
+            try:
                 if os.path.isdir(filename):
                     shutil.rmtree(filename, onerror=handleRemoveReadonly)
                 elif filename != 'results.txt':
                     os.remove(filename)
-        except WindowsError as err:
-            time.sleep(30)
-            if count == 0:
-                print('Failed to cleanup files/folders')
-                print(err)
-                sys.exit(1)
-            continue
-        except OSError as err:
-            time.sleep(30)
-            if count == 0:
-                print('Failed to cleanup files/folders')
-                print(err)
-                sys.exit(1)
-            continue
-        count = 0
+                break
+            except WindowsError as err:
+                time.sleep(30)
+                if count == 0:
+                    f = open('results.txt','at')
+                    f.write('Failed to cleanup ' + filename + ': ' + str(err))
+                    f.close()
+            except OSError as err:
+                time.sleep(30)
+                if count == 0:
+                    f = open('results.txt','at')
+                    f.write('Failed to cleanup ' + filename + ': ' + str(err))
+                    f.close()
 
 
 def removeLargeFiles(path):
@@ -113,14 +111,20 @@ def removeLargeFiles(path):
         if os.path.islink(g):
             continue
         if os.path.isdir(g):
-            removeLargeFiles(g + '/')
+            # Remove test code
+            if g.endswith('/testsuite') or g.endswith('/clang/INPUTS'):
+                shutil.rmtree(g, onerror=handleRemoveReadonly)
+            else:
+                removeLargeFiles(g + '/')
         elif os.path.isfile(g) and g[-4:] != '.txt':
             statinfo = os.stat(g)
-            # Remove gcc torture tests, that is not meant to be valid code
-            if path.find('/gcc/testsuite/') > 0:
-                os.remove(g)
-            if path.find('/clang/INPUTS/') > 0 or statinfo.st_size > 1000000:
-                os.remove(g)
+            if statinfo.st_size > 1000000:
+                try:
+                    os.remove(g)
+                except OSError as err:
+                    f = open('results.txt','at')
+                    f.write('Failed to remove ' + g + ': ' + str(err))
+                    f.close()
 
 def strfCurrTime(fmt):
     return datetime.time.strftime(datetime.datetime.now().time(), fmt)
