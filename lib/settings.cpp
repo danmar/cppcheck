@@ -23,9 +23,10 @@
 #include <fstream>
 #include <set>
 
+bool Settings::_terminated;
+
 Settings::Settings()
-    : _terminated(false),
-      debug(false),
+    : debug(false),
       debugnormal(false),
       debugwarnings(false),
       dump(false),

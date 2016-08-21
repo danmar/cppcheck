@@ -51,7 +51,7 @@ private:
     std::set<std::string> _enabled;
 
     /** @brief terminate checking */
-    bool _terminated;
+    static bool _terminated;
 
 public:
     Settings();
@@ -98,12 +98,12 @@ public:
 
     /** @brief Request termination of checking */
     void terminate() {
-        _terminated = true;
+        Settings::_terminated = true;
     }
 
     /** @brief termination requested? */
     bool terminated() const {
-        return _terminated;
+        return Settings::_terminated;
     }
 
     /** @brief Force checking the files with "too many" configurations (--force). */
