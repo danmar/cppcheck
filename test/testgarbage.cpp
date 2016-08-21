@@ -232,6 +232,7 @@ private:
         TEST_CASE(garbageCode181);
         TEST_CASE(garbageCode182); // #4195
         TEST_CASE(garbageCode183); // #7505
+        TEST_CASE(garbageCode184); // #7699
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1519,6 +1520,13 @@ private:
     // #7505 - segfault
     void garbageCode183() {
         ASSERT_THROW(checkCode("= { int } enum return { r = f() f(); }"), InternalError);
+    }
+
+    void garbageCode184() { // #7699
+        checkCode("unsigned int AquaSalSystem::GetDisplayScreenCount() {\n"
+                  "    NSArray* pScreens = [NSScreen screens];\n"
+                  "    return pScreens ? [pScreens count] : 1;\n"
+                  "}");
     }
 
 };

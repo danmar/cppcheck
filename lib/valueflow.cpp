@@ -362,7 +362,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         setTokenValue(parent,value);
     }
 
-    else if (parent->str() == "?" && tok->str() == ":" && tok == parent->astOperand2()) {
+    else if (parent->str() == "?" && tok->str() == ":" && tok == parent->astOperand2() && parent->astOperand1()) {
         // is condition always true/false?
         if (parent->astOperand1()->values.size() == 1U && parent->astOperand1()->values.front().isKnown()) {
             const ValueFlow::Value &condvalue = parent->astOperand1()->values.front();
