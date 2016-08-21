@@ -280,8 +280,11 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 // Skip if we already met the same simplified token list
                 if (_settings.force || _settings.maxConfigs > 1) {
                     const unsigned long long checksum = _tokenizer.list.calculateChecksum();
-                    if (checksums.find(checksum) != checksums.end())
+                    if (checksums.find(checksum) != checksums.end()) {
+                        if (_settings.isEnabled("information") && (_settings.debug || _settings.verbose))
+                            purgedConfigurationMessage(filename, cfg);
                         continue;
+                    }
                     checksums.insert(checksum);
                 }
 
@@ -302,8 +305,6 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 }
 
             } catch (const InternalError &e) {
-                if (_settings.isEnabled("information") && (_settings.debug || _settings.verbose))
-                    purgedConfigurationMessage(filename, cfg);
                 internalErrorFound=true;
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
