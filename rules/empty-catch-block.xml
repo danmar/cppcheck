@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<rule>
+	<tokenlist>normal</tokenlist>
+	<pattern><![CDATA[\}\s*catch\s*\(.*\)\s*\{\s*\}]]></pattern>
+	<message>
+		<severity>style</severity>
+		<summary>Empty catch block found.</summary>
+	</message>
+</rule>
