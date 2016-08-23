@@ -440,13 +440,15 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
 static void splitcfg(const std::string &cfg, std::list<std::string> &defines, const std::string &defaultValue)
 {
-    for (std::string::size_type pos1 = 0U; pos1 < cfg.size();) {
-        const std::string::size_type pos2 = cfg.find(";",pos1);
-        std::string def = (pos2 == std::string::npos) ? cfg.substr(pos1) : cfg.substr(pos1, pos2 - pos1);
+    for (std::string::size_type defineStartPos = 0U; defineStartPos < cfg.size();) {
+        const std::string::size_type defineEndPos = cfg.find(";", defineStartPos);
+        std::string def = (defineEndPos == std::string::npos) ? cfg.substr(defineStartPos) : cfg.substr(defineStartPos, defineEndPos - defineStartPos);
         if (!defaultValue.empty() && def.find("=") == std::string::npos)
             def += '=' + defaultValue;
         defines.push_back(def);
-        pos1 = (pos2 == std::string::npos) ? pos2 : pos2 + 1U;
+        if (defineEndPos == std::string::npos)
+            break;
+        defineStartPos = defineEndPos + 1U;
     }
 }
 
