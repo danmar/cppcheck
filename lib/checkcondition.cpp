@@ -29,9 +29,9 @@
 #include <stack>
 
 // CWE ids used
-static const struct CWE CWE398(398U);
-static const struct CWE CWE570(570U);
-static const struct CWE CWE571(571U);
+static const struct CWE CWE398(398U);	// Indicator of Poor Code Quality
+static const struct CWE CWE570(570U);	// Expression is Always False
+static const struct CWE CWE571(571U);	// Expression is Always True
 
 //---------------------------------------------------------------------------
 
@@ -272,7 +272,7 @@ void CheckCondition::checkBadBitmaskCheck()
 
 void CheckCondition::badBitmaskCheckError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?");
+    reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?", CWE571, false);
 }
 
 void CheckCondition::comparison()
@@ -1023,7 +1023,8 @@ void CheckCondition::alwaysTrueFalseError(const Token *tok, bool knownResult)
     reportError(tok,
                 Severity::style,
                 "knownConditionTrueFalse",
-                "Condition '" + expr + "' is always " + (knownResult ? "true" : "false"));
+                "Condition '" + expr + "' is always " + (knownResult ? "true" : "false"),
+				(knownResult ? CWE571 : CWE570), false);
 }
 
 void CheckCondition::checkInvalidTestForOverflow()
@@ -1087,5 +1088,5 @@ void CheckCondition::invalidTestForOverflow(const Token* tok, bool result)
              "'. Condition is always " +
              std::string(result ? "true" : "false") +
              " unless there is overflow, and overflow is UB.";
-    reportError(tok, Severity::warning, "invalidTestForOverflow", errmsg);
+    reportError(tok, Severity::warning, "invalidTestForOverflow", errmsg, (result ? CWE571 : CWE570), false);
 }

@@ -27,6 +27,7 @@
 
 // CWE ID used:
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const struct CWE CWE703(703U);	// Improper Check or Handling of Exceptional Conditions
 
 
 /// @addtogroup Checks
@@ -124,7 +125,7 @@ private:
         reportError(locationList, Severity::style, "unhandledExceptionSpecification",
                     "Unhandled exception specification when calling function " + str1 + "().\n"
                     "Unhandled exception specification when calling function " + str1 + "(). "
-                    "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.", CWE(0U), true);
+                    "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.", CWE703, true);
     }
 
     /** Generate all possible errors (for --errorlist) */
