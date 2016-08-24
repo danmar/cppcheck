@@ -35,11 +35,11 @@ namespace {
     CheckClass instance;
 }
 
-static const CWE CWE398(398U);	// Indicator of Poor Code Quality
-static const CWE CWE404(404U);	// Improper Resource Shutdown or Release
-static const CWE CWE665(665U);	// Improper Initialization
-static const CWE CWE758(758U);	// Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const CWE CWE762(762U);	// Mismatched Memory Management Routines
+static const CWE CWE398(398U);  // Indicator of Poor Code Quality
+static const CWE CWE404(404U);  // Improper Resource Shutdown or Release
+static const CWE CWE665(665U);  // Improper Initialization
+static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE762(762U);  // Mismatched Memory Management Routines
 
 static const char * getFunctionTypeName(Function::Type type)
 {

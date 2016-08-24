@@ -29,9 +29,9 @@
 #include <stack>
 
 // CWE ids used
-static const struct CWE CWE398(398U);	// Indicator of Poor Code Quality
-static const struct CWE CWE570(570U);	// Expression is Always False
-static const struct CWE CWE571(571U);	// Expression is Always True
+static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const struct CWE CWE570(570U);   // Expression is Always False
+static const struct CWE CWE571(571U);   // Expression is Always True
 
 //---------------------------------------------------------------------------
 
@@ -1024,7 +1024,7 @@ void CheckCondition::alwaysTrueFalseError(const Token *tok, bool knownResult)
                 Severity::style,
                 "knownConditionTrueFalse",
                 "Condition '" + expr + "' is always " + (knownResult ? "true" : "false"),
-				(knownResult ? CWE571 : CWE570), false);
+                (knownResult ? CWE571 : CWE570), false);
 }
 
 void CheckCondition::checkInvalidTestForOverflow()
