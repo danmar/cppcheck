@@ -35,11 +35,11 @@ namespace {
     CheckClass instance;
 }
 
-static const CWE CWE398(398U);
-static const CWE CWE404(404U);
-static const CWE CWE665(665U);
-static const CWE CWE758(758U);
-static const CWE CWE762(762U);
+static const CWE CWE398(398U);	// Indicator of Poor Code Quality
+static const CWE CWE404(404U);	// Improper Resource Shutdown or Release
+static const CWE CWE665(665U);	// Improper Initialization
+static const CWE CWE758(758U);	// Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE762(762U);	// Mismatched Memory Management Routines
 
 static const char * getFunctionTypeName(Function::Type type)
 {
@@ -2010,7 +2010,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
                     "function. Making this function 'const' should not cause compiler errors. "
                     "Even though the function can be made const function technically it may not make "
                     "sense conceptually. Think about your design and the task of the function first - is "
-                    "it a function that must not change object internal state?", CWE(0U), true);
+                    "it a function that must not change object internal state?", CWE398, true);
     else
         reportError(toks, Severity::performance, "functionStatic",
                     "Technically the member function '" + classname + "::" + funcname + "' can be static.\n"
@@ -2018,7 +2018,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
                     "function. Making a function static can bring a performance benefit since no 'this' instance is "
                     "passed to the function. This change should not cause compiler errors but it does not "
                     "necessarily make sense conceptually. Think about your design and the task of the function first - "
-                    "is it a function that must not access members of class instances?", CWE(0U), true);
+                    "is it a function that must not access members of class instances?", CWE398, true);
 }
 
 //---------------------------------------------------------------------------
@@ -2105,7 +2105,7 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
                 "Members are initialized in the order they are declared, not in the "
                 "order they are in the initializer list.  Keeping the initializer list "
                 "in the same order that the members were declared prevents order dependent "
-                "initialization errors.", CWE(0U), true);
+                "initialization errors.", CWE398, true);
 }
 
 

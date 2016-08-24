@@ -69,7 +69,7 @@ void CheckIO::checkCoutCerrMisusage()
 
 void CheckIO::coutCerrMisusageError(const Token* tok, const std::string& streamName)
 {
-    reportError(tok, Severity::error, "coutCerrMisusage", "Invalid usage of output stream: '<< std::" + streamName + "'.");
+    reportError(tok, Severity::error, "coutCerrMisusage", "Invalid usage of output stream: '<< std::" + streamName + "'.", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1923,7 +1923,7 @@ void CheckIO::invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFo
     errmsg << " but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_int", errmsg.str());
+    reportError(tok, Severity::warning, "invalidPrintfArgType_int", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
