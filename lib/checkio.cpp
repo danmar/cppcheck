@@ -1056,6 +1056,13 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                     } else {
                                         switch (specifier[0]) {
+                                        case 'h':
+                                            if (specifier[1] == 'h') {
+                                                if (argInfo.typeToken->str() != "char")
+                                                    invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            } else if (argInfo.typeToken->str() != "short")
+                                                invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            break;
                                         case 'l':
                                             if (specifier[1] == 'l') {
                                                 if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
@@ -1121,6 +1128,13 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                     } else {
                                         switch (specifier[0]) {
+                                        case 'h':
+                                            if (specifier[1] == 'h') {
+                                                if (!(argInfo.typeToken->str() == "char" && !argInfo.typeToken->isUnsigned()))
+                                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            } else if (!(argInfo.typeToken->str() == "short" && !argInfo.typeToken->isUnsigned()))
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            break;
                                         case 'l':
                                             if (specifier[1] == 'l') {
                                                 if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
@@ -1191,6 +1205,13 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                     } else {
                                         switch (specifier[0]) {
+                                        case 'h':
+                                            if (specifier[1] == 'h') {
+                                                if (!(argInfo.typeToken->str() == "char" && argInfo.typeToken->isUnsigned()))
+                                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            } else if (!(argInfo.typeToken->str() == "short" && argInfo.typeToken->isUnsigned()))
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            break;
                                         case 'l':
                                             if (specifier[1] == 'l') {
                                                 if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
@@ -1888,6 +1909,11 @@ static void printfFormatType(std::ostream& os, const std::string& specifier, boo
             os << (isUnsigned ? "unsigned " : "") << "long long";
         else
             os << (isUnsigned ? "unsigned " : "") << "long";
+    } else if (specifier[0] == 'h') {
+        if (specifier[1] == 'h')
+            os << (isUnsigned ? "unsigned " : "") << "char";
+        else
+            os << (isUnsigned ? "unsigned " : "") << "short";
     } else if (specifier.find("I32") != std::string::npos) {
         os << (isUnsigned ? "unsigned " : "") << "__int32";
     } else if (specifier.find("I64") != std::string::npos) {
