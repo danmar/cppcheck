@@ -214,10 +214,12 @@ namespace {
             if (a)
                 name = a;
             for (const tinyxml2::XMLElement *e = cfg->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                if (std::strcmp(e->Name(),"Configuration")==0)
-                    configuration = e->GetText();
-                else if (std::strcmp(e->Name(),"Platform")==0)
-                    platform = e->GetText();
+                if (e->GetText()) {
+                    if (std::strcmp(e->Name(),"Configuration")==0)
+                        configuration = e->GetText();
+                    else if (std::strcmp(e->Name(),"Platform")==0)
+                        platform = e->GetText();
+                }
             }
         }
         std::string name;
@@ -234,10 +236,12 @@ namespace {
                 if (std::strcmp(e1->Name(), "ClCompile") != 0)
                     continue;
                 for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                    if (std::strcmp(e->Name(), "PreprocessorDefinitions") == 0)
-                        preprocessorDefinitions = e->GetText();
-                    else if (std::strcmp(e->Name(), "AdditionalIncludeDirectories") == 0)
-                        additionalIncludePaths = e->GetText();
+                    if (e->GetText()) {
+                        if (std::strcmp(e->Name(), "PreprocessorDefinitions") == 0)
+                            preprocessorDefinitions = e->GetText();
+                        else if (std::strcmp(e->Name(), "AdditionalIncludeDirectories") == 0)
+                            additionalIncludePaths = e->GetText();
+                    }
                 }
             }
         }
