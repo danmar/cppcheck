@@ -100,11 +100,11 @@ void TemplateSimplifier::cleanupAfterSimplify(Token *tokens)
                  (!tok->previous() || tok->previous()->str() == ";")) {
             const Token *tok2 = tok->tokAt(2);
             std::string type;
-            while (Token::Match(tok2, "%type% ,") || Token::Match(tok2, "%num% ,")) {
+            while (Token::Match(tok2, "%type%|%num% ,")) {
                 type += tok2->str() + ",";
                 tok2 = tok2->tokAt(2);
             }
-            if (Token::Match(tok2, "%type% > (") || Token::Match(tok2, "%num% > (")) {
+            if (Token::Match(tok2, "%type%|%num% > (")) {
                 type += tok2->str();
                 tok->str(tok->str() + "<" + type + ">");
                 Token::eraseTokens(tok, tok2->tokAt(2));
