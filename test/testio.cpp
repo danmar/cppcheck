@@ -2828,6 +2828,12 @@ private:
               "    string.sprintf(\"%d\", f);\n"
               "}", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'float'.\n", errout.str());
+
+        check("void foo(float f) {\n"
+              "    QString string;\n"
+              "    string = QString::asprintf(\"%d\", f);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'float'.\n", errout.str());
     }
 
     void testTernary() {  // ticket #6182
