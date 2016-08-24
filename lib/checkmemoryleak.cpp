@@ -39,9 +39,10 @@ namespace {
 }
 
 // CWE ID used:
-static const CWE CWE398(398U);
-static const CWE CWE771(771U);
-static const CWE CWE772(772U);
+static const CWE CWE398(398U);	// Indicator of Poor Code Quality
+static const CWE CWE401(401U);	// Improper Release of Memory Before Removing Last Reference ('Memory Leak')
+static const CWE CWE771(771U);	// Missing Reference to Active Allocated Resource
+static const CWE CWE772(772U);	// Missing Release of Resource after Effective Lifetime
 
 /**
  * Count function parameters
@@ -2749,6 +2750,6 @@ void CheckMemoryLeakNoVar::unsafeArgAllocError(const Token *tok, const std::stri
     const std::string factoryFunc = ptrType == "shared_ptr" ? "make_shared" : "make_unique";
     reportError(tok, Severity::warning, "leakUnsafeArgAlloc",
                 "Unsafe allocation. If " + funcName + "() throws, memory could be leaked. Use " + factoryFunc + "<" + objType + ">() instead.",
-                CWE(0U),
+                CWE401,
                 true); // Inconclusive because funcName may never throw
 }

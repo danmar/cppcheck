@@ -34,7 +34,8 @@ namespace {
 }
 
 static const struct CWE CWE197(197U);   // Numeric Truncation Error
-static const struct CWE CWE369(369U);
+static const struct CWE CWE362(362U);	// Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')
+static const struct CWE CWE369(369U);	// Divide By Zero
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 static const struct CWE CWE475(475U);   // Undefined Behavior for Input to API
 static const struct CWE CWE561(561U);   // Dead Code
@@ -2554,7 +2555,7 @@ void CheckOther::checkInterlockedDecrement()
 void CheckOther::raceAfterInterlockedDecrementError(const Token* tok)
 {
     reportError(tok, Severity::error, "raceAfterInterlockedDecrement",
-                "Race condition: non-interlocked access after InterlockedDecrement(). Use InterlockedDecrement() return value instead.");
+                "Race condition: non-interlocked access after InterlockedDecrement(). Use InterlockedDecrement() return value instead.", CWE362, false);
 }
 
 void CheckOther::checkUnusedLabel()

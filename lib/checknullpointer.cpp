@@ -30,7 +30,7 @@ namespace {
     CheckNullPointer instance;
 }
 
-static const CWE CWE476(476U);
+static const CWE CWE476(476U);	// NULL Pointer Dereference
 
 //---------------------------------------------------------------------------
 
@@ -477,7 +477,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
 {
     if (defaultArg) {
         if (_settings->isEnabled("warning"))
-            reportError(tok, Severity::warning, "nullPointerDefaultArg", "Possible null pointer dereference if the default parameter value is used: " + varname, CWE(0U), inconclusive);
+            reportError(tok, Severity::warning, "nullPointerDefaultArg", "Possible null pointer dereference if the default parameter value is used: " + varname, CWE476, inconclusive);
     } else if (possible) {
         if (_settings->isEnabled("warning"))
             reportError(tok, Severity::warning, "nullPointer", "Possible null pointer dereference: " + varname, CWE476, inconclusive);
@@ -491,5 +491,5 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     callstack.push_back(tok);
     callstack.push_back(nullCheck);
     const std::string errmsg(ValueFlow::eitherTheConditionIsRedundant(nullCheck) + " or there is possible null pointer dereference: " + varname + ".");
-    reportError(callstack, Severity::warning, "nullPointerRedundantCheck", errmsg, CWE(0U), inconclusive);
+    reportError(callstack, Severity::warning, "nullPointerRedundantCheck", errmsg, CWE476, inconclusive);
 }
