@@ -1146,8 +1146,20 @@ private:
             } else if (tok->op == '#' && sameline(tok, tok->next) && tok->next->op != '#') {
                 tok = expandHash(tokens, tok->location, tok, macros, expandedmacros, parametertokens);
             } else {
-                if (!expandArg(tokens, tok, tok->location, macros, expandedmacros, parametertokens))
-                    tokens->push_back(new Token(*tok));
+                if (!expandArg(tokens, tok, tok->location, macros, expandedmacros, parametertokens)) {
+                    bool expanded = false;
+                    if (macros.find(tok->str) != macros.end() && expandedmacros.find(tok->str) == expandedmacros.end()) {
+                        const std::map<TokenString, Macro>::const_iterator it = macros.find(tok->str);
+                        const Macro &m = it->second;
+                        if (!m.functionLike()) {
+                            m.expand(tokens, tok, macros, files);
+                            expanded = true;
+                        }
+                    }
+                    if (!expanded)
+                        tokens->push_back(new Token(*tok));
+                }
+
                 if (tok->op == '(')
                     ++par;
                 else if (tok->op == ')') {
@@ -1243,6 +1255,8 @@ private:
             if (tok->op != '#') {
                 // A##B => AB
                 if (tok->next && tok->next->op == '#' && tok->next->next && tok->next->next->op == '#') {
+                    if (!sameline(tok, tok->next->next->next))
+                        throw invalidHashHash(tok->location, name());
                     output->push_back(newMacroToken(expandArgStr(tok, parametertokens2), loc, isReplaced(expandedmacros)));
                     tok = tok->next;
                 } else {
@@ -1441,7 +1455,19 @@ private:
             throw invalidHashHash(tok->location, name());
 
         Token *B = tok->next->next;
-        const std::string strAB = A->str + expandArgStr(B, parametertokens);
+        std::string strAB;
+
+        TokenList tokensB(files);
+        if (expandArg(&tokensB, B, parametertokens)) {
+            if (tokensB.empty())
+                strAB = A->str;
+            else {
+                strAB = A->str + tokensB.cfront()->str;
+                tokensB.deleteToken(tokensB.front());
+            }
+        } else {
+            strAB = A->str + B->str;
+        }
 
         bool removeComma = false;
         if (variadic && strAB == "," && tok->previous->str == "," && args.size() >= 1U && B->str == args[args.size()-1U])
@@ -1454,6 +1480,9 @@ private:
             tokens.push_back(new Token(strAB, tok->location));
             // TODO: For functionLike macros, push the (...)
             expandToken(output, loc, tokens.cfront(), macros, expandedmacros, parametertokens);
+            for (Token *b = tokensB.front(); b; b = b->next)
+                b->location = loc;
+            output->takeTokens(tokensB);
         }
 
         return B->next;
