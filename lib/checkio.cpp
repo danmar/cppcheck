@@ -40,6 +40,7 @@ static const CWE CWE664(664U);  // Improper Control of a Resource Through its Li
 static const CWE CWE685(685U);  // Function Call With Incorrect Number of Arguments
 static const CWE CWE686(686U);  // Function Call With Incorrect Argument Type
 static const CWE CWE687(687U);  // Function Call With Incorrectly Specified Argument Value
+static const CWE CWE704(704U);	// Incorrect Type Conversion or Cast
 static const CWE CWE910(910U);  // Use of Expired File Descriptor
 
 //---------------------------------------------------------------------------
@@ -2019,7 +2020,7 @@ void CheckIO::invalidLengthModifierError(const Token* tok, unsigned int numForma
         return;
     std::ostringstream errmsg;
     errmsg << "'" << modifier << "' in format string (no. " << numFormat << ") is a length modifier and cannot be used without a conversion specifier.";
-    reportError(tok, Severity::warning, "invalidLengthModifierError", errmsg.str());
+    reportError(tok, Severity::warning, "invalidLengthModifierError", errmsg.str(), CWE704, false);
 }
 
 void CheckIO::invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var, char c)
