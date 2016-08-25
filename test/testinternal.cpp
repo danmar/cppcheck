@@ -309,6 +309,12 @@ private:
               "    return tok->next()->next()->str();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::str()' can be simplified.\n", errout.str());
+
+        check("void f() {\n"
+              "    return tok->previous()->next()->str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::previous()' followed by 'Token::next()' can be simplified.\n", errout.str());
+
     }
 
     void internalError() {
