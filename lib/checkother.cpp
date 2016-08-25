@@ -36,8 +36,8 @@ namespace {
 static const struct CWE CWE128(128U);   // Wrap-around Error
 static const struct CWE CWE131(131U);   // Incorrect Calculation of Buffer Size
 static const struct CWE CWE197(197U);   // Numeric Truncation Error
-static const struct CWE CWE362(362U);	// Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')
-static const struct CWE CWE369(369U);	// Divide By Zero
+static const struct CWE CWE362(362U);   // Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')
+static const struct CWE CWE369(369U);   // Divide By Zero
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 static const struct CWE CWE475(475U);   // Undefined Behavior for Input to API
 static const struct CWE CWE482(482U);   // Comparing instead of Assigning
@@ -50,7 +50,7 @@ static const struct CWE CWE687(687U);   // Function Call With Incorrectly Specif
 static const struct CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
 static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
 static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const struct CWE CWE768(768U);	// Incorrect Short Circuit Evaluation
+static const struct CWE CWE768(768U);   // Incorrect Short Circuit Evaluation
 static const struct CWE CWE783(783U);   // Operator Precedence Logic Error
 
 //----------------------------------------------------------------------------------

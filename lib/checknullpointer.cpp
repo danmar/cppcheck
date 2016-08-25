@@ -30,7 +30,7 @@ namespace {
     CheckNullPointer instance;
 }
 
-static const CWE CWE476(476U);	// NULL Pointer Dereference
+static const CWE CWE476(476U);  // NULL Pointer Dereference
 
 //---------------------------------------------------------------------------
 

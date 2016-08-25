@@ -1254,7 +1254,7 @@ void CheckStl::autoPointerError(const Token *tok)
     reportError(tok, Severity::style, "useAutoPointerCopy",
                 "Copying 'auto_ptr' pointer to another does not create two equal objects since one has lost its ownership of the pointer.\n"
                 "'std::auto_ptr' has semantics of strict ownership, meaning that the 'auto_ptr' instance is the sole entity responsible for the object's lifetime. If an 'auto_ptr' is copied, the source looses the reference.",
-               CWE398, false);
+                CWE398, false);
 }
 
 void CheckStl::autoPointerContainerError(const Token *tok)
