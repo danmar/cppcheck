@@ -4406,9 +4406,29 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
     if (!valuetype->typeScope)
         valuetype->type = ValueType::Type::UNKNOWN_TYPE;
-    else if (valuetype->typeScope->type == Scope::eEnum)
-        valuetype->type = ValueType::Type::INT;
-    else
+    else if (valuetype->typeScope->type == Scope::eEnum) {
+        const Token * enum_type = valuetype->typeScope->enumType;
+        if (enum_type) {
+            if (enum_type->isSigned())
+                valuetype->sign = ValueType::Sign::SIGNED;
+            else if (enum_type->isUnsigned())
+                valuetype->sign = ValueType::Sign::UNSIGNED;
+            else
+                valuetype->sign = defaultSignedness;
+            if (enum_type->str() == "char")
+                valuetype->type = ValueType::Type::CHAR;
+            else if (enum_type->str() == "short")
+                valuetype->type = ValueType::Type::SHORT;
+            else if (enum_type->str() == "int")
+                valuetype->type = ValueType::Type::INT;
+            else if (enum_type->str() == "long")
+                valuetype->type = enum_type->isLong() ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
+            else if (enum_type->isStandardType()) {
+                valuetype->fromLibraryType(enum_type->str(), settings);
+            }
+        } else
+            valuetype->type = ValueType::Type::INT;
+    } else
         valuetype->type = ValueType::Type::NONSTD;
     while (Token::Match(type, "%name%|*|&|::") && !type->variable()) {
         if (type->isSigned())
