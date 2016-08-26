@@ -37,6 +37,7 @@ namespace {
 
 // CWE ids used:
 static const struct CWE CWE195(195U);   // Signed to Unsigned Conversion Error
+static const struct CWE CWE197(197U);   // Numeric Truncation Error
 static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const struct CWE CWE190(190U);   // Integer Overflow or Wraparound
 
@@ -290,7 +291,7 @@ void CheckType::longCastAssignError(const Token *tok)
                 Severity::style,
                 "truncLongCastAssignment",
                 "int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n"
-                "int result is assigned to long variable. If the variable is long to avoid loss of information, then there is loss of information. To avoid loss of information you must cast a calculation operand to long, for example 'l = a * b;' => 'l = (long)a * b;'.");
+                "int result is assigned to long variable. If the variable is long to avoid loss of information, then there is loss of information. To avoid loss of information you must cast a calculation operand to long, for example 'l = a * b;' => 'l = (long)a * b;'.", CWE197, false);
 }
 
 void CheckType::longCastReturnError(const Token *tok)
@@ -299,5 +300,5 @@ void CheckType::longCastReturnError(const Token *tok)
                 Severity::style,
                 "truncLongCastReturn",
                 "int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n"
-                "int result is returned as long value. If the return value is long to avoid loss of information, then there is loss of information. To avoid loss of information you must cast a calculation operand to long, for example 'return a*b;' => 'return (long)a*b'.");
+                "int result is returned as long value. If the return value is long to avoid loss of information, then there is loss of information. To avoid loss of information you must cast a calculation operand to long, for example 'return a*b;' => 'return (long)a*b'.", CWE197, false);
 }
