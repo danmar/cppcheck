@@ -1457,11 +1457,15 @@ private:
         Token *B = tok->next->next;
         std::string strAB;
 
+        const bool varargs = variadic && args.size() >= 1U && B->str == args[args.size()-1U];
+
         TokenList tokensB(files);
         if (expandArg(&tokensB, B, parametertokens)) {
             if (tokensB.empty())
                 strAB = A->str;
-            else {
+            else if (varargs && A->op == ',') {
+                strAB = ",";
+            } else {
                 strAB = A->str + tokensB.cfront()->str;
                 tokensB.deleteToken(tokensB.front());
             }
@@ -1470,7 +1474,7 @@ private:
         }
 
         bool removeComma = false;
-        if (variadic && strAB == "," && tok->previous->str == "," && args.size() >= 1U && B->str == args[args.size()-1U])
+        if (varargs && tokensB.empty() && tok->previous->str == ",")
             removeComma = true;
 
         output->deleteToken(A);
