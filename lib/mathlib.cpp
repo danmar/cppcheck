@@ -349,7 +349,12 @@ static unsigned int encodeMultiChar(const std::string& str)
 MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
 {
     if (str.empty())
-        return 0; // for unit-testing...
+        return 0; // <- only possible in unit testing
+
+    // '\xF6'
+    if (str.size() == 4 && str.compare(0,2,"\\x")==0 && std::isxdigit(str[2]) && std::isxdigit(str[3])) {
+        return std::strtoul(str.substr(2).c_str(), NULL, 16);
+    }
 
     // C99 6.4.4.4
     // The value of an integer character constant containing more than one character (e.g., 'ab'),

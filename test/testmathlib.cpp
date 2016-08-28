@@ -292,6 +292,7 @@ private:
         ASSERT_EQUALS((int)('\3'),  MathLib::toLongNumber("'\\3'"));
         ASSERT_EQUALS((int)('\34'),  MathLib::toLongNumber("'\\34'"));
         ASSERT_EQUALS((int)('\034'), MathLib::toLongNumber("'\\034'"));
+        ASSERT_EQUALS((int)('\x34'), MathLib::toLongNumber("'\\x34'"));
         ASSERT_EQUALS((int)('\134'), MathLib::toLongNumber("'\\134'"));
         ASSERT_EQUALS((int)('\134t'), MathLib::toLongNumber("'\\134t'")); // Ticket #7452
         ASSERT_THROW(MathLib::toLongNumber("'\\9'"), InternalError);
