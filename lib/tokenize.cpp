@@ -3405,7 +3405,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (Token::Match(tok, "[;{}]"))
                 lt = nullptr;
-            else if (Token::Match(tok, "%type <"))
+            else if (Token::Match(tok, "%type% <"))
                 lt = tok->next();
             else if (lt && Token::Match(tok, ">|>> %name%|::|(")) {
                 const Token * const end = tok;
