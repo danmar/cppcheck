@@ -3364,12 +3364,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Combine tokens..
     combineOperators();
 
-    // simplify simple calculations
-    for (Token *tok = list.front() ? list.front()->next() : nullptr; tok; tok = tok->next()) {
-        if (tok->isNumber())
-            TemplateSimplifier::simplifyNumericCalculations(tok->previous());
-    }
-
     // remove extern "C" and extern "C" {}
     if (isCPP())
         simplifyExternC();
@@ -3404,6 +3398,25 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Remove "volatile", "inline", "register", and "restrict"
     simplifyKeyword();
+
+    // simplify simple calculations inside <..>
+    if (isCPP()) {
+        Token *lt = nullptr;
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            if (Token::Match(tok, "[;{}]"))
+                lt = nullptr;
+            else if (Token::Match(tok, "%type <"))
+                lt = tok->next();
+            else if (lt && Token::Match(tok, ">|>> %name%|::|(")) {
+                const Token * const end = tok;
+                for (tok = lt; tok != end; tok = tok->next()) {
+                    if (tok->isNumber())
+                        TemplateSimplifier::simplifyNumericCalculations(tok->previous());
+                }
+                lt = tok->next();
+            }
+        }
+    }
 
     // Convert K&R function declarations to modern C
     simplifyVarDecl(true);

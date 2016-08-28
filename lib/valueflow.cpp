@@ -765,6 +765,9 @@ static void valueFlowBitAnd(TokenList *tokenlist)
         if (tok->str() != "&")
             continue;
 
+        if (tok->values.size() == 1U && tok->values.front().isKnown())
+            continue;
+
         if (!tok->astOperand1() || !tok->astOperand2())
             continue;
 
