@@ -467,8 +467,9 @@ static bool checkExceptionHandling(const Token* tok)
 void CheckOther::checkRedundantAssignment()
 {
     const bool printPerformance = _settings->isEnabled("performance");
+    const bool printStyle = _settings->isEnabled("style");
     const bool printWarning = _settings->isEnabled("warning");
-    if (!printWarning && !printPerformance)
+    if (!printWarning && !printPerformance && !printStyle)
         return;
 
     const bool printInconclusive = _settings->inconclusive;
@@ -597,15 +598,24 @@ void CheckOther::checkRedundantAssignment()
                                 }
                             }
                         }
+
                         if (error) {
                             if (printWarning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantAssignmentInSwitchError(it->second, tok, eq->astOperand1()->expressionString());
-                            else if (printPerformance) {
-                                // See #7133
+                            else if (printStyle) {
+                                // c++, unknown type => assignment might have additional side effects
+                                const bool possibleSideEffects(_tokenizer->isCPP() && !tok->valueType());
+
+                                // TODO nonlocal variables are not tracked entirely.
                                 const bool nonlocal = it->second->variable() && nonLocalVolatile(it->second->variable());
-                                if (printInconclusive || !nonlocal) // report inconclusive only when requested
+                                
+                                // Warnings are inconclusive if there are possible side effects or if variable is not
+                                // tracked perfectly.
+                                const bool inconclusive = possibleSideEffects | nonlocal;
+
+                                if (printInconclusive || !inconclusive)
                                     if (_tokenizer->isC() || checkExceptionHandling(tok)) // see #6555 to see how exception handling might have an impact
-                                        redundantAssignmentError(it->second, tok, eq->astOperand1()->expressionString(), nonlocal); // Inconclusive for non-local variables
+                                        redundantAssignmentError(it->second, tok, eq->astOperand1()->expressionString(), inconclusive);
                             }
                         }
                         it->second = tok;

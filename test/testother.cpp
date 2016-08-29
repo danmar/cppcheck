@@ -5041,7 +5041,7 @@ private:
               "    if (memptr)\n"
               "        memptr = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'memptr' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style, inconclusive) Variable 'memptr' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
     }
 
     void redundantVarAssignment_7133() {
@@ -5067,7 +5067,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void ConvertBitmapData(sal_uInt16 nDestBits) {\n"
-              "BitmapBuffer aSrcBuf;\n"
+              "    BitmapBuffer aSrcBuf;\n"
               "    aSrcBuf.mnBitCount = nSrcBits;\n"
               "    BitmapBuffer aDstBuf;\n"
               "    aSrcBuf.mnBitCount = nDestBits;\n"
@@ -5075,15 +5075,14 @@ private:
               "}", "test.c");
         ASSERT_EQUALS("[test.c:3] -> [test.c:5]: (style) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used.\n", errout.str());
         check("void ConvertBitmapData(sal_uInt16 nDestBits) {\n"
-              "BitmapBuffer aSrcBuf;\n"
+              "    BitmapBuffer aSrcBuf;\n"
               "    aSrcBuf.mnBitCount = nSrcBits;\n"
               "    BitmapBuffer aDstBuf;\n"
               "    aSrcBuf.mnBitCount = nDestBits;\n"
               "    bConverted = ::ImplFastBitmapConversion( aDstBuf, aSrcBuf, aTwoRects );\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style, inconclusive) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used.\n",
-                           "[test.cpp:3] -> [test.cpp:5]: (style) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used.\n",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style, inconclusive) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used if variable is no semaphore variable.\n",
+                      errout.str());
 
     }
 
