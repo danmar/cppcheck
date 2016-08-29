@@ -608,7 +608,7 @@ void CheckOther::checkRedundantAssignment()
 
                                 // TODO nonlocal variables are not tracked entirely.
                                 const bool nonlocal = it->second->variable() && nonLocalVolatile(it->second->variable());
-                                
+
                                 // Warnings are inconclusive if there are possible side effects or if variable is not
                                 // tracked perfectly.
                                 const bool inconclusive = possibleSideEffects | nonlocal;
