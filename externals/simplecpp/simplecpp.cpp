@@ -1265,6 +1265,19 @@ private:
                 continue;
             }
 
+            int numberOfHash = 1;
+            const Token *hashToken = tok->next;
+            while (sameline(tok,hashToken) && hashToken->op == '#') {
+                hashToken = hashToken->next;
+                ++numberOfHash;
+            }
+            if (numberOfHash == 4) {
+                // # ## #  => ##
+                output->push_back(newMacroToken("##", loc, isReplaced(expandedmacros)));
+                tok = hashToken;
+                continue;
+            }
+
             tok = tok->next;
             if (tok == endToken) {
                 output->push_back(new Token(*tok->previous));
@@ -1473,23 +1486,30 @@ private:
             strAB = A->str + B->str;
         }
 
-        bool removeComma = false;
+        const Token *nextTok = B->next;
+
         if (varargs && tokensB.empty() && tok->previous->str == ",")
-            removeComma = true;
-
-        output->deleteToken(A);
-
-        if (!removeComma) {
+            output->deleteToken(A);
+        else {
+            output->deleteToken(A);
             TokenList tokens(files);
             tokens.push_back(new Token(strAB, tok->location));
-            // TODO: For functionLike macros, push the (...)
+            // for function like macros, push the (...)
+            if (tokensB.empty() && sameline(B,B->next) && B->next->op=='(') {
+                const std::map<TokenString,Macro>::const_iterator it = macros.find(strAB);
+                if (it != macros.end() && expandedmacros.find(strAB) == expandedmacros.end() && it->second.functionLike()) {
+                    const Token *tok2 = appendTokens(&tokens, B->next, macros, expandedmacros, parametertokens);
+                    if (tok2)
+                        nextTok = tok2->next;
+                }
+            }
             expandToken(output, loc, tokens.cfront(), macros, expandedmacros, parametertokens);
             for (Token *b = tokensB.front(); b; b = b->next)
                 b->location = loc;
             output->takeTokens(tokensB);
         }
 
-        return B->next;
+        return nextTok;
     }
 
     bool isReplaced(const std::set<std::string> &expandedmacros) const {
