@@ -34,7 +34,7 @@ static const struct CWE CWE571(571U);   // Expression is Always True
 static const struct CWE CWE595(595U);   // Comparison of Object References Instead of Object Contents
 static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
 static const struct CWE CWE665(665U);   // Improper Initialization
-
+static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
 //---------------------------------------------------------------------------
 // Writing string literal is UB
@@ -75,7 +75,7 @@ void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValu
     }
     errmsg += " directly or indirectly is undefined behaviour.";
 
-    reportError(callstack, Severity::error, "stringLiteralWrite", errmsg);
+    reportError(callstack, Severity::error, "stringLiteralWrite", errmsg, CWE758, false);
 }
 
 //---------------------------------------------------------------------------

@@ -30,9 +30,12 @@ namespace {
 // CWE IDs used:
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 static const struct CWE CWE597(597U);   // Use of Wrong Operator in String Comparison
+static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
 static const struct CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
 static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
+static const struct CWE CWE762(762U);   // Mismatched Memory Management Routines
 static const struct CWE CWE788(788U);   // Access of Memory Location After End of Buffer
+static const struct CWE CWE825(825U);   // Expired Pointer Dereference
 static const struct CWE CWE834(834U);   // Excessive Iteration
 
 // Error message for bad iterator usage..
@@ -1277,7 +1280,7 @@ void CheckStl::autoPointerMallocError(const Token *tok, const std::string& alloc
 {
     const std::string summary = "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function '" + allocFunction + "'.";
     const std::string verbose = summary + " This means that you should only use 'auto_ptr' for pointers obtained with operator 'new'. This excludes use C library allocation functions (for example '" + allocFunction + "'), which must be deallocated by the appropriate C library function.";
-    reportError(tok, Severity::error, "useAutoPointerMalloc", summary + "\n" + verbose);
+    reportError(tok, Severity::error, "useAutoPointerMalloc", summary + "\n" + verbose, CWE762, false);
 }
 
 namespace {
@@ -1341,7 +1344,7 @@ void CheckStl::uselessCallsReturnValueError(const Token *tok, const std::string 
            << "(" << varname << "." << function << "(" << varname << ")). As it is currently the "
            << "code is inefficient. It is possible either the string searched ('"
            << varname << "') or searched for ('" << varname << "') is wrong.";
-    reportError(tok, Severity::warning, "uselessCallsCompare", errmsg.str());
+    reportError(tok, Severity::warning, "uselessCallsCompare", errmsg.str(), CWE628, false);
 }
 
 void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varname)
@@ -1351,27 +1354,27 @@ void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varnam
            << "The 'swap()' function has no logical effect when given itself as parameter "
            << "(" << varname << ".swap(" << varname << ")). As it is currently the "
            << "code is inefficient. Is the object or the parameter wrong here?";
-    reportError(tok, Severity::performance, "uselessCallsSwap", errmsg.str());
+    reportError(tok, Severity::performance, "uselessCallsSwap", errmsg.str(), CWE628, false);
 }
 
 void CheckStl::uselessCallsSubstrError(const Token *tok, bool empty)
 {
     if (empty)
-        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns an empty string.");
+        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns an empty string.", CWE398, false);
     else
-        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns a copy of the object. Use operator= instead.");
+        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns a copy of the object. Use operator= instead.", CWE398, false);
 }
 
 void CheckStl::uselessCallsEmptyError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "uselessCallsEmpty", "Ineffective call of function 'empty()'. Did you intend to call 'clear()' instead?");
+    reportError(tok, Severity::warning, "uselessCallsEmpty", "Ineffective call of function 'empty()'. Did you intend to call 'clear()' instead?", CWE398, false);
 }
 
 void CheckStl::uselessCallsRemoveError(const Token *tok, const std::string& function)
 {
     reportError(tok, Severity::warning, "uselessCallsRemove", "Return value of std::" + function + "() ignored. Elements remain in container.\n"
                 "The return value of std::" + function + "() is ignored. This function returns an iterator to the end of the range containing those elements that should be kept. "
-                "Elements past new end remain valid but with unspecified values. Use the erase method of the container to delete them.");
+                "Elements past new end remain valid but with unspecified values. Use the erase method of the container to delete them.", CWE762, false);
 }
 
 // Check for iterators being dereferenced before being checked for validity.
@@ -1442,7 +1445,7 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::st
 {
     reportError(deref, Severity::warning,
                 "derefInvalidIterator", "Possible dereference of an invalid iterator: " + iterName + "\n" +
-                "Make sure to check that the iterator is valid before dereferencing it - not after.");
+                "Make sure to check that the iterator is valid before dereferencing it - not after.", CWE825, false);
 }
 
 
@@ -1557,5 +1560,5 @@ void CheckStl::readingEmptyStlContainer()
 
 void CheckStl::readingEmptyStlContainerError(const Token *tok)
 {
-    reportError(tok, Severity::style, "reademptycontainer", "Reading from empty STL container '" + (tok ? tok->str() : std::string("var")) + "'", CWE(0U), true);
+    reportError(tok, Severity::style, "reademptycontainer", "Reading from empty STL container '" + (tok ? tok->str() : std::string("var")) + "'", CWE398, true);
 }

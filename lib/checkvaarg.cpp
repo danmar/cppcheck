@@ -32,8 +32,9 @@ namespace {
 //---------------------------------------------------------------------------
 
 // CWE ids used:
-static const struct CWE CWE664(664U);
-static const struct CWE CWE758(758U);
+static const struct CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
+static const struct CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
+static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
 void CheckVaarg::va_start_argument()
 {
@@ -70,7 +71,7 @@ void CheckVaarg::va_start_argument()
 void CheckVaarg::wrongParameterTo_va_start_error(const Token *tok, const std::string& paramIsName, const std::string& paramShouldName)
 {
     reportError(tok, Severity::warning,
-                "va_start_wrongParameter", "'" + paramIsName + "' given to va_start() is not last named argument of the function. Did you intend to pass '" + paramShouldName + "'?");
+                "va_start_wrongParameter", "'" + paramIsName + "' given to va_start() is not last named argument of the function. Did you intend to pass '" + paramShouldName + "'?", CWE688, false);
 }
 
 void CheckVaarg::referenceAs_va_start_error(const Token *tok, const std::string& paramName)
