@@ -1070,6 +1070,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.use(tok->next()->varId(), tok);   // use = read + write
         } else if (Token::Match(tok, "[(,] %var% [,)]") && tok->previous()->str() != "*") {
             variables.use(tok->next()->varId(), tok);   // use = read + write
+        } else if (Token::Match(tok, "[(,] & %var% [,)]")) {
+            variables.eraseAll(tok->tokAt(2)->varId());
         } else if (Token::Match(tok, "[(,] (") &&
                    Token::Match(tok->next()->link(), ") %var% [,)]")) {
             variables.use(tok->next()->link()->next()->varId(), tok);   // use = read + write
@@ -1083,6 +1085,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         // function
         else if (Token::Match(tok, "%var% (")) {
             variables.read(tok->varId(), tok);
+        } else if (Token::Match(tok, "std :: ref ( %var% )")) {
+            variables.eraseAll(tok->tokAt(4)->varId());
         }
 
         else if (Token::Match(tok->previous(), "[{,] %var% [,}]")) {
