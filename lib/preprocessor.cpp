@@ -496,6 +496,7 @@ static bool hasErrors(const simplecpp::OutputList &outputList)
             return true;
         case simplecpp::Output::WARNING:
         case simplecpp::Output::MISSING_HEADER:
+        case simplecpp::Output::PORTABILITY_BACKSLASH:
             break;
         };
     }
@@ -664,6 +665,7 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
                 error(it->location.file(), it->location.line, it->msg);
             break;
         case simplecpp::Output::WARNING:
+        case simplecpp::Output::PORTABILITY_BACKSLASH:
             break;
         case simplecpp::Output::MISSING_HEADER: {
             const std::string::size_type pos1 = it->msg.find_first_of("<\"");

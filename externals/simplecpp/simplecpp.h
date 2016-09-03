@@ -158,7 +158,8 @@ struct SIMPLECPP_LIB Output {
         WARNING, /* #warning */
         MISSING_HEADER,
         INCLUDE_NESTED_TOO_DEEPLY,
-        SYNTAX_ERROR
+        SYNTAX_ERROR,
+        PORTABILITY_BACKSLASH
     } type;
     Location location;
     std::string msg;

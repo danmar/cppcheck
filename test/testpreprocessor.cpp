@@ -1510,7 +1510,7 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("", actual[""]);
-        ASSERT_EQUALS("[file.c:6]: (error) Wrong number of parameters for macro 'BC'.\n", errout.str());
+        ASSERT_EQUALS("[file.c:6]: (error) failed to expand 'BC', Wrong number of parameters for macro 'BC'.\n", errout.str());
     }
 
     void newline_in_macro() {
