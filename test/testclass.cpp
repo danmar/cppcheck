@@ -5135,6 +5135,17 @@ private:
                    "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Foo::foo' can be static.\n", errout.str());
+
+        checkConst("struct A;\n" // #5839 - operator()
+                   "struct B {\n"
+                   "    void operator()(A *a);\n"
+                   "};\n"
+                   "struct A {\n"
+                   "    void dostuff() {\n"
+                   "        B()(this);\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void assigningPointerToPointerIsNotAConstOperation() {

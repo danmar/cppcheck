@@ -1978,7 +1978,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 memberAccessed = true;
             }
             // Member variable given as parameter
-            for (const Token* tok2 = tok1->tokAt(2); tok2 && tok2 != tok1->next()->link(); tok2 = tok2->next()) {
+            const Token *lpar = tok1->next();
+            if (Token::simpleMatch(lpar, "( ) ("))
+                lpar = lpar->tokAt(2);
+            for (const Token* tok2 = lpar->next(); tok2 && tok2 != tok1->next()->link(); tok2 = tok2->next()) {
                 if (tok2->str() == "(")
                     tok2 = tok2->link();
                 else if (tok2->isName() && isMemberVar(scope, tok2)) {
