@@ -161,7 +161,7 @@ public:
 
     // returns true if ftok is not a library function
     bool isNotLibraryFunction(const Token *ftok) const;
-
+    bool matchArguments(const Token *ftok, const std::string &functionName) const;
 
     bool isUseRetVal(const Token* ftok) const;
 
@@ -476,6 +476,7 @@ private:
     std::set<std::string> _useretval;
     std::map<std::string, AllocFunc> _alloc; // allocation functions
     std::map<std::string, AllocFunc> _dealloc; // deallocation functions
+    std::set<std::string> _functions;
     std::map<std::string, bool> _noreturn; // is function noreturn?
     std::set<std::string> _ignorefunction; // ignore functions/macros from a library (gtk, qt etc)
     std::map<std::string, bool> _reporterrors;
@@ -492,6 +493,9 @@ private:
     std::map<std::string, Platform> platforms; // platform dependent typedefs
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
+
+    std::string getFunctionName(const Token *ftok, bool *error) const;
+    std::string getFunctionName(const Token *ftok) const;
 
     static const AllocFunc* getAllocDealloc(const std::map<std::string, AllocFunc> &data, const std::string &name) {
         const std::map<std::string, AllocFunc>::const_iterator it = data.find(name);
