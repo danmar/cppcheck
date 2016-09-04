@@ -1692,71 +1692,76 @@ void CheckClass::checkConst()
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             // does the function have a body?
-            if (func->type == Function::eFunction && func->hasBody() && !func->isFriend() && !func->isStatic() && !func->isVirtual()) {
-                // get last token of return type
-                const Token *previous = func->tokenDef->previous();
+            if (func->type != Function::eFunction || !func->hasBody())
+                continue;
 
-                // does the function return a pointer or reference?
-                if (Token::Match(previous, "*|&")) {
-                    if (func->retDef->str() != "const")
-                        continue;
-                } else if (Token::Match(previous->previous(), "*|& >")) {
-                    const Token *temp = previous->previous();
+            // don't warn for friend/static/virtual methods
+            if (func->isFriend() || func->isStatic() || func->isVirtual())
+                continue;
 
-                    bool foundConst = false;
-                    while (!Token::Match(temp->previous(), ";|}|{|public:|protected:|private:")) {
-                        temp = temp->previous();
-                        if (temp->str() == "const") {
-                            foundConst = true;
-                            break;
-                        }
-                    }
+            // get last token of return type
+            const Token *previous = func->tokenDef->previous();
 
-                    if (!foundConst)
-                        continue;
-                } else if (func->isOperator() && Token::Match(previous, ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
-                    const std::string& opName = func->tokenDef->str();
-                    if (opName.compare(8, 5, "const") != 0 && opName.back() == '&')
-                        continue;
-                } else {
-                    // don't warn for unknown types..
-                    // LPVOID, HDC, etc
-                    if (previous->str().size() > 2 && !previous->type() && previous->isUpperCaseName())
-                        continue;
-                }
+            // does the function return a pointer or reference?
+            if (Token::Match(previous, "*|&")) {
+                if (func->retDef->str() != "const")
+                    continue;
+            } else if (Token::Match(previous->previous(), "*|& >")) {
+                const Token *temp = previous->previous();
 
-                // check if base class function is virtual
-                if (!scope->definedType->derivedFrom.empty()) {
-                    if (func->isImplicitlyVirtual(true))
-                        continue;
-                }
-
-                bool memberAccessed = false;
-                // if nothing non-const was found. write error..
-                if (checkConstFunc(scope, &*func, memberAccessed)) {
-                    std::string classname = scope->className;
-                    const Scope *nest = scope->nestedIn;
-                    while (nest && nest->type != Scope::eGlobal) {
-                        classname = std::string(nest->className + "::" + classname);
-                        nest = nest->nestedIn;
-                    }
-
-                    // get function name
-                    std::string functionName = (func->tokenDef->isName() ? "" : "operator") + func->tokenDef->str();
-
-                    if (func->tokenDef->str() == "(")
-                        functionName += ")";
-                    else if (func->tokenDef->str() == "[")
-                        functionName += "]";
-
-                    if (!func->isConst() || (!memberAccessed && !func->isOperator())) {
-                        if (func->isInline())
-                            checkConstError(func->token, classname, functionName, !memberAccessed && !func->isOperator());
-                        else // not inline
-                            checkConstError2(func->token, func->tokenDef, classname, functionName, !memberAccessed && !func->isOperator());
+                bool foundConst = false;
+                while (!Token::Match(temp->previous(), ";|}|{|public:|protected:|private:")) {
+                    temp = temp->previous();
+                    if (temp->str() == "const") {
+                        foundConst = true;
+                        break;
                     }
                 }
+
+                if (!foundConst)
+                    continue;
+            } else if (func->isOperator() && Token::Match(previous, ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
+                const std::string& opName = func->tokenDef->str();
+                if (opName.compare(8, 5, "const") != 0 && opName.back() == '&')
+                    continue;
+            } else {
+                // don't warn for unknown types..
+                // LPVOID, HDC, etc
+                if (previous->str().size() > 2 && !previous->type() && previous->isUpperCaseName())
+                    continue;
             }
+
+            // check if base class function is virtual
+            if (!scope->definedType->derivedFrom.empty() && !func->isImplicitlyVirtual(true))
+                continue;
+
+            bool memberAccessed = false;
+            // if nothing non-const was found. write error..
+            if (!checkConstFunc(scope, &*func, memberAccessed))
+                continue;
+
+            if (func->isConst() && (memberAccessed || func->isOperator()))
+                continue;
+
+            std::string classname = scope->className;
+            const Scope *nest = scope->nestedIn;
+            while (nest && nest->type != Scope::eGlobal) {
+                classname = std::string(nest->className + "::" + classname);
+                nest = nest->nestedIn;
+            }
+
+            // get function name
+            std::string functionName = (func->tokenDef->isName() ? "" : "operator") + func->tokenDef->str();
+
+            if (func->tokenDef->str() == "(")
+                functionName += ")";
+            else if (func->tokenDef->str() == "[")
+                functionName += "]";
+
+            if (func->isInline())
+                checkConstError(func->token, classname, functionName, !memberAccessed && !func->isOperator());
+            else // not inline
+                checkConstError2(func->token, func->tokenDef, classname, functionName, !memberAccessed && !func->isOperator());
         }
     }
 }
