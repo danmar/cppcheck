@@ -1692,11 +1692,7 @@ void CheckClass::checkConst()
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             // does the function have a body?
-            if (func->type != Function::eFunction || !func->hasBody())
-                continue;
-
-            // don't warn for friend/static/virtual methods
-            if (func->isFriend() || func->isStatic() || func->isVirtual())
+            if (func->type != Function::eFunction || !func->hasBody() || func->isFriend() || func->isStatic() || func->isVirtual())
                 continue;
 
             // get last token of return type
@@ -1732,36 +1728,36 @@ void CheckClass::checkConst()
             }
 
             // check if base class function is virtual
-            if (!scope->definedType->derivedFrom.empty() && !func->isImplicitlyVirtual(true))
-                continue;
+            if (!scope->definedType->derivedFrom.empty()) {
+                if (func->isImplicitlyVirtual(true))
+                    continue;
+            }
 
             bool memberAccessed = false;
             // if nothing non-const was found. write error..
-            if (!checkConstFunc(scope, &*func, memberAccessed))
-                continue;
+            if (checkConstFunc(scope, &*func, memberAccessed)) {
+                std::string classname = scope->className;
+                const Scope *nest = scope->nestedIn;
+                while (nest && nest->type != Scope::eGlobal) {
+                    classname = std::string(nest->className + "::" + classname);
+                    nest = nest->nestedIn;
+                }
 
-            if (func->isConst() && (memberAccessed || func->isOperator()))
-                continue;
+                // get function name
+                std::string functionName = (func->tokenDef->isName() ? "" : "operator") + func->tokenDef->str();
 
-            std::string classname = scope->className;
-            const Scope *nest = scope->nestedIn;
-            while (nest && nest->type != Scope::eGlobal) {
-                classname = std::string(nest->className + "::" + classname);
-                nest = nest->nestedIn;
+                if (func->tokenDef->str() == "(")
+                    functionName += ")";
+                else if (func->tokenDef->str() == "[")
+                    functionName += "]";
+
+                if (!func->isConst() || (!memberAccessed && !func->isOperator())) {
+                    if (func->isInline())
+                        checkConstError(func->token, classname, functionName, !memberAccessed && !func->isOperator());
+                    else // not inline
+                        checkConstError2(func->token, func->tokenDef, classname, functionName, !memberAccessed && !func->isOperator());
+                }
             }
-
-            // get function name
-            std::string functionName = (func->tokenDef->isName() ? "" : "operator") + func->tokenDef->str();
-
-            if (func->tokenDef->str() == "(")
-                functionName += ")";
-            else if (func->tokenDef->str() == "[")
-                functionName += "]";
-
-            if (func->isInline())
-                checkConstError(func->token, classname, functionName, !memberAccessed && !func->isOperator());
-            else // not inline
-                checkConstError2(func->token, func->tokenDef, classname, functionName, !memberAccessed && !func->isOperator());
         }
     }
 }
