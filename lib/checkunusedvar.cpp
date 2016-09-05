@@ -1240,6 +1240,10 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (scope->classStart->fileIndex() != 0 || scope->className.empty())
             continue;
 
+        // Packed struct => possibly used by lowlevel code. Struct members might be required by hardware.
+        if (scope->classEnd->isAttributePacked())
+            continue;
+
         // Bail out if struct/union contains any functions
         if (!scope->functionList.empty())
             continue;

@@ -386,6 +386,12 @@ public:
     void isAttributeNothrow(bool value) {
         setFlag(fIsAttributeNothrow, value);
     }
+    bool isAttributePacked() const {
+        return getFlag(fIsAttributePacked);
+    }
+    void isAttributePacked(bool value) {
+        setFlag(fIsAttributePacked, value);
+    }
     bool isOperatorKeyword() const {
         return getFlag(fIsOperatorKeyword);
     }
@@ -838,9 +844,10 @@ private:
         fIsAttributeNoreturn    = (1 << 12), // __attribute__((noreturn)), __declspec(noreturn)
         fIsAttributeNothrow     = (1 << 13), // __attribute__((nothrow)), __declspec(nothrow)
         fIsAttributeUsed        = (1 << 14), // __attribute__((used))
-        fIsOperatorKeyword      = (1 << 15), // operator=, etc
-        fIsComplex              = (1 << 16), // complex/_Complex type
-        fIsEnumType             = (1 << 17)  // enumeration type
+        fIsAttributePacked      = (1 << 15), // __attribute__((packed))
+        fIsOperatorKeyword      = (1 << 16), // operator=, etc
+        fIsComplex              = (1 << 17), // complex/_Complex type
+        fIsEnumType             = (1 << 18)  // enumeration type
     };
 
     unsigned int _flags;

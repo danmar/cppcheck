@@ -8585,6 +8585,10 @@ void Tokenizer::simplifyAttribute()
                 }
             }
 
+            else if (Token::simpleMatch(tok->previous(), "} __attribute__ ( ( packed )")) {
+                tok->previous()->isAttributePacked(true);
+            }
+
             Token::eraseTokens(tok, tok->next()->link()->next());
             tok->deleteThis();
         }

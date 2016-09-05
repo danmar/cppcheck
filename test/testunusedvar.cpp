@@ -48,6 +48,7 @@ private:
         TEST_CASE(structmember10);
         TEST_CASE(structmember11); // #4168 - initialization with {} / passed by address to unknown function
         TEST_CASE(structmember12); // #7179 - FP unused structmember
+        TEST_CASE(structmember13); // #3088 - __attribute__((packed))
         TEST_CASE(structmember_sizeof);
 
         TEST_CASE(localvar1);
@@ -419,6 +420,13 @@ private:
                                "    printf(\"var.struct1.a = %d\n\", var.struct1.a);\n"
                                "    return 1;\n"
                                "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember13() { // #3088 - struct members required by hardware
+        checkStructMemberUsage("struct S {\n"
+                               "  int x;\n"
+                               "} __attribute__((packed));");
         ASSERT_EQUALS("", errout.str());
     }
 
