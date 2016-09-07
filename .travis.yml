@@ -88,6 +88,9 @@ script:
 # check --dump
   - ./cppcheck test/testpreprocessor.cpp --dump
   - xmllint --noout test/testpreprocessor.cpp.dump
+# Send list of errors without a CWE 
+  - ./cppcheck --error-exitcode=1 --errorlist --xml-version=2 > errors.xml
+  - ./tools/listErrorsWithoutCWE.py -F errors.xml
 # check if Makefile needs to be regenerated
   - git clean -dfx
   - make dmake
