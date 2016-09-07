@@ -551,7 +551,7 @@ There are false positives with this option. Each result must be carefully invest
       <varlistentry>
         <term><option>--xml-version=&lt;version&gt;</option></term>
         <listitem>
-          <para>Select the XML file version. Currently versions 1 and 2 are available. The default version is 1.</para>
+            <para>Select the XML file version. Currently versions 1 and 2 are available. The default version is 1. Using version 2 each error will show the associate CWE using CWE dictionary version 2.9. You can find more information about CWE here: http://cwe.mitre.org/</para>
         </listitem>
       </varlistentry>
     </variablelist>
