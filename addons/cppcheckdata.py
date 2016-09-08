@@ -237,7 +237,7 @@ class Scope:
         self.classStart = None
         self.classEndId = element.get('classEnd')
         self.classEnd = None
-        self.nestedInId = element.get('nestedId')
+        self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
         self.type = element.get('type')
 
