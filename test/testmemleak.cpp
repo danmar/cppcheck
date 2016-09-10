@@ -365,6 +365,7 @@ private:
         TEST_CASE(gnucfg);
         TEST_CASE(trac3991);
         TEST_CASE(crash);
+        TEST_CASE(trac7680);
     }
 
     std::string getcode(const char code[], const char varname[], bool classfunc=false) {
@@ -3928,6 +3929,14 @@ private:
               "    ComponentDC *cdc = dynamic_cast<ComponentDC *>(childNode);\n"
               "    if (cdc)\n"
               "        ::Component *c = cdc->getComponent();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void trac7680() {
+        check("void foo() {\n"
+              "  int *i = ::new int;\n"
+              "  ::delete i;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
