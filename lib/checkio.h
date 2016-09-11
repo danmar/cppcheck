@@ -128,6 +128,7 @@ private:
     void invalidLengthModifierError(const Token* tok, unsigned int numFormat, const std::string& modifier);
     void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var, char c);
     static void argumentType(std::ostream & s, const ArgumentInfo * argInfo);
+    Severity::SeverityType getSeverity(const ArgumentInfo *argInfo) const;
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckIO c(nullptr, settings, errorLogger);
