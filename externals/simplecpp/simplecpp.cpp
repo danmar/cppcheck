@@ -1565,19 +1565,33 @@ private:
 
 namespace simplecpp {
 #ifdef SIMPLECPP_WINDOWS
-std::string realFilename(const std::string &f) {
+
+static bool realFileName(const std::vector<TCHAR> &buf, std::ostream &ostr) {
     WIN32_FIND_DATA FindFileData;
-    TCHAR buf[4096] = {0};
+    HANDLE hFind = FindFirstFile(&buf[0], &FindFileData);
+    if (hFind == INVALID_HANDLE_VALUE)
+        return false;
+    for (const TCHAR *c = FindFileData.cFileName; *c; c++)
+        ostr << (char)*c;
+    FindClose(hFind);
+    return true;
+}
+
+std::string realFilename(const std::string &f) {
+    std::vector<TCHAR> buf(f.size()+1U, 0);
     for (unsigned int i = 0; i < f.size(); ++i)
         buf[i] = f[i];
-    HANDLE hFind = FindFirstFile(buf, &FindFileData);
-    if (hFind == INVALID_HANDLE_VALUE)
-        return f;
     std::ostringstream ostr;
-    for (const TCHAR *c = FindFileData.cFileName; *c; c++) {
-        ostr << (char)*c;
+    std::string::size_type sep = 0;
+    while ((sep = f.find_first_of("\\/", sep + 1U)) != std::string::npos) {
+        buf[sep] = 0;
+        if (!realFileName(buf,ostr))
+            return f;
+        ostr << '/';
+        buf[sep] = '/';
     }
-    FindClose(hFind);
+    if (!realFileName(buf, ostr))
+        return f;
     return ostr.str();
 }
 #else
