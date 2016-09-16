@@ -5583,12 +5583,12 @@ private:
         check("int *f(int *x) {\n"
               "    return &*x;\n"
               "}\n", nullptr, false, true);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on x - it's already a pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on 'x' - it's already a pointer.\n", errout.str());
 
         check("int *f(int *y) {\n"
               "    return &(*y);\n"
               "}\n", nullptr, false, true);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on y - it's already a pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on 'y' - it's already a pointer.\n", errout.str());
 
         // no warning for bitwise AND
         check("void f(int *b) {\n"
@@ -5618,14 +5618,14 @@ private:
         check("void f(Mutex *mut) {\n"
               "    pthread_mutex_lock(&*mut);\n"
               "}\n", nullptr, false, false);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on mut - it's already a pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on 'mut' - it's already a pointer.\n", errout.str());
 
         // make sure we got the AST match for "(" right
         check("void f(char *ptr) {\n"
               "    if (&*ptr == NULL)\n"
               "        return;\n"
               "}\n", nullptr, false, true);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on ptr - it's already a pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on 'ptr' - it's already a pointer.\n", errout.str());
 
         // no warning for macros
         check("#define MUTEX_LOCK(m) pthread_mutex_lock(&(m))\n"
