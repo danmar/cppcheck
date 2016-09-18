@@ -493,18 +493,18 @@ void ResultsTree::RefreshTree()
 
 QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, const QString &file0, bool hide)
 {
-    QString name = StripPath(fullpath, false);
+    QString name0 = QDir::toNativeSeparators(StripPath(file0, false));
+    QString name = QDir::toNativeSeparators(StripPath(fullpath, false));
     // Since item has path with native separators we must use path with
     // native separators to find it.
-    QStandardItem *item = FindFileItem(QDir::toNativeSeparators(name));
+    QStandardItem *item = FindFileItem(name0);
 
     if (item) {
         return item;
     }
 
     // Ensure shown path is with native separators
-    name = QDir::toNativeSeparators(name);
-    item = CreateNormalItem(name);
+    item = CreateNormalItem(name0);
     item->setIcon(QIcon(":images/text-x-generic.png"));
 
     //Add user data to that item
