@@ -1146,6 +1146,51 @@ bool Token::isUnaryPreOp() const
     return false; // <- guess
 }
 
+static const Token* goToLeftParenthesis(const Token* start, const Token* end)
+{
+    // move start to lpar in such expression: '(*it).x'
+    int par = 0;
+    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+        if (tok->str() == "(")
+            ++par;
+        else if (tok->str() == ")") {
+            if (par == 0)
+                start = tok->link();
+            else
+                --par;
+        }
+    }
+    return start;
+}
+
+static const Token* goToRightParenthesis(const Token* start, const Token* end)
+{
+    // move end to rpar in such expression: '2>(x+1)'
+    int par = 0;
+    for (const Token *tok = end; tok && tok != start; tok = tok->previous()) {
+        if (tok->str() == ")")
+            ++par;
+        else if (tok->str() == "(") {
+            if (par == 0)
+                end = tok->link();
+            else
+                --par;
+        }
+    }
+    return end;
+}
+
+static std::string stringFromTokenRange(const Token* start, const Token* end)
+{
+    std::string ret;
+    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+        ret += tok->str();
+        if (Token::Match(tok, "%name%|%num% %name%|%num%"))
+            ret += " ";
+    }
+    return ret + end->str();
+}
+
 std::string Token::expressionString() const
 {
     const Token * const top = this;
@@ -1163,39 +1208,10 @@ std::string Token::expressionString() const
         end = end->astOperand2() ? end->astOperand2() : end->astOperand1();
     }
 
-    // move start to lpar in such expression: '(*it).x'
-    int par = 0;
-    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-        if (tok->str() == "(")
-            ++par;
-        else if (tok->str() == ")") {
-            if (par == 0)
-                start = tok->link();
-            else
-                --par;
-        }
-    }
+    start = goToLeftParenthesis(start, end);
+    end = goToRightParenthesis(start, end);
 
-    // move end to rpar in such expression: '2>(x+1)'
-    par = 0;
-    for (const Token *tok = end; tok && tok != start; tok = tok->previous()) {
-        if (tok->str() == ")")
-            ++par;
-        else if (tok->str() == "(") {
-            if (par == 0)
-                end = tok->link();
-            else
-                --par;
-        }
-    }
-
-    std::string ret;
-    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-        ret += tok->str();
-        if (Token::Match(tok, "%name%|%num% %name%|%num%"))
-            ret += " ";
-    }
-    return ret + end->str();
+    return stringFromTokenRange(start, end);
 }
 
 static void astStringXml(const Token *tok, std::size_t indent, std::ostream &out)

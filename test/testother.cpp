@@ -170,6 +170,8 @@ private:
         TEST_CASE(testEvaluationOrderSequencePointsFunctionCall);
         TEST_CASE(testEvaluationOrderSequencePointsComma);
         TEST_CASE(testEvaluationOrderSizeof);
+
+        TEST_CASE(testUnsignedLessThanZero);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -6052,6 +6054,27 @@ private:
               "  dostuff(buf++, sizeof(*buf));"
               "}", "test.c");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testUnsignedLessThanZero() {
+        check("struct d {\n"
+              "  unsigned n;\n"
+              "};\n"
+              "void f(void) {\n"
+              "  struct d d;\n"
+              "  d.n = 3;\n"
+              "\n"
+              "  if (d.n < 0) {\n"
+              "    return;\n"
+              "  }\n"
+              "\n"
+              "  if (0 > d.n) {\n"
+              "    return;\n"
+              "  }\n"
+              "}", "test.c");
+        ASSERT_EQUALS("[test.c:8]: (style) Checking if unsigned variable 'd.n' is less than zero.\n"
+                      "[test.c:12]: (style) Checking if unsigned variable 'd.n' is less than zero.\n",
+                      errout.str());
     }
 };
 
