@@ -129,7 +129,7 @@ def removeLargeFiles(path):
 def strfCurrTime(fmt):
     return datetime.time.strftime(datetime.datetime.now().time(), fmt)
 
-def scanarchive(filepath, jobs):
+def scanarchive(filepath, jobs, cpulimit):
     # remove all files/folders except results.txt
     removeAllExceptResults()
 
@@ -156,17 +156,13 @@ def scanarchive(filepath, jobs):
 
     print(strfCurrTime('[%H:%M] cppcheck ') + filename)
 
-    p = subprocess.Popen(
-        ['nice',
-         '../cppcheck-O2',
-         '-D__GCC__',
-         '--enable=style',
-         '--error-exitcode=0',
-         '--exception-handling=stderr',
-         jobs,
-         '.'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+    cmd = '../cppcheck-O2 -D__GCC__ --enable=style --error-exitcode=0 --exception-handling=stderr ' + jobs + ' .'
+    if cpulimit:
+        cmd = 'cpulimit --limit=' + cpulimit + ' ' + cmd
+    else:
+        cmd = 'nice --adjustment=1000 ' + cmd
+
+    p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
 
     results = open('results.txt', 'at')
@@ -182,16 +178,19 @@ FOLDER = None
 JOBS = '-j1'
 REV = None
 SKIP = []
-WORKDIR = os.path.expanduser('~/daca2');
+WORKDIR = os.path.expanduser('~/daca2')
+CPULIMIT = None
 for arg in sys.argv[1:]:
     if arg[:6] == '--rev=':
         REV = arg[6:]
     elif arg[:2] == '-j':
         JOBS = arg
-    elif arg[:7] == '--skip=':
+    elif arg.startswith('--skip='):
         SKIP.append(arg[7:])
-    elif arg[:10] == '--workdir=':
+    elif arg.startswith('--workdir='):
         WORKDIR = arg[10:]
+    elif arg.startswith('--cpulimit='):
+        CPULIMIT = arg[11:]
     else:
         FOLDER = arg
 
@@ -207,9 +206,6 @@ archives = getpackages(FOLDER)
 if len(archives) == 0:
     print('failed to load packages')
     sys.exit(1)
-
-print('Sleep for 10 seconds..')
-time.sleep(10)
 
 if not WORKDIR.endswith('/'):
     WORKDIR = WORKDIR + '/'
@@ -234,7 +230,7 @@ try:
             a = a[a.rfind('/')+1:]
             if a in SKIP:
                 continue
-        scanarchive(archive, JOBS)
+        scanarchive(archive, JOBS, CPULIMIT)
 
     results = open('results.txt', 'at')
     results.write('DATE ' + str(datetime.date.today()) + '\n')
