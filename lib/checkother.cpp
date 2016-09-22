@@ -2157,13 +2157,13 @@ void CheckOther::checkSignOfUnsignedVariable()
                 if (vt && vt->pointer)
                     pointerLessThanZeroError(tok, inconclusive);
                 if (vt && vt->sign == ValueType::UNSIGNED)
-                    unsignedLessThanZeroError(tok, tok->astOperand1()->str(), inconclusive);
+                    unsignedLessThanZeroError(tok, tok->astOperand1()->expressionString(), inconclusive);
             } else if (Token::Match(tok->previous(), "0 >|>=") && tok->previous() == tok->astOperand1()) {
                 const ValueType* vt = tok->astOperand2()->valueType();
                 if (vt && vt->pointer)
                     pointerLessThanZeroError(tok, inconclusive);
                 if (vt && vt->sign == ValueType::UNSIGNED)
-                    unsignedLessThanZeroError(tok, tok->astOperand2()->str(), inconclusive);
+                    unsignedLessThanZeroError(tok, tok->astOperand2()->expressionString(), inconclusive);
             } else if (Token::simpleMatch(tok, ">= 0") && tok->next() == tok->astOperand2()) {
                 const ValueType* vt = tok->astOperand1()->valueType();
                 if (vt && vt->pointer)
