@@ -35,7 +35,7 @@ if (BUILD_GUI)
 
     # icons
     install(FILES icon.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
-    install(FILES icon.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/64x64/apps)
+    install(FILES cppcheck-gui.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/64x64/apps)
 
     set(CMAKE_AUTOMOC OFF)
 

@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     if (!CheckArgs(app.arguments()))
         return 0;
 
-    app.setWindowIcon(QIcon(":icon.png"));
+    app.setWindowIcon(QIcon(":cppcheck-gui.png"));
 
     // Register this metatype that is used to transfer error info
     qRegisterMetaType<ErrorItem>("ErrorItem");

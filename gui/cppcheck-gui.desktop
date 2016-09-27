@@ -4,5 +4,5 @@ Type=Application
 Name=Cppcheck
 Comment=A tool for static C/C++ code analysis
 Exec=cppcheck-gui
-Icon=icon
+Icon=cppcheck-gui
 Categories=Development;Debugger;Qt;

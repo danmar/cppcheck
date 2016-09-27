@@ -24,7 +24,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="gui.qrc">:/icon.png</pixmap>
+          <pixmap resource="gui.qrc">:/cppcheck-gui.png</pixmap>
          </property>
         </widget>
        </item>
