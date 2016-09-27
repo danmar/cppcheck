@@ -9,12 +9,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="744.09448819"
-   height="1052.3622047"
+   width="573.00116"
+   height="505.54184"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.48.5 r10040"
-   sodipodi:docname="icon.svg"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="cppcheck-gui.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    inkscape:export-filename="/home/daniel/cppcheck/logo.png"
    inkscape:export-xdpi="12.045081"
@@ -33,16 +33,20 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.59676231"
-     inkscape:cx="409.21617"
-     inkscape:cy="560.6768"
+     inkscape:cx="320.1211"
+     inkscape:cy="296.99526"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1440"
-     inkscape:window-height="900"
+     inkscape:window-height="891"
      inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="0" />
+     inkscape:window-maximized="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -51,15 +55,17 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(-92.44649,-283.13881)">
     <path
-       style="fill:#88aa00;fill-rule:evenodd;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#88aa00;fill-rule:evenodd;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 174.07528,636.75382 93.83228,49.57527 193.83211,-159.94892 100.43557,52.9473 -288.40158,200.50224 -167.38943,-94.83028 67.69105,-48.24561 z"
        id="path2395"
        sodipodi:nodetypes="ccccccc"
@@ -68,7 +74,7 @@
        inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
-       style="font-size:514.91314697px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#9797ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Serif;-inkscape-font-specification:Serif Bold"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:514.91314697px;font-family:Serif;-inkscape-font-specification:'Serif Bold';fill:#9797ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        x="83.791084"
        y="569.93414"
        id="text3351"
@@ -77,10 +83,10 @@
          id="tspan3353"
          x="83.791084"
          y="569.93414"
-         style="fill:#9797ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:15;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none">c</tspan></text>
+         style="fill:#9797ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:15;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">c</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:263.74542236px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#9797ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:AlMothnna;-inkscape-font-specification:AlMothnna Bold"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:263.74542236px;font-family:AlMothnna;-inkscape-font-specification:'AlMothnna Bold';fill:#9797ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        x="496.65094"
        y="375.33548"
        id="text3347"
@@ -89,6 +95,6 @@
          id="tspan3349"
          x="496.65094"
          y="375.33548"
-         style="fill:#9797ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:15;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none">++</tspan></text>
+         style="fill:#9797ff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:15;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">++</tspan></text>
   </g>
 </svg>
