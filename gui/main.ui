@@ -260,7 +260,7 @@
   <action name="mActionCheckDirectory">
    <property name="icon">
     <iconset resource="gui.qrc">
-     <normaloff>:/icon.png</normaloff>:/icon.png</iconset>
+     <normaloff>:/cppcheck-gui.png</normaloff>:/cppcheck-gui.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Directory...</string>

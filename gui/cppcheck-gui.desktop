@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Cppcheck
+Comment=A tool for static C/C++ code analysis
+Exec=cppcheck-gui
+Icon=cppcheck-gui
+Categories=Development;Debugger;Qt;
