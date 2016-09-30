@@ -247,7 +247,7 @@ public:
     ImportProject project;
 
     /**
-     * @brief return true if a file is to be excluded from configuration checking
+     * @brief return true if a included file is to be excluded in Preprocessor::getConfigs
      * @return true for the file to be excluded.
      */
     bool configurationExcluded(const std::string &file) const {

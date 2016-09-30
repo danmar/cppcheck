@@ -365,8 +365,10 @@ std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &token
 
     ::getConfigs(tokens, defined, _settings.userDefines, _settings.userUndefs, ret);
 
-    for (std::map<std::string, simplecpp::TokenList*>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it)
-        ::getConfigs(*(it->second), defined, _settings.userDefines, _settings.userUndefs, ret);
+    for (std::map<std::string, simplecpp::TokenList*>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+        if (!_settings.configurationExcluded(it->first))
+            ::getConfigs(*(it->second), defined, _settings.userDefines, _settings.userUndefs, ret);
+    }
 
     return ret;
 }
