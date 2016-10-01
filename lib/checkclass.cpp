@@ -628,6 +628,18 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             return;
         }
 
+        // Ticket #7068
+        else if (Token::Match(ftok, "::| memset ( &| this . %name%")) {
+            if (ftok->str() == "::")
+                ftok = ftok->next();
+            int offsetToMember = 4;
+            if (ftok->tokAt(ftok->strAt(2) == "&"))
+                ++offsetToMember;
+            assignVar(ftok->tokAt(offsetToMember)->varId(), scope, usage);
+            ftok = ftok->linkAt(1);
+            continue;
+        }
+
         // Clearing array..
         else if (Token::Match(ftok, "::| memset ( %name% ,")) {
             if (ftok->str() == "::")

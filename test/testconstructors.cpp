@@ -2807,6 +2807,48 @@ private:
               "};");
 
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #7068
+        check("struct Foo {\n"
+              "    int * p;\n"
+              "    char c;\n"
+              "    Foo() { memset(p, 0, sizeof(int)); }\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Foo::c' is not initialized in the constructor.\n", errout.str());
+        check("struct Foo {\n"
+              "    int i;\n"
+              "    char c;\n"
+              "    Foo() { memset(&i, 0, sizeof(int)); }\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Foo::c' is not initialized in the constructor.\n", errout.str());
+        check("struct Foo { int f; };\n"
+              "struct Bar { int b; };\n"
+              "struct FooBar {\n"
+              "  FooBar() {\n"
+              "     memset(&foo, 0, sizeof(foo));\n"
+              "  }\n"
+              "  Foo foo;\n"
+              "  Bar bar;\n"
+              "};\n"
+              "int main() {\n"
+              "  FooBar foobar;\n"
+              "  return foobar.foo.f + foobar.bar.b;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'FooBar::bar' is not initialized in the constructor.\n", errout.str());
+        check("struct Foo { int f; };\n"
+              "struct Bar { int b; };\n"
+              "struct FooBar {\n"
+              "  FooBar() {\n"
+              "     memset(&this->foo, 0, sizeof(this->foo));\n"
+              "  }\n"
+              "  Foo foo;\n"
+              "  Bar bar;\n"
+              "};\n"
+              "int main() {\n"
+              "  FooBar foobar;\n"
+              "  return foobar.foo.f + foobar.bar.b;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'FooBar::bar' is not initialized in the constructor.\n", errout.str());
     }
 
     void privateCtor1() {
