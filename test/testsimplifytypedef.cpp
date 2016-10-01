@@ -151,6 +151,7 @@ private:
         TEST_CASE(simplifyTypedef116); // ticket #5624
         TEST_CASE(simplifyTypedef117); // ticket #6507
         TEST_CASE(simplifyTypedef118); // ticket #5749
+        TEST_CASE(simplifyTypedef119); // ticket #7541
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2417,6 +2418,18 @@ private:
                                 "return & ClassyClass :: id ; "
                                 "} }";
         ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef119() { // #7541
+        const char code[] = "namespace Baz {\n"
+                            "  typedef char* T1;\n"
+                            "  typedef T1 XX;\n"
+                            "}\n"
+                            "namespace Baz { }\n"
+                            "enum Bar { XX = 1 };";
+        const char exp [] = "enum Bar { XX = 1 } ;";
+        ASSERT_EQUALS(exp, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
 
