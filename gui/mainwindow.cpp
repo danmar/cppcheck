@@ -491,8 +491,8 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
                    tr("Select files to check"),
                    GetPath(SETTINGS_LAST_CHECK_PATH),
                    tr("C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)")
-                                                 .arg(FileList::GetDefaultFilters().join(" "))
-                                                 .arg(compile_commands_json));
+                   .arg(FileList::GetDefaultFilters().join(" "))
+                   .arg(compile_commands_json));
         if (selected.isEmpty())
             mCurrentDirectory.clear();
         else {
