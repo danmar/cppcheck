@@ -174,6 +174,7 @@ private:
         TEST_CASE(usingNamespace);     // #4585
 
         TEST_CASE(lambdaFunction); // #5078
+        TEST_CASE(namespaces); // #7557
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -4069,6 +4070,24 @@ private:
                               "  std::for_each(ints.begin(), ints.end(), [&x](int i){ x += i; });\n"
                               "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", "", errout.str());
+    }
+
+    void namespaces() { // #7557
+        functionVariableUsage("namespace t { namespace g {\n"
+                              "   typedef std::pair<BoostBox, size_t> value;\n"
+                              "} }\n"
+                              "namespace t { namespace g {} }\n"
+                              "namespace t {\n"
+                              "  inline double getTime() const {\n"
+                              "     iterator it=find();\n"
+                              "     double& value=it->second.values[index];\n"
+                              "     if(isnan(value)) {\n"
+                              "       value=get();\n"
+                              "     }\n"
+                              "     return value;\n"
+                              "  }\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
