@@ -789,6 +789,8 @@ Settings MainWindow::GetCppcheckSettings()
         result.jobs = 1;
     }
 
+    result.terminate(false);
+
     return result;
 }
 
@@ -1375,7 +1377,8 @@ void MainWindow::EditProjectFile()
         msg.exec();
         return;
     }
-    mProject->Edit();
+    if (mProject->Edit())
+        CheckProject(mProject);
 }
 
 void MainWindow::ShowLogView()

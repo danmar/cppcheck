@@ -97,8 +97,8 @@ public:
     bool verbose;
 
     /** @brief Request termination of checking */
-    void terminate() {
-        Settings::_terminated = true;
+    void terminate(bool t = true) {
+        Settings::_terminated = t;
     }
 
     /** @brief termination requested? */
