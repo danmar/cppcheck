@@ -65,21 +65,22 @@ bool Project::IsOpen() const
 bool Project::Open()
 {
     mPFile = new ProjectFile(mFilename, this);
-    if (QFile::exists(mFilename)) {
-        if (!mPFile->Read()) {
-            QMessageBox msg(QMessageBox::Critical,
-                            tr("Cppcheck"),
-                            tr("Could not read the project file."),
-                            QMessageBox::Ok,
-                            mParentWidget);
-            msg.exec();
-            mFilename = QString();
-            mPFile->SetFilename(mFilename);
-            return false;
-        }
-        return true;
+    if (!QFile::exists(mFilename))
+        return false;
+
+    if (!mPFile->Read()) {
+        QMessageBox msg(QMessageBox::Critical,
+                        tr("Cppcheck"),
+                        tr("Could not read the project file."),
+                        QMessageBox::Ok,
+                        mParentWidget);
+        msg.exec();
+        mFilename = QString();
+        mPFile->SetFilename(mFilename);
+        return false;
     }
-    return false;
+
+    return true;
 }
 
 bool Project::Edit()
