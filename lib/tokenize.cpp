@@ -1067,6 +1067,7 @@ void Tokenizer::simplifyTypedef()
                             if (classLevel < spaceInfo.size() &&
                                 spaceInfo[classLevel].isNamespace &&
                                 spaceInfo[classLevel].className == tok2->previous()->str()) {
+                                spaceInfo[classLevel].classEnd = tok2->link();
                                 ++classLevel;
                                 pattern.clear();
                                 for (std::size_t i = classLevel; i < spaceInfo.size(); ++i)
