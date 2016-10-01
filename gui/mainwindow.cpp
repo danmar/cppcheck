@@ -48,6 +48,7 @@
 #include "librarydialog.h"
 
 static const QString OnlineHelpURL("http://cppcheck.net/manual.html");
+static const QString compile_commands_json("compile_commands.json");
 
 MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mSettings(settings),
@@ -489,7 +490,9 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
         selected = QFileDialog::getOpenFileNames(this,
                    tr("Select files to check"),
                    GetPath(SETTINGS_LAST_CHECK_PATH),
-                   tr("C/C++ Source, Visual Studio, Compile database (%1 *.sln *.vcxproj compile_database.json)").arg(FileList::GetDefaultFilters().join(" ")));
+                   tr("C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)")
+                                                 .arg(FileList::GetDefaultFilters().join(" "))
+                                                 .arg(compile_commands_json));
         if (selected.isEmpty())
             mCurrentDirectory.clear();
         else {
@@ -520,7 +523,7 @@ void MainWindow::CheckFiles()
     QStringList selected = SelectFilesToCheck(QFileDialog::ExistingFiles);
 
     const QString file0 = (selected.size() ? selected[0].toLower() : "");
-    if (file0.endsWith(".sln") || file0.endsWith(".vcxproj") || file0.endsWith("compile_database.json")) {
+    if (file0.endsWith(".sln") || file0.endsWith(".vcxproj") || file0.endsWith(compile_commands_json)) {
         ImportProject p;
         p.import(selected[0].toStdString());
 
