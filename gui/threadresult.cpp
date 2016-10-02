@@ -67,7 +67,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = msg._callStack.begin();
          tok != msg._callStack.end();
          ++tok) {
-        files << QString((*tok).getfile(false).c_str());
+        files << QString::fromStdString((*tok).getfile(false));
         lines << (*tok).line;
     }
 

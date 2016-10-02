@@ -38,7 +38,7 @@ class ErrorLine;
 class GuiSeverity {
 public:
     static QString toString(Severity::SeverityType severity) {
-        return QString(Severity::toString(severity).c_str());
+        return QString::fromStdString(Severity::toString(severity));
     }
 
     static Severity::SeverityType fromString(const QString &severity) {
