@@ -21,6 +21,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include "filelist.h"
+#include "path.h"
+#include "pathmatch.h"
 
 QStringList FileList::GetDefaultFilters()
 {
@@ -106,28 +108,28 @@ void FileList::AddExcludeList(const QStringList &paths)
     mExcludedPaths = paths;
 }
 
+static std::vector<std::string> toStdStringList(const QStringList &stringList)
+{
+    std::vector<std::string> ret;
+    foreach (const QString &s, stringList) {
+        ret.push_back(s.toStdString());
+    }
+    return ret;
+}
+
 QStringList FileList::ApplyExcludeList() const
 {
+#ifdef _WIN32
+    const PathMatch pathMatch(toStdStringList(mExcludedPaths), true);
+#else
+    const PathMatch pathMatch(toStdStringList(mExcludedPaths), false);
+#endif
+
     QStringList paths;
     foreach (QFileInfo item, mFileList) {
         QString name = QDir::fromNativeSeparators(item.canonicalFilePath());
-        if (!Match(name))
+        if (!pathMatch.Match(name.toStdString()))
             paths << name;
     }
     return paths;
-}
-
-bool FileList::Match(const QString &path) const
-{
-    for (int i = 0; i < mExcludedPaths.size(); i++) {
-        if (mExcludedPaths[i].endsWith('/')) {
-            const QString pathexclude("/" + mExcludedPaths[i]);
-            if (path.indexOf(pathexclude) != -1)
-                return true;
-        } else {
-            if (path.endsWith(mExcludedPaths[i]))
-                return true;
-        }
-    }
-    return false;
 }

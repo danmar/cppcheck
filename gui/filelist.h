@@ -91,13 +91,6 @@ protected:
     */
     QStringList ApplyExcludeList() const;
 
-    /**
-    * @brief Test if path matches any of the exclude filters.
-    * @param path Path to test against exclude filters.
-    * @return true if any of the filters matches, false otherwise.
-    */
-    bool Match(const QString &path) const;
-
 private:
     QFileInfoList mFileList;
     QStringList mExcludedPaths;
