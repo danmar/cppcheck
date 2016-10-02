@@ -25,6 +25,9 @@
 #include <sstream>
 #include <cstring>
 #include <cctype>
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
 /** Is the filesystem case insensitive? */
 static bool caseInsensitiveFilesystem()
@@ -181,6 +184,35 @@ std::string Path::getFilenameExtensionInLowerCase(const std::string &path)
     std::string extension = getFilenameExtension(path);
     std::transform(extension.begin(), extension.end(), extension.begin(), tolowerWrapper);
     return extension;
+}
+
+const std::string Path::getCurrentPath()
+{
+    char currentPath[4096];
+
+    if (getcwd(currentPath, 4096) != 0)
+        return std::string(currentPath);
+
+    return emptyString;
+}
+
+bool Path::isAbsolute(const std::string& path)
+{
+    const std::string& nativePath = toNativeSeparators(path);
+
+#ifdef _WIN32
+    if (path.length() < 2)
+        return false;
+
+    // On Windows, 'C:\foo\bar' is an absolute path, while 'C:foo\bar' is not
+    if (nativePath.compare(0, 2, "\\\\") == 0 || (std::isalpha(nativePath[0]) != 0 && nativePath.compare(1, 2, ":\\") == 0))
+        return true;
+#else
+    if (!nativePath.empty() && nativePath[0] == '/')
+        return true;
+#endif
+
+    return false;
 }
 
 std::string Path::getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths)

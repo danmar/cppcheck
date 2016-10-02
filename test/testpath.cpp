@@ -30,6 +30,8 @@ private:
     void run() {
         TEST_CASE(simplify_path);
         TEST_CASE(accept_file);
+        TEST_CASE(getCurrentPath);
+        TEST_CASE(isAbsolute);
         TEST_CASE(getRelative);
         TEST_CASE(is_c);
         TEST_CASE(is_cpp);
@@ -108,6 +110,28 @@ private:
         // don't accept any headers
         ASSERT_EQUALS(false, Path::acceptFile("index.h"));
         ASSERT_EQUALS(false, Path::acceptFile("index.hpp"));
+    }
+
+    void getCurrentPath() const {
+        ASSERT_EQUALS(true, Path::isAbsolute(Path::getCurrentPath()));
+    }
+
+    void isAbsolute() const {
+#ifdef _WIN32
+        ASSERT_EQUALS(true, Path::isAbsolute("C:\\foo\\bar"));
+        ASSERT_EQUALS(true, Path::isAbsolute("C:/foo/bar"));
+        ASSERT_EQUALS(true, Path::isAbsolute("\\\\foo\\bar"));
+        ASSERT_EQUALS(false, Path::isAbsolute("foo\\bar"));
+        ASSERT_EQUALS(false, Path::isAbsolute("foo/bar"));
+        ASSERT_EQUALS(false, Path::isAbsolute("foo.cpp"));
+        ASSERT_EQUALS(false, Path::isAbsolute("C:foo.cpp"));
+        ASSERT_EQUALS(false, Path::isAbsolute("C:foo\\bar.cpp"));
+#else
+        ASSERT_EQUALS(true, Path::isAbsolute("/foo/bar"));
+        ASSERT_EQUALS(true, Path::isAbsolute("/"));
+        ASSERT_EQUALS(false, Path::isAbsolute("foo/bar"));
+        ASSERT_EQUALS(false, Path::isAbsolute("foo.cpp"));
+#endif
     }
 
     void getRelative() const {

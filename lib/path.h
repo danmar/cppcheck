@@ -97,6 +97,19 @@ public:
     static std::string getFilenameExtensionInLowerCase(const std::string &path);
 
     /**
+     * @brief Returns the absolute path of current working directory
+     * @return absolute path of current working directory
+     */
+    static const std::string getCurrentPath();
+
+    /**
+     * @brief Check if given path is absolute
+     * @param path Path to check
+     * @return true if given path is absolute
+     */
+    static bool isAbsolute(const std::string& path);
+
+    /**
       * @brief Create a relative path from an absolute one, if absolute path is inside the basePaths.
       * @param absolutePath Path to be made relative.
       * @param basePaths Paths to which it may be made relative.
