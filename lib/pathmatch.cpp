@@ -27,6 +27,7 @@ PathMatch::PathMatch(const std::vector<std::string> &excludedPaths, bool caseSen
     if (!_caseSensitive)
         for (std::vector<std::string>::iterator i = _excludedPaths.begin(); i != _excludedPaths.end(); ++i)
             std::transform(i->begin(), i->end(), i->begin(), ::tolower);
+    _workingDirectory.push_back(Path::getCurrentPath());
 }
 
 bool PathMatch::Match(const std::string &path) const
@@ -34,11 +35,8 @@ bool PathMatch::Match(const std::string &path) const
     if (path.empty())
         return false;
 
-    std::vector<std::string> workingDirectory;
-    workingDirectory.push_back(Path::getCurrentPath());
-
     for (std::vector<std::string>::const_iterator i = _excludedPaths.begin(); i != _excludedPaths.end(); ++i) {
-        const std::string excludedPath((!Path::isAbsolute(path) && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, workingDirectory) : *i);
+        const std::string excludedPath((!Path::isAbsolute(path) && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, _workingDirectory) : *i);
 
         std::string findpath = Path::fromNativeSeparators(path);
         if (!_caseSensitive)

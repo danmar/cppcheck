@@ -58,6 +58,7 @@ protected:
 private:
     std::vector<std::string> _excludedPaths;
     bool _caseSensitive;
+    std::vector<std::string> _workingDirectory;
 };
 
 /// @}
