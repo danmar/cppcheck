@@ -398,7 +398,7 @@ $(SRCDIR)/mathlib.o: lib/mathlib.cpp lib/cxx11emu.h lib/mathlib.h lib/config.h l
 $(SRCDIR)/path.o: lib/path.cpp lib/cxx11emu.h lib/path.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/path.o $(SRCDIR)/path.cpp
 
-$(SRCDIR)/pathmatch.o: lib/pathmatch.cpp lib/cxx11emu.h lib/pathmatch.h lib/path.h lib/config.h
+$(SRCDIR)/pathmatch.o: lib/pathmatch.cpp lib/cxx11emu.h lib/pathmatch.h lib/config.h lib/path.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/pathmatch.o $(SRCDIR)/pathmatch.cpp
 
 $(SRCDIR)/platform.o: lib/platform.cpp lib/cxx11emu.h lib/platform.h lib/config.h
@@ -629,7 +629,7 @@ externals/simplecpp/simplecpp.o: externals/simplecpp/simplecpp.cpp lib/cxx11emu.
 externals/tinyxml/tinyxml2.o: externals/tinyxml/tinyxml2.cpp lib/cxx11emu.h externals/tinyxml/tinyxml2.h
 	$(CXX)  $(CPPFLAGS) $(CFG) $(CXXFLAGS) -w $(UNDEF_STRICT_ANSI) -c -o externals/tinyxml/tinyxml2.o externals/tinyxml/tinyxml2.cpp
 
-tools/dmake.o: tools/dmake.cpp lib/cxx11emu.h cli/filelister.h lib/pathmatch.h
+tools/dmake.o: tools/dmake.cpp lib/cxx11emu.h cli/filelister.h lib/pathmatch.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/dmake.o tools/dmake.cpp
 
 tools/reduce.o: tools/reduce.cpp lib/cxx11emu.h
