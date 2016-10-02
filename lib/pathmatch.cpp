@@ -34,8 +34,11 @@ bool PathMatch::Match(const std::string &path) const
     if (path.empty())
         return false;
 
+    std::vector<std::string> workingDirectory;
+    workingDirectory.push_back(Path::getCurrentPath());
+
     for (std::vector<std::string>::const_iterator iterMask = _masks.begin(); iterMask != _masks.end(); ++iterMask) {
-        const std::string& mask(*iterMask);
+        const std::string mask((!Path::isAbsolute(path) && Path::isAbsolute(*iterMask)) ? Path::getRelativePath(*iterMask, workingDirectory) : *iterMask);
 
         std::string findpath = Path::fromNativeSeparators(path);
         if (!_caseSensitive)

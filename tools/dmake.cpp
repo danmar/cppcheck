@@ -26,7 +26,7 @@
 #include <sstream>
 
 #include "../cli/filelister.h"
-#include "../cli/pathmatch.h"
+#include "../lib/pathmatch.h"
 
 static std::string builddir(std::string filename)
 {

@@ -161,6 +161,7 @@ LIBOBJ =      $(SRCDIR)/astutils.o \
               $(SRCDIR)/library.o \
               $(SRCDIR)/mathlib.o \
               $(SRCDIR)/path.o \
+              $(SRCDIR)/pathmatch.o \
               $(SRCDIR)/platform.o \
               $(SRCDIR)/preprocessor.o \
               $(SRCDIR)/settings.o \
@@ -180,7 +181,6 @@ CLIOBJ =      cli/cmdlineparser.o \
               cli/cppcheckexecutor.o \
               cli/filelister.o \
               cli/main.o \
-              cli/pathmatch.o \
               cli/threadexecutor.o
 
 TESTOBJ =     test/options.o \
@@ -398,6 +398,9 @@ $(SRCDIR)/mathlib.o: lib/mathlib.cpp lib/cxx11emu.h lib/mathlib.h lib/config.h l
 $(SRCDIR)/path.o: lib/path.cpp lib/cxx11emu.h lib/path.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/path.o $(SRCDIR)/path.cpp
 
+$(SRCDIR)/pathmatch.o: lib/pathmatch.cpp lib/cxx11emu.h lib/pathmatch.h lib/path.h lib/config.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/pathmatch.o $(SRCDIR)/pathmatch.cpp
+
 $(SRCDIR)/platform.o: lib/platform.cpp lib/cxx11emu.h lib/platform.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/platform.o $(SRCDIR)/platform.cpp
 
@@ -434,17 +437,14 @@ $(SRCDIR)/valueflow.o: lib/valueflow.cpp lib/cxx11emu.h lib/valueflow.h lib/conf
 cli/cmdlineparser.o: cli/cmdlineparser.cpp lib/cxx11emu.h cli/cmdlineparser.h lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/errorlogger.h lib/suppressions.h lib/platform.h lib/importproject.h lib/timer.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h cli/cppcheckexecutor.h cli/filelister.h lib/path.h cli/threadexecutor.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o cli/cmdlineparser.o cli/cmdlineparser.cpp
 
-cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp lib/cxx11emu.h cli/cppcheckexecutor.h lib/errorlogger.h lib/config.h lib/suppressions.h cli/cmdlineparser.h lib/cppcheck.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/platform.h lib/importproject.h lib/timer.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h cli/filelister.h lib/path.h cli/pathmatch.h lib/preprocessor.h cli/threadexecutor.h lib/utils.h
+cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp lib/cxx11emu.h cli/cppcheckexecutor.h lib/errorlogger.h lib/config.h lib/suppressions.h cli/cmdlineparser.h lib/cppcheck.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/platform.h lib/importproject.h lib/timer.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h cli/filelister.h lib/path.h lib/pathmatch.h lib/preprocessor.h cli/threadexecutor.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o cli/cppcheckexecutor.o cli/cppcheckexecutor.cpp
 
-cli/filelister.o: cli/filelister.cpp lib/cxx11emu.h cli/filelister.h lib/path.h lib/config.h cli/pathmatch.h
+cli/filelister.o: cli/filelister.cpp lib/cxx11emu.h cli/filelister.h lib/path.h lib/config.h lib/pathmatch.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o cli/filelister.o cli/filelister.cpp
 
 cli/main.o: cli/main.cpp lib/cxx11emu.h cli/cppcheckexecutor.h lib/errorlogger.h lib/config.h lib/suppressions.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o cli/main.o cli/main.cpp
-
-cli/pathmatch.o: cli/pathmatch.cpp lib/cxx11emu.h cli/pathmatch.h lib/path.h lib/config.h
-	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o cli/pathmatch.o cli/pathmatch.cpp
 
 cli/threadexecutor.o: cli/threadexecutor.cpp lib/cxx11emu.h cli/threadexecutor.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/importproject.h lib/platform.h lib/cppcheck.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h cli/cppcheckexecutor.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o cli/threadexecutor.o cli/threadexecutor.cpp
@@ -497,7 +497,7 @@ test/testerrorlogger.o: test/testerrorlogger.cpp lib/cxx11emu.h lib/cppcheck.h l
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkexceptionsafety.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/platform.h lib/importproject.h lib/timer.h lib/utils.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
 
-test/testfilelister.o: test/testfilelister.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/platform.h lib/importproject.h lib/timer.h
+test/testfilelister.o: test/testfilelister.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/platform.h lib/importproject.h lib/timer.h lib/pathmatch.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testfilelister.o test/testfilelister.cpp
 
 test/testfunctions.o: test/testfunctions.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/platform.h lib/importproject.h lib/timer.h test/testsuite.h
@@ -542,7 +542,7 @@ test/testother.o: test/testother.cpp lib/cxx11emu.h lib/preprocessor.h lib/confi
 test/testpath.o: test/testpath.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/path.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testpath.o test/testpath.cpp
 
-test/testpathmatch.o: test/testpathmatch.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h
+test/testpathmatch.o: test/testpathmatch.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/pathmatch.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testpathmatch.o test/testpathmatch.cpp
 
 test/testpostfixoperator.o: test/testpostfixoperator.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkpostfixoperator.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/platform.h lib/importproject.h lib/timer.h test/testsuite.h
@@ -554,7 +554,7 @@ test/testpreprocessor.o: test/testpreprocessor.cpp lib/cxx11emu.h test/testsuite
 test/testrunner.o: test/testrunner.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/preprocessor.h test/options.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testrunner.o test/testrunner.cpp
 
-test/testsamples.o: test/testsamples.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/path.h test/redirect.h
+test/testsamples.o: test/testsamples.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/path.h lib/pathmatch.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testsamples.o test/testsamples.cpp
 
 test/testsimplifytemplate.o: test/testsimplifytemplate.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/platform.h lib/importproject.h lib/timer.h lib/templatesimplifier.h
@@ -629,7 +629,7 @@ externals/simplecpp/simplecpp.o: externals/simplecpp/simplecpp.cpp lib/cxx11emu.
 externals/tinyxml/tinyxml2.o: externals/tinyxml/tinyxml2.cpp lib/cxx11emu.h externals/tinyxml/tinyxml2.h
 	$(CXX)  $(CPPFLAGS) $(CFG) $(CXXFLAGS) -w $(UNDEF_STRICT_ANSI) -c -o externals/tinyxml/tinyxml2.o externals/tinyxml/tinyxml2.cpp
 
-tools/dmake.o: tools/dmake.cpp lib/cxx11emu.h cli/filelister.h cli/pathmatch.h
+tools/dmake.o: tools/dmake.cpp lib/cxx11emu.h cli/filelister.h lib/pathmatch.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/dmake.o tools/dmake.cpp
 
 tools/reduce.o: tools/reduce.cpp lib/cxx11emu.h

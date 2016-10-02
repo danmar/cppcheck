@@ -37,6 +37,7 @@ HEADERS += $${PWD}/check.h \
            $${PWD}/library.h \
            $${PWD}/mathlib.h \
            $${PWD}/path.h \
+           $${PWD}/pathmatch.h \
            $${PWD}/platform.h \
            $${PWD}/preprocessor.h \
            $${PWD}/settings.h \
@@ -83,6 +84,7 @@ SOURCES += $${PWD}/astutils.cpp \
            $${PWD}/library.cpp \
            $${PWD}/mathlib.cpp \
            $${PWD}/path.cpp \
+           $${PWD}/pathmatch.cpp \
            $${PWD}/platform.cpp \
            $${PWD}/preprocessor.cpp \
            $${PWD}/settings.cpp \
