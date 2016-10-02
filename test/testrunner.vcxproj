@@ -27,7 +27,6 @@
     <ClCompile Include="..\cli\cmdlineparser.cpp" />
     <ClCompile Include="..\cli\cppcheckexecutor.cpp" />
     <ClCompile Include="..\cli\filelister.cpp" />
-    <ClCompile Include="..\cli\pathmatch.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="test64bit.cpp" />
@@ -94,7 +93,6 @@
   <ItemGroup>
     <ClInclude Include="..\cli\cmdlineparser.h" />
     <ClInclude Include="..\cli\filelister.h" />
-    <ClInclude Include="..\cli\pathmatch.h" />
     <ClInclude Include="..\cli\threadexecutor.h" />
     <ClInclude Include="..\lib\config.h" />
     <ClInclude Include="options.h" />

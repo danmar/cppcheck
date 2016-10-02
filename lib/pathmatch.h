@@ -28,7 +28,7 @@
 /**
  * @brief Simple path matching for ignoring paths in CLI.
  */
-class PathMatch {
+class CPPCHECKLIB PathMatch {
 public:
 
     /**

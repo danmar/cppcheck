@@ -27,6 +27,8 @@
 #include <cctype>
 #ifndef _WIN32
 #include <unistd.h>
+#else
+#include <direct.h>
 #endif
 
 /** Is the filesystem case insensitive? */
@@ -190,7 +192,11 @@ const std::string Path::getCurrentPath()
 {
     char currentPath[4096];
 
+#ifndef _WIN32
     if (getcwd(currentPath, 4096) != 0)
+#else
+    if (_getcwd(currentPath, 4096) != 0)
+#endif
         return std::string(currentPath);
 
     return emptyString;

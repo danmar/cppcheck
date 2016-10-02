@@ -385,7 +385,6 @@
     <ClInclude Include="cmdlineparser.h" />
     <ClInclude Include="cppcheckexecutor.h" />
     <ClInclude Include="filelister.h" />
-    <ClInclude Include="pathmatch.h" />
     <ClInclude Include="threadexecutor.h" />
   </ItemGroup>
   <ItemGroup>
@@ -398,7 +397,6 @@
     <ClCompile Include="cppcheckexecutor.cpp" />
     <ClCompile Include="filelister.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="pathmatch.cpp" />
     <ClCompile Include="threadexecutor.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
