@@ -144,56 +144,6 @@ bool ProjectFile::Read(const QString &filename)
         return false;
 }
 
-QStringList ProjectFile::GetIncludeDirs() const
-{
-    QStringList dirs;
-    foreach (QString path, mIncludeDirs) {
-        dirs << QDir::fromNativeSeparators(path);
-    }
-    return dirs;
-}
-
-QStringList ProjectFile::GetDefines() const
-{
-    return mDefines;
-}
-
-QStringList ProjectFile::GetCheckPaths() const
-{
-    QStringList paths;
-    foreach (QString path, mPaths) {
-        paths << QDir::fromNativeSeparators(path);
-    }
-    return paths;
-}
-
-QStringList ProjectFile::GetExcludedPaths() const
-{
-    QStringList paths;
-    foreach (QString path, mExcludedPaths) {
-        paths << QDir::fromNativeSeparators(path);
-    }
-    return paths;
-}
-
-QStringList ProjectFile::GetLibraries() const
-{
-    QStringList libraries;
-    foreach (QString library, mLibraries) {
-        libraries << library;
-    }
-    return libraries;
-}
-
-QStringList ProjectFile::GetSuppressions() const
-{
-    QStringList suppressions;
-    foreach (QString suppression, mSuppressions) {
-        suppressions << suppression;
-    }
-    return suppressions;
-}
-
 void ProjectFile::ReadRootPath(QXmlStreamReader &reader)
 {
     QXmlStreamAttributes attribs = reader.attributes();
@@ -549,4 +499,12 @@ void ProjectFile::WriteStringList(QXmlStreamWriter &xmlWriter, const QStringList
         xmlWriter.writeEndElement();
     }
     xmlWriter.writeEndElement();
+}
+
+QStringList ProjectFile::fromNativeSeparators(const QStringList &paths)
+{
+    QStringList ret;
+    foreach (const QString &path, paths)
+        ret << QDir::fromNativeSeparators(path);
+    return ret;
 }
