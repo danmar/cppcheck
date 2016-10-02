@@ -252,8 +252,8 @@ cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)
 
 all:	cppcheck testrunner
 
-testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/pathmatch.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o cli/pathmatch.o $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)
+testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o lib/pathmatch.o
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o lib/pathmatch.o $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)
 
 test:	all
 	./testrunner
@@ -264,8 +264,8 @@ check:	all
 checkcfg:	cppcheck
 	./test/cfg/runtests.sh
 
-dmake:	tools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o
-	$(CXX) $(CXXFLAGS) -o dmake tools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o -Ilib $(LDFLAGS)
+dmake:	tools/dmake.o cli/filelister.o lib/pathmatch.o lib/path.o
+	$(CXX) $(CXXFLAGS) -o dmake tools/dmake.o cli/filelister.o lib/pathmatch.o lib/path.o -Ilib $(LDFLAGS)
 
 run-dmake: dmake
 	./dmake
