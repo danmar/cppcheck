@@ -758,6 +758,15 @@ private:
                                  "3: void bar ( int * p ) ;\n"
                                  "4: }\n";
         ASSERT_EQUALS(expected2, tokenize(code2));
+
+        // #7740
+        const char code3[] = "Float f(float scale) {\n"
+                             "    return Float(val * scale);\n"
+                             "}\n";
+        const char expected3[] = "1: Float f ( float scale@1 ) {\n"
+                                 "2: return Float ( val * scale@1 ) ;\n"
+                                 "3: }\n";
+        ASSERT_EQUALS(expected3, tokenize(code3));
     }
 
     void varid36() { // ticket #2980 (segmentation fault)

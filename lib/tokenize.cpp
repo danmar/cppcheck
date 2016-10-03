@@ -2766,10 +2766,12 @@ void Tokenizer::setVarIdPass1()
                     continue;
             }
 
-            // function declaration inside executable scope?
+            // function declaration inside executable scope? Function declaration is of form: type name "(" args ")"
             if (scopeStack.top().isExecutable && Token::Match(tok, "%name% [,)]")) {
                 bool par = false;
                 const Token *start, *end;
+
+                // search begin of function declaration
                 for (start = tok; Token::Match(start, "%name%|*|&|,|("); start = start->previous()) {
                     if (start->str() == "(") {
                         if (par)
@@ -2783,8 +2785,15 @@ void Tokenizer::setVarIdPass1()
                     if (start->varId() > 0U)
                         break;
                 }
+
+                // search end of function declaration
                 for (end = tok->next(); Token::Match(end, "%name%|*|&|,"); end = end->next()) {}
-                if (Token::Match(start, "[;{}] %type% %name%|*") && par && Token::simpleMatch(end, ") ;"))
+
+                // there are tokens which can't appear at the begin of a function declaration such as "return"
+                const bool isNotstartKeyword = start->next() && notstart.find(start->next()->str()) != notstart.end();
+
+                // now check if it is a function declaration
+                if (Token::Match(start, "[;{}] %type% %name%|*") && par && Token::simpleMatch(end, ") ;") && !isNotstartKeyword)
                     // function declaration => don't set varid
                     continue;
             }
