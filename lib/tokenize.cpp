@@ -8900,7 +8900,6 @@ void Tokenizer::simplifyBitfields()
 {
     bool goback = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-
         if (goback) {
             goback = false;
             tok = tok->previous();
@@ -8925,7 +8924,7 @@ void Tokenizer::simplifyBitfields()
 
                 last = tok1->next();
             }
-        } else if (Token::Match(tok->next(), "const| %type% : %any% ;") &&
+        } else if (Token::Match(tok->next(), "const| %type% : %num%|%bool% ;") &&
                    tok->next()->str() != "default") {
             const int offset = (tok->next()->str() == "const") ? 1 : 0;
 
