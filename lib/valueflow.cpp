@@ -1929,6 +1929,10 @@ static void execute(const Token *expr,
             *result = result1 / result2;
         else if (expr->str() == "%")
             *result = result1 % result2;
+        else if (expr->str() == "<<")
+            *result = result1 << result2;
+        else if (expr->str() == ">>")
+            *result = result1 >> result2;
     }
 
     else if (expr->str() == "&&") {
