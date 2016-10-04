@@ -8909,6 +8909,18 @@ void Tokenizer::simplifyBitfields()
         if (!Token::Match(tok, ";|{|}|public:|protected:|private:"))
             continue;
 
+        bool isEnum = false;
+        if (tok->str() == "}") {
+            const Token *type = tok->link()->previous();
+            while (type && type->isName()) {
+                if (type->str() == "enum") {
+                    isEnum = true;
+                    break;
+                }
+                type = type->previous();
+            }
+        }
+
         if (Token::Match(tok->next(), "const| %type% %name% :") &&
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
@@ -8924,10 +8936,16 @@ void Tokenizer::simplifyBitfields()
 
                 last = tok1->next();
             }
+        } else if (isEnum && Token::Match(tok, "} %name%| : %num% ;")) {
+            if (tok->next()->str() == ":") {
+                tok->deleteNext(2);
+                tok->insertToken("Anonymous");
+            } else {
+                tok->next()->deleteNext(2);
+            }
         } else if (Token::Match(tok->next(), "const| %type% : %num%|%bool% ;") &&
                    tok->next()->str() != "default") {
             const int offset = (tok->next()->str() == "const") ? 1 : 0;
-
             if (!Token::Match(tok->tokAt(3 + offset), "[{};()]")) {
                 tok->deleteNext(4 + offset);
                 goback = true;

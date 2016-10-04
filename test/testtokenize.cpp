@@ -345,6 +345,7 @@ private:
         TEST_CASE(bitfields12); // ticket #3485 (segmentation fault)
         TEST_CASE(bitfields13); // ticket #3502 (segmentation fault)
         TEST_CASE(bitfields14); // ticket #4561 (segfault for 'class a { signals: };')
+        TEST_CASE(bitfields15); // ticket #7747 (enum Foo {A,B}:4;)
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -5388,6 +5389,21 @@ private:
 
     void bitfields14() { // #4561 - crash for 'signals:'
         ASSERT_EQUALS("class x { signals : } ;", tokenizeAndStringify("class x { signals: };\n",false));
+    }
+
+    void bitfields15() { // #7747 - enum Foo {A,B}:4;
+        ASSERT_EQUALS("struct AB {\n"
+                      "enum Foo { A , B } ; enum Foo Anonymous ;\n"
+                      "} ;",
+                      tokenizeAndStringify("struct AB {\n"
+                                           "  enum Foo {A,B} : 4;\n"
+                                           "};"));
+        ASSERT_EQUALS("struct AB {\n"
+                      "enum Foo { A , B } ; enum Foo foo ;\n"
+                      "} ;",
+                      tokenizeAndStringify("struct AB {\n"
+                                           "  enum Foo {A,B} foo : 4;\n"
+                                           "};"));
     }
 
 
