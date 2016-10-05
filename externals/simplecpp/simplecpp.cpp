@@ -296,7 +296,7 @@ static unsigned char peekChar(std::istream &istr, unsigned int bom) {
 
 static void ungetChar(std::istream &istr, unsigned int bom) {
     istr.unget();
-    if (bom != 0)
+    if (bom == 0xfeff || bom == 0xfffe)
         istr.unget();
 }
 
