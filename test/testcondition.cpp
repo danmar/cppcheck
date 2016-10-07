@@ -1552,7 +1552,8 @@ private:
         check("void f() {\n"
               "    if (x & 3 == 2) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n"
+                      "[test.cpp:2]: (style) Condition '3==2' is always false\n", errout.str());
 
         check("void f() {\n"
               "    if (a & fred1.x == fred2.y) {}\n"
@@ -1726,6 +1727,19 @@ private:
               "  assert(x == 0);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7750 warn about number and char literals in boolean expressions
+        check("void f() {\n"
+              "  if('a'){}\n"
+              "  if(L'b'){}\n"
+              "  if(1 && 'c'){}\n"
+              "  int x = 'd' ? 1 : 2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition ''a'' is always true\n"
+                      "[test.cpp:3]: (style) Condition ''b'' is always true\n"
+                      "[test.cpp:4]: (style) Condition '1' is always true\n"
+                      "[test.cpp:4]: (style) Condition ''c'' is always true\n"
+                      "[test.cpp:5]: (style) Condition ''d'' is always true\n", errout.str());
     }
 
     void checkInvalidTestForOverflow() {

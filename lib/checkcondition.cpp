@@ -975,15 +975,18 @@ void CheckCondition::alwaysTrueFalse()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%comp%|!"))
+
+            const bool constValCond = Token::Match(tok->tokAt(-2), "if|while ( %num%|%char% )"); // just one number or char inside if|while
+            const bool constValExpr = Token::Match(tok, "%num%|%char%") && tok->astParent() && Token::Match(tok->astParent(),"&&|%oror%|?"); // just one number or char in boolean expression
+            const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
+
+            if (!(constValCond || constValExpr || compExpr))
                 continue;
             if (tok->link()) // don't write false positives when templates are used
                 continue;
             if (tok->values.size() != 1U)
                 continue;
             if (!tok->values.front().isKnown())
-                continue;
-            if (!tok->astParent() || !Token::Match(tok->astParent()->previous(), "%name% ("))
                 continue;
 
             // Don't warn in assertions. Condition is often 'always true' by intention.

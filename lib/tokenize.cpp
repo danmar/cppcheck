@@ -1859,14 +1859,14 @@ void Tokenizer::combineOperators()
     }
 }
 
-void Tokenizer::combineStrings()
+void Tokenizer::combineStringAndCharLiterals()
 {
-    // Combine wide strings
+    // Combine wide strings and wide characters
     for (Token *tok = list.front();
          tok;
          tok = tok->next()) {
-        while (tok->str() == "L" && tok->next() && tok->next()->tokType() == Token::eString) {
-            // Combine 'L "string"'
+        if (tok->str() == "L" && tok->next() && (tok->next()->tokType() == Token::eString || tok->next()->tokType() == Token::eChar)) {
+            // Combine 'L "string"' and 'L 'c''
             tok->str(tok->next()->str());
             tok->deleteNext();
             tok->isLong(true);
@@ -3326,8 +3326,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove MACRO in variable declaration: MACRO int x;
     removeMacroInVarDecl();
 
-    // Combine strings
-    combineStrings();
+    // Combine strings and character literals, e.g. L"string", L'c', "string1" "string2"
+    combineStringAndCharLiterals();
 
     // replace inline SQL with "asm()" (Oracle PRO*C). Ticket: #1959
     simplifySQL();

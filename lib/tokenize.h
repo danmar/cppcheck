@@ -466,7 +466,7 @@ public:
 
     void combineOperators();
 
-    void combineStrings();
+    void combineStringAndCharLiterals();
 
     void simplifyNull();
 
