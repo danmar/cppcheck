@@ -1667,6 +1667,16 @@ private:
                        "    font->Initialize();\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7623 - new can also initialize the memory, don't warn in this case
+        checkUninitVar("void foo(){\n"
+                       "    int* p1 = new int(314); \n"
+                       "    int* p2 = new int(); \n"
+                       "    int* arr = new int[5](); \n"
+                       "    std::cout << *p1 << *p2 << arr[0]; \n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     // class / struct..

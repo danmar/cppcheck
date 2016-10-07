@@ -649,8 +649,26 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             }
             if (var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::True)) && Token::simpleMatch(tok->next(), "= new")) {
                 *alloc = CTOR_CALL;
+
+                // type has constructor(s)
                 if (var.typeScope() && var.typeScope()->numConstructors > 0)
                     return true;
+
+                // standard or enum type: check if new initializes the allocated memory
+                if (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType()) {
+                    // scalar new with initialization
+                    if (Token::Match(tok->next(), " = new %type% ("))
+                        return true;
+
+                    // array new
+                    if (Token::Match(tok->next(), " = new %type% [")) {
+                        const Token* tokClosingBracket=tok->tokAt(4)->link();
+                        // array new with initialization
+                        if (tokClosingBracket && Token::simpleMatch(tokClosingBracket->next(), "( )"))
+                            return true;
+                    }
+                }
+
                 continue;
             }
 
