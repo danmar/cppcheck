@@ -910,17 +910,17 @@ Parameter: -l(line) (file)
     <message>
         <location filename="mainwindow.cpp" line="493"/>
         <source>C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)</source>
-        <translation type="unfinished"></translation>
+        <translation>C/C++-Sourcecode, Compile-Datenbank, Visual Studio (%1 %2 *.sln *.vcxproj)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="540"/>
         <source>Select configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Konfiguration wählen</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="540"/>
         <source>Select the configuration that will be checked</source>
-        <translation type="unfinished"></translation>
+        <translation>Wählen Sie die Konfiguration, die geprüft werden soll</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="570"/>
@@ -1087,12 +1087,12 @@ Möchten Sie die Prüfung abbrechen und Cppcheck beenden?</translation>
     <message>
         <location filename="mainwindow.cpp" line="1138"/>
         <source>Deprecated XML format</source>
-        <translation type="unfinished"></translation>
+        <translation>Veraltetes XML-Format</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1138"/>
         <source>XML format 1 is deprecated and will be removed in cppcheck 1.81.</source>
-        <translation type="unfinished"></translation>
+        <translation>XML-Format 1 ist veraltet und wird in cppcheck 1.81 entfernt.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1144"/>
@@ -1280,7 +1280,7 @@ Options:
     <message>
         <location filename="projectfile.ui" line="95"/>
         <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
+        <translation>Visual Studio</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="101"/>
@@ -1291,18 +1291,24 @@ Cppcheck can import visual studio solutions and projects.
 Files to check, include paths, configurations, defines, platform settings are imported.
 
 Library settings are not imported.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visual Studio
+
+Cppcheck kann Visual-Studio-Projektmappen und -Projekte öffnen.
+
+Zu prüfende Dateien, Includepfade, Konfigurationen, Definitionen und Plattformeinstellungen werden importiert.
+
+Bibliothekseinstellungen werden nicht importiert.</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="119"/>
         <location filename="projectfile.ui" line="166"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="142"/>
         <source>CMake</source>
-        <translation type="unfinished"></translation>
+        <translation>CMake</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="148"/>
@@ -1313,12 +1319,18 @@ Cppcheck can import files to analyse, include paths, defines from the compile da
 Platform settings are not provided in compile database and must be configured.
 
 Library settings are not provided in compile database, be careful about this configuration also.</source>
-        <translation type="unfinished"></translation>
+        <translation>Compile-Datenbank
+
+Cppcheck kann zu prüfende Dateien, Includepfade und Definitionen von der Compile-Datenbank importieren.
+
+Plattformeinstellungen werden nicht bereitgestellt und müssen konfiguriert werden.
+
+Bibliothekseinstellungen werden ebenfalls nicht bereitgestellt, geben Sie also auf deren Konfiguration acht.</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="189"/>
         <source>Other</source>
-        <translation type="unfinished"></translation>
+        <translation>Andere</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="199"/>
@@ -1351,7 +1363,7 @@ Library settings are not provided in compile database, be careful about this con
     <message>
         <location filename="projectfile.ui" line="289"/>
         <source>Include Paths:</source>
-        <translation type="unfinished"></translation>
+        <translation>Includepfade:</translation>
     </message>
     <message>
         <source>Includes</source>
@@ -1407,22 +1419,22 @@ Library settings are not provided in compile database, be careful about this con
     <message>
         <location filename="projectfiledialog.cpp" line="126"/>
         <source>Compile Database</source>
-        <translation type="unfinished"></translation>
+        <translation>Compile-Datenbank</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="128"/>
         <source>Compile database (compile_database.json)</source>
-        <translation type="unfinished"></translation>
+        <translation>Compile-Datenbank (compile_database.json)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="136"/>
         <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
+        <translation>Visual Studio</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="138"/>
         <source>Visual Studio Solution/Project (*.sln *.vcxproj)</source>
-        <translation type="unfinished"></translation>
+        <translation>Visual-Studio-Projektmappe/-Projekt (*.sln *.vcxproj)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="327"/>
