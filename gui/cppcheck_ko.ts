@@ -928,15 +928,31 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>C/C++ Source (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Unknown element</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Unknown issue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select the configuration that will be checked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Deprecated XML format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML format 1 is deprecated and will be removed in cppcheck 1.81.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1022,11 +1038,11 @@ Options:
     </message>
     <message>
         <source>Includes</source>
-        <translation>Includes</translation>
+        <translation type="obsolete">Includes</translation>
     </message>
     <message>
         <source>Include directories:</source>
-        <translation>Include 디렉토리:</translation>
+        <translation type="obsolete">Include 디렉토리:</translation>
     </message>
     <message>
         <source>Up</source>
@@ -1064,6 +1080,46 @@ Options:
         <source>Defines must be separated by a semicolon &apos;;&apos;</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Visual Studio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Visual Studio
+
+Cppcheck can import visual studio solutions and projects.
+
+Files to check, include paths, configurations, defines, platform settings are imported.
+
+Library settings are not imported.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CMake</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compile database
+
+Cppcheck can import files to analyse, include paths, defines from the compile database.
+
+Platform settings are not provided in compile database and must be configured.
+
+Library settings are not provided in compile database, be careful about this configuration also.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Include Paths:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProjectFileDialog</name>
@@ -1089,6 +1145,22 @@ Options:
     </message>
     <message>
         <source>Select error id suppress:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compile Database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compile database (compile_database.json)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Visual Studio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Visual Studio Solution/Project (*.sln *.vcxproj)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
