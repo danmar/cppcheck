@@ -976,7 +976,7 @@ void CheckCondition::alwaysTrueFalse()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
 
-            const bool constValCond = Token::Match(tok->tokAt(-2), "if|while ( %num%|%char% )"); // just one number or char inside if|while
+            const bool constValCond = Token::Match(tok->tokAt(-2), "if|while ( %num%|%char% )") && !Token::Match(tok,"0|1"); // just one number or char inside if|while
             const bool constValExpr = Token::Match(tok, "%num%|%char%") && tok->astParent() && Token::Match(tok->astParent(),"&&|%oror%|?"); // just one number or char in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
 
