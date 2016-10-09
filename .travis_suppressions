@@ -6,6 +6,7 @@ uselessAssignmentPtrArg:build/tokenize.cpp
 passedByValue:lib/symboldatabase.h
 passedByValue:lib/library.h
 knownConditionTrueFalse:lib/platform.cpp
+knownConditionTrueFalse:build/*
 *:gui/test*
 *:test/test.cxx
 *:test/cfg*
