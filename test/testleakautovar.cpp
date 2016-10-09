@@ -92,7 +92,7 @@ private:
         TEST_CASE(loop1);
 
         // mismatching allocation/deallocation
-        TEST_CASE(mismatch_fopen_free);
+        TEST_CASE(mismatchAllocDealloc);
 
         // Execution reaches a 'return'
         TEST_CASE(return1);
@@ -994,12 +994,28 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void mismatch_fopen_free() {
+    void mismatchAllocDealloc() {
         check("void f() {\n"
               "    FILE*f=fopen(fname,a);\n"
               "    free(f);\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+
+        check("void f() {\n"
+              "    char *cPtr = new char[100];\n"
+              "    delete[] cPtr;\n"
+              "    cPtr = new char[100]('x');\n"
+              "    delete[] cPtr;\n"
+              "    cPtr = new char[100];\n"
+              "    delete cPtr;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:7]: (error) Mismatching allocation and deallocation: cPtr\n", errout.str());
+
+        check("void f() {\n"
+              "    char *cPtr = new char[100];\n"
+              "    free(cPtr);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: cPtr\n", errout.str());
     }
 
     void return1() {
