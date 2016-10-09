@@ -96,6 +96,7 @@ private:
         TEST_CASE(functioncallDefaultArguments);
         TEST_CASE(nullpointer_internal_error); // #5080
         TEST_CASE(ticket6505);
+        TEST_CASE(subtract);
     }
 
     void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp") {
@@ -111,12 +112,12 @@ private:
             return;
 
         // Check for redundant code..
-        CheckNullPointer checkNullPointer(&tokenizer, &settings, this);
-        checkNullPointer.nullPointer();
+        CheckNullPointer checkNullPointer;
+        checkNullPointer.runChecks(&tokenizer, &settings, this);
 
         tokenizer.simplifyTokenList2();
 
-        checkNullPointer.nullConstantDereference();
+        checkNullPointer.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
 
@@ -2514,6 +2515,20 @@ private:
               "  foo(0);\n"
               "}\n", true, "test.c");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void subtract() {
+        check("void foo(char *s) {\n"
+              "  p = s - 20;\n"
+              "}\n"
+              "void bar() { foo(0); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n", errout.str());
+
+        check("void foo(char *s) {\n"
+              "  if (!s) {}\n"
+              "  p = s - 20;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is overflow in pointer subtraction.\n", errout.str());
     }
 };
 

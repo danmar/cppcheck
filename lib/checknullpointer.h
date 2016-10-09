@@ -47,6 +47,7 @@ public:
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckNullPointer checkNullPointer(tokenizer, settings, errorLogger);
         checkNullPointer.nullPointer();
+        checkNullPointer.arithmetic();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -96,6 +97,7 @@ private:
         c.nullPointerError(nullptr);
         c.nullPointerError(nullptr, "pointer", false, true, true);
         c.nullPointerError(nullptr, "pointer", nullptr, false);
+        c.arithmeticError(nullptr, nullptr);
     }
 
     /** Name of check */
@@ -106,7 +108,8 @@ private:
     /** class info in WIKI format. Used by --doc */
     std::string classInfo() const {
         return "Null pointers\n"
-               "- null pointer dereferencing\n";
+               "- null pointer dereferencing\n"
+               "- undefined null pointer arithmetic\n";
     }
 
     /**
@@ -120,6 +123,10 @@ private:
      * Dereferencing a pointer and then checking if it's NULL..
      */
     void nullPointerByDeRefAndChec();
+
+    /** undefined null pointer arithmetic */
+    void arithmetic();
+    void arithmeticError(const Token *tok, const ValueFlow::Value *value);
 };
 /// @}
 //---------------------------------------------------------------------------

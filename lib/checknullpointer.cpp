@@ -493,3 +493,50 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     const std::string errmsg(ValueFlow::eitherTheConditionIsRedundant(nullCheck) + " or there is possible null pointer dereference: " + varname + ".");
     reportError(callstack, Severity::warning, "nullPointerRedundantCheck", errmsg, CWE476, inconclusive);
 }
+
+void CheckNullPointer::arithmetic()
+{
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (!tok->astOperand2() || tok->str() != "-")
+                continue;
+            // pointer subtraction
+            if (!tok->valueType() || !tok->valueType()->pointer)
+                continue;
+            // Can LHS be NULL?
+            const ValueFlow::Value *value = tok->astOperand1()->getValue(0);
+            if (!value)
+                continue;
+            if (!_settings->inconclusive && value->inconclusive)
+                continue;
+            if (value->condition && !_settings->isEnabled("warning"))
+                continue;
+            arithmeticError(tok,value);
+        }
+    }
+}
+
+void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value *value)
+{
+    std::string errmsg;
+    if (value && value->condition)
+        errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is overflow in pointer subtraction.";
+    else
+        errmsg = "Overflow in pointer arithmetic, NULL pointer is subtracted.";
+
+    std::list<const Token*> callstack;
+    callstack.push_back(tok);
+    if (value && value->condition)
+        callstack.push_back(value->condition);
+
+    reportError(callstack,
+                (value && value->condition) ? Severity::warning : Severity::error,
+                (value && value->condition) ? "nullPointerArithmeticRedundantCheck" : "nullPointerArithmetic",
+                errmsg,
+                CWE(0), // unknown - pointer overflow
+                value && value->inconclusive);
+}
+
