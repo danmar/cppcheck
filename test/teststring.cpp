@@ -367,7 +367,7 @@ private:
 
     void suspiciousStringCompare_char() {
         check("bool foo(char* c) {\n"
-              "    return c == '\\0';\n"
+              "    return c == 'x';\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
 

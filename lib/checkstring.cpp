@@ -168,7 +168,7 @@ void CheckString::checkSuspiciousStringCompare()
                 continue;
             if (varTok->tokType() == Token::eString || varTok->tokType() == Token::eNumber)
                 std::swap(varTok, litTok);
-            else if (litTok->tokType() != Token::eString && litTok->tokType() != Token::eNumber)
+            else if (!Token::Match(litTok, "%char%|%num%|%str%"))
                 continue;
 
             // Pointer addition?
@@ -200,10 +200,13 @@ void CheckString::checkSuspiciousStringCompare()
                 varTok = varTok->astParent();
             const std::string varname = varTok->expressionString();
 
+            const bool ischar(litTok->tokType() == Token::eChar ||
+                              (!litTok->originalName().empty() &&
+                               litTok->originalName().front() == '\''));
             if (litTok->tokType() == Token::eString) {
                 if (_tokenizer->isC() || (var && var->isArrayOrPointer()))
                     suspiciousStringCompareError(tok, varname);
-            } else if (litTok->originalName() == "'\\0'" && var && var->isPointer()) {
+            } else if (ischar && var && var->isPointer()) {
                 suspiciousStringCompareError_char(tok, varname);
             }
         }
