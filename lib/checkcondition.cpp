@@ -991,7 +991,7 @@ void CheckCondition::alwaysTrueFalse()
 
             // Don't warn in assertions. Condition is often 'always true' by intention.
             // If platform,defines,etc cause 'always false' then that is not dangerous neither.
-            const std::string &str = tok->astParent()->previous()->str();
+            const std::string str = tok->astParent() && tok->astParent()->previous() ? tok->astParent()->previous()->str() : "";
             if (str.find("assert")!=std::string::npos || str.find("ASSERT")!=std::string::npos)
                 continue;
 
