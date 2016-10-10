@@ -328,6 +328,11 @@ private:
               "    ptr++;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?\n", errout.str());
+
+        check("void foo(int* ptr) {\n" // #3177
+              "    --ptr;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?\n", errout.str());
     }
 
     void testautovar11() { // #4641 - fp, assign local struct member address to function parameter
