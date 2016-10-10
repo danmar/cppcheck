@@ -78,7 +78,7 @@ private:
     void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname, bool isUnion = false);
     void unusedVariableError(const Token *tok, const std::string &varname);
     void allocatedButUnusedVariableError(const Token *tok, const std::string &varname);
-    void unreadVariableError(const Token *tok, const std::string &varname);
+    void unreadVariableError(const Token *tok, const std::string &varname, bool modified);
     void unassignedVariableError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -87,7 +87,7 @@ private:
         // style/warning
         c.unusedVariableError(nullptr, "varname");
         c.allocatedButUnusedVariableError(nullptr, "varname");
-        c.unreadVariableError(nullptr, "varname");
+        c.unreadVariableError(nullptr, "varname", false);
         c.unassignedVariableError(nullptr, "varname");
         c.unusedStructMemberError(nullptr, "structname", "variable");
     }

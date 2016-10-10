@@ -1130,7 +1130,8 @@ private:
                               "    int &ii(i);\n"
                               "    ii--;\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is not assigned a value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is not assigned a value.\n"
+                      "[test.cpp:5]: (style) Variable 'ii' is modified but its new value is never used.\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1138,7 +1139,8 @@ private:
                               "    int &ii=i;\n"
                               "    ii--;\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is not assigned a value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is not assigned a value.\n"
+                      "[test.cpp:5]: (style) Variable 'ii' is modified but its new value is never used.\n", errout.str());
     }
 
     void localvar8() {
@@ -3409,6 +3411,16 @@ private:
                               "        i += 5;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo() {\n"
+                              "    static int x = 0;\n"
+                              "    print(x);\n"
+                              "    if(x > 5)\n"
+                              "        x = 0;\n"
+                              "    else\n"
+                              "        x++;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarextern() {
@@ -3657,14 +3669,14 @@ private:
     }
 
     void localvardynamic3() {
-        // Ticket #3477 - False positive that 'data' is not assigned a value
+        // Ticket #3467 - False positive that 'data' is not assigned a value
         functionVariableUsage("void foo() {\n"
                               "    int* data = new int[100];\n"
                               "    int* p = data;\n"
                               "    for ( int i = 0; i < 10; ++i )\n"
                               "        p++;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'p' is modified but its new value is never used.\n", errout.str());
     }
 
     void localvararray1() {

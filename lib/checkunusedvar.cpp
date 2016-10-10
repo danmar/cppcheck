@@ -350,6 +350,8 @@ void Variables::modified(unsigned int varid, const Token* tok)
     VariableUsage *usage = find(varid);
 
     if (usage) {
+        if (!usage->_var->isStatic())
+            usage->_read = false;
         usage->_modified = true;
         usage->_lastAccess = tok;
 
@@ -1193,8 +1195,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 unassignedVariableError(usage._var->nameToken(), varname);
 
             // variable has been written but not read
-            else if (!usage._read && !usage._modified)
-                unreadVariableError(usage._lastAccess, varname);
+            else if (!usage._read)
+                unreadVariableError(usage._lastAccess, varname, usage._modified);
 
             // variable has been read but not written
             else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()))
@@ -1213,9 +1215,12 @@ void CheckUnusedVar::allocatedButUnusedVariableError(const Token *tok, const std
     reportError(tok, Severity::style, "unusedAllocatedMemory", "Variable '" + varname + "' is allocated memory that is never used.", CWE563, false);
 }
 
-void CheckUnusedVar::unreadVariableError(const Token *tok, const std::string &varname)
+void CheckUnusedVar::unreadVariableError(const Token *tok, const std::string &varname, bool modified)
 {
-    reportError(tok, Severity::style, "unreadVariable", "Variable '" + varname + "' is assigned a value that is never used.", CWE563, false);
+    if (modified)
+        reportError(tok, Severity::style, "unreadVariable", "Variable '" + varname + "' is modified but its new value is never used.", CWE563, false);
+    else
+        reportError(tok, Severity::style, "unreadVariable", "Variable '" + varname + "' is assigned a value that is never used.", CWE563, false);
 }
 
 void CheckUnusedVar::unassignedVariableError(const Token *tok, const std::string &varname)
