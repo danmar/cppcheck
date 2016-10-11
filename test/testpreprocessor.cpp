@@ -224,6 +224,7 @@ private:
         TEST_CASE(getConfigsU4);
         TEST_CASE(getConfigsU5);
         TEST_CASE(getConfigsU6);
+        TEST_CASE(getConfigsU7);
 
         TEST_CASE(validateCfg);
 
@@ -2120,6 +2121,14 @@ private:
         ASSERT_EQUALS("\nX=0\n", getConfigsStr(filedata, "-UX"));
         ASSERT_EQUALS("\nX=0\n", getConfigsStr(filedata));
     }
+
+    void getConfigsU7() {
+        const char code[] = "#ifndef Y\n"
+                            "#else\n"
+                            "#endif\n";
+        ASSERT_EQUALS("\nY\n", getConfigsStr(code, "-DX"));
+    }
+
 
     void validateCfg() {
         Settings settings;
