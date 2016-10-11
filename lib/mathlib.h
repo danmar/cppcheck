@@ -112,19 +112,20 @@ public:
     static bool isNullValue(const std::string &tok);
     /**
      * Return true if given character is 0,1,2,3,4,5,6 or 7.
-     * @param c The character to check
+     * @param[in] c The character to check
      * @return true if given character is octal digit.
      */
     static bool isOctalDigit(char c);
-    /*
-     * \param str character literal
+
+    /**
+     * \param[in] str character literal
      * @return Number of internal representation of the character literal
      * */
     static MathLib::bigint characterLiteralToLongNumber(const std::string& str);
 
     /**
-     * \param iCode Code being considered
-     * \param iPos A posision within iCode
+     * \param[in] iCode Code being considered
+     * \param[in] iPos A posision within iCode
      * \return Whether iCode[iPos] is a C++14 digit separator
      */
     static bool isDigitSeparator(const std::string& iCode, std::string::size_type iPos);
