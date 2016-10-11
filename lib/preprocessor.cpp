@@ -217,6 +217,10 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
 
 static bool hasDefine(const std::string &userDefines, const std::string &cfg)
 {
+    if (cfg.empty()) {
+        return false;
+    }
+
     std::string::size_type pos = 0;
     while (pos < userDefines.size()) {
         pos = userDefines.find(cfg, pos);
