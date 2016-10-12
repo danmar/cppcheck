@@ -166,7 +166,7 @@ void CheckString::checkSuspiciousStringCompare()
             const Token* litTok = tok->astOperand2();
             if (!varTok || !litTok)  // <- failed to create AST for comparison
                 continue;
-            if (varTok->tokType() == Token::eString || varTok->tokType() == Token::eNumber)
+            if (Token::Match(varTok, "%char%|%num%|%str%"))
                 std::swap(varTok, litTok);
             else if (!Token::Match(litTok, "%char%|%num%|%str%"))
                 continue;
@@ -200,9 +200,7 @@ void CheckString::checkSuspiciousStringCompare()
                 varTok = varTok->astParent();
             const std::string varname = varTok->expressionString();
 
-            const bool ischar(litTok->tokType() == Token::eChar ||
-                              (!litTok->originalName().empty() &&
-                               litTok->originalName().front() == '\''));
+            const bool ischar(litTok->tokType() == Token::eChar);
             if (litTok->tokType() == Token::eString) {
                 if (_tokenizer->isC() || (var && var->isArrayOrPointer()))
                     suspiciousStringCompareError(tok, varname);

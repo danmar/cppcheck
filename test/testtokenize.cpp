@@ -3698,15 +3698,13 @@ private:
     void vardecl8() {
         // ticket #696
         const char code[] = "char a[10]={'\\0'}, b[10]={'\\0'};";
-        const char res[]  = "char a [ 10 ] = { 0 } ; char b [ 10 ] = { 0 } ;";
-
+        const char res[]  = "char a [ 10 ] = { '\\0' } ; char b [ 10 ] = { '\\0' } ;";
         ASSERT_EQUALS(res, tokenizeAndStringify(code));
     }
 
     void vardecl9() {
         const char code[] = "char a[2] = {'A', '\\0'}, b[2] = {'B', '\\0'};";
-        const char res[]  = "char a [ 2 ] = { 'A' , 0 } ; char b [ 2 ] = { 'B' , 0 } ;";
-
+        const char res[]  = "char a [ 2 ] = { 'A' , '\\0' } ; char b [ 2 ] = { 'B' , '\\0' } ;";
         ASSERT_EQUALS(res, tokenizeAndStringify(code));
     }
 

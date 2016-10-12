@@ -1894,7 +1894,7 @@ void Tokenizer::simplifyNull()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "NULL" && (!Token::Match(tok->previous(), "[(,] NULL [,)]") || tok->strAt(-2) == "="))
             tok->str("0");
-        else if (tok->str() == "__null" || tok->str() == "'\\0'" || tok->str() == "'\\x0'") {
+        else if (tok->str() == "__null") {
             tok->originalName(tok->str());
             tok->str("0");
         }
