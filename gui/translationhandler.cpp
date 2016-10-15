@@ -127,7 +127,6 @@ bool TranslationHandler::SetLanguage(const QString &code)
         translationFile = appPath + "/" + mTranslations[index].mFilename + ".qm";
 
     if (!mTranslator->load(translationFile) && !failure) {
-        translationFile += ".qm";
         //If it failed, lets check if the default file exists
         if (!QFile::exists(translationFile)) {
             error = QObject::tr("Language file %1 not found!");
