@@ -1674,7 +1674,18 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 }
             }
 
-            valueFlowForward(tok, endOfVarScope, var, varid, values, constValue, tokenlist, errorLogger, settings);
+            // Skip RHS
+            const Token *nextExpression = tok->astOperand2();
+            for (;;) {
+                if (nextExpression->astOperand2())
+                    nextExpression = nextExpression->astOperand2();
+                else if (nextExpression->isUnaryPreOp())
+                    nextExpression = nextExpression->astOperand1();
+                else break;
+            }
+            nextExpression = nextExpression->next();
+
+            valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, varid, values, constValue, tokenlist, errorLogger, settings);
         }
     }
 }

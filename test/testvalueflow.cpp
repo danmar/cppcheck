@@ -772,6 +772,13 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 9));
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 8));
 
+        code = "void x() {\n"
+               "    int x = value ? 6 : 0;\n"
+               "    x =\n"
+               "        1 + x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 7));
+
         code = "void f() {\n"
                "    int x = 0;\n"
                "    y = x += z;\n"
