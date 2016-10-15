@@ -645,6 +645,19 @@ Library::Error MainWindow::LoadLibrary(Library *library, QString filename)
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
 
+#ifdef CFGDIR
+    // Try to load the library from CFGDIR..
+    const QString cfgdir = CFGDIR;
+    if (!cfgdir.isEmpty()) {
+        ret = library->load(NULL, (cfgdir+"/"+filename).toLatin1());
+        if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+            return ret;
+        ret = library->load(NULL, (cfgdir+"/cfg/"+filename).toLatin1());
+        if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+            return ret;
+    }
+#endif
+
     // Try to load the library from the cfg subfolder..
     const QString datadir = mSettings->value("DATADIR", QString()).toString();
     if (!datadir.isEmpty()) {
