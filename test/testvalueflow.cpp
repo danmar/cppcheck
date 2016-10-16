@@ -612,6 +612,12 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
 
+        code = "void f(const s *x) {\n"
+               "  x->a = 0;\n"
+               "  if (x ? x->a : 0) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
+
         code = "void f(int x, int y) {\n"
                "    a = x;\n"
                "    if (y){}\n"

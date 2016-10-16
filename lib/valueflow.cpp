@@ -990,7 +990,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
                        Token::Match(tok, "%oror%|&& %name% %oror%|&&|)")) {
                 vartok = tok->next();
                 num = 0;
-            } else if (tok->str() == "!" && tok->astOperand1() && tok->astOperand1()->isName()) {
+            } else if (Token::Match(tok, "[!?]") && Token::Match(tok->astOperand1(), "%name%")) {
                 vartok = tok->astOperand1();
                 num = 0;
             } else {
