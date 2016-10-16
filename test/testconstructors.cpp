@@ -2849,6 +2849,16 @@ private:
               "  return foobar.foo.f + foobar.bar.b;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'FooBar::bar' is not initialized in the constructor.\n", errout.str());
+
+        // #7755
+        check("struct A {\n"
+              "  A() {\n"
+              "    memset(this->data, 0, 42);\n"
+              "  }\n"
+              "  char data[42];\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void privateCtor1() {

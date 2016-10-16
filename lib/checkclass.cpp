@@ -633,7 +633,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             if (ftok->str() == "::")
                 ftok = ftok->next();
             int offsetToMember = 4;
-            if (ftok->tokAt(ftok->strAt(2) == "&"))
+            if (ftok->strAt(2) == "&")
                 ++offsetToMember;
             assignVar(ftok->tokAt(offsetToMember)->varId(), scope, usage);
             ftok = ftok->linkAt(1);
