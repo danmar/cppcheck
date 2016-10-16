@@ -346,6 +346,10 @@ static unsigned int encodeMultiChar(const std::string& str)
     return retval;
 }
 
+static bool isoctal(int c) {
+    return c>='0' && c<='7';
+}
+
 MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
 {
     if (str.empty())
@@ -354,6 +358,11 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
     // '\xF6'
     if (str.size() == 4 && str.compare(0,2,"\\x")==0 && std::isxdigit(str[2]) && std::isxdigit(str[3])) {
         return std::strtoul(str.substr(2).c_str(), NULL, 16);
+    }
+
+    // '\123'
+    if (str.size() == 4 && str[0] == '\\' && isoctal(str[1]) && isoctal(str[2]) && isoctal(str[3])) {
+        return (char)std::strtoul(str.substr(1).c_str(), NULL, 8);
     }
 
     // C99 6.4.4.4

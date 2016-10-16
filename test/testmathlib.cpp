@@ -275,6 +275,9 @@ private:
 
         // from char
         ASSERT_EQUALS((int)('A'),    MathLib::toLongNumber("'A'"));
+        ASSERT_EQUALS((int)('\x10'), MathLib::toLongNumber("'\\x10'"));
+        ASSERT_EQUALS((int)('\100'), MathLib::toLongNumber("'\\100'"));
+        ASSERT_EQUALS((int)('\200'), MathLib::toLongNumber("'\\200'"));
 #ifdef __GNUC__
         // BEGIN Implementation-specific results
         ASSERT_EQUALS((int)('AB'),    MathLib::toLongNumber("'AB'"));
