@@ -34,27 +34,27 @@ namespace cppcheck {
     */
     class CPPCHECKLIB Platform {
     private:
-        long long min_value(int sz) const {
-            if (sz >= 64)
+        long long min_value(int bit) const {
+            if (bit >= 64)
                 return 1LL << 63;
-            return -(1LL << (sz-1));
+            return -(1LL << (bit-1));
         }
 
-        long long max_value(int sz) const {
-            if (sz >= 64)
+        long long max_value(int bit) const {
+            if (bit >= 64)
                 return (~0ULL) >> 1;
-            return (1LL << (sz-1)) - 1LL;
+            return (1LL << (bit-1)) - 1LL;
         }
     public:
         Platform();
         virtual ~Platform() {}
 
         bool isIntValue(long long value) const {
-            return value >= min_value(sizeof_int) && value <= max_value(sizeof_int);
+            return value >= min_value(int_bit) && value <= max_value(int_bit);
         }
 
         bool isLongValue(long long value) const {
-            return value >= min_value(sizeof_long) && value <= max_value(sizeof_long);
+            return value >= min_value(long_bit) && value <= max_value(long_bit);
         }
 
         unsigned int char_bit;       /// bits in char

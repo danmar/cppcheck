@@ -3862,9 +3862,9 @@ private:
         ASSERT_EQUALS("", ValueType().str());
 
         Settings s;
-        s.sizeof_int = 16;
-        s.sizeof_long = 32;
-        s.sizeof_long_long = 64;
+        s.int_bit = 16;
+        s.long_bit = 32;
+        s.long_long_bit = 64;
 
         // numbers
         ASSERT_EQUALS("signed int", typeOf("1", "1", "test.c", &s));
