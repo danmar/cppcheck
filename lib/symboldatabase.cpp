@@ -4535,7 +4535,16 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
                 ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, type, 0U), cpp, defsign, settings);
             } else if (MathLib::isInt(tok->str())) {
                 ValueType::Sign sign = ValueType::Sign::SIGNED;
-                ValueType::Type type = ValueType::Type::INT;
+                ValueType::Type type;
+                const MathLib::bigint value = MathLib::toLongNumber(tok->str());
+                if (settings->platformType == cppcheck::Platform::Unspecified)
+                    type = ValueType::Type::INT;
+                else if (settings->isIntValue(value))
+                    type = ValueType::Type::INT;
+                else if (settings->isLongValue(value))
+                    type = ValueType::Type::LONG;
+                else
+                    type = ValueType::Type::LONGLONG;
                 if (MathLib::isIntHex(tok->str()))
                     sign = ValueType::Sign::UNSIGNED;
                 for (std::size_t pos = tok->str().size() - 1U; pos > 0U; --pos) {

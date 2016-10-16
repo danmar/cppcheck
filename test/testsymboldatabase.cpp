@@ -3846,8 +3846,8 @@ private:
         }
     }
 
-    std::string typeOf(const char code[], const char pattern[], const char filename[] = "test.cpp") {
-        Tokenizer tokenizer(&settings2, this);
+    std::string typeOf(const char code[], const char pattern[], const char filename[] = "test.cpp", const Settings *settings = nullptr) {
+        Tokenizer tokenizer(settings ? settings : &settings2, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
         const Token* tok;
@@ -3861,8 +3861,16 @@ private:
         // stringification
         ASSERT_EQUALS("", ValueType().str());
 
+        Settings s;
+        s.sizeof_int = 16;
+        s.sizeof_long = 32;
+        s.sizeof_long_long = 64;
+
         // numbers
-        ASSERT_EQUALS("signed int", typeOf("1", "1"));
+        ASSERT_EQUALS("signed int", typeOf("1", "1", "test.c", &s));
+        ASSERT_EQUALS("signed int", typeOf("32767", "32767", "test.c", &s));
+        ASSERT_EQUALS("signed long", typeOf("32768", "32768", "test.c", &s));
+        ASSERT_EQUALS("signed long long", typeOf("2147483648", "2147483648", "test.c", &s));
         ASSERT_EQUALS("unsigned int", typeOf("1U", "1U"));
         ASSERT_EQUALS("signed long", typeOf("1L", "1L"));
         ASSERT_EQUALS("unsigned long", typeOf("1UL", "1UL"));
