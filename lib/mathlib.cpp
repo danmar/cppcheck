@@ -346,7 +346,8 @@ static unsigned int encodeMultiChar(const std::string& str)
     return retval;
 }
 
-static bool isoctal(int c) {
+static bool isoctal(int c)
+{
     return c>='0' && c<='7';
 }
 
