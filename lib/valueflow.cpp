@@ -407,7 +407,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
     }
 
     // Calculations..
-    else if ((parent->isArithmeticalOp() || parent->isComparisonOp() || (parent->tokType() == Token::eBitOp)) &&
+    else if ((parent->isArithmeticalOp() || parent->isComparisonOp() || (parent->tokType() == Token::eBitOp) || (parent->tokType() == Token::eLogicalOp)) &&
              parent->astOperand1() &&
              parent->astOperand2()) {
         const bool known = ((parent->astOperand1()->values.size() == 1U &&
@@ -503,11 +503,17 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                         setTokenValue(parent, result);
                         break;
                     case '&':
-                        result.intvalue = value1->intvalue & value2->intvalue;
+                        if (parent->str() == "&")
+                            result.intvalue = value1->intvalue & value2->intvalue;
+                        else
+                            result.intvalue = value1->intvalue && value2->intvalue;
                         setTokenValue(parent, result);
                         break;
                     case '|':
-                        result.intvalue = value1->intvalue | value2->intvalue;
+                        if (parent->str() == "|")
+                            result.intvalue = value1->intvalue | value2->intvalue;
+                        else
+                            result.intvalue = value1->intvalue || value2->intvalue;
                         setTokenValue(parent, result);
                         break;
                     case '^':
@@ -2323,6 +2329,68 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
     }
 }
 
+static void setTokenValues(Token *tok, const std::list<ValueFlow::Value> &values)
+{
+    for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
+        const ValueFlow::Value &value = *it;
+        if (!value.tokvalue)
+            setTokenValue(tok, value);
+    }
+}
+
+static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue, const Settings *settings)
+{
+    std::istringstream istr(returnValue);
+    TokenList tokenList(settings);
+    if (!tokenList.createTokens(istr))
+        return;
+
+    const Token *arg1 = tok->astOperand2();
+    while (arg1 && arg1->str() == ",")
+        arg1 = arg1->astOperand1();
+    if (Token::findsimplematch(tokenList.front(), "arg1") && !arg1)
+        return;
+
+    if (Token::simpleMatch(tokenList.front(), "strlen ( arg1 )") && arg1) {
+        for (std::list<ValueFlow::Value>::const_iterator it = arg1->values.begin(); it != arg1->values.end(); ++it) {
+            const ValueFlow::Value &value = *it;
+            if (value.tokvalue && value.tokvalue->tokType() == Token::eString) {
+                ValueFlow::Value retval(value); // copy all "inconclusive", "condition", etc attributes
+                // set return value..
+                retval.tokvalue = nullptr;
+                retval.intvalue = Token::getStrLength(value.tokvalue);
+                setTokenValue(tok, retval);
+            }
+        }
+        return;
+    }
+
+    // combine operators, set links, etc..
+    for (Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
+        if (Token::Match(tok2, "[!<>=] =")) {
+            tok2->str(tok2->str() + "=");
+            tok2->deleteNext();
+        }
+    }
+
+    // Evaluate expression
+    tokenList.createAst();
+    valueFlowNumber(&tokenList);
+    for (Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
+        if (tok2->str() == "arg1" && arg1) {
+            setTokenValues(tok2, arg1->values);
+        }
+    }
+
+    // Find result..
+    for (const Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
+        if (!tok2->astParent() && !tok2->values.empty()) {
+            setTokenValues(tok, tok2->values);
+            return;
+        }
+    }
+}
+
 static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -2330,8 +2398,13 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             continue;
 
         const Function * const currentFunction = tok->function();
-        if (!currentFunction)
+        if (!currentFunction) {
+            // library function?
+            const std::string returnValue(settings->library.returnValue(tok));
+            if (!returnValue.empty())
+                valueFlowLibraryFunction(tok->next(), returnValue, settings);
             continue;
+        }
 
         // Function scope..
         const Scope * const functionScope = currentFunction->functionScope;

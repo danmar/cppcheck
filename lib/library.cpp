@@ -545,6 +545,8 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             leakignore.insert(name);
         else if (functionnodename == "use-retval")
             _useretval.insert(name);
+        else if (functionnodename == "returnValue" && functionnode->GetText())
+            _returnValue[name] = functionnode->GetText();
         else if (functionnodename == "arg") {
             const char* argNrString = functionnode->Attribute("nr");
             if (!argNrString)
@@ -983,6 +985,14 @@ bool Library::isUseRetVal(const Token* ftok) const
 {
     return (!isNotLibraryFunction(ftok) &&
             _useretval.find(getFunctionName(ftok)) != _useretval.end());
+}
+
+std::string Library::returnValue(const Token *ftok) const
+{
+    if (isNotLibraryFunction(ftok))
+        return std::string();
+    std::map<std::string, std::string>::const_iterator it = _returnValue.find(getFunctionName(ftok));
+    return it != _returnValue.end() ? it->second : std::string();
 }
 
 bool Library::isnoreturn(const Token *ftok) const
