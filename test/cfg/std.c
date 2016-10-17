@@ -3684,3 +3684,26 @@ void invalidPrintfArgType_printf(void)
     // cppcheck-suppress invalidPrintfArgType_uint
     printf("%"PRIi16"\n", n);
 }
+
+
+#define AssertAlwaysTrue(C)  if (C) {}
+
+void valueFlow(void)
+{
+    const char abc[] = "abc";
+    int three = 3, minusThree = -3;
+    int c0='0', ca='a';
+
+    // When adding functions below, please sort alphabetically.
+
+    // cppcheck-suppress knownConditionTrueFalse
+    AssertAlwaysTrue(strlen(abc) == 3);
+    // cppcheck-suppress knownConditionTrueFalse
+    AssertAlwaysTrue(abs(three) == 3);
+    // cppcheck-suppress knownConditionTrueFalse
+    AssertAlwaysTrue(abs(minusThree) == 3);
+    // cppcheck-suppress knownConditionTrueFalse
+    AssertAlwaysTrue(isdigit(c0) == 1);
+    // cppcheck-suppress knownConditionTrueFalse
+    AssertAlwaysTrue(isdigit(ca) == 0);
+}
