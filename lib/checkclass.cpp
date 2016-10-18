@@ -384,7 +384,7 @@ void CheckClass::noCopyConstructorError(const Token *tok, const std::string &cla
 {
     // The constructor might be intentionally missing. Therefore this is not a "warning"
     reportError(tok, Severity::style, "noCopyConstructor",
-                "'" + std::string(isStruct ? "struct" : "class") + " " + classname +
+                std::string(isStruct ? "struct" : "class") + " '" + classname +
                 "' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.", CWE398, false);
 }
 
