@@ -282,7 +282,8 @@ void CheckOther::warningOldStylePointerCast()
             if (tok->strAt(3) == "const")
                 tok = tok->next();
 
-            if (tok->strAt(4) == "0") // Casting nullpointers is safe
+            const Token *p = tok->tokAt(4);
+            if (p->hasKnownIntValue() && p->values.front().intvalue==0) // Casting nullpointers is safe
                 continue;
 
             // Is "type" a class?
