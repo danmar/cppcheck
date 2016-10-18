@@ -3039,6 +3039,7 @@ void ignoredReturnValue_abs(int i)
     // cppcheck-suppress ignoredReturnValue
     std::abs(i);
     // cppcheck-suppress constStatement
+    // cppcheck-suppress ignoredReturnValue
     std::abs(-199);
 }
 
