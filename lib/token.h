@@ -748,6 +748,10 @@ public:
     /** Values of token */
     std::list<ValueFlow::Value> values;
 
+    bool hasKnownIntValue() const {
+        return values.size() == 1U && values.front().isKnown() && values.front().tokvalue == nullptr;
+    }
+
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = values.begin(); it != values.end(); ++it) {

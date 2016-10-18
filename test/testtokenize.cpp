@@ -241,7 +241,6 @@ private:
         TEST_CASE(simplify_constants4);
         TEST_CASE(simplify_constants5);
         TEST_CASE(simplify_constants6);     // Ticket #5625: Ternary operator as template parameter
-        TEST_CASE(simplifyNull);
         TEST_CASE(simplifyMulAndParens);    // Ticket #2784 + #3184
 
         TEST_CASE(simplifyStructDecl);
@@ -2675,7 +2674,7 @@ private:
                             "    nr = (last = list->prev)->nr;\n"  // <- don't replace "last" with 0
                             "}\n";
         const char expected[] = "void f ( struct ABC * list ) {\n"
-                                "struct ABC * last ; last = 0 ;\n"
+                                "struct ABC * last ; last = NULL ;\n"
                                 "nr = ( last = list . prev ) . nr ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
@@ -3394,24 +3393,6 @@ private:
         }
     }
 
-    void simplifyNull() {
-        {
-            const char code[] =
-                "int * p = NULL;\n"
-                "int * q = __null;\n";
-            const char expected[] =
-                "int * p ; p = 0 ;\nint * q ; q = 0 ;";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
-        }
-
-        ASSERT_EQUALS("( a == nullptr )", tokenizeAndStringify("(a==nullptr)", false, false, Settings::Native, "test.c"));
-        ASSERT_EQUALS("( a == 0 )", tokenizeAndStringify("(a==nullptr)", false, false, Settings::Native, "test.cpp"));
-
-        ASSERT_EQUALS("if ( p == 0 )", tokenizeAndStringify("if (p==NULL)"));
-        ASSERT_EQUALS("f ( NULL ) ;", tokenizeAndStringify("f(NULL);"));
-        ASSERT_EQUALS("char * i ; i = 0 ;", tokenizeAndStringify("char* i = (NULL);"));
-    }
-
     void simplifyMulAndParens() {
         // (error) Resource leak
         const char code[] = "void f() {"
@@ -3482,19 +3463,19 @@ private:
         // ticket #346
 
         const char code1[] = "void *p = NULL;";
-        const char res1[]  = "void * p ; p = 0 ;";
+        const char res1[]  = "void * p ; p = NULL ;";
         ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
 
         const char code2[] = "const void *p = NULL;";
-        const char res2[]  = "const void * p ; p = 0 ;";
+        const char res2[]  = "const void * p ; p = NULL ;";
         ASSERT_EQUALS(res2, tokenizeAndStringify(code2));
 
         const char code3[] = "void * const p = NULL;";
-        const char res3[]  = "void * const p ; p = 0 ;";
+        const char res3[]  = "void * const p ; p = NULL ;";
         ASSERT_EQUALS(res3, tokenizeAndStringify(code3));
 
         const char code4[] = "const void * const p = NULL;";
-        const char res4[]  = "const void * const p ; p = 0 ;";
+        const char res4[]  = "const void * const p ; p = NULL ;";
         ASSERT_EQUALS(res4, tokenizeAndStringify(code4));
     }
 
@@ -3562,7 +3543,7 @@ private:
 
         // ticket #3927
         const char code3[] = "union xy *p = NULL;";
-        ASSERT_EQUALS("union xy * p ; p = 0 ;", tokenizeAndStringify(code3));
+        ASSERT_EQUALS("union xy * p ; p = NULL ;", tokenizeAndStringify(code3));
     }
 
     void vardecl_par() {

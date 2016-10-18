@@ -1707,7 +1707,7 @@ private:
         {
             const char code[] = "typedef int RexxFunctionHandler();\n"
                                 "RexxFunctionHandler *(efuncs[]) = { NULL, NULL };";
-            const char expected[] = "int ( * ( efuncs [ ] ) ) ( ) = { 0 , 0 } ;";
+            const char expected[] = "int ( * ( efuncs [ ] ) ) ( ) = { NULL , NULL } ;";
             ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }

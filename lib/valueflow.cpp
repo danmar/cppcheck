@@ -604,7 +604,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
 
 
 // Handle various constants..
-static Token * valueFlowSetConstantValue(const Token *tok, const Settings *settings)
+static Token * valueFlowSetConstantValue(const Token *tok, const Settings *settings, bool cpp)
 {
     if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
         ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
@@ -612,6 +612,10 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
         setTokenValue(const_cast<Token *>(tok), value);
     } else if (tok->enumerator() && tok->enumerator()->value_known) {
         ValueFlow::Value value(tok->enumerator()->value);
+        value.setKnown();
+        setTokenValue(const_cast<Token *>(tok), value);
+    } else if (tok->str() == "NULL" || (cpp && tok->str() == "nullptr")) {
+        ValueFlow::Value value(0);
         value.setKnown();
         setTokenValue(const_cast<Token *>(tok), value);
     } else if (Token::simpleMatch(tok, "sizeof (") && tok->tokAt(2)) {
@@ -655,7 +659,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
 static void valueFlowNumber(TokenList *tokenlist)
 {
     for (Token *tok = tokenlist->front(); tok;) {
-        tok = valueFlowSetConstantValue(tok, tokenlist->getSettings());
+        tok = valueFlowSetConstantValue(tok, tokenlist->getSettings(), tokenlist->isCPP());
     }
 
     if (tokenlist->isCPP()) {
@@ -983,12 +987,12 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
             MathLib::bigint num = 0;
             const Token *vartok = nullptr;
             if (tok->isComparisonOp() && tok->astOperand1() && tok->astOperand2()) {
-                if (tok->astOperand1()->isName() && tok->astOperand2()->isNumber()) {
+                if (tok->astOperand1()->isName() && tok->astOperand2()->hasKnownIntValue()) {
                     vartok = tok->astOperand1();
-                    num = MathLib::toLongNumber(tok->astOperand2()->str());
-                } else if (tok->astOperand1()->isNumber() && tok->astOperand2()->isName()) {
+                    num = tok->astOperand2()->values.front().intvalue;
+                } else if (tok->astOperand1()->hasKnownIntValue() && tok->astOperand2()->isName()) {
                     vartok = tok->astOperand2();
-                    num = MathLib::toLongNumber(tok->astOperand1()->str());
+                    num = tok->astOperand1()->values.front().intvalue;
                 } else {
                     continue;
                 }
@@ -1708,7 +1712,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
             if (Token::Match(tok, "==|!=|>=|<=")) {
                 if (!tok->astOperand1() || !tok->astOperand2())
                     continue;
-                if (tok->astOperand1()->isNumber()) {
+                if (tok->astOperand1()->hasKnownIntValue()) {
                     numtok = tok->astOperand1();
                     vartok = tok->astOperand2();
                 } else {
@@ -1717,7 +1721,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 }
                 if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                     vartok = vartok->astOperand1();
-                if (!vartok->isName() || !numtok->isNumber() || !MathLib::isInt(numtok->str()))
+                if (!vartok->isName() || !numtok->hasKnownIntValue())
                     continue;
             } else if (tok->str() == "!") {
                 vartok = tok->astOperand1();
@@ -1742,7 +1746,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
             if (!var || !(var->isLocal() || var->isArgument()))
                 continue;
             std::list<ValueFlow::Value> values;
-            values.push_back(ValueFlow::Value(tok, numtok ? MathLib::toLongNumber(numtok->str()) : 0LL));
+            values.push_back(ValueFlow::Value(tok, numtok ? numtok->values.front().intvalue : 0LL));
 
             if (Token::Match(tok->astParent(), "%oror%|&&")) {
                 Token *parent = const_cast<Token*>(tok->astParent());
@@ -2549,7 +2553,7 @@ const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(const Token *expr, c
     if (expr && expr->values.empty()) {
         valueFlowConstantFoldAST(expr->astOperand1(), settings);
         valueFlowConstantFoldAST(expr->astOperand2(), settings);
-        valueFlowSetConstantValue(expr, settings);
+        valueFlowSetConstantValue(expr, settings, true /* TODO: this is a guess */);
     }
     return expr && expr->values.size() == 1U && expr->values.front().isKnown() ? &expr->values.front() : nullptr;
 }

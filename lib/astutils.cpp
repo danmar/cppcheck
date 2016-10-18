@@ -83,6 +83,15 @@ std::string astCanonicalType(const Token *expr)
     return "";
 }
 
+static bool match(const Token *tok, const std::string &rhs)
+{
+    if (tok->str() == rhs)
+        return true;
+    if (tok->isName() && !tok->varId() && tok->values.size() == 1U && tok->values.front().isKnown() && MathLib::toString(tok->values.front().intvalue) == rhs)
+        return true;
+    return false;
+}
+
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok)
 {
     if (!tok)
@@ -90,7 +99,7 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 
     const Token *ret = nullptr;
     if (tok->isComparisonOp()) {
-        if (tok->astOperand1() && tok->astOperand1()->str() == rhs) {
+        if (tok->astOperand1() && match(tok->astOperand1(), rhs)) {
             // Invert comparator
             std::string s = tok->str();
             if (s[0] == '>')
@@ -100,7 +109,7 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
             if (s == comp) {
                 ret = tok->astOperand2();
             }
-        } else if (tok->str() == comp && tok->astOperand2() && tok->astOperand2()->str() == rhs) {
+        } else if (tok->str() == comp && tok->astOperand2() && match(tok->astOperand2(), rhs)) {
             ret = tok->astOperand1();
         }
     } else if (comp == "!=" && rhs == std::string("0")) {

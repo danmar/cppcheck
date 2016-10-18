@@ -1669,7 +1669,7 @@ private:
               "        return;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (warning) Either the condition 'p==0' is redundant or there is possible null pointer dereference: p.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (warning) Either the condition 'p==NULL' is redundant or there is possible null pointer dereference: p.\n", errout.str());
 
         // check, and use
         check("void f(struct X *p, int x) {\n"
@@ -1689,7 +1689,7 @@ private:
             ASSERT_EQUALS("", errout.str());
 
             check(code, true);     // inconclusive
-            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning, inconclusive) Either the condition 'fred==0' is redundant or there is possible null pointer dereference: fred.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning, inconclusive) Either the condition 'fred==NULL' is redundant or there is possible null pointer dereference: fred.\n", errout.str());
         }
 
         check("void f(char *s) {\n"   // #3358

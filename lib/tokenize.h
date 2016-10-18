@@ -468,8 +468,6 @@ public:
 
     void combineStringAndCharLiterals();
 
-    void simplifyNull();
-
     void concatenateNegativeNumberAndAnyPositive();
 
     void simplifyExternC();

@@ -1592,7 +1592,7 @@ private:
                                "{ "
                                "FILE * f ; "
                                "f = fopen ( \"foo\" , \"r\" ) ; "
-                               "if ( f == 0 ) "
+                               "if ( f == NULL ) "
                                "{ "
                                "return -1 ; "
                                "} "
@@ -1669,7 +1669,7 @@ private:
         ASSERT_EQUALS("char * s ; do { s = new char [ 10 ] ; } while ( ! s ) ;",
                       tok("char *s; do { } while (0 == (s=new char[10]));"));
         // #4911
-        ASSERT_EQUALS("; do { current = f ( ) ; } while ( ( current ) != 0 ) ;", simplifyIfAndWhileAssign(";do { } while((current=f()) != NULL);"));
+        ASSERT_EQUALS("; do { current = f ( ) ; } while ( ( current ) != NULL ) ;", simplifyIfAndWhileAssign(";do { } while((current=f()) != NULL);"));
     }
 
     void not1() {

@@ -1889,26 +1889,6 @@ void Tokenizer::combineStringAndCharLiterals()
     }
 }
 
-void Tokenizer::simplifyNull()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "NULL" && (!Token::Match(tok->previous(), "[(,] NULL [,)]") || tok->strAt(-2) == "="))
-            tok->str("0");
-        else if (tok->str() == "__null") {
-            tok->originalName(tok->str());
-            tok->str("0");
-        }
-    }
-
-    // nullptr..
-    if (isCPP() && _settings->standards.cpp == Standards::CPP11) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (tok->str() == "nullptr")
-                tok->str("0");
-        }
-    }
-}
-
 void Tokenizer::concatenateNegativeNumberAndAnyPositive()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -3361,9 +3341,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Simplify the C alternative tokens (and, or, etc.)
     simplifyCAlternativeTokens();
-
-    // replace 'NULL' and similar '0'-defined macros with '0'
-    simplifyNull();
 
     // replace 'sin(0)' to '0' and other similar math expressions
     simplifyMathExpressions();
