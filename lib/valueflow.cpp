@@ -2497,7 +2497,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
 
         // Arguments..
         std::vector<MathLib::bigint> parvalues;
-        {
+        if (tok->astOperand2()) {
             const Token *partok = tok->astOperand2();
             while (partok && partok->str() == "," && constval(partok->astOperand2()))
                 partok = partok->astOperand1();
@@ -2517,7 +2517,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         const Function * const function = tok->astOperand1()->function();
         const Scope * const functionScope = function->functionScope;
         if (!functionScope || !Token::simpleMatch(functionScope->classStart, "{ return")) {
-            if (functionScope && settings->debugwarnings)
+            if (functionScope && settings->debugwarnings && Token::findsimplematch(functionScope->classStart, "return", functionScope->classEnd))
                 bailout(tokenlist, errorLogger, tok, "function return; nontrivial function body");
             continue;
         }
@@ -2533,7 +2533,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
             }
             programMemory.setIntValue(arg->declarationId(), parvalues[i]);
         }
-        if (programMemory.empty())
+        if (programMemory.empty() && !parvalues.empty())
             continue;
 
         // Determine return value of subfunction..
@@ -2543,8 +2543,13 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
                 &programMemory,
                 &result,
                 &error);
-        if (!error)
-            setTokenValue(tok, ValueFlow::Value(result));
+        if (!error) {
+            ValueFlow::Value v(result);
+            if (functionScope->classStart->next()->astOperand1()->hasKnownIntValue())
+                v.setKnown();
+            // TODO: Known input parameters => known return value
+            setTokenValue(tok, v);
+        }
     }
 }
 

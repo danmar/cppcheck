@@ -1761,7 +1761,7 @@ private:
     void valueFlowFunctionReturn() {
         const char *code;
 
-        code = "void f1(int x) {\n"
+        code = "int f1(int x) {\n"
                "  return x+1;\n"
                "}\n"
                "void f2() {\n"
@@ -1769,13 +1769,17 @@ private:
                "}";
         ASSERT_EQUALS(7, valueOfTok(code, "-").intvalue);
 
-        code = "void add(int x, int y) {\n"
+        code = "int add(int x, int y) {\n"
                "  return x+y;\n"
                "}\n"
                "void f2() {\n"
                "    x = 1 * add(10+1,4);\n"
                "}";
         ASSERT_EQUALS(15, valueOfTok(code, "*").intvalue);
+
+        code = "int one() { return 1; }\n"
+               "void f() { x = 1 * one(); }";
+        ASSERT_EQUALS(1, valueOfTok(code, "*").intvalue);
     }
 
     void valueFlowFunctionDefaultParameter() {
