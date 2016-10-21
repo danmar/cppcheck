@@ -1138,7 +1138,7 @@ private:
                                 "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:28]: (debug) ValueFlow bailout: function return; nontrivial function body\n", errout.str());
     }
 
     void simplifyTypedef36() {
@@ -2160,7 +2160,7 @@ private:
                             "    return fred;\n"
                             "}";
         tok(code);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: function return; nontrivial function body\n", errout.str());
     }
 
     void simplifyTypedef101() { // ticket #3003 (segmentation fault)
