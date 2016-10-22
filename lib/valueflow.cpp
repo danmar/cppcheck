@@ -2484,9 +2484,9 @@ static void valueFlowFunctionDefaultParameter(TokenList *tokenlist, SymbolDataba
     }
 }
 
-static bool constval(const Token * tok)
+static bool isKnown(const Token * tok)
 {
-    return tok && tok->values.size() == 1U && tok->values.front().varId == 0U;
+    return tok && tok->hasKnownIntValue();
 }
 
 static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
@@ -2499,9 +2499,9 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         std::vector<MathLib::bigint> parvalues;
         if (tok->astOperand2()) {
             const Token *partok = tok->astOperand2();
-            while (partok && partok->str() == "," && constval(partok->astOperand2()))
+            while (partok && partok->str() == "," && isKnown(partok->astOperand2()))
                 partok = partok->astOperand1();
-            if (!constval(partok))
+            if (!isKnown(partok))
                 continue;
             parvalues.push_back(partok->values.front().intvalue);
             partok = partok->astParent();
@@ -2545,9 +2545,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
                 &error);
         if (!error) {
             ValueFlow::Value v(result);
-            if (functionScope->classStart->next()->astOperand1()->hasKnownIntValue())
-                v.setKnown();
-            // TODO: Known input parameters => known return value
+            v.setKnown();
             setTokenValue(tok, v);
         }
     }

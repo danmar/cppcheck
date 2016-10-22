@@ -1768,6 +1768,7 @@ private:
                "    x = 10 - f1(2);\n"
                "}";
         ASSERT_EQUALS(7, valueOfTok(code, "-").intvalue);
+        ASSERT_EQUALS(true, valueOfTok(code, "-").isKnown());
 
         code = "int add(int x, int y) {\n"
                "  return x+y;\n"
@@ -1776,10 +1777,12 @@ private:
                "    x = 1 * add(10+1,4);\n"
                "}";
         ASSERT_EQUALS(15, valueOfTok(code, "*").intvalue);
+        ASSERT_EQUALS(true, valueOfTok(code, "*").isKnown());
 
         code = "int one() { return 1; }\n"
                "void f() { x = 1 * one(); }";
         ASSERT_EQUALS(1, valueOfTok(code, "*").intvalue);
+        ASSERT_EQUALS(true, valueOfTok(code, "*").isKnown());
     }
 
     void valueFlowFunctionDefaultParameter() {
