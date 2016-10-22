@@ -1783,6 +1783,15 @@ private:
                "void f() { x = 1 * one(); }";
         ASSERT_EQUALS(1, valueOfTok(code, "*").intvalue);
         ASSERT_EQUALS(true, valueOfTok(code, "*").isKnown());
+
+        code = "int add(int x, int y) {\n"
+               "  return x+y;\n"
+               "}\n"
+               "void f2() {\n"
+               "    x = 1 * add(1,add(2,3));\n"
+               "}";
+        ASSERT_EQUALS(6, valueOfTok(code, "*").intvalue);
+        ASSERT_EQUALS(true, valueOfTok(code, "*").isKnown());
     }
 
     void valueFlowFunctionDefaultParameter() {
