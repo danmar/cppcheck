@@ -253,6 +253,7 @@ private:
         TEST_CASE(symboldatabase52); // #6581
         TEST_CASE(symboldatabase53); // #7124 (library podtype)
         TEST_CASE(symboldatabase54); // #7257
+        TEST_CASE(symboldatabase55); // #7767 (return unknown macro)
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -2649,6 +2650,18 @@ private:
         if (db) {
             ASSERT_EQUALS(1U, db->functionScopes.size());
             ASSERT_EQUALS("getReg", db->functionScopes.front()->className);
+        }
+    }
+
+    void symboldatabase55() { // #7767
+        GET_SYMBOL_DB("PRIVATE S32 testfunc(void) {\n"
+                      "    return 0;\n"
+                      "}");
+
+        ASSERT(db != nullptr);
+        if (db) {
+            ASSERT_EQUALS(1U, db->functionScopes.size());
+            ASSERT_EQUALS("testfunc", db->functionScopes.front()->className);
         }
     }
 
