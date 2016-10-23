@@ -166,6 +166,7 @@ public:
     bool isUseRetVal(const Token* ftok) const;
 
     std::string returnValue(const Token *ftok) const;
+    std::string returnValueType(const Token *ftok) const;
 
     bool isnoreturn(const Token *ftok) const;
     bool isnotnoreturn(const Token *ftok) const;
@@ -481,6 +482,7 @@ private:
     std::set<std::string> _functions;
     std::map<std::string, bool> _noreturn; // is function noreturn?
     std::map<std::string, std::string> _returnValue;
+    std::map<std::string, std::string> _returnValueType;
     std::set<std::string> _ignorefunction; // ignore functions/macros from a library (gtk, qt etc)
     std::map<std::string, bool> _reporterrors;
     std::map<std::string, bool> _processAfterCode;

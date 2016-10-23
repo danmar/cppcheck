@@ -545,9 +545,12 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             leakignore.insert(name);
         else if (functionnodename == "use-retval")
             _useretval.insert(name);
-        else if (functionnodename == "returnValue" && functionnode->GetText())
+        else if (functionnodename == "returnValue" && functionnode->GetText()) {
             _returnValue[name] = functionnode->GetText();
-        else if (functionnodename == "arg") {
+            const char *type = functionnode->Attribute("type");
+            if (type)
+                _returnValueType[name] = type;
+        } else if (functionnodename == "arg") {
             const char* argNrString = functionnode->Attribute("nr");
             if (!argNrString)
                 return Error(MISSING_ATTRIBUTE, "nr");
@@ -993,6 +996,14 @@ std::string Library::returnValue(const Token *ftok) const
         return std::string();
     std::map<std::string, std::string>::const_iterator it = _returnValue.find(getFunctionName(ftok));
     return it != _returnValue.end() ? it->second : std::string();
+}
+
+std::string Library::returnValueType(const Token *ftok) const
+{
+    if (isNotLibraryFunction(ftok))
+        return std::string();
+    std::map<std::string, std::string>::const_iterator it = _returnValueType.find(getFunctionName(ftok));
+    return it != _returnValueType.end() ? it->second : std::string();
 }
 
 bool Library::isnoreturn(const Token *ftok) const

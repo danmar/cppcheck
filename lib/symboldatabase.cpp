@@ -4602,6 +4602,12 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
                     ::setValueType(tok, valuetype, cpp, defsign, settings);
             }
 
+            // library function
+            else if (tok->previous() && settings->library.returnValueType(tok->previous()) == "int") {
+                ValueType valuetype(ValueType::Sign::SIGNED, ValueType::Type::INT, 0U);
+                ::setValueType(tok, valuetype, cpp, defsign, settings);
+            }
+
             else if (Token::simpleMatch(tok->previous(), "sizeof (")) {
                 // TODO: use specified size_t type
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
