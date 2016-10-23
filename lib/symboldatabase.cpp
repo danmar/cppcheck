@@ -4602,12 +4602,6 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
                     ::setValueType(tok, valuetype, cpp, defsign, settings);
             }
 
-            // library function
-            else if (tok->previous() && settings->library.returnValueType(tok->previous()) == "int") {
-                ValueType valuetype(ValueType::Sign::SIGNED, ValueType::Type::INT, 0U);
-                ::setValueType(tok, valuetype, cpp, defsign, settings);
-            }
-
             else if (Token::simpleMatch(tok->previous(), "sizeof (")) {
                 // TODO: use specified size_t type
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
@@ -4618,6 +4612,21 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
                     ValueType vt;
                     if (parsedecl(tok->next(), &vt, defsign, settings)) {
                         setValueType(tok->next(), vt, cpp, defsign, settings);
+                    }
+                }
+            }
+
+            // library function
+            else if (tok->previous()) {
+                const std::string typestr(settings->library.returnValueType(tok->previous()));
+                if (typestr.empty())
+                    continue;
+                TokenList tokenList(settings);
+                std::istringstream istr(typestr+";");
+                if (tokenList.createTokens(istr)) {
+                    ValueType vt;
+                    if (parsedecl(tokenList.front(), &vt, defsign, settings)) {
+                        setValueType(tok, vt, cpp, defsign, settings);
                     }
                 }
             }

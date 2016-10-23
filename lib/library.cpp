@@ -545,10 +545,10 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             leakignore.insert(name);
         else if (functionnodename == "use-retval")
             _useretval.insert(name);
-        else if (functionnodename == "returnValue" && functionnode->GetText()) {
-            _returnValue[name] = functionnode->GetText();
-            const char *type = functionnode->Attribute("type");
-            if (type)
+        else if (functionnodename == "returnValue") {
+            if (const char *expr = functionnode->GetText())
+                _returnValue[name] = expr;
+            if (const char *type = functionnode->Attribute("type"))
                 _returnValueType[name] = type;
         } else if (functionnodename == "arg") {
             const char* argNrString = functionnode->Attribute("nr");
