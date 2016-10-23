@@ -77,11 +77,7 @@ namespace ValueFlow {
             /** This value is possible, other unlisted values may also be possible */
             Possible,
             /** Only listed values are possible */
-            Known,
-            /** Max value. Greater values are impossible. */
-            Max,
-            /** Min value. Smaller values are impossible. */
-            Min
+            Known
         } valueKind;
 
         void setKnown() {
