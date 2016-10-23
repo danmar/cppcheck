@@ -95,8 +95,9 @@ private:
         checkIO.invalidScanf();
     }
 
-
-
+    void check(const std::string & code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
+        return check(code.c_str(), inconclusive, portability, platform);
+    }
 
     void coutCerrMisusage() {
         check(
@@ -748,64 +749,106 @@ private:
     }
 
 
+    std::string testScanfCode(const std::string & format, const std::string & type) {
+        return "void f() { " + type + " x; scanf(\"" + format + "\", &x); }";
+    }
 
-#define TEST_SCANF_CODE(FORMAT,TYPE)   "void f() { " TYPE " x; scanf(\"" FORMAT "\", &x); }"
+    std::string testScanfErr(const std::string & format, const std::string & formatStr, const std::string & type) {
+        return "[test.cpp:1]: (warning) " + format + " in format string (no. 1) requires '" + formatStr + " *' but the argument type is '" + type + " *'.\n";
+    }
 
-#define TEST_SCANF_ERR(FORMAT,FORMATSTR,TYPE)               \
-    "[test.cpp:1]: (warning) " FORMAT " in format string (no. 1) requires '" FORMATSTR " *' but the argument type is '" TYPE " *'.\n"
+    std::string testScanfErrAka(const std::string & format, const std::string & formatStr, const std::string & type, const std::string & akaType) {
+        return "[test.cpp:1]: (portability) " + format + " in format string (no. 1) requires '" + formatStr + " *' but the argument type is '" + type + " * {aka " + akaType + " *}'.\n";
+    }
 
-#define TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE)   \
-    "[test.cpp:1]: (portability) " FORMAT " in format string (no. 1) requires '" FORMATSTR " *' but the argument type is '" TYPE " * {aka " AKATYPE " *}'.\n"
+    void testScanfNoWarn(const char *filename, unsigned int linenr,
+                         const std::string & format, const std::string & /* formatStr */ , const std::string & type) {
+        const std::string code = testScanfCode(format, type);
 
-#define TEST_SCANF_NOWARN(FORMAT, FORMATSTR, TYPE)                         \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Unix32);    \
-    ASSERT_EQUALS("", errout.str());                                       \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Unix64);    \
-    ASSERT_EQUALS("", errout.str());                                       \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Win32A);    \
-    ASSERT_EQUALS("", errout.str());                                       \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Win64);     \
-    ASSERT_EQUALS("", errout.str());
+        check(code, true, false, Settings::Unix32);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, false, Settings::Unix64);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, false, Settings::Win32A);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, false, Settings::Win64);
+        assertEquals(filename, linenr, "", errout.str());
+    }
 
-#define TEST_SCANF_WARN(FORMAT, FORMATSTR, TYPE)                           \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Unix32);    \
-    ASSERT_EQUALS(TEST_SCANF_ERR(FORMAT,FORMATSTR,TYPE), errout.str());    \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Unix64);    \
-    ASSERT_EQUALS(TEST_SCANF_ERR(FORMAT,FORMATSTR,TYPE), errout.str());    \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Win32A);    \
-    ASSERT_EQUALS(TEST_SCANF_ERR(FORMAT,FORMATSTR,TYPE), errout.str());    \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, false, Settings::Win64);     \
-    ASSERT_EQUALS(TEST_SCANF_ERR(FORMAT,FORMATSTR,TYPE), errout.str());
+    void testScanfWarn(const char *filename, unsigned int linenr,
+                       const std::string & format, const std::string & formatStr, const std::string & type) {
+        const std::string code = testScanfCode(format, type);
+        const std::string testScanfErrString = testScanfErr(format,formatStr,type);
 
-#define TEST_SCANF_WARN_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE, AKATYPE_WIN64)        \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Unix32);              \
-    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE), errout.str()); \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Unix64);              \
-    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE), errout.str()); \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Win32A);              \
-    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE), errout.str()); \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Win64);               \
-    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE_WIN64), errout.str());
+        check(code, true, false, Settings::Unix32);
+        assertEquals(filename, linenr, testScanfErrString, errout.str());
+        check(code, true, false, Settings::Unix64);
+        assertEquals(filename, linenr, testScanfErrString, errout.str());
+        check(code, true, false, Settings::Win32A);
+        assertEquals(filename, linenr, testScanfErrString, errout.str());
+        check(code, true, false, Settings::Win64);
+        assertEquals(filename, linenr, testScanfErrString, errout.str());
+    }
 
-#define TEST_SCANF_WARN_AKA_WIN64(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64)           \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Unix32);              \
-    ASSERT_EQUALS("", errout.str());                                                \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Unix64);              \
-    ASSERT_EQUALS("", errout.str());                                                \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Win32A);              \
-    ASSERT_EQUALS("", errout.str());                                                \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Win64);               \
-    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE_WIN64), errout.str());
+    void testScanfWarnAka(const char *filename, unsigned int linenr,
+                          const std::string & format, const std::string & formatStr, const std::string & type,
+                          const std::string & akaType, const std::string & akaTypeWin64) {
+        const std::string code = testScanfCode(format, type);
+        const std::string testScanfErrAkaString = testScanfErrAka(format,formatStr,type,akaType);
+        const std::string testScanfErrAkaWin64String = testScanfErrAka(format,formatStr,type,akaTypeWin64);
 
-#define TEST_SCANF_WARN_AKA_WIN32(FORMAT, FORMATSTR, TYPE, AKATYPE)                 \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Unix32);              \
-    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE), errout.str()); \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Unix64);              \
-    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE), errout.str()); \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Win32A);              \
-    ASSERT_EQUALS(TEST_SCANF_ERR_AKA(FORMAT,FORMATSTR,TYPE,AKATYPE), errout.str()); \
-    check(TEST_SCANF_CODE(FORMAT,TYPE), true, true, Settings::Win64);               \
-    ASSERT_EQUALS("", errout.str());
+        check(code, true, true, Settings::Unix32);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Unix64);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Win32A);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Win64);
+        assertEquals(filename, linenr, testScanfErrAkaWin64String, errout.str());
+    }
+
+    void testScanfWarnAkaWin64(const char *filename, unsigned int linenr,
+                               const std::string & format, const std::string & formatStr, const std::string & type,
+                               const std::string & akaTypeWin64) {
+        const std::string code = testScanfCode(format, type);
+        const std::string testScanfErrAkaWin64String = testScanfErrAka(format,formatStr,type,akaTypeWin64);
+
+        check(code, true, true, Settings::Unix32);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, true, Settings::Unix64);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, true, Settings::Win32A);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, true, Settings::Win64);
+        assertEquals(filename, linenr, testScanfErrAkaWin64String, errout.str());
+    }
+
+    void testScanfWarnAkaWin32(const char *filename, unsigned int linenr,
+                               const std::string & format, const std::string & formatStr, const std::string & type,
+                               const std::string & akaType) {
+        const std::string code = testScanfCode(format, type);
+        const std::string testScanfErrAkaString = testScanfErrAka(format,formatStr,type,akaType);
+
+        check(code, true, true, Settings::Unix32);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Unix64);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Win32A);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Win64);
+        assertEquals(filename, linenr, "", errout.str());
+    }
+
+#define TEST_SCANF_NOWARN(FORMAT, FORMATSTR, TYPE) \
+    testScanfNoWarn(__FILE__, __LINE__, FORMAT, FORMATSTR, TYPE)
+#define TEST_SCANF_WARN(FORMAT, FORMATSTR, TYPE) \
+    testScanfWarn(__FILE__, __LINE__, FORMAT, FORMATSTR, TYPE)
+#define TEST_SCANF_WARN_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE, AKATYPE_WIN64) \
+    testScanfWarnAka(__FILE__, __LINE__, FORMAT, FORMATSTR, TYPE, AKATYPE, AKATYPE_WIN64)
+#define TEST_SCANF_WARN_AKA_WIN64(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64) \
+    testScanfWarnAkaWin64(__FILE__, __LINE__, FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64)
+#define TEST_SCANF_WARN_AKA_WIN32(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32) \
+    testScanfWarnAkaWin32(__FILE__, __LINE__, FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32)
 
     void testScanfArgument() {
         check("void foo() {\n"
