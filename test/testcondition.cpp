@@ -193,6 +193,26 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void g(int x);\n"
+              "void f(int x) {\n"
+              "    int a = 100;\n"
+              "    while (x) {\n"
+              "        int y = 16 | a;\n"
+              "        while (y != 0) g(y);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'y!=0' is always true\n[test.cpp:5] -> [test.cpp:6]: (style) Mismatching assignment and comparison, comparison 'y!=0' is always true.\n", errout.str());
+
+        check("void g(int &x);\n"
+              "void f(int x) {\n"
+              "    int a = 100;\n"
+              "    while (x) {\n"
+              "        int y = 16 | a;\n"
+              "        while (y != 0) g(y);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // calling function
         check("void f(int x) {\n"
               "    int y = x & 7;\n"
@@ -293,6 +313,33 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int x = 100;\n"
+              "    while (x) {\n"
+              "        g(x);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int x);\n"
+              "void f() {\n"
+              "    int x = 100;\n"
+              "    while (x) {\n"
+              "        g(x);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int & x);\n"
+              "void f() {\n"
+              "    int x = 100;\n"
+              "    while (x) {\n"
+              "        g(x);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void mismatchingBitAnd() {

@@ -19,6 +19,7 @@
 
 //---------------------------------------------------------------------------
 #include "astutils.h"
+#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
@@ -341,7 +342,69 @@ bool isReturnScope(const Token * const endToken)
     return false;
 }
 
-bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid)
+bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive)
+{
+    if (!tok)
+        return false;
+
+    // address of variable
+    const bool addressOf = tok && Token::simpleMatch(tok->previous(), "&");
+
+    // passing variable to subfunction?
+    if (Token::Match(tok->tokAt(-2), ") & %name% [,)]") && Token::Match(tok->linkAt(-2)->previous(), "[,(] ("))
+        ;
+    else if (Token::Match(tok->tokAt(addressOf?-2:-1), "[(,] &| %name% [,)]"))
+        ;
+    else
+        return false;
+
+    // reinterpret_cast etc..
+    if (Token::Match(tok->tokAt(-3), "> ( & %name% ) [,)]") &&
+        tok->linkAt(-3) &&
+        Token::Match(tok->linkAt(-3)->tokAt(-2), "[,(] %type% <"))
+        tok = tok->linkAt(-3);
+
+    // goto start of function call and get argnr
+    unsigned int argnr = 0;
+    while (tok && tok->str() != "(") {
+        if (tok->str() == ",")
+            ++argnr;
+        else if (tok->str() == ")")
+            tok = tok->link();
+        tok = tok->previous();
+    }
+    tok = tok ? tok->previous() : nullptr;
+    if (tok && tok->link() && tok->str() == ">")
+        tok = tok->link()->previous();
+    if (!Token::Match(tok, "%name% ("))
+        return false; // not a function => variable not changed
+
+    if (tok->varId())
+        return false; // Constructor call of tok => variable probably not changed by constructor call
+
+    if (!tok->function()) {
+        // if the library says 0 is invalid
+        // => it is assumed that parameter is an in parameter (TODO: this is a bad heuristic)
+        if (!addressOf && settings->library.isnullargbad(tok, 1+argnr))
+            return false;
+        // addressOf => inconclusive
+        if (!addressOf) {
+            if (inconclusive != nullptr)
+                *inconclusive = true;
+            return false;
+        }
+        return true;
+    }
+
+    const Variable *arg = tok->function()->getArgumentVar(argnr);
+
+    if (addressOf && !(arg && arg->isConst()))
+        return true;
+
+    return arg && !arg->isConst() && arg->isReference();
+}
+
+bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, const Settings *settings)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() == varid) {
@@ -351,17 +414,11 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
             if (Token::Match(tok->previous(), "++|-- %name%"))
                 return true;
 
-            if (Token::Match(tok->tokAt(-2), "[(,] & %var% [,)]"))
-                return true; // TODO: check if function parameter is const
-
-            if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
-                const Token *parent = tok->astParent();
-                while (parent && parent->str() == ",")
-                    parent = parent->astParent();
-                if (parent && Token::Match(parent->previous(), "%name% (") && !parent->previous()->function())
-                    return true;
-                // TODO: check if function parameter is non-const reference etc..
-            }
+            bool inconclusive = false;
+            bool isChanged = isVariableChangedByFunctionCall(tok, settings, &inconclusive);
+            isChanged |= inconclusive;
+            if (isChanged)
+                return true;
 
             const Token *parent = tok->astParent();
             while (Token::Match(parent, ".|::"))

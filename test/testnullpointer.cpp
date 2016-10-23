@@ -2503,7 +2503,7 @@ private:
 
     void ticket6505() {
         check("void foo(MythSocket *socket) {\n"
-              "  bool do_write=false;\n"
+              "  bool do_write=0;\n"
               "  if (socket) {\n"
               "    do_write=something();\n"
               "  }\n"

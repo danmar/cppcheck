@@ -1865,6 +1865,34 @@ private:
                "}\n";
         ASSERT(isNotKnownValues(code, "<"));
 
+        code = "void dostuff(int x);\n"
+               "void f() {\n"
+               "  int x = 0;\n"
+               "  dostuff(x);\n"
+               "  if (x < 0) {}\n"
+               "}\n";
+        value = valueOfTok(code, "<");
+        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT(value.isKnown());
+
+        code = "void dostuff(int & x);\n"
+               "void f() {\n"
+               "  int x = 0;\n"
+               "  dostuff(x);\n"
+               "  if (x < 0) {}\n"
+               "}\n";
+        ASSERT(isNotKnownValues(code, "<"));
+
+        code = "void dostuff(const int & x);\n"
+               "void f() {\n"
+               "  int x = 0;\n"
+               "  dostuff(x);\n"
+               "  if (x < 0) {}\n"
+               "}\n";
+        value = valueOfTok(code, "<");
+        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT(value.isKnown());
+
         code = "void f() {\n"
                "  int x = 0;\n"
                "  do {\n"

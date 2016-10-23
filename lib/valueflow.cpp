@@ -87,63 +87,6 @@ static void bailout(TokenList *tokenlist, ErrorLogger *errorLogger, const Token 
     errorLogger->reportErr(errmsg);
 }
 
-static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, const Settings *settings, bool *inconclusive)
-{
-    if (!tok)
-        return false;
-
-    // address of variable
-    const bool addressOf = tok && Token::simpleMatch(tok->previous(), "&");
-
-    // passing variable to subfunction?
-    if (Token::Match(tok->tokAt(-2), ") & %name% [,)]") && Token::Match(tok->linkAt(-2)->previous(), "[,(] ("))
-        ;
-    else if (Token::Match(tok->tokAt(addressOf?-2:-1), "[(,] &| %name% [,)]"))
-        ;
-    else
-        return false;
-
-    // reinterpret_cast etc..
-    if (Token::Match(tok->tokAt(-3), "> ( & %name% ) [,)]") &&
-        tok->linkAt(-3) &&
-        Token::Match(tok->linkAt(-3)->tokAt(-2), "[,(] %type% <"))
-        tok = tok->linkAt(-3);
-
-    // goto start of function call and get argnr
-    unsigned int argnr = 0;
-    while (tok && tok->str() != "(") {
-        if (tok->str() == ",")
-            ++argnr;
-        else if (tok->str() == ")")
-            tok = tok->link();
-        tok = tok->previous();
-    }
-    tok = tok ? tok->previous() : nullptr;
-    if (tok && tok->link() && tok->str() == ">")
-        tok = tok->link()->previous();
-    if (!Token::Match(tok, "%name% ("))
-        return false; // not a function => do not bailout
-
-    if (!tok->function()) {
-        // if value is 0 and the library says 0 is invalid => do not bailout
-        if (value.intvalue==0 && settings->library.isnullargbad(tok, 1+argnr))
-            return false;
-        // addressOf => inconclusive
-        if (!addressOf) {
-            *inconclusive = true;
-            return false;
-        }
-        return true;
-    }
-
-    const Variable *arg = tok->function()->getArgumentVar(argnr);
-
-    if (addressOf && !(arg && arg->isConst()))
-        return true;
-
-    return arg && !arg->isConst() && arg->isReference();
-}
-
 /**
  * Is condition always false when variable has given value?
  * \param condition   top ast token in condition
@@ -891,7 +834,7 @@ static void valueFlowReverse(TokenList *tokenlist,
 
             // assigned by subfunction?
             bool inconclusive = false;
-            if (bailoutFunctionPar(tok2,val2.condition ? val2 : val, settings, &inconclusive)) {
+            if (isVariableChangedByFunctionCall(tok2, settings, &inconclusive)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                 break;
@@ -950,7 +893,7 @@ static void valueFlowReverse(TokenList *tokenlist,
 
                 const Token *start = tok2;
                 const Token *end   = start->link();
-                if (isVariableChanged(start,end,varid)) {
+                if (isVariableChanged(start,end,varid, settings)) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " is assigned in loop. so valueflow analysis bailout when start of loop is reached.");
                     break;
@@ -1029,7 +972,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
 
                 // Variable changed in 3rd for-expression
                 if (Token::simpleMatch(tok2->previous(), "for (")) {
-                    if (tok2->astOperand2() && tok2->astOperand2()->astOperand2() && isVariableChanged(tok2->astOperand2()->astOperand2(), tok2->link(), varid)) {
+                    if (tok2->astOperand2() && tok2->astOperand2()->astOperand2() && isVariableChanged(tok2->astOperand2()->astOperand2(), tok2->link(), varid, settings)) {
                         varid = 0U;
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, tok, "variable " + var->name() + " used in loop");
@@ -1041,7 +984,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
                     const Token * const start = tok2->link()->next();
                     const Token * const end   = start->link();
 
-                    if (isVariableChanged(start,end,varid)) {
+                    if (isVariableChanged(start,end,varid, settings)) {
                         varid = 0U;
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, tok, "variable " + var->name() + " used in loop");
@@ -1134,13 +1077,14 @@ static void valueFlowAST(Token *tok, unsigned int varid, const ValueFlow::Value 
 static void handleKnownValuesInLoop(const Token                 *startToken,
                                     const Token                 *endToken,
                                     std::list<ValueFlow::Value> *values,
-                                    unsigned int                varid)
+                                    unsigned int                varid,
+                                    const Settings              *settings)
 {
     bool isChanged = false;
     for (std::list<ValueFlow::Value>::iterator it = values->begin(); it != values->end(); ++it) {
         if (it->isKnown()) {
             if (!isChanged) {
-                if (!isVariableChanged(startToken, endToken, varid))
+                if (!isVariableChanged(startToken, endToken, varid, settings))
                     break;
                 isChanged = true;
             }
@@ -1239,19 +1183,19 @@ static bool valueFlowForward(Token * const               startToken,
             if (Token::simpleMatch(end, "} while ("))
                 end = end->linkAt(2);
 
-            if (isVariableChanged(start, end, varid)) {
+            if (isVariableChanged(start, end, varid, settings)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in do-while");
                 return false;
             }
 
-            handleKnownValuesInLoop(start, end, &values, varid);
+            handleKnownValuesInLoop(start, end, &values, varid, settings);
         }
 
         // conditional block of code that assigns variable..
         else if (Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // is variable changed in condition?
-            if (isVariableChanged(tok2->next(), tok2->next()->link(), varid)) {
+            if (isVariableChanged(tok2->next(), tok2->next()->link(), varid, settings)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in condition");
                 return false;
@@ -1259,7 +1203,7 @@ static bool valueFlowForward(Token * const               startToken,
 
             // if known variable is changed in loop body, change it to a possible value..
             if (Token::Match(tok2, "for|while"))
-                handleKnownValuesInLoop(tok2, tok2->linkAt(1)->linkAt(1), &values, varid);
+                handleKnownValuesInLoop(tok2, tok2->linkAt(1)->linkAt(1), &values, varid, settings);
 
             // Set values in condition
             for (Token* tok3 = tok2->tokAt(2); tok3 != tok2->next()->link(); tok3 = tok3->next()) {
@@ -1294,7 +1238,7 @@ static bool valueFlowForward(Token * const               startToken,
                                  errorLogger,
                                  settings);
 
-                if (isVariableChanged(startToken1, startToken1->link(), varid)) {
+                if (isVariableChanged(startToken1, startToken1->link(), varid, settings)) {
                     removeValues(values, truevalues);
 
                     std::list<ValueFlow::Value>::iterator it;
@@ -1314,7 +1258,7 @@ static bool valueFlowForward(Token * const               startToken,
             Token * const start = tok2->linkAt(1)->next();
             Token * const end   = start->link();
             bool varusage = (indentlevel >= 0 && constValue && number_of_if == 0U) ?
-                            isVariableChanged(start,end,varid) :
+                            isVariableChanged(start,end,varid, settings) :
                             (nullptr != Token::findmatch(start, "%varid%", end, varid));
             if (!read) {
                 read = bool(nullptr != Token::findmatch(tok2, "%varid% !!=", end, varid));
@@ -1383,7 +1327,7 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
 
-            if (isVariableChanged(start, end, varid)) {
+            if (isVariableChanged(start, end, varid, settings)) {
                 if ((!read || number_of_if == 0) &&
                     Token::simpleMatch(tok2, "if (") &&
                     !(Token::simpleMatch(end, "} else {") &&
@@ -1623,7 +1567,7 @@ static bool valueFlowForward(Token * const               startToken,
 
             // assigned by subfunction?
             bool inconclusive = false;
-            if (bailoutFunctionPar(tok2, ValueFlow::Value(), settings, &inconclusive)) {
+            if (isVariableChangedByFunctionCall(tok2, settings, &inconclusive)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                 return false;
@@ -1642,7 +1586,7 @@ static bool valueFlowForward(Token * const               startToken,
             Token::simpleMatch(tok2->linkAt(1), "] (") &&
             Token::simpleMatch(tok2->linkAt(1)->linkAt(1), ") {")) {
             const Token *bodyStart = tok2->linkAt(1)->linkAt(1)->next();
-            if (isVariableChanged(bodyStart, bodyStart->link(), varid)) {
+            if (isVariableChanged(bodyStart, bodyStart->link(), varid, settings)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "valueFlowForward, " + var->name() + " is changed in lambda function");
                 return false;
@@ -1788,7 +1732,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 // does condition reassign variable?
                 if (tok != top->astOperand2() &&
                     Token::Match(top->astOperand2(), "%oror%|&&") &&
-                    isVariableChanged(top, top->link(), varid)) {
+                    isVariableChanged(top, top->link(), varid, settings)) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok, "assignment in condition");
                     continue;
@@ -1823,7 +1767,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 if (startToken) {
                     if (!valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings))
                         continue;
-                    if (isVariableChanged(startToken, startToken->link(), varid)) {
+                    if (isVariableChanged(startToken, startToken->link(), varid, settings)) {
                         // TODO: The endToken should not be startToken->link() in the valueFlowForward call
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, startToken->link(), "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
@@ -2119,7 +2063,7 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
     const Token * const bodyEnd = bodyStart->link();
 
     // Is variable modified inside for loop
-    if (isVariableChanged(bodyStart, bodyEnd, varid))
+    if (isVariableChanged(bodyStart, bodyEnd, varid, settings))
         return;
 
     for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
