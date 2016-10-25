@@ -31,6 +31,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <cstring>
 
 namespace tinyxml2 {
     class XMLDocument;
@@ -228,7 +229,8 @@ public:
             notuninit(false),
             formatstr(false),
             strz(false),
-            optional(false) {
+            optional(false),
+            iteratorInfo() {
         }
 
         bool         notbool;
@@ -238,6 +240,26 @@ public:
         bool         strz;
         bool         optional;
         std::string  valid;
+
+        class IteratorInfo {
+        public:
+            IteratorInfo() : it(false), container(0), first(false), last(false) {}
+            void setContainer(const char *str) {
+                it = true;
+                container = str ? std::atoi(str) : 0;
+            }
+            void setType(const char *str) {
+                it = true;
+                first = str ? (std::strcmp(str,"first") == 0) : false;
+                last = str ? (std::strcmp(str,"last") == 0) : false;
+            }
+
+            bool it;
+            int  container;
+            bool first;
+            bool last;
+        };
+        IteratorInfo iteratorInfo;
 
         class MinSize {
         public:
@@ -276,6 +298,11 @@ public:
     const std::string& validarg(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? arg->valid : emptyString;
+    }
+
+    const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
+        return arg && arg->iteratorInfo.it ? &arg->iteratorInfo : nullptr;
     }
 
     bool hasminsize(const std::string &functionName) const {

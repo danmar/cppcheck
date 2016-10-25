@@ -556,25 +556,20 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 return Error(MISSING_ATTRIBUTE, "nr");
             const bool bAnyArg = strcmp(argNrString, "any")==0;
             const int nr = (bAnyArg) ? -1 : atoi(argNrString);
-            bool notbool = false;
-            bool notnull = false;
-            bool notuninit = false;
-            bool formatstr = false;
-            bool strz = false;
-            std::string& valid = argumentChecks[name][nr].valid;
-            std::list<ArgumentChecks::MinSize>& minsizes = argumentChecks[name][nr].minsizes;
+            ArgumentChecks &ac = argumentChecks[name][nr];
+            ac.optional  = functionnode->Attribute("default") != nullptr;
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                 const std::string argnodename = argnode->Name();
                 if (argnodename == "not-bool")
-                    notbool = true;
+                    ac.notbool = true;
                 else if (argnodename == "not-null")
-                    notnull = true;
+                    ac.notnull = true;
                 else if (argnodename == "not-uninit")
-                    notuninit = true;
+                    ac.notuninit = true;
                 else if (argnodename == "formatstr")
-                    formatstr = true;
+                    ac.formatstr = true;
                 else if (argnodename == "strz")
-                    strz = true;
+                    ac.strz = true;
                 else if (argnodename == "valid") {
                     // Validate the validation expression
                     const char *p = argnode->GetText();
@@ -598,7 +593,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                         return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
 
                     // Set validation expression
-                    valid = argnode->GetText();
+                    ac.valid = argnode->GetText();
                 }
 
                 else if (argnodename == "minsize") {
@@ -624,26 +619,25 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
                         return Error(BAD_ATTRIBUTE_VALUE, argattr);
 
-                    minsizes.push_back(ArgumentChecks::MinSize(type,argattr[0]-'0'));
+                    ac.minsizes.push_back(ArgumentChecks::MinSize(type,argattr[0]-'0'));
                     if (type == ArgumentChecks::MinSize::MUL) {
                         const char *arg2attr  = argnode->Attribute("arg2");
                         if (!arg2attr)
                             return Error(MISSING_ATTRIBUTE, "arg2");
                         if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
                             return Error(BAD_ATTRIBUTE_VALUE, arg2attr);
-                        minsizes.back().arg2 = arg2attr[0] - '0';
+                        ac.minsizes.back().arg2 = arg2attr[0] - '0';
                     }
+                }
+
+                else if (argnodename == "iterator") {
+                    ac.iteratorInfo.setType(argnode->Attribute("type"));
+                    ac.iteratorInfo.setContainer(argnode->Attribute("container"));
                 }
 
                 else
                     unknown_elements.insert(argnodename);
             }
-            argumentChecks[name][nr].notbool   = notbool;
-            argumentChecks[name][nr].notnull   = notnull;
-            argumentChecks[name][nr].notuninit = notuninit;
-            argumentChecks[name][nr].formatstr = formatstr;
-            argumentChecks[name][nr].strz      = strz;
-            argumentChecks[name][nr].optional  = functionnode->Attribute("default") != nullptr;
         } else if (functionnodename == "ignorefunction") {
             _ignorefunction.insert(name);
         } else if (functionnodename == "formatstr") {
