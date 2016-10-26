@@ -77,6 +77,8 @@ private:
         TEST_CASE(valueFlowFunctionDefaultParameter);
 
         TEST_CASE(knownValue);
+
+        TEST_CASE(valueFlowSizeofForwardDeclaredEnum);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -2010,6 +2012,11 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 6));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 7));
         ASSERT(value.isKnown());
+    }
+
+    void valueFlowSizeofForwardDeclaredEnum() {
+        const char *code = "enum E; sz=sizeof(E);";
+        valueOfTok(code, "="); // Don't crash (#7775)
     }
 };
 

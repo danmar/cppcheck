@@ -636,13 +636,15 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             setTokenValue(const_cast<Token *>(tok->next()), value);
         } else if (tok2->type() && tok2->type()->isEnumType()) {
             long long size = settings->sizeof_int;
-            const Token * type = tok2->type()->classScope->enumType;
-            if (type) {
-                size = type->str() == "char" ? 1 :
-                       type->str() == "short" ? settings->sizeof_short :
-                       type->str() == "int" ? settings->sizeof_int :
-                       (type->str() == "long" && type->isLong()) ? settings->sizeof_long_long :
-                       type->str() == "long" ? settings->sizeof_long : 0;
+            if (tok2->type()->classScope) {
+                const Token * type = tok2->type()->classScope->enumType;
+                if (type) {
+                    size = type->str() == "char" ? 1 :
+                           type->str() == "short" ? settings->sizeof_short :
+                           type->str() == "int" ? settings->sizeof_int :
+                           (type->str() == "long" && type->isLong()) ? settings->sizeof_long_long :
+                           type->str() == "long" ? settings->sizeof_long : 0;
+                }
             }
             ValueFlow::Value value(size);
             value.setKnown();
