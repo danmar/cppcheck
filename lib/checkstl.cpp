@@ -274,8 +274,7 @@ void CheckStl::mismatchingContainersError(const Token *tok)
     reportError(tok, Severity::error, "mismatchingContainers", "Iterators of different containers are used together.", CWE664, false);
 }
 
-namespace {
-    const std::set<std::string> algorithm2 = make_container< std::set<std::string> >() // func(begin1, end1
+static const std::set<std::string> algorithm2 = make_container< std::set<std::string> >() // func(begin1, end1
             << "adjacent_find" << "all_of" << "any_of" << "binary_search" << "copy" << "copy_if" << "count" << "count_if" << "equal" << "equal_range"
             << "find" << "find_if" << "find_if_not" << "for_each" << "generate" << "is_heap" << "is_heap_until" << "is_partitioned"
             << "is_permutation" << "is_sorted" << "is_sorted_until" << "lower_bound" << "make_heap" << "max_element" << "minmax_element"
@@ -284,19 +283,18 @@ namespace {
             << "remove_copy_if" << "remove_if" << "replace" << "replace_copy" << "replace_copy_if" << "replace_if" << "reverse" << "reverse_copy"
             << "search_n" << "shuffle" << "sort" << "sort_heap" << "stable_partition" << "stable_sort" << "swap_ranges" << "transform" << "unique"
             << "unique_copy" << "upper_bound" << "string" << "wstring" << "u16string" << "u32string";
-    const std::set<std::string> algorithm22 = make_container< std::set<std::string> >() // func(begin1 << end1 << begin2 << end2
+static const std::set<std::string> algorithm22 = make_container< std::set<std::string> >() // func(begin1 << end1 << begin2 << end2
             << "find_end" << "find_first_of" << "includes" << "lexicographical_compare" << "merge" << "partial_sort_copy"
             << "search" << "set_difference" << "set_intersection" << "set_symmetric_difference" << "set_union";
-    const std::set<std::string> algorithm1x1 = make_container< std::set<std::string> >()  // func(begin1 << x << end1
+static const std::set<std::string> algorithm1x1 = make_container< std::set<std::string> >()  // func(begin1 << x << end1
             << "inplace_merge" << "nth_element" << "partial_sort" << "rotate" << "rotate_copy";
 
-    const std::string iteratorBeginFuncPattern = "begin|cbegin|rbegin|crbegin";
-    const std::string iteratorEndFuncPattern = "end|cend|rend|crend";
+static const std::string iteratorBeginFuncPattern = "begin|cbegin|rbegin|crbegin";
+static const std::string iteratorEndFuncPattern = "end|cend|rend|crend";
 
-    const std::string pattern1x1_1 = "%name% . " + iteratorBeginFuncPattern + " ( ) , ";
-    const std::string pattern1x1_2 = "%name% . " + iteratorEndFuncPattern + " ( ) ,|)";
-    const std::string pattern2 = pattern1x1_1 + pattern1x1_2;
-}
+static const std::string pattern1x1_1 = "%name% . " + iteratorBeginFuncPattern + " ( ) , ";
+static const std::string pattern1x1_2 = "%name% . " + iteratorEndFuncPattern + " ( ) ,|)";
+static const std::string pattern2 = pattern1x1_1 + pattern1x1_2;
 
 static const Variable *getContainer(const Token *argtok)
 {
