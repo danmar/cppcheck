@@ -303,7 +303,7 @@ static const Variable *getContainer(const Token *argtok)
     if (!Token::Match(argtok, "%var% . begin|end|rbegin|rend ( )")) // TODO: use Library yield
         return nullptr;
     const Variable *var = argtok->variable();
-    if (var && Token::Match(var->typeStartToken(), "std ::"))
+    if (var && Token::simpleMatch(var->typeStartToken(), "std ::"))
         return var;
     return nullptr;
 }
