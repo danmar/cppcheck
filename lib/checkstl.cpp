@@ -77,7 +77,6 @@ static const Token *skipMembers(const Token *tok)
 
 bool CheckStl::isIterator(const Variable *var) const
 {
-
     // Check that its an iterator
     if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator|auto"))
         return false;
@@ -299,6 +298,16 @@ namespace {
     const std::string pattern2 = pattern1x1_1 + pattern1x1_2;
 }
 
+static const Variable *getContainer(const Token *argtok)
+{
+    if (!Token::Match(argtok, "%var% . begin|end|rbegin|rend ( )")) // TODO: use Library yield
+        return nullptr;
+    const Variable *var = argtok->variable();
+    if (var && Token::Match(var->typeStartToken(), "std ::"))
+        return var;
+    return nullptr;
+}
+
 void CheckStl::mismatchingContainers()
 {
     // Check if different containers are used in various calls of standard functions
@@ -307,34 +316,33 @@ void CheckStl::mismatchingContainers()
     for (std::size_t ii = 0; ii < functions; ++ii) {
         const Scope * scope = symbolDatabase->functionScopes[ii];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "std :: %type% ( !!)"))
+            if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
-            const Token* arg1 = tok->tokAt(4);
+            const Token * const ftok = tok;
+            const Token * const arg1 = tok->tokAt(2);
 
-            // TODO: If iterator variables are used instead then there are false negatives.
-            if (Token::Match(arg1, pattern2.c_str()) && algorithm2.find(tok->strAt(2)) != algorithm2.end()) {
-                if (arg1->str() != arg1->strAt(6)) {
-                    mismatchingContainersError(arg1);
-                }
-            } else if (algorithm22.find(tok->strAt(2)) != algorithm22.end()) {
-                if (Token::Match(arg1, pattern2.c_str()) && arg1->str() != arg1->strAt(6))
-                    mismatchingContainersError(arg1);
-                // Find third parameter
-                const Token* arg3 = arg1;
-                for (unsigned int i = 0; i < 2 && arg3; i++)
-                    arg3 = arg3->nextArgument();
-                if (Token::Match(arg3, pattern2.c_str()) && arg3->str() != arg3->strAt(6))
-                    mismatchingContainersError(arg3);
-            } else if (Token::Match(arg1, pattern1x1_1.c_str()) && algorithm1x1.find(tok->strAt(2)) != algorithm1x1.end()) {
-                // Find third parameter
-                const Token *arg3 = arg1->tokAt(6)->nextArgument();
-                if (Token::Match(arg3, pattern1x1_2.c_str())) {
-                    if (arg1->str() != arg3->str()) {
-                        mismatchingContainersError(arg1);
+            int argnr = 1;
+            std::map<const Variable *, unsigned int> containerNr;
+            for (const Token *argTok = arg1; argTok; argTok = argTok->nextArgument()) {
+                const Library::ArgumentChecks::IteratorInfo *i = _settings->library.getArgIteratorInfo(ftok,argnr++);
+                if (!i)
+                    continue;
+                const Variable *c = getContainer(argTok);
+                if (!c)
+                    continue;
+                std::map<const Variable *, unsigned int>::const_iterator it = containerNr.find(c);
+                if (it == containerNr.end()) {
+                    for (it = containerNr.begin(); it != containerNr.end(); ++it) {
+                        if (it->second == i->container) {
+                            mismatchingContainersError(argTok);
+                            break;
+                        }
                     }
+                    containerNr[c] = i->container;
+                } else if (it->second != i->container) {
+                    mismatchingContainersError(argTok);
                 }
             }
-            tok = arg1->linkAt(-1);
         }
     }
     for (unsigned int varid = 0; varid < symbolDatabase->getVariableListSize(); varid++) {
