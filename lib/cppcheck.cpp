@@ -346,7 +346,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
     if (!_settings.jointSuppressionReport && (_settings.isEnabled("information") || _settings.checkConfiguration)) {
-        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(filename, unusedFunctionCheckIsEnabled()));
+        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(filename, isUnusedFunctionCheckEnabled()));
     }
 
     _errorList.clear();
@@ -698,7 +698,7 @@ void CppCheck::analyseWholeProgram()
         (*it)->analyseWholeProgram(fileInfo, _settings, *this);
 }
 
-bool CppCheck::unusedFunctionCheckIsEnabled() const
+bool CppCheck::isUnusedFunctionCheckEnabled() const
 {
     return (_settings.jobs == 1 && _settings.isEnabled("unusedFunction"));
 }

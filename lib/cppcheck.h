@@ -130,7 +130,7 @@ public:
 
     /** Check if the user wants to check for unused functions
      * and if it's possible at all */
-    bool unusedFunctionCheckIsEnabled() const;
+    bool isUnusedFunctionCheckEnabled() const;
 
 private:
 
