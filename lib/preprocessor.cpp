@@ -30,6 +30,7 @@
 #include <cctype>
 #include <vector>
 #include <set>
+#include <cstdint>
 
 /**
  * Remove heading and trailing whitespaces from the input parameter.
