@@ -35,7 +35,7 @@ void AnalyzerInformation::close()
     }
 }
 
-static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t checksum, std::list<ErrorLogger::ErrorMessage> *errors)
+static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned int checksum, std::list<ErrorLogger::ErrorMessage> *errors)
 {
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLError error = doc.LoadFile(analyzerInfoFile.c_str());
@@ -58,7 +58,7 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t checks
     return true;
 }
 
-bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, std::size_t checksum, std::list<ErrorLogger::ErrorMessage> *errors)
+bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, unsigned int checksum, std::list<ErrorLogger::ErrorMessage> *errors)
 {
     if (buildDir.empty() || sourcefile.empty())
         return true;

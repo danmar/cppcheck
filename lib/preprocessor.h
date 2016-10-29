@@ -160,7 +160,7 @@ public:
     bool validateCfg(const std::string &cfg, const std::list<simplecpp::MacroUsage> &macroUsageList);
     void validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro);
 
-    std::size_t calculateChecksum(const simplecpp::TokenList &tokens1) const;
+    unsigned int calculateChecksum(const simplecpp::TokenList &tokens1) const;
 
 private:
 
