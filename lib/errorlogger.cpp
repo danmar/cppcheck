@@ -111,16 +111,18 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
     setmsg(msg);
 }
 
-ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg) : _cwe(0U)
+ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
+    : _id(errmsg->Attribute("id")),
+      _severity(Severity::fromString(errmsg->Attribute("severity"))),
+      _cwe(0U),
+      _inconclusive(false),
+      _shortMessage(errmsg->Attribute("msg")),
+      _verboseMessage(errmsg->Attribute("verbose"))
 {
-    _id = errmsg->Attribute("id");
-    _severity = Severity::fromString(errmsg->Attribute("severity"));
     const char *attr = errmsg->Attribute("cwe");
     std::istringstream(attr ? attr : "0") >> _cwe.id;
     attr = errmsg->Attribute("inconclusive");
     _inconclusive = attr && (std::strcmp(attr, "true") == 0);
-    _shortMessage = errmsg->Attribute("msg");
-    _verboseMessage = errmsg->Attribute("verbose");
     for (const tinyxml2::XMLElement *e = errmsg->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(),"location")==0) {
             _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(e->Attribute("file"), std::atoi(e->Attribute("line"))));
