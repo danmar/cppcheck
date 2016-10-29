@@ -1448,13 +1448,13 @@ void Tokenizer::simplifyTypedef()
                             // Name is not available, and () should not be
                             // inserted
                             const bool castOperator = inOperator && Token::Match(tok2, "%type% (");
-                            Token *tok3;
+                            Token *openParenthesis = nullptr;
 
                             if (!castOperator) {
                                 tok2->insertToken("(");
                                 tok2 = tok2->next();
 
-                                tok3 = tok2;
+                                openParenthesis = tok2;
                             }
 
                             const Token *tok4 = namespaceStart;
@@ -1470,14 +1470,14 @@ void Tokenizer::simplifyTypedef()
                             tok2->insertToken("*");
                             tok2 = tok2->next();
 
-                            if (!castOperator) {
+                            if (openParenthesis) {
                                 // skip over name
                                 tok2 = tok2->next();
 
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();
 
-                                Token::createMutualLinks(tok2, tok3);
+                                Token::createMutualLinks(tok2, openParenthesis);
                             }
                         }
                     } else if (typeOf) {
