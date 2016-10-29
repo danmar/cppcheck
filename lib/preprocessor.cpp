@@ -864,9 +864,10 @@ static std::uint32_t crc32(const std::string &data)
     return crc ^ ~0U;
 }
 
-unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1) const
+unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const
 {
     std::ostringstream ostr;
+    ostr << toolinfo << '\n';
     for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
         if (!tok->comment)
             ostr << tok->str;

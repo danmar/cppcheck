@@ -138,8 +138,19 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         preprocessor.removeComments();
 
         if (!_settings.buildDir.empty()) {
+            // Get toolinfo
+            std::string toolinfo;
+            toolinfo += CPPCHECK_VERSION_STRING;
+            toolinfo += _settings.isEnabled("warning") ? 'w' : ' ';
+            toolinfo += _settings.isEnabled("style") ? 's' : ' ';
+            toolinfo += _settings.isEnabled("performance") ? 'p' : ' ';
+            toolinfo += _settings.isEnabled("portability") ? 'p' : ' ';
+            toolinfo += _settings.isEnabled("information") ? 'i' : ' ';
+            toolinfo += _settings.userDefines;
+
+            // Calculate checksum so it can be compared with old checksum / future checksums
+            const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo);
             std::list<ErrorLogger::ErrorMessage> errors;
-            unsigned int checksum = preprocessor.calculateChecksum(tokens1);
             if (!analyzerInformation.analyzeFile(_settings.buildDir, filename, checksum, &errors)) {
                 while (!errors.empty()) {
                     reportErr(errors.front());
