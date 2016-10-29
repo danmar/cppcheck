@@ -1057,7 +1057,7 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
         } else {
             const bool isnullbad = _settings->library.isnullargbad(start->previous(), argumentNumber + 1);
             if (pointer && !address && isnullbad && alloc == NO_ALLOC)
-                return true;
+                return 1;
             const bool isuninitbad = _settings->library.isuninitargbad(start->previous(), argumentNumber + 1);
             if (alloc != NO_ALLOC)
                 return isnullbad && isuninitbad;
