@@ -411,20 +411,20 @@ public:
         setFlag(fIsEnumType, value);
     }
 
-    static const Token *findsimplematch(const Token *startTok, const char pattern[]);
-    static const Token *findsimplematch(const Token *startTok, const char pattern[], const Token *end);
-    static const Token *findmatch(const Token *startTok, const char pattern[], unsigned int varId = 0);
-    static const Token *findmatch(const Token *startTok, const char pattern[], const Token *end, unsigned int varId = 0);
-    static Token *findsimplematch(Token *startTok, const char pattern[]) {
+    static const Token *findsimplematch(const Token * const startTok, const char pattern[]);
+    static const Token *findsimplematch(const Token * const startTok, const char pattern[], const Token * const end);
+    static const Token *findmatch(const Token * const startTok, const char pattern[], const unsigned int varId = 0U);
+    static const Token *findmatch(const Token * const startTok, const char pattern[], const Token * const end, const unsigned int varId = 0U);
+    static Token *findsimplematch(Token * const startTok, const char pattern[]) {
         return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern));
     }
-    static Token *findsimplematch(Token *startTok, const char pattern[], const Token *end) {
+    static Token *findsimplematch(Token * const startTok, const char pattern[], const Token * const end) {
         return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, end));
     }
-    static Token *findmatch(Token *startTok, const char pattern[], unsigned int varId = 0) {
+    static Token *findmatch(Token * const startTok, const char pattern[], const unsigned int varId = 0U) {
         return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, varId));
     }
-    static Token *findmatch(Token *startTok, const char pattern[], const Token *end, unsigned int varId = 0) {
+    static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const unsigned int varId = 0U) {
         return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, end, varId));
     }
 
