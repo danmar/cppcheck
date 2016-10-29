@@ -37,6 +37,7 @@
   <ItemGroup>
     <ClCompile Include="..\externals\simplecpp\simplecpp.cpp" />
     <ClCompile Include="..\externals\tinyxml\tinyxml2.cpp" />
+    <ClCompile Include="analyzerinfo.cpp" />
     <ClCompile Include="astutils.cpp" />
     <ClCompile Include="check.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -95,6 +96,7 @@
   <ItemGroup>
     <ClInclude Include="..\externals\simplecpp\simplecpp.h" />
     <ClInclude Include="..\externals\tinyxml\tinyxml2.h" />
+    <ClInclude Include="analyzerinfo.h" />
     <ClInclude Include="astutils.h" />
     <ClInclude Include="check.h" />
     <ClInclude Include="check64bit.h" />
