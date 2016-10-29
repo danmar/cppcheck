@@ -30,6 +30,33 @@
 #include <sstream>
 #include <array>
 
+namespace {
+    const char * getAttributeWithDefault(const tinyxml2::XMLElement * const element, const char * attribute_name, const char * default_value)
+    {
+        const char * ret = default_value;
+        if (!element)
+            return ret;
+        const char * attribute_value = element->Attribute(attribute_name);
+        if (!attribute_value)
+            return ret;
+        ret = attribute_value;
+        return ret;
+    }
+
+    bool cStringToBool(const char * cString)
+    {
+        return (std::strcmp(cString, "true") == 0);
+    }
+
+    unsigned short cStringToUnsignedShort(char const * cString)
+    {
+        unsigned short ret;
+        std::istringstream(cString) >> ret;
+        return ret;
+    }
+
+} // namespace
+
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg)
 {
@@ -111,16 +138,14 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
     setmsg(msg);
 }
 
-ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg) : _cwe(0U)
+ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
+    : _id(errmsg->Attribute("id")),
+      _severity(Severity::fromString(errmsg->Attribute("severity"))),
+      _cwe(cStringToUnsignedShort(getAttributeWithDefault(errmsg,"cwe","0"))),
+      _inconclusive(cStringToBool(getAttributeWithDefault(errmsg,"inconclusive", "true"))),
+      _shortMessage(errmsg->Attribute("msg")),
+      _verboseMessage(errmsg->Attribute("verbose"))
 {
-    _id = errmsg->Attribute("id");
-    _severity = Severity::fromString(errmsg->Attribute("severity"));
-    const char *attr = errmsg->Attribute("cwe");
-    std::istringstream(attr ? attr : "0") >> _cwe.id;
-    attr = errmsg->Attribute("inconclusive");
-    _inconclusive = attr && (std::strcmp(attr, "true") == 0);
-    _shortMessage = errmsg->Attribute("msg");
-    _verboseMessage = errmsg->Attribute("verbose");
     for (const tinyxml2::XMLElement *e = errmsg->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(),"location")==0) {
             _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(e->Attribute("file"), std::atoi(e->Attribute("line"))));
