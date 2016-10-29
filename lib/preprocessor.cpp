@@ -24,6 +24,7 @@
 #include "simplecpp.h"
 
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #include <cstdlib>
 #include <cctype>
@@ -805,4 +806,20 @@ void Preprocessor::dump(std::ostream &out) const
             << "str=\"" << ErrorLogger::toxml(it->str) << "\"/>" << std::endl;
     }
     out << "  </directivelist>" << std::endl;
+}
+
+std::size_t Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1) const
+{
+    std::ostringstream ostr;
+    for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
+        if (!tok->comment)
+            ostr << tok->str;
+    }
+    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+        for (const simplecpp::Token *tok = it->second->cfront(); tok; tok = tok->next) {
+            if (!tok->comment)
+                ostr << tok->str;
+        }
+    }
+    return std::hash<std::string> {}(ostr.str());
 }

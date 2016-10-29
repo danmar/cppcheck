@@ -272,3 +272,19 @@ void CheckUnusedFunctions::analyseWholeProgram(const std::list<Check::FileInfo*>
     (void)fileInfo;
     check(&errorLogger, settings);
 }
+
+std::string CheckUnusedFunctions::analyzerInfo(const std::string &filename) const
+{
+    std::ostringstream ret;
+    for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it) {
+        if (it->second.filename != filename)
+            continue;
+        ret << "    <functionusage"
+            << " function=\"" << ErrorLogger::toxml(it->first) << '\"'
+            << " lineNumber=\"" << it->second.lineNumber << '\"'
+            << " usedSameFile=\"" << (it->second.usedSameFile?1:0) << '\"'
+            << " usedOtherFile=\"" << (it->second.usedOtherFile?1:0) << "\"/>\n";
+    }
+    return ret.str();
+}
+

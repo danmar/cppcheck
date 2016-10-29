@@ -40,6 +40,9 @@ struct CWE {
 
 class Token;
 class TokenList;
+namespace tinyxml2 {
+    class XMLElement;
+}
 
 /// @addtogroup Core
 /// @{
@@ -213,6 +216,7 @@ public:
         ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive);
         ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive);
         ErrorMessage();
+        ErrorMessage(const tinyxml2::XMLElement * const errmsg);
 
         /**
          * Format the error message in XML format

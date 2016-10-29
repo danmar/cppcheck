@@ -90,6 +90,9 @@ public:
     public:
         FileInfo() {}
         virtual ~FileInfo() {}
+        virtual std::string toString() const {
+            return std::string();
+        }
     };
 
     virtual FileInfo * getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const {

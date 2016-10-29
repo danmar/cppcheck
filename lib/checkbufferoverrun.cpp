@@ -1896,6 +1896,24 @@ void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::s
                 "not be accessed if the index is out of limits.", CWE398, false);
 }
 
+std::string CheckBufferOverrun::MyFileInfo::toString() const
+{
+    std::ostringstream ret;
+    for (std::map<std::string, struct CheckBufferOverrun::MyFileInfo::ArrayUsage>::const_iterator it = arrayUsage.begin(); it != arrayUsage.end(); ++it) {
+        ret << "    <ArrayUsage"
+            << " array=\"" << ErrorLogger::toxml(it->first) << '\"'
+            << " index=\"" << it->second.index << '\"'
+            << " fileName=\"" << ErrorLogger::toxml(it->second.fileName) << '\"'
+            << " linenr=\"" << it->second.linenr << "\"/>\n";
+    }
+    for (std::map<std::string, MathLib::bigint>::const_iterator it = arraySize.begin(); it != arraySize.end(); ++it) {
+        ret << "    <ArraySize"
+            << " array=\"" << ErrorLogger::toxml(it->first) << '\"'
+            << " size=\"" << it->second << "\"/>\n";
+    }
+    return ret.str();
+}
+
 Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
     (void)settings;

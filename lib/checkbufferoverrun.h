@@ -209,6 +209,8 @@ public:
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
+        std::string toString() const;
+
         struct ArrayUsage {
             MathLib::bigint   index;
             std::string       fileName;

@@ -120,6 +120,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 return true;
             }
 
+            else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0)
+                _settings->buildDir = argv[i] + 21;
+
             // Flag used for various purposes during debugging
             else if (std::strcmp(argv[i], "--debug") == 0)
                 _settings->debug = _settings->debugwarnings = true;
@@ -797,6 +800,9 @@ void CmdLineParser::PrintHelp()
               "If a directory is given instead of a filename, *.cpp, *.cxx, *.cc, *.c++, *.c,\n"
               "*.tpp, and *.txx files are checked recursively from the given directory.\n\n"
               "Options:\n"
+              "    --analyze-dir=<dir>  Analysis output directory. Useful for various data.\n"
+              "                         Some possible usages are; whole program analysis,\n"
+              "                         incremental analysis, distributed analysis.\n"
               "    --check-config       Check cppcheck configuration. The normal code\n"
               "                         analysis is disabled by this flag.\n"
               "    --check-library      Show information messages when library files have\n"

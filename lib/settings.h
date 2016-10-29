@@ -56,6 +56,9 @@ private:
 public:
     Settings();
 
+    /** @brief --cppcheck-build-dir */
+    std::string buildDir;
+
     /** @brief Is --debug given? */
     bool debug;
 

@@ -24,6 +24,8 @@
 #include "check.h"
 #include "path.h"
 
+#include "checkunusedfunctions.h"
+
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -134,6 +136,18 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         preprocessor.inlineSuppressions(tokens1);
         tokens1.removeComments();
         preprocessor.removeComments();
+
+        if (!_settings.buildDir.empty()) {
+            std::list<ErrorLogger::ErrorMessage> errors;
+            unsigned int checksum = preprocessor.calculateChecksum(tokens1);
+            if (!analyzerInformation.analyzeFile(_settings.buildDir, filename, checksum, &errors)) {
+                while (!errors.empty()) {
+                    reportErr(errors.front());
+                    errors.pop_front();
+                }
+                return exitcode;  // known results => no need to reanalyze file
+            }
+        }
 
         // Get directives
         preprocessor.setDirectives(tokens1);
@@ -343,6 +357,9 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         exitcode=1; // e.g. reflect a syntax error
     }
 
+    analyzerInformation.setFileInfo("CheckUnusedFunctions", CheckUnusedFunctions::instance.analyzerInfo(filename));
+    analyzerInformation.close();
+
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
     if (!_settings.jointSuppressionReport && (_settings.isEnabled("information") || _settings.checkConfiguration)) {
@@ -411,8 +428,10 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     // Analyse the tokens..
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
         Check::FileInfo *fi = (*it)->getFileInfo(&tokenizer, &_settings);
-        if (fi != nullptr)
+        if (fi != nullptr) {
             fileInfo.push_back(fi);
+            analyzerInformation.setFileInfo((*it)->name(), fi->toString());
+        }
     }
 
     executeRules("normal", tokenizer);
@@ -635,6 +654,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     _errorList.push_back(errmsg);
 
     _errorLogger.reportErr(msg);
+    analyzerInformation.reportErr(msg, _settings.verbose);
 }
 
 void CppCheck::reportOut(const std::string &outmsg)

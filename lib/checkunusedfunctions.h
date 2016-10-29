@@ -55,6 +55,8 @@ public:
 
     static CheckUnusedFunctions instance;
 
+    std::string analyzerInfo(const std::string &filename) const;
+
 private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -72,9 +74,7 @@ private:
     /**
      * Dummy implementation, just to provide error for --errorlist
      */
-    void runSimplifiedChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
-
-    }
+    void runSimplifiedChecks(const Tokenizer *, const Settings *, ErrorLogger *) {}
 
     static std::string myName() {
         return "Unused functions";

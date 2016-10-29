@@ -25,6 +25,7 @@
 #include "settings.h"
 #include "errorlogger.h"
 #include "check.h"
+#include "analyzerinfo.h"
 
 #include <string>
 #include <list>
@@ -214,6 +215,8 @@ private:
 
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> fileInfo;
+
+    AnalyzerInformation analyzerInformation;
 };
 
 /// @}
