@@ -50,7 +50,7 @@ public:
 
     /** Close current TU.analyzerinfo file */
     void close();
-    bool analyzeFile(const std::string &buildDir, const std::string &sourcefile, unsigned int checksum, std::list<ErrorLogger::ErrorMessage> *errors);
+    bool analyzeFile(const std::string &buildDir, const std::string &sourcefile, unsigned long long checksum, std::list<ErrorLogger::ErrorMessage> *errors);
     void reportErr(const ErrorLogger::ErrorMessage &msg, bool verbose);
     void setFileInfo(const std::string &check, const std::string &fileInfo);
 private:
