@@ -7,6 +7,7 @@ passedByValue:lib/symboldatabase.h
 passedByValue:lib/library.h
 knownConditionTrueFalse:lib/platform.cpp
 knownConditionTrueFalse:build/*
+useInitializationList:lib/errorlogger.cpp
 *:gui/test*
 *:test/test.cxx
 *:test/cfg*
