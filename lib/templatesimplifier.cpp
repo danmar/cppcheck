@@ -683,7 +683,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
     }
 }
 
-bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::string &name, std::size_t numberOfArguments, const char patternAfter[])
+bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::string &name, const std::size_t numberOfArguments, const char patternAfter[])
 {
     if (!Token::simpleMatch(instance, (name + " <").c_str()))
         return false;
@@ -739,9 +739,9 @@ void TemplateSimplifier::expandTemplate(
     TokenList& tokenlist,
     const Token *tok,
     const std::string &name,
-    std::vector<const Token *> &typeParametersInDeclaration,
+    const std::vector<const Token *> &typeParametersInDeclaration,
     const std::string &newName,
-    std::vector<const Token *> &typesUsedInTemplateInstantiation,
+    const std::vector<const Token *> &typesUsedInTemplateInstantiation,
     std::list<Token *> &templateInstantiations)
 {
     bool inTemplateDefinition=false;

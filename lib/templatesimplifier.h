@@ -99,7 +99,7 @@ public:
      * @param patternAfter pattern that must match the tokens after the ">"
      * @return match => true
      */
-    static bool instantiateMatch(const Token *instance, const std::string &name, std::size_t numberOfArguments, const char patternAfter[]);
+    static bool instantiateMatch(const Token *instance, const std::string &name, const std::size_t numberOfArguments, const char patternAfter[]);
 
     /**
      * Match template declaration/instantiation
@@ -113,9 +113,9 @@ public:
         TokenList& tokenlist,
         const Token *tok,
         const std::string &name,
-        std::vector<const Token *> &typeParametersInDeclaration,
+        const std::vector<const Token *> &typeParametersInDeclaration,
         const std::string &newName,
-        std::vector<const Token *> &typesUsedInTemplateInstantiation,
+        const std::vector<const Token *> &typesUsedInTemplateInstantiation,
         std::list<Token *> &templateInstantiations);
 
     /**
