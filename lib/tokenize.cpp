@@ -2415,7 +2415,7 @@ static void setVarIdStructMembers(Token **tok1,
 }
 
 
-void Tokenizer::setVarIdClassDeclaration(Token * const startToken,
+void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
         const std::map<std::string, unsigned int> &variableId,
         const unsigned int scopeStartVarId,
         std::map<unsigned int, std::map<std::string,unsigned int> >& structMembers)

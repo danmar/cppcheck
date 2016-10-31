@@ -691,7 +691,7 @@ private:
 
     void unsupportedTypedef(const Token *tok) const;
 
-    void setVarIdClassDeclaration(Token * const startToken,
+    void setVarIdClassDeclaration(const Token * const startToken,
                                   const std::map<std::string, unsigned int> &variableId,
                                   const unsigned int scopeStartVarId,
                                   std::map<unsigned int, std::map<std::string,unsigned int> >& structMembers);
