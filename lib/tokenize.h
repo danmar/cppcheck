@@ -238,8 +238,8 @@ public:
      * Simplify variable declarations (split up)
      * \param only_k_r_fpar Only simplify K&R function parameters
      */
-    void simplifyVarDecl(bool only_k_r_fpar);
-    void simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_fpar);
+    void simplifyVarDecl(const bool only_k_r_fpar);
+    void simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar);
 
     /**
      * Simplify variable initialization
