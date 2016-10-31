@@ -731,5 +731,5 @@ void CppCheck::analyseWholeProgram()
 
 bool CppCheck::isUnusedFunctionCheckEnabled() const
 {
-    return (_settings.jobs == 1 && _settings.isEnabled("unusedFunction"));
+    return ((_settings.jobs == 1 || !_settings.buildDir.empty()) && _settings.isEnabled("unusedFunction"));
 }

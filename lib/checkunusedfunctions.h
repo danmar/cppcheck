@@ -25,6 +25,10 @@
 #include "config.h"
 #include "check.h"
 
+namespace tinyxml2 {
+    class XMLElement;
+}
+
 /// @addtogroup Checks
 /** @brief Check for functions never called */
 /// @{
@@ -56,6 +60,10 @@ public:
     static CheckUnusedFunctions instance;
 
     std::string analyzerInfo(const std::string &filename) const;
+
+    /** @brief Combine and analyze all analyzerInfos for all TUs */
+    void clear();
+    void loadInfo(const tinyxml2::XMLElement *info, const std::string &filename);
 
 private:
 
@@ -96,6 +104,15 @@ private:
     };
 
     std::map<std::string, FunctionUsage> _functions;
+
+    class CPPCHECKLIB FunctionDecl {
+    public:
+        FunctionDecl(const Function *f);
+        std::string functionName;
+        unsigned int lineNumber;
+    };
+    std::list<struct FunctionDecl> _functionDecl;
+    std::set<std::string> _functionCalls;
 };
 /// @}
 //---------------------------------------------------------------------------

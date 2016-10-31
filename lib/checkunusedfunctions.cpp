@@ -23,6 +23,7 @@
 #include "token.h"
 #include "symboldatabase.h"
 #include <cctype>
+#include <tinyxml2.h>
 //---------------------------------------------------------------------------
 
 
@@ -43,6 +44,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     const SymbolDatabase* symbolDatabase = tokenizer.getSymbolDatabase();
 
     // Function declarations..
+    _functionDecl.clear();
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); i++) {
         const Scope* scope = symbolDatabase->functionScopes[i];
         const Function* func = scope->function;
@@ -56,6 +58,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         // Don't care about templates
         if (tokenizer.isCPP() && func->retDef->str() == "template")
             continue;
+
+        _functionDecl.push_back(FunctionDecl(func));
 
         FunctionUsage &usage = _functions[func->name()];
 
@@ -74,6 +78,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     }
 
     // Function usage..
+    _functionCalls.clear();
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
 
         // parsing of library code to find called functions
@@ -91,6 +96,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 } else if (markupVarToken->str() == settings->library.blockend(FileName))
                     scope--;
                 else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {
+                    _functionCalls.insert(markupVarToken->str());
                     if (_functions.find(markupVarToken->str()) != _functions.end())
                         _functions[markupVarToken->str()].usedOtherFile = true;
                     else if (markupVarToken->next()->str() == "(") {
@@ -116,6 +122,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                     if (_functions.find(value) != _functions.end()) {
                         _functions[value].usedOtherFile = true;
                     }
+                    _functionCalls.insert(value);
                 }
                 if (settings->library.isexportedsuffix(tok->str(), propToken->str())) {
                     const Token* prevPropToken = propToken->previous();
@@ -123,6 +130,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                     if (value != ")" && _functions.find(value) != _functions.end()) {
                         _functions[value].usedOtherFile = true;
                     }
+                    _functionCalls.insert(value);
                 }
                 propToken = propToken->next();
             }
@@ -136,6 +144,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                     const std::string& value = propToken->str();
                     if (!value.empty()) {
                         _functions[value].usedOtherFile = true;
+                        _functionCalls.insert(value);
                         break;
                     }
                     propToken = propToken->next();
@@ -161,6 +170,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 if (index == argIndex) {
                     value = value.substr(1, value.length() - 2);
                     _functions[value].usedOtherFile = true;
+                    _functionCalls.insert(value);
                 }
             }
         }
@@ -204,6 +214,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 func.usedOtherFile = true;
             else
                 func.usedSameFile = true;
+
+            _functionCalls.insert(funcname->str());
         }
     }
 }
@@ -261,10 +273,9 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
 
 Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    if (settings->isEnabled("unusedFunction") && settings->jobs == 1)
+    if (settings->isEnabled("unusedFunction") && (settings->jobs == 1 || !settings->buildDir.empty()))
         instance.parseTokens(*tokenizer, tokenizer->list.getFiles().front().c_str(), settings);
     return nullptr;
-
 }
 
 void CheckUnusedFunctions::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
@@ -273,18 +284,44 @@ void CheckUnusedFunctions::analyseWholeProgram(const std::list<Check::FileInfo*>
     check(&errorLogger, settings);
 }
 
+CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
+    : functionName(f->name()), lineNumber(f->token->linenr())
+{
+}
+
 std::string CheckUnusedFunctions::analyzerInfo(const std::string &filename) const
 {
     std::ostringstream ret;
-    for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it) {
-        if (it->second.filename != filename)
-            continue;
-        ret << "    <functionusage"
-            << " function=\"" << ErrorLogger::toxml(it->first) << '\"'
-            << " lineNumber=\"" << it->second.lineNumber << '\"'
-            << " usedSameFile=\"" << (it->second.usedSameFile?1:0) << '\"'
-            << " usedOtherFile=\"" << (it->second.usedOtherFile?1:0) << "\"/>\n";
+    for (std::list<FunctionDecl>::const_iterator it = instance._functionDecl.begin(); it != instance._functionDecl.end(); ++it) {
+        ret << "    <functiondecl"
+            << " functionName=\"" << ErrorLogger::toxml(it->functionName) << '\"'
+            << " lineNumber=\"" << it->lineNumber << "\"/>\n";
+    }
+    for (std::set<std::string>::const_iterator it = instance._functionCalls.begin(); it != instance._functionCalls.end(); ++it) {
+        ret << "    <functioncall functionName=\"" << ErrorLogger::toxml(*it) << "\"/>\n";
     }
     return ret.str();
 }
 
+
+void CheckUnusedFunctions::clear()
+{
+    instance._functions.clear();
+}
+
+void CheckUnusedFunctions::loadInfo(const tinyxml2::XMLElement *info, const std::string &filename)
+{
+    for (const tinyxml2::XMLElement *e = info->FirstChildElement(); e; e = e->NextSiblingElement()) {
+        if (std::strcmp(e->Name(), "functiondecl")==0) {
+            FunctionUsage &func = _functions[e->Attribute("functionName")];
+            func.filename = filename;
+            func.lineNumber = std::atoi(e->Attribute("lineNumber"));
+        } else if (std::strcmp(e->Name(), "functioncall")==0) {
+            FunctionUsage &func = _functions[e->Attribute("functionName")];
+            if (func.filename == filename)
+                func.usedSameFile = true;
+            else
+                func.usedOtherFile = true;
+        }
+    }
+}
