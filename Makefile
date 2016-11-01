@@ -303,7 +303,7 @@ endif
 $(SRCDIR)/analyzerinfo.o: lib/analyzerinfo.cpp lib/cxx11emu.h lib/analyzerinfo.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/path.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/analyzerinfo.o $(SRCDIR)/analyzerinfo.cpp
 
-$(SRCDIR)/astutils.o: lib/astutils.cpp lib/cxx11emu.h lib/astutils.h lib/symboldatabase.h lib/config.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h
+$(SRCDIR)/astutils.o: lib/astutils.cpp lib/cxx11emu.h lib/astutils.h lib/settings.h lib/config.h lib/library.h lib/mathlib.h lib/standards.h lib/errorlogger.h lib/suppressions.h lib/platform.h lib/importproject.h lib/timer.h lib/symboldatabase.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/astutils.o $(SRCDIR)/astutils.cpp
 
 $(SRCDIR)/check.o: lib/check.cpp lib/cxx11emu.h lib/check.h lib/config.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/standards.h lib/platform.h lib/importproject.h lib/timer.h

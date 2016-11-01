@@ -25,6 +25,7 @@
 #include <set>
 #include <string>
 
+class Settings;
 class Token;
 
 /** Is expression a 'signed char' if no promotion is used */
@@ -71,8 +72,18 @@ bool isWithoutSideEffects(bool cpp, const Token* tok);
 /** Is scope a return scope (scope will unconditionally return) */
 bool isReturnScope(const Token *endToken);
 
+/** Is variable changed by function call?
+ * In case the anser of the question is inconclusive, e.g. because the function declaration is not known
+ * the return value is false and the output parameter inconclusive is set to true
+ *
+ * @param tok           token of varible in function call
+ * @param settings      program settings
+ * @param inconclusive pointer to output variable which indicates that the answer of the question is inconclusive
+ */
+bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive);
+
 /** Is variable changed in block of code? */
-bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid);
+bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, const Settings *settings);
 
 /** Determines the number of arguments - if token is a function call or macro
  * @param start token which is supposed to be the function/macro name.
