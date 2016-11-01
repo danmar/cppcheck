@@ -107,7 +107,7 @@ private:
 
     class CPPCHECKLIB FunctionDecl {
     public:
-        FunctionDecl(const Function *f);
+        explicit FunctionDecl(const Function *f);
         std::string functionName;
         unsigned int lineNumber;
     };
