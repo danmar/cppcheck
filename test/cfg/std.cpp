@@ -3157,3 +3157,19 @@ void nullPointer_wmemcmp(wchar_t *p)
     // cppcheck-suppress nullPointer
     (void)std::wmemcmp(p, 0, 123);
 }
+
+///////////////////////////////////////////////////////////////////////
+//  <algorithm>
+///////////////////////////////////////////////////////////////////////
+
+#include <algorithm>
+#include <list>
+
+void stdfind(const std::list<int> &ints1, const std::list<int> &ints2) {
+    std::list<int>::const_iterator it;
+    // cppcheck-suppress mismatchingContainers
+    // cppcheck-suppress ignoredReturnValue
+    std::find(ints1.begin(), ints2.end(), 123);
+    // TODO cppcheck-suppress mismatchingContainers
+    if (std::find(ints1.begin(), ints1.end(), 123) == ints2.end()){}
+}
