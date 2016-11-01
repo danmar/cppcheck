@@ -4619,7 +4619,7 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
             // library function
             else if (tok->previous()) {
                 const std::string typestr(settings->library.returnValueType(tok->previous()));
-                if (typestr.empty())
+                if (typestr.empty() || typestr == "iterator")
                     continue;
                 TokenList tokenList(settings);
                 std::istringstream istr(typestr+";");

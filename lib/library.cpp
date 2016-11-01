@@ -550,12 +550,14 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 _returnValue[name] = expr;
             if (const char *type = functionnode->Attribute("type"))
                 _returnValueType[name] = type;
+            if (const char *container = functionnode->Attribute("container"))
+                _returnValueContainer[name] = std::atoi(container);
         } else if (functionnodename == "arg") {
             const char* argNrString = functionnode->Attribute("nr");
             if (!argNrString)
                 return Error(MISSING_ATTRIBUTE, "nr");
             const bool bAnyArg = strcmp(argNrString, "any")==0;
-            const int nr = (bAnyArg) ? -1 : atoi(argNrString);
+            const int nr = bAnyArg ? -1 : std::atoi(argNrString);
             ArgumentChecks &ac = argumentChecks[name][nr];
             ac.optional  = functionnode->Attribute("default") != nullptr;
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
@@ -998,6 +1000,14 @@ std::string Library::returnValueType(const Token *ftok) const
         return std::string();
     std::map<std::string, std::string>::const_iterator it = _returnValueType.find(getFunctionName(ftok));
     return it != _returnValueType.end() ? it->second : std::string();
+}
+
+int Library::returnValueContainer(const Token *ftok) const
+{
+    if (isNotLibraryFunction(ftok))
+        return -1;
+    std::map<std::string, int>::const_iterator it = _returnValueContainer.find(getFunctionName(ftok));
+    return it != _returnValueContainer.end() ? it->second : -1;
 }
 
 bool Library::isnoreturn(const Token *ftok) const

@@ -298,6 +298,8 @@ static const std::string pattern2 = pattern1x1_1 + pattern1x1_2;
 
 static const Variable *getContainer(const Token *argtok)
 {
+    while (argtok && argtok->astOperand1())
+        argtok = argtok->astOperand1();
     if (!Token::Match(argtok, "%var% . begin|end|rbegin|rend ( )")) // TODO: use Library yield
         return nullptr;
     const Variable *var = argtok->variable();
@@ -339,6 +341,17 @@ void CheckStl::mismatchingContainers()
                     containerNr[c] = i->container;
                 } else if (it->second != i->container) {
                     mismatchingContainersError(argTok);
+                }
+            }
+            int ret = _settings->library.returnValueContainer(ftok);
+            if (ret != -1 && Token::Match(ftok->next()->astParent(), "==|!=")) {
+                const Token *parent = ftok->next()->astParent();
+                const Token *other = (parent->astOperand1() == ftok->next()) ? parent->astOperand2() : parent->astOperand1();
+                const Variable *c = getContainer(other);
+                if (c) {
+                    std::map<const Variable *, unsigned int>::const_iterator it = containerNr.find(c);
+                    if (it == containerNr.end() || it->second != ret)
+                        mismatchingContainersError(other);
                 }
             }
         }
