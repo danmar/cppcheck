@@ -368,7 +368,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         exitcode=1; // e.g. reflect a syntax error
     }
 
-    analyzerInformation.setFileInfo("CheckUnusedFunctions", CheckUnusedFunctions::instance.analyzerInfo(filename));
+    analyzerInformation.setFileInfo("CheckUnusedFunctions", CheckUnusedFunctions::instance.analyzerInfo());
     analyzerInformation.close();
 
     // In jointSuppressionReport mode, unmatched suppressions are

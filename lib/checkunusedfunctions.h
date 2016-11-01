@@ -59,7 +59,7 @@ public:
 
     static CheckUnusedFunctions instance;
 
-    std::string analyzerInfo(const std::string &filename) const;
+    std::string analyzerInfo() const;
 
     /** @brief Combine and analyze all analyzerInfos for all TUs */
     void clear();

@@ -289,7 +289,7 @@ CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
 {
 }
 
-std::string CheckUnusedFunctions::analyzerInfo(const std::string &filename) const
+std::string CheckUnusedFunctions::analyzerInfo() const
 {
     std::ostringstream ret;
     for (std::list<FunctionDecl>::const_iterator it = instance._functionDecl.begin(); it != instance._functionDecl.end(); ++it) {
