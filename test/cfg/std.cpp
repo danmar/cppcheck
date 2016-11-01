@@ -3166,7 +3166,6 @@ void nullPointer_wmemcmp(wchar_t *p)
 #include <list>
 
 void stdfind(const std::list<int> &ints1, const std::list<int> &ints2) {
-    std::list<int>::const_iterator it;
     // cppcheck-suppress mismatchingContainers
     // cppcheck-suppress ignoredReturnValue
     std::find(ints1.begin(), ints2.end(), 123);
