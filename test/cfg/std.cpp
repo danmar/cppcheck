@@ -3172,4 +3172,16 @@ void stdfind(const std::list<int> &ints1, const std::list<int> &ints2)
     std::find(ints1.begin(), ints2.end(), 123);
     // cppcheck-suppress mismatchingContainers
     if (std::find(ints1.begin(), ints1.end(), 123) == ints2.end()) {}
+
+    // cppcheck-suppress mismatchingContainers
+    // cppcheck-suppress ignoredReturnValue
+    std::find_if(ints1.begin(), ints2.end(), [](int i){return i!=0;});
+    // cppcheck-suppress mismatchingContainers
+    if (std::find_if(ints1.begin(), ints1.end(), [](int i){return i!=0;}) == ints2.end()) {}
+
+    // cppcheck-suppress mismatchingContainers
+    // cppcheck-suppress ignoredReturnValue
+    std::find_if_not(ints1.begin(), ints2.end(), [](int i){return i!=0;});
+    // cppcheck-suppress mismatchingContainers
+    if (std::find_if_not(ints1.begin(), ints1.end(), [](int i){return i!=0;}) == ints2.end()) {}
 }
