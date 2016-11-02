@@ -3215,4 +3215,9 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
     // cppcheck-suppress mismatchingContainers
     // cppcheck-suppress ignoredReturnValue
     std::count_if(ints1.begin(), ints2.end(), pred);
+
+    // <!-- Function std::for_each(InputIterator first, InputIterator last, Function func) -->
+    // cppcheck-suppress mismatchingContainers
+    std::for_each(ints1.begin(), ints2.end(), [](int i){});
+
 }
