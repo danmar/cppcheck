@@ -47,7 +47,7 @@ script:
   - cd ../
 # use same hack as for clang to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
   - touch /tmp/cppcheck.cppcheck
-  - ./cppcheck --error-exitcode=1 -Ilib --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions . -j 2 |& tee /tmp/cppcheck.cppcheck
+  - ./cppcheck --error-exitcode=1 -Ilib --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions -itest/synthetic . -j 2 |& tee /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
 # run extra tests
   - tools/generate_and_run_more_tests.sh
