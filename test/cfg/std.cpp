@@ -3165,6 +3165,9 @@ void nullPointer_wmemcmp(wchar_t *p)
 #include <algorithm>
 #include <list>
 
+//  <!-- InputIterator std::find(InputIterator first, InputIterator last, T val) -->
+//  <!-- InputIterator std::find_if(InputIterator first, InputIterator last, UnaryPredicate val) -->
+//  <!-- InputIterator std::find_if_not(InputIterator first, InputIterator last, UnaryPredicate val) -->
 void stdfind(const std::list<int> &ints1, const std::list<int> &ints2)
 {
     // cppcheck-suppress mismatchingContainers
@@ -3184,4 +3187,23 @@ void stdfind(const std::list<int> &ints1, const std::list<int> &ints2)
     std::find_if_not(ints1.begin(), ints2.end(), [](int i){return i!=0;});
     // cppcheck-suppress mismatchingContainers
     if (std::find_if_not(ints1.begin(), ints1.end(), [](int i){return i!=0;}) == ints2.end()) {}
+}
+
+//  <!-- bool std::all_of(InputIterator first, InputIterator last, UnaryPredicate pred) -->
+//  <!-- bool std::any_of(InputIterator first, InputIterator last, UnaryPredicate pred) -->
+//  <!-- bool std::none_of(InputIterator first, InputIterator last, UnaryPredicate pred) -->
+void stdallof(const std::list<int> &ints1, const std::list<int> &ints2) {
+    bool pred(int);
+
+    // cppcheck-suppress mismatchingContainers
+    // cppcheck-suppress ignoredReturnValue
+    std::all_of(ints1.begin(), ints2.end(), pred);
+
+    // cppcheck-suppress mismatchingContainers
+    // cppcheck-suppress ignoredReturnValue
+    std::any_of(ints1.begin(), ints2.end(), pred);
+
+    // cppcheck-suppress mismatchingContainers
+    // cppcheck-suppress ignoredReturnValue
+    std::none_of(ints1.begin(), ints2.end(), pred);
 }
