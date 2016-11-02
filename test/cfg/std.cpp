@@ -3168,43 +3168,51 @@ void nullPointer_wmemcmp(wchar_t *p)
 #define pred    [](int i){return i==0;}
 
 
-//  <!-- InputIterator std::find(InputIterator first, InputIterator last, T val) -->
-//  <!-- InputIterator std::find_if(InputIterator first, InputIterator last, UnaryPredicate val) -->
-//  <!-- InputIterator std::find_if_not(InputIterator first, InputIterator last, UnaryPredicate val) -->
-void stdfind(const std::list<int> &ints1, const std::list<int> &ints2)
+void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
 {
+    // <!-- InputIterator std::find(InputIterator first, InputIterator last, T val) -->
     // cppcheck-suppress mismatchingContainers
     // cppcheck-suppress ignoredReturnValue
     std::find(ints1.begin(), ints2.end(), 123);
     // cppcheck-suppress mismatchingContainers
     if (std::find(ints1.begin(), ints1.end(), 123) == ints2.end()) {}
 
+    // <!-- InputIterator std::find_if(InputIterator first, InputIterator last, UnaryPredicate val) -->
     // cppcheck-suppress mismatchingContainers
     // cppcheck-suppress ignoredReturnValue
     std::find_if(ints1.begin(), ints2.end(), pred);
     // cppcheck-suppress mismatchingContainers
     if (std::find_if(ints1.begin(), ints1.end(), pred) == ints2.end()) {}
 
+    // <!-- InputIterator std::find_if_not(InputIterator first, InputIterator last, UnaryPredicate val) -->
     // cppcheck-suppress mismatchingContainers
     // cppcheck-suppress ignoredReturnValue
     std::find_if_not(ints1.begin(), ints2.end(), pred);
     // cppcheck-suppress mismatchingContainers
     if (std::find_if_not(ints1.begin(), ints1.end(), pred) == ints2.end()) {}
-}
 
-//  <!-- bool std::all_of(InputIterator first, InputIterator last, UnaryPredicate pred) -->
-//  <!-- bool std::any_of(InputIterator first, InputIterator last, UnaryPredicate pred) -->
-//  <!-- bool std::none_of(InputIterator first, InputIterator last, UnaryPredicate pred) -->
-void stdallof(const std::list<int> &ints1, const std::list<int> &ints2) {
+    // <!-- bool std::all_of(InputIterator first, InputIterator last, UnaryPredicate pred) -->
     // cppcheck-suppress mismatchingContainers
     // cppcheck-suppress ignoredReturnValue
     std::all_of(ints1.begin(), ints2.end(), pred);
 
+    // <!-- bool std::any_of(InputIterator first, InputIterator last, UnaryPredicate pred) -->
     // cppcheck-suppress mismatchingContainers
     // cppcheck-suppress ignoredReturnValue
     std::any_of(ints1.begin(), ints2.end(), pred);
 
+    // <!-- bool std::none_of(InputIterator first, InputIterator last, UnaryPredicate pred) -->
     // cppcheck-suppress mismatchingContainers
     // cppcheck-suppress ignoredReturnValue
     std::none_of(ints1.begin(), ints2.end(), pred);
+
+    // <!-- difference_type std::count(InputIterator first, InputIterator last, T val) -->
+    // cppcheck-suppress mismatchingContainers
+    // cppcheck-suppress ignoredReturnValue
+    std::count(ints1.begin(), ints2.end(), 123);
+
+    // <!-- difference_type std::count_if(InputIterator first, InputIterator last, UnaryPredicate val) -->
+    // cppcheck-suppress mismatchingContainers
+    // cppcheck-suppress ignoredReturnValue
+    std::count_if(ints1.begin(), ints2.end(), pred);
 }
