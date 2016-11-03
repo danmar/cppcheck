@@ -2,7 +2,7 @@
 int TestData[100];
 
 
-void test_function_par(int par) {
+void test_function_par1(int par) {
   TestData[par] = 0;
 }
 void test_function_par2(int x, int y) {

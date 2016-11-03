@@ -5,6 +5,6 @@ int null_pointer() { int *p = 0; return *p; }
 int *pointer_arithmetic() { static int buf[10]; return buf + 100; }
 int shift_overrun(int x) { return x << 123; }
 int shift_negative() { return -1 << 1; }
-int signed_int_overrun() { int x = ~0; return x * 2; }
+int signed_int_overrun() { int intmax = (~0U) >> 1; return intmax * 2; }
 void string_literal() { *((char *)"hello") = 0; }
 int uninit() { int x; return x + 2; }
