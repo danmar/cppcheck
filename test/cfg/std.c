@@ -3723,6 +3723,11 @@ void valueFlow(void)
     AssertAlwaysTrue(iswblank(w0) == 0);
 
     // cppcheck-suppress knownConditionTrueFalse
+    AssertAlwaysTrue(iswdigit(w0) == 0);
+    // cppcheck-suppress knownConditionTrueFalse
+    AssertAlwaysTrue(iswdigit(wtab) == 1);
+
+    // cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(labs(three) == 3);
     // cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(labs(minusThree) == 3);
