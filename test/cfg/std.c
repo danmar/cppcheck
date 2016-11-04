@@ -3692,8 +3692,9 @@ void invalidPrintfArgType_printf(void)
 void valueFlow(void)
 {
     const char abc[] = "abc";
-    int three = 3, minusThree = -3;
-    int c0='0', ca='a', blank=' ', tab='\t';
+    const int three = 3, minusThree = -3;
+    const int c0='0', ca='a', blank=' ', tab='\t';
+    const wint_t wblank=L' ', wtab=L'\t', w0=L'0';
 
     // When adding functions below, please sort alphabetically.
 
@@ -3713,6 +3714,14 @@ void valueFlow(void)
     AssertAlwaysTrue(isdigit(c0) == 1);
     // cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(isdigit(ca) == 0);
+
+    // cppcheck-suppress knownConditionTrueFalse
+    AssertAlwaysTrue(iswblank(wblank) == 1);
+    // cppcheck-suppress knownConditionTrueFalse
+    AssertAlwaysTrue(iswblank(wtab) == 1);
+    // cppcheck-suppress knownConditionTrueFalse
+    AssertAlwaysTrue(iswblank(w0) == 0);
+
     // cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(labs(three) == 3);
     // cppcheck-suppress knownConditionTrueFalse

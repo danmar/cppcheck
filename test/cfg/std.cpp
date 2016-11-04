@@ -3218,6 +3218,6 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
 
     // <!-- Function std::for_each(InputIterator first, InputIterator last, Function func) -->
     // cppcheck-suppress mismatchingContainers
-    std::for_each(ints1.begin(), ints2.end(), [](int i){});
+    std::for_each(ints1.begin(), ints2.end(), [](int i) {});
 
 }
