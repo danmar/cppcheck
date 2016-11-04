@@ -73,10 +73,10 @@ bool isWithoutSideEffects(bool cpp, const Token* tok);
 bool isReturnScope(const Token *endToken);
 
 /** Is variable changed by function call?
- * In case the anser of the question is inconclusive, e.g. because the function declaration is not known
+ * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
  * the return value is false and the output parameter inconclusive is set to true
  *
- * @param tok           token of varible in function call
+ * @param tok           token of variable in function call
  * @param settings      program settings
  * @param inconclusive pointer to output variable which indicates that the answer of the question is inconclusive
  */

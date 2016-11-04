@@ -332,7 +332,7 @@ public:
     /**
      * Convert XML-sensitive characters into XML entities
      * @param str The input string containing XML-sensitive characters
-     * @return The ouput string containing XML entities
+     * @return The output string containing XML entities
      */
     static std::string toxml(const std::string &str);
 };

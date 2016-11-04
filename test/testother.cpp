@@ -118,7 +118,7 @@ private:
         TEST_CASE(clarifyStatement);
 
         TEST_CASE(duplicateBranch);
-        TEST_CASE(duplicateBranch1); // tests extracted by http://www.viva64.com/en/b/0149/ ( Comparison between PVS-Studio and cppcheck ): Errors detected in Quake 3: Arena by PVS-Studio: Fragement 2
+        TEST_CASE(duplicateBranch1); // tests extracted by http://www.viva64.com/en/b/0149/ ( Comparison between PVS-Studio and cppcheck ): Errors detected in Quake 3: Arena by PVS-Studio: Fragment 2
         TEST_CASE(duplicateBranch2); // empty macro
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
@@ -3338,7 +3338,7 @@ private:
     void duplicateBranch1() {
 
         // tests inspired by http://www.viva64.com/en/b/0149/ ( Comparison between PVS-Studio and cppcheck )
-        // Errors detected in Quake 3: Arena by PVS-Studio: Fragement 2
+        // Errors detected in Quake 3: Arena by PVS-Studio: Fragment 2
         check("void f()\n"
               "{\n"
               "  if (front < 0)\n"

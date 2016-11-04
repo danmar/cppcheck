@@ -521,7 +521,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 if (!findFormat(1, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
             } else if (Token::simpleMatch(tok, "swprintf (") && !Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) {
-                // Find forth parameter and format string
+                // Find fourth parameter and format string
                 if (!findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
             } else if (isWindows && Token::Match(tok, "sprintf_s|swprintf_s (")) {

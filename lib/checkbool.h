@@ -32,7 +32,7 @@ class Variable;
 /// @{
 
 
-/** @brief checks dealing with suspicous usage of boolean type (not for evaluating conditions) */
+/** @brief checks dealing with suspicious usage of boolean type (not for evaluating conditions) */
 
 class CPPCHECKLIB CheckBool : public Check {
 public:

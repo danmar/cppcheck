@@ -1649,7 +1649,7 @@ void CheckOther::checkIncompleteStatement()
         else if (Token::Match(tok,"> %name% {") || Token::Match(tok, "[;{}] return {"))
             tok = tok->linkAt(2);
 
-        // C++11 initialize set in initalizer list : [,:] std::set<int>{1} [{,]
+        // C++11 initialize set in initializer list : [,:] std::set<int>{1} [{,]
         else if (Token::simpleMatch(tok,"> {") && tok->link())
             tok = tok->next()->link();
 
@@ -1774,7 +1774,7 @@ void CheckOther::nanInArithmeticExpressionError(const Token *tok)
 }
 
 //---------------------------------------------------------------------------
-// Creating instance of clases which are destroyed immediately
+// Creating instance of classes which are destroyed immediately
 //---------------------------------------------------------------------------
 void CheckOther::checkMisusedScopedObject()
 {
@@ -2104,7 +2104,7 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse()
                 const unsigned int varidLeft = tok->tokAt(2)->varId();// get the left varid
                 const unsigned int varidRight = tok->tokAt(4)->varId();// get the right varid
                 // compare varids: if they are not zero but equal
-                // --> the comparison function is calles with the same variables
+                // --> the comparison function is called with the same variables
                 if (varidLeft == varidRight) {
                     const std::string& functionName = tok->str(); // store function name
                     const std::string& varNameLeft = tok->strAt(2); // get the left variable name
@@ -2290,7 +2290,7 @@ void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
                 "The const variable '"+varname+"' is assigned a copy of the data. You can avoid "
                 "the unnecessary data copying by converting '" + varname + "' to const reference.",
                 CWE398,
-                true); // since #5618 that check became inconlusive
+                true); // since #5618 that check became inconclusive
 }
 
 //---------------------------------------------------------------------------
@@ -2672,7 +2672,7 @@ void CheckOther::checkEvaluationOrder()
                     if (!tok3)
                         continue;
                     if (tok3->str() == "&" && !tok3->astOperand2())
-                        continue; // don't handle adress-of for now
+                        continue; // don't handle address-of for now
                     if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
                         continue; // don't care about sizeof usage
                     tokens.push(tok3->astOperand1());
