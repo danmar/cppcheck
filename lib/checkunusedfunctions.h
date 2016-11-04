@@ -111,7 +111,7 @@ private:
         std::string functionName;
         unsigned int lineNumber;
     };
-    std::list<struct FunctionDecl> _functionDecl;
+    std::list<FunctionDecl> _functionDecl;
     std::set<std::string> _functionCalls;
 };
 /// @}
