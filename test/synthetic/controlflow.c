@@ -10,7 +10,7 @@ int getValue(void); // unknown int value
 // -------------------------------------
 
 void arg_in_if(int a) {
-  if (a>=100)
+  if (a==100)
     buf[a] = 0; // BUG
 }
 
@@ -76,7 +76,7 @@ void var_in_while(void) {
   int x = 0;
   while (x<100) {
     buf[x] = 0; // BUG
-	x++;
+    x++;
   }
 }
 
@@ -102,7 +102,7 @@ void arg_var_in_while_1(int a) {
   if (a == 100) {}
   while (x<a) {
     buf[x] = 0; // WARNING
-	x++;
+    x++;
   }
 }
 
@@ -110,7 +110,7 @@ void arg_var_in_while_2(int a) {
   int x = 0;
   while (x<a) {
     buf[x] = 0; // WARNING
-	x++;
+    x++;
   }
   if (a == 100) {}
 }
