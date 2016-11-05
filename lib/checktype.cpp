@@ -117,7 +117,7 @@ void CheckType::checkIntegerOverflow()
         return;
 
     // max int value according to platform settings.
-    const MathLib::bigint maxint = (1LL << (_settings->int_bit - 1)) - 1;
+    const MathLib::bigint maxint = (1LL << (_settings->int_bit - 2)) - 1;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();

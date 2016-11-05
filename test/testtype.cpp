@@ -88,10 +88,10 @@ private:
 
         // Ticket #6793
         check("template<int I> int foo(int x) { return x << I; }\n"
-              "const int f = foo<31>(1);\n"
-              "const int g = foo<100>(1);\n"
+              "const int f = foo<31>(0);\n"
+              "const int g = foo<100>(0);\n"
               "template<int I> int hoo(int x) { return x << 32; }\n"
-              "const int h = hoo<100>(1);", &settings);
+              "const int h = hoo<100>(0);", &settings);
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n"
                       "[test.cpp:1]: (error) Shifting 32-bit value by 100 bits is undefined behaviour\n", errout.str());
 
@@ -106,6 +106,12 @@ private:
         Settings settings;
         settings.platform(Settings::Unix32);
         settings.addEnabled("warning");
+
+        check("void foo() {\n"
+              "    int intmax = 0x7fffffff;\n"
+              "    return intmax + 1;\n"
+              "}",&settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression 'intmax+1'.\n", errout.str());
 
         check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
