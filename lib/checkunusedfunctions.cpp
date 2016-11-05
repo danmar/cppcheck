@@ -22,6 +22,7 @@
 #include "tokenize.h"
 #include "token.h"
 #include "symboldatabase.h"
+#include "analyzerinfo.h"
 #include <cctype>
 #include <tinyxml2.h>
 //---------------------------------------------------------------------------
@@ -303,25 +304,56 @@ std::string CheckUnusedFunctions::analyzerInfo() const
     return ret.str();
 }
 
-
-void CheckUnusedFunctions::clear()
-{
-    instance._functions.clear();
+namespace {
+    struct Location {
+        Location() : fileName(""), lineNumber(0) {}
+        Location(std::string f, int l) : fileName(f), lineNumber(l) {}
+        std::string fileName;
+        int lineNumber;
+    };
 }
 
-void CheckUnusedFunctions::loadInfo(const tinyxml2::XMLElement *info, const std::string &filename)
+void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir, const std::map<std::string, std::size_t> &files)
 {
-    for (const tinyxml2::XMLElement *e = info->FirstChildElement(); e; e = e->NextSiblingElement()) {
-        if (std::strcmp(e->Name(), "functiondecl")==0) {
-            FunctionUsage &func = _functions[e->Attribute("functionName")];
-            func.filename = filename;
-            func.lineNumber = std::atoi(e->Attribute("lineNumber"));
-        } else if (std::strcmp(e->Name(), "functioncall")==0) {
-            FunctionUsage &func = _functions[e->Attribute("functionName")];
-            if (func.filename == filename)
-                func.usedSameFile = true;
-            else
-                func.usedOtherFile = true;
+    std::map<std::string, Location> decls;
+    std::set<std::string> calls;
+
+    for (std::map<std::string, std::size_t>::const_iterator it = files.begin(); it != files.end(); ++it) {
+        const std::string &sourcefile = it->first;
+        const std::string xmlfile = AnalyzerInformation::getAnalyzerInfoFile(buildDir, sourcefile);
+
+        tinyxml2::XMLDocument doc;
+        tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
+        if (error != tinyxml2::XML_SUCCESS)
+            continue;
+
+        const tinyxml2::XMLElement * const rootNode = doc.FirstChildElement();
+        if (rootNode == nullptr)
+            continue;
+
+        for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
+            if (std::strcmp(e->Name(), "FileInfo") == 0) {
+                const char *checkattr = e->Attribute("check");
+                if (checkattr && std::strcmp(checkattr,"CheckUnusedFunctions")==0) {
+                    for (const tinyxml2::XMLElement *e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
+                        if (!e2->Attribute("functionName"))
+                            continue;
+                        if (std::strcmp(e2->Name(),"functiondecl")==0 && e2->Attribute("lineNumber")) {
+                            decls[e2->Attribute("functionName")] = Location(sourcefile, std::atoi(e2->Attribute("lineNumber")));
+                        } else if (std::strcmp(e2->Name(),"functioncall")==0) {
+                            calls.insert(e2->Attribute("functionName"));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    for (std::map<std::string, Location>::const_iterator decl = decls.begin(); decl != decls.end(); ++decl) {
+        const std::string &functionName = decl->first;
+        if (calls.find(functionName) == calls.end()) {
+            const Location &loc = decl->second;
+            unusedFunctionError(errorLogger, loc.fileName, loc.lineNumber, functionName);
         }
     }
 }

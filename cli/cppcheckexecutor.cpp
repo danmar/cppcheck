@@ -854,6 +854,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         returnValue = executor.check();
     }
 
+    cppcheck.analyseWholeProgram(_settings->buildDir, _files);
+
     if (settings.isEnabled("information") || settings.checkConfiguration) {
         const bool enableUnusedFunctionCheck = cppcheck.isUnusedFunctionCheckEnabled();
 

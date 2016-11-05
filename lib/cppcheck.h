@@ -126,8 +126,14 @@ public:
         _simplify = false;
     }
 
-    /** analyse whole program, run this after all TUs has been scanned. */
+    /** Analyse whole program, run this after all TUs has been scanned.
+     * This is deprecated and the plan is to remove this when
+     * .analyzeinfo is good enough
+     */
     void analyseWholeProgram();
+
+    /** analyse whole program use .analyzeinfo files */
+    void analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files);
 
     /** Check if the user wants to check for unused functions
      * and if it's possible at all */

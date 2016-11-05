@@ -62,8 +62,7 @@ public:
     std::string analyzerInfo() const;
 
     /** @brief Combine and analyze all analyzerInfos for all TUs */
-    void clear();
-    void loadInfo(const tinyxml2::XMLElement *info, const std::string &filename);
+    void analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir, const std::map<std::string, std::size_t> &files);
 
 private:
 

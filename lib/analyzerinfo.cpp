@@ -58,21 +58,27 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned long long
     return true;
 }
 
+std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile)
+{
+    std::string filename = Path::fromNativeSeparators(buildDir);
+    if (filename.back() != '/')
+        filename += '/';
+    const std::string::size_type pos = sourcefile.rfind("/");
+    if (pos == std::string::npos)
+        filename += sourcefile;
+    else
+        filename += sourcefile.substr(pos+1);
+    filename += ".analyzerinfo";
+    return filename;
+}
+
 bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, unsigned long long checksum, std::list<ErrorLogger::ErrorMessage> *errors)
 {
     if (buildDir.empty() || sourcefile.empty())
         return true;
     close();
 
-    analyzerInfoFile = Path::fromNativeSeparators(buildDir);
-    if (analyzerInfoFile.back() != '/')
-        analyzerInfoFile += '/';
-    const std::string::size_type pos = sourcefile.rfind("/");
-    if (pos == std::string::npos)
-        analyzerInfoFile += sourcefile;
-    else
-        analyzerInfoFile += sourcefile.substr(pos+1);
-    analyzerInfoFile += ".analyzerinfo";
+    analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile);
 
     const std::string start = "<analyzerinfo checksum=\"" + std::to_string(checksum) + "\">";
 

@@ -53,6 +53,7 @@ public:
     bool analyzeFile(const std::string &buildDir, const std::string &sourcefile, unsigned long long checksum, std::list<ErrorLogger::ErrorMessage> *errors);
     void reportErr(const ErrorLogger::ErrorMessage &msg, bool verbose);
     void setFileInfo(const std::string &check, const std::string &fileInfo);
+    static std::string getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile);
 private:
     std::ofstream fout;
     std::string analyzerInfoFile;
