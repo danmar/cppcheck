@@ -733,8 +733,8 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
 {
     if (buildDir.empty())
         return;
-    if (_settings.isEnabled("unusedFunctions"))
-        CheckUnusedFunctions::instance.analyseWholeProgram(this, buildDir, files);
+//    if (_settings.isEnabled("unusedFunction"))
+//        CheckUnusedFunctions::instance.analyseWholeProgram(this, buildDir, files);
 }
 
 bool CppCheck::isUnusedFunctionCheckEnabled() const
