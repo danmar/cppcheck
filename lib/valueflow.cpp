@@ -287,7 +287,7 @@ static bool addValue(Token *tok, const ValueFlow::Value &value)
 }
 
 /** set ValueFlow value and perform calculations if possible */
-static void setTokenValue(Token* tok, const ValueFlow::Value &value)
+static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings=nullptr)
 {
     if (!addValue(tok,value))
         return;
@@ -298,11 +298,11 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
 
     // Cast..
     if (parent->str() == "(" && tok == parent->link()->next()) {
-        setTokenValue(parent,value);
+        setTokenValue(parent,value,settings);
     }
 
     else if (parent->str() == ":") {
-        setTokenValue(parent,value);
+        setTokenValue(parent,value,settings);
     }
 
     else if (parent->str() == "?" && tok->str() == ":" && tok == parent->astOperand2() && parent->astOperand1()) {
@@ -311,12 +311,12 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
             const ValueFlow::Value &condvalue = parent->astOperand1()->values.front();
             const bool cond(condvalue.tokvalue || condvalue.intvalue != 0);
             if (cond && !tok->astOperand1()) { // true condition, no second operator
-                setTokenValue(parent, condvalue);
+                setTokenValue(parent, condvalue, settings);
             } else {
                 const Token *op = cond ? tok->astOperand1() : tok->astOperand2();
                 const std::list<ValueFlow::Value> &values = op->values;
                 if (std::find(values.begin(), values.end(), value) != values.end())
-                    setTokenValue(parent, value);
+                    setTokenValue(parent, value, settings);
             }
         } else {
             // is condition only depending on 1 variable?
@@ -345,7 +345,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
             if (varId)
                 v.varId = varId;
 
-            setTokenValue(parent, v);
+            setTokenValue(parent, v, settings);
         }
     }
 
@@ -360,7 +360,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
 
         // known result when a operand is 0.
         if (Token::Match(parent, "[&*]") && value.isKnown() && value.tokvalue==nullptr && value.intvalue==0) {
-            setTokenValue(parent, value);
+            setTokenValue(parent, value, settings);
             return;
         }
 
@@ -383,27 +383,27 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                     switch (parent->str()[0]) {
                     case '+':
                         result.intvalue = value1->intvalue + value2->intvalue;
-                        setTokenValue(parent, result);
+                        setTokenValue(parent, result, settings);
                         break;
                     case '-':
                         result.intvalue = value1->intvalue - value2->intvalue;
-                        setTokenValue(parent, result);
+                        setTokenValue(parent, result, settings);
                         break;
                     case '*':
                         result.intvalue = value1->intvalue * value2->intvalue;
-                        setTokenValue(parent, result);
+                        setTokenValue(parent, result, settings);
                         break;
                     case '/':
                         if (value2->intvalue == 0)
                             break;
                         result.intvalue = value1->intvalue / value2->intvalue;
-                        setTokenValue(parent, result);
+                        setTokenValue(parent, result, settings);
                         break;
                     case '%':
                         if (value2->intvalue == 0)
                             break;
                         result.intvalue = value1->intvalue % value2->intvalue;
-                        setTokenValue(parent, result);
+                        setTokenValue(parent, result, settings);
                         break;
                     case '=':
                         if (parent->str() == "==") {
@@ -411,7 +411,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                                 result.intvalue = 0;
                             else
                                 result.intvalue = value1->intvalue == value2->intvalue;
-                            setTokenValue(parent, result);
+                            setTokenValue(parent, result, settings);
                         }
                         break;
                     case '!':
@@ -420,7 +420,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                                 result.intvalue = 1;
                             else
                                 result.intvalue = value1->intvalue != value2->intvalue;
-                            setTokenValue(parent, result);
+                            setTokenValue(parent, result, settings);
                         }
                         break;
                     case '>':
@@ -430,9 +430,11 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                             result.intvalue = value1->intvalue > value2->intvalue;
                         else if (parent->str() == ">=")
                             result.intvalue = value1->intvalue >= value2->intvalue;
+                        else if (parent->str() == ">>")
+                            result.intvalue = value1->intvalue >> value2->intvalue;
                         else
                             break;
-                        setTokenValue(parent, result);
+                        setTokenValue(parent, result, settings);
                         break;
                     case '<':
                         if (value1->tokvalue || value2->tokvalue)
@@ -441,27 +443,29 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                             result.intvalue = value1->intvalue < value2->intvalue;
                         else if (parent->str() == "<=")
                             result.intvalue = value1->intvalue <= value2->intvalue;
+                        else if (parent->str() == "<<")
+                            result.intvalue = value1->intvalue << value2->intvalue;
                         else
                             break;
-                        setTokenValue(parent, result);
+                        setTokenValue(parent, result, settings);
                         break;
                     case '&':
                         if (parent->str() == "&")
                             result.intvalue = value1->intvalue & value2->intvalue;
                         else
                             result.intvalue = value1->intvalue && value2->intvalue;
-                        setTokenValue(parent, result);
+                        setTokenValue(parent, result, settings);
                         break;
                     case '|':
                         if (parent->str() == "|")
                             result.intvalue = value1->intvalue | value2->intvalue;
                         else
                             result.intvalue = value1->intvalue || value2->intvalue;
-                        setTokenValue(parent, result);
+                        setTokenValue(parent, result, settings);
                         break;
                     case '^':
                         result.intvalue = value1->intvalue ^ value2->intvalue;
-                        setTokenValue(parent, result);
+                        setTokenValue(parent, result, settings);
                         break;
                     default:
                         // unhandled operator, do nothing
@@ -480,7 +484,30 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                 continue;
             ValueFlow::Value v(*it);
             v.intvalue = !v.intvalue;
-            setTokenValue(parent, v);
+            setTokenValue(parent, v, settings);
+        }
+    }
+
+    // ~
+    else if (parent->str() == "~") {
+        std::list<ValueFlow::Value>::const_iterator it;
+        for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+            if (it->tokvalue)
+                continue;
+            ValueFlow::Value v(*it);
+            v.intvalue = ~v.intvalue;
+            unsigned int bits = 0;
+            if (tok->valueType() &&
+                tok->valueType()->sign == ValueType::Sign::UNSIGNED &&
+                tok->valueType()->pointer == 0) {
+                if (tok->valueType()->type == ValueType::Type::INT)
+                    bits = settings->int_bit;
+                else if (tok->valueType()->type == ValueType::Type::LONG)
+                    bits = settings->long_bit;
+            }
+            if (bits > 0 && bits < 64)
+                v.intvalue &= (1ULL<<bits) - 1ULL;
+            setTokenValue(parent, v, settings);
         }
     }
 
@@ -492,7 +519,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                 continue;
             ValueFlow::Value v(*it);
             v.intvalue = -v.intvalue;
-            setTokenValue(parent, v);
+            setTokenValue(parent, v, settings);
         }
     }
 
@@ -522,7 +549,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                             setTokenValue(parent, result);
                         } else if (index >= 0 && index < s.size()) {
                             result.intvalue = s[index];
-                            setTokenValue(parent, result);
+                            setTokenValue(parent, result, settings);
                         }
                     } else if (value1->tokvalue->str() == "{") {
                         MathLib::bigint index = value2->intvalue;
@@ -536,7 +563,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                         }
                         if (Token::Match(element, "%num% [,}]")) {
                             result.intvalue = MathLib::toLongNumber(element->str());
-                            setTokenValue(parent, result);
+                            setTokenValue(parent, result, settings);
                         }
                     }
                 }
@@ -552,15 +579,15 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
     if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
         ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
         value.setKnown();
-        setTokenValue(const_cast<Token *>(tok), value);
+        setTokenValue(const_cast<Token *>(tok), value, settings);
     } else if (tok->enumerator() && tok->enumerator()->value_known) {
         ValueFlow::Value value(tok->enumerator()->value);
         value.setKnown();
-        setTokenValue(const_cast<Token *>(tok), value);
+        setTokenValue(const_cast<Token *>(tok), value, settings);
     } else if (tok->str() == "NULL" || (cpp && tok->str() == "nullptr")) {
         ValueFlow::Value value(0);
         value.setKnown();
-        setTokenValue(const_cast<Token *>(tok), value);
+        setTokenValue(const_cast<Token *>(tok), value, settings);
     } else if (Token::simpleMatch(tok, "sizeof (") && tok->tokAt(2)) {
         const Token *tok2 = tok->tokAt(2);
         if (tok2->enumerator() && tok2->enumerator()->scope) {
@@ -575,8 +602,8 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             }
             ValueFlow::Value value(size);
             value.setKnown();
-            setTokenValue(const_cast<Token *>(tok), value);
-            setTokenValue(const_cast<Token *>(tok->next()), value);
+            setTokenValue(const_cast<Token *>(tok), value, settings);
+            setTokenValue(const_cast<Token *>(tok->next()), value, settings);
         } else if (tok2->type() && tok2->type()->isEnumType()) {
             long long size = settings->sizeof_int;
             if (tok2->type()->classScope) {
@@ -591,8 +618,8 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             }
             ValueFlow::Value value(size);
             value.setKnown();
-            setTokenValue(const_cast<Token *>(tok), value);
-            setTokenValue(const_cast<Token *>(tok->next()), value);
+            setTokenValue(const_cast<Token *>(tok), value, settings);
+            setTokenValue(const_cast<Token *>(tok->next()), value, settings);
         }
         // skip over enum
         tok = tok->linkAt(1);

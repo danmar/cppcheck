@@ -339,6 +339,13 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(123, values.empty() ? 0 : values.front().intvalue);
 
+        // ~
+        code  = "x = ~0U;";
+        settings.platform(cppcheck::Platform::Native); // ensure platform is native
+        values = tokenValues(code,"~");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(~0U, values.back().intvalue);
+
         // !
         code  = "void f(int x) {\n"
                 "    a = !x;\n"
