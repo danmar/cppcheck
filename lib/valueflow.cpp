@@ -432,7 +432,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                             result.intvalue = value1->intvalue > value2->intvalue;
                         else if (parent->str() == ">=")
                             result.intvalue = value1->intvalue >= value2->intvalue;
-                        else if (parent->str() == ">>")
+                        else if (parent->str() == ">>" && value1->intvalue >= 0 && value2->intvalue >= 0)
                             result.intvalue = value1->intvalue >> value2->intvalue;
                         else
                             break;
@@ -445,7 +445,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                             result.intvalue = value1->intvalue < value2->intvalue;
                         else if (parent->str() == "<=")
                             result.intvalue = value1->intvalue <= value2->intvalue;
-                        else if (parent->str() == "<<")
+                        else if (parent->str() == "<<" && value1->intvalue >= 0 && value2->intvalue >= 0)
                             result.intvalue = value1->intvalue << value2->intvalue;
                         else
                             break;
