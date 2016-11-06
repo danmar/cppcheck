@@ -314,6 +314,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                 setTokenValue(parent, condvalue, settings);
             } else {
                 const Token *op = cond ? tok->astOperand1() : tok->astOperand2();
+                if (!op) // #7769 segmentation fault at setTokenValue()
+                    return;
                 const std::list<ValueFlow::Value> &values = op->values;
                 if (std::find(values.begin(), values.end(), value) != values.end())
                     setTokenValue(parent, value, settings);

@@ -233,6 +233,7 @@ private:
         TEST_CASE(garbageCode182); // #4195
         TEST_CASE(garbageCode183); // #7505
         TEST_CASE(garbageCode184); // #7699
+        TEST_CASE(garbageCode185); // #7769
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1527,6 +1528,11 @@ private:
                   "    NSArray* pScreens = [NSScreen screens];\n"
                   "    return pScreens ? [pScreens count] : 1;\n"
                   "}");
+    }
+
+    void garbageCode185() { // #7769
+        // that check failed to reproduce the segfault but got added anyway...
+        checkCode("!2 : #h2 ?:", false);
     }
 
 };
