@@ -50,7 +50,7 @@ typedef std::string TokenString;
  */
 class SIMPLECPP_LIB Location {
 public:
-    Location(const std::vector<std::string> &f) : files(f), fileIndex(0), line(1U), col(0U) {}
+    explicit Location(const std::vector<std::string> &f) : files(f), fileIndex(0), line(1U), col(0U) {}
 
     Location &operator=(const Location &other) {
         if (this != &other) {
@@ -152,7 +152,7 @@ private:
 
 /** Output from preprocessor */
 struct SIMPLECPP_LIB Output {
-    Output(const std::vector<std::string> &files) : type(ERROR), location(files) {}
+    explicit Output(const std::vector<std::string> &files) : type(ERROR), location(files) {}
     enum Type {
         ERROR, /* #error */
         WARNING, /* #warning */
@@ -170,7 +170,7 @@ typedef std::list<Output> OutputList;
 /** List of tokens. */
 class SIMPLECPP_LIB TokenList {
 public:
-    TokenList(std::vector<std::string> &filenames);
+    explicit TokenList(std::vector<std::string> &filenames);
     TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = 0);
     TokenList(const TokenList &other);
     ~TokenList();
@@ -262,7 +262,7 @@ private:
 
 /** Tracking how macros are used */
 struct SIMPLECPP_LIB MacroUsage {
-    MacroUsage(const std::vector<std::string> &f) : macroLocation(f), useLocation(f) {}
+    explicit MacroUsage(const std::vector<std::string> &f) : macroLocation(f), useLocation(f) {}
     std::string macroName;
     Location    macroLocation;
     Location    useLocation;

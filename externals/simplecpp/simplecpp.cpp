@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 #include <limits>
 #include <list>
 #include <map>
@@ -32,6 +33,7 @@
 #include <fstream>
 #include <iostream>
 #include <stack>
+#include <string>
 
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
 #include <windows.h>
@@ -392,8 +394,14 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                     loc.push(location);
                     location.fileIndex = fileIndex(cback()->str.substr(1U, cback()->str.size() - 2U));
                     location.line = 1U;
+                } else if (lastline == "# line %num%") {
+                    loc.push(location);
+                    location.line = std::atol(cback()->str.c_str());
+                } else if (lastline == "# line %num% %str%") {
+                    loc.push(location);
+                    location.fileIndex = fileIndex(cback()->str.substr(1U, cback()->str.size() - 2U));
+                    location.line = std::atol(cback()->previous->str.c_str());
                 }
-
                 // #endfile
                 else if (lastline == "# endfile" && !loc.empty()) {
                     location = loc.top();
@@ -870,7 +878,8 @@ std::string simplecpp::TokenList::lastLine(int maxsize) const {
             continue;
         if (!ret.empty())
             ret = ' ' + ret;
-        ret = (tok->str[0] == '\"' ? std::string("%str%") : tok->str) + ret;
+        ret = (tok->str[0] == '\"' ? std::string("%str%")
+               : std::isdigit(static_cast<unsigned char>(tok->str[0])) ? std::string("%num%") : tok->str) + ret;
         if (++count > maxsize)
             return "";
     }
@@ -1567,6 +1576,14 @@ namespace simplecpp {
 #ifdef SIMPLECPP_WINDOWS
 
 static bool realFileName(const std::vector<TCHAR> &buf, std::ostream &ostr) {
+    // Detect root directory, see simplecpp:realFileName returns the wrong root path #45
+    if ((buf.size()==2 || (buf.size()>2 && buf[2]=='\0'))
+            && std::isalpha(buf[0]) && buf[1]==':')
+    {
+        ostr << (char)buf[0];
+        ostr << (char)buf[1];
+        return true;
+    }
     WIN32_FIND_DATA FindFileData;
     HANDLE hFind = FindFirstFile(&buf[0], &FindFileData);
     if (hFind == INVALID_HANDLE_VALUE)
@@ -1640,7 +1657,13 @@ void simplifySizeof(simplecpp::TokenList &expr, const std::map<std::string, std:
         if (tok->str != "sizeof")
             continue;
         simplecpp::Token *tok1 = tok->next;
+        if (!tok1) {
+            throw std::runtime_error("missed sizeof argument");
+        }
         simplecpp::Token *tok2 = tok1->next;
+        if (!tok2) {
+            throw std::runtime_error("missed sizeof argument");
+        }
         if (tok1->op == '(') {
             tok1 = tok1->next;
             while (tok2->op != ')')
@@ -1837,8 +1860,6 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
         const std::string header2 = openHeader(f,dui,sourcefile,header,systemheader);
         if (!f.is_open())
             continue;
-
-        ret[header2] = 0;
 
         TokenList *tokens = new TokenList(f, fileNumbers, header2, outputList);
         ret[header2] = tokens;
