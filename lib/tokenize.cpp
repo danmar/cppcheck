@@ -220,7 +220,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
 
         if (end->str() == "[") {
             if (!end->link())
-                syntaxError(end); // #6680 invalid code
+                syntaxError(end); // invalid code
             end = end->link()->next();
         } else if (end->str() == ",") {
             // check for derived class
@@ -1046,7 +1046,7 @@ void Tokenizer::simplifyTypedef()
                         if (func->previous()->str() == "operator")
                             func = func->previous();
 
-                        if (!func->previous()) // #7020
+                        if (!func->previous())
                             syntaxError(func);
 
                         // check for qualifier
@@ -1485,7 +1485,7 @@ void Tokenizer::simplifyTypedef()
                     } else if (tok2->strAt(2) == "[") {
                         do {
                             if (!tok2->linkAt(2))
-                                syntaxError(tok2); // #6807
+                                syntaxError(tok2);
 
                             tok2 = tok2->linkAt(2)->previous();
                         } while (tok2->strAt(2) == "[");
@@ -2189,7 +2189,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
             if (tok->str() != "case" && tok->next() && tok->next()->str() == ":") {
                 tok = tok->next();
                 if (!tok->next())
-                    syntaxError(tok); // #7270 invalid code
+                    syntaxError(tok);
                 if (tok->next()->str() != ";" && tok->next()->str() != "case")
                     tok->insertToken(";");
                 else
@@ -2249,7 +2249,7 @@ void Tokenizer::simplifyTemplates()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // #2648 - simple fix for sizeof used as template parameter
+        // simple fix for sizeof used as template parameter
         // TODO: this is a bit hardcoded. make a bit more generic
         if (Token::Match(tok, "%name% < sizeof ( %type% ) >") && tok->tokAt(4)->isStandardType()) {
             Token * const tok3 = tok->next();
@@ -2440,7 +2440,7 @@ void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
     const Token *initListArgLastToken = nullptr;
     for (Token *tok = startToken->next(); tok != endToken; tok = tok->next()) {
         if (!tok)
-            syntaxError(nullptr); // #7089 invalid code
+            syntaxError(nullptr);
         if (initList) {
             if (tok == initListArgLastToken)
                 initListArgLastToken = nullptr;
@@ -2465,7 +2465,7 @@ void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
                 if (Token::Match(tok->previous(), "::|.") && tok->strAt(-2) != "this" && !Token::simpleMatch(tok->tokAt(-5), "( * this ) ."))
                     continue;
                 if (!tok->next())
-                    syntaxError(nullptr); // #7237 invalid code
+                    syntaxError(nullptr);
                 if (tok->next()->str() == "::") {
                     if (tok->str() == className)
                         tok = tok->tokAt(2);
@@ -3123,7 +3123,7 @@ bool Tokenizer::simplifySizeof()
                 do {
                     const MathLib::bigint num = MathLib::toLongNumber(tok2->strAt(1));
                     if (num<0)
-                        break; // #6940 negative number
+                        break;
                     size *= (unsigned)num;
                     tok2 = tok2->tokAt(3);
                 } while (Token::Match(tok2, "[ %num% ]"));
@@ -3162,7 +3162,7 @@ bool Tokenizer::simplifySizeof()
             tok->deleteThis();
             tok->deleteNext();
             std::ostringstream sz;
-            sz << ((isC()) ? _settings->sizeof_int : 1) ; // #7490 sizeof('a') should be sizeof(int) in C mode
+            sz << ((isC()) ? _settings->sizeof_int : 1);
             tok->str(sz.str());
             ret = true;
             continue;
@@ -3460,7 +3460,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove Borland stuff..
     simplifyBorland();
 
-    // #2449: syntax error: enum with typedef in it
+    // syntax error: enum with typedef in it
     checkForEnumsWithTypedef();
 
     // Remove __asm..
@@ -3818,7 +3818,7 @@ void Tokenizer::printDebugOutput(unsigned int simplification) const
     if (simplification == 2U && _settings->debugwarnings) {
         printUnknownTypes();
 
-        // #5054 - the typeStartToken() should come before typeEndToken()
+        // the typeStartToken() should come before typeEndToken()
         for (unsigned int varid = 1; varid < _symbolDatabase->getVariableListSize(); varid++) {
             const Variable *var = _symbolDatabase->getVariableFromVarId(varid);
             if (!var)
@@ -4897,9 +4897,9 @@ void Tokenizer::simplifyUndefinedSizeArray()
 void Tokenizer::simplifyCasts()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // #2897 : don't remove cast in such cases:
+        // Don't remove cast in such cases:
         // *((char *)a + 1) = 0;
-        // #3596 : remove cast when casting a function pointer:
+        // Remove cast when casting a function pointer:
         // (*(void (*)(char *))fp)(x);
         if (!tok->isName() &&
             Token::simpleMatch(tok->next(), "* (") &&
