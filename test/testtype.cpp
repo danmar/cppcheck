@@ -113,6 +113,12 @@ private:
               "}",&settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression 'intmax+1'.\n", errout.str());
 
+        check("void foo() {\n"
+              "    int intmax = 0x7fffffff;\n"
+              "    return intmax - 1;\n"
+              "}",&settings);
+        ASSERT_EQUALS("", errout.str());
+
         check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
               "   return x * x;\n"
