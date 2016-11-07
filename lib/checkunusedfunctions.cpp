@@ -39,13 +39,14 @@ static const struct CWE CWE561(561U);   // Dead Code
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings)
+void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings, bool clear)
 {
     const bool doMarkup = settings->library.markupFile(FileName);
     const SymbolDatabase* symbolDatabase = tokenizer.getSymbolDatabase();
 
     // Function declarations..
-    _functionDecl.clear();
+    if (clear)
+        _functionDecl.clear();
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); i++) {
         const Scope* scope = symbolDatabase->functionScopes[i];
         const Function* func = scope->function;
@@ -79,7 +80,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     }
 
     // Function usage..
-    _functionCalls.clear();
+    if (clear)
+        _functionCalls.clear();
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
 
         // parsing of library code to find called functions
@@ -293,12 +295,12 @@ CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
 std::string CheckUnusedFunctions::analyzerInfo() const
 {
     std::ostringstream ret;
-    for (std::list<FunctionDecl>::const_iterator it = instance._functionDecl.begin(); it != instance._functionDecl.end(); ++it) {
+    for (std::list<FunctionDecl>::const_iterator it = _functionDecl.begin(); it != _functionDecl.end(); ++it) {
         ret << "    <functiondecl"
             << " functionName=\"" << ErrorLogger::toxml(it->functionName) << '\"'
             << " lineNumber=\"" << it->lineNumber << "\"/>\n";
     }
-    for (std::set<std::string>::const_iterator it = instance._functionCalls.begin(); it != instance._functionCalls.end(); ++it) {
+    for (std::set<std::string>::const_iterator it = _functionCalls.begin(); it != _functionCalls.end(); ++it) {
         ret << "    <functioncall functionName=\"" << ErrorLogger::toxml(*it) << "\"/>\n";
     }
     return ret.str();
@@ -351,6 +353,11 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
 
     for (std::map<std::string, Location>::const_iterator decl = decls.begin(); decl != decls.end(); ++decl) {
         const std::string &functionName = decl->first;
+
+        if (functionName == "main" || functionName == "WinMain" || functionName == "_tmain" ||
+            functionName == "if" || functionName.compare(0, 8, "operator") == 0)
+            continue;
+
         if (calls.find(functionName) == calls.end()) {
             const Location &loc = decl->second;
             unusedFunctionError(errorLogger, loc.fileName, loc.lineNumber, functionName);

@@ -122,6 +122,8 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         }
     }
 
+    CheckUnusedFunctions checkUnusedFunctions;
+
     bool internalErrorFound(false);
     try {
         Preprocessor preprocessor(_settings, this);
@@ -316,6 +318,10 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 // Check normal tokens
                 checkNormalTokens(_tokenizer);
 
+                // Analyze info..
+                if (!_settings.buildDir.empty())
+                    checkUnusedFunctions.parseTokens(_tokenizer, filename.c_str(), &_settings, false);
+
                 // simplify more if required, skip rest of iteration if failed
                 if (_simplify) {
                     // if further simplification fails then skip rest of iteration
@@ -368,7 +374,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         exitcode=1; // e.g. reflect a syntax error
     }
 
-    analyzerInformation.setFileInfo("CheckUnusedFunctions", CheckUnusedFunctions::instance.analyzerInfo());
+    analyzerInformation.setFileInfo("CheckUnusedFunctions", checkUnusedFunctions.analyzerInfo());
     analyzerInformation.close();
 
     // In jointSuppressionReport mode, unmatched suppressions are
@@ -733,11 +739,11 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
 {
     if (buildDir.empty())
         return;
-//    if (_settings.isEnabled("unusedFunction"))
-//        CheckUnusedFunctions::instance.analyseWholeProgram(this, buildDir, files);
+    if (_settings.isEnabled("unusedFunction"))
+        CheckUnusedFunctions::analyseWholeProgram(this, buildDir, files);
 }
 
 bool CppCheck::isUnusedFunctionCheckEnabled() const
 {
-    return ((_settings.jobs == 1 || !_settings.buildDir.empty()) && _settings.isEnabled("unusedFunction"));
+    return (_settings.jobs == 1 && _settings.isEnabled("unusedFunction"));
 }

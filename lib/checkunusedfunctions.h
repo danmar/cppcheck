@@ -47,7 +47,7 @@ public:
     // Parse current tokens and determine..
     // * Check what functions are used
     // * What functions are declared
-    void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
+    void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings, bool clear=true);
 
     void check(ErrorLogger * const errorLogger, const Settings& settings);
 
@@ -62,7 +62,7 @@ public:
     std::string analyzerInfo() const;
 
     /** @brief Combine and analyze all analyzerInfos for all TUs */
-    void analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir, const std::map<std::string, std::size_t> &files);
+    static void analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir, const std::map<std::string, std::size_t> &files);
 
 private:
 
