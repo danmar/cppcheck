@@ -1,49 +1,49 @@
 
 int TestData[10];
 
-int global;
+int g;
 void global() {
-  global = 1000;
-  TestData[global] = 0; // BUG
+  g = 1000;
+  TestData[g] = 0; // BUG
 }
 
-int global_array[10];
+int garr[10];
 void global_array() {
-  global_array[3] = 1000;
-  TestData[global_array[3]] = 0; // BUG
+  garr[3] = 1000;
+  TestData[garr[3]] = 0; // BUG
 }
 
-int *global_pointer;
+int *gp;
 void global_pointer() {
-  *global_pointer = 1000;
-  TestData[*global_pointer] = 0; // BUG
+  *gp = 1000;
+  TestData[*gp] = 0; // BUG
 }
 
 
 void local() {
-  int local;
-  local = 1000;
-  TestData[local] = 0; // BUG
+  int x;
+  x = 1000;
+  TestData[x] = 0; // BUG
 }
 
 void local_array() {
-  int local_array[10];
-  local_array[3] = 1000;
-  TestData[local_array[3]] = 0; // BUG
+  int arr[10];
+  arr[3] = 1000;
+  TestData[arr[3]] = 0; // BUG
 }
 
 void local_alias_1() {
-  int local;
-  int *local_alias = &local;
-  *local_alias = 1000;
-  TestData[*local_alias] = 0; // BUG
+  int x;
+  int *p = &x;
+  *p = 1000;
+  TestData[*p] = 0; // BUG
 }
 
 void local_alias_2() {
-  int local;
-  int *local_alias = &local;
-  local = 1000;
-  TestData[*local_alias] = 0; // BUG
+  int x;
+  int *p = &x;
+  x = 1000;
+  TestData[*p] = 0; // BUG
 }
 
 struct ABC {
