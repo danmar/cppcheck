@@ -26,8 +26,8 @@ def parsefile(filename):
       for i in range(100):
         spaces = spaces + ' '
       s = filename + spaces
-      s = s[:16] + functionName + spaces
-      s = s[:48] + str(linenr) + spaces
+      s = s[:15] + str(linenr) + spaces
+      s = s[:20] + functionName + spaces
       s = s[:50]
       if hasresult('cppcheck.txt', '[' + filename + ':' + str(linenr) + ']'):
         s = s + '      X'
