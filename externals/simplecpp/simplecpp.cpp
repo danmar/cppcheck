@@ -814,15 +814,17 @@ void simplecpp::TokenList::constFoldQuestionOp(Token **tok1) {
         gotoTok1 = false;
         if (tok->str != "?")
             continue;
-        if (!tok->previous || !tok->previous->number)
+        if (!tok->previous || !tok->next || !tok->next->next)
+            throw std::runtime_error("invalid expression");
+        if (!tok->previous->number)
             continue;
-        if (!tok->next)
-            continue;
-        if (!tok->next->next || tok->next->next->op != ':')
+        if (tok->next->next->op != ':')
             continue;
         Token * const condTok = tok->previous;
         Token * const trueTok = tok->next;
         Token * const falseTok = trueTok->next->next;
+        if (!falseTok)
+            throw std::runtime_error("invalid expression");
         if (condTok == *tok1)
             *tok1 = (condTok->str != "0" ? trueTok : falseTok);
         deleteToken(condTok->next); // ?
@@ -906,20 +908,23 @@ public:
             throw std::runtime_error("bad macro syntax");
         if (tok->op != '#')
             throw std::runtime_error("bad macro syntax");
+        const Token * const hashtok = tok;
         tok = tok->next;
         if (!tok || tok->str != DEFINE)
             throw std::runtime_error("bad macro syntax");
         tok = tok->next;
-        if (!tok || !tok->name)
+        if (!tok || !tok->name || !sameline(hashtok,tok))
             throw std::runtime_error("bad macro syntax");
-        parseDefine(tok);
+        if (!parseDefine(tok))
+            throw std::runtime_error("bad macro syntax");
     }
 
     Macro(const std::string &name, const std::string &value, std::vector<std::string> &f) : nameToken(NULL), files(f), tokenListDefine(f) {
         const std::string def(name + ' ' + value);
         std::istringstream istr(def);
         tokenListDefine.readfile(istr);
-        parseDefine(tokenListDefine.cfront());
+        if (!parseDefine(tokenListDefine.cfront()))
+            throw std::runtime_error("bad macro syntax");
     }
 
     Macro(const Macro &macro) : nameToken(NULL), files(macro.files), tokenListDefine(macro.files) {
@@ -1080,20 +1085,20 @@ private:
         return tok;
     }
 
-    void parseDefine(const Token *nametoken) {
+    bool parseDefine(const Token *nametoken) {
         nameToken = nametoken;
         variadic = false;
         if (!nameToken) {
             valueToken = endToken = NULL;
             args.clear();
-            return;
+            return false;
         }
 
         // function like macro..
         if (functionLike()) {
             args.clear();
             const Token *argtok = nameToken->next->next;
-            while (argtok && argtok->op != ')') {
+            while (sameline(nametoken, argtok) && argtok->op != ')') {
                 if (argtok->op == '.' &&
                         argtok->next && argtok->next->op == '.' &&
                         argtok->next->next && argtok->next->next->op == '.' &&
@@ -1108,6 +1113,9 @@ private:
                     args.push_back(argtok->str);
                 argtok = argtok->next;
             }
+            if (!sameline(nametoken, argtok)) {
+                return false;
+            }
             valueToken = argtok ? argtok->next : NULL;
         } else {
             args.clear();
@@ -1119,6 +1127,7 @@ private:
         endToken = valueToken;
         while (sameline(endToken, nameToken))
             endToken = endToken->next;
+        return true;
     }
 
     unsigned int getArgNum(const TokenString &str) const {
@@ -1895,7 +1904,7 @@ static bool preprocessToken(simplecpp::TokenList &output, const simplecpp::Token
     return true;
 }
 
-void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, const std::map<std::string, simplecpp::TokenList *> &filedata, const simplecpp::DUI &dui, simplecpp::OutputList *outputList, std::list<simplecpp::MacroUsage> *macroUsage)
+void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, std::map<std::string, simplecpp::TokenList *> &filedata, const simplecpp::DUI &dui, simplecpp::OutputList *outputList, std::list<simplecpp::MacroUsage> *macroUsage)
 {
     std::map<std::string, std::size_t> sizeOfType(rawtokens.sizeOfType);
     sizeOfType.insert(std::pair<std::string, std::size_t>(std::string("char"), sizeof(char)));
@@ -2003,6 +2012,14 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                             it->second = macro;
                     }
                 } catch (const std::runtime_error &) {
+                    simplecpp::Output err(files);
+                    err.type = Output::SYNTAX_ERROR;
+                    err.location = rawtok->location;
+                    err.msg = "Failed to parse #define";
+                    if (outputList)
+                        outputList->push_back(err);
+                    output.clear();
+                    return;
                 }
             } else if (ifstates.top() == TRUE && rawtok->str == INCLUDE) {
                 TokenList inc1(files);
@@ -2021,7 +2038,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                     inc2.takeTokens(inc1);
                 }
 
-                if (inc2.empty()) {
+                if (inc2.empty() || inc2.cfront()->str.size() <= 2U) {
                     simplecpp::Output err(files);
                     err.type = Output::SYNTAX_ERROR;
                     err.location = rawtok->location;
@@ -2036,7 +2053,16 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
 
                 const bool systemheader = (inctok->op == '<');
                 const std::string header(realFilename(inctok->str.substr(1U, inctok->str.size() - 2U)));
-                const std::string header2 = getFileName(filedata, rawtok->location.file(), header, dui, systemheader);
+                std::string header2 = getFileName(filedata, rawtok->location.file(), header, dui, systemheader);
+                if (header2.empty()) {
+                    // try to load file..
+                    std::ifstream f;
+                    header2 = openHeader(f, dui, rawtok->location.file(), header, systemheader);
+                    if (f.is_open()) {
+                        TokenList *tokens = new TokenList(f, files, header2, outputList);
+                        filedata[header2] = tokens;
+                    }
+                }
                 if (header2.empty()) {
                     simplecpp::Output output(files);
                     output.type = Output::MISSING_HEADER;
@@ -2089,14 +2115,24 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                             const bool par = (tok && tok->op == '(');
                             if (par)
                                 tok = tok->next;
-                            if (!tok)
-                                break;
-                            if (macros.find(tok->str) != macros.end())
-                                expr.push_back(new Token("1", tok->location));
-                            else
-                                expr.push_back(new Token("0", tok->location));
-                            if (tok && par)
-                                tok = tok->next;
+                            if (tok) {
+                                if (macros.find(tok->str) != macros.end())
+                                    expr.push_back(new Token("1", tok->location));
+                                else
+                                    expr.push_back(new Token("0", tok->location));
+                            }
+                            if (par)
+                                tok = tok ? tok->next : NULL;
+                            if (!tok || !sameline(rawtok,tok) || (par && tok->op != ')')) {
+                                Output out(rawtok->location.files);
+                                out.type = Output::SYNTAX_ERROR;
+                                out.location = rawtok->location;
+                                out.msg = "failed to evaluate " + std::string(rawtok->str == IF ? "#if" : "#elif") + " condition";
+                                if (outputList)
+                                    outputList->push_back(out);
+                                output.clear();
+                                return;
+                            }
                             continue;
                         }
 
