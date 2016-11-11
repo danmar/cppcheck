@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include <list>
+#include <map>
 #include <string>
 #include <set>
 #include <vector>
@@ -47,7 +48,7 @@ public:
         cppcheck::Platform::PlatformType platformType;
 
         void setDefines(std::string defs);
-        void setIncludePaths(const std::string &basepath, const std::list<std::string> &in);
+        void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, const std::map<std::string, std::string> &variables);
     };
     std::list<FileSettings> fileSettings;
 
@@ -59,7 +60,7 @@ public:
 private:
     void importCompileCommands(std::istream &istr);
     void importSln(std::istream &istr, const std::string &path);
-    void importVcxproj(const std::string &filename);
+    void importVcxproj(const std::string &filename, std::map<std::string, std::string> variables);
 };
 
 /// @}

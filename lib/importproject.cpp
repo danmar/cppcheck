@@ -23,7 +23,6 @@
 #include "token.h"
 #include "tinyxml2.h"
 #include <fstream>
-#include <map>
 //#include <iostream>
 
 void ImportProject::ignorePaths(std::vector<std::string> &ipaths)
@@ -92,7 +91,7 @@ void ImportProject::FileSettings::setDefines(std::string defs)
     defines.swap(defs);
 }
 
-void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in)
+void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, const std::map<std::string, std::string> &variables)
 {
     std::list<std::string> I;
     for (std::list<std::string>::const_iterator it = in.begin(); it != in.end(); ++it) {
@@ -107,9 +106,22 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
             I.push_back(s);
             continue;
         }
+
         if (s[s.size()-1U] == '/') // this is a temporary hack, simplifyPath can crash if path ends with '/'
             s.erase(s.size() - 1U);
-        s = Path::simplifyPath(basepath + s);
+
+        if (s.compare(0,2,"$(")==0) {
+            std::string::size_type end = s.find(")");
+            if (end == std::string::npos)
+                continue;
+            const std::string &var = s.substr(2,end-2);
+            std::map<std::string, std::string>::const_iterator it1 = variables.find(var);
+            if (it1 == variables.end())
+                continue;
+            s = Path::simplifyPath(it1->second + s.substr(end+1));
+        } else {
+            s = Path::simplifyPath(basepath + s);
+        }
         if (s.empty())
             continue;
         I.push_back(s + '/');
@@ -130,7 +142,8 @@ void ImportProject::import(const std::string &filename)
             path += '/';
         importSln(fin,path);
     } else if (filename.find(".vcxproj") != std::string::npos) {
-        importVcxproj(filename);
+        std::map<std::string, std::string> variables;
+        importVcxproj(filename, variables);
     }
 }
 
@@ -180,7 +193,8 @@ void ImportProject::importCompileCommands(std::istream &istr)
                     else if (F=='I')
                         fs.includePaths.push_back(fval);
                 }
-                fs.setIncludePaths(directory, fs.includePaths);
+                std::map<std::string, std::string> variables;
+                fs.setIncludePaths(directory, fs.includePaths, variables);
                 fs.setDefines(fs.defines);
                 fileSettings.push_back(fs);
             }
@@ -191,6 +205,8 @@ void ImportProject::importCompileCommands(std::istream &istr)
 
 void ImportProject::importSln(std::istream &istr, const std::string &path)
 {
+    std::map<std::string,std::string> variables;
+    variables["SolutionDir"] = path;
     std::string line;
     while (std::getline(istr,line)) {
         if (line.compare(0,8,"Project(")!=0)
@@ -203,7 +219,7 @@ void ImportProject::importSln(std::istream &istr, const std::string &path)
             continue;
         const std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
         //std::cout << "Importing " << vcxproj << "..." << std::endl;
-        importVcxproj(path + Path::fromNativeSeparators(vcxproj));
+        importVcxproj(path + Path::fromNativeSeparators(vcxproj), variables);
     }
 }
 
@@ -296,8 +312,10 @@ static std::list<std::string> toStringList(const std::string &s)
     return ret;
 }
 
-void ImportProject::importVcxproj(const std::string &filename)
+void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string> variables)
 {
+    variables["ProjectDir"] = Path::getPathFromFilename(filename);
+
     std::list<ProjectConfiguration> projectConfigurationList;
     std::list<std::string> compileList;
     std::list<ItemDefinitionGroup> itemDefinitionGroupList;
@@ -352,7 +370,7 @@ void ImportProject::importVcxproj(const std::string &filename)
                 if (useOfMfc)
                     fs.defines += ";__AFXWIN_H__";
                 fs.setDefines(fs.defines);
-                fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(i->additionalIncludePaths));
+                fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(i->additionalIncludePaths), variables);
                 fileSettings.push_back(fs);
             }
         }

@@ -29,7 +29,8 @@ private:
 
     void run() {
         TEST_CASE(setDefines);
-        TEST_CASE(setIncludePaths);
+        TEST_CASE(setIncludePaths1);
+        TEST_CASE(setIncludePaths2);
     }
 
     void setDefines() {
@@ -48,13 +49,25 @@ private:
         ASSERT_EQUALS("A=1;B=1", fs.defines);
     }
 
-    void setIncludePaths() {
+    void setIncludePaths1() {
         ImportProject::FileSettings fs;
         std::list<std::string> in;
         in.push_back("../include");
-        fs.setIncludePaths("abc/def/", in);
+        std::map<std::string, std::string> variables;
+        fs.setIncludePaths("abc/def/", in, variables);
         ASSERT_EQUALS(1U, fs.includePaths.size());
         ASSERT_EQUALS("abc/include/", fs.includePaths.front());
+    }
+
+    void setIncludePaths2() {
+        ImportProject::FileSettings fs;
+        std::list<std::string> in;
+        in.push_back("$(SolutionDir)other");
+        std::map<std::string, std::string> variables;
+        variables["SolutionDir"] = "c:/abc/";
+        fs.setIncludePaths("/home/fred", in, variables);
+        ASSERT_EQUALS(1U, fs.includePaths.size());
+        ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
     }
 };
 
