@@ -33,8 +33,8 @@ class Settings;
 namespace ValueFlow {
     class CPPCHECKLIB Value {
     public:
-        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
-        Value(const Token *c, long long val) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(MovedVariable), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        Value(const Token *c, long long val) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(MovedVariable), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
 
         bool operator==(const Value &rhs) const {
             if (valueType != rhs.valueType)
@@ -53,6 +53,10 @@ namespace ValueFlow {
                 if (floatValue > rhs.floatValue || floatValue < rhs.floatValue)
                     return false;
                 break;
+            case MOVED:
+                if (moveKind != rhs.moveKind)
+                    return false;
+                break;
             };
 
             return varvalue == rhs.varvalue &&
@@ -64,7 +68,7 @@ namespace ValueFlow {
                    valueKind == rhs.valueKind;
         }
 
-        enum ValueType { INT, TOK, FLOAT } valueType;
+        enum ValueType { INT, TOK, FLOAT, MOVED } valueType;
         bool isIntValue() const {
             return valueType == INT;
         }
@@ -73,6 +77,9 @@ namespace ValueFlow {
         }
         bool isFloatValue() const {
             return valueType == FLOAT;
+        }
+        bool isMovedValue() const {
+            return valueType == MOVED;
         }
 
         /** int value */
@@ -83,6 +90,9 @@ namespace ValueFlow {
 
         /** float value */
         double floatValue;
+
+        /** kind of moved  */
+        enum MoveKind {MovedVariable, ForwardedVariable} moveKind;
 
         /** For calculated values - variable value that calculated value depends on */
         long long varvalue;
@@ -101,6 +111,16 @@ namespace ValueFlow {
 
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
+
+        static const char * toString(MoveKind moveKind) {
+            switch (moveKind) {
+            case MovedVariable:
+                return "MovedVariable";
+            case ForwardedVariable:
+                return "ForwardedVariable";
+            }
+            return "";
+        }
 
         /** How known is this value */
         enum ValueKind {

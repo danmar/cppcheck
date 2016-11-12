@@ -46,6 +46,7 @@ private:
         TEST_CASE(valueFlowString);
         TEST_CASE(valueFlowPointerAlias);
         TEST_CASE(valueFlowArrayElement);
+        TEST_CASE(valueFlowMove);
 
         TEST_CASE(valueFlowBitAnd);
 
@@ -112,6 +113,25 @@ private:
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = tok->values.begin(); it != tok->values.end(); ++it) {
                     if (it->isTokValue() && Token::simpleMatch(it->tokvalue, value))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool testValueOfX(const char code[], unsigned int linenr, ValueFlow::Value::MoveKind moveKind) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                std::list<ValueFlow::Value>::const_iterator it;
+                for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+                    if (it->isMovedValue() && it->moveKind == moveKind)
                         return true;
                 }
             }
@@ -262,6 +282,77 @@ private:
                 "    return x[0];\n"
                 "}";
         ASSERT_EQUALS(0, valueOfTok(code, "[").intvalue);
+    }
+
+    void valueFlowMove() {
+        const char *code;
+
+        code = "void f() {\n"
+               "   X x;\n"
+               "   g(std::move(x));\n"
+               "   y=x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+
+        code = "void f() {\n"
+               "   X x;\n"
+               "   g(std::forward<X>(x));\n"
+               "   y=x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::ForwardedVariable));
+
+        code = "void f() {\n"
+               "   X x;\n"
+               "   g(std::move(x).getA());\n"   // Only parts of x might be moved out
+               "   y=x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+
+        code = "void f() {\n"
+               "   X x;\n"
+               "   g(std::forward<X>(x).getA());\n" // Only parts of x might be moved out
+               "   y=x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::ForwardedVariable));
+
+        code = "void f() {\n"
+               "   X x;\n"
+               "   g(std::move(x));\n"
+               "   x.clear();\n"
+               "   y=x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MovedVariable));
+
+        code = "void f() {\n"
+               "   X x;\n"
+               "   g(std::move(x));\n"
+               "   y=x->y;\n"
+               "   z=x->z;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, ValueFlow::Value::MovedVariable));
+
+        code = "void f(int i) {\n"
+               "    X x;\n"
+               "    z = g(std::move(x));\n"
+               "    y = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+
+        code = "void f(int i) {\n"
+               "    X x;\n"
+               "    x = g(std::move(x));\n"
+               "    y = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+
+        code = "A f(int i) {\n"
+               "    X x;\n"
+               "    if (i)"
+               "        return g(std::move(x));\n"
+               "    return h(std::move(x));\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MovedVariable));
+
     }
 
     void valueFlowCalculations() {
@@ -1821,6 +1912,14 @@ private:
                "}";
         ASSERT_EQUALS(6, valueOfTok(code, "*").intvalue);
         ASSERT_EQUALS(true, valueOfTok(code, "*").isKnown());
+
+        code = "int f(int i, X x) {\n"
+               "    if (i)\n"
+               "        return g(std::move(x));\n"
+               "    g(x);\n"
+               "    return 0;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
     }
 
     void valueFlowFunctionDefaultParameter() {

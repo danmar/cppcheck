@@ -31,10 +31,10 @@
  */
 struct Standards {
     /** C code C89/C99/C11 standard */
-    enum cstd_t { C89, C99, C11 } c;
+    enum cstd_t { C89, C99, C11, CLatest=C11 } c;
 
     /** C++ code standard */
-    enum cppstd_t { CPP03, CPP11 } cpp;
+    enum cppstd_t { CPP03, CPP11, CPPLatest=CPP11 } cpp;
 
     /** Code is posix */
     bool posix;
