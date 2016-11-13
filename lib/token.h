@@ -749,13 +749,13 @@ public:
     std::list<ValueFlow::Value> values;
 
     bool hasKnownIntValue() const {
-        return values.size() == 1U && values.front().isKnown() && values.front().tokvalue == nullptr;
+        return values.size() == 1U && values.front().isKnown() && values.front().isIntValue();
     }
 
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = values.begin(); it != values.end(); ++it) {
-            if (it->intvalue == val && !it->tokvalue)
+            if (it->isIntValue() && it->intvalue == val)
                 return &(*it);
         }
         return nullptr;
@@ -765,7 +765,7 @@ public:
         const ValueFlow::Value *ret = nullptr;
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = values.begin(); it != values.end(); ++it) {
-            if (it->tokvalue)
+            if (!it->isIntValue())
                 continue;
             if ((!ret || it->intvalue > ret->intvalue) &&
                 ((it->condition != nullptr) == condition))

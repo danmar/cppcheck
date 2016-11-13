@@ -33,19 +33,38 @@ class Settings;
 namespace ValueFlow {
     class CPPCHECKLIB Value {
     public:
-        explicit Value(long long val = 0) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
-        Value(const Token *c, long long val) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        Value(const Token *c, long long val) : valueType(INT), intvalue(val), tokvalue(nullptr), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
 
         bool operator==(const Value &rhs) const {
-            return intvalue == rhs.intvalue &&
-                   tokvalue == rhs.tokvalue &&
-                   varvalue == rhs.varvalue &&
+            if (valueType != rhs.valueType)
+                return false;
+            switch (valueType) {
+            case INT:
+                if (intvalue != rhs.intvalue)
+                    return false;
+                break;
+            case TOK:
+                if (tokvalue != rhs.tokvalue)
+                    return false;
+                break;
+            };
+
+            return varvalue == rhs.varvalue &&
                    condition == rhs.condition &&
                    varId == rhs.varId &&
                    conditional == rhs.conditional &&
                    inconclusive == rhs.inconclusive &&
                    defaultArg == rhs.defaultArg &&
                    valueKind == rhs.valueKind;
+        }
+
+        enum ValueType { INT, TOK } valueType;
+        bool isIntValue() const {
+            return valueType == INT;
+        }
+        bool isTokValue() const {
+            return valueType == TOK;
         }
 
         /** int value */

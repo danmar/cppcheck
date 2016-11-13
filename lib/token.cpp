@@ -1325,9 +1325,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
         for (std::list<ValueFlow::Value>::const_iterator it=tok->values.begin(); it!=tok->values.end(); ++it) {
             if (xml) {
                 out << "      <value ";
-                if (it->tokvalue)
+                if (it->isTokValue())
                     out << "tokvalue=\"" << it->tokvalue << '\"';
-                else
+                else if (it->isIntValue())
                     out << "intvalue=\"" << it->intvalue << '\"';
                 if (it->condition)
                     out << " condition-line=\"" << it->condition->linenr() << '\"';
@@ -1341,9 +1341,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             else {
                 if (it != tok->values.begin())
                     out << ",";
-                if (it->tokvalue)
+                if (it->isTokValue())
                     out << it->tokvalue->str();
-                else
+                else if (it->isIntValue())
                     out << it->intvalue;
             }
         }
@@ -1363,7 +1363,7 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = values.begin(); it != values.end(); ++it) {
-        if (it->intvalue <= val && !it->tokvalue) {
+        if (it->isIntValue() && it->intvalue <= val) {
             if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
                 ret = &(*it);
             if (!ret->inconclusive && !ret->condition)
@@ -1384,7 +1384,7 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = values.begin(); it != values.end(); ++it) {
-        if (it->intvalue >= val && !it->tokvalue) {
+        if (it->isIntValue() && it->intvalue >= val) {
             if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
                 ret = &(*it);
             if (!ret->inconclusive && !ret->condition)
@@ -1406,7 +1406,7 @@ const Token *Token::getValueTokenMinStrSize() const
     std::size_t minsize = ~0U;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = values.begin(); it != values.end(); ++it) {
-        if (it->tokvalue && it->tokvalue->tokType() == Token::eString) {
+        if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             std::size_t size = getStrSize(it->tokvalue);
             if (!ret || size < minsize) {
                 minsize = size;
@@ -1423,7 +1423,7 @@ const Token *Token::getValueTokenMaxStrLength() const
     std::size_t maxlength = 0U;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = values.begin(); it != values.end(); ++it) {
-        if (it->tokvalue && it->tokvalue->tokType() == Token::eString) {
+        if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             std::size_t length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
                 maxlength = length;
@@ -1448,7 +1448,7 @@ const Token *Token::getValueTokenDeadPointer() const
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = values.begin(); it != values.end(); ++it) {
         // Is this a pointer alias?
-        if (!it->tokvalue || it->tokvalue->str() != "&")
+        if (!it->isTokValue() || (it->tokvalue && it->tokvalue->str() != "&"))
             continue;
         // Get variable
         const Token *vartok = it->tokvalue->astOperand1();

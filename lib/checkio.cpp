@@ -475,7 +475,7 @@ static bool findFormat(unsigned int arg, const Token *firstArg,
                  argTok->variable()->dimensionKnown(0) &&
                  argTok->variable()->dimension(0) != 0))) {
         *formatArgTok = argTok->nextArgument();
-        if (argTok->values.size() >= 1 && argTok->values.front().tokvalue && argTok->values.front().tokvalue->tokType() == Token::eString)
+        if (!argTok->values.empty() && argTok->values.front().isTokValue() && argTok->values.front().tokvalue && argTok->values.front().tokvalue->tokType() == Token::eString)
             *formatStringTok = argTok->values.front().tokvalue;
         return true;
     }
