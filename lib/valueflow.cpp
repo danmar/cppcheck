@@ -1279,8 +1279,11 @@ static bool valueFlowForward(Token * const               startToken,
                 // goto '}'
                 tok2 = startToken1->link();
 
-                if (condAlwaysTrue && isReturnScope(tok2))
-                    return false;
+                if (isReturnScope(tok2)) {
+                    if (condAlwaysTrue)
+                        return false;
+                    removeValues(values, truevalues);
+                }
 
                 continue;
             }
@@ -2255,7 +2258,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
     if (!varid2)
         return;
 
-    valueFlowForward(const_cast<Token*>(functionScope->classStart->next()), functionScope->classEnd, arg, varid2, argvalues, true, tokenlist, errorLogger, settings);
+    valueFlowForward(const_cast<Token*>(functionScope->classStart->next()), functionScope->classEnd, arg, varid2, argvalues, false, tokenlist, errorLogger, settings);
 }
 
 static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)

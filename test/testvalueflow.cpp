@@ -1716,6 +1716,17 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
+        code = "void f1(int x) {\n"
+               "    if (x == 0) return;\n"
+               "    int y = x;\n"
+               "}\n"
+               "\n"
+               "void f2() {\n"
+               "    f1(x&4);\n" // possible {0,4}
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 4));
+
         code = "void f1(int x) { a=x; }\n"
                "void f2(int y) { f1(y<123); }\n";
         ASSERT_EQUALS(true, testValueOfX(code, 1U, 0));
