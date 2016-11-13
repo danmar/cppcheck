@@ -33,8 +33,8 @@ class Settings;
 namespace ValueFlow {
     class CPPCHECKLIB Value {
     public:
-        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
-        Value(const Token *c, long long val) : valueType(INT), intvalue(val), tokvalue(nullptr), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        Value(const Token *c, long long val) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
 
         bool operator==(const Value &rhs) const {
             if (valueType != rhs.valueType)
@@ -48,6 +48,11 @@ namespace ValueFlow {
                 if (tokvalue != rhs.tokvalue)
                     return false;
                 break;
+            case FLOAT:
+                // TODO: Write some better comparison
+                if (floatValue > rhs.floatValue || floatValue < rhs.floatValue)
+                    return false;
+                break;
             };
 
             return varvalue == rhs.varvalue &&
@@ -59,12 +64,15 @@ namespace ValueFlow {
                    valueKind == rhs.valueKind;
         }
 
-        enum ValueType { INT, TOK } valueType;
+        enum ValueType { INT, TOK, FLOAT } valueType;
         bool isIntValue() const {
             return valueType == INT;
         }
         bool isTokValue() const {
             return valueType == TOK;
+        }
+        bool isFloatValue() const {
+            return valueType == FLOAT;
         }
 
         /** int value */
@@ -72,6 +80,9 @@ namespace ValueFlow {
 
         /** token value - the token that has the value. this is used for pointer aliases, strings, etc. */
         const Token *tokvalue;
+
+        /** float value */
+        double floatValue;
 
         /** For calculated values - variable value that calculated value depends on */
         long long varvalue;

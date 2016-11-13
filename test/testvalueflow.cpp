@@ -24,7 +24,7 @@
 
 #include <vector>
 #include <string>
-
+#include <cmath>
 
 class TestValueFlow : public TestFixture {
 public:
@@ -91,7 +91,7 @@ private:
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = tok->values.begin(); it != tok->values.end(); ++it) {
-                    if (it->intvalue == value && !it->tokvalue)
+                    if (it->isIntValue() && it->intvalue == value)
                         return true;
                 }
             }
@@ -111,7 +111,7 @@ private:
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = tok->values.begin(); it != tok->values.end(); ++it) {
-                    if (Token::simpleMatch(it->tokvalue, value))
+                    if (it->isTokValue() && Token::simpleMatch(it->tokvalue, value))
                         return true;
                 }
             }
@@ -130,7 +130,7 @@ private:
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = tok->values.begin(); it != tok->values.end(); ++it) {
-                    if (it->intvalue == value && !it->tokvalue && it->condition)
+                    if (it->isIntValue() && it->intvalue == value && it->condition)
                         return true;
                 }
             }
@@ -162,11 +162,12 @@ private:
 
     ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
         std::list<ValueFlow::Value> values = tokenValues(code, tokstr);
-        return values.size() == 1U && !values.front().tokvalue ? values.front() : ValueFlow::Value();
+        return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
     }
 
     void valueFlowNumber() {
         ASSERT_EQUALS(123, valueOfTok("x=123;", "123").intvalue);
+        ASSERT(std::fabs(valueOfTok("x=0.5;", "0.5").floatValue - 0.5f) < 0.1f);
         ASSERT_EQUALS(10, valueOfTok("enum {A=10,B=15}; x=A+0;", "+").intvalue);
         ASSERT_EQUALS(0, valueOfTok("x=false;", "false").intvalue);
         ASSERT_EQUALS(1, valueOfTok("x=true;", "true").intvalue);

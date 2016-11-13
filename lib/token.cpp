@@ -1325,10 +1325,17 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
         for (std::list<ValueFlow::Value>::const_iterator it=tok->values.begin(); it!=tok->values.end(); ++it) {
             if (xml) {
                 out << "      <value ";
-                if (it->isTokValue())
-                    out << "tokvalue=\"" << it->tokvalue << '\"';
-                else if (it->isIntValue())
+                switch (it->valueType) {
+                case ValueFlow::Value::INT:
                     out << "intvalue=\"" << it->intvalue << '\"';
+                    break;
+                case ValueFlow::Value::TOK:
+                    out << "tokvalue=\"" << it->tokvalue << '\"';
+                    break;
+                case ValueFlow::Value::FLOAT:
+                    out << "floatvalue=\"" << it->floatValue << '\"';
+                    break;
+                }
                 if (it->condition)
                     out << " condition-line=\"" << it->condition->linenr() << '\"';
                 if (it->isKnown())
@@ -1341,10 +1348,17 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             else {
                 if (it != tok->values.begin())
                     out << ",";
-                if (it->isTokValue())
-                    out << it->tokvalue->str();
-                else if (it->isIntValue())
+                switch (it->valueType) {
+                case ValueFlow::Value::INT:
                     out << it->intvalue;
+                    break;
+                case ValueFlow::Value::TOK:
+                    out << it->tokvalue->str();
+                    break;
+                case ValueFlow::Value::FLOAT:
+                    out << it->floatValue;
+                    break;
+                }
             }
         }
         if (xml)

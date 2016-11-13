@@ -598,6 +598,12 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
         ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
         value.setKnown();
         setTokenValue(const_cast<Token *>(tok), value, settings);
+    } else if (tok->isNumber() && MathLib::isFloat(tok->str())) {
+        ValueFlow::Value value;
+        value.valueType = ValueFlow::Value::FLOAT;
+        value.floatValue = MathLib::toDoubleNumber(tok->str());
+        value.setKnown();
+        setTokenValue(const_cast<Token *>(tok), value, settings);
     } else if (tok->enumerator() && tok->enumerator()->value_known) {
         ValueFlow::Value value(tok->enumerator()->value);
         value.setKnown();
