@@ -1811,9 +1811,15 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 start = memberInitializationTok;
         }
 
+        const Token * isInForCondition = nullptr;   // if in for condition then pointer to end of for condition
         for (Token* tok = const_cast<Token*>(start); tok != scope->classEnd; tok = tok->next()) {
+            if (tok == isInForCondition)
+                isInForCondition = nullptr;
+            if (Token::simpleMatch(tok, "for ("))
+                isInForCondition = tok->linkAt(1);
             if (tok->str() != "=" || tok->astParent())
                 continue;
+
             // Lhs should be a variable
             if (!tok->astOperand1() || !tok->astOperand1()->varId())
                 continue;

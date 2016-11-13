@@ -187,6 +187,7 @@ private:
         TEST_CASE(moveAndClear);
         TEST_CASE(movedPointer);
         TEST_CASE(partiallyMoved);
+        TEST_CASE(moveAndLambda);
         TEST_CASE(forwardAndUsed);
     }
 
@@ -6254,6 +6255,15 @@ private:
               "    A a;\n"
               "    gx(std::move(a).x());\n"
               "    gy(std::move(a).y());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void moveAndLambda() {
+        check("void f() {\n"
+              "    A a;\n"
+              "    auto h = [a=std::move(a)](){return g(std::move(a));};"
+              "    b = a;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
