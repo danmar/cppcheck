@@ -60,7 +60,7 @@ public:
 private:
     void importCompileCommands(std::istream &istr);
     void importSln(std::istream &istr, const std::string &path);
-    void importVcxproj(const std::string &filename, std::map<std::string, std::string> variables);
+    void importVcxproj(const std::string &filename, std::map<std::string, std::string> variables, const std::string &additionalIncludeDirectories);
 };
 
 /// @}

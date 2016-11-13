@@ -110,17 +110,27 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         if (s[s.size()-1U] == '/') // this is a temporary hack, simplifyPath can crash if path ends with '/'
             s.erase(s.size() - 1U);
 
-        if (s.compare(0,2,"$(")==0) {
-            std::string::size_type end = s.find(")");
-            if (end == std::string::npos)
-                continue;
-            const std::string &var = s.substr(2,end-2);
-            std::map<std::string, std::string>::const_iterator it1 = variables.find(var);
-            if (it1 == variables.end())
-                continue;
-            s = Path::simplifyPath(it1->second + s.substr(end+1));
-        } else {
+        if (s.find("$(")==std::string::npos) {
             s = Path::simplifyPath(basepath + s);
+        } else {
+            std::set<std::string> expanded;
+            std::string::size_type start = 0;
+            while ((start = s.find("$(")) != std::string::npos) {
+                std::string::size_type end = s.find(")",start);
+                if (end == std::string::npos)
+                    break;
+                const std::string &var = s.substr(start+2,end-start-2);
+                if (expanded.find(var) != expanded.end())
+                    break;
+                expanded.insert(var);
+                std::map<std::string, std::string>::const_iterator it1 = variables.find(var);
+                if (it1 == variables.end())
+                    break;
+                s = s.substr(0,start) + it1->second + s.substr(end+1);
+            }
+            if (s.find("$(") != std::string::npos)
+                continue;
+            s = Path::simplifyPath(Path::fromNativeSeparators(s));
         }
         if (s.empty())
             continue;
@@ -143,7 +153,7 @@ void ImportProject::import(const std::string &filename)
         importSln(fin,path);
     } else if (filename.find(".vcxproj") != std::string::npos) {
         std::map<std::string, std::string> variables;
-        importVcxproj(filename, variables);
+        importVcxproj(filename, variables, "");
     }
 }
 
@@ -203,10 +213,52 @@ void ImportProject::importCompileCommands(std::istream &istr)
     }
 }
 
+static void loadVisualStudioProperties(const std::string &props, std::map<std::string,std::string> *variables, std::string *additionalIncludeDirectories)
+{
+    tinyxml2::XMLDocument doc;
+    if (doc.LoadFile(props.c_str()) != tinyxml2::XML_SUCCESS)
+        return;
+    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
+    if (rootnode == nullptr)
+        return;
+    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+        if (std::strcmp(node->Name(), "ImportGroup") == 0 && node->Attribute("Label") && std::strcmp(node->Attribute("Label"),"PropertySheets")==0) {
+            for (const tinyxml2::XMLElement *importGroup = node->FirstChildElement(); importGroup; importGroup = importGroup->NextSiblingElement()) {
+                if (std::strcmp(importGroup->Name(), "Import") == 0 && importGroup->Attribute("Project")) {
+                    loadVisualStudioProperties(Path::getPathFromFilename(props)+importGroup->Attribute("Project"), variables, additionalIncludeDirectories);
+                }
+            }
+        } else if (std::strcmp(node->Name(),"PropertyGroup")==0 && node->Attribute("Label") && std::strcmp(node->Attribute("Label"),"UserMacros")==0) {
+            for (const tinyxml2::XMLElement *propertyGroup = node->FirstChildElement(); propertyGroup; propertyGroup = propertyGroup->NextSiblingElement()) {
+                const std::string name(propertyGroup->Name());
+                const char *text = propertyGroup->GetText();
+                (*variables)[name] = std::string(text ? text : "");
+            }
+        } else if (std::strcmp(node->Name(),"ItemDefinitionGroup")==0) {
+            for (const tinyxml2::XMLElement *clcompile = node->FirstChildElement(); clcompile; clcompile = clcompile->NextSiblingElement()) {
+                if (std::strcmp(clcompile->Name(), "ClCompile") != 0)
+                    continue;
+                for (const tinyxml2::XMLElement *incdir = clcompile->FirstChildElement(); incdir; incdir = incdir->NextSiblingElement()) {
+                    if (std::strcmp(incdir->Name(),"AdditionalIncludeDirectories")!=0)
+                        continue;
+                    if (!incdir->GetText())
+                        continue;
+                    if (!additionalIncludeDirectories->empty())
+                        *additionalIncludeDirectories += '+';
+                    *additionalIncludeDirectories += incdir->GetText();
+                }
+            }
+        }
+    }
+}
+
 void ImportProject::importSln(std::istream &istr, const std::string &path)
 {
     std::map<std::string,std::string> variables;
     variables["SolutionDir"] = path;
+    std::string additionalIncludeDirectories;
+    loadVisualStudioProperties(path + "propertysheets/custom.props", &variables, &additionalIncludeDirectories);
+
     std::string line;
     while (std::getline(istr,line)) {
         if (line.compare(0,8,"Project(")!=0)
@@ -219,7 +271,7 @@ void ImportProject::importSln(std::istream &istr, const std::string &path)
             continue;
         const std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
         //std::cout << "Importing " << vcxproj << "..." << std::endl;
-        importVcxproj(path + Path::fromNativeSeparators(vcxproj), variables);
+        importVcxproj(path + Path::fromNativeSeparators(vcxproj), variables, additionalIncludeDirectories);
     }
 }
 
@@ -244,7 +296,7 @@ namespace {
     };
 
     struct ItemDefinitionGroup {
-        explicit ItemDefinitionGroup(const tinyxml2::XMLElement *idg) {
+        explicit ItemDefinitionGroup(const tinyxml2::XMLElement *idg, const std::string &includePaths) : additionalIncludePaths(includePaths) {
             const char *condAttr = idg->Attribute("Condition");
             if (condAttr)
                 condition = condAttr;
@@ -255,8 +307,11 @@ namespace {
                     if (e->GetText()) {
                         if (std::strcmp(e->Name(), "PreprocessorDefinitions") == 0)
                             preprocessorDefinitions = e->GetText();
-                        else if (std::strcmp(e->Name(), "AdditionalIncludeDirectories") == 0)
-                            additionalIncludePaths = e->GetText();
+                        else if (std::strcmp(e->Name(), "AdditionalIncludeDirectories") == 0) {
+                            if (!additionalIncludePaths.empty())
+                                additionalIncludePaths += ';';
+                            additionalIncludePaths += e->GetText();
+                        }
                     }
                 }
             }
@@ -312,7 +367,7 @@ static std::list<std::string> toStringList(const std::string &s)
     return ret;
 }
 
-void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string> variables)
+void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string> variables, const std::string &additionalIncludeDirectories)
 {
     variables["ProjectDir"] = Path::getPathFromFilename(filename);
 
@@ -343,7 +398,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 }
             }
         } else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
-            itemDefinitionGroupList.push_back(ItemDefinitionGroup(node));
+            itemDefinitionGroupList.push_back(ItemDefinitionGroup(node, additionalIncludeDirectories));
         } else if (std::strcmp(node->Name(), "PropertyGroup") == 0) {
             for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
                 if (std::strcmp(e->Name(), "UseOfMfc") == 0)
