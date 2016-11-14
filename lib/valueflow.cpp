@@ -467,7 +467,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         break;
                     case '>': {
                         const bool f = value1->isFloatValue() || value2->isFloatValue();
-                        if (!f && !value1->isIntValue() && !value1->isIntValue())
+                        if (!f && !value1->isIntValue() && !value2->isIntValue())
                             break;
                         if (parent->str() == ">")
                             result.intvalue = f ? floatValue1 > floatValue2 : value1->intvalue > value2->intvalue;
@@ -482,7 +482,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     }
                     case '<': {
                         const bool f = value1->isFloatValue() || value2->isFloatValue();
-                        if (!f && !value1->isIntValue() && !value1->isIntValue())
+                        if (!f && !value1->isIntValue() && !value2->isIntValue())
                             break;
                         if (parent->str() == "<")
                             result.intvalue = f ? floatValue1 < floatValue2 : value1->intvalue < value2->intvalue;
