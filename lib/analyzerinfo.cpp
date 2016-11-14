@@ -19,6 +19,7 @@
 #include "analyzerinfo.h"
 #include "path.h"
 #include <tinyxml2.h>
+#include <sstream>
 
 AnalyzerInformation::AnalyzerInformation() {}
 AnalyzerInformation::~AnalyzerInformation()
@@ -60,6 +61,21 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned long long
 
 std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile)
 {
+    const std::string files(buildDir + "/files.txt");
+    std::ifstream fin(files.c_str());
+    if (fin.is_open()) {
+        int id = 1;
+        std::string line;
+        while (std::getline(fin,line)) {
+            if (line == sourcefile) {
+                std::ostringstream ostr;
+                ostr << buildDir << '/' << id << ".analyzeinfo";
+                return ostr.str();
+            }
+            id++;
+        }
+    }
+
     std::string filename = Path::fromNativeSeparators(buildDir);
     if (filename.back() != '/')
         filename += '/';

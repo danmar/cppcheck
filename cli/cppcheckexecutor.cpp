@@ -802,6 +802,14 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         reportErr(ErrorLogger::ErrorMessage::getXMLHeader(settings.xml_version));
     }
 
+    if (!settings.buildDir.empty()) {
+        const std::string filename(settings.buildDir + "/files.txt");
+        std::ofstream fout(filename.c_str());
+        for (std::map<std::string, std::size_t>::const_iterator f = _files.begin(); f != _files.end(); ++f) {
+            fout << f->first << '\n';
+        }
+    }
+
     unsigned int returnValue = 0;
     if (settings.jobs == 1) {
         // Single process

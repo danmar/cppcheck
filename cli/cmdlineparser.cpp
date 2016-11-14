@@ -120,8 +120,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 return true;
             }
 
-            else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0)
-                _settings->buildDir = argv[i] + 21;
+            else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
+                _settings->buildDir = Path::fromNativeSeparators(argv[i] + 21);
+                if (_settings->buildDir.back() == '/')
+                    _settings->buildDir.erase(_settings->buildDir.size() - 1U);
+            }
 
             // Flag used for various purposes during debugging
             else if (std::strcmp(argv[i], "--debug") == 0)
