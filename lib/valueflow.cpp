@@ -28,51 +28,46 @@
 
 namespace {
     struct ProgramMemory {
-        std::map<unsigned int, MathLib::bigint> intvalues;
-        std::map<unsigned int, const Token *> tokvalues;
+        std::map<unsigned int, ValueFlow::Value> values;
 
         void setValue(unsigned int varid, const ValueFlow::Value &value) {
-            switch (value.valueType) {
-            case ValueFlow::Value::INT:
-                intvalues[varid] = value.intvalue;
-                tokvalues.erase(varid);
-                break;
-            case ValueFlow::Value::TOK:
-                intvalues.erase(varid);
-                tokvalues[varid] = value.tokvalue;
-                break;
-            }
+            values[varid] = value;
         }
 
         bool getIntValue(unsigned int varid, MathLib::bigint* result) const {
-            const std::map<unsigned int, MathLib::bigint>::const_iterator it = intvalues.find(varid);
-            if (it != intvalues.end())
-                *result = it->second;
-            return (it != intvalues.end());
+            const std::map<unsigned int, ValueFlow::Value>::const_iterator it = values.find(varid);
+            bool found = it != values.end() && it->second.isIntValue();
+            if (found)
+                *result = it->second.intvalue;
+            return found;
         }
 
         void setIntValue(unsigned int varid, MathLib::bigint value) {
-            intvalues[varid] = value;
-            tokvalues.erase(varid);
+            values[varid] = ValueFlow::Value(value);
+        }
+
+        bool getTokValue(unsigned int varid, const Token** result) const {
+            const std::map<unsigned int, ValueFlow::Value>::const_iterator it = values.find(varid);
+            bool found = it != values.end() && it->second.isTokValue();
+            if (found)
+                *result = it->second.tokvalue;
+            return found;
         }
 
         bool hasValue(unsigned int varid) {
-            return intvalues.find(varid) != intvalues.end() ||
-                   tokvalues.find(varid) != tokvalues.end();
+            return values.find(varid) != values.end();
         }
 
         void swap(ProgramMemory &pm) {
-            intvalues.swap(pm.intvalues);
-            tokvalues.swap(pm.tokvalues);
+            values.swap(pm.values);
         }
 
         void clear() {
-            intvalues.clear();
-            tokvalues.clear();
+            values.clear();
         }
 
         bool empty() const {
-            return intvalues.empty() && tokvalues.empty();
+            return values.empty();
         }
     };
 }
@@ -371,9 +366,13 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
         std::list<ValueFlow::Value>::const_iterator value1, value2;
         for (value1 = parent->astOperand1()->values.begin(); value1 != parent->astOperand1()->values.end(); ++value1) {
+            if (!value1->isIntValue() && !value1->isFloatValue() && !value1->isTokValue())
+                continue;
             if (value1->isTokValue() && (!parent->isComparisonOp() || value1->tokvalue->tokType() != Token::eString))
                 continue;
             for (value2 = parent->astOperand2()->values.begin(); value2 != parent->astOperand2()->values.end(); ++value2) {
+                if (!value2->isIntValue() && !value2->isFloatValue() && !value2->isTokValue())
+                    continue;
                 if (value2->isTokValue() && (!parent->isComparisonOp() || value2->tokvalue->tokType() != Token::eString || value1->isTokValue()))
                     continue;
                 if (known || value1->varId == 0U || value2->varId == 0U ||
@@ -385,26 +384,58 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     result.varvalue = (result.varId == value1->varId) ? value1->intvalue : value2->intvalue;
                     if (value1->valueKind == value2->valueKind)
                         result.valueKind = value1->valueKind;
+                    const float floatValue1 = value1->isIntValue() ? value1->intvalue : value1->floatValue;
+                    const float floatValue2 = value2->isIntValue() ? value2->intvalue : value2->floatValue;
                     switch (parent->str()[0]) {
                     case '+':
-                        result.intvalue = value1->intvalue + value2->intvalue;
+                        if (value1->isTokValue() || value2->isTokValue())
+                            break;
+                        if (value1->isFloatValue() || value2->isFloatValue()) {
+                            result.valueType = ValueFlow::Value::FLOAT;
+                            result.floatValue = floatValue1 + floatValue2;
+                        } else {
+                            result.intvalue = value1->intvalue + value2->intvalue;
+                        }
                         setTokenValue(parent, result, settings);
                         break;
                     case '-':
-                        result.intvalue = value1->intvalue - value2->intvalue;
+                        if (value1->isTokValue() || value2->isTokValue())
+                            break;
+                        if (value1->isFloatValue() || value2->isFloatValue()) {
+                            result.valueType = ValueFlow::Value::FLOAT;
+                            result.floatValue = floatValue1 - floatValue2;
+                        } else {
+                            result.intvalue = value1->intvalue - value2->intvalue;
+                        }
                         setTokenValue(parent, result, settings);
                         break;
                     case '*':
-                        result.intvalue = value1->intvalue * value2->intvalue;
+                        if (value1->isTokValue() || value2->isTokValue())
+                            break;
+                        if (value1->isFloatValue() || value2->isFloatValue()) {
+                            result.valueType = ValueFlow::Value::FLOAT;
+                            result.floatValue = floatValue1 * floatValue2;
+                        } else {
+                            result.intvalue = value1->intvalue * value2->intvalue;
+                        }
                         setTokenValue(parent, result, settings);
                         break;
                     case '/':
-                        if (value2->intvalue == 0)
+                        if (value1->isTokValue() || value2->isTokValue())
                             break;
-                        result.intvalue = value1->intvalue / value2->intvalue;
+                        if (value1->isFloatValue() || value2->isFloatValue()) {
+                            result.valueType = ValueFlow::Value::FLOAT;
+                            result.floatValue = floatValue1 / floatValue2;
+                        } else if (value2->intvalue == 0) {
+                            break;
+                        } else {
+                            result.intvalue = value1->intvalue / value2->intvalue;
+                        }
                         setTokenValue(parent, result, settings);
                         break;
                     case '%':
+                        if (!value1->isIntValue() || !value2->isIntValue())
+                            break;
                         if (value2->intvalue == 0)
                             break;
                         result.intvalue = value1->intvalue % value2->intvalue;
@@ -434,32 +465,36 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                             }
                         }
                         break;
-                    case '>':
-                        if (!value1->isIntValue() || !value2->isIntValue())
+                    case '>': {
+                        const bool f = value1->isFloatValue() || value2->isFloatValue();
+                        if (!f && !value1->isIntValue() && !value1->isIntValue())
                             break;
                         if (parent->str() == ">")
-                            result.intvalue = value1->intvalue > value2->intvalue;
+                            result.intvalue = f ? floatValue1 > floatValue2 : value1->intvalue > value2->intvalue;
                         else if (parent->str() == ">=")
-                            result.intvalue = value1->intvalue >= value2->intvalue;
-                        else if (parent->str() == ">>" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
+                            result.intvalue = f ? floatValue1 >= floatValue2 : value1->intvalue >= value2->intvalue;
+                        else if (!f && parent->str() == ">>" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
                             result.intvalue = value1->intvalue >> value2->intvalue;
                         else
                             break;
                         setTokenValue(parent, result, settings);
                         break;
-                    case '<':
-                        if (!value1->isIntValue() || !value2->isIntValue())
+                    }
+                    case '<': {
+                        const bool f = value1->isFloatValue() || value2->isFloatValue();
+                        if (!f && !value1->isIntValue() && !value1->isIntValue())
                             break;
                         if (parent->str() == "<")
-                            result.intvalue = value1->intvalue < value2->intvalue;
+                            result.intvalue = f ? floatValue1 < floatValue2 : value1->intvalue < value2->intvalue;
                         else if (parent->str() == "<=")
-                            result.intvalue = value1->intvalue <= value2->intvalue;
-                        else if (parent->str() == "<<" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
+                            result.intvalue = f ? floatValue1 <= floatValue2 : value1->intvalue <= value2->intvalue;
+                        else if (!f && parent->str() == "<<" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
                             result.intvalue = value1->intvalue << value2->intvalue;
                         else
                             break;
                         setTokenValue(parent, result, settings);
                         break;
+                    }
                     case '&':
                         if (!value1->isIntValue() || !value2->isIntValue())
                             break;
@@ -533,10 +568,13 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     else if (parent->str() == "-" && !parent->astOperand2()) {
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = tok->values.begin(); it != tok->values.end(); ++it) {
-            if (!it->isIntValue())
+            if (!it->isIntValue() && !it->isFloatValue())
                 continue;
             ValueFlow::Value v(*it);
-            v.intvalue = -v.intvalue;
+            if (v.isIntValue())
+                v.intvalue = -v.intvalue;
+            else
+                v.floatValue = -v.floatValue;
             setTokenValue(parent, v, settings);
         }
     }
@@ -1920,17 +1958,17 @@ static void execute(const Token *expr,
         if (!expr->astOperand1() || expr->astOperand1()->varId() == 0U)
             *error = true;
         else {
-            std::map<unsigned int, MathLib::bigint>::iterator var = programMemory->intvalues.find(expr->astOperand1()->varId());
-            if (var == programMemory->intvalues.end())
+            long long i;
+            if (!programMemory->getIntValue(expr->astOperand1()->varId(), &i))
                 *error = true;
             else {
-                if (var->second == 0 &&
+                if (i == 0 &&
                     expr->str() == "--" &&
                     expr->astOperand1()->variable() &&
                     expr->astOperand1()->variable()->typeStartToken()->isUnsigned())
                     *error = true; // overflow
-                *result = var->second + (expr->str() == "++" ? 1 : -1);
-                var->second = *result;
+                *result = i + (expr->str() == "++" ? 1 : -1);
+                programMemory->setIntValue(expr->astOperand1()->varId(), *result);
             }
         }
     }
@@ -1994,12 +2032,9 @@ static void execute(const Token *expr,
     }
 
     else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
-        const Token *tokvalue = nullptr;
-        std::map<unsigned int, const Token *>::iterator var = programMemory->tokvalues.find(expr->astOperand1()->varId());
-        if (var != programMemory->tokvalues.end()) {
-            tokvalue = var->second;
-        } else {
-            if (expr->astOperand1()->values.size() != 1U) {
+        const Token *tokvalue;
+        if (!programMemory->getTokValue(expr->astOperand1()->varId(), &tokvalue)) {
+            if (expr->astOperand1()->values.size() != 1U || !expr->astOperand1()->values.front().isTokValue()) {
                 *error = true;
                 return;
             }
@@ -2260,13 +2295,22 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
         } else {
             ProgramMemory mem1, mem2, memAfter;
             if (valueFlowForLoop2(tok, &mem1, &mem2, &memAfter)) {
-                std::map<unsigned int, MathLib::bigint>::const_iterator it;
-                for (it = mem1.intvalues.begin(); it != mem1.intvalues.end(); ++it)
-                    valueFlowForLoopSimplify(bodyStart, it->first, it->second, tokenlist, errorLogger, settings);
-                for (it = mem2.intvalues.begin(); it != mem2.intvalues.end(); ++it)
-                    valueFlowForLoopSimplify(bodyStart, it->first, it->second, tokenlist, errorLogger, settings);
-                for (it = memAfter.intvalues.begin(); it != memAfter.intvalues.end(); ++it)
-                    valueFlowForLoopSimplifyAfter(tok, it->first, it->second, tokenlist, errorLogger, settings);
+                std::map<unsigned int, ValueFlow::Value>::const_iterator it;
+                for (it = mem1.values.begin(); it != mem1.values.end(); ++it) {
+                    if (!it->second.isIntValue())
+                        continue;
+                    valueFlowForLoopSimplify(bodyStart, it->first, it->second.intvalue, tokenlist, errorLogger, settings);
+                }
+                for (it = mem2.values.begin(); it != mem2.values.end(); ++it) {
+                    if (!it->second.isIntValue())
+                        continue;
+                    valueFlowForLoopSimplify(bodyStart, it->first, it->second.intvalue, tokenlist, errorLogger, settings);
+                }
+                for (it = memAfter.values.begin(); it != memAfter.values.end(); ++it) {
+                    if (!it->second.isIntValue())
+                        continue;
+                    valueFlowForLoopSimplifyAfter(tok, it->first, it->second.intvalue, tokenlist, errorLogger, settings);
+                }
             }
         }
     }
