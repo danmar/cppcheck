@@ -6,18 +6,8 @@ environment:
   matrix:
     - VisualStudioVersion: 10.0
       platform: "Win32"
-      configuration: "Debug"
-      vcvarsall_platform: "x86"
-      PlatformToolset: "v100"
-    - VisualStudioVersion: 10.0
-      platform: "Win32"
       configuration: "Release"
       vcvarsall_platform: "x86"
-      PlatformToolset: "v100"
-    - VisualStudioVersion: 10.0
-      platform: "x64"
-      configuration: "Debug"
-      vcvarsall_platform: "x64"
       PlatformToolset: "v100"
     - VisualStudioVersion: 10.0
       platform: "x64"
