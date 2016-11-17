@@ -355,7 +355,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                 // class function?
                 else if (isFunction(tok, scope, &funcStart, &argStart, &declEnd)) {
-                    if (tok->previous()->str() != "::") {
+                    if (tok->previous()->str() != "::" || tok->strAt(-2) == scope->className) {
                         Function function;
 
                         // save the function definition argument start '('

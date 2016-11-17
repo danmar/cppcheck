@@ -152,6 +152,7 @@ private:
         TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
+        TEST_CASE(methodWithRedundantScope);
         TEST_CASE(complexFunctionArrayPtr);
         TEST_CASE(pointerToMemberFunction);
         TEST_CASE(hasSubClassConstructor);
@@ -1117,6 +1118,27 @@ private:
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == functionToken);
             ASSERT(function && function->hasBody() && !function->isInline());
+        }
+    }
+
+    void methodWithRedundantScope() {
+        GET_SYMBOL_DB("class Fred { void Fred::func() {} };\n")
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3);
+
+        if (db) {
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
+
+            ASSERT(scope && scope->className == "func");
+
+            const Function *function = findFunctionByName("func", &db->scopeList.back());
+
+            ASSERT(function && function->token->str() == "func");
+            ASSERT(function && function->token == functionToken);
+            ASSERT(function && function->hasBody() && function->isInline());
         }
     }
 
