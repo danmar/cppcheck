@@ -122,7 +122,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         }
     }
 
-    CheckUnusedFunctions checkUnusedFunctions;
+    CheckUnusedFunctions checkUnusedFunctions(0,0,0);
 
     bool internalErrorFound(false);
     try {
