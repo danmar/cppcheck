@@ -44,7 +44,7 @@ FORMS = about.ui \
         application.ui \
         file.ui \
         logview.ui \
-        main.ui \
+        mainwindow.ui \
         projectfiledialog.ui \
         resultsview.ui \
         scratchpad.ui \

@@ -418,7 +418,7 @@ Parameters: -l(line) (file)</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="main.ui" line="26"/>
+        <location filename="mainwindow.ui" line="26"/>
         <location filename="mainwindow.cpp" line="308"/>
         <location filename="mainwindow.cpp" line="418"/>
         <location filename="mainwindow.cpp" line="475"/>
@@ -433,99 +433,99 @@ Parameters: -l(line) (file)</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="main.ui" line="70"/>
+        <location filename="mainwindow.ui" line="70"/>
         <source>&amp;File</source>
         <translation>文件(&amp;F)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="89"/>
+        <location filename="mainwindow.ui" line="89"/>
         <source>&amp;View</source>
         <translation>查看(&amp;V)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="93"/>
+        <location filename="mainwindow.ui" line="93"/>
         <source>&amp;Toolbars</source>
         <translation>工具栏(&amp;T)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="122"/>
+        <location filename="mainwindow.ui" line="122"/>
         <source>&amp;Help</source>
         <translation>帮助(&amp;H)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="132"/>
+        <location filename="mainwindow.ui" line="132"/>
         <source>&amp;Check</source>
         <translation>检查(&amp;C)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="136"/>
+        <location filename="mainwindow.ui" line="136"/>
         <source>C++ standard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="143"/>
+        <location filename="mainwindow.ui" line="143"/>
         <source>C standard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="167"/>
+        <location filename="mainwindow.ui" line="167"/>
         <source>&amp;Edit</source>
         <translation>编辑(&amp;E)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="180"/>
+        <location filename="mainwindow.ui" line="180"/>
         <source>Standard</source>
         <translation>标准</translation>
     </message>
     <message>
-        <location filename="main.ui" line="201"/>
+        <location filename="mainwindow.ui" line="201"/>
         <source>Categories</source>
         <translation>分类</translation>
     </message>
     <message>
-        <location filename="main.ui" line="229"/>
+        <location filename="mainwindow.ui" line="229"/>
         <source>&amp;License...</source>
         <translation>许可证(&amp;L)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="234"/>
+        <location filename="mainwindow.ui" line="234"/>
         <source>A&amp;uthors...</source>
         <translation>作者(&amp;U)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="243"/>
+        <location filename="mainwindow.ui" line="243"/>
         <source>&amp;About...</source>
         <translation>关于(&amp;A)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="248"/>
+        <location filename="mainwindow.ui" line="248"/>
         <source>&amp;Files...</source>
         <translation>文件(&amp;F)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="251"/>
-        <location filename="main.ui" line="254"/>
+        <location filename="mainwindow.ui" line="251"/>
+        <location filename="mainwindow.ui" line="254"/>
         <source>Check files</source>
         <translation>检查文件</translation>
     </message>
     <message>
-        <location filename="main.ui" line="257"/>
+        <location filename="mainwindow.ui" line="257"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="main.ui" line="266"/>
+        <location filename="mainwindow.ui" line="266"/>
         <source>&amp;Directory...</source>
         <translation>目录(&amp;D)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="269"/>
-        <location filename="main.ui" line="272"/>
+        <location filename="mainwindow.ui" line="269"/>
+        <location filename="mainwindow.ui" line="272"/>
         <source>Check directory</source>
         <translation>检查目录</translation>
     </message>
     <message>
-        <location filename="main.ui" line="275"/>
+        <location filename="mainwindow.ui" line="275"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
@@ -534,354 +534,354 @@ Parameters: -l(line) (file)</source>
         <translation type="obsolete">重新检查文件(&amp;R)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="287"/>
+        <location filename="mainwindow.ui" line="287"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="main.ui" line="296"/>
+        <location filename="mainwindow.ui" line="296"/>
         <source>&amp;Recheck all files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="305"/>
+        <location filename="mainwindow.ui" line="305"/>
         <source>&amp;Stop</source>
         <translation>停止(&amp;S)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="308"/>
-        <location filename="main.ui" line="311"/>
+        <location filename="mainwindow.ui" line="308"/>
+        <location filename="mainwindow.ui" line="311"/>
         <source>Stop checking</source>
         <translation>停止检查</translation>
     </message>
     <message>
-        <location filename="main.ui" line="314"/>
+        <location filename="mainwindow.ui" line="314"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="main.ui" line="323"/>
+        <location filename="mainwindow.ui" line="323"/>
         <source>&amp;Save results to file...</source>
         <translation>保存结果到文件(&amp;S)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="326"/>
+        <location filename="mainwindow.ui" line="326"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="main.ui" line="331"/>
+        <location filename="mainwindow.ui" line="331"/>
         <source>&amp;Quit</source>
         <translation>退出(&amp;Q)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="340"/>
+        <location filename="mainwindow.ui" line="340"/>
         <source>&amp;Clear results</source>
         <translation>清空结果(&amp;C)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="349"/>
+        <location filename="mainwindow.ui" line="349"/>
         <source>&amp;Preferences</source>
         <translation>首选项(&amp;P)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="361"/>
+        <location filename="mainwindow.ui" line="361"/>
         <source>Style warnings</source>
         <translation>风格警告</translation>
     </message>
     <message>
-        <location filename="main.ui" line="364"/>
-        <location filename="main.ui" line="367"/>
+        <location filename="mainwindow.ui" line="364"/>
+        <location filename="mainwindow.ui" line="367"/>
         <source>Show style warnings</source>
         <translation>显示风格警告</translation>
     </message>
     <message>
-        <location filename="main.ui" line="379"/>
+        <location filename="mainwindow.ui" line="379"/>
         <source>Errors</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="main.ui" line="382"/>
-        <location filename="main.ui" line="385"/>
+        <location filename="mainwindow.ui" line="382"/>
+        <location filename="mainwindow.ui" line="385"/>
         <source>Show errors</source>
         <translation>显示错误</translation>
     </message>
     <message>
-        <location filename="main.ui" line="466"/>
+        <location filename="mainwindow.ui" line="466"/>
         <source>Show S&amp;cratchpad...</source>
         <translation>显示便条(&amp;C)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="560"/>
+        <location filename="mainwindow.ui" line="560"/>
         <location filename="mainwindow.cpp" line="667"/>
         <location filename="mainwindow.cpp" line="705"/>
         <source>Information</source>
         <translation>信息</translation>
     </message>
     <message>
-        <location filename="main.ui" line="563"/>
+        <location filename="mainwindow.ui" line="563"/>
         <source>Show information messages</source>
         <translation>显示信息消息</translation>
     </message>
     <message>
-        <location filename="main.ui" line="575"/>
+        <location filename="mainwindow.ui" line="575"/>
         <source>Portability</source>
         <translation>移植可能性</translation>
     </message>
     <message>
-        <location filename="main.ui" line="578"/>
+        <location filename="mainwindow.ui" line="578"/>
         <source>Show portability warnings</source>
         <translation>显示可移植性警告</translation>
     </message>
     <message>
-        <location filename="main.ui" line="586"/>
+        <location filename="mainwindow.ui" line="586"/>
         <source>&amp;Filter</source>
         <translation>滤器(&amp;F)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="589"/>
+        <location filename="mainwindow.ui" line="589"/>
         <source>Filter results</source>
         <translation>过滤结果</translation>
     </message>
     <message>
-        <location filename="main.ui" line="605"/>
+        <location filename="mainwindow.ui" line="605"/>
         <source>Windows 32-bit ANSI</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="main.ui" line="613"/>
+        <location filename="mainwindow.ui" line="613"/>
         <source>Windows 32-bit Unicode</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="main.ui" line="621"/>
+        <location filename="mainwindow.ui" line="621"/>
         <source>Unix 32-bit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="main.ui" line="629"/>
+        <location filename="mainwindow.ui" line="629"/>
         <source>Unix 64-bit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="main.ui" line="637"/>
+        <location filename="mainwindow.ui" line="637"/>
         <source>Windows 64-bit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="main.ui" line="645"/>
+        <location filename="mainwindow.ui" line="645"/>
         <source>Platforms</source>
         <translation>平台</translation>
     </message>
     <message>
-        <location filename="main.ui" line="659"/>
+        <location filename="mainwindow.ui" line="659"/>
         <source>C++11</source>
         <translation>C++11</translation>
     </message>
     <message>
-        <location filename="main.ui" line="670"/>
+        <location filename="mainwindow.ui" line="670"/>
         <source>C99</source>
         <translation>C99</translation>
     </message>
     <message>
-        <location filename="main.ui" line="678"/>
+        <location filename="mainwindow.ui" line="678"/>
         <source>Posix</source>
         <translation>Posix</translation>
     </message>
     <message>
-        <location filename="main.ui" line="686"/>
+        <location filename="mainwindow.ui" line="686"/>
         <source>C11</source>
         <translation type="unfinished">C11</translation>
     </message>
     <message>
-        <location filename="main.ui" line="694"/>
+        <location filename="mainwindow.ui" line="694"/>
         <source>C89</source>
         <translation type="unfinished">C89</translation>
     </message>
     <message>
-        <location filename="main.ui" line="702"/>
+        <location filename="mainwindow.ui" line="702"/>
         <source>C++03</source>
         <translation type="unfinished">C++03</translation>
     </message>
     <message>
-        <location filename="main.ui" line="707"/>
+        <location filename="mainwindow.ui" line="707"/>
         <source>&amp;Print...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="710"/>
+        <location filename="mainwindow.ui" line="710"/>
         <source>Print the Current Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="715"/>
+        <location filename="mainwindow.ui" line="715"/>
         <source>Print Pre&amp;view...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="718"/>
+        <location filename="mainwindow.ui" line="718"/>
         <source>Open a Print Preview Dialog for the Current Results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="723"/>
+        <location filename="mainwindow.ui" line="723"/>
         <source>Library Editor...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="726"/>
+        <location filename="mainwindow.ui" line="726"/>
         <source>Open library editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="734"/>
+        <location filename="mainwindow.ui" line="734"/>
         <source>Auto-detect language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="742"/>
+        <location filename="mainwindow.ui" line="742"/>
         <source>Enforce C++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="750"/>
+        <location filename="mainwindow.ui" line="750"/>
         <source>Enforce C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="487"/>
+        <location filename="mainwindow.ui" line="487"/>
         <source>C&amp;lose Project File</source>
         <translation>关闭项目文件(&amp;L)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="495"/>
+        <location filename="mainwindow.ui" line="495"/>
         <source>&amp;Edit Project File...</source>
         <translation>编辑项目文件(&amp;E)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="504"/>
+        <location filename="mainwindow.ui" line="504"/>
         <source>&amp;Statistics</source>
         <translation>统计(&amp;S)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="516"/>
+        <location filename="mainwindow.ui" line="516"/>
         <source>Warnings</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="main.ui" line="519"/>
-        <location filename="main.ui" line="522"/>
+        <location filename="mainwindow.ui" line="519"/>
+        <location filename="mainwindow.ui" line="522"/>
         <source>Show warnings</source>
         <translation>显示警告</translation>
     </message>
     <message>
-        <location filename="main.ui" line="534"/>
+        <location filename="mainwindow.ui" line="534"/>
         <source>Performance warnings</source>
         <translation>性能警告</translation>
     </message>
     <message>
-        <location filename="main.ui" line="537"/>
-        <location filename="main.ui" line="540"/>
+        <location filename="mainwindow.ui" line="537"/>
+        <location filename="mainwindow.ui" line="540"/>
         <source>Show performance warnings</source>
         <translation>显示性能警告</translation>
     </message>
     <message>
-        <location filename="main.ui" line="548"/>
+        <location filename="mainwindow.ui" line="548"/>
         <source>Show &amp;hidden</source>
         <translation>显示隐藏项(&amp;H)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="390"/>
+        <location filename="mainwindow.ui" line="390"/>
         <source>&amp;Check all</source>
         <translation>全部选中(&amp;C)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="218"/>
+        <location filename="mainwindow.ui" line="218"/>
         <source>Filter</source>
         <translation>滤器</translation>
     </message>
     <message>
-        <location filename="main.ui" line="284"/>
+        <location filename="mainwindow.ui" line="284"/>
         <source>&amp;Recheck modified files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="395"/>
+        <location filename="mainwindow.ui" line="395"/>
         <source>&amp;Uncheck all</source>
         <translation>全部取消选中(&amp;U)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="400"/>
+        <location filename="mainwindow.ui" line="400"/>
         <source>Collapse &amp;all</source>
         <translation>全部折叠(&amp;A)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="405"/>
+        <location filename="mainwindow.ui" line="405"/>
         <source>&amp;Expand all</source>
         <translation>全部展开(&amp;E)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="413"/>
+        <location filename="mainwindow.ui" line="413"/>
         <source>&amp;Standard</source>
         <translation>标准(&amp;S)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="416"/>
+        <location filename="mainwindow.ui" line="416"/>
         <source>Standard items</source>
         <translation>标准项</translation>
     </message>
     <message>
-        <location filename="main.ui" line="421"/>
+        <location filename="mainwindow.ui" line="421"/>
         <source>&amp;Contents</source>
         <translation>内容(&amp;C)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="424"/>
+        <location filename="mainwindow.ui" line="424"/>
         <source>Open the help contents</source>
         <translation>打开帮助内容</translation>
     </message>
     <message>
-        <location filename="main.ui" line="427"/>
+        <location filename="mainwindow.ui" line="427"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="main.ui" line="432"/>
+        <location filename="mainwindow.ui" line="432"/>
         <source>Toolbar</source>
         <translation>工具栏</translation>
     </message>
     <message>
-        <location filename="main.ui" line="440"/>
+        <location filename="mainwindow.ui" line="440"/>
         <source>&amp;Categories</source>
         <translation>分类(&amp;C)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="443"/>
+        <location filename="mainwindow.ui" line="443"/>
         <source>Error categories</source>
         <translation>错误分类</translation>
     </message>
     <message>
-        <location filename="main.ui" line="448"/>
+        <location filename="mainwindow.ui" line="448"/>
         <source>&amp;Open XML...</source>
         <translation>打开 XML (&amp;O)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="457"/>
+        <location filename="mainwindow.ui" line="457"/>
         <source>Open P&amp;roject File...</source>
         <translation>打开项目文件(&amp;R)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="471"/>
+        <location filename="mainwindow.ui" line="471"/>
         <source>&amp;New Project File...</source>
         <translation>新建项目文件(&amp;N)...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="476"/>
+        <location filename="mainwindow.ui" line="476"/>
         <source>&amp;Log View</source>
         <translation>日志视图(&amp;L)</translation>
     </message>
     <message>
-        <location filename="main.ui" line="479"/>
+        <location filename="mainwindow.ui" line="479"/>
         <source>Log View</source>
         <translation>日志视图</translation>
     </message>

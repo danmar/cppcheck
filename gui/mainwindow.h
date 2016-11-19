@@ -28,7 +28,7 @@
 
 #include "settings.h"
 #include "platforms.h"
-#include "ui_main.h"
+#include "ui_mainwindow.h"
 
 class ThreadHandler;
 class TranslationHandler;

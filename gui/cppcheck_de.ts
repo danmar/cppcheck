@@ -429,7 +429,7 @@ Parameter: -l(line) (file)
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="main.ui" line="26"/>
+        <location filename="mainwindow.ui" line="26"/>
         <location filename="mainwindow.cpp" line="308"/>
         <location filename="mainwindow.cpp" line="418"/>
         <location filename="mainwindow.cpp" line="475"/>
@@ -444,451 +444,451 @@ Parameter: -l(line) (file)
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="main.ui" line="180"/>
+        <location filename="mainwindow.ui" line="180"/>
         <source>Standard</source>
         <translation>Standard</translation>
     </message>
     <message>
-        <location filename="main.ui" line="70"/>
+        <location filename="mainwindow.ui" line="70"/>
         <source>&amp;File</source>
         <translation>&amp;Datei</translation>
     </message>
     <message>
-        <location filename="main.ui" line="89"/>
+        <location filename="mainwindow.ui" line="89"/>
         <source>&amp;View</source>
         <translation>&amp;Ansicht</translation>
     </message>
     <message>
-        <location filename="main.ui" line="93"/>
+        <location filename="mainwindow.ui" line="93"/>
         <source>&amp;Toolbars</source>
         <translation>&amp;Symbolleisten</translation>
     </message>
     <message>
-        <location filename="main.ui" line="132"/>
+        <location filename="mainwindow.ui" line="132"/>
         <source>&amp;Check</source>
         <translation>&amp;Prüfen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="136"/>
+        <location filename="mainwindow.ui" line="136"/>
         <source>C++ standard</source>
         <translation>C++-Standard</translation>
     </message>
     <message>
-        <location filename="main.ui" line="143"/>
+        <location filename="mainwindow.ui" line="143"/>
         <source>C standard</source>
         <translation>C-Standard</translation>
     </message>
     <message>
-        <location filename="main.ui" line="167"/>
+        <location filename="mainwindow.ui" line="167"/>
         <source>&amp;Edit</source>
         <translation>&amp;Bearbeiten</translation>
     </message>
     <message>
-        <location filename="main.ui" line="229"/>
+        <location filename="mainwindow.ui" line="229"/>
         <source>&amp;License...</source>
         <translation>&amp;Lizenz...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="234"/>
+        <location filename="mainwindow.ui" line="234"/>
         <source>A&amp;uthors...</source>
         <translation>&amp;Autoren...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="243"/>
+        <location filename="mainwindow.ui" line="243"/>
         <source>&amp;About...</source>
         <translation>Ü&amp;ber...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="248"/>
+        <location filename="mainwindow.ui" line="248"/>
         <source>&amp;Files...</source>
         <translation>&amp;Dateien...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="251"/>
-        <location filename="main.ui" line="254"/>
+        <location filename="mainwindow.ui" line="251"/>
+        <location filename="mainwindow.ui" line="254"/>
         <source>Check files</source>
         <translation>Prüfe Dateien</translation>
     </message>
     <message>
-        <location filename="main.ui" line="257"/>
+        <location filename="mainwindow.ui" line="257"/>
         <source>Ctrl+F</source>
         <translation>Strg+F</translation>
     </message>
     <message>
-        <location filename="main.ui" line="266"/>
+        <location filename="mainwindow.ui" line="266"/>
         <source>&amp;Directory...</source>
         <translation>&amp;Verzeichnis...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="269"/>
-        <location filename="main.ui" line="272"/>
+        <location filename="mainwindow.ui" line="269"/>
+        <location filename="mainwindow.ui" line="272"/>
         <source>Check directory</source>
         <translation>Prüfe Verzeichnis</translation>
     </message>
     <message>
-        <location filename="main.ui" line="275"/>
+        <location filename="mainwindow.ui" line="275"/>
         <source>Ctrl+D</source>
         <translation>Strg+D</translation>
     </message>
     <message>
-        <location filename="main.ui" line="287"/>
+        <location filename="mainwindow.ui" line="287"/>
         <source>Ctrl+R</source>
         <translation>Strg+R</translation>
     </message>
     <message>
-        <location filename="main.ui" line="296"/>
+        <location filename="mainwindow.ui" line="296"/>
         <source>&amp;Recheck all files</source>
         <translation>Alle Dateien neu prüfen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="305"/>
+        <location filename="mainwindow.ui" line="305"/>
         <source>&amp;Stop</source>
         <translation>&amp;Stoppen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="308"/>
-        <location filename="main.ui" line="311"/>
+        <location filename="mainwindow.ui" line="308"/>
+        <location filename="mainwindow.ui" line="311"/>
         <source>Stop checking</source>
         <translation>Prüfung abbrechen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="314"/>
+        <location filename="mainwindow.ui" line="314"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="main.ui" line="323"/>
+        <location filename="mainwindow.ui" line="323"/>
         <source>&amp;Save results to file...</source>
         <translation>&amp;Ergebnisse in Datei speichern...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="326"/>
+        <location filename="mainwindow.ui" line="326"/>
         <source>Ctrl+S</source>
         <translation>Strg+S</translation>
     </message>
     <message>
-        <location filename="main.ui" line="331"/>
+        <location filename="mainwindow.ui" line="331"/>
         <source>&amp;Quit</source>
         <translation>&amp;Beenden</translation>
     </message>
     <message>
-        <location filename="main.ui" line="340"/>
+        <location filename="mainwindow.ui" line="340"/>
         <source>&amp;Clear results</source>
         <translation>Ergebnisse &amp;löschen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="349"/>
+        <location filename="mainwindow.ui" line="349"/>
         <source>&amp;Preferences</source>
         <translation>&amp;Einstellungen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="379"/>
+        <location filename="mainwindow.ui" line="379"/>
         <source>Errors</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="main.ui" line="382"/>
-        <location filename="main.ui" line="385"/>
+        <location filename="mainwindow.ui" line="382"/>
+        <location filename="mainwindow.ui" line="385"/>
         <source>Show errors</source>
         <translation>Zeige Fehler</translation>
     </message>
     <message>
-        <location filename="main.ui" line="466"/>
+        <location filename="mainwindow.ui" line="466"/>
         <source>Show S&amp;cratchpad...</source>
         <translation>Zeige Schmierzettel</translation>
     </message>
     <message>
-        <location filename="main.ui" line="516"/>
+        <location filename="mainwindow.ui" line="516"/>
         <source>Warnings</source>
         <translation>Warnungen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="519"/>
-        <location filename="main.ui" line="522"/>
+        <location filename="mainwindow.ui" line="519"/>
+        <location filename="mainwindow.ui" line="522"/>
         <source>Show warnings</source>
         <translation>Zeige Warnungen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="534"/>
+        <location filename="mainwindow.ui" line="534"/>
         <source>Performance warnings</source>
         <translation>Performance-Warnungen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="537"/>
-        <location filename="main.ui" line="540"/>
+        <location filename="mainwindow.ui" line="537"/>
+        <location filename="mainwindow.ui" line="540"/>
         <source>Show performance warnings</source>
         <translation>Zeige Performance-Warnungen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="548"/>
+        <location filename="mainwindow.ui" line="548"/>
         <source>Show &amp;hidden</source>
         <translation>Zeige &amp;versteckte</translation>
     </message>
     <message>
-        <location filename="main.ui" line="560"/>
+        <location filename="mainwindow.ui" line="560"/>
         <location filename="mainwindow.cpp" line="667"/>
         <location filename="mainwindow.cpp" line="705"/>
         <source>Information</source>
         <translation>Information</translation>
     </message>
     <message>
-        <location filename="main.ui" line="563"/>
+        <location filename="mainwindow.ui" line="563"/>
         <source>Show information messages</source>
         <translation>Zeige Informationsmeldungen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="575"/>
+        <location filename="mainwindow.ui" line="575"/>
         <source>Portability</source>
         <translation>Portabilität</translation>
     </message>
     <message>
-        <location filename="main.ui" line="578"/>
+        <location filename="mainwindow.ui" line="578"/>
         <source>Show portability warnings</source>
         <translation>Zeige Portabilitätswarnungen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="586"/>
+        <location filename="mainwindow.ui" line="586"/>
         <source>&amp;Filter</source>
         <translation>&amp;Filter</translation>
     </message>
     <message>
-        <location filename="main.ui" line="589"/>
+        <location filename="mainwindow.ui" line="589"/>
         <source>Filter results</source>
         <translation>Gefilterte Ergebnisse</translation>
     </message>
     <message>
-        <location filename="main.ui" line="605"/>
+        <location filename="mainwindow.ui" line="605"/>
         <source>Windows 32-bit ANSI</source>
         <translation>Windows 32-bit, ANSI</translation>
     </message>
     <message>
-        <location filename="main.ui" line="613"/>
+        <location filename="mainwindow.ui" line="613"/>
         <source>Windows 32-bit Unicode</source>
         <translation>Windows 32-bit, Unicode</translation>
     </message>
     <message>
-        <location filename="main.ui" line="621"/>
+        <location filename="mainwindow.ui" line="621"/>
         <source>Unix 32-bit</source>
         <translation>Unix 32-bit</translation>
     </message>
     <message>
-        <location filename="main.ui" line="629"/>
+        <location filename="mainwindow.ui" line="629"/>
         <source>Unix 64-bit</source>
         <translation>Unix 64-bit</translation>
     </message>
     <message>
-        <location filename="main.ui" line="637"/>
+        <location filename="mainwindow.ui" line="637"/>
         <source>Windows 64-bit</source>
         <translation>Windows 64-bit</translation>
     </message>
     <message>
-        <location filename="main.ui" line="645"/>
+        <location filename="mainwindow.ui" line="645"/>
         <source>Platforms</source>
         <translation>Plattformen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="659"/>
+        <location filename="mainwindow.ui" line="659"/>
         <source>C++11</source>
         <translation>C++11</translation>
     </message>
     <message>
-        <location filename="main.ui" line="670"/>
+        <location filename="mainwindow.ui" line="670"/>
         <source>C99</source>
         <translation>C99</translation>
     </message>
     <message>
-        <location filename="main.ui" line="678"/>
+        <location filename="mainwindow.ui" line="678"/>
         <source>Posix</source>
         <translation>Posix</translation>
     </message>
     <message>
-        <location filename="main.ui" line="686"/>
+        <location filename="mainwindow.ui" line="686"/>
         <source>C11</source>
         <translation>C11</translation>
     </message>
     <message>
-        <location filename="main.ui" line="694"/>
+        <location filename="mainwindow.ui" line="694"/>
         <source>C89</source>
         <translation>C89</translation>
     </message>
     <message>
-        <location filename="main.ui" line="702"/>
+        <location filename="mainwindow.ui" line="702"/>
         <source>C++03</source>
         <translation>C++03</translation>
     </message>
     <message>
-        <location filename="main.ui" line="707"/>
+        <location filename="mainwindow.ui" line="707"/>
         <source>&amp;Print...</source>
         <translation>Drucken...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="710"/>
+        <location filename="mainwindow.ui" line="710"/>
         <source>Print the Current Report</source>
         <translation>Aktuellen Bericht ausdrucken</translation>
     </message>
     <message>
-        <location filename="main.ui" line="715"/>
+        <location filename="mainwindow.ui" line="715"/>
         <source>Print Pre&amp;view...</source>
         <translation>Druckvorschau</translation>
     </message>
     <message>
-        <location filename="main.ui" line="718"/>
+        <location filename="mainwindow.ui" line="718"/>
         <source>Open a Print Preview Dialog for the Current Results</source>
         <translation>Druckvorschaudialog für aktuelle Ergebnisse öffnen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="723"/>
+        <location filename="mainwindow.ui" line="723"/>
         <source>Library Editor...</source>
         <translation>Bibliothekseditor...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="726"/>
+        <location filename="mainwindow.ui" line="726"/>
         <source>Open library editor</source>
         <translation>Bibliothekseditor öffnen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="734"/>
+        <location filename="mainwindow.ui" line="734"/>
         <source>Auto-detect language</source>
         <translation>Sprache automatisch erkennen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="742"/>
+        <location filename="mainwindow.ui" line="742"/>
         <source>Enforce C++</source>
         <translation>Erzwinge C++</translation>
     </message>
     <message>
-        <location filename="main.ui" line="750"/>
+        <location filename="mainwindow.ui" line="750"/>
         <source>Enforce C</source>
         <translation>Erzwinge C</translation>
     </message>
     <message>
-        <location filename="main.ui" line="390"/>
+        <location filename="mainwindow.ui" line="390"/>
         <source>&amp;Check all</source>
         <translation>Alle &amp;auswählen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="218"/>
+        <location filename="mainwindow.ui" line="218"/>
         <source>Filter</source>
         <translation>Filter</translation>
     </message>
     <message>
-        <location filename="main.ui" line="284"/>
+        <location filename="mainwindow.ui" line="284"/>
         <source>&amp;Recheck modified files</source>
         <translation>Veränderte Dateien neu prüfen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="395"/>
+        <location filename="mainwindow.ui" line="395"/>
         <source>&amp;Uncheck all</source>
         <translation>Alle a&amp;bwählen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="400"/>
+        <location filename="mainwindow.ui" line="400"/>
         <source>Collapse &amp;all</source>
         <translation>Alle &amp;reduzieren</translation>
     </message>
     <message>
-        <location filename="main.ui" line="405"/>
+        <location filename="mainwindow.ui" line="405"/>
         <source>&amp;Expand all</source>
         <translation>Alle &amp;erweitern</translation>
     </message>
     <message>
-        <location filename="main.ui" line="413"/>
+        <location filename="mainwindow.ui" line="413"/>
         <source>&amp;Standard</source>
         <translation>&amp;Standard</translation>
     </message>
     <message>
-        <location filename="main.ui" line="416"/>
+        <location filename="mainwindow.ui" line="416"/>
         <source>Standard items</source>
         <translation>Standardeinträge</translation>
     </message>
     <message>
-        <location filename="main.ui" line="432"/>
+        <location filename="mainwindow.ui" line="432"/>
         <source>Toolbar</source>
         <translation>Symbolleiste</translation>
     </message>
     <message>
-        <location filename="main.ui" line="440"/>
+        <location filename="mainwindow.ui" line="440"/>
         <source>&amp;Categories</source>
         <translation>&amp;Kategorien</translation>
     </message>
     <message>
-        <location filename="main.ui" line="443"/>
+        <location filename="mainwindow.ui" line="443"/>
         <source>Error categories</source>
         <translation>Fehler-Kategorien</translation>
     </message>
     <message>
-        <location filename="main.ui" line="448"/>
+        <location filename="mainwindow.ui" line="448"/>
         <source>&amp;Open XML...</source>
         <translation>Öffne &amp;XML...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="457"/>
+        <location filename="mainwindow.ui" line="457"/>
         <source>Open P&amp;roject File...</source>
         <translation>Pr&amp;ojektdatei öffnen...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="471"/>
+        <location filename="mainwindow.ui" line="471"/>
         <source>&amp;New Project File...</source>
         <translation>&amp;Neue Projektdatei...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="476"/>
+        <location filename="mainwindow.ui" line="476"/>
         <source>&amp;Log View</source>
         <translation>&amp;Loganzeige</translation>
     </message>
     <message>
-        <location filename="main.ui" line="479"/>
+        <location filename="mainwindow.ui" line="479"/>
         <source>Log View</source>
         <translation>Loganzeige</translation>
     </message>
     <message>
-        <location filename="main.ui" line="487"/>
+        <location filename="mainwindow.ui" line="487"/>
         <source>C&amp;lose Project File</source>
         <translation>Projektdatei &amp;schließen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="495"/>
+        <location filename="mainwindow.ui" line="495"/>
         <source>&amp;Edit Project File...</source>
         <translation>Projektdatei &amp;bearbeiten...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="504"/>
+        <location filename="mainwindow.ui" line="504"/>
         <source>&amp;Statistics</source>
         <translation>&amp;Statistik</translation>
     </message>
     <message>
-        <location filename="main.ui" line="421"/>
+        <location filename="mainwindow.ui" line="421"/>
         <source>&amp;Contents</source>
         <translation>&amp;Inhalte</translation>
     </message>
     <message>
-        <location filename="main.ui" line="201"/>
+        <location filename="mainwindow.ui" line="201"/>
         <source>Categories</source>
         <translation>Kategorien</translation>
     </message>
     <message>
-        <location filename="main.ui" line="361"/>
+        <location filename="mainwindow.ui" line="361"/>
         <source>Style warnings</source>
         <translation>Stilwarnungen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="364"/>
-        <location filename="main.ui" line="367"/>
+        <location filename="mainwindow.ui" line="364"/>
+        <location filename="mainwindow.ui" line="367"/>
         <source>Show style warnings</source>
         <translation>Zeige Stilwarnungen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="424"/>
+        <location filename="mainwindow.ui" line="424"/>
         <source>Open the help contents</source>
         <translation>Öffnet die Hilfe-Inhalte</translation>
     </message>
     <message>
-        <location filename="main.ui" line="427"/>
+        <location filename="mainwindow.ui" line="427"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="main.ui" line="122"/>
+        <location filename="mainwindow.ui" line="122"/>
         <source>&amp;Help</source>
         <translation>&amp;Hilfe</translation>
     </message>
