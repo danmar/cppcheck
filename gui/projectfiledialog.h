@@ -73,7 +73,7 @@ public:
     * @brief Return check paths from the dialog control.
     * @return List of check paths.
     */
-    QStringList GetPaths() const;
+    QStringList GetCheckPaths() const;
 
     /**
     * @brief Return excluded paths from the dialog control.
@@ -120,7 +120,7 @@ public:
     * @brief Set check paths to dialog control.
     * @param paths List of path names to set to dialog control.
     */
-    void SetPaths(const QStringList &paths);
+    void SetCheckPaths(const QStringList &paths);
 
     /**
     * @brief Set excluded paths to dialog control.
@@ -158,15 +158,25 @@ protected slots:
     void BrowseCompileDatabase();
 
     /**
+    * @brief Add new path to check.
+    */
+    void AddCheckPath();
+
+    /**
+    * @brief Edit path in the list.
+    */
+    void EditCheckPath();
+
+    /**
+    * @brief Remove path from the list.
+    */
+    void RemoveCheckPath();
+
+    /**
     * @brief Browse for include directory.
     * Allow user to add new include directory to the list.
     */
     void AddIncludeDir();
-
-    /**
-    * @brief Add new path to check.
-    */
-    void AddPath();
 
     /**
     * @brief Remove include directory from the list.
@@ -177,16 +187,6 @@ protected slots:
     * @brief Edit include directory in the list.
     */
     void EditIncludeDir();
-
-    /**
-    * @brief Edit path in the list.
-    */
-    void EditPath();
-
-    /**
-    * @brief Remove path from the list.
-    */
-    void RemovePath();
 
     /**
     * @brief Add new path to exclude.
@@ -245,7 +245,7 @@ protected:
     * @brief Add new path to check.
     * @param path Path to add.
     */
-    void AddPath(const QString &path);
+    void AddCheckPath(const QString &path);
 
     /**
     * @brief Add new path to ignore list.
