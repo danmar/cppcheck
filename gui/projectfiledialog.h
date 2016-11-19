@@ -49,6 +49,9 @@ public:
 
     QString GetImportProject() const;
 
+    /** Get Cppcheck build dir */
+    QString GetBuildDir() const;
+
     /**
     * @brief Return include paths from the dialog control.
     * @return List of include paths.
@@ -91,6 +94,9 @@ public:
     */
     void SetRootPath(const QString &root);
 
+    /** Set build dir */
+    void SetBuildDir(const QString &buildDir);
+
     void SetImportProject(const QString &importProject);
 
     /**
@@ -130,6 +136,11 @@ public:
     void SetSuppressions(const QStringList &suppressions);
 
 protected slots:
+
+    /**
+    * @brief Browse for build dir.
+    */
+    void BrowseBuildDir();
 
     /**
     * @brief Browse for Visual Studio solution/project.
@@ -247,6 +258,8 @@ private:
 
     /** @brief Library checkboxes */
     QList<QCheckBox*> mLibraryCheckboxes;
+
+    QString getExistingDirectory(const QString &caption, bool trailingSlash);
 };
 
 /// @}

@@ -29,7 +29,9 @@
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent),
     mScanDuration(0),
-    mRunningThreadCount(0)
+    mRunningThreadCount(0),
+    mAnalyseWholeProgram(false)
+
 {
     SetThreadCount(1);
 }
@@ -43,6 +45,7 @@ void ThreadHandler::ClearFiles()
 {
     mLastFiles.clear();
     mResults.ClearFiles();
+    mAnalyseWholeProgram = false;
 }
 
 void ThreadHandler::SetFiles(const QStringList &files)
@@ -94,6 +97,8 @@ void ThreadHandler::Check(const Settings &settings, bool all)
     // Date and time when checking starts..
     mCheckStartTime = QDateTime::currentDateTime();
 
+    mAnalyseWholeProgram = true;
+
     mTime.start();
 }
 
@@ -137,10 +142,17 @@ void ThreadHandler::RemoveThreads()
     }
 
     mThreads.clear();
+    mAnalyseWholeProgram = false;
 }
 
 void ThreadHandler::ThreadDone()
 {
+    if (mRunningThreadCount == 1 && mAnalyseWholeProgram) {
+        mThreads[0]->AnalyseWholeProgram(mLastFiles);
+        mAnalyseWholeProgram = false;
+        return;
+    }
+
     mRunningThreadCount--;
     if (mRunningThreadCount == 0) {
         emit Done();
@@ -158,6 +170,7 @@ void ThreadHandler::ThreadDone()
 void ThreadHandler::Stop()
 {
     mCheckStartTime = QDateTime();
+    mAnalyseWholeProgram = false;
     for (int i = 0; i < mThreads.size(); i++) {
         mThreads[i]->stop();
     }

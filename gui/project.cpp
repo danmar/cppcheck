@@ -86,53 +86,40 @@ bool Project::Open()
 bool Project::Edit()
 {
     ProjectFileDialog dlg(mFilename, mParentWidget);
-    QString root = mPFile->GetRootPath();
-    dlg.SetRootPath(root);
-    QStringList includes = mPFile->GetIncludeDirs();
-    dlg.SetIncludepaths(includes);
-    QStringList defines = mPFile->GetDefines();
-    dlg.SetDefines(defines);
-    QStringList paths = mPFile->GetCheckPaths();
-    dlg.SetPaths(paths);
-    QString importProject = mPFile->GetImportProject();
-    dlg.SetImportProject(importProject);
-    QStringList ignorepaths = mPFile->GetExcludedPaths();
-    dlg.SetExcludedPaths(ignorepaths);
-    QStringList libraries = mPFile->GetLibraries();
-    dlg.SetLibraries(libraries);
-    QStringList suppressions = mPFile->GetSuppressions();
-    dlg.SetSuppressions(suppressions);
+    dlg.SetRootPath(mPFile->GetRootPath());
+    dlg.SetBuildDir(mPFile->GetBuildDir());
+    dlg.SetIncludepaths(mPFile->GetIncludeDirs());
+    dlg.SetDefines(mPFile->GetDefines());
+    dlg.SetPaths(mPFile->GetCheckPaths());
+    dlg.SetImportProject(mPFile->GetImportProject());
+    dlg.SetExcludedPaths(mPFile->GetExcludedPaths());
+    dlg.SetLibraries(mPFile->GetLibraries());
+    dlg.SetSuppressions(mPFile->GetSuppressions());
 
-    int rv = dlg.exec();
-    if (rv == QDialog::Accepted) {
-        QString root = dlg.GetRootPath();
-        mPFile->SetRootPath(root);
-        mPFile->SetImportProject(dlg.GetImportProject());
-        QStringList includes = dlg.GetIncludePaths();
-        mPFile->SetIncludes(includes);
-        QStringList defines = dlg.GetDefines();
-        mPFile->SetDefines(defines);
-        QStringList paths = dlg.GetPaths();
-        mPFile->SetCheckPaths(paths);
-        QStringList excludedpaths = dlg.GetExcludedPaths();
-        mPFile->SetExcludedPaths(excludedpaths);
-        QStringList libraries = dlg.GetLibraries();
-        mPFile->SetLibraries(libraries);
-        QStringList suppressions = dlg.GetSuppressions();
-        mPFile->SetSuppressions(suppressions);
+    if (dlg.exec() != QDialog::Accepted)
+        return false;
 
-        bool writeSuccess = mPFile->Write();
-        if (!writeSuccess) {
-            QMessageBox msg(QMessageBox::Critical,
-                            tr("Cppcheck"),
-                            tr("Could not write the project file."),
-                            QMessageBox::Ok,
-                            mParentWidget);
-            msg.exec();
-        }
-        return writeSuccess;
+    mPFile->SetRootPath(dlg.GetRootPath());
+    mPFile->SetBuildDir(dlg.GetBuildDir());
+    mPFile->SetImportProject(dlg.GetImportProject());
+    mPFile->SetIncludes(dlg.GetIncludePaths());
+    mPFile->SetDefines(dlg.GetDefines());
+    mPFile->SetCheckPaths(dlg.GetPaths());
+    mPFile->SetExcludedPaths(dlg.GetExcludedPaths());
+    mPFile->SetLibraries(dlg.GetLibraries());
+    mPFile->SetSuppressions(dlg.GetSuppressions());
+
+    if (!mPFile->Write()) {
+        QMessageBox msg(QMessageBox::Critical,
+                        tr("Cppcheck"),
+                        tr("Could not write the project file."),
+                        QMessageBox::Ok,
+                        mParentWidget);
+        msg.exec();
+        return false;
     }
-    return false;
+
+    return true;
 }
 
 void Project::Create()

@@ -47,6 +47,12 @@ public:
     void Check(const Settings &settings);
 
     /**
+    * @brief Run whole program analysis
+    * @param files    All files
+    */
+    void AnalyseWholeProgram(const QStringList &files);
+
+    /**
     * @brief method that is run in a thread
     *
     */
@@ -91,7 +97,9 @@ protected:
     *
     */
     CppCheck mCppcheck;
+
 private:
+    QStringList mFiles;
 };
 /// @}
 #endif // CHECKTHREAD_H

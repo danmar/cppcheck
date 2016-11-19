@@ -83,6 +83,7 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     }
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(mUI.buildDirBrowse, SIGNAL(clicked()), this, SLOT(BrowseBuildDir()));
     connect(mUI.mBrowseCompileDatabase, SIGNAL(clicked()), this, SLOT(BrowseCompileDatabase()));
     connect(mUI.mBrowseVisualStudio, SIGNAL(clicked()), this, SLOT(BrowseVisualStudio()));
     connect(mUI.mBtnAddInclude, SIGNAL(clicked()), this, SLOT(AddIncludeDir()));
@@ -117,6 +118,38 @@ void ProjectFileDialog::SaveSettings() const
     QSettings settings;
     settings.setValue(SETTINGS_PROJECT_DIALOG_WIDTH, size().width());
     settings.setValue(SETTINGS_PROJECT_DIALOG_HEIGHT, size().height());
+}
+
+
+QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool trailingSlash) {
+    const QFileInfo inf(mFilePath);
+    const QString rootpath = inf.absolutePath();
+    QString selectedDir = QFileDialog::getExistingDirectory(this,
+                          caption,
+                          rootpath);
+
+    if (selectedDir.isEmpty())
+        return QString();
+
+    // Check if the path is relative to project file's path and if so
+    // make it a relative path instead of absolute path.
+    const QDir dir(rootpath);
+    const QString relpath(dir.relativeFilePath(selectedDir));
+    if (!relpath.startsWith("."))
+        selectedDir = relpath;
+
+    // Trailing slash..
+    if (trailingSlash && !selectedDir.endsWith('/'))
+        selectedDir += '/';
+
+    return selectedDir;
+}
+
+void ProjectFileDialog::BrowseBuildDir()
+{
+    const QString dir(getExistingDirectory(tr("Select Cppcheck build dir"), false));
+    if (!dir.isEmpty())
+        mUI.buildDirEdit->setText(dir);
 }
 
 void ProjectFileDialog::BrowseCompileDatabase()
@@ -178,6 +211,10 @@ QString ProjectFileDialog::GetRootPath() const
     root = root.trimmed();
     root = QDir::fromNativeSeparators(root);
     return root;
+}
+
+QString ProjectFileDialog::GetBuildDir() const {
+    return mUI.buildDirEdit->text();
 }
 
 QString ProjectFileDialog::GetImportProject() const
@@ -253,10 +290,12 @@ QStringList ProjectFileDialog::GetSuppressions() const
     return suppressions;
 }
 
-void ProjectFileDialog::SetRootPath(const QString &root)
-{
-    QString newroot = QDir::toNativeSeparators(root);
-    mUI.mEditProjectRoot->setText(newroot);
+void ProjectFileDialog::SetRootPath(const QString &root) {
+    mUI.mEditProjectRoot->setText(QDir::toNativeSeparators(root));
+}
+
+void ProjectFileDialog::SetBuildDir(const QString &buildDir) {
+    mUI.buildDirEdit->setText(buildDir);
 }
 
 void ProjectFileDialog::SetImportProject(const QString &importProject)
@@ -321,38 +360,16 @@ void ProjectFileDialog::SetSuppressions(const QStringList &suppressions)
 
 void ProjectFileDialog::AddIncludeDir()
 {
-    const QFileInfo inf(mFilePath);
-    const QString rootpath = inf.absolutePath();
-    QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select include directory"),
-                          rootpath);
-
-    if (!selectedDir.isEmpty()) {
-        // Check if the path is relative to project file's path and if so
-        // make it a relative path instead of absolute path.
-        const QDir dir(selectedDir);
-        QString absPath = dir.absolutePath();
-        if (absPath.startsWith(rootpath)) {
-            // Remove also the slash from begin of new relative path
-            selectedDir = absPath.remove(0, rootpath.length() + 1);
-        }
-        if (!selectedDir.endsWith("/"))
-            selectedDir += '/';
-        AddIncludeDir(selectedDir);
-    }
+    const QString dir = getExistingDirectory(tr("Select include directory"), true);
+    if (!dir.isEmpty())
+        AddIncludeDir(dir);
 }
 
 void ProjectFileDialog::AddPath()
 {
-    QFileInfo inf(mFilePath);
-    const QString rootpath = inf.absolutePath();
-    QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select a directory to check"),
-                          rootpath);
-
-    if (!selectedDir.isEmpty()) {
-        AddPath(selectedDir);
-    }
+    QString dir = getExistingDirectory(tr("Select a directory to check"), false);
+    if (!dir.isEmpty())
+        AddPath(dir);
 }
 
 void ProjectFileDialog::RemoveIncludeDir()
@@ -383,18 +400,9 @@ void ProjectFileDialog::RemovePath()
 
 void ProjectFileDialog::AddExcludePath()
 {
-    QFileInfo inf(mFilePath);
-    const QString rootpath = inf.absolutePath();
-
-    QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select directory to ignore"),
-                          rootpath);
-
-    if (!selectedDir.isEmpty()) {
-        if (!selectedDir.endsWith('/'))
-            selectedDir += '/';
-        AddExcludePath(selectedDir);
-    }
+    QString dir = getExistingDirectory(tr("Select directory to ignore"), true);
+    if (!dir.isEmpty())
+        AddExcludePath(dir);
 }
 
 void ProjectFileDialog::EditExcludePath()

@@ -54,6 +54,10 @@ public:
         return mRootPath;
     }
 
+    QString GetBuildDir() const {
+        return mBuildDir;
+    }
+
     QString GetImportProject() const {
         return mImportProject;
     }
@@ -120,6 +124,11 @@ public:
     */
     void SetRootPath(const QString &rootpath) {
         mRootPath = rootpath;
+    }
+
+
+    void SetBuildDir(const QString &buildDir) {
+        mBuildDir = buildDir;
     }
 
     void SetImportProject(const QString &importProject) {
@@ -193,6 +202,8 @@ protected:
      */
     void ReadRootPath(QXmlStreamReader &reader);
 
+    void ReadBuildDir(QXmlStreamReader &reader);
+
     /**
      * @brief Read importproject from XML.
      * @param reader XML stream reader.
@@ -251,6 +262,10 @@ private:
      */
     QString mRootPath;
 
+    /** Cppcheck build dir */
+    QString mBuildDir;
+
+    /** Visual studio project/solution , compile database */
     QString mImportProject;
 
     /**

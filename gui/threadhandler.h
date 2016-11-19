@@ -234,6 +234,8 @@ protected:
     *
     */
     int mRunningThreadCount;
+
+    bool mAnalyseWholeProgram;
 private:
 
     /**

@@ -27,6 +27,7 @@
 static const char ProjectElementName[] = "project";
 static const char ProjectVersionAttrib[] = "version";
 static const char ProjectFileVersion[] = "1";
+static const char BuildDirElementName[] = "builddir";
 static const char ImportProjectElementName[] = "importproject";
 static const char IncludeDirElementName[] = "includedir";
 static const char DirElementName[] = "dir";
@@ -83,6 +84,10 @@ bool ProjectFile::Read(const QString &filename)
             // Read root path from inside project element
             if (insideProject && xmlReader.name() == RootPathName)
                 ReadRootPath(xmlReader);
+
+            // Read root path from inside project element
+            if (insideProject && xmlReader.name() == BuildDirElementName)
+                ReadBuildDir(xmlReader);
 
             // Find paths to check from inside project element
             if (insideProject && xmlReader.name() == PathsElementName)
@@ -150,6 +155,31 @@ void ProjectFile::ReadRootPath(QXmlStreamReader &reader)
     QString name = attribs.value("", RootPathNameAttrib).toString();
     if (!name.isEmpty())
         mRootPath = name;
+}
+
+void ProjectFile::ReadBuildDir(QXmlStreamReader &reader)
+{
+    mBuildDir.clear();
+    do {
+        const QXmlStreamReader::TokenType type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::Characters:
+            mBuildDir = reader.text().toString();
+        case QXmlStreamReader::EndElement:
+            return;
+        // Not handled
+        case QXmlStreamReader::StartElement:
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (1);
 }
 
 void ProjectFile::ReadImportProject(QXmlStreamReader &reader)
@@ -423,6 +453,12 @@ bool ProjectFile::Write(const QString &filename)
     if (!mRootPath.isEmpty()) {
         xmlWriter.writeStartElement(RootPathName);
         xmlWriter.writeAttribute(RootPathNameAttrib, mRootPath);
+        xmlWriter.writeEndElement();
+    }
+
+    if (!mBuildDir.isEmpty()) {
+        xmlWriter.writeStartElement(BuildDirElementName);
+        xmlWriter.writeCharacters(mBuildDir);
         xmlWriter.writeEndElement();
     }
 
