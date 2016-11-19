@@ -121,7 +121,8 @@ void ProjectFileDialog::SaveSettings() const
 }
 
 
-QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool trailingSlash) {
+QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool trailingSlash)
+{
     const QFileInfo inf(mFilePath);
     const QString rootpath = inf.absolutePath();
     QString selectedDir = QFileDialog::getExistingDirectory(this,
@@ -213,7 +214,8 @@ QString ProjectFileDialog::GetRootPath() const
     return root;
 }
 
-QString ProjectFileDialog::GetBuildDir() const {
+QString ProjectFileDialog::GetBuildDir() const
+{
     return mUI.buildDirEdit->text();
 }
 
@@ -290,11 +292,13 @@ QStringList ProjectFileDialog::GetSuppressions() const
     return suppressions;
 }
 
-void ProjectFileDialog::SetRootPath(const QString &root) {
+void ProjectFileDialog::SetRootPath(const QString &root)
+{
     mUI.mEditProjectRoot->setText(QDir::toNativeSeparators(root));
 }
 
-void ProjectFileDialog::SetBuildDir(const QString &buildDir) {
+void ProjectFileDialog::SetBuildDir(const QString &buildDir)
+{
     mUI.buildDirEdit->setText(buildDir);
 }
 

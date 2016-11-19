@@ -80,13 +80,13 @@ public:
     * @return project file.
     */
     ProjectFile * GetProjectFile() const {
-        return mPFile;
+        return mProjectFile;
     }
 
 private:
 
     QString mFilename;
-    ProjectFile *mPFile;
+    ProjectFile *mProjectFile;
     QWidget *mParentWidget;
 };
 
