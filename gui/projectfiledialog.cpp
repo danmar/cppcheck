@@ -78,20 +78,20 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     foreach (const QString library, libs) {
         QCheckBox *checkbox = new QCheckBox(this);
         checkbox->setText(library);
-        mUI.layoutLibraries->addWidget(checkbox);
+        mUI.mLayoutLibraries->addWidget(checkbox);
         mLibraryCheckboxes << checkbox;
     }
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(mUI.buildDirBrowse, SIGNAL(clicked()), this, SLOT(BrowseBuildDir()));
-    connect(mUI.mBrowseCompileDatabase, SIGNAL(clicked()), this, SLOT(BrowseCompileDatabase()));
-    connect(mUI.mBrowseVisualStudio, SIGNAL(clicked()), this, SLOT(BrowseVisualStudio()));
+    connect(mUI.mBtnBrowseBuildDir, SIGNAL(clicked()), this, SLOT(BrowseBuildDir()));
+    connect(mUI.mBtnBrowseCompileDatabase, SIGNAL(clicked()), this, SLOT(BrowseCompileDatabase()));
+    connect(mUI.mBtnBrowseVisualStudio, SIGNAL(clicked()), this, SLOT(BrowseVisualStudio()));
+    connect(mUI.mBtnAddCheckPath, SIGNAL(clicked()), this, SLOT(AddPath()));
+    connect(mUI.mBtnEditCheckPath, SIGNAL(clicked()), this, SLOT(EditPath()));
+    connect(mUI.mBtnRemoveCheckPath, SIGNAL(clicked()), this, SLOT(RemovePath()));
     connect(mUI.mBtnAddInclude, SIGNAL(clicked()), this, SLOT(AddIncludeDir()));
-    connect(mUI.mBtnAddPath, SIGNAL(clicked()), this, SLOT(AddPath()));
     connect(mUI.mBtnEditInclude, SIGNAL(clicked()), this, SLOT(EditIncludeDir()));
     connect(mUI.mBtnRemoveInclude, SIGNAL(clicked()), this, SLOT(RemoveIncludeDir()));
-    connect(mUI.mBtnEditPath, SIGNAL(clicked()), this, SLOT(EditPath()));
-    connect(mUI.mBtnRemovePath, SIGNAL(clicked()), this, SLOT(RemovePath()));
     connect(mUI.mBtnAddIgnorePath, SIGNAL(clicked()), this, SLOT(AddExcludePath()));
     connect(mUI.mBtnEditIgnorePath, SIGNAL(clicked()), this, SLOT(EditExcludePath()));
     connect(mUI.mBtnRemoveIgnorePath, SIGNAL(clicked()), this, SLOT(RemoveExcludePath()));
@@ -150,7 +150,7 @@ void ProjectFileDialog::BrowseBuildDir()
 {
     const QString dir(getExistingDirectory(tr("Select Cppcheck build dir"), false));
     if (!dir.isEmpty())
-        mUI.buildDirEdit->setText(dir);
+        mUI.mEditBuildDir->setText(dir);
 }
 
 void ProjectFileDialog::BrowseCompileDatabase()
@@ -192,7 +192,7 @@ void ProjectFileDialog::AddPath(const QString &path)
     const QString newpath = QDir::toNativeSeparators(path);
     QListWidgetItem *item = new QListWidgetItem(newpath);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
-    mUI.mListPaths->addItem(item);
+    mUI.mListCheckPaths->addItem(item);
 }
 
 void ProjectFileDialog::AddExcludePath(const QString &path)
@@ -216,7 +216,7 @@ QString ProjectFileDialog::GetRootPath() const
 
 QString ProjectFileDialog::GetBuildDir() const
 {
-    return mUI.buildDirEdit->text();
+    return mUI.mEditBuildDir->text();
 }
 
 QString ProjectFileDialog::GetImportProject() const
@@ -251,10 +251,10 @@ QStringList ProjectFileDialog::GetDefines() const
 
 QStringList ProjectFileDialog::GetPaths() const
 {
-    const int count = mUI.mListPaths->count();
+    const int count = mUI.mListCheckPaths->count();
     QStringList paths;
     for (int i = 0; i < count; i++) {
-        QListWidgetItem *item = mUI.mListPaths->item(i);
+        QListWidgetItem *item = mUI.mListCheckPaths->item(i);
         paths << QDir::fromNativeSeparators(item->text());
     }
     return paths;
@@ -299,7 +299,7 @@ void ProjectFileDialog::SetRootPath(const QString &root)
 
 void ProjectFileDialog::SetBuildDir(const QString &buildDir)
 {
-    mUI.buildDirEdit->setText(buildDir);
+    mUI.mEditBuildDir->setText(buildDir);
 }
 
 void ProjectFileDialog::SetImportProject(const QString &importProject)
@@ -391,14 +391,14 @@ void ProjectFileDialog::EditIncludeDir()
 
 void ProjectFileDialog::EditPath()
 {
-    QListWidgetItem *item = mUI.mListPaths->currentItem();
-    mUI.mListPaths->editItem(item);
+    QListWidgetItem *item = mUI.mListCheckPaths->currentItem();
+    mUI.mListCheckPaths->editItem(item);
 }
 
 void ProjectFileDialog::RemovePath()
 {
-    const int row = mUI.mListPaths->currentRow();
-    QListWidgetItem *item = mUI.mListPaths->takeItem(row);
+    const int row = mUI.mListCheckPaths->currentRow();
+    QListWidgetItem *item = mUI.mListCheckPaths->takeItem(row);
     delete item;
 }
 
