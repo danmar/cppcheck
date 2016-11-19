@@ -45,14 +45,14 @@ FORMS = about.ui \
         file.ui \
         logview.ui \
         main.ui \
-        projectfile.ui \
+        projectfiledialog.ui \
         resultsview.ui \
         scratchpad.ui \
         settings.ui \
         stats.ui \
-    librarydialog.ui \
-    libraryaddfunctiondialog.ui \
-    libraryeditargdialog.ui
+        librarydialog.ui \
+        libraryaddfunctiondialog.ui \
+        libraryeditargdialog.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_es.ts \

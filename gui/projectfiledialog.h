@@ -24,13 +24,15 @@
 #include <QStringList>
 #include <QCheckBox>
 
-#include "ui_projectfile.h"
+#include "ui_projectfiledialog.h"
 
 class QWidget;
 
 /// @addtogroup GUI
 /// @{
 
+
+class ProjectFile;
 
 /**
 * @brief A dialog for editing project file data.
@@ -40,6 +42,9 @@ class ProjectFileDialog : public QDialog {
 public:
     ProjectFileDialog(const QString &path, QWidget *parent = 0);
     virtual ~ProjectFileDialog();
+
+    void LoadFromProjectFile(const ProjectFile *projectFile);
+    void SaveToProjectFile(ProjectFile *projectFile) const;
 
     /**
     * @brief Return project root path from the dialog control.

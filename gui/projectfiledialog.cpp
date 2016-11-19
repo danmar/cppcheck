@@ -27,6 +27,7 @@
 #include <QSettings>
 #include "common.h"
 #include "projectfiledialog.h"
+#include "projectfile.h"
 #include "library.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -120,6 +121,29 @@ void ProjectFileDialog::SaveSettings() const
     settings.setValue(SETTINGS_PROJECT_DIALOG_HEIGHT, size().height());
 }
 
+void ProjectFileDialog::LoadFromProjectFile(const ProjectFile *projectFile) {
+    SetRootPath(projectFile->GetRootPath());
+    SetBuildDir(projectFile->GetBuildDir());
+    SetIncludepaths(projectFile->GetIncludeDirs());
+    SetDefines(projectFile->GetDefines());
+    SetPaths(projectFile->GetCheckPaths());
+    SetImportProject(projectFile->GetImportProject());
+    SetExcludedPaths(projectFile->GetExcludedPaths());
+    SetLibraries(projectFile->GetLibraries());
+    SetSuppressions(projectFile->GetSuppressions());
+}
+
+void ProjectFileDialog::SaveToProjectFile(ProjectFile *projectFile) const {
+    projectFile->SetRootPath(GetRootPath());
+    projectFile->SetBuildDir(GetBuildDir());
+    projectFile->SetImportProject(GetImportProject());
+    projectFile->SetIncludes(GetIncludePaths());
+    projectFile->SetDefines(GetDefines());
+    projectFile->SetCheckPaths(GetPaths());
+    projectFile->SetExcludedPaths(GetExcludedPaths());
+    projectFile->SetLibraries(GetLibraries());
+    projectFile->SetSuppressions(GetSuppressions());
+}
 
 QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool trailingSlash)
 {

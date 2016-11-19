@@ -1254,42 +1254,42 @@ Options:
 <context>
     <name>ProjectFile</name>
     <message>
-        <location filename="projectfile.ui" line="14"/>
+        <location filename="projectfiledialog.ui" line="14"/>
         <source>Project File</source>
         <translation>プロジェクトファイル</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="24"/>
+        <location filename="projectfiledialog.ui" line="24"/>
         <source>Project</source>
         <translation>プロジェクト</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="276"/>
+        <location filename="projectfiledialog.ui" line="276"/>
         <source>Defines must be separated by a semicolon &apos;;&apos;</source>
         <translation>定義(Define)はセミコロン&apos;;&apos;で区切る必要があります。</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="32"/>
+        <location filename="projectfiledialog.ui" line="32"/>
         <source>Root:</source>
         <translation>ルート：</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="62"/>
+        <location filename="projectfiledialog.ui" line="62"/>
         <source>Libraries:</source>
         <translation>ライブラリ</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="71"/>
+        <location filename="projectfiledialog.ui" line="71"/>
         <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
         <translation>カスタマイズした cfgファイルを同じフォルダにプロジェクトファイルとして保存してください。ここに表示できるようになります。</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="95"/>
+        <location filename="projectfiledialog.ui" line="95"/>
         <source>Visual Studio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="101"/>
+        <location filename="projectfiledialog.ui" line="101"/>
         <source>Visual Studio
 
 Cppcheck can import visual studio solutions and projects.
@@ -1300,18 +1300,18 @@ Library settings are not imported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="119"/>
-        <location filename="projectfile.ui" line="166"/>
+        <location filename="projectfiledialog.ui" line="119"/>
+        <location filename="projectfiledialog.ui" line="166"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="142"/>
+        <location filename="projectfiledialog.ui" line="142"/>
         <source>CMake</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="148"/>
+        <location filename="projectfiledialog.ui" line="148"/>
         <source>Compile database
 
 Cppcheck can import files to analyse, include paths, defines from the compile database.
@@ -1322,40 +1322,40 @@ Library settings are not provided in compile database, be careful about this con
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="189"/>
+        <location filename="projectfiledialog.ui" line="189"/>
         <source>Other</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="199"/>
-        <location filename="projectfile.ui" line="392"/>
+        <location filename="projectfiledialog.ui" line="199"/>
+        <location filename="projectfiledialog.ui" line="392"/>
         <source>Paths:</source>
         <translation>パス:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="226"/>
-        <location filename="projectfile.ui" line="320"/>
-        <location filename="projectfile.ui" line="406"/>
+        <location filename="projectfiledialog.ui" line="226"/>
+        <location filename="projectfiledialog.ui" line="320"/>
+        <location filename="projectfiledialog.ui" line="406"/>
         <source>Add...</source>
         <translation>追加...</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="233"/>
-        <location filename="projectfile.ui" line="327"/>
-        <location filename="projectfile.ui" line="413"/>
+        <location filename="projectfiledialog.ui" line="233"/>
+        <location filename="projectfiledialog.ui" line="327"/>
+        <location filename="projectfiledialog.ui" line="413"/>
         <source>Edit</source>
         <translation>編集</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="240"/>
-        <location filename="projectfile.ui" line="334"/>
-        <location filename="projectfile.ui" line="420"/>
-        <location filename="projectfile.ui" line="483"/>
+        <location filename="projectfiledialog.ui" line="240"/>
+        <location filename="projectfiledialog.ui" line="334"/>
+        <location filename="projectfiledialog.ui" line="420"/>
+        <location filename="projectfiledialog.ui" line="483"/>
         <source>Remove</source>
         <translation>取り除く</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="289"/>
+        <location filename="projectfiledialog.ui" line="289"/>
         <source>Include Paths:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1368,37 +1368,37 @@ Library settings are not provided in compile database, be careful about this con
         <translation type="obsolete">インクルードディレクトリ:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="354"/>
+        <location filename="projectfiledialog.ui" line="354"/>
         <source>Up</source>
         <translation>上</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="361"/>
+        <location filename="projectfiledialog.ui" line="361"/>
         <source>Down</source>
         <translation>下</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="386"/>
+        <location filename="projectfiledialog.ui" line="386"/>
         <source>Exclude</source>
         <translation>除外する</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="445"/>
+        <location filename="projectfiledialog.ui" line="445"/>
         <source>Suppressions</source>
         <translation>指摘の抑制</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="451"/>
+        <location filename="projectfiledialog.ui" line="451"/>
         <source>Suppression list:</source>
         <translation>抑制リスト</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="476"/>
+        <location filename="projectfiledialog.ui" line="476"/>
         <source>Add</source>
         <translation>追加</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="266"/>
+        <location filename="projectfiledialog.ui" line="266"/>
         <source>Defines:</source>
         <translation>定義(Defines):</translation>
     </message>

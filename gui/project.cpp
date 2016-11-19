@@ -86,28 +86,11 @@ bool Project::Open()
 bool Project::Edit()
 {
     ProjectFileDialog dlg(mFilename, mParentWidget);
-    dlg.SetRootPath(mProjectFile->GetRootPath());
-    dlg.SetBuildDir(mProjectFile->GetBuildDir());
-    dlg.SetIncludepaths(mProjectFile->GetIncludeDirs());
-    dlg.SetDefines(mProjectFile->GetDefines());
-    dlg.SetPaths(mProjectFile->GetCheckPaths());
-    dlg.SetImportProject(mProjectFile->GetImportProject());
-    dlg.SetExcludedPaths(mProjectFile->GetExcludedPaths());
-    dlg.SetLibraries(mProjectFile->GetLibraries());
-    dlg.SetSuppressions(mProjectFile->GetSuppressions());
-
+    dlg.LoadFromProjectFile(mProjectFile);
     if (dlg.exec() != QDialog::Accepted)
         return false;
 
-    mProjectFile->SetRootPath(dlg.GetRootPath());
-    mProjectFile->SetBuildDir(dlg.GetBuildDir());
-    mProjectFile->SetImportProject(dlg.GetImportProject());
-    mProjectFile->SetIncludes(dlg.GetIncludePaths());
-    mProjectFile->SetDefines(dlg.GetDefines());
-    mProjectFile->SetCheckPaths(dlg.GetPaths());
-    mProjectFile->SetExcludedPaths(dlg.GetExcludedPaths());
-    mProjectFile->SetLibraries(dlg.GetLibraries());
-    mProjectFile->SetSuppressions(dlg.GetSuppressions());
+    dlg.SaveToProjectFile(mProjectFile);
 
     if (!mProjectFile->Write()) {
         QMessageBox msg(QMessageBox::Critical,

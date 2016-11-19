@@ -1240,42 +1240,42 @@ Options:
 <context>
     <name>ProjectFile</name>
     <message>
-        <location filename="projectfile.ui" line="14"/>
+        <location filename="projectfiledialog.ui" line="14"/>
         <source>Project File</source>
         <translation>项目文件</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="24"/>
+        <location filename="projectfiledialog.ui" line="24"/>
         <source>Project</source>
         <translation>项目</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="276"/>
+        <location filename="projectfiledialog.ui" line="276"/>
         <source>Defines must be separated by a semicolon &apos;;&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="32"/>
+        <location filename="projectfiledialog.ui" line="32"/>
         <source>Root:</source>
         <translation>根目录:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="62"/>
+        <location filename="projectfiledialog.ui" line="62"/>
         <source>Libraries:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="71"/>
+        <location filename="projectfiledialog.ui" line="71"/>
         <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="95"/>
+        <location filename="projectfiledialog.ui" line="95"/>
         <source>Visual Studio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="101"/>
+        <location filename="projectfiledialog.ui" line="101"/>
         <source>Visual Studio
 
 Cppcheck can import visual studio solutions and projects.
@@ -1286,18 +1286,18 @@ Library settings are not imported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="119"/>
-        <location filename="projectfile.ui" line="166"/>
+        <location filename="projectfiledialog.ui" line="119"/>
+        <location filename="projectfiledialog.ui" line="166"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="142"/>
+        <location filename="projectfiledialog.ui" line="142"/>
         <source>CMake</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="148"/>
+        <location filename="projectfiledialog.ui" line="148"/>
         <source>Compile database
 
 Cppcheck can import files to analyse, include paths, defines from the compile database.
@@ -1308,40 +1308,40 @@ Library settings are not provided in compile database, be careful about this con
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="189"/>
+        <location filename="projectfiledialog.ui" line="189"/>
         <source>Other</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="199"/>
-        <location filename="projectfile.ui" line="392"/>
+        <location filename="projectfiledialog.ui" line="199"/>
+        <location filename="projectfiledialog.ui" line="392"/>
         <source>Paths:</source>
         <translation>路径:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="226"/>
-        <location filename="projectfile.ui" line="320"/>
-        <location filename="projectfile.ui" line="406"/>
+        <location filename="projectfiledialog.ui" line="226"/>
+        <location filename="projectfiledialog.ui" line="320"/>
+        <location filename="projectfiledialog.ui" line="406"/>
         <source>Add...</source>
         <translation>添加...</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="233"/>
-        <location filename="projectfile.ui" line="327"/>
-        <location filename="projectfile.ui" line="413"/>
+        <location filename="projectfiledialog.ui" line="233"/>
+        <location filename="projectfiledialog.ui" line="327"/>
+        <location filename="projectfiledialog.ui" line="413"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="240"/>
-        <location filename="projectfile.ui" line="334"/>
-        <location filename="projectfile.ui" line="420"/>
-        <location filename="projectfile.ui" line="483"/>
+        <location filename="projectfiledialog.ui" line="240"/>
+        <location filename="projectfiledialog.ui" line="334"/>
+        <location filename="projectfiledialog.ui" line="420"/>
+        <location filename="projectfiledialog.ui" line="483"/>
         <source>Remove</source>
         <translation>移除</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="289"/>
+        <location filename="projectfiledialog.ui" line="289"/>
         <source>Include Paths:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1354,37 +1354,37 @@ Library settings are not provided in compile database, be careful about this con
         <translation type="obsolete">Include 目录:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="354"/>
+        <location filename="projectfiledialog.ui" line="354"/>
         <source>Up</source>
         <translation>向上</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="361"/>
+        <location filename="projectfiledialog.ui" line="361"/>
         <source>Down</source>
         <translation>向下</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="386"/>
+        <location filename="projectfiledialog.ui" line="386"/>
         <source>Exclude</source>
         <translation>排除</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="445"/>
+        <location filename="projectfiledialog.ui" line="445"/>
         <source>Suppressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="451"/>
+        <location filename="projectfiledialog.ui" line="451"/>
         <source>Suppression list:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="476"/>
+        <location filename="projectfiledialog.ui" line="476"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="266"/>
+        <location filename="projectfiledialog.ui" line="266"/>
         <source>Defines:</source>
         <translation>定义:</translation>
     </message>
