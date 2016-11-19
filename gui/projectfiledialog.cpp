@@ -78,7 +78,7 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     foreach (const QString library, libs) {
         QCheckBox *checkbox = new QCheckBox(this);
         checkbox->setText(library);
-        mUI.librariesLayout->addWidget(checkbox);
+        mUI.layoutLibraries->addWidget(checkbox);
         mLibraryCheckboxes << checkbox;
     }
 

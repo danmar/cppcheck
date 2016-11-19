@@ -19,15 +19,15 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tabProject">
       <attribute name="title">
        <string>Project</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_12">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QHBoxLayout" name="layoutProjectRoot">
          <item>
-          <widget class="QLabel" name="label_4">
+          <widget class="QLabel" name="labelProjectRoot">
            <property name="text">
             <string>Root:</string>
            </property>
@@ -42,7 +42,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_9">
+        <layout class="QHBoxLayout" name="layoutBuildDir">
          <item>
           <widget class="QLabel" name="buildDirLabel">
            <property name="text">
@@ -76,9 +76,9 @@
         </spacer>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="librariesLayout">
+        <layout class="QHBoxLayout" name="layoutLibraries">
          <item>
-          <widget class="QLabel" name="label_6">
+          <widget class="QLabel" name="labelLibraries">
            <property name="text">
             <string>Libraries:</string>
            </property>
@@ -87,7 +87,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QLabel" name="label_8">
+        <widget class="QLabel" name="labelLibrariesNote">
          <property name="text">
           <string>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</string>
          </property>
@@ -111,13 +111,13 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="tabVisualStudio">
       <attribute name="title">
        <string>Visual Studio</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
-        <widget class="QLabel" name="label_9">
+        <widget class="QLabel" name="labelVisualStudio">
          <property name="text">
           <string>Visual Studio
 
@@ -130,7 +130,7 @@ Library settings are not imported.</string>
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <layout class="QHBoxLayout" name="layoutVisualStudio">
          <item>
           <widget class="QLineEdit" name="mEditVisualStudio"/>
          </item>
@@ -158,13 +158,13 @@ Library settings are not imported.</string>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_5">
+     <widget class="QWidget" name="tabCMake">
       <attribute name="title">
        <string>CMake</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <widget class="QLabel" name="label_11">
+        <widget class="QLabel" name="labelCMake">
          <property name="text">
           <string>Compile database
 
@@ -177,7 +177,7 @@ Library settings are not provided in compile database, be careful about this con
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <layout class="QHBoxLayout" name="layoutCMake">
          <item>
           <widget class="QLineEdit" name="mEditCompileDatabase"/>
          </item>
@@ -205,13 +205,13 @@ Library settings are not provided in compile database, be careful about this con
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_6">
+     <widget class="QWidget" name="tabOther">
       <attribute name="title">
        <string>Other</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <layout class="QHBoxLayout" name="layoutCheckPaths">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_5">
            <item>
@@ -240,7 +240,7 @@ Library settings are not provided in compile database, be careful about this con
           <widget class="QListWidget" name="mListPaths"/>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_2">
+          <layout class="QVBoxLayout" name="layoutCheckPathsButtons">
            <item>
             <widget class="QPushButton" name="mBtnAddPath">
              <property name="text">
@@ -280,9 +280,9 @@ Library settings are not provided in compile database, be careful about this con
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <layout class="QHBoxLayout" name="layoutDefines">
          <item>
-          <widget class="QLabel" name="label_2">
+          <widget class="QLabel" name="labelDefines">
            <property name="text">
             <string>Defines:</string>
            </property>
@@ -301,7 +301,7 @@ Library settings are not provided in compile database, be careful about this con
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="layoutIncludePaths">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_11">
            <item>
@@ -334,7 +334,7 @@ Library settings are not provided in compile database, be careful about this con
           </widget>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
+          <layout class="QVBoxLayout" name="layoutIncludePathsButtons">
            <item>
             <widget class="QPushButton" name="mBtnAddInclude">
              <property name="text">
@@ -402,25 +402,25 @@ Library settings are not provided in compile database, be careful about this con
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_3">
+     <widget class="QWidget" name="tabExclude">
       <attribute name="title">
        <string>Exclude</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_9">
        <item>
-        <widget class="QLabel" name="label_5">
+        <widget class="QLabel" name="labelExcludePaths">
          <property name="text">
           <string>Paths:</string>
          </property>
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <layout class="QHBoxLayout" name="layoutExcludePaths">
          <item>
           <widget class="QListWidget" name="mListExcludedPaths"/>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_8">
+          <layout class="QVBoxLayout" name="layoutExcludePathButtons">
            <item>
             <widget class="QPushButton" name="mBtnAddIgnorePath">
              <property name="text">
@@ -461,13 +461,13 @@ Library settings are not provided in compile database, be careful about this con
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_4">
+     <widget class="QWidget" name="tabSuppressions">
       <attribute name="title">
        <string>Suppressions</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_6">
        <item>
-        <widget class="QLabel" name="label_7">
+        <widget class="QLabel" name="labelSuppressions">
          <property name="text">
           <string>Suppression list:</string>
          </property>
@@ -477,7 +477,7 @@ Library settings are not provided in compile database, be careful about this con
         <widget class="QListWidget" name="mListSuppressions"/>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <layout class="QHBoxLayout" name="layoutSuppressionButtons">
          <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
