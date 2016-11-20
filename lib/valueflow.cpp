@@ -421,13 +421,11 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         setTokenValue(parent, result, settings);
                         break;
                     case '/':
-                        if (value1->isTokValue() || value2->isTokValue())
+                        if (value1->isTokValue() || value2->isTokValue() || value2->intvalue == 0)
                             break;
                         if (value1->isFloatValue() || value2->isFloatValue()) {
                             result.valueType = ValueFlow::Value::FLOAT;
                             result.floatValue = floatValue1 / floatValue2;
-                        } else if (value2->intvalue == 0) {
-                            break;
                         } else {
                             result.intvalue = value1->intvalue / value2->intvalue;
                         }
