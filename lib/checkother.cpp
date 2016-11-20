@@ -2589,7 +2589,7 @@ void CheckOther::checkUnusedLabel()
 
             if (Token::Match(tok, "{|}|; %name% :") && tok->strAt(1) != "default") {
                 if (!Token::findsimplematch(scope->classStart->next(), ("goto " + tok->strAt(1)).c_str(), scope->classEnd->previous()))
-                    unusedLabelError(tok->next(), tok->scope()->type == Scope::eSwitch);
+                    unusedLabelError(tok->next(), tok->next()->scope()->type == Scope::eSwitch);
             }
         }
     }

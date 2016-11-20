@@ -5972,6 +5972,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Label 'caseZERO' is not used. Should this be a 'case' of the enclosing switch()?\n"
                       "[test.cpp:5]: (warning) Label 'case1' is not used. Should this be a 'case' of the enclosing switch()?\n", errout.str());
+
+        check("int test(char art) {\n"
+              "    switch (art) {\n"
+              "    case 2:\n"
+              "        return 2;\n"
+              "    }\n"
+              "    label:\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Label 'label' is not used.\n", errout.str());
     }
 
     void testEvaluationOrder() {
