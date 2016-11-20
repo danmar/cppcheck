@@ -172,6 +172,7 @@ private:
         TEST_CASE(garbageCode131); // #7023
         TEST_CASE(garbageCode132); // #7022
         TEST_CASE(garbageCode133);
+        TEST_CASE(garbageCode134);
         TEST_CASE(garbageCode135); // #4994
         TEST_CASE(garbageCode136); // #7033
         TEST_CASE(garbageCode137); // #7034
