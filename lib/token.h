@@ -774,6 +774,15 @@ public:
         return ret;
     }
 
+    const ValueFlow::Value * getMovedValue() const {
+        std::list<ValueFlow::Value>::const_iterator it;
+        for (it = values.begin(); it != values.end(); ++it) {
+            if (it->isMovedValue())
+                return &(*it);
+        }
+        return nullptr;
+    }
+
     const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
     const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
 

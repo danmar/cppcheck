@@ -678,6 +678,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 // - Nest the round bracket under the square bracket.
                 // - Nest what follows the lambda (if anything) with the lambda opening [
                 // - Compile the content of the lambda function as separate tree (this is done later)
+                // this must be consistant with isLambdaCaptureList
                 Token* squareBracket = tok;
                 Token* roundBracket = squareBracket->link()->next();
                 Token* curlyBracket = roundBracket->link()->next();
@@ -976,6 +977,23 @@ static void compileExpression(Token *&tok, AST_state& state)
         compileComma(tok, state);
 }
 
+static bool isLambdaCaptureList(Token * tok)
+{
+    // a lambda expression '[x](y){}' is compiled as:
+    // [
+    // `-(
+    //   `-{
+    // see compilePrecedence2
+    if (tok->str() != "[")
+        return false;
+    if (!tok->astOperand1() || tok->astOperand1()->str() != "(")
+        return false;
+    const Token * params = tok->astOperand1();
+    if (!params || !params->astOperand1() || params->astOperand1()->str() != "{")
+        return false;
+    return true;
+}
+
 static Token * createAstAtToken(Token *tok, bool cpp)
 {
     if (Token::simpleMatch(tok, "for (")) {
@@ -1060,25 +1078,30 @@ static Token * createAstAtToken(Token *tok, bool cpp)
 
         // Compile inner expressions inside inner ({..}) and lambda bodies
         for (tok = tok1->next(); tok && tok != endToken; tok = tok ? tok->next() : nullptr) {
-            if (tok->str() != "{")
-                continue;
+            if (tok->str() == "{") {
+                if (Token::simpleMatch(tok->previous(), "( {"))
+                    ;
+                else if (Token::simpleMatch(tok->astParent(), "(") &&
+                         Token::simpleMatch(tok->astParent()->astParent(), "[") &&
+                         tok->astParent()->astParent()->astOperand1() &&
+                         tok == tok->astParent()->astParent()->astOperand1()->astOperand1())
+                    ;
+                else
+                    continue;
 
-            if (Token::simpleMatch(tok->previous(), "( {"))
-                ;
-            else if (Token::simpleMatch(tok->astParent(), "(") &&
-                     Token::simpleMatch(tok->astParent()->astParent(), "[") &&
-                     tok->astParent()->astParent()->astOperand1() &&
-                     tok == tok->astParent()->astParent()->astOperand1()->astOperand1())
-                ;
-            else
-                continue;
+                if (Token::simpleMatch(tok->previous(), "( { ."))
+                    break;
 
-            if (Token::simpleMatch(tok->previous(), "( { ."))
-                break;
-
-            const Token * const endToken2 = tok->link();
-            for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
-                tok = createAstAtToken(tok, cpp);
+                const Token * const endToken2 = tok->link();
+                for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
+                    tok = createAstAtToken(tok, cpp);
+            } else if (tok->str() == "[") {
+                if (isLambdaCaptureList(tok)) {
+                    const Token * const endToken2 = tok->link();
+                    for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
+                        tok = createAstAtToken(tok, cpp);
+                }
+            }
         }
 
         return endToken ? endToken->previous() : nullptr;

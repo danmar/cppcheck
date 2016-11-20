@@ -2697,3 +2697,78 @@ void CheckOther::unknownEvaluationOrder(const Token* tok)
                 "Expression '" + (tok ? tok->expressionString() : std::string("x = x++;")) + "' depends on order of evaluation of side effects", CWE768, false);
 }
 
+void CheckOther::checkAccessOfMovedVariable()
+{
+    if (!_tokenizer->isCPP() || _settings->standards.cpp < Standards::CPP11)
+        return;
+    bool reportInconclusive = _settings->inconclusive;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        const Token * scopeStart = scope->classStart;
+        if (scope->function) {
+            const Token * memberInitializationStart = scope->function->constructorMemberInitialization();
+            if (memberInitializationStart)
+                scopeStart = memberInitializationStart;
+        }
+        for (const Token* tok = scopeStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            const ValueFlow::Value * movedValue = tok->getMovedValue();
+            if (!movedValue)
+                continue;
+            if (movedValue->inconclusive && !reportInconclusive)
+                continue;
+
+            bool inconclusive = false;
+            bool accessOfMoved = false;
+            if (tok->strAt(1) == ".") {
+                if (tok->next()->originalName() == "->")
+                    accessOfMoved = true;
+                else
+                    inconclusive = true;
+            } else {
+                bool isVariableChanged = isVariableChangedByFunctionCall(tok, _settings, &inconclusive);
+                accessOfMoved = !isVariableChanged;
+                if (inconclusive) {
+                    accessOfMoved = !isMovedParameterAllowedForInconclusiveFunction(tok);
+                    if (accessOfMoved)
+                        inconclusive = false;
+                }
+            }
+            if (accessOfMoved || (inconclusive && reportInconclusive))
+                accessMovedError(tok, tok->str(), movedValue->moveKind, inconclusive || movedValue->inconclusive);
+        }
+    }
+}
+
+bool CheckOther::isMovedParameterAllowedForInconclusiveFunction(const Token * tok)
+{
+    if (Token::simpleMatch(tok->tokAt(-4), "std :: move ("))
+        return false;
+    const Token * tokAtM2 = tok->tokAt(-2);
+    if (Token::simpleMatch(tokAtM2, "> (") && tokAtM2->link()) {
+        const Token * leftAngle = tokAtM2->link();
+        if (Token::simpleMatch(leftAngle->tokAt(-3), "std :: forward <"))
+            return false;
+    }
+    return true;
+}
+
+void CheckOther::accessMovedError(const Token *tok, const std::string &varname, ValueFlow::Value::MoveKind moveKind, bool inconclusive)
+{
+    const char * errorId = nullptr;
+    const char * kindString = nullptr;
+    switch (moveKind) {
+    case ValueFlow::Value::MovedVariable:
+        errorId = "accessMoved";
+        kindString = "moved";
+        break;
+    case ValueFlow::Value::ForwardedVariable:
+        errorId = "accessForwarded";
+        kindString = "forwarded";
+        break;
+    }
+    const std::string errmsg(std::string("Access of ") + kindString + " variable " + varname + ".");
+    reportError(tok, Severity::warning, errorId, errmsg, CWE(0U), inconclusive);
+}
+

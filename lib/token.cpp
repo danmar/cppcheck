@@ -1335,6 +1335,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::FLOAT:
                     out << "floatvalue=\"" << it->floatValue << '\"';
                     break;
+                case ValueFlow::Value::MOVED:
+                    out << "movedvalue=\"" << ValueFlow::Value::toString(it->moveKind) << '\"';
+                    break;
                 }
                 if (it->condition)
                     out << " condition-line=\"" << it->condition->linenr() << '\"';
@@ -1357,6 +1360,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::FLOAT:
                     out << it->floatValue;
+                    break;
+                case ValueFlow::Value::MOVED:
+                    out << ValueFlow::Value::toString(it->moveKind);
                     break;
                 }
             }

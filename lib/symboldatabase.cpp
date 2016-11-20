@@ -1838,6 +1838,15 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     return false;
 }
 
+const Token * Function::constructorMemberInitialization() const
+{
+    if (!isConstructor() || !functionScope || !functionScope->classStart)
+        return nullptr;
+    if (Token::Match(token, "%name% (") && Token::simpleMatch(token->linkAt(1), ") :"))
+        return token->linkAt(1)->next();
+    return nullptr;
+}
+
 Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
 {
     Function* function = nullptr;
