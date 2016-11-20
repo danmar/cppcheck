@@ -3191,8 +3191,8 @@ private:
 
     void removeParentheses16() { // *(x.y)=
         // #4423
-        ASSERT_EQUALS("* x = 0 ;", tokenizeAndStringify("*(x)=0;", false));
-        ASSERT_EQUALS("* x . y = 0 ;", tokenizeAndStringify("*(x.y)=0;", false));
+        ASSERT_EQUALS("; * x = 0 ;", tokenizeAndStringify(";*(x)=0;", false));
+        ASSERT_EQUALS("; * x . y = 0 ;", tokenizeAndStringify(";*(x.y)=0;", false));
     }
 
     void removeParentheses17() { // a ? b : (c > 0 ? d : e)
@@ -3232,8 +3232,8 @@ private:
     void removeParentheses23() { // Ticket #6103
         // Reported case
         {
-            static char code[] = "* * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
-            static char  exp[] = "* * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
+            static char code[] = "; * * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
+            static char  exp[] = "; * * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
         // Various valid cases

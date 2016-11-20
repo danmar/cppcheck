@@ -1292,27 +1292,27 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp", "");
 
-        return TemplateSimplifier::templateParameters(tokenizer.tokens());
+        return TemplateSimplifier::templateParameters(tokenizer.tokens()->next());
     }
 
     void templateParameters() {
         // Test that the function TemplateSimplifier::templateParameters works
-        ASSERT_EQUALS(1U, templateParameters("<struct C> x;"));
-        ASSERT_EQUALS(1U, templateParameters("<union C> x;"));
-        ASSERT_EQUALS(1U, templateParameters("<const int> x;"));
-        ASSERT_EQUALS(1U, templateParameters("<int const *> x;"));
-        ASSERT_EQUALS(1U, templateParameters("<const struct C> x;"));
-        ASSERT_EQUALS(0U, templateParameters("<len>>x;"));
-        ASSERT_EQUALS(1U, templateParameters("<typename> x;"));
-        ASSERT_EQUALS(0U, templateParameters("<...> x;"));
-        ASSERT_EQUALS(0U, templateParameters("<class T...> x;")); // Invalid syntax
-        ASSERT_EQUALS(1U, templateParameters("<class... T> x;"));
-        ASSERT_EQUALS(0U, templateParameters("<class, typename T...> x;")); // Invalid syntax
-        ASSERT_EQUALS(2U, templateParameters("<class, typename... T> x;"));
-        ASSERT_EQUALS(2U, templateParameters("<int(&)(), class> x;"));
-        ASSERT_EQUALS(3U, templateParameters("<char, int(*)(), bool> x;"));
-        TODO_ASSERT_EQUALS(1U, 0U, templateParameters("<int...> x;")); // Mishandled valid syntax
-        TODO_ASSERT_EQUALS(2U, 0U, templateParameters("<class, typename...> x;")); // Mishandled valid syntax
+        ASSERT_EQUALS(1U, templateParameters("X<struct C> x;"));
+        ASSERT_EQUALS(1U, templateParameters("X<union C> x;"));
+        ASSERT_EQUALS(1U, templateParameters("X<const int> x;"));
+        ASSERT_EQUALS(1U, templateParameters("X<int const *> x;"));
+        ASSERT_EQUALS(1U, templateParameters("X<const struct C> x;"));
+        ASSERT_EQUALS(0U, templateParameters("X<len>>x;"));
+        ASSERT_EQUALS(1U, templateParameters("X<typename> x;"));
+        ASSERT_EQUALS(0U, templateParameters("X<...> x;"));
+        ASSERT_EQUALS(0U, templateParameters("X<class T...> x;")); // Invalid syntax
+        ASSERT_EQUALS(1U, templateParameters("X<class... T> x;"));
+        ASSERT_EQUALS(0U, templateParameters("X<class, typename T...> x;")); // Invalid syntax
+        ASSERT_EQUALS(2U, templateParameters("X<class, typename... T> x;"));
+        ASSERT_EQUALS(2U, templateParameters("X<int(&)(), class> x;"));
+        ASSERT_EQUALS(3U, templateParameters("X<char, int(*)(), bool> x;"));
+        TODO_ASSERT_EQUALS(1U, 0U, templateParameters("X<int...> x;")); // Mishandled valid syntax
+        TODO_ASSERT_EQUALS(2U, 0U, templateParameters("X<class, typename...> x;")); // Mishandled valid syntax
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition

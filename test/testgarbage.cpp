@@ -152,7 +152,6 @@ private:
         TEST_CASE(garbageCode110);
         TEST_CASE(garbageCode111);
         TEST_CASE(garbageCode112);
-        TEST_CASE(garbageCode113);
         TEST_CASE(garbageCode114);
         TEST_CASE(garbageCode115); // #5506
         TEST_CASE(garbageCode116); // #5356
@@ -188,11 +187,10 @@ private:
         TEST_CASE(garbageCode148); // #7090
         TEST_CASE(garbageCode149); // #7085
         TEST_CASE(garbageCode150); // #7089
-        TEST_CASE(garbageCode151); // #4175
+        TEST_CASE(garbageCode151); // #4911
         TEST_CASE(garbageCode152); // travis after 9c7271a5
         TEST_CASE(garbageCode153);
         TEST_CASE(garbageCode154); // #7112
-        TEST_CASE(garbageCode155); // #7118
         TEST_CASE(garbageCode156); // #7120
         TEST_CASE(garbageCode157); // #7131
         TEST_CASE(garbageCode158); // #3238
@@ -214,7 +212,6 @@ private:
         TEST_CASE(garbageCode175);
         TEST_CASE(garbageCode176); // #7527
         TEST_CASE(garbageCode177); // #7321
-        TEST_CASE(garbageCode179); // #3533
         TEST_CASE(garbageCode180);
         TEST_CASE(garbageCode181);
         TEST_CASE(garbageCode182); // #4195
@@ -224,7 +221,8 @@ private:
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
         TEST_CASE(templateSimplifierCrashes);
-        TEST_CASE(garbageLastToken); // Make sure syntax errors are detected and reported
+        TEST_CASE(syntaxErrorFirstToken); // Make sure syntax errors are detected and reported
+        TEST_CASE(syntaxErrorLastToken); // Make sure syntax errors are detected and reported
     }
 
     std::string checkCode(const char code[], bool cpp = true) {
@@ -869,10 +867,6 @@ private:
         TODO_ASSERT_THROW(checkCode("enum { FOO = ( , ) } {{ }}>> enum { FOO< = ( ) } { { } } ;"), InternalError);
     }
 
-    void garbageCode113() { //  #6858
-        checkCode("*(*const<> (size_t); foo) { } *(*const (size_t)() ; foo) { }");
-    }
-
     void garbageCode114() { // #2118
         ASSERT_THROW(checkCode("Q_GLOBAL_STATIC_WITH_INITIALIZER(Qt4NodeStaticData, qt4NodeStaticData, {\n"
                                "    for (unsigned i = 0 ; i < count; i++) {\n"
@@ -1166,9 +1160,8 @@ private:
                                "}\n"), InternalError);
     }
 
-    void garbageCode151() { // #4175
-        checkCode(">{ x while (y) z int = }");
-        checkCode("void f() {\n" // #4911 - bad simplification => don't crash
+    void garbageCode151() { // #4911 - bad simplification => don't crash
+        checkCode("void f() {\n"
                   "    int a;\n"
                   "    do { a=do_something() } while (a);\n"
                   "}");
@@ -1187,10 +1180,6 @@ private:
 
     void garbageCode154() {
         checkCode("\"abc\"[];");
-    }
-
-    void garbageCode155() { // #7118
-        checkCode("&p(!{}e x){({(0?:?){({})}()})}");
     }
 
     void garbageCode156() { // #7120
@@ -1297,8 +1286,6 @@ private:
             "  foo<int_<0> >::value;\n"
             "}\n"
         );
-
-        checkCode(" > template < . > struct Y < T > { = } ;\n"); // #6108
 
         checkCode( // #6117
             "template <typename ...> struct something_like_tuple\n"
@@ -1420,15 +1407,6 @@ private:
         checkCode("{(){(())}}r&const");
     }
 
-    void garbageCode179() { // #3533
-        checkCode("<class T>\n"
-                  "{\n"
-                  "    struct {\n"
-                  "        typename D4:typename Base<T*>\n"
-                  "    };\n"
-                  "};");
-    }
-
     void garbageCode180() {
         checkCode("int");
     }
@@ -1453,7 +1431,17 @@ private:
                   "}");
     }
 
-    void garbageLastToken() {
+    void syntaxErrorFirstToken() {
+        ASSERT_THROW(checkCode("&operator(){[]};"), InternalError); // #7818
+        ASSERT_THROW(checkCode("*(*const<> (size_t); foo) { } *(*const (size_t)() ; foo) { }"), InternalError); // #6858
+        ASSERT_THROW(checkCode(">{ x while (y) z int = }"), InternalError); // #4175
+        ASSERT_THROW(checkCode("&p(!{}e x){({(0?:?){({})}()})}"), InternalError); // #7118
+        ASSERT_THROW(checkCode("<class T> { struct { typename D4:typename Base<T*> }; };"), InternalError); // #3533
+        ASSERT_THROW(checkCode(" > template < . > struct Y < T > { = } ;\n"), InternalError); // #6108
+
+    }
+
+    void syntaxErrorLastToken() {
         ASSERT_THROW(checkCode("int *"), InternalError); // #7821
         ASSERT_THROW(checkCode("x[y]"), InternalError); // #2986
         ASSERT_THROW(checkCode("( ) &"), InternalError);

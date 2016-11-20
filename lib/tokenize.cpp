@@ -8028,6 +8028,10 @@ const Token * Tokenizer::findGarbageCode() const
         }
     }
 
+    // Code must not start with an arithmetical operand
+    if (Token::Match(list.front(), "%cop%"))
+        return list.front();
+
     // Code must end with } ; ) NAME
     if (!Token::Match(list.back(), "%name%|;|}|)"))
         return list.back();

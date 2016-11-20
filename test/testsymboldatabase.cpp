@@ -3940,7 +3940,7 @@ private:
         // char *
         ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1;", "+"));
         ASSERT_EQUALS("const char",  typeOf("\"hello\"[1];", "["));
-        ASSERT_EQUALS("const char",  typeOf("*\"hello\";", "*"));
+        ASSERT_EQUALS("const char",  typeOf(";*\"hello\";", "*"));
         ASSERT_EQUALS("const short *", typeOf("L\"hello\" + 1;", "+"));
 
         // Variable calculations
@@ -3983,7 +3983,7 @@ private:
 
         // Boolean operators
         ASSERT_EQUALS("bool", typeOf("a > b;", ">"));
-        ASSERT_EQUALS("bool", typeOf("!b;", "!"));
+        ASSERT_EQUALS("bool", typeOf(";!b;", "!"));
         ASSERT_EQUALS("bool", typeOf("c = a && b;", "&&"));
 
         // shift => result has same type as lhs

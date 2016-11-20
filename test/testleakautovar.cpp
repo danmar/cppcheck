@@ -576,10 +576,10 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
 
         check(
-            "~LineMarker() {\n"
+            "LineMarker::~LineMarker() {\n"
             "  delete pxpm;\n"
             "}\n"
-            "LineMarker &operator=(const LineMarker &) {\n"
+            "LineMarker &LineMarker::operator=(const LineMarker &) {\n"
             "  delete pxpm;\n"
             "  pxpm = NULL;\n"
             "  return *this;\n"

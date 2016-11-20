@@ -118,11 +118,11 @@ private:
     bool Match(const std::string &code, const std::string &pattern, unsigned int varid=0) {
         static const Settings settings;
         Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code + ";");
+        std::istringstream istr(";" + code + ";");
         try {
             tokenizer.tokenize(istr, "test.cpp");
         } catch (...) {}
-        return Token::Match(tokenizer.tokens(), pattern.c_str(), varid);
+        return Token::Match(tokenizer.tokens()->next(), pattern.c_str(), varid);
     }
 
     void multiCompare() const {
@@ -512,27 +512,27 @@ private:
     }
 
     void matchOr() const {
-        givenACodeSampleToTokenize bitwiseOr("|;", true);
-        ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "%or%"));
-        ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "%op%"));
-        ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "%oror%"));
+        givenACodeSampleToTokenize bitwiseOr(";|;", true);
+        ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "; %or%"));
+        ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "; %op%"));
+        ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "; %oror%"));
 
-        givenACodeSampleToTokenize bitwiseOrAssignment("|=;");
-        ASSERT_EQUALS(false,  Token::Match(bitwiseOrAssignment.tokens(), "%or%"));
-        ASSERT_EQUALS(true,  Token::Match(bitwiseOrAssignment.tokens(), "%op%"));
-        ASSERT_EQUALS(false, Token::Match(bitwiseOrAssignment.tokens(), "%oror%"));
+        givenACodeSampleToTokenize bitwiseOrAssignment(";|=;");
+        ASSERT_EQUALS(false,  Token::Match(bitwiseOrAssignment.tokens(), "; %or%"));
+        ASSERT_EQUALS(true,  Token::Match(bitwiseOrAssignment.tokens(), "; %op%"));
+        ASSERT_EQUALS(false, Token::Match(bitwiseOrAssignment.tokens(), "; %oror%"));
 
-        givenACodeSampleToTokenize logicalOr("||;", true);
-        ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "%or%"));
-        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "%op%"));
-        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "%oror%"));
-        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "&&|%oror%"));
-        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "%oror%|&&"));
+        givenACodeSampleToTokenize logicalOr(";||;", true);
+        ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "; %or%"));
+        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "; %op%"));
+        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "; %oror%"));
+        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "; &&|%oror%"));
+        ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "; %oror%|&&"));
 
-        givenACodeSampleToTokenize logicalAnd("&&;", true);
-        ASSERT_EQUALS(true, Token::simpleMatch(logicalAnd.tokens(), "&&"));
-        ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "&&|%oror%"));
-        ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "%oror%|&&"));
+        givenACodeSampleToTokenize logicalAnd(";&&;", true);
+        ASSERT_EQUALS(true, Token::simpleMatch(logicalAnd.tokens(), "; &&"));
+        ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "; &&|%oror%"));
+        ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "; %oror%|&&"));
     }
 
     static void append_vector(std::vector<std::string> &dest, const std::vector<std::string> &src) {
