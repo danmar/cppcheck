@@ -2905,41 +2905,38 @@ private:
 
 
     void uninitVarHeader1() {
-        check("#file \"fred.h\"\n"
+        check("#line 1 \"fred.h\"\n"
               "class Fred\n"
               "{\n"
               "private:\n"
               "    unsigned int i;\n"
               "public:\n"
               "    Fred();\n"
-              "};\n"
-              "#endfile");
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarHeader2() {
-        check("#file \"fred.h\"\n"
+        check("#line 1 \"fred.h\"\n"
               "class Fred\n"
               "{\n"
               "private:\n"
               "    unsigned int i;\n"
               "public:\n"
               "    Fred() { }\n"
-              "};\n"
-              "#endfile");
+              "};\n");
         ASSERT_EQUALS("[fred.h:6]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarHeader3() {
-        check("#file \"fred.h\"\n"
+        check("#line 1 \"fred.h\"\n"
               "class Fred\n"
               "{\n"
               "private:\n"
               "    mutable int i;\n"
               "public:\n"
               "    Fred() { }\n"
-              "};\n"
-              "#endfile");
+              "};\n");
         ASSERT_EQUALS("[fred.h:6]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
     }
 

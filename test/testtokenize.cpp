@@ -52,7 +52,6 @@ private:
         TEST_CASE(tokenize13);  // bailout if the code contains "@" - that is not handled well.
         TEST_CASE(tokenize14);  // tokenize "0X10" => 16
         TEST_CASE(tokenize15);  // tokenize ".123"
-        TEST_CASE(tokenize16);  // #2612 - segfault for "<><<"
         TEST_CASE(tokenize17);  // #2759
         TEST_CASE(tokenize18);  // tokenize "(X&&Y)" into "( X && Y )" instead of "( X & & Y )"
         TEST_CASE(tokenize19);  // #3006 (segmentation fault)
@@ -340,7 +339,6 @@ private:
         TEST_CASE(bitfields8);
         TEST_CASE(bitfields9); // ticket #2706
         TEST_CASE(bitfields10);
-        TEST_CASE(bitfields11); // ticket #2845 (segmentation fault)
         TEST_CASE(bitfields12); // ticket #3485 (segmentation fault)
         TEST_CASE(bitfields13); // ticket #3502 (segmentation fault)
         TEST_CASE(bitfields14); // ticket #4561 (segfault for 'class a { signals: };')
@@ -675,13 +673,8 @@ private:
 
     // Ticket #2429: 0.125
     void tokenize15() {
-        ASSERT_EQUALS("0.125", tokenizeAndStringify(".125"));
-        ASSERT_EQUALS("005.125", tokenizeAndStringify("005.125")); // Don't confuse with octal values
-    }
-
-    // #2612 - segfault for "<><<"
-    void tokenize16() {
-        tokenizeAndStringify("<><<");
+        ASSERT_EQUALS("0.125 ;", tokenizeAndStringify(".125;"));
+        ASSERT_EQUALS("005.125 ;", tokenizeAndStringify("005.125;")); // Don't confuse with octal values
     }
 
     void tokenize17() { // #2759
@@ -689,7 +682,7 @@ private:
     }
 
     void tokenize18() { // tokenize "(X&&Y)" into "( X && Y )" instead of "( X & & Y )"
-        ASSERT_EQUALS("( X && Y )", tokenizeAndStringify("(X&&Y)"));
+        ASSERT_EQUALS("( X && Y ) ;", tokenizeAndStringify("(X&&Y);"));
     }
 
     void tokenize19() {
@@ -722,7 +715,7 @@ private:
     }
 
     void tokenize21() { // tokenize 0x0E-7
-        ASSERT_EQUALS("14 - 7", tokenizeAndStringify("0x0E-7"));
+        ASSERT_EQUALS("14 - 7 ;", tokenizeAndStringify("0x0E-7;"));
     }
 
     void tokenize22() { // tokenize special marker $ from preprocessor
@@ -834,17 +827,17 @@ private:
     }
 
     void combineOperators() {
-        ASSERT_EQUALS("; private:", tokenizeAndStringify(";private:", false));
-        ASSERT_EQUALS("; protected:", tokenizeAndStringify(";protected:", false));
-        ASSERT_EQUALS("; public:", tokenizeAndStringify(";public:", false));
-        ASSERT_EQUALS("; __published:", tokenizeAndStringify(";__published:", false));
-        ASSERT_EQUALS("a . public :", tokenizeAndStringify("a.public:", false));
+        ASSERT_EQUALS("; private: ;", tokenizeAndStringify(";private:;", false));
+        ASSERT_EQUALS("; protected: ;", tokenizeAndStringify(";protected:;", false));
+        ASSERT_EQUALS("; public: ;", tokenizeAndStringify(";public:;", false));
+        ASSERT_EQUALS("; __published: ;", tokenizeAndStringify(";__published:;", false));
+        ASSERT_EQUALS("a . public : ;", tokenizeAndStringify("a.public:;", false));
     }
 
     void concatenateNegativeNumber() {
-        ASSERT_EQUALS("i = -12", tokenizeAndStringify("i = -12"));
-        ASSERT_EQUALS("1 - 2", tokenizeAndStringify("1-2"));
-        ASSERT_EQUALS("foo ( -1 ) - 2", tokenizeAndStringify("foo(-1)-2"));
+        ASSERT_EQUALS("i = -12 ;", tokenizeAndStringify("i = -12;"));
+        ASSERT_EQUALS("1 - 2 ;", tokenizeAndStringify("1-2;"));
+        ASSERT_EQUALS("foo ( -1 ) - 2 ;", tokenizeAndStringify("foo(-1)-2;"));
         ASSERT_EQUALS("int f ( ) { return -2 ; }", tokenizeAndStringify("int f(){return -2;}"));
         ASSERT_EQUALS("int x [ 2 ] = { -2 , 1 }", tokenizeAndStringify("int x[2] = {-2,1}"));
 
@@ -938,7 +931,7 @@ private:
 
     void simplifyCasts14() { // const
         // #5081
-        ASSERT_EQUALS("( ! ( & s ) . a )", tokenizeAndStringify("(! ( (struct S const *) &s)->a)", true));
+        ASSERT_EQUALS("( ! ( & s ) . a ) ;", tokenizeAndStringify("(! ( (struct S const *) &s)->a);", true));
         // #5244
         ASSERT_EQUALS("bar ( & ptr ) ;", tokenizeAndStringify("bar((const X**)&ptr);",true));
     }
@@ -2947,7 +2940,7 @@ private:
 
     void file3() {
         const char code[] = "#file \"c:\\a.h\"\n"
-                            "123\n"
+                            "123 ;\n"
                             "#endfile\n";
 
         errout.str("");
@@ -3132,8 +3125,8 @@ private:
     // "!(abc.a)" => "!abc.a"
     void removeParentheses6() {
         {
-            const char code[] = "(!(abc.a))";
-            ASSERT_EQUALS("( ! abc . a )", tokenizeAndStringify(code));
+            const char code[] = "(!(abc.a));";
+            ASSERT_EQUALS("( ! abc . a ) ;", tokenizeAndStringify(code));
         }
         //handle more complex member selections
         {
@@ -3211,7 +3204,7 @@ private:
     }
 
     void removeParentheses19() {
-        ASSERT_EQUALS("( ( ( typeof ( X ) ) * ) 0 )", tokenizeAndStringify("(((typeof(X))*)0)", false));
+        ASSERT_EQUALS("( ( ( typeof ( X ) ) * ) 0 ) ;", tokenizeAndStringify("(((typeof(X))*)0);", false));
     }
 
     void removeParentheses20() {
@@ -4468,7 +4461,7 @@ private:
         }
 
         {
-            const char code[] = "Data<T&&>";
+            const char code[] = "Data<T&&>;";
             errout.str("");
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
@@ -5342,13 +5335,6 @@ private:
         ASSERT_EQUALS("{ } MACRO default : { } ;", tokenizeAndStringify(code,false));
     }
 
-    void bitfields11() { // ticket #2845 (segmentation fault)
-        const char code[] = "#if b&&a\n"
-                            "#ifdef y z:\n";
-        tokenizeAndStringify(code,false);
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void bitfields12() { // ticket #3485 (segmentation fault)
         const char code[] = "{a:1;};\n";
         ASSERT_EQUALS("{ } ;", tokenizeAndStringify(code,false));
@@ -5690,10 +5676,10 @@ private:
                       tokenizeAndStringify("int foo ( ) { int i; int j; i = 0 && j; return i; }", true));        // ticket #3576 - False positives in boolean expressions
 
         // ticket #3723 - Simplify condition (0 && a < 123)
-        ASSERT_EQUALS("( 0 )",
-                      tokenizeAndStringify("( 0 && a < 123 )", true));
-        ASSERT_EQUALS("( 0 )",
-                      tokenizeAndStringify("( 0 && a[123] )", true));
+        ASSERT_EQUALS("( 0 ) ;",
+                      tokenizeAndStringify("( 0 && a < 123 );", true));
+        ASSERT_EQUALS("( 0 ) ;",
+                      tokenizeAndStringify("( 0 && a[123] );", true));
 
         // ticket #3964 - simplify numeric calculations in tokenization
         ASSERT_EQUALS("char a [ 10 ] ;", tokenizeAndStringify("char a[9+1];"));

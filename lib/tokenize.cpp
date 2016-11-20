@@ -8027,6 +8027,14 @@ const Token * Tokenizer::findGarbageCode() const
             }
         }
     }
+
+    // Code must end with } ; ) NAME
+    if (!Token::Match(list.back(), "%name%|;|}|)"))
+        return list.back();
+    if (list.back()->str() == ")" && !Token::Match(list.back()->link()->previous(), "%name% ("))
+        return list.back();
+
+
     return nullptr;
 }
 

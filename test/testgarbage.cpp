@@ -59,7 +59,6 @@ private:
         TEST_CASE(garbageCode8); // #5511
         TEST_CASE(garbageCode9); // #5604
         TEST_CASE(garbageCode10); // #6127
-        TEST_CASE(garbageCode11);
         TEST_CASE(garbageCode12);
         TEST_CASE(garbageCode13); // #2607
         TEST_CASE(garbageCode14); // #5595
@@ -77,17 +76,14 @@ private:
         TEST_CASE(garbageCode26);
         TEST_CASE(garbageCode27);
         TEST_CASE(garbageCode28);
-        TEST_CASE(garbageCode29);
         TEST_CASE(garbageCode30); // #5867
         TEST_CASE(garbageCode31); // #6539
-        TEST_CASE(garbageCode32); // #6135
         TEST_CASE(garbageCode33); // #6613
         TEST_CASE(garbageCode34); // #6626
         TEST_CASE(garbageCode35); // #2599, #2604
         TEST_CASE(garbageCode36); // #6334
         TEST_CASE(garbageCode37); // #5166
         TEST_CASE(garbageCode38); // #6666
-        TEST_CASE(garbageCode39); // #6686
         TEST_CASE(garbageCode40); // #6620
         TEST_CASE(garbageCode41); // #6685
         TEST_CASE(garbageCode42); // #5760
@@ -100,7 +96,6 @@ private:
         TEST_CASE(garbageCode49); // #6715
         TEST_CASE(garbageCode50); // #6718
         TEST_CASE(garbageCode51); // #6719
-        TEST_CASE(garbageCode52); // #6720
         TEST_CASE(garbageCode53); // #6721
         TEST_CASE(garbageCode54); // #6722
         TEST_CASE(garbageCode55); // #6724
@@ -110,12 +105,10 @@ private:
         TEST_CASE(garbageCode59); // #6735
         TEST_CASE(garbageCode60); // #6736
         TEST_CASE(garbageCode61);
-        TEST_CASE(garbageCode62);
         TEST_CASE(garbageCode63);
         TEST_CASE(garbageCode64);
         TEST_CASE(garbageCode65);
         TEST_CASE(garbageCode66);
-        TEST_CASE(garbageCode67);
         TEST_CASE(garbageCode68);
         TEST_CASE(garbageCode69);
         TEST_CASE(garbageCode70);
@@ -123,7 +116,6 @@ private:
         TEST_CASE(garbageCode72);
         TEST_CASE(garbageCode73);
         TEST_CASE(garbageCode74);
-        TEST_CASE(garbageCode75);
         TEST_CASE(garbageCode76);
         TEST_CASE(garbageCode77);
         TEST_CASE(garbageCode78);
@@ -137,7 +129,6 @@ private:
         TEST_CASE(garbageCode86);
         TEST_CASE(garbageCode87);
         TEST_CASE(garbageCode88);
-        TEST_CASE(garbageCode89);
         TEST_CASE(garbageCode90);
         TEST_CASE(garbageCode91);
         TEST_CASE(garbageCode92);
@@ -172,7 +163,6 @@ private:
         TEST_CASE(garbageCode121); // #2585
         TEST_CASE(garbageCode122); // #6303
         TEST_CASE(garbageCode123);
-        TEST_CASE(garbageCode124); // 6948
         TEST_CASE(garbageCode125); // 6782, 6834
         TEST_CASE(garbageCode126); // #6997
         TEST_CASE(garbageCode127); // #6667
@@ -182,7 +172,6 @@ private:
         TEST_CASE(garbageCode131); // #7023
         TEST_CASE(garbageCode132); // #7022
         TEST_CASE(garbageCode133);
-        TEST_CASE(garbageCode134);
         TEST_CASE(garbageCode135); // #4994
         TEST_CASE(garbageCode136); // #7033
         TEST_CASE(garbageCode137); // #7034
@@ -193,7 +182,6 @@ private:
         TEST_CASE(garbageCode142); // #7050
         TEST_CASE(garbageCode143); // #6922
         TEST_CASE(garbageCode144); // #6865
-        TEST_CASE(garbageCode145); // #7074
         TEST_CASE(garbageCode146); // #7081
         TEST_CASE(garbageCode147); // #7082
         TEST_CASE(garbageCode148); // #7090
@@ -214,7 +202,6 @@ private:
         TEST_CASE(garbageCode163); // #7228
         TEST_CASE(garbageCode164); // #7234
         TEST_CASE(garbageCode165); // #7235
-        TEST_CASE(garbageCode166); // #7236
         TEST_CASE(garbageCode167); // #7237
         TEST_CASE(garbageCode168); // #7246
         TEST_CASE(garbageCode169); // #6731
@@ -226,18 +213,17 @@ private:
         TEST_CASE(garbageCode175);
         TEST_CASE(garbageCode176); // #7527
         TEST_CASE(garbageCode177); // #7321
-        TEST_CASE(garbageCode178); // #3441
         TEST_CASE(garbageCode179); // #3533
         TEST_CASE(garbageCode180);
         TEST_CASE(garbageCode181);
         TEST_CASE(garbageCode182); // #4195
         TEST_CASE(garbageCode183); // #7505
         TEST_CASE(garbageCode184); // #7699
-        TEST_CASE(garbageCode185); // #7769
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
         TEST_CASE(templateSimplifierCrashes);
+        TEST_CASE(garbageLastToken); // Make sure syntax errors are detected and reported
     }
 
     std::string checkCode(const char code[], bool cpp = true) {
@@ -436,10 +422,6 @@ private:
         checkCode("for( rl=reslist; rl!=NULL; rl=rl->next )");
     }
 
-    void garbageCode11() { // do not crash
-        checkCode("( ) &");
-    }
-
     void garbageCode12() { // do not crash
         checkCode("{ g; S (void) { struct } { } int &g; }");
     }
@@ -553,11 +535,6 @@ private:
                   "};\n");
     }
 
-    void garbageCode29() {
-        // ticket #2601 segmentation fault
-        checkCode("|| #if #define <=");
-    }
-
     void garbageCode30() {
         // simply survive - a syntax error would be even better (#5867)
         checkCode("void f(int x) {\n"
@@ -569,16 +546,8 @@ private:
         ASSERT_THROW(checkCode("typedef struct{}x[([],)]typedef e y;(y,x 0){}"), InternalError);
     }
 
-    void garbageCode32() { // #6135
-        checkCode(" ( * const ( size_t ) ; foo )");
-    }
-
     void garbageCode33() { // #6613
         checkCode("main(()B{});");
-
-        checkCode("f::y:y : <x::");
-
-        checkCode("\xe2u.");
     }
 
     // Bug #6626 crash: Token::astOperand2() const ( do while )
@@ -614,10 +583,6 @@ private:
 
     void garbageCode38() { // Ticket #6666
         checkCode("{ f2 { } } void f3 () { delete[] } { }");
-    }
-
-    void garbageCode39() { // #6686
-        checkCode("({ (); strcat(strcat(() ()) ()) })");
     }
 
     void garbageCode40() { // #6620
@@ -669,10 +634,6 @@ private:
         checkCode(" (const \"C\" ...); struct base { int f2; base (int arg1, int arg2); }; global_base(0x55, 0xff); { ((global_base.f1 0x55) (global_base.f2 0xff)) { } } base::base(int arg1, int arg2) { f2 = }");
     }
 
-    void garbageCode52() { // #6720
-        checkCode("a \"b\" not_eq \"c\"");
-    }
-
     void garbageCode53() { // #6721
         checkCode("{ { } }; void foo (struct int i) { x->b[i] = = }");
     }
@@ -710,10 +671,6 @@ private:
         ASSERT_THROW(checkCode("{ (const U&) }; { }; { }; struct U : virtual public"), InternalError);
     }
 
-    void garbageCode62() { // #6738
-        checkCode("(int arg2) { } { } typedef void (func_type) (int, int); typedef func_type&");
-    }
-
     void garbageCode63() { // #6739
         ASSERT_THROW(checkCode("{ } { } typedef int u_array[]; typedef u_array &u_array_ref; (u_array_ref arg) { } u_array_ref u_array_ref_gbl_obj0"), InternalError);
     }
@@ -728,10 +685,6 @@ private:
 
     void garbageCode66() { // #6742
         ASSERT_THROW(checkCode("{ { } }; { { } }; { }; class bar : public virtual"), InternalError);
-    }
-
-    void garbageCode67() { // #6744
-        checkCode("&g[0]; { (g[0] 0) } =", false);
     }
 
     void garbageCode68() { // #6745
@@ -760,10 +713,6 @@ private:
 
     void garbageCode74() { // #6751
         checkCode("_lenraw(const char* digits) { } typedef decltype(sizeof(0)) { } operator");
-    }
-
-    void garbageCode75() { // #6753
-        checkCode("{ { void foo() { struct }; { }; } }; struct S { } f =", false);
     }
 
     void garbageCode76() { // #6754
@@ -816,10 +765,6 @@ private:
 
     void garbageCode88() { // #6786
         ASSERT_THROW(checkCode("( ) { ( 0 ) { ( ) } } g ( ) { i( ( false ?) ( ) : 1 ) ; } ;"), InternalError); // do not crash
-    }
-
-    void garbageCode89() { // #6772
-        checkCode("{ { ( ) } P ( ) ^ { } { } { } ( ) } 0"); // do not crash
     }
 
     void garbageCode90() { // #6790
@@ -989,10 +934,6 @@ private:
                                "}"), InternalError);
     }
 
-    void garbageCode124() {
-        checkCode("+---+");
-    }
-
     void garbageCode125() {
         ASSERT_THROW(checkCode("{ T struct B : T valueA_AA ; } T : [ T > ( ) { B } template < T > struct A < > : ] { ( ) { return valueA_AC struct { : } } b A < int > AC ( ) a_aa.M ; ( ) ( ) }"),
                      InternalError);
@@ -1084,7 +1025,6 @@ private:
 
     void garbageCode134() {
         // Ticket #5605, #5759, #5762, #5774, #5823, #6059
-        checkCode("template<>\n");
         checkCode("foo() template<typename T1 = T2 = typename = unused, T5 = = unused> struct tuple Args> tuple<Args...> { } main() { foo<int,int,int,int,int,int>(); }");
         checkCode("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }");
         checkCode("() template < T = typename = x > struct a {} { f <int> () }");
@@ -1176,10 +1116,6 @@ private:
 
     void garbageCode144() { // #6865
         //ASSERT_THROW(checkCode("template < typename > struct A { } ; template < typename > struct A < INVALID > : A < int[ > { }] ;"), InternalError);
-    }
-
-    void garbageCode145() { // #7074
-        checkCode("++4++ +  + E++++++++++ + ch " "tp.oed5[.]");
     }
 
     void garbageCode146() { // #7081
@@ -1316,8 +1252,6 @@ private:
     }
 
     void garbageAST() {
-        checkCode("--"); // don't crash
-
         ASSERT_THROW(checkCode("N 1024 float a[N], b[N + 3], c[N]; void N; (void) i;\n"
                                "int #define for (i = avx_test i < c[i]; i++)\n"
                                "b[i + 3] = a[i] * {}"), InternalError); // Don't hang (#5787)
@@ -1402,9 +1336,6 @@ private:
                       checkCode("template<typename T> struct A;\n"
                                 "struct B { template<typename T> struct C };\n"
                                 "{};"));
-
-        // #4169
-        checkCode("volatile true , test < test < #ifdef __ppc__ true ,");
     }
     void garbageCode161() {
         //7200
@@ -1429,11 +1360,6 @@ private:
     void garbageCode165() {
         //7235
         checkCode("for(;..)", false);
-    }
-
-    void garbageCode166() {
-        //7236
-        checkCode("d a(){f s=0()8[]s?():0}*()?:0", false);
     }
 
     void garbageCode167() {
@@ -1493,10 +1419,6 @@ private:
         checkCode("{(){(())}}r&const");
     }
 
-    void garbageCode178() { // #3441
-        checkCode("%: return ; ()");
-    }
-
     void garbageCode179() { // #3533
         checkCode("<class T>\n"
                   "{\n"
@@ -1530,11 +1452,39 @@ private:
                   "}");
     }
 
-    void garbageCode185() { // #7769
-        // that check failed to reproduce the segfault but got added anyway...
-        checkCode("!2 : #h2 ?:", false);
-    }
+    void garbageLastToken() {
+        ASSERT_THROW(checkCode("int *"), InternalError); // #7821
+        ASSERT_THROW(checkCode("x[y]"), InternalError); // #2986
+        ASSERT_THROW(checkCode("( ) &"), InternalError);
+        ASSERT_THROW(checkCode("|| #if #define <="), InternalError); // #2601
+        ASSERT_THROW(checkCode("f::y:y : <x::"), InternalError); // #6613
+        ASSERT_THROW(checkCode("\xe2u."), InternalError); // #6613
+        ASSERT_THROW(checkCode("a \"b\" not_eq \"c\""), InternalError); // #6720
+        ASSERT_THROW(checkCode("(int arg2) { } { } typedef void (func_type) (int, int); typedef func_type&"), InternalError); // #6738
+        ASSERT_THROW(checkCode("&g[0]; { (g[0] 0) } =", false), InternalError); // #6744
+        ASSERT_THROW(checkCode("{ { void foo() { struct }; { }; } }; struct S { } f =", false), InternalError); // #6753
+        ASSERT_THROW(checkCode("{ { ( ) } P ( ) ^ { } { } { } ( ) } 0"), InternalError); // #6772
+        ASSERT_THROW(checkCode("+---+"), InternalError); // #6948
+        ASSERT_THROW(checkCode("template<>\n"), InternalError);
+        ASSERT_THROW(checkCode("++4++ +  + E++++++++++ + ch " "tp.oed5[.]"), InternalError); // #7074
+        ASSERT_THROW(checkCode("d a(){f s=0()8[]s?():0}*()?:0", false), InternalError); // #7236
+        ASSERT_THROW(checkCode("!2 : #h2 ?:", false), InternalError); // #7769
+        ASSERT_THROW(checkCode("--"), InternalError);
+        ASSERT_THROW(checkCode("volatile true , test < test < #ifdef __ppc__ true ,"), InternalError); // #4169
+        ASSERT_THROW(checkCode("a,b--\n"), InternalError); // #2847
+        ASSERT_THROW(checkCode("x a[0] ="), InternalError); // #2682
+        ASSERT_THROW(checkCode("auto_ptr<x>\n"), InternalError); // #2967
+        ASSERT_THROW(checkCode("char a[1]\n"), InternalError); // #2865
+        ASSERT_THROW(checkCode("<><<"), InternalError); // #2612
+        ASSERT_THROW(checkCode("z<y<x>"), InternalError); // #2831
+        ASSERT_THROW(checkCode("><,f<i,"), InternalError); // #2835
+        ASSERT_THROW(checkCode("0; (a) < (a)"), InternalError); // #2875
+        ASSERT_THROW(checkCode(" ( * const ( size_t ) ; foo )"), InternalError); // #6135
+        ASSERT_THROW(checkCode("({ (); strcat(strcat(() ()) ()) })"), InternalError); // #6686
+        ASSERT_THROW(checkCode("%: return ; ()"), InternalError); // #3441
 
+        // ASSERT_THROW(  , InternalError)
+    }
 };
 
 REGISTER_TEST(TestGarbage)

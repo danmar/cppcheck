@@ -2509,10 +2509,6 @@ private:
         check("A::A(std::auto_ptr<X> e){}");
         ASSERT_EQUALS("", errout.str());
 
-        // ticket #2967 (segmentation fault)
-        check("auto_ptr<x>\n");
-        ASSERT_EQUALS("", errout.str());
-
         // ticket #4390
         check("auto_ptr<ConnectionStringReadStorage> CreateRegistryStringStorage() {\n"
               "    return auto_ptr<ConnectionStringReadStorage>(new RegistryConnectionStringStorage());\n"

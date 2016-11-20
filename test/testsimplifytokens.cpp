@@ -206,7 +206,6 @@ private:
         // void foo(void) -> void foo()
         TEST_CASE(removeVoidFromFunction);
 
-        TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
         TEST_CASE(return_strncat); // ticket # 2860 Returning value of strncat() reported as memory leak
 
         // #3069 : for loop with 1 iteration
@@ -700,7 +699,7 @@ private:
 
         // keep parentheses..
         ASSERT_EQUALS("b = a ;", tok("b = (char)a;"));
-        ASSERT_EQUALS("cast < char * > ( p )", tok("cast<char *>(p)"));
+        ASSERT_EQUALS("cast < char * > ( p ) ;", tok("cast<char *>(p);"));
         ASSERT_EQUALS("return ( a + b ) * c ;", tok("return (a+b)*c;"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( 2 * p == 0 ) { } }", tok("void f(){int p; if (2*p == 0) {}}"));
         ASSERT_EQUALS("void f ( ) { DIR * f ; f = opendir ( dirname ) ; if ( closedir ( f ) ) { } }", tok("void f(){DIR * f = opendir(dirname);if (closedir(f)){}}"));
@@ -793,8 +792,8 @@ private:
     }
 
     void elseif1() {
-        const char code[] = "else if(ab) { cd } else { ef }gh";
-        ASSERT_EQUALS("\n\n##file 0\n1: else { if ( ab ) { cd } else { ef } } gh\n", tokenizeDebugListing(code));
+        const char code[] = "else if(ab) { cd } else { ef }gh;";
+        ASSERT_EQUALS("\n\n##file 0\n1: else { if ( ab ) { cd } else { ef } } gh ;\n", tokenizeDebugListing(code));
 
         // syntax error: assert there is no segmentation fault
         ASSERT_EQUALS("\n\n##file 0\n1: else if ( x ) { }\n", tokenizeDebugListing("else if (x) { }"));
@@ -831,13 +830,13 @@ private:
 
         // Ticket #6860 - lambdas
         {
-            const char src[] = "( []{if (ab) {cd}else if(ef) { gh } else { ij }kl}() )";
-            const char expected[] = "\n\n##file 0\n1: ( [ ] { if ( ab ) { cd } else { if ( ef ) { gh } else { ij } } kl } ( ) )\n";
+            const char src[] = "( []{if (ab) {cd}else if(ef) { gh } else { ij }kl}() );";
+            const char expected[] = "\n\n##file 0\n1: ( [ ] { if ( ab ) { cd } else { if ( ef ) { gh } else { ij } } kl } ( ) ) ;\n";
             ASSERT_EQUALS(expected, tokenizeDebugListing(src));
         }
         {
-            const char src[] = "[ []{if (ab) {cd}else if(ef) { gh } else { ij }kl}() ]";
-            const char expected[] = "\n\n##file 0\n1: [ [ ] { if ( ab ) { cd } else { if ( ef ) { gh } else { ij } } kl } ( ) ]\n";
+            const char src[] = "[ []{if (ab) {cd}else if(ef) { gh } else { ij }kl}() ];";
+            const char expected[] = "\n\n##file 0\n1: [ [ ] { if ( ab ) { cd } else { if ( ef ) { gh } else { ij } } kl } ( ) ] ;\n";
             ASSERT_EQUALS(expected, tokenizeDebugListing(src));
         }
         {
@@ -1005,10 +1004,10 @@ private:
         // ticket #716 - sizeof string
         {
             std::ostringstream expected;
-            expected << "; " << (sizeof "123");
+            expected << "; " << (sizeof "123") << " ;";
 
-            ASSERT_EQUALS(expected.str(), tok("; sizeof \"123\""));
-            ASSERT_EQUALS(expected.str(), tok("; sizeof(\"123\")"));
+            ASSERT_EQUALS(expected.str(), tok("; sizeof \"123\";"));
+            ASSERT_EQUALS(expected.str(), tok("; sizeof(\"123\");"));
         }
 
         {
@@ -1971,13 +1970,13 @@ private:
 
     void simplifyConditionOperator() {
         {
-            const char code[] = "(0?(false?1:2):3)";
-            ASSERT_EQUALS("( 3 )", tok(code));
+            const char code[] = "(0?(false?1:2):3);";
+            ASSERT_EQUALS("( 3 ) ;", tok(code));
         }
 
         {
-            const char code[] = "(1?(false?1:2):3)";
-            ASSERT_EQUALS("( 2 )", tok(code));
+            const char code[] = "(1?(false?1:2):3);";
+            ASSERT_EQUALS("( 2 ) ;", tok(code));
         }
 
         {
@@ -1986,8 +1985,8 @@ private:
         }
 
         {
-            const char code[] = "(1?0:foo())";
-            ASSERT_EQUALS("( 0 )", tok(code));
+            const char code[] = "(1?0:foo());";
+            ASSERT_EQUALS("( 0 ) ;", tok(code));
         }
 
         {
@@ -2006,13 +2005,13 @@ private:
         }
 
         {
-            const char code[] = "( true ? a ( ) : b ( ) )";
-            ASSERT_EQUALS("( a ( ) )", tok(code));
+            const char code[] = "( true ? a ( ) : b ( ) );";
+            ASSERT_EQUALS("( a ( ) ) ;", tok(code));
         }
 
         {
-            const char code[] = "( true ? abc . a : abc . b )";
-            ASSERT_EQUALS("( abc . a )", tok(code));
+            const char code[] = "( true ? abc . a : abc . b );";
+            ASSERT_EQUALS("( abc . a ) ;", tok(code));
         }
 
         {
@@ -2060,28 +2059,28 @@ private:
 
     void calculations() {
         {
-            const char code[] = "a[i+8+2]";
-            ASSERT_EQUALS("a [ i + 10 ]", tok(code));
+            const char code[] = "a[i+8+2];";
+            ASSERT_EQUALS("a [ i + 10 ] ;", tok(code));
         }
         {
-            const char code[] = "a[8+2+i]";
-            ASSERT_EQUALS("a [ 10 + i ]", tok(code));
+            const char code[] = "a[8+2+i];";
+            ASSERT_EQUALS("a [ 10 + i ] ;", tok(code));
         }
         {
-            const char code[] = "a[i + 2 * (2 * 4)]";
-            ASSERT_EQUALS("a [ i + 16 ]", tok(code));
+            const char code[] = "a[i + 2 * (2 * 4)];";
+            ASSERT_EQUALS("a [ i + 16 ] ;", tok(code));
         }
         {
-            const char code[] = "a[i + 100 - 90]";
-            ASSERT_EQUALS("a [ i + 10 ]", tok(code));
+            const char code[] = "a[i + 100 - 90];";
+            ASSERT_EQUALS("a [ i + 10 ] ;", tok(code));
         }
         {
-            const char code[] = "a[1+1+1+1+1+1+1+1+1+1-2+5-3]";
-            ASSERT_EQUALS("a [ 10 ]", tok(code));
+            const char code[] = "a[1+1+1+1+1+1+1+1+1+1-2+5-3];";
+            ASSERT_EQUALS("a [ 10 ] ;", tok(code));
         }
         {
-            const char code[] = "a[10+10-10-10]";
-            ASSERT_EQUALS("a [ 0 ]", tok(code));
+            const char code[] = "a[10+10-10-10];";
+            ASSERT_EQUALS("a [ 0 ] ;", tok(code));
         }
 
         ASSERT_EQUALS("a [ 4 ] ;", tok("a[1+3|4];"));
@@ -2114,30 +2113,30 @@ private:
         ASSERT_EQUALS("if ( a + 2 != 6 ) { ; }", tok("if (a+1+1!=1+2+3);"));
         ASSERT_EQUALS("if ( 4 < a ) { ; }", tok("if (14-2*5<a*4/(2*2));"));
 
-        ASSERT_EQUALS("( y / 2 - 2 )", tok("(y / 2 - 2)"));
-        ASSERT_EQUALS("( y % 2 - 2 )", tok("(y % 2 - 2)"));
+        ASSERT_EQUALS("( y / 2 - 2 ) ;", tok("(y / 2 - 2);"));
+        ASSERT_EQUALS("( y % 2 - 2 ) ;", tok("(y % 2 - 2);"));
 
-        ASSERT_EQUALS("( 4 )", tok("(1 * 2 / 1 * 2)")); // #3722
+        ASSERT_EQUALS("( 4 ) ;", tok("(1 * 2 / 1 * 2);")); // #3722
 
-        ASSERT_EQUALS("x ( 60129542144 )", tok("x(14<<4+17<<300%17)")); // #4931
-        ASSERT_EQUALS("x ( 1 )", tok("x(8|5&6+0 && 7)")); // #6104
-        ASSERT_EQUALS("x ( 1 )", tok("x(2 && 4<<4<<5 && 4)")); // #4933
-        ASSERT_EQUALS("x ( 1 )", tok("x(9&&8%5%4/3)")); // #4931
-        ASSERT_EQUALS("x ( 1 )", tok("x(2 && 2|5<<2%4)")); // #4931
-        ASSERT_EQUALS("x ( -2 << 6 | 1 )", tok("x(1-3<<6|5/3)")); // #4931
-        ASSERT_EQUALS("x ( 2 )", tok("x(2|0*0&2>>1+0%2*1)")); // #4931
-        ASSERT_EQUALS("x ( 0 & 4 != 1 )", tok("x(4%1<<1&4!=1)")); // #4931 (can be simplified further but it's not a problem)
-        ASSERT_EQUALS("x ( true )", tok("x(0&&4>0==2||4)")); // #4931
+        ASSERT_EQUALS("x ( 60129542144 ) ;", tok("x(14<<4+17<<300%17);")); // #4931
+        ASSERT_EQUALS("x ( 1 ) ;", tok("x(8|5&6+0 && 7);")); // #6104
+        ASSERT_EQUALS("x ( 1 ) ;", tok("x(2 && 4<<4<<5 && 4);")); // #4933
+        ASSERT_EQUALS("x ( 1 ) ;", tok("x(9&&8%5%4/3);")); // #4931
+        ASSERT_EQUALS("x ( 1 ) ;", tok("x(2 && 2|5<<2%4);")); // #4931
+        ASSERT_EQUALS("x ( -2 << 6 | 1 ) ;", tok("x(1-3<<6|5/3);")); // #4931
+        ASSERT_EQUALS("x ( 2 ) ;", tok("x(2|0*0&2>>1+0%2*1);")); // #4931
+        ASSERT_EQUALS("x ( 0 & 4 != 1 ) ;", tok("x(4%1<<1&4!=1);")); // #4931 (can be simplified further but it's not a problem)
+        ASSERT_EQUALS("x ( true ) ;", tok("x(0&&4>0==2||4);")); // #4931
 
         // don't remove these spaces..
         ASSERT_EQUALS("new ( auto ) ( 4 ) ;", tok("new (auto)(4);"));
     }
 
     void comparisons() {
-        ASSERT_EQUALS("( 1 )", tok("( 1 < 2 )"));
-        ASSERT_EQUALS("( x && true )", tok("( x && 1 < 2 )"));
-        ASSERT_EQUALS("( 5 )", tok("( 1 < 2 && 3 < 4 ? 5 : 6 )"));
-        ASSERT_EQUALS("( 6 )", tok("( 1 > 2 && 3 > 4 ? 5 : 6 )"));
+        ASSERT_EQUALS("( 1 ) ;", tok("( 1 < 2 );"));
+        ASSERT_EQUALS("( x && true ) ;", tok("( x && 1 < 2 );"));
+        ASSERT_EQUALS("( 5 ) ;", tok("( 1 < 2 && 3 < 4 ? 5 : 6 );"));
+        ASSERT_EQUALS("( 6 ) ;", tok("( 1 > 2 && 3 > 4 ? 5 : 6 );"));
     }
 
 
@@ -3330,12 +3329,6 @@ private:
 
     void removeVoidFromFunction() {
         ASSERT_EQUALS("void foo ( ) ;", tok("void foo(void);"));
-    }
-
-    void simplifyVarDecl1() { // ticket # 2682 segmentation fault
-        const char code[] = "x a[0] =";
-        tok(code, false);
-        ASSERT_EQUALS("", errout.str());
     }
 
     void return_strncat() {

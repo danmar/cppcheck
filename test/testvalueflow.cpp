@@ -281,12 +281,12 @@ private:
         ASSERT_EQUALS(0, valueOfTok("3 <= (a ? b : 2);", "<=").intvalue);
 
         // Don't calculate if there is UB
-        ASSERT(tokenValues("-1<<10","<<").empty());
-        ASSERT(tokenValues("10<<-1","<<").empty());
-        ASSERT(tokenValues("10<<64","<<").empty());
-        ASSERT(tokenValues("-1>>10",">>").empty());
-        ASSERT(tokenValues("10>>-1",">>").empty());
-        ASSERT(tokenValues("10>>64",">>").empty());
+        ASSERT(tokenValues("-1<<10;","<<").empty());
+        ASSERT(tokenValues("10<<-1;","<<").empty());
+        ASSERT(tokenValues("10<<64;","<<").empty());
+        ASSERT(tokenValues("-1>>10;",">>").empty());
+        ASSERT(tokenValues("10>>-1;",">>").empty());
+        ASSERT(tokenValues("10>>64;",">>").empty());
 
         // calculation using 1,2 variables/values
         code  = "void f(int x) {\n"
@@ -2035,7 +2035,7 @@ private:
 
         // function
         code = "int f(int x) { return x + 1; }\n" // <- possible value
-               "void a() { f(12); }\b";
+               "void a() { f(12); }";
         value = valueOfTok(code, "+");
         ASSERT_EQUALS(13, value.intvalue);
         ASSERT(value.isPossible());

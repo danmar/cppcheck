@@ -158,7 +158,6 @@ private:
         TEST_CASE(buffer_overrun_16);
         TEST_CASE(buffer_overrun_18); // ticket #2576 - for, calculation with loop variable
         TEST_CASE(buffer_overrun_19); // #2597 - class member with unknown type
-        TEST_CASE(buffer_overrun_20); // #2986 (segmentation fault)
         TEST_CASE(buffer_overrun_21);
         TEST_CASE(buffer_overrun_24); // index variable is changed in for-loop
         TEST_CASE(buffer_overrun_26); // #4432 (segmentation fault)
@@ -2410,11 +2409,6 @@ private:
               "A::A() {\n"
               "    memset(buf, 0, 10);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void buffer_overrun_20() { // #2986(segmentation fault)
-        check("x[y]\n");
         ASSERT_EQUALS("", errout.str());
     }
 

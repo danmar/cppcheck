@@ -58,9 +58,6 @@ private:
         TEST_CASE(varid28);   // ticket #2630
         TEST_CASE(varid29);   // ticket #1974
         TEST_CASE(varid30);   // ticket #2614
-        TEST_CASE(varid31);   // ticket #2831 (segmentation fault)
-        TEST_CASE(varid32);   // ticket #2835 (segmentation fault)
-        TEST_CASE(varid33);   // ticket #2875 (segmentation fault)
         TEST_CASE(varid34);   // ticket #2825
         TEST_CASE(varid35);   // function declaration inside function body
         TEST_CASE(varid36);   // ticket #2980 (segmentation fault)
@@ -697,24 +694,6 @@ private:
                                  "6: }\n"
                                  "7: }\n";
         ASSERT_EQUALS(expected3, tokenize(code3));
-    }
-
-    void varid31() { // ticket #2831 (segmentation fault)
-        const char code[] ="z<y<x>";
-        tokenize(code);
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void varid32() { // ticket #2835 (segmentation fault)
-        const char code[] ="><,f<i,";
-        tokenize(code);
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void varid33() { // ticket #2875 (segmentation fault)
-        const char code[] ="0; (a) < (a)";
-        tokenize(code, true);
-        ASSERT_EQUALS("", errout.str());
     }
 
     void varid34() { // ticket #2825
@@ -2064,9 +2043,9 @@ private:
     }
 
     void varid_typename() {
-        ASSERT_EQUALS("1: template < int d , class A , class B >\n", tokenize("template<int d, class A, class B>"));
+        ASSERT_EQUALS("1: template < int d , class A , class B > ;\n", tokenize("template<int d, class A, class B>;"));
 
-        ASSERT_EQUALS("1: template < int d , typename A , typename B >\n", tokenize("template<int d, typename A, typename B>"));
+        ASSERT_EQUALS("1: template < int d , typename A , typename B > ;\n", tokenize("template<int d, typename A, typename B>;"));
 
         ASSERT_EQUALS("1: typename A a@1 ;\n", tokenize("typename A a;"));
     }

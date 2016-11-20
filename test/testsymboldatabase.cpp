@@ -217,7 +217,6 @@ private:
         TEST_CASE(symboldatabase15); // ticket #2591
         TEST_CASE(symboldatabase16); // ticket #2637
         TEST_CASE(symboldatabase17); // ticket #2657
-        TEST_CASE(symboldatabase18); // ticket #2865
         TEST_CASE(symboldatabase19); // ticket #2991 (segmentation fault)
         TEST_CASE(symboldatabase20); // ticket #3013 (segmentation fault)
         TEST_CASE(symboldatabase21);
@@ -2184,13 +2183,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase18() {
-        // ticket #2865 - segmentation fault
-        check("char a[1]\n");
-
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void symboldatabase19() {
         // ticket #2991 - segmentation fault
         check("::y(){x}");
@@ -3902,54 +3894,54 @@ private:
         s.long_long_bit = 64;
 
         // numbers
-        ASSERT_EQUALS("signed int", typeOf("1", "1", "test.c", &s));
-        ASSERT_EQUALS("signed int", typeOf("32767", "32767", "test.c", &s));
-        ASSERT_EQUALS("signed long", typeOf("32768", "32768", "test.c", &s));
-        ASSERT_EQUALS("signed long long", typeOf("2147483648", "2147483648", "test.c", &s));
-        ASSERT_EQUALS("unsigned int", typeOf("1U", "1U"));
-        ASSERT_EQUALS("signed long", typeOf("1L", "1L"));
-        ASSERT_EQUALS("unsigned long", typeOf("1UL", "1UL"));
-        ASSERT_EQUALS("signed long long", typeOf("1LL", "1LL"));
-        ASSERT_EQUALS("unsigned long long", typeOf("1ULL", "1ULL"));
-        ASSERT_EQUALS("unsigned long long", typeOf("1LLU", "1LLU"));
-        ASSERT_EQUALS("signed long long", typeOf("1i64", "1i64"));
-        ASSERT_EQUALS("unsigned long long", typeOf("1ui64", "1ui64"));
-        ASSERT_EQUALS("unsigned int", typeOf("1u", "1u"));
-        ASSERT_EQUALS("signed long", typeOf("1l", "1l"));
-        ASSERT_EQUALS("unsigned long", typeOf("1ul", "1ul"));
-        ASSERT_EQUALS("signed long long", typeOf("1ll", "1ll"));
-        ASSERT_EQUALS("unsigned long long", typeOf("1ull", "1ull"));
-        ASSERT_EQUALS("unsigned long long", typeOf("1llu", "1llu"));
-        ASSERT_EQUALS("float", typeOf("1.0F", "1.0F"));
-        ASSERT_EQUALS("float", typeOf("1.0f", "1.0f"));
-        ASSERT_EQUALS("double", typeOf("1.0", "1.0"));
-        ASSERT_EQUALS("double", typeOf("1E3", "1E3"));
-        ASSERT_EQUALS("long double", typeOf("1.23L", "1.23L"));
+        ASSERT_EQUALS("signed int", typeOf("1;", "1", "test.c", &s));
+        ASSERT_EQUALS("signed int", typeOf("32767;", "32767", "test.c", &s));
+        ASSERT_EQUALS("signed long", typeOf("32768;", "32768", "test.c", &s));
+        ASSERT_EQUALS("signed long long", typeOf("2147483648;", "2147483648", "test.c", &s));
+        ASSERT_EQUALS("unsigned int", typeOf("1U;", "1U"));
+        ASSERT_EQUALS("signed long", typeOf("1L;", "1L"));
+        ASSERT_EQUALS("unsigned long", typeOf("1UL;", "1UL"));
+        ASSERT_EQUALS("signed long long", typeOf("1LL;", "1LL"));
+        ASSERT_EQUALS("unsigned long long", typeOf("1ULL;", "1ULL"));
+        ASSERT_EQUALS("unsigned long long", typeOf("1LLU;", "1LLU"));
+        ASSERT_EQUALS("signed long long", typeOf("1i64;", "1i64"));
+        ASSERT_EQUALS("unsigned long long", typeOf("1ui64;", "1ui64"));
+        ASSERT_EQUALS("unsigned int", typeOf("1u;", "1u"));
+        ASSERT_EQUALS("signed long", typeOf("1l;", "1l"));
+        ASSERT_EQUALS("unsigned long", typeOf("1ul;", "1ul"));
+        ASSERT_EQUALS("signed long long", typeOf("1ll;", "1ll"));
+        ASSERT_EQUALS("unsigned long long", typeOf("1ull;", "1ull"));
+        ASSERT_EQUALS("unsigned long long", typeOf("1llu;", "1llu"));
+        ASSERT_EQUALS("float", typeOf("1.0F;", "1.0F"));
+        ASSERT_EQUALS("float", typeOf("1.0f;", "1.0f"));
+        ASSERT_EQUALS("double", typeOf("1.0;", "1.0"));
+        ASSERT_EQUALS("double", typeOf("1E3;", "1E3"));
+        ASSERT_EQUALS("long double", typeOf("1.23L;", "1.23L"));
 
         // Constant calculations
-        ASSERT_EQUALS("signed int", typeOf("1 + 2", "+"));
-        ASSERT_EQUALS("signed long", typeOf("1L + 2", "+"));
-        ASSERT_EQUALS("signed long long", typeOf("1LL + 2", "+"));
-        ASSERT_EQUALS("float", typeOf("1.2f + 3", "+"));
-        ASSERT_EQUALS("float", typeOf("1 + 2.3f", "+"));
+        ASSERT_EQUALS("signed int", typeOf("1 + 2;", "+"));
+        ASSERT_EQUALS("signed long", typeOf("1L + 2;", "+"));
+        ASSERT_EQUALS("signed long long", typeOf("1LL + 2;", "+"));
+        ASSERT_EQUALS("float", typeOf("1.2f + 3;", "+"));
+        ASSERT_EQUALS("float", typeOf("1 + 2.3f;", "+"));
 
         // promotions
-        ASSERT_EQUALS("signed int", typeOf("(char)1 +  (char)2", "+"));
-        ASSERT_EQUALS("signed int", typeOf("(short)1 + (short)2", "+"));
-        ASSERT_EQUALS("signed int", typeOf("(signed int)1 + (signed char)2", "+"));
-        ASSERT_EQUALS("signed int", typeOf("(signed int)1 + (unsigned char)2", "+"));
-        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (signed char)2", "+"));
-        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (unsigned char)2", "+"));
-        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (signed int)2", "+"));
-        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (unsigned int)2", "+"));
-        ASSERT_EQUALS("signed long", typeOf("(signed long)1 + (unsigned int)2", "+"));
-        ASSERT_EQUALS("unsigned long", typeOf("(unsigned long)1 + (signed int)2", "+"));
+        ASSERT_EQUALS("signed int", typeOf("(char)1 +  (char)2;", "+"));
+        ASSERT_EQUALS("signed int", typeOf("(short)1 + (short)2;", "+"));
+        ASSERT_EQUALS("signed int", typeOf("(signed int)1 + (signed char)2;", "+"));
+        ASSERT_EQUALS("signed int", typeOf("(signed int)1 + (unsigned char)2;", "+"));
+        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (signed char)2;", "+"));
+        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (unsigned char)2;", "+"));
+        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (signed int)2;", "+"));
+        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (unsigned int)2;", "+"));
+        ASSERT_EQUALS("signed long", typeOf("(signed long)1 + (unsigned int)2;", "+"));
+        ASSERT_EQUALS("unsigned long", typeOf("(unsigned long)1 + (signed int)2;", "+"));
 
         // char *
-        ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1", "+"));
-        ASSERT_EQUALS("const char",  typeOf("\"hello\"[1]", "["));
-        ASSERT_EQUALS("const char",  typeOf("*\"hello\"", "*"));
-        ASSERT_EQUALS("const short *", typeOf("L\"hello\" + 1", "+"));
+        ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1;", "+"));
+        ASSERT_EQUALS("const char",  typeOf("\"hello\"[1];", "["));
+        ASSERT_EQUALS("const char",  typeOf("*\"hello\";", "*"));
+        ASSERT_EQUALS("const short *", typeOf("L\"hello\" + 1;", "+"));
 
         // Variable calculations
         ASSERT_EQUALS("void *", typeOf("void *p; a = p + 1;", "+"));
@@ -3983,11 +3975,11 @@ private:
         ASSERT_EQUALS("double", typeOf("double x; a = -x;", "-"));
 
         // Ternary operator
-        ASSERT_EQUALS("signed int", typeOf("int x; a = (b ? x : x)", "?"));
-        ASSERT_EQUALS("", typeOf("int x; a = (b ? x : y)", "?"));
-        ASSERT_EQUALS("double", typeOf("int x; double y; a = (b ? x : y)", "?"));
-        ASSERT_EQUALS("const char *", typeOf("int x; double y; a = (b ? \"a\" : \"b\")", "?"));
-        ASSERT_EQUALS("", typeOf("int x; double y; a = (b ? \"a\" : std::string(\"b\"))", "?"));
+        ASSERT_EQUALS("signed int", typeOf("int x; a = (b ? x : x);", "?"));
+        ASSERT_EQUALS("", typeOf("int x; a = (b ? x : y);", "?"));
+        ASSERT_EQUALS("double", typeOf("int x; double y; a = (b ? x : y);", "?"));
+        ASSERT_EQUALS("const char *", typeOf("int x; double y; a = (b ? \"a\" : \"b\");", "?"));
+        ASSERT_EQUALS("", typeOf("int x; double y; a = (b ? \"a\" : std::string(\"b\"));", "?"));
 
         // Boolean operators
         ASSERT_EQUALS("bool", typeOf("a > b;", ">"));
@@ -4023,7 +4015,7 @@ private:
         ASSERT_EQUALS("", typeOf("a = (unsigned x)0;", "("));
 
         // sizeof..
-        ASSERT_EQUALS("char", typeOf("sizeof(char)", "char"));
+        ASSERT_EQUALS("char", typeOf("sizeof(char);", "char"));
 
         // const..
         ASSERT_EQUALS("const char *", typeOf("a = \"123\";", "\"123\""));
