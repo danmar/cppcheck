@@ -2699,7 +2699,7 @@ void CheckOther::unknownEvaluationOrder(const Token* tok)
 
 void CheckOther::checkAccessOfMovedVariable()
 {
-    if (!_tokenizer->isCPP() || _settings->standards.cpp < Standards::CPP11)
+    if (!_tokenizer->isCPP() || _settings->standards.cpp < Standards::CPP11 || !_settings->isEnabled("warning"))
         return;
     const bool reportInconclusive = _settings->inconclusive;
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
