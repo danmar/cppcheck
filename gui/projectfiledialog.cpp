@@ -121,7 +121,8 @@ void ProjectFileDialog::SaveSettings() const
     settings.setValue(SETTINGS_PROJECT_DIALOG_HEIGHT, size().height());
 }
 
-void ProjectFileDialog::LoadFromProjectFile(const ProjectFile *projectFile) {
+void ProjectFileDialog::LoadFromProjectFile(const ProjectFile *projectFile)
+{
     SetRootPath(projectFile->GetRootPath());
     SetBuildDir(projectFile->GetBuildDir());
     SetIncludepaths(projectFile->GetIncludeDirs());
@@ -133,7 +134,8 @@ void ProjectFileDialog::LoadFromProjectFile(const ProjectFile *projectFile) {
     SetSuppressions(projectFile->GetSuppressions());
 }
 
-void ProjectFileDialog::SaveToProjectFile(ProjectFile *projectFile) const {
+void ProjectFileDialog::SaveToProjectFile(ProjectFile *projectFile) const
+{
     projectFile->SetRootPath(GetRootPath());
     projectFile->SetBuildDir(GetBuildDir());
     projectFile->SetImportProject(GetImportProject());
