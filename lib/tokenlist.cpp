@@ -977,7 +977,7 @@ static void compileExpression(Token *&tok, AST_state& state)
         compileComma(tok, state);
 }
 
-static bool isLambdaCaptureList(Token * tok)
+static bool isLambdaCaptureList(const Token * tok)
 {
     // a lambda expression '[x](y){}' is compiled as:
     // [
