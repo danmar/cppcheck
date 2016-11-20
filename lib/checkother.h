@@ -94,6 +94,7 @@ public:
         checkOther.checkRedundantCopy();
         checkOther.checkSuspiciousEqualityComparison();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
+        checkOther.checkAccessOfMovedVariable();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -203,6 +204,9 @@ public:
     /** @brief %Check for expression that depends on order of evaluation of side effects */
     void checkEvaluationOrder();
 
+    /** @brief %Check for access of moved or forwarded variable */
+    void checkAccessOfMovedVariable();
+
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
@@ -252,6 +256,8 @@ private:
     void raceAfterInterlockedDecrementError(const Token* tok);
     void unusedLabelError(const Token* tok, bool inSwitch);
     void unknownEvaluationOrder(const Token* tok);
+    static bool isMovedParameterAllowedForInconclusiveFunction(const Token * tok);
+    void accessMovedError(const Token *tok, const std::string &varname, ValueFlow::Value::MoveKind moveKind, bool inconclusive);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(nullptr, settings, errorLogger);
@@ -308,6 +314,8 @@ private:
         c.unusedLabelError(nullptr,  true);
         c.unusedLabelError(nullptr,  false);
         c.unknownEvaluationOrder(nullptr);
+        c.accessMovedError(nullptr, "v", ValueFlow::Value::MovedVariable, false);
+        c.accessMovedError(nullptr, "v", ValueFlow::Value::ForwardedVariable, false);
     }
 
     static std::string myName() {
@@ -331,6 +339,7 @@ private:
                // warning
                "- either division by zero or useless condition\n"
                "- memset() with a value out of range as the 2nd parameter\n"
+               "- access of moved or forwarded variable.\n"
 
                // performance
                "- redundant data copying for const variable\n"

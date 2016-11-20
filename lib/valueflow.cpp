@@ -1284,7 +1284,7 @@ static bool valueFlowForward(Token * const               startToken,
         }
 
         // conditional block of code that assigns variable..
-        else if (Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
+        else if (!tok2->varId() && Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // is variable changed in condition?
             if (isVariableChanged(tok2->next(), tok2->next()->link(), varid, settings)) {
                 if (settings->debugwarnings)
@@ -1673,6 +1673,19 @@ static bool valueFlowForward(Token * const               startToken,
                     it->changeKnownToPossible();
                 }
             }
+            if (tok2->strAt(1) == "." && tok2->next()->originalName() != "->") {
+                if (settings->inconclusive) {
+                    std::list<ValueFlow::Value>::iterator it;
+                    for (it = values.begin(); it != values.end(); ++it) {
+                        it->inconclusive = true;
+                        it->changeKnownToPossible();
+                    }
+                } else {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by member function");
+                    return false;
+                }
+            }
         }
 
         // Lambda function
@@ -1688,6 +1701,99 @@ static bool valueFlowForward(Token * const               startToken,
         }
     }
     return true;
+}
+
+static bool isStdMoveOrStdForwarded(Token * tok, ValueFlow::Value::MoveKind * moveKind, Token ** varTok = nullptr)
+{
+    if (tok->str() != "std")
+        return false;
+    bool isMovedOrForwarded = false;
+    ValueFlow::Value::MoveKind kind = ValueFlow::Value::MovedVariable;
+    Token * variableToken = nullptr;
+    if (Token::Match(tok, "std :: move ( %var% )")) {
+        variableToken = tok->tokAt(4);
+        isMovedOrForwarded = true;
+        kind = ValueFlow::Value::MovedVariable;
+    } else if (Token::simpleMatch(tok, "std :: forward <")) {
+        Token * leftAngle = tok->tokAt(3);
+        Token * rightAngle = leftAngle->link();
+        if (Token::Match(rightAngle, "> ( %var% )")) {
+            variableToken = rightAngle->tokAt(2);
+            isMovedOrForwarded = true;
+            kind = ValueFlow::Value::ForwardedVariable;
+        }
+    }
+    if (!isMovedOrForwarded)
+        return false;
+    if (variableToken->strAt(2) == ".") // Only partially moved
+        return false;
+
+    if (moveKind != nullptr)
+        *moveKind = kind;
+    if (varTok != nullptr)
+        *varTok = variableToken;
+    return true;
+}
+
+static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+{
+    if (!tokenlist->isCPP() || settings->standards.cpp < Standards::CPP11)
+        return;
+    const std::size_t functions = symboldatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symboldatabase->functionScopes[i];
+        if (!scope)
+            continue;
+        const Token * start = scope->classStart;
+        if (scope->function) {
+            const Token * memberInitializationTok = scope->function->constructorMemberInitialization();
+            if (memberInitializationTok)
+                start = memberInitializationTok;
+        }
+
+        for (Token* tok = const_cast<Token*>(start); tok != scope->classEnd; tok = tok->next()) {
+            Token * varTok;
+            ValueFlow::Value::MoveKind moveKind;
+            if (!isStdMoveOrStdForwarded(tok, &moveKind, &varTok))
+                continue;
+            // x is not MOVED after assignment if code is:  x = ... std::move(x) .. ;
+            const Token *parent = tok->astParent();
+            while (parent && parent->str() != "=" && parent->str() != "return")
+                parent = parent->astParent();
+            if (parent && parent->str() == "return") // MOVED in return statement
+                continue;
+            if (parent && parent->astOperand1()->str() == varTok->str())
+                continue;
+            const unsigned int varid = varTok->varId();
+            const Variable *var = varTok->variable();
+            if (!var)
+                continue;
+            const Token * const endOfVarScope = var->typeStartToken()->scope()->classEnd;
+
+            ValueFlow::Value value;
+            value.valueType = ValueFlow::Value::MOVED;
+            value.moveKind = moveKind;
+            value.setKnown();
+            std::list<ValueFlow::Value> values;
+            values.push_back(value);
+
+            valueFlowForward(varTok->next(), endOfVarScope, var, varid, values, false, tokenlist, errorLogger, settings);
+        }
+    }
+}
+
+static const Token * nextAfterAstRightmostLeaf(Token const * tok)
+{
+    const Token * rightmostLeaf = tok;
+    if (!rightmostLeaf || !rightmostLeaf->astOperand1())
+        return nullptr;
+    do {
+        if (rightmostLeaf->astOperand2())
+            rightmostLeaf = rightmostLeaf->astOperand2();
+        else
+            rightmostLeaf = rightmostLeaf->astOperand1();
+    } while (rightmostLeaf->astOperand1());
+    return rightmostLeaf->next();
 }
 
 static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
@@ -1725,15 +1831,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             }
 
             // Skip RHS
-            const Token *nextExpression = tok->astOperand2();
-            for (;;) {
-                if (nextExpression->astOperand2())
-                    nextExpression = nextExpression->astOperand2();
-                else if (nextExpression->isUnaryPreOp())
-                    nextExpression = nextExpression->astOperand1();
-                else break;
-            }
-            nextExpression = nextExpression->next();
+            const Token * nextExpression = nextAfterAstRightmostLeaf(tok);
 
             valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, varid, values, constValue, tokenlist, errorLogger, settings);
         }
@@ -2623,6 +2721,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowOppositeCondition(symboldatabase, settings);
     valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
+    valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);

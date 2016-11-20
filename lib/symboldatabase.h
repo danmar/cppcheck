@@ -857,6 +857,12 @@ public:
 
     static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
+    /**
+     * @return token to ":" if the function is a constructor
+     * and it contains member initialization otherwise a nullptr is returned
+     */
+    const Token * constructorMemberInitialization() const;
+
 private:
     bool isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const;
 
