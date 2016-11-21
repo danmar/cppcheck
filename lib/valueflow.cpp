@@ -1800,8 +1800,15 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
 {
     const std::size_t functions = symboldatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
+        std::set<unsigned int> aliased;
         const Scope * scope = symboldatabase->functionScopes[i];
         for (Token* tok = const_cast<Token*>(scope->classStart); tok != scope->classEnd; tok = tok->next()) {
+            // Alias
+            if (tok->str() == "&" && !tok->astOperand2() && tok->astOperand1()) {
+                aliased.insert(tok->astOperand1()->varId());
+                continue;
+            }
+
             // Assignment
             if ((tok->str() != "=") || (tok->astParent()))
                 continue;
@@ -1810,6 +1817,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (!tok->astOperand1() || !tok->astOperand1()->varId())
                 continue;
             const unsigned int varid = tok->astOperand1()->varId();
+            if (aliased.find(varid) != aliased.end())
+                continue;
             const Variable *var = tok->astOperand1()->variable();
             if (!var || (!var->isLocal() && !var->isArgument()))
                 continue;

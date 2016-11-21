@@ -1342,6 +1342,17 @@ private:
                "  }\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        // alias
+        code = "void f() {\n" // #7778
+               "  int x = 0;\n"
+               "  int *p = &x;\n"
+               "  x = 3;\n"
+               "  *p = 2;\n"
+               "  a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 6U, 2));
     }
 
     void valueFlowAfterCondition() {
