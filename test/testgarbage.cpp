@@ -66,7 +66,6 @@ private:
         TEST_CASE(garbageCode16);
         TEST_CASE(garbageCode17);
         TEST_CASE(garbageCode18);
-        TEST_CASE(garbageCode19);
         TEST_CASE(garbageCode20);
         TEST_CASE(garbageCode21);
         TEST_CASE(garbageCode22);
@@ -80,7 +79,7 @@ private:
         TEST_CASE(garbageCode31); // #6539
         TEST_CASE(garbageCode33); // #6613
         TEST_CASE(garbageCode34); // #6626
-        TEST_CASE(garbageCode35); // #2599, #2604
+        TEST_CASE(garbageCode35); // #2604
         TEST_CASE(garbageCode36); // #6334
         TEST_CASE(garbageCode37); // #5166
         TEST_CASE(garbageCode38); // #6666
@@ -94,7 +93,6 @@ private:
         TEST_CASE(garbageCode47); // #6706
         TEST_CASE(garbageCode48); // #6712
         TEST_CASE(garbageCode49); // #6715
-        TEST_CASE(garbageCode50); // #6718
         TEST_CASE(garbageCode51); // #6719
         TEST_CASE(garbageCode53); // #6721
         TEST_CASE(garbageCode54); // #6722
@@ -211,13 +209,10 @@ private:
         TEST_CASE(garbageCode174); // #7356
         TEST_CASE(garbageCode175);
         TEST_CASE(garbageCode176); // #7527
-        TEST_CASE(garbageCode177); // #7321
-        TEST_CASE(garbageCode180);
         TEST_CASE(garbageCode181);
         TEST_CASE(garbageCode182); // #4195
         TEST_CASE(garbageCode183); // #7505
         TEST_CASE(garbageCode184); // #7699
-        TEST_CASE(garbageCode185); // #7816
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -452,11 +447,6 @@ private:
         ASSERT_THROW(checkCode("switch(){case}"), InternalError);
     }
 
-    void garbageCode19() {
-        // ticket #3512 - Don't crash on garbage code
-        ASSERT_EQUALS("p = const", checkCode("1 *p = const"));
-    }
-
     void garbageCode20() {
         // #3953 (valgrind errors on garbage code)
         ASSERT_EQUALS("void f ( 0 * ) ;", checkCode("void f ( 0 * ) ;"));
@@ -560,9 +550,6 @@ private:
     }
 
     void garbageCode35() {
-        // ticket #2599 segmentation fault
-        checkCode("sizeof");
-
         // ticket #2604 segmentation fault
         checkCode("sizeof <= A");
     }
@@ -624,10 +611,6 @@ private:
 
     void garbageCode49() { // #6715
         checkCode(" ( ( ) ) { } ( { ( __builtin_va_arg_pack ( ) ) ; } ) { ( int { ( ) ( ( ) ) } ( ) { } ( ) ) += ( ) }");
-    }
-
-    void garbageCode50() { // #6718
-        checkCode(" enum struct");
     }
 
     void garbageCode51() { // #6719
@@ -1404,14 +1387,6 @@ private:
         checkCode("class t { { struct } enum class f : unsigned { q } b ; operator= ( T ) { switch ( b ) { case f::q: } } { assert ( b ) ; } } { ; & ( t ) ( f::t ) ; } ;");
     }
 
-    void garbageCode177() { // #7321
-        checkCode("{(){(())}}r&const");
-    }
-
-    void garbageCode180() {
-        checkCode("int");
-    }
-
     void garbageCode181() {
         checkCode("int test() { int +; }");
     }
@@ -1430,10 +1405,6 @@ private:
                   "    NSArray* pScreens = [NSScreen screens];\n"
                   "    return pScreens ? [pScreens count] : 1;\n"
                   "}");
-    }
-
-    void garbageCode185() { // #7816
-        checkCode("__attribute__((destructor)) void");
     }
 
     void syntaxErrorFirstToken() {
@@ -1476,6 +1447,14 @@ private:
         ASSERT_THROW(checkCode(" ( * const ( size_t ) ; foo )"), InternalError); // #6135
         ASSERT_THROW(checkCode("({ (); strcat(strcat(() ()) ()) })"), InternalError); // #6686
         ASSERT_THROW(checkCode("%: return ; ()"), InternalError); // #3441
+        ASSERT_THROW(checkCode("__attribute__((destructor)) void"), InternalError); // #7816
+        ASSERT_THROW(checkCode("1 *p = const"), InternalError); // #3512
+        ASSERT_THROW(checkCode("sizeof"), InternalError); // #2599
+        ASSERT_THROW(checkCode(" enum struct"), InternalError); // #6718
+        ASSERT_THROW(checkCode("{(){(())}}r&const"), InternalError); // #7321
+        ASSERT_THROW(checkCode("int"), InternalError);
+        ASSERT_THROW(checkCode("struct A :\n"), InternalError); // #2591
+        ASSERT_THROW(checkCode("{} const const\n"), InternalError); // #2637
 
         // ASSERT_THROW(  , InternalError)
     }

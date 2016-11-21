@@ -8037,7 +8037,8 @@ const Token * Tokenizer::findGarbageCode() const
         return list.back();
     if (list.back()->str() == ")" && !Token::Match(list.back()->link()->previous(), "%name% ("))
         return list.back();
-
+    if (Token::Match(list.back(), "void|char|short|int|long|float|double|const|volatile|static|inline|struct|class|enum|union|template|sizeof|break|continue|typedef"))
+        return list.back();
 
     return nullptr;
 }
@@ -8445,12 +8446,9 @@ void Tokenizer::simplifyAttribute()
                 if (!tok->next()->link()->next())
                     syntaxError(tok);
 
-                if (tok->next()->link()->next()->str() == "void")  {
-                    // __attribute__((destructor)) void func() {}
-                    if (!tok->next()->link()->next()->next())
-                        syntaxError(tok);
+                if (tok->next()->link()->next()->str() == "void") // __attribute__((destructor)) void func() {}
                     tok->next()->link()->next()->next()->isAttributeDestructor(true);
-                } else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1) && tok->previous()->link()->previous()) // void func() __attribute__((destructor));
+                else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1) && tok->previous()->link()->previous()) // void func() __attribute__((destructor));
                     tok->previous()->link()->previous()->isAttributeDestructor(true);
                 else // void __attribute__((destructor)) func() {}
                     tok->next()->link()->next()->isAttributeDestructor(true);

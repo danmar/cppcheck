@@ -214,8 +214,6 @@ private:
         TEST_CASE(symboldatabase12); // ticket #2547
         TEST_CASE(symboldatabase13); // ticket #2577
         TEST_CASE(symboldatabase14); // ticket #2589
-        TEST_CASE(symboldatabase15); // ticket #2591
-        TEST_CASE(symboldatabase16); // ticket #2637
         TEST_CASE(symboldatabase17); // ticket #2657
         TEST_CASE(symboldatabase19); // ticket #2991 (segmentation fault)
         TEST_CASE(symboldatabase20); // ticket #3013 (segmentation fault)
@@ -2162,18 +2160,6 @@ private:
     void symboldatabase14() {
         // ticket #2589 - segmentation fault
         ASSERT_THROW(check("struct B : A\n"), InternalError);
-    }
-
-    void symboldatabase15() {
-        // ticket #2591 - segmentation fault
-        ASSERT_THROW(check("struct A :\n"), InternalError);
-    }
-
-    void symboldatabase16() {
-        // ticket #2637 - segmentation fault
-        check("{} const const\n");
-
-        ASSERT_EQUALS("", errout.str());
     }
 
     void symboldatabase17() {
