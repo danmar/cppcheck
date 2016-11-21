@@ -217,6 +217,7 @@ private:
         TEST_CASE(garbageCode182); // #4195
         TEST_CASE(garbageCode183); // #7505
         TEST_CASE(garbageCode184); // #7699
+        TEST_CASE(garbageCode185); // #7816
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1429,6 +1430,10 @@ private:
                   "    NSArray* pScreens = [NSScreen screens];\n"
                   "    return pScreens ? [pScreens count] : 1;\n"
                   "}");
+    }
+
+    void garbageCode185() { // #7816
+        checkCode("__attribute__((destructor)) void");
     }
 
     void syntaxErrorFirstToken() {
