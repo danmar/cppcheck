@@ -1157,6 +1157,10 @@ public:
         return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
     }
 
+    bool isFloat() const {
+        return (type == ValueType::Type::FLOAT || type == ValueType::Type::DOUBLE);
+    }
+
     bool fromLibraryType(const std::string &typestr, const Settings *settings);
 
     std::string str() const;

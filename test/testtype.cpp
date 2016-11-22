@@ -39,6 +39,7 @@ private:
         TEST_CASE(signConversion);
         TEST_CASE(longCastAssign);
         TEST_CASE(longCastReturn);
+        TEST_CASE(checkFloatToIntegerOverflow);
     }
 
     void check(const char code[], Settings* settings = 0) {
@@ -210,6 +211,33 @@ private:
               "  return x * y;\n"
               "}\n", &settings);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // This function ensure that test works with different compilers. Floats can
+    // be stringified differently.
+    std::string removeFloat(std::string errmsg) {
+        std::string::size_type pos1 = errmsg.find("float (");
+        std::string::size_type pos2 = errmsg.find(") conversion");
+        if (pos1 == std::string::npos || pos2 == std::string::npos || pos1 > pos2)
+            return errmsg;
+        return errmsg.substr(0,pos1+7) + errmsg.substr(pos2);
+    }
+
+    void checkFloatToIntegerOverflow() {
+        check("void f(void) {\n"
+              "  return (int)1E100;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () conversion overflow.\n", removeFloat(errout.str()));
+
+        check("void f(void) {\n"
+              "  return (int)-1E100;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () conversion overflow.\n", removeFloat(errout.str()));
+
+        check("void f(void) {\n"
+              "  return (short)1E6;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () conversion overflow.\n", removeFloat(errout.str()));
     }
 };
 

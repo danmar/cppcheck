@@ -302,3 +302,72 @@ void CheckType::longCastReturnError(const Token *tok)
                 "int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n"
                 "int result is returned as long value. If the return value is long to avoid loss of information, then there is loss of information. To avoid loss of information you must cast a calculation operand to long, for example 'return a*b;' => 'return (long)a*b'.", CWE197, false);
 }
+
+//---------------------------------------------------------------------------
+// Checking for float to integer overflow
+//---------------------------------------------------------------------------
+
+void CheckType::checkFloatToIntegerOverflow()
+{
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->str() != "(")
+                continue;
+
+            if (!tok->astOperand1() || tok->astOperand2())
+                continue;
+
+            // is result integer?
+            const ValueType *vt = tok->valueType();
+            if (!vt || !vt->isIntegral())
+                continue;
+
+            // is value float?
+            const ValueType *vt1 = tok->astOperand1()->valueType();
+            if (!vt1 || !vt1->isFloat())
+                continue;
+
+            const Token *op1 = tok->astOperand1();
+            for (std::list<ValueFlow::Value>::const_iterator it = op1->values.begin(); it != op1->values.end(); ++it) {
+                if (it->valueType != ValueFlow::Value::FLOAT)
+                    continue;
+                if (it->inconclusive && !_settings->inconclusive)
+                    continue;
+                if (it->floatValue > ~0ULL)
+                    floatToIntegerOverflowError(tok, *it);
+                else if ((-it->floatValue) > (1ULL<<62))
+                    floatToIntegerOverflowError(tok, *it);
+                else if (_settings->platformType != Settings::Unspecified) {
+                    int bits = 0;
+                    if (vt->type == ValueType::Type::CHAR)
+                        bits = _settings->char_bit;
+                    else if (vt->type == ValueType::Type::SHORT)
+                        bits = _settings->short_bit;
+                    else if (vt->type == ValueType::Type::INT)
+                        bits = _settings->int_bit;
+                    else if (vt->type == ValueType::Type::LONG)
+                        bits = _settings->long_bit;
+                    else if (vt->type == ValueType::Type::LONGLONG)
+                        bits = _settings->long_long_bit;
+                    else
+                        continue;
+                    if (bits < 64 && it->floatValue > (1 << (bits - 1)))
+                        floatToIntegerOverflowError(tok, *it);
+                }
+            }
+        }
+    }
+}
+
+void CheckType::floatToIntegerOverflowError(const Token *tok, const ValueFlow::Value &value)
+{
+    std::ostringstream errmsg;
+    errmsg << "Undefined behaviour: float (" << value.floatValue << ") conversion overflow.";
+    reportError(tok,
+                Severity::error,
+                "floatConversionOverflow",
+                errmsg.str(), CWE190, value.inconclusive);
+}
