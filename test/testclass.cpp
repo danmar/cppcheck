@@ -5907,10 +5907,12 @@ private:
     }
 
     void initializerListUsage() {
-        checkInitializationListUsage("class Fred {\n"
+        checkInitializationListUsage("enum Enum { C = 0 };\n"
+                                     "class Fred {\n"
                                      "    int a;\n"  // No message for builtin types: No performance gain
                                      "    int* b;\n" // No message for pointers: No performance gain
-                                     "    Fred() { a = 0; b = 0; }\n"
+                                     "    Enum c;\n" // No message for enums: No performance gain
+                                     "    Fred() { a = 0; b = 0; c = C; }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
 
