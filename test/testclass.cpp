@@ -1893,6 +1893,7 @@ private:
         errout.str("");
 
         settings0.inconclusive = inconclusive;
+        settings0.addEnabled("warning");
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
