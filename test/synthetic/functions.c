@@ -10,8 +10,8 @@ void par_dependant(int x, int y) {
       TestData[y] = 0; // BUG
 }
 void call(int x) {
-  function_par_not_dependant(1000);
-  function_par_dependant(0, 1000);
+  par_not_dependant(1000);
+  par_dependant(0, 1000);
 }
 
 int getLargeIndex() { return 1000; }
