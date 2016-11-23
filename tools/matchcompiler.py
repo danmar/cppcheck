@@ -382,7 +382,7 @@ class MatchCompiler:
                 patternNumber) + '(' + tok + more_args + ')' + line[start_pos + end_pos:]
         )
 
-    def _replaceTokenMatch(self, line):
+    def _replaceTokenMatch(self, line, linenr, filename):
         while True:
             is_simplematch = False
             pos1 = line.find('Token::Match(')
@@ -409,7 +409,7 @@ class MatchCompiler:
             res = re.match(r'\s*"((?:.|\\")*?)"\s*$', raw_pattern)
             if res is None:
                 if self._showSkipped:
-                    print("[SKIPPING] match pattern: " + raw_pattern)
+                    print(filename +":" + str(linenr) +" skipping match pattern:" + raw_pattern)
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
@@ -515,7 +515,7 @@ class MatchCompiler:
                 findMatchNumber) + '(' + tok + more_args + ') ' + line[start_pos + end_pos:]
         )
 
-    def _replaceTokenFindMatch(self, line):
+    def _replaceTokenFindMatch(self, line, linenr, filename):
         pos1 = 0
         while True:
             is_findsimplematch = True
@@ -565,7 +565,7 @@ class MatchCompiler:
             res = re.match(r'\s*"((?:.|\\")*?)"\s*$', pattern)
             if res is None:
                 if self._showSkipped:
-                    print("[SKIPPING] findmatch pattern: " + pattern)
+                    print(filename +":" + str(linenr) +" skipping findmatch pattern:" + pattern)
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
@@ -617,12 +617,14 @@ class MatchCompiler:
         # header += '#include <iostream>\n'
         code = ''
 
+        linenr = 0
         for line in srclines:
+            linenr += 1
             # Compile Token::Match and Token::simpleMatch
-            line = self._replaceTokenMatch(line)
+            line = self._replaceTokenMatch(line, linenr, srcname)
 
             # Compile Token::findsimplematch
-            line = self._replaceTokenFindMatch(line)
+            line = self._replaceTokenFindMatch(line, linenr, srcname)
 
             # Cache plain C-strings in C++ strings
             line = self._replaceCStrings(line)
