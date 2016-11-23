@@ -4626,6 +4626,16 @@ private:
         // #6383 - unsigned type
         check("const int x = (unsigned int)(-1) >> 2;");
         ASSERT_EQUALS("", errout.str());
+
+        // #7814 - UB happening in valueflowcode when it tried to compute shifts.
+        check("int shift1() { return 1 >> -1 ;}\n"
+              "int shift2() { return 1 << -1 ;}\n"
+              "int shift3() { return -1 >> 1 ;}\n"
+              "int shift4() { return -1 << 1 ;}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting by a negative value is undefined behaviour\n"
+                      "[test.cpp:2]: (error) Shifting by a negative value is undefined behaviour\n"
+                      "[test.cpp:3]: (error) Shifting a negative value is undefined behaviour\n"
+                      "[test.cpp:4]: (error) Shifting a negative value is undefined behaviour\n", errout.str());
     }
 
     void incompleteArrayFill() {

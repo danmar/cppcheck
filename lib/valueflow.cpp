@@ -2097,10 +2097,19 @@ static void execute(const Token *expr,
             *result = result1 / result2;
         else if (expr->str() == "%")
             *result = result1 % result2;
-        else if (expr->str() == "<<")
-            *result = result1 << result2;
-        else if (expr->str() == ">>")
-            *result = result1 >> result2;
+        else if (expr->str() == "<<")  {
+            if (result2 < 0 || result1 < 0)  { // dont perform UB
+                *error= true;
+            } else {
+                *result = result1 << result2;
+            }
+        } else if (expr->str() == ">>") {
+            if (result2 < 0) { // don't perform UB
+                *error=true;
+            } else {
+                *result = result1 >> result2;
+            }
+        }
     }
 
     else if (expr->str() == "&&") {
