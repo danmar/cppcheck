@@ -1775,6 +1775,20 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #7783  FP knownConditionTrueFalse on assert(0 && "message")
+        check("void foo(int x) {\n"
+              "    if (x<0)\n"
+              "    {\n"
+              "        assert(0 && \"bla\");\n"
+              "        ASSERT(0 && \"bla\");\n"
+              "        assert_foo(0 && \"bla\");\n"
+              "        ASSERT_FOO(0 && \"bla\");\n"
+              "        assert((int)(0==0));\n"
+              "        assert((int)(0==0) && \"bla\");\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #7750 warn about number and char literals in boolean expressions
         check("void f() {\n"
               "  if('a'){}\n"

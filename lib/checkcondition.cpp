@@ -991,8 +991,16 @@ void CheckCondition::alwaysTrueFalse()
 
             // Don't warn in assertions. Condition is often 'always true' by intention.
             // If platform,defines,etc cause 'always false' then that is not dangerous neither.
-            const std::string str = tok->astParent() && tok->astParent()->previous() ? tok->astParent()->previous()->str() : "";
-            if (str.find("assert")!=std::string::npos || str.find("ASSERT")!=std::string::npos)
+            bool assertFound = false;
+            for (const Token * tok2 = tok->astParent(); tok2 ; tok2 = tok2->astParent()) { // move backwards and try to find "assert"
+                if (tok2->str() == "(" && tok2->astOperand2()) {
+                    const std::string& str = tok2->previous()->str();
+                    if ((str.find("assert")!=std::string::npos || str.find("ASSERT")!=std::string::npos))
+                        assertFound = true;
+                    break;
+                }
+            }
+            if (assertFound)
                 continue;
 
             // Don't warn when there are expanded macros..
