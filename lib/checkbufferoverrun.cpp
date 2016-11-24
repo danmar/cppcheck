@@ -987,10 +987,12 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
                     for (; tok4; tok4 = tok4->next()) {
                         const Token* tok3 = tok2->tokAt(2);
                         if (tok4->varId() == tok3->varId()) {
-                            if (!Token::Match(tok4, "%varid% [ %any% ] = 0 ;", tok3->varId())) {
+                            const Token *eq = nullptr;
+                            if (Token::Match(tok4, "%varid% [", tok3->varId()) && Token::simpleMatch(tok4->linkAt(1), "] ="))
+                                eq = tok4->linkAt(1)->next();
+                            const Token *rhs = eq ? eq->astOperand2() : nullptr;
+                            if (!(rhs && rhs->hasKnownIntValue() && rhs->getValue(0)))
                                 terminateStrncpyError(tok2, tok3->str());
-                            }
-
                             break;
                         }
                     }

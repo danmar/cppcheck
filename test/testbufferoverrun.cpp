@@ -3431,6 +3431,20 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'baz' may not be null-terminated after the call to strncpy().\n", errout.str());
 
+        check("void foo ( char *bar ) {\n"
+              "    char baz[100];\n"
+              "    strncpy(baz, bar, 100);\n"
+              "    baz[99] = '\\0';\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo ( char *bar ) {\n"
+              "    char baz[100];\n"
+              "    strncpy(baz, bar, 100);\n"
+              "    baz[x+1] = '\\0';\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // Test with invalid code that there is no segfault
         check("char baz[100];\n"
               "strncpy(baz, \"var\", 100)\n");
