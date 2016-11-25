@@ -354,7 +354,7 @@ void CheckType::checkFloatToIntegerOverflow()
                         bits = _settings->long_long_bit;
                     else
                         continue;
-                    if (bits < 64 && it->floatValue > (1 << (bits - 1)))
+                    if (bits < 64 && it->floatValue > (1ULL << (bits - 1)))
                         floatToIntegerOverflowError(tok, *it);
                 }
             }
