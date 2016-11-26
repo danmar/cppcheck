@@ -105,9 +105,7 @@ class MatchCompiler:
         elif tok == '%str%':
             return '(tok->tokType()==Token::eString)'
         elif tok == '%type%':
-            return (
-                '(tok->isName() && tok->varId()==0U && !tok->isKeyword())'
-            )
+            return '(tok->isName() && tok->varId()==0U && !tok->isKeyword())'
         elif tok == '%name%':
             return 'tok->isName()'
         elif tok == '%var%':
@@ -163,15 +161,12 @@ class MatchCompiler:
             elif tok.find('|') > 0:
                 tokens2 = tok.split('|')
                 logicalOp = None
-                neg = None
                 if "" in tokens2:
                     ret += '    if (tok && ('
                     logicalOp = ' || '
-                    neg = ''
                 else:
                     ret += '    if (!tok || !('
                     logicalOp = ' || '
-                    neg = ''
                 first = True
                 for tok2 in tokens2:
                     if tok2 == '':
@@ -179,7 +174,7 @@ class MatchCompiler:
                     if not first:
                         ret += logicalOp
                     first = False
-                    ret += neg + self._compileCmd(tok2)
+                    ret += self._compileCmd(tok2)
 
                 if "" in tokens2:
                     ret += '))\n'
