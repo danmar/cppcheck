@@ -492,10 +492,12 @@ public:
     }
     void varId(unsigned int id) {
         _varId = id;
-        if (id != 0)
+        if (id != 0) {
             _tokType = eVariable;
-        else
+            isStandardType(false);
+        } else {
             update_property_info();
+        }
     }
 
     /**

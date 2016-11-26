@@ -830,6 +830,12 @@ private:
         // Change back to standard type
         tok.str("int");
         ASSERT_EQUALS(true, tok.isStandardType());
+
+        // token can't be both type and variable
+        tok.str("abc");
+        tok.isStandardType(true);
+        tok.varId(123);
+        ASSERT_EQUALS(false, tok.isStandardType());
     }
 
     void updateProperties() const {
