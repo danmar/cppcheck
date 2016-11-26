@@ -160,13 +160,11 @@ class MatchCompiler:
             # a|b|c
             elif tok.find('|') > 0:
                 tokens2 = tok.split('|')
-                logicalOp = None
+                logicalOp = ' || '
                 if "" in tokens2:
                     ret += '    if (tok && ('
-                    logicalOp = ' || '
                 else:
                     ret += '    if (!tok || !('
-                    logicalOp = ' || '
                 first = True
                 for tok2 in tokens2:
                     if tok2 == '':
@@ -176,12 +174,11 @@ class MatchCompiler:
                     first = False
                     ret += self._compileCmd(tok2)
 
+                ret += '))\n'
                 if "" in tokens2:
-                    ret += '))\n'
                     ret += '        tok = tok->next();\n'
                     gotoNextToken = ''
                 else:
-                    ret += '))\n'
                     ret += '        ' + returnStatement
 
             # !!a
@@ -261,16 +258,10 @@ class MatchCompiler:
         pos = 0
         inString = False
         while pos != pos1:
-            if inString:
-                if line[pos] == '\\':
-                    pos += 1
-                elif line[pos] == '"':
-                    inString = False
-            else:
-                if line[pos] == '\\':
-                    pos += 1
-                elif line[pos] == '"':
-                    inString = True
+            if line[pos] == '\\':
+                pos += 1
+            elif line[pos] == '"':
+                inString = not inString
             pos += 1
         return inString
 
@@ -526,8 +517,8 @@ class MatchCompiler:
                 break
 
             assert(len(res) >= 3 or len(res) < 6)
-            # assert that Token::find(simple)match has either 2, 3 or
-            # four arguments
+            # assert that Token::find(simple)match has either 2, 3 or 4
+            # arguments
 
             g0 = res[0]
             tok = res[1]
@@ -549,13 +540,10 @@ class MatchCompiler:
             # Token *findmatch(const Token *tok, const char pattern[], const
             # Token *end, unsigned int varId = 0);
             endToken = None
-            if is_findsimplematch is True and len(res) == 4:
+            if ((is_findsimplematch and len(res) == 4) or
+               (not is_findsimplematch and varId and (len(res) == 5)) or
+               (not is_findsimplematch and varId is None and len(res) == 4)):
                 endToken = res[3]
-            elif is_findsimplematch is False:
-                if varId and len(res) == 5:
-                    endToken = res[3]
-                elif varId is None and len(res) == 4:
-                    endToken = res[3]
 
             res = re.match(r'\s*"((?:.|\\")*?)"\s*$', pattern)
             if res is None:
