@@ -245,7 +245,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         }
 
         // Skip '=', '?', ':'
-        if (tok && Token::Match(tok, "=|?|:"))
+        if (Token::Match(tok, "=|?|:"))
             tok = tok->next();
         if (!tok)
             return 0;

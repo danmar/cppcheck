@@ -985,7 +985,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     if (_tokenizer->isCPP() && Token::Match(vartok->next(), "<<|>>")) {
         // Is this calculation done in rhs?
         const Token *tok = vartok;
-        while (tok && Token::Match(tok, "%name%|.|::"))
+        while (Token::Match(tok, "%name%|.|::"))
             tok = tok->previous();
         if (Token::Match(tok, "[;{}]"))
             return false;

@@ -240,7 +240,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 tok = tok->tokAt(3);
 
             // skip over qualification
-            while (tok && Token::Match(tok, "%type% ::"))
+            while (Token::Match(tok, "%type% ::"))
                 tok = tok->tokAt(2);
         }
 

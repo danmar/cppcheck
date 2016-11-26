@@ -1723,7 +1723,7 @@ bool CheckIO::ArgumentInfo::isArrayOrPointer() const
         return variableInfo->isArrayOrPointer();
     } else {
         const Token *tok = typeToken;
-        while (tok && Token::Match(tok, "const|struct"))
+        while (Token::Match(tok, "const|struct"))
             tok = tok->next();
         if (tok && tok->strAt(1) == "*")
             return true;
