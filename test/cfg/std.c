@@ -85,7 +85,7 @@ void nullpointer(int value)
     // cppcheck-suppress nullPointer
     ferror(0);
     // cppcheck-suppress nullPointer
-    ftell(0);
+    (void)ftell(0);
     // cppcheck-suppress nullPointer
     puts(0);
     // cppcheck-suppress nullPointer
@@ -343,7 +343,7 @@ void uninit_ftell(void)
 {
     FILE *fp;
     // cppcheck-suppress uninitvar
-    ftell(fp);
+    (void)ftell(fp);
 }
 
 void uninit_puts(void)
