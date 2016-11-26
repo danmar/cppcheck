@@ -78,7 +78,7 @@ void nullpointer(int value)
     // cppcheck-suppress nullPointer
     feof(0);
     // cppcheck-suppress nullPointer
-    fgetc(0);
+    (void)fgetc(0);
     // cppcheck-suppress nullPointer
     fclose(0);
     // cppcheck-suppress ignoredReturnValue
@@ -265,7 +265,7 @@ void uninit_fgetc(void)
 {
     FILE *fp;
     // cppcheck-suppress uninitvar
-    fgetc(fp);
+    (void)fgetc(fp);
 }
 
 void uninit_fgetpos(void)
