@@ -1151,7 +1151,7 @@ private:
                   "}");
     }
 
-    void garbageCode152() { // happened in travis, originaly from llvm clang code
+    void garbageCode152() { // happened in travis, originally from llvm clang code
         const char* code = "template <bool foo = std::value &&>\n"
                            "static std::string foo(char *Bla) {\n"
                            "    while (Bla[1] && Bla[1] != ',') }\n";

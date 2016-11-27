@@ -158,7 +158,7 @@ private:
               "void f2() { f1(-4); }");
         ASSERT_EQUALS("", errout.str());
 
-        // Dont warn for + and -
+        // Don't warn for + and -
         check("void f1(int x) {"
               "  a = x + 5U;\n"
               "}\n"

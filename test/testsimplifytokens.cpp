@@ -385,7 +385,7 @@ private:
 
         ASSERT_EQUALS("if ( true )", tok("if ((unsigned char)1)")); // #4164
         ASSERT_EQUALS("f ( 200 )", tok("f((unsigned char)200)"));
-        ASSERT_EQUALS("f ( ( char ) 1234 )", tok("f((char)1234)")); // dont simplify downcast
+        ASSERT_EQUALS("f ( ( char ) 1234 )", tok("f((char)1234)")); // don't simplify downcast
     }
 
 

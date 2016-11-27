@@ -1463,7 +1463,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // #6313 - false postive: opposite conditions in nested if blocks when condition changed
+        // #6313 - false positive: opposite conditions in nested if blocks when condition changed
         check("void Foo::Bar() {\n"
               "   if(var){\n"
               "      --var;\n"
@@ -1829,7 +1829,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'x+100<x'. Condition is always false unless there is overflow, and overflow is UB.\n", errout.str());
 
-        check("void f(signed int x) {\n" // unsigned overflow => dont warn
+        check("void f(signed int x) {\n" // unsigned overflow => don't warn
               "    assert(x + 100U < x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());

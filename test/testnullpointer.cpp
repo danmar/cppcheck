@@ -2134,7 +2134,7 @@ private:
               "}", true);
         ASSERT_EQUALS("", errout.str());
 
-        // #5811 false postive: (error) Null pointer dereference
+        // #5811 false positive: (error) Null pointer dereference
         check("using namespace std;\n"
               "std::string itoip(int ip) {\n"
               "    stringstream out;\n"

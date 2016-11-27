@@ -656,7 +656,7 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 37));
 
-        code = "void f(int x) {\n" // loop condition, x is assigned inside loop => dont use condition
+        code = "void f(int x) {\n" // loop condition, x is assigned inside loop => don't use condition
                "  a = x;\n"  // don't assume that x can be 37
                "  while (x != 37) { x++; }\n"
                "}";
@@ -682,7 +682,7 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 76));
 
-        code = "void f(int x) {\n"  // conditions inside loop, x is assigned inside do-while => dont use condition
+        code = "void f(int x) {\n"  // conditions inside loop, x is assigned inside do-while => don't use condition
                "    a = x;\n"
                "    do {\n"
                "        if (x!=76) { x=do_something(); }\n"
@@ -690,7 +690,7 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 76));
 
-        code = "void f(X x) {\n"  // conditions inside loop, x is assigned inside do-while => dont use condition
+        code = "void f(X x) {\n"  // conditions inside loop, x is assigned inside do-while => don't use condition
                "    a = x;\n"
                "    for (i=1;i<=count;i++) {\n"
                "        BUGON(x==0)\n"
@@ -1319,9 +1319,9 @@ private:
                "      ;\n" // <- no break
                "    }\n"
                "  }\n"
-               "  a = x;\n" // <- x cant be 0
+               "  a = x;\n" // <- x can't be 0
                "}\n";
-        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0)); // x cant be 0 at line 9
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0)); // x can't be 0 at line 9
 
         code = "void f(const int *buf) {\n"
                "  int x = 0;\n"
@@ -1777,7 +1777,7 @@ private:
                "  for(int i = 0; i < 20; i++)\n"
                "    n = (int)(i < 10 || abs(negWander) < abs(negTravel));\n"
                "}";
-        testValueOfX(code,0,0); // <- dont hang
+        testValueOfX(code,0,0); // <- don't hang
 
         // conditional code in loop
         code = "void f(int mask) {\n" // #6000

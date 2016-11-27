@@ -678,7 +678,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 // - Nest the round bracket under the square bracket.
                 // - Nest what follows the lambda (if anything) with the lambda opening [
                 // - Compile the content of the lambda function as separate tree (this is done later)
-                // this must be consistant with isLambdaCaptureList
+                // this must be consistent with isLambdaCaptureList
                 Token* squareBracket = tok;
                 Token* roundBracket = squareBracket->link()->next();
                 Token* curlyBracket = roundBracket->link()->next();

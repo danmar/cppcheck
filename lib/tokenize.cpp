@@ -2678,7 +2678,7 @@ void Tokenizer::setVarIdPass1()
                     const Token *tok3 = tok2->next();
                     if (!tok3->isStandardType() && tok3->str() != "void" && !Token::Match(tok3, "struct|union|class %type%") && tok3->str() != "." && !Token::Match(tok2->link()->previous(), "[&*]")) {
                         if (!scopeStack.top().isExecutable) {
-                            // Detecting initializations with () in non-executable scope is hard and often impossible to be done safely. Thus, only treat code as a variable that definitly is one.
+                            // Detecting initializations with () in non-executable scope is hard and often impossible to be done safely. Thus, only treat code as a variable that definitely is one.
                             decl = false;
                             bool rhs = false;
                             for (; tok3; tok3 = tok3->nextArgumentBeforeCreateLinks2()) {
@@ -7299,7 +7299,7 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
             }
         }
 
-        // don't warn for nonglobal functions (class methods, functions hidden in namespaces) since they cant be configured yet
+        // don't warn for nonglobal functions (class methods, functions hidden in namespaces) since they can't be configured yet
         // FIXME: when methods and namespaces can be configured properly, remove the "globalFunction" check
         if (globalFunction) {
             reportError(endScopeToken->previous(),

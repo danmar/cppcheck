@@ -100,7 +100,7 @@ public:
 
     /**
     * Tries to load a library and prints warning/error messages
-    * @return false, if an error occured (except unknown XML elements)
+    * @return false, if an error occurred (except unknown XML elements)
     */
     static bool tryLoadLibrary(Library& destination, const char* basepath, const char* filename);
 
