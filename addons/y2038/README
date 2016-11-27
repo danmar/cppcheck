@@ -58,7 +58,7 @@ _TIME_BITS is defined equal to 64 by user code when it wants 64-bit time
 support from the GNU glibc. Code which does not define _TIME_BITS equal to 64
 (or defines it to something else than 64) runs a risk of not being Y2038-proof.
 
-__USE_TIME_BITS64 is defined by the GNU glibc when it actualy provides 64-bit
+__USE_TIME_BITS64 is defined by the GNU glibc when it actually provides 64-bit
 time support. When this is defined, then all glibc symbols, barring bugs, are
 Y2038-proof (but your code might have its own Y2038 bugs, if it handles signed
 32-bit Unix epoch values).

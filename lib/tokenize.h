@@ -750,7 +750,7 @@ public:
      * Token list: stores all tokens.
      */
     TokenList list;
-    // Implement tokens() as a wrapper for convinience when using the TokenList
+    // Implement tokens() as a wrapper for convenience when using the TokenList
     const Token* tokens() const {
         return list.front();
     }

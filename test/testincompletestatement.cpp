@@ -119,7 +119,7 @@ private:
     }
 
     void test6() {
-        // dont crash
+        // don't crash
         check("void f() {\n"
               "  1 == (two + three);\n"
               "  2 != (two + three);\n"

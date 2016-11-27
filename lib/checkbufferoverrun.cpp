@@ -193,7 +193,7 @@ void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &w
 
 void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const Token *index, const MathLib::bigint indexvalue)
 {
-    // The severity is portability instead of error since this ub doesnt
+    // The severity is portability instead of error since this ub doesn't
     // cause bad behaviour on most implementations. people create out
     // of bounds pointers by intention.
     const std::string expr(tok ? tok->expressionString() : std::string(""));

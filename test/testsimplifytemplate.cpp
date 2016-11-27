@@ -444,7 +444,7 @@ private:
         // #3130
         const char code2[] = "template <int n> struct vec {\n"
                              "  vec() {}\n"
-                             "  vec(const vec<n-1>& v) {}\n" // <- never used dont instantiate
+                             "  vec(const vec<n-1>& v) {}\n" // <- never used don't instantiate
                              "};\n"
                              "\n"
                              "vec<4> v;";

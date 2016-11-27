@@ -6046,7 +6046,7 @@ private:
     }
 
     void testEvaluationOrderMacro() {
-        // macro, dont bailout (#7233)
+        // macro, don't bailout (#7233)
         check((std::string("void f(int x) {\n"
                            "  return x + ") + Preprocessor::macroChar + "x++;\n"
                "}").c_str(), "test.c");

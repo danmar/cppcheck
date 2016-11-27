@@ -114,7 +114,7 @@ void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *a
     if (!prevVar)
         return;
 
-    // Variable declared in inner scope in assert => dont warn
+    // Variable declared in inner scope in assert => don't warn
     if (assertionScope != prevVar->scope()) {
         const Scope *s = prevVar->scope();
         while (s && s != assertionScope)

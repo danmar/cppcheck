@@ -7965,7 +7965,7 @@ private:
                       testAst("QT_WA({},{x=0;});" // don't hang
                               "QT_WA({x=1;},{x=2;});"));
         ASSERT_EQUALS("xMACROtypeT=value1=,{({=",
-                      testAst("x = { MACRO( { .type=T, .value=1 } ) }")); // dont hang: MACRO({..})
+                      testAst("x = { MACRO( { .type=T, .value=1 } ) }")); // don't hang: MACRO({..})
 
 
         // function pointer
