@@ -6,6 +6,7 @@
 # 4. Optional: tweak FTPSERVER and FTPPATH in this script below.
 # 5. Run the daca2 script:  python daca2.py FOLDER
 
+import argparse
 import subprocess
 import sys
 import shutil
@@ -176,63 +177,52 @@ def scanarchive(filepath, jobs, cpulimit):
     results.write('\n')
     results.close()
 
-FOLDER = None
-JOBS = '-j1'
-REV = None
-SKIP = []
-WORKDIR = os.path.expanduser('~/daca2')
-CPULIMIT = None
-for arg in sys.argv[1:]:
-    if arg[:6] == '--rev=':
-        REV = arg[6:]
-    elif arg[:2] == '-j':
-        JOBS = arg
-    elif arg.startswith('--skip='):
-        SKIP.append(arg[7:])
-    elif arg.startswith('--workdir='):
-        WORKDIR = arg[10:]
-    elif arg.startswith('--cpulimit='):
-        CPULIMIT = arg[11:]
-    else:
-        FOLDER = arg
+parser = argparse.ArgumentParser(description='Checks debian source code')
+parser.add_argument('folder', metavar='FOLDER')
+parser.add_argument('--rev')
+parser.add_argument('--workdir', default='~/daca2')
+parser.add_argument('-j', '--jobs', default='-j1')
+parser.add_argument('--skip', default=[], action='append')
+parser.add_argument('--cpulimit')
 
-if not FOLDER:
-    print('no folder given')
+args = parser.parse_args()
+
+workdir = os.path.expanduser(args.workdir)
+if not os.path.isdir(workdir):
+    print('workdir \'' + workdir + '\' is not a folder')
     sys.exit(1)
 
-if not os.path.isdir(WORKDIR):
-    print('workdir \'' + WORKDIR + '\' is not a folder')
-    sys.exit(1)
+workdir = os.path.join(workdir, args.folder)
+if not os.path.isdir(workdir):
+    os.makedirs(workdir)
 
-archives = getpackages(FOLDER)
+print(workdir)
+
+archives = getpackages(args.folder)
 if len(archives) == 0:
     print('failed to load packages')
     sys.exit(1)
 
-if not WORKDIR.endswith('/'):
-    WORKDIR = WORKDIR + '/'
-
-print('~/daca2/' + FOLDER)
-if not os.path.isdir(WORKDIR + FOLDER):
-    os.makedirs(WORKDIR + FOLDER)
-os.chdir(WORKDIR + FOLDER)
+if not os.path.isdir(workdir):
+    os.makedirs(workdir)
+os.chdir(workdir)
 
 try:
     results = open('results.txt', 'wt')
     results.write('STARTDATE ' + str(datetime.date.today()) + '\n')
     results.write('STARTTIME ' + strfCurrTime('%H:%M:%S') + '\n')
-    if REV:
-        results.write('GIT-REVISION ' + REV + '\n')
+    if args.rev:
+        results.write('GIT-REVISION ' + args.rev + '\n')
     results.write('\n')
     results.close()
 
     for archive in archives:
-        if len(SKIP) > 0:
+        if len(args.skip) > 0:
             a = archive[:archive.rfind('/')]
             a = a[a.rfind('/')+1:]
-            if a in SKIP:
+            if a in args.skip:
                 continue
-        scanarchive(archive, JOBS, CPULIMIT)
+        scanarchive(archive, args.jobs, args.cpulimit)
 
     results = open('results.txt', 'at')
     results.write('DATE ' + str(datetime.date.today()) + '\n')
