@@ -1350,22 +1350,22 @@ private:
 
         if (db) {
             const Token *f = Token::findsimplematch(tokenizer.tokens(), "f1");
-            ASSERT(f && f->function() && f->function()->isStaticLocal());
+            ASSERT(f && f->function() && f->function()->isStaticLocal() && f->function()->retDef->str() == "void");
 
             f = Token::findsimplematch(tokenizer.tokens(), "f2");
-            ASSERT(f && f->function() && !f->function()->isStaticLocal());
+            ASSERT(f && f->function() && !f->function()->isStaticLocal() && f->function()->retDef->str() == "void");
 
             f = Token::findsimplematch(tokenizer.tokens(), "f3");
-            ASSERT(f && f->function() && f->function()->isExtern());
+            ASSERT(f && f->function() && f->function()->isExtern() && f->function()->retDef->str() == "void");
 
             f = Token::findsimplematch(tokenizer.tokens(), "f4");
-            ASSERT(f && f->function() && !f->function()->isExtern());
+            ASSERT(f && f->function() && !f->function()->isExtern() && f->function()->retDef->str() == "void");
 
             f = Token::findsimplematch(tokenizer.tokens(), "f5");
-            ASSERT(f && f->function() && f->function()->isExtern());
+            ASSERT(f && f->function() && f->function()->isExtern() && f->function()->retDef->str() == "void");
 
             f = Token::findsimplematch(tokenizer.tokens(), "f6");
-            ASSERT(f && f->function() && !f->function()->isExtern());
+            ASSERT(f && f->function() && !f->function()->isExtern() && f->function()->retDef->str() == "void");
         }
     }
 

@@ -1899,7 +1899,7 @@ Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok,
         tok1 = tok1->previous();
 
     // find the return type
-    while (tok1 && Token::Match(tok1->next(), "static|extern|const")) {
+    while (Token::Match(tok1, "static|extern|const")) {
         if (tok1->str() == "static")
             function.isStaticLocal(true);
         else if (tok1->str() == "extern")
