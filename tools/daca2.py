@@ -14,6 +14,7 @@ import glob
 import os
 import datetime
 import time
+import logging
 
 DEBIAN = ['ftp://ftp.se.debian.org/debian/',
           'ftp://ftp.debian.org/debian/']
@@ -88,21 +89,17 @@ def removeAllExceptResults():
             try:
                 if os.path.isdir(filename):
                     shutil.rmtree(filename, onerror=handleRemoveReadonly)
-                elif filename != 'results.txt':
+                elif filename != RESULTS_FILENAME:
                     os.remove(filename)
                 break
             except WindowsError as err:
                 time.sleep(30)
                 if count == 0:
-                    f = open('results.txt','at')
-                    f.write('Failed to cleanup ' + filename + ': ' + str(err))
-                    f.close()
+                    logging.error('Failed to cleanup {}: {}'.format(filename, err))
             except OSError as err:
                 time.sleep(30)
                 if count == 0:
-                    f = open('results.txt','at')
-                    f.write('Failed to cleanup ' + filename + ': ' + str(err))
-                    f.close()
+                    logging.error('Failed to cleanup {}: {}'.format(filename, err))
 
 
 def removeLargeFiles(path):
@@ -123,26 +120,20 @@ def removeLargeFiles(path):
                 try:
                     os.remove(g)
                 except OSError as err:
-                    f = open('results.txt','at')
-                    f.write('Failed to remove ' + g + ': ' + str(err))
-                    f.close()
+                    logging.error('Failed to remove {}: {}'.format(g, err))
 
 def strfCurrTime(fmt):
     return datetime.time.strftime(datetime.datetime.now().time(), fmt)
 
 def scanarchive(filepath, jobs, cpulimit):
-    # remove all files/folders except results.txt
+    # remove all files/folders except RESULTS_FILENAME
     removeAllExceptResults()
 
-    results = open('results.txt', 'at')
-    results.write(DEBIAN[0] + filepath + '\n')
-    results.close()
+    logging.info(DEBIAN[0] + filepath)
 
     if not wget(filepath):
         if not wget(filepath):
-            results = open('results.txt', 'at')
-            results.write('wget failed\n')
-            results.close()
+            logging.error('wget failed at {}', filepath)
             return
 
     filename = filepath[filepath.rfind('/') + 1:]
@@ -168,14 +159,12 @@ def scanarchive(filepath, jobs, cpulimit):
     p = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
 
-    results = open('results.txt', 'at')
     if p.returncode == 0:
-        results.write(comm[1] + strfCurrTime('[%H:%M]') + '\n')
+        logging.info(comm[1] + strfCurrTime('[%H:%M]'))
     elif comm[0].find('cppcheck: error: could not find or open any of the paths given.') < 0:
-        results.write(comm[1] + strfCurrTime('[%H:%M]') + '\n')
-        results.write('Exit code is not zero! Crash?\n')
-    results.write('\n')
-    results.close()
+        logging.error(comm[1] + strfCurrTime('[%H:%M]'))
+        logging.error('Exit code is not zero! Crash?\n')
+
 
 parser = argparse.ArgumentParser(description='Checks debian source code')
 parser.add_argument('folder', metavar='FOLDER')
@@ -196,11 +185,19 @@ workdir = os.path.join(workdir, args.folder)
 if not os.path.isdir(workdir):
     os.makedirs(workdir)
 
+RESULTS_FILENAME = 'results.txt'
+RESULTS_FILE = os.path.join(workdir, RESULTS_FILENAME)
+
+logging.basicConfig(
+        filename=RESULTS_FILE,
+        level=logging.INFO,
+        format='%(message)s')
+
 print(workdir)
 
 archives = getpackages(args.folder)
 if len(archives) == 0:
-    print('failed to load packages')
+    logging.critical('failed to load packages')
     sys.exit(1)
 
 if not os.path.isdir(workdir):
@@ -208,13 +205,11 @@ if not os.path.isdir(workdir):
 os.chdir(workdir)
 
 try:
-    results = open('results.txt', 'wt')
-    results.write('STARTDATE ' + str(datetime.date.today()) + '\n')
-    results.write('STARTTIME ' + strfCurrTime('%H:%M:%S') + '\n')
+    logging.info('STARTDATE ' + str(datetime.date.today()))
+    logging.info('STARTTIME ' + strfCurrTime('%H:%M:%S'))
     if args.rev:
-        results.write('GIT-REVISION ' + args.rev + '\n')
-    results.write('\n')
-    results.close()
+        logging.info('GIT-REVISION ' + args.rev + '\n')
+    logging.info('')
 
     for archive in archives:
         if len(args.skip) > 0:
@@ -224,13 +219,11 @@ try:
                 continue
         scanarchive(archive, args.jobs, args.cpulimit)
 
-    results = open('results.txt', 'at')
-    results.write('DATE ' + str(datetime.date.today()) + '\n')
-    results.write('TIME ' + strfCurrTime('%H:%M:%S') + '\n')
-    results.close()
+    logging.info('DATE {}'.format(datetime.date.today()))
+    logging.info('TIME {}'.format(strfCurrTime('%H:%M:%S')))
 
 except EOFError:
     pass
 
-# remove all files/folders except results.txt
+# remove all files/folders except RESULTS_FILENAME
 removeAllExceptResults()
