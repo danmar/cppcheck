@@ -3898,7 +3898,8 @@ void Tokenizer::dump(std::ostream &out) const
     out << "  </tokenlist>" << std::endl;
 
     _symbolDatabase->printXml(out);
-    list.front()->printValueFlow(true, out);
+    if (list.front())
+        list.front()->printValueFlow(true, out);
 }
 
 void Tokenizer::removeMacrosInGlobalScope()
