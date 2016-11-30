@@ -8095,7 +8095,7 @@ private:
         // Preprocess file..
         Preprocessor preprocessor(settings0);
         std::list<std::string> configurations;
-        std::string filedata = "";
+        std::string filedata;
         std::istringstream fin(raw_code);
         preprocessor.preprocess(fin, filedata, configurations, emptyString, settings0.includePaths);
         const std::string code = preprocessor.getcode(filedata, emptyString, emptyString);

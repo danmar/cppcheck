@@ -73,7 +73,7 @@ std::string Path::simplifyPath(std::string originalPath)
         originalPath = originalPath.erase(0, toErase);
     }
 
-    std::string subPath = "";
+    std::string subPath;
     std::vector<std::string> pathParts;
     for (std::size_t i = 0; i < originalPath.size(); ++i) {
         if (originalPath[i] == '/' || originalPath[i] == '\\') {

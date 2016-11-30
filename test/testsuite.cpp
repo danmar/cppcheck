@@ -278,7 +278,7 @@ void TestFixture::processOptions(const options& args)
 std::size_t TestFixture::runTests(const options& args)
 {
     std::string classname(args.which_test());
-    std::string testname("");
+    std::string testname;
     if (classname.find("::") != std::string::npos) {
         testname = classname.substr(classname.find("::") + 2);
         classname.erase(classname.find("::"));
