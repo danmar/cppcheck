@@ -69,7 +69,7 @@ std::string Path::simplifyPath(std::string originalPath)
 
     // Remove ./, .//, ./// etc. at the beginning
     while (originalPath.compare(0,2,"./") == 0) { // remove "./././"
-        size_t toErase = originalPath.find_first_not_of("/",2);
+        const size_t toErase = originalPath.find_first_not_of('/', 2);
         originalPath = originalPath.erase(0, toErase);
     }
 

@@ -66,7 +66,7 @@ void ImportProject::FileSettings::setDefines(std::string defs)
 {
     while (defs.find(";%(") != std::string::npos) {
         std::string::size_type pos1 = defs.find(";%(");
-        std::string::size_type pos2 = defs.find(";", pos1+1);
+        std::string::size_type pos2 = defs.find(';', pos1+1);
         defs.erase(pos1, pos2 == std::string::npos ? pos2 : (pos2-pos1));
     }
     while (defs.find(";;") != std::string::npos)
@@ -96,7 +96,7 @@ static bool simplifyPathWithVariables(std::string &s, const std::map<std::string
     std::set<std::string> expanded;
     std::string::size_type start = 0;
     while ((start = s.find("$(")) != std::string::npos) {
-        std::string::size_type end = s.find(")",start);
+        std::string::size_type end = s.find(')',start);
         if (end == std::string::npos)
             break;
         const std::string &var = s.substr(start+2,end-start-2);
@@ -187,7 +187,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
                 const std::string command = values["command"];
                 const std::string directory = Path::fromNativeSeparators(values["directory"]);
                 std::string::size_type pos = 0;
-                while (std::string::npos != (pos = command.find(" ",pos))) {
+                while (std::string::npos != (pos = command.find(' ',pos))) {
                     pos++;
                     if (pos >= command.size())
                         break;
@@ -236,7 +236,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
             for (const tinyxml2::XMLElement *importGroup = node->FirstChildElement(); importGroup; importGroup = importGroup->NextSiblingElement()) {
                 if (std::strcmp(importGroup->Name(), "Import") == 0 && importGroup->Attribute("Project")) {
                     std::string loadprj = importGroup->Attribute("Project");
-                    if (loadprj.find("$") == std::string::npos) {
+                    if (loadprj.find('$') == std::string::npos) {
                         loadprj = Path::getPathFromFilename(filename) + loadprj;
                     }
                     loadVisualStudioProperties(loadprj, variables, includePath, additionalIncludeDirectories);
@@ -294,7 +294,7 @@ void ImportProject::importSln(std::istream &istr, const std::string &path)
         const std::string::size_type pos = line.find(".vcxproj");
         if (pos == std::string::npos)
             continue;
-        const std::string::size_type pos1 = line.rfind("\"",pos);
+        const std::string::size_type pos1 = line.rfind('\"',pos);
         if (pos == std::string::npos)
             continue;
         const std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
@@ -383,7 +383,7 @@ static std::list<std::string> toStringList(const std::string &s)
     std::list<std::string> ret;
     std::string::size_type pos1 = 0;
     std::string::size_type pos2;
-    while ((pos2 = s.find(";",pos1)) != std::string::npos) {
+    while ((pos2 = s.find(';',pos1)) != std::string::npos) {
         ret.push_back(s.substr(pos1, pos2-pos1));
         pos1 = pos2 + 1;
         if (pos1 >= s.size())

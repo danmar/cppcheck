@@ -79,7 +79,7 @@ std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir
     std::string filename = Path::fromNativeSeparators(buildDir);
     if (filename.back() != '/')
         filename += '/';
-    const std::string::size_type pos = sourcefile.rfind("/");
+    const std::string::size_type pos = sourcefile.rfind('/');
     if (pos == std::string::npos)
         filename += sourcefile;
     else

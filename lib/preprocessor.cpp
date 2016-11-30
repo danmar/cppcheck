@@ -257,10 +257,10 @@ static std::string cfg(const std::vector<std::string> &configs, const std::strin
 static bool isUndefined(const std::string &cfg, const std::set<std::string> &undefined)
 {
     for (std::string::size_type pos1 = 0U; pos1 < cfg.size();) {
-        const std::string::size_type pos2 = cfg.find(";",pos1);
+        const std::string::size_type pos2 = cfg.find(';',pos1);
         const std::string def = (pos2 == std::string::npos) ? cfg.substr(pos1) : cfg.substr(pos1, pos2 - pos1);
 
-        std::string::size_type eq = def.find("=");
+        std::string::size_type eq = def.find('=');
         if (eq == std::string::npos && undefined.find(def) != undefined.end())
             return true;
         if (eq != std::string::npos && undefined.find(def.substr(0,eq)) != undefined.end() && def.substr(eq) != "=0")
@@ -449,9 +449,9 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 static void splitcfg(const std::string &cfg, std::list<std::string> &defines, const std::string &defaultValue)
 {
     for (std::string::size_type defineStartPos = 0U; defineStartPos < cfg.size();) {
-        const std::string::size_type defineEndPos = cfg.find(";", defineStartPos);
+        const std::string::size_type defineEndPos = cfg.find(';', defineStartPos);
         std::string def = (defineEndPos == std::string::npos) ? cfg.substr(defineStartPos) : cfg.substr(defineStartPos, defineEndPos - defineStartPos);
-        if (!defaultValue.empty() && def.find("=") == std::string::npos)
+        if (!defaultValue.empty() && def.find('=') == std::string::npos)
             def += '=' + defaultValue;
         defines.push_back(def);
         if (defineEndPos == std::string::npos)
@@ -480,7 +480,7 @@ static simplecpp::DUI createDUI(const Settings &_settings, const std::string &cf
         if (s[pos] == ' ') {
             s[pos] = '=';
         } else {
-            s[s.find(")")+1] = '=';
+            s[s.find(')')+1] = '=';
         }
         dui.defines.push_back(s);
     }
