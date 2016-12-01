@@ -743,9 +743,9 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
     std::list<std::string> defines;
     splitcfg(cfg, defines, std::string());
     for (std::list<std::string>::const_iterator defineIt = defines.begin(); defineIt != defines.end(); ++defineIt) {
-        if (defineIt->find("=") != std::string::npos)
+        if (defineIt->find('=') != std::string::npos)
             continue;
-        const std::string macroName(defineIt->substr(0, defineIt->find("(")));
+        const std::string macroName(defineIt->substr(0, defineIt->find('(')));
         for (std::list<simplecpp::MacroUsage>::const_iterator usageIt = macroUsageList.begin(); usageIt != macroUsageList.end(); ++usageIt) {
             const simplecpp::MacroUsage &mu = *usageIt;
             if (mu.macroName != macroName)
