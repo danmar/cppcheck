@@ -215,6 +215,7 @@ private:
         TEST_CASE(getConfigs7e);
         TEST_CASE(getConfigs8);  // #if A==1  => cfg: A=1
         TEST_CASE(getConfigs10); // #5139
+        TEST_CASE(getConfigsError);
 
         TEST_CASE(getConfigsD1);
 
@@ -2064,6 +2065,20 @@ private:
                                 "#if 0\n"
                                 "#endif";
         ASSERT_EQUALS("\n", getConfigsStr(filedata));
+    }
+
+    void getConfigsError() {
+        const char filedata1[] = "#ifndef X\n"
+                                 "#error \"!X\"\n"
+                                 "#endif\n";
+        ASSERT_EQUALS("\nX\n", getConfigsStr(filedata1));
+
+        const char filedata2[] = "#ifdef X\n"
+                                 "#ifndef Y\n"
+                                 "#error \"!Y\"\n"
+                                 "#endif\n"
+                                 "#endif\n";
+        ASSERT_EQUALS("\nX\nX;Y\n", getConfigsStr(filedata2));
     }
 
     void getConfigsD1() {

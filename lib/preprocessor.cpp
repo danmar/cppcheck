@@ -352,6 +352,12 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 configs_if.pop_back();
             if (!configs_ifndef.empty())
                 configs_ifndef.pop_back();
+        } else if (cmdtok->str == "error") {
+            if (!configs_ifndef.empty() && !configs_ifndef.back().empty()) {
+                std::vector<std::string> configs(configs_if);
+                configs.push_back(configs_ifndef.back());
+                ret.insert(cfg(configs, userDefines));
+            }
         } else if (cmdtok->str == "define" && sameline(tok, cmdtok->next) && cmdtok->next->name) {
             defined.insert(cmdtok->next->str);
         }
