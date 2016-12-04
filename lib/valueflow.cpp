@@ -381,7 +381,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     result.condition = value1->condition ? value1->condition : value2->condition;
                     result.inconclusive = value1->inconclusive | value2->inconclusive;
                     result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
-                    result.varvalue = (result.varId == value1->varId) ? value1->intvalue : value2->intvalue;
+                    result.varvalue = (result.varId == value1->varId) ? value1->varvalue : value2->varvalue;
                     if (value1->valueKind == value2->valueKind)
                         result.valueKind = value1->valueKind;
                     const float floatValue1 = value1->isIntValue() ? value1->intvalue : value1->floatValue;

@@ -408,6 +408,12 @@ private:
         ASSERT_EQUALS(4, values.front().intvalue);
         ASSERT_EQUALS(16, values.back().intvalue);
 
+        code  = "void f(int x) {\n"
+                "    if (x == 3) {}\n"
+                "    a = x * (1 - x - 1);\n"
+                "}";
+        ASSERT_EQUALS(-9, valueOfTok(code, "*").intvalue);
+
         // addition of different variables with known values
         code = "int f(int x) {\n"
                "  int a = 1;\n"
