@@ -4297,6 +4297,12 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
         setValueType(parent, vt, cpp, defaultSignedness, settings);
         return;
     }
+    if (Token::Match(parent->previous(), "%name% (") && parent->astOperand1() == tok && valuetype.pointer > 0U) {
+        ValueType vt(valuetype);
+        vt.pointer -= 1U;
+        setValueType(parent, vt, cpp, defaultSignedness, settings);
+        return;
+    }
     if (parent->str() == "*" && !parent->astOperand2() && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
         vt.pointer -= 1U;
