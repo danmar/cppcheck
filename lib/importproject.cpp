@@ -333,14 +333,22 @@ static std::list<std::string> toStringList(const std::string &s)
     return ret;
 }
 
-static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string,std::string> *variables, std::string *includePath)
+static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string,std::string> *variables, std::string *includePath, bool *useOfMfc)
 {
+    if (useOfMfc) {
+        for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
+            if (std::strcmp(e->Name(), "UseOfMfc") == 0)
+                *useOfMfc = true;
+        }
+    }
+
     if (node->Attribute("Label") && std::strcmp(node->Attribute("Label"),"UserMacros")==0) {
         for (const tinyxml2::XMLElement *propertyGroup = node->FirstChildElement(); propertyGroup; propertyGroup = propertyGroup->NextSiblingElement()) {
             const std::string name(propertyGroup->Name());
             const char *text = propertyGroup->GetText();
             (*variables)[name] = std::string(text ? text : "");
         }
+
     } else if (!node->Attribute("Label")) {
         for (const tinyxml2::XMLElement *propertyGroup = node->FirstChildElement(); propertyGroup; propertyGroup = propertyGroup->NextSiblingElement()) {
             if (std::strcmp(propertyGroup->Name(), "IncludePath") != 0)
@@ -380,7 +388,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
                 }
             }
         } else if (std::strcmp(node->Name(),"PropertyGroup")==0) {
-            importPropertyGroup(node, variables, includePath);
+            importPropertyGroup(node, variables, includePath, nullptr);
         } else if (std::strcmp(node->Name(),"ItemDefinitionGroup")==0) {
             itemDefinitionGroupList.push_back(ItemDefinitionGroup(node, additionalIncludeDirectories));
         }
@@ -421,10 +429,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         } else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
             itemDefinitionGroupList.push_back(ItemDefinitionGroup(node, additionalIncludeDirectories));
         } else if (std::strcmp(node->Name(), "PropertyGroup") == 0) {
-            for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                if (std::strcmp(e->Name(), "UseOfMfc") == 0)
-                    useOfMfc = true;
-            }
+            importPropertyGroup(node, &variables, &includePath, &useOfMfc);
         } else if (std::strcmp(node->Name(), "ImportGroup") == 0) {
             if (node->Attribute("Label") && std::strcmp(node->Attribute("Label"), "PropertySheets") == 0) {
                 for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
@@ -435,8 +440,6 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     }
                 }
             }
-        } else if (std::strcmp(node->Name(),"PropertyGroup")==0) {
-            importPropertyGroup(node, &variables, &includePath);
         }
     }
 
