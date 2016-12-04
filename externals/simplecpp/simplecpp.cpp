@@ -466,7 +466,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
             }
             if (multiline || startsWith(lastLine(10),"# ")) {
                 pos = 0;
-                while ((pos = currentToken.find("\n",pos)) != std::string::npos) {
+                while ((pos = currentToken.find('\n',pos)) != std::string::npos) {
                     currentToken.erase(pos,1);
                     ++multiline;
                 }
@@ -1646,7 +1646,7 @@ std::string simplifyPath(std::string path) {
     // remove "xyz/../"
     pos = 1U;
     while ((pos = path.find("/../", pos)) != std::string::npos) {
-        const std::string::size_type pos1 = path.rfind("/", pos - 1U);
+        const std::string::size_type pos1 = path.rfind('/', pos - 1U);
         if (pos1 == std::string::npos)
             pos++;
         else {
@@ -1683,7 +1683,7 @@ void simplifySizeof(simplecpp::TokenList &expr, const std::map<std::string, std:
         for (simplecpp::Token *typeToken = tok1; typeToken != tok2; typeToken = typeToken->next) {
             if ((typeToken->str == "unsigned" || typeToken->str == "signed") && typeToken->next->name)
                 continue;
-            if (typeToken->str == "*" && type.find("*") != std::string::npos)
+            if (typeToken->str == "*" && type.find('*') != std::string::npos)
                 continue;
             if (!type.empty())
                 type += ' ';
@@ -1931,8 +1931,8 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     std::map<TokenString, Macro> macros;
     for (std::list<std::string>::const_iterator it = dui.defines.begin(); it != dui.defines.end(); ++it) {
         const std::string &macrostr = *it;
-        const std::string::size_type eq = macrostr.find("=");
-        const std::string::size_type par = macrostr.find("(");
+        const std::string::size_type eq = macrostr.find('=');
+        const std::string::size_type par = macrostr.find('(');
         const std::string macroname = macrostr.substr(0, std::min(eq,par));
         if (dui.undefined.find(macroname) != dui.undefined.end())
             continue;
@@ -1978,6 +1978,17 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 if (rawtok)
                     rawtok = gotoNextLine(rawtok);
                 continue;
+            }
+
+            if (ifstates.size() <= 1U && (rawtok->str == ELIF || rawtok->str == ELSE || rawtok->str == ENDIF)) {
+                simplecpp::Output err(files);
+                err.type = Output::SYNTAX_ERROR;
+                err.location = rawtok->location;
+                err.msg = "#" + rawtok->str + " without #if";
+                if (outputList)
+                    outputList->push_back(err);
+                output.clear();
+                return;
             }
 
             if (ifstates.top() == TRUE && (rawtok->str == ERROR || rawtok->str == WARNING)) {
@@ -2170,8 +2181,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             } else if (rawtok->str == ELSE) {
                 ifstates.top() = (ifstates.top() == ELSE_IS_TRUE) ? TRUE : ALWAYS_FALSE;
             } else if (rawtok->str == ENDIF) {
-                if (ifstates.size() > 1U)
-                    ifstates.pop();
+                ifstates.pop();
             } else if (rawtok->str == UNDEF) {
                 if (ifstates.top() == TRUE) {
                     const Token *tok = rawtok->next;
