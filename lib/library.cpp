@@ -986,20 +986,20 @@ bool Library::isUseRetVal(const Token* ftok) const
             _useretval.find(getFunctionName(ftok)) != _useretval.end());
 }
 
-std::string Library::returnValue(const Token *ftok) const
+const std::string& Library::returnValue(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
-        return std::string();
+        return emptyString;
     std::map<std::string, std::string>::const_iterator it = _returnValue.find(getFunctionName(ftok));
-    return it != _returnValue.end() ? it->second : std::string();
+    return it != _returnValue.end() ? it->second : emptyString;
 }
 
-std::string Library::returnValueType(const Token *ftok) const
+const std::string& Library::returnValueType(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
-        return std::string();
+        return emptyString;
     std::map<std::string, std::string>::const_iterator it = _returnValueType.find(getFunctionName(ftok));
-    return it != _returnValueType.end() ? it->second : std::string();
+    return it != _returnValueType.end() ? it->second : emptyString;
 }
 
 int Library::returnValueContainer(const Token *ftok) const

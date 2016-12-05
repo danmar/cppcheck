@@ -125,13 +125,14 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens1)
     // directive list..
     directives.clear();
 
-    std::list<const simplecpp::TokenList *> list;
+    std::vector<const simplecpp::TokenList *> list;
+    list.reserve(1U + tokenlists.size());
     list.push_back(&tokens1);
     for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
         list.push_back(it->second);
     }
 
-    for (std::list<const simplecpp::TokenList *>::const_iterator it = list.begin(); it != list.end(); ++it) {
+    for (std::vector<const simplecpp::TokenList *>::const_iterator it = list.begin(); it != list.end(); ++it) {
         for (const simplecpp::Token *tok = (*it)->cfront(); tok; tok = tok ? tok->next : nullptr) {
             if ((tok->op != '#') || (tok->previous && tok->previous->location.line == tok->location.line))
                 continue;
@@ -557,9 +558,7 @@ void Preprocessor::setPlatformInfo(simplecpp::TokenList *tokens) const
 
 std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations)
 {
-    const std::string filename(files[0]);
-
-    const simplecpp::DUI dui = createDUI(_settings, cfg, filename);
+    const simplecpp::DUI dui = createDUI(_settings, cfg, files[0]);
 
     simplecpp::OutputList outputList;
     std::list<simplecpp::MacroUsage> macroUsage;
@@ -747,7 +746,7 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
 {
     bool ret = true;
     std::list<std::string> defines;
-    splitcfg(cfg, defines, std::string());
+    splitcfg(cfg, defines, emptyString);
     for (std::list<std::string>::const_iterator defineIt = defines.begin(); defineIt != defines.end(); ++defineIt) {
         if (defineIt->find('=') != std::string::npos)
             continue;
@@ -800,11 +799,9 @@ void Preprocessor::dump(std::ostream &out) const
     // Create a xml directive dump.
     // The idea is not that this will be readable for humans. It's a
     // data dump that 3rd party tools could load and get useful info from.
-    std::list<Directive>::const_iterator it;
-
     out << "  <directivelist>" << std::endl;
 
-    for (it = directives.begin(); it != directives.end(); ++it) {
+    for (std::list<Directive>::const_iterator it = directives.begin(); it != directives.end(); ++it) {
         out << "    <directive "
             << "file=\"" << it->file << "\" "
             << "linenr=\"" << it->linenr << "\" "

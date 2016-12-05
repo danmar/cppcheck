@@ -166,8 +166,8 @@ public:
 
     bool isUseRetVal(const Token* ftok) const;
 
-    std::string returnValue(const Token *ftok) const;
-    std::string returnValueType(const Token *ftok) const;
+    const std::string& returnValue(const Token *ftok) const;
+    const std::string& returnValueType(const Token *ftok) const;
     int returnValueContainer(const Token *ftok) const;
 
     bool isnoreturn(const Token *ftok) const;

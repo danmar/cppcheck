@@ -2567,7 +2567,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         const Function * const currentFunction = tok->function();
         if (!currentFunction) {
             // library function?
-            const std::string returnValue(settings->library.returnValue(tok));
+            const std::string& returnValue(settings->library.returnValue(tok));
             if (!returnValue.empty())
                 valueFlowLibraryFunction(tok->next(), returnValue, settings);
             continue;
