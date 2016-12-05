@@ -215,12 +215,12 @@ private:
 
     // This function ensure that test works with different compilers. Floats can
     // be stringified differently.
-    std::string removeFloat(std::string errmsg) {
-        std::string::size_type pos1 = errmsg.find("float (");
-        std::string::size_type pos2 = errmsg.find(") conversion");
+    std::string removeFloat(const std::string& msg) {
+        std::string::size_type pos1 = msg.find("float (");
+        std::string::size_type pos2 = msg.find(") conversion");
         if (pos1 == std::string::npos || pos2 == std::string::npos || pos1 > pos2)
-            return errmsg;
-        return errmsg.substr(0,pos1+7) + errmsg.substr(pos2);
+            return msg;
+        return msg.substr(0,pos1+7) + msg.substr(pos2);
     }
 
     void checkFloatToIntegerOverflow() {
