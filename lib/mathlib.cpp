@@ -524,7 +524,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
             return static_cast<bigint>(doubleval);
     }
 
-    if (str[0] == '\'' && str.size() >= 3U && str[str.size()-1U] == '\'') {
+    if (str[0] == '\'' && str.size() >= 3U && str.back() == '\'') {
         return characterLiteralToLongNumber(str.substr(1,str.size()-2));
     }
 

@@ -71,8 +71,8 @@ void ImportProject::FileSettings::setDefines(std::string defs)
     }
     while (defs.find(";;") != std::string::npos)
         defs.erase(defs.find(";;"),1);
-    if (!defs.empty() && defs[defs.size()-1U] == ';')
-        defs.erase(defs.size()-1U);
+    if (!defs.empty() && defs.back() == ';')
+        defs.pop_back();
     bool eq = false;
     for (std::size_t pos = 0; pos < defs.size(); ++pos) {
         if (defs[pos] == '(' || defs[pos] == '=')
@@ -124,14 +124,14 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
             continue;
         std::string s(Path::fromNativeSeparators(*it));
         if (s[0] == '/' || (s.size() > 1U && s.compare(1,2,":/") == 0)) {
-            if (s[s.size()-1U] != '/')
+            if (s.back() != '/')
                 s += '/';
             I.push_back(s);
             continue;
         }
 
-        if (s[s.size()-1U] == '/') // this is a temporary hack, simplifyPath can crash if path ends with '/'
-            s.erase(s.size() - 1U);
+        if (s.back() == '/') // this is a temporary hack, simplifyPath can crash if path ends with '/'
+            s.pop_back();
 
         if (s.find("$(")==std::string::npos) {
             s = Path::simplifyPath(basepath + s);
@@ -155,7 +155,7 @@ void ImportProject::import(const std::string &filename)
         importCompileCommands(fin);
     } else if (filename.find(".sln") != std::string::npos) {
         std::string path(Path::getPathFromFilename(Path::fromNativeSeparators(filename)));
-        if (!path.empty() && path[path.size()-1U] != '/')
+        if (!path.empty() && path.back() != '/')
             path += '/';
         importSln(fin,path);
     } else if (filename.find(".vcxproj") != std::string::npos) {

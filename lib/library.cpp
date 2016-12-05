@@ -87,7 +87,7 @@ Library::Error Library::load(const char exename[], const char path[])
         while (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND && !cfgfolders.empty()) {
             const std::string cfgfolder(cfgfolders.front());
             cfgfolders.pop_front();
-            const char *sep = (!cfgfolder.empty() && cfgfolder[cfgfolder.size()-1U]=='/' ? "" : "/");
+            const char *sep = (!cfgfolder.empty() && cfgfolder.back()=='/' ? "" : "/");
             const std::string filename(cfgfolder + sep + fullfilename);
             error = doc.LoadFile(filename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
