@@ -72,7 +72,7 @@ void ImportProject::FileSettings::setDefines(std::string defs)
     while (defs.find(";;") != std::string::npos)
         defs.erase(defs.find(";;"),1);
     if (!defs.empty() && defs.back() == ';')
-        defs.pop_back();
+        defs.erase(defs.size() - 1U); // TODO: Use std::string::pop_back() as soon as travis supports it
     bool eq = false;
     for (std::size_t pos = 0; pos < defs.size(); ++pos) {
         if (defs[pos] == '(' || defs[pos] == '=')
@@ -131,7 +131,7 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         }
 
         if (s.back() == '/') // this is a temporary hack, simplifyPath can crash if path ends with '/'
-            s.pop_back();
+            s.erase(s.size() - 1U); // TODO: Use std::string::pop_back() as soon as travis supports it
 
         if (s.find("$(")==std::string::npos) {
             s = Path::simplifyPath(basepath + s);
