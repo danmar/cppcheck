@@ -664,6 +664,7 @@ void CheckCondition::checkIncorrectLogicOperator()
     const bool printWarning = _settings->isEnabled("warning");
     if (!printWarning && !printStyle)
         return;
+    const bool printInconclusive = _settings->inconclusive;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -684,8 +685,8 @@ void CheckCondition::checkIncorrectLogicOperator()
             }
 
 
-            // 'A && (!A || B)' is equivalent with 'A && B'
-            // 'A || (!A && B)' is equivalent with 'A || B'
+            // 'A && (!A || B)' is equivalent to 'A && B'
+            // 'A || (!A && B)' is equivalent to 'A || B'
             if (printStyle &&
                 ((tok->str() == "||" && tok->astOperand2()->str() == "&&") ||
                  (tok->str() == "&&" && tok->astOperand2()->str() == "||"))) {
@@ -694,6 +695,10 @@ void CheckCondition::checkIncorrectLogicOperator()
                     std::string expr1(tok->astOperand1()->expressionString());
                     std::string expr2(tok->astOperand2()->astOperand1()->expressionString());
                     std::string expr3(tok->astOperand2()->astOperand2()->expressionString());
+                    // make copy for later because the original string might get overwritten
+                    const std::string expr1VerboseMsg = expr1;
+                    const std::string expr2VerboseMsg = expr2;
+                    const std::string expr3VerboseMsg = expr3;
 
                     if (expr1.length() + expr2.length() + expr3.length() > 50U) {
                         if (expr1[0] == '!' && expr2[0] != '!') {
@@ -710,7 +715,12 @@ void CheckCondition::checkIncorrectLogicOperator()
                     const std::string cond1 = expr1 + " " + tok->str() + " (" + expr2 + " " + tok->astOperand2()->str() + " " + expr3 + ")";
                     const std::string cond2 = expr1 + " " + tok->str() + " " + expr3;
 
-                    redundantConditionError(tok, tok2->expressionString() + ". '" + cond1 + "' is equivalent to '" + cond2 + "'", false);
+                    const std::string cond1VerboseMsg = expr1VerboseMsg + " " + tok->str() + " " + expr2VerboseMsg + " " + tok->astOperand2()->str() + " " + expr3VerboseMsg;
+                    const std::string cond2VerboseMsg = expr1VerboseMsg + " " + tok->str() + " " + expr3VerboseMsg;
+					// for the --verbose message, transform the actual condition and print it
+                    const std::string msg = tok2->expressionString() + ". '" + cond1 + "' is equivalent to '" + cond2 + "'\n"
+                                            "The condition '" + cond1VerboseMsg + "' is equivalent to '" + cond2VerboseMsg + "'.";
+                    redundantConditionError(tok, msg, false);
                     continue;
                 }
             }
@@ -739,7 +749,7 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (!parseComparison(comp2, &not2, &op2, &value2, &expr2, &inconclusive))
                 continue;
 
-            if (inconclusive && !_settings->inconclusive)
+            if (inconclusive && !printInconclusive)
                 continue;
 
             if (isSameExpression(_tokenizer->isCPP(), true, comp1, comp2, _settings->library.functionpure))
