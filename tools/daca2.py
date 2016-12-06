@@ -160,7 +160,7 @@ def scanarchive(filepath, jobs, cpulimit):
         cmd = 'cpulimit --limit=' + cpulimit
     else:
         cmd = 'nice --adjustment=1000'
-    cmd = cmd + ' ../cppcheck-O2 -D__GCC__ --enable=style --error-exitcode=0 --exception-handling=stderr ' + jobs + ' .'
+    cmd = cmd + ' ../cppcheck-O2 -D__GCC__ --enable=style --inconclusive --error-exitcode=0 --exception-handling=stderr ' + jobs + ' .'
     cmds = cmd.split()
     cmds.append('--template={callstack}: ({severity}) {message} [{id}]')
 
