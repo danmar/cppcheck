@@ -156,13 +156,15 @@ def scanarchive(filepath, jobs, cpulimit):
 
     print(strfCurrTime('[%H:%M] cppcheck ') + filename)
 
-    cmd = '../cppcheck-O2 -D__GCC__ --enable=style --error-exitcode=0 --exception-handling=stderr ' + jobs + ' .'
     if cpulimit:
-        cmd = 'cpulimit --limit=' + cpulimit + ' ' + cmd
+        cmd = 'cpulimit --limit=' + cpulimit
     else:
-        cmd = 'nice --adjustment=1000 ' + cmd
+        cmd = 'nice --adjustment=1000'
+    cmd = cmd + ' ../cppcheck-O2 -D__GCC__ --enable=style --error-exitcode=0 --exception-handling=stderr ' + jobs + ' .'
+    cmds = cmd.split()
+    cmds.append('--template={callstack}: ({severity}) {message} [{id}]')
 
-    p = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
 
     results = open('results.txt', 'at')
