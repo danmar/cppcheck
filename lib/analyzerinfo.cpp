@@ -21,7 +21,6 @@
 #include <tinyxml2.h>
 #include <sstream>
 
-AnalyzerInformation::AnalyzerInformation() {}
 AnalyzerInformation::~AnalyzerInformation()
 {
     close();
@@ -96,16 +95,13 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
 
     analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile);
 
-    const std::string start = "<analyzerinfo checksum=\"" + std::to_string(checksum) + "\">";
-
-    if (skipAnalysis(analyzerInfoFile, checksum, errors)) {
+    if (skipAnalysis(analyzerInfoFile, checksum, errors))
         return false;
-    }
 
     fout.open(analyzerInfoFile);
     if (fout.is_open()) {
         fout << "<?xml version=\"1.0\"?>\n";
-        fout << start << '\n';
+        fout << "<analyzerinfo checksum=\"" << checksum << "\">\n";
     } else {
         analyzerInfoFile.clear();
     }

@@ -45,7 +45,6 @@
 */
 class CPPCHECKLIB AnalyzerInformation {
 public:
-    AnalyzerInformation();
     ~AnalyzerInformation();
 
     /** Close current TU.analyzerinfo file */

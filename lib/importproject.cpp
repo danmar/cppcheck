@@ -23,9 +23,8 @@
 #include "token.h"
 #include "tinyxml2.h"
 #include <fstream>
-//#include <iostream>
 
-void ImportProject::ignorePaths(std::vector<std::string> &ipaths)
+void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         bool ignore = false;
@@ -99,7 +98,7 @@ static bool simplifyPathWithVariables(std::string &s, const std::map<std::string
         std::string::size_type end = s.find(')',start);
         if (end == std::string::npos)
             break;
-        const std::string &var = s.substr(start+2,end-start-2);
+        const std::string var = s.substr(start+2,end-start-2);
         if (expanded.find(var) != expanded.end())
             break;
         expanded.insert(var);
@@ -175,8 +174,8 @@ void ImportProject::importCompileCommands(std::istream &istr)
     tokenList.createTokens(istr);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%str% : %str% [,}]")) {
-            const std::string key = tok->str();
-            const std::string value = tok->strAt(2);
+            const std::string& key = tok->str();
+            const std::string& value = tok->strAt(2);
             values[key.substr(1, key.size() - 2U)] = value.substr(1, value.size() - 2U);
         }
 
@@ -184,7 +183,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
             if (!values["file"].empty() && !values["command"].empty()) {
                 struct FileSettings fs;
                 fs.filename = Path::fromNativeSeparators(values["file"]);
-                const std::string command = values["command"];
+                const std::string& command = values["command"];
                 const std::string directory = Path::fromNativeSeparators(values["directory"]);
                 std::string::size_type pos = 0;
                 while (std::string::npos != (pos = command.find(' ',pos))) {
@@ -224,7 +223,6 @@ void ImportProject::importSln(std::istream &istr, const std::string &path)
 {
     std::map<std::string,std::string> variables;
     variables["SolutionDir"] = path;
-    std::string additionalIncludeDirectories;
 
     std::string line;
     while (std::getline(istr,line)) {
@@ -237,7 +235,7 @@ void ImportProject::importSln(std::istream &istr, const std::string &path)
         if (pos == std::string::npos)
             continue;
         const std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
-        importVcxproj(path + Path::fromNativeSeparators(vcxproj), variables, additionalIncludeDirectories);
+        importVcxproj(path + Path::fromNativeSeparators(vcxproj), variables, emptyString);
     }
 }
 

@@ -21,13 +21,13 @@
 #define importprojectH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+#include "platform.h"
 #include <list>
 #include <map>
 #include <string>
 #include <set>
 #include <vector>
-#include "config.h"
-#include "platform.h"
 
 /// @addtogroup Core
 /// @{
@@ -52,7 +52,7 @@ public:
     };
     std::list<FileSettings> fileSettings;
 
-    void ignorePaths(std::vector<std::string> &ipaths);
+    void ignorePaths(const std::vector<std::string> &ipaths);
     void ignoreOtherConfigs(const std::string &cfg);
     void ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType);
 

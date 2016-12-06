@@ -23,7 +23,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include <set>
 
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
 {
