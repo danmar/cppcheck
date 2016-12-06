@@ -30,7 +30,6 @@
 #include <algorithm>
 #include <sstream>
 #include <list>
-#include <cassert>     // <- assert
 #include <cstdlib>
 #include <stack>
 

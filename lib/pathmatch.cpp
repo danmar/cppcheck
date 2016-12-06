@@ -43,8 +43,8 @@ bool PathMatch::Match(const std::string &path) const
             std::transform(findpath.begin(), findpath.end(), findpath.begin(), ::tolower);
 
         // Filtering directory name
-        if (excludedPath[excludedPath.length() - 1] == '/') {
-            if (findpath[findpath.length() - 1] != '/')
+        if (excludedPath.back() == '/') {
+            if (findpath.back() != '/')
                 findpath = RemoveFilename(findpath);
 
             if (excludedPath.length() > findpath.length())

@@ -1831,7 +1831,7 @@ void Tokenizer::combineOperators()
                    Token::Match(tok, "private|protected|public|__published : !!:")) {
             bool simplify = false;
             unsigned int par = 0U;
-            for (const Token *prev = tok->tokAt(-1); prev; prev = prev->previous()) {
+            for (const Token *prev = tok->previous(); prev; prev = prev->previous()) {
                 if (prev->str() == ")") {
                     ++par;
                 } else if (prev->str() == "(") {
@@ -1847,7 +1847,7 @@ void Tokenizer::combineOperators()
                 }
                 if (prev->isName() && prev->isUpperCaseName())
                     continue;
-                if (prev->isName() && prev->str()[prev->str().size() - 1U] == ':')
+                if (prev->isName() && prev->str().back() == ':')
                     simplify = true;
                 break;
             }
@@ -2635,7 +2635,7 @@ void Tokenizer::setVarIdPass1()
              (tok->str() == "(" && isFunctionHead(tok,"{")) ||
              (tok->str() == "(" && !scopeStack.top().isExecutable && isFunctionHead(tok,";:")) ||
              (tok->str() == "," && !scopeStack.top().isExecutable) ||
-             (tok->isName() && tok->str().at(tok->str().length()-1U) == ':'))) {
+             (tok->isName() && tok->str().back() == ':'))) {
 
             // No variable declarations in sizeof
             if (Token::simpleMatch(tok->previous(), "sizeof (")) {
@@ -2649,7 +2649,7 @@ void Tokenizer::setVarIdPass1()
             const Token *tok2 = (tok->isName()) ? tok : tok->next();
 
             // private: protected: public: etc
-            while (tok2 && tok2->str()[tok2->str().size() - 1U] == ':') {
+            while (tok2 && tok2->str().back() == ':') {
                 tok2 = tok2->next();
             }
             if (!tok2)
@@ -5659,7 +5659,7 @@ void Tokenizer::simplifyPlatformTypes()
                 // skip when non-global namespace defined
                 if (tok1 && tok1->tokType() == Token::eName)
                     continue;
-                tok = tok->tokAt(-1);
+                tok = tok->previous();
                 tok->deleteThis();
             }
             Token *typeToken;

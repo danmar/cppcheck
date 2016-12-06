@@ -30,6 +30,7 @@ public:
     TestLibrary() : TestFixture("TestLibrary") { }
 
 private:
+    Settings settings;
 
     void run() {
         TEST_CASE(empty);
@@ -375,7 +376,6 @@ private:
         ASSERT_EQUALS(library.functions.size(), 1U);
 
         {
-            Settings settings;
             Tokenizer tokenizer(&settings, nullptr);
             std::istringstream istr("CString str; str.Format();");
             tokenizer.tokenize(istr, "test.cpp");
@@ -383,7 +383,6 @@ private:
         }
 
         {
-            Settings settings;
             Tokenizer tokenizer(&settings, nullptr);
             std::istringstream istr("HardDrive hd; hd.Format();");
             tokenizer.tokenize(istr, "test.cpp");
@@ -403,7 +402,6 @@ private:
         readLibrary(library, xmldata);
 
         {
-            Settings settings;
             Tokenizer tokenizer(&settings, nullptr);
             std::istringstream istr("struct X : public Base { void dostuff() { f(0); } };");
             tokenizer.tokenize(istr, "test.cpp");
@@ -411,7 +409,6 @@ private:
         }
 
         {
-            Settings settings;
             Tokenizer tokenizer(&settings, nullptr);
             std::istringstream istr("struct X : public Base { void dostuff() { f(1,2); } };");
             tokenizer.tokenize(istr, "test.cpp");

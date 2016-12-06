@@ -82,7 +82,7 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
     const bool checkAllFilesInDir = (MyIsDirectory(cleanedPath) != FALSE);
 
     if (checkAllFilesInDir) {
-        char c = cleanedPath[ cleanedPath.size()-1 ];
+        char c = cleanedPath.back();
         switch (c) {
         case '\\':
             searchPattern += '*';

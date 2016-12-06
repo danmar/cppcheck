@@ -1554,7 +1554,7 @@ void CheckStl::readingEmptyStlContainer()
             if (var && !var->isArrayOrPointer() && !var->typeStartToken()->isStandardType()) {
                 bool insert = false;
                 if (var->nameToken() == tok && var->isLocal() && !var->isStatic()) { // Local variable declared
-                    insert = !Token::Match(tok->tokAt(1), "[(=]"); // Only if not initialized
+                    insert = !Token::Match(tok->next(), "[(=]"); // Only if not initialized
                 } else if (Token::Match(tok, "%var% . clear ( ) ;")) {
                     insert = true;
                 }

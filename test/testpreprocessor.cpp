@@ -54,7 +54,7 @@ public:
             simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI(), &outputList);
 
             if (errorLogger) {
-                Settings settings;
+                static Settings settings;
                 Preprocessor p(settings, errorLogger);
                 p.reportOutput(outputList, true);
             }
@@ -1923,7 +1923,6 @@ private:
     void predefine5() {  // #3737, #5119 - automatically define __cplusplus
         // #3737...
         const char code[] = "#ifdef __cplusplus\n123\n#endif";
-        Settings settings;
         ASSERT_EQUALS("",      preprocessor0.getcode(code, "X=123", "test.c"));
         ASSERT_EQUALS("\n123", preprocessor0.getcode(code, "X=123", "test.cpp"));
     }
@@ -2146,12 +2145,10 @@ private:
 
 
     void validateCfg() {
-        Settings settings;
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings0, this);
 
         std::list<simplecpp::MacroUsage> macroUsageList;
-        std::vector<std::string> files;
-        files.push_back("test.c");
+        std::vector<std::string> files(1, "test.c");
         simplecpp::MacroUsage macroUsage(files);
         macroUsage.useLocation.fileIndex = 0;
         macroUsage.useLocation.line = 1;
@@ -2247,8 +2244,7 @@ private:
                                 "  </directivelist>\n";
 
         std::ostringstream ostr;
-        Settings settings;
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings0, this);
         preprocessor.getcode(filedata, "", "test.c");
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
@@ -2275,8 +2271,7 @@ private:
                                 "  </directivelist>\n";
 
         std::ostringstream ostr;
-        Settings settings;
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings0, this);
         preprocessor.getcode(filedata, "", "test.c");
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
@@ -2293,8 +2288,7 @@ private:
                                 "  </directivelist>\n";
 
         std::ostringstream ostr;
-        Settings settings;
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings0, this);
         preprocessor.getcode(filedata, "", "test.c");
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
