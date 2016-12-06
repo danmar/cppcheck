@@ -888,7 +888,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
                 break;
             }
             if (alloc != NO_ALLOC && parent->str() == "(") {
-                if (_settings->library.functionpure.find(parent->strAt(-1)) == _settings->library.functionpure.end()) {
+                if (!_settings->library.isFunctionConst(parent->strAt(-1), true)) {
                     assignment = true;
                     break;
                 }

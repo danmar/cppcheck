@@ -103,7 +103,7 @@ public:
 
 private:
 
-    bool isOverlappingCond(const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions) const;
+    bool isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const;
     void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
     void mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2);
     void badBitmaskCheckError(const Token *tok);

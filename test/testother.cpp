@@ -2291,7 +2291,7 @@ private:
 
         Settings settings;
         settings.library.setnoreturn("exit", true);
-        settings.library.argumentChecks["exit"][1] = Library::ArgumentChecks();
+        settings.library.functions["exit"].argumentChecks[1] = Library::ArgumentChecks();
         check("void foo() {\n"
               "    exit(0);\n"
               "    break;\n"

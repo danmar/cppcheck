@@ -460,8 +460,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 if (_tokenizer->IsScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (!unknown)
                         varInfo->clear();
-                    else if (_settings->library.leakignore.find(functionName) == _settings->library.leakignore.end() &&
-                             _settings->library.use.find(functionName) == _settings->library.use.end())
+                    else if (!_settings->library.isLeakIgnore(functionName) && !_settings->library.isUse(functionName))
                         varInfo->possibleUsageAll(functionName);
                 }
             }
@@ -526,8 +525,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocI
 void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af)
 {
     // Ignore function call?
-    const bool ignore = bool(_settings->library.leakignore.find(tok->str()) != _settings->library.leakignore.end());
-    if (ignore)
+    if (_settings->library.isLeakIgnore(tok->str()))
         return;
 
     int argNr = 1;

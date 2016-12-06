@@ -2254,9 +2254,9 @@ private:
         {
             Library library;
             Library::ArgumentChecks arg;
-            library.argumentChecks["x"][1] = arg;
-            library.argumentChecks["x"][2] = arg;
-            library.argumentChecks["x"][3] = arg;
+            library.functions["x"].argumentChecks[1] = arg;
+            library.functions["x"].argumentChecks[2] = arg;
+            library.functions["x"].argumentChecks[3] = arg;
 
             std::list<const Token *> null, uninit;
             CheckNullPointer::parseFunctionCall(*xtok, null, &library, 0U);
@@ -2269,10 +2269,10 @@ private:
         {
             Library library;
             Library::ArgumentChecks arg;
-            library.argumentChecks["x"][1] = arg;
-            library.argumentChecks["x"][2] = arg;
-            library.argumentChecks["x"][3] = arg;
-            library.argumentChecks["x"][1].notnull = true;
+            library.functions["x"].argumentChecks[1] = arg;
+            library.functions["x"].argumentChecks[2] = arg;
+            library.functions["x"].argumentChecks[3] = arg;
+            library.functions["x"].argumentChecks[1].notnull = true;
 
             std::list<const Token *> null,uninit;
             CheckNullPointer::parseFunctionCall(*xtok, null, &library, 0U);
@@ -2286,10 +2286,10 @@ private:
         {
             Library library;
             Library::ArgumentChecks arg;
-            library.argumentChecks["x"][1] = arg;
-            library.argumentChecks["x"][2] = arg;
-            library.argumentChecks["x"][3] = arg;
-            library.argumentChecks["x"][2].notuninit = true;
+            library.functions["x"].argumentChecks[1] = arg;
+            library.functions["x"].argumentChecks[2] = arg;
+            library.functions["x"].argumentChecks[3] = arg;
+            library.functions["x"].argumentChecks[2].notuninit = true;
 
             std::list<const Token *> null,uninit;
             CheckNullPointer::parseFunctionCall(*xtok, null, &library, 0U);
@@ -2303,10 +2303,10 @@ private:
         {
             Library library;
             Library::ArgumentChecks arg;
-            library.argumentChecks["x"][1] = arg;
-            library.argumentChecks["x"][2] = arg;
-            library.argumentChecks["x"][3] = arg;
-            library.argumentChecks["x"][3].notuninit = true;
+            library.functions["x"].argumentChecks[1] = arg;
+            library.functions["x"].argumentChecks[2] = arg;
+            library.functions["x"].argumentChecks[3] = arg;
+            library.functions["x"].argumentChecks[3].notuninit = true;
 
             std::list<const Token *> null,uninit;
             CheckNullPointer::parseFunctionCall(*xtok, null, &library, 0U);

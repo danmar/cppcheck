@@ -22,10 +22,10 @@
 #define astutilsH
 //---------------------------------------------------------------------------
 
-#include <set>
 #include <string>
 
 class Settings;
+class Library;
 class Token;
 
 /** Is expression a 'signed char' if no promotion is used */
@@ -53,7 +53,7 @@ std::string astCanonicalType(const Token *expr);
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
-bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions);
+bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure);
 
 /**
  * Are two conditions opposite
@@ -63,9 +63,9 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
  * @param cond2  condition2
  * @param constFunctions  constFunctions
  */
-bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions);
+bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure);
 
-bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions);
+bool isConstExpression(const Token *tok, const Library& library, bool pure);
 
 bool isWithoutSideEffects(bool cpp, const Token* tok);
 

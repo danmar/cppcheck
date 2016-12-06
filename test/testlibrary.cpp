@@ -66,9 +66,7 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT(library.use.empty());
-        ASSERT(library.leakignore.empty());
-        ASSERT(library.argumentChecks.empty());
+        ASSERT(library.functions.empty());
     }
 
     void function() const {
@@ -86,9 +84,7 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT(library.use.empty());
-        ASSERT(library.leakignore.empty());
-        ASSERT(library.argumentChecks.empty());
+        ASSERT(library.functions.empty());
         ASSERT(library.isnotnoreturn(tokenList.front()));
     }
 
@@ -222,13 +218,13 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT_EQUALS(true, library.argumentChecks["foo"][1].notuninit);
-        ASSERT_EQUALS(true, library.argumentChecks["foo"][2].notnull);
-        ASSERT_EQUALS(true, library.argumentChecks["foo"][3].formatstr);
-        ASSERT_EQUALS(true, library.argumentChecks["foo"][4].strz);
-        ASSERT_EQUALS(false, library.argumentChecks["foo"][4].optional);
-        ASSERT_EQUALS(true, library.argumentChecks["foo"][5].notbool);
-        ASSERT_EQUALS(true, library.argumentChecks["foo"][5].optional);
+        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[1].notuninit);
+        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[2].notnull);
+        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[3].formatstr);
+        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[4].strz);
+        ASSERT_EQUALS(false, library.functions["foo"].argumentChecks[4].optional);
+        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[5].notbool);
+        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[5].optional);
     }
 
     void function_arg_any() const {
@@ -241,7 +237,7 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT_EQUALS(true, library.argumentChecks["foo"][-1].notuninit);
+        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[-1].notuninit);
     }
 
     void function_arg_valid() const {
@@ -346,9 +342,7 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT(library.use.empty());
-        ASSERT(library.leakignore.empty());
-        ASSERT(library.argumentChecks.empty());
+        ASSERT(library.functions.empty());
 
         {
             TokenList tokenList(nullptr);
@@ -375,9 +369,7 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT(library.use.empty());
-        ASSERT(library.leakignore.empty());
-        ASSERT(library.argumentChecks.empty());
+        ASSERT(library.functions.empty());
 
         {
             Settings settings;
@@ -471,9 +463,7 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT(library.use.empty());
-        ASSERT(library.leakignore.empty());
-        ASSERT(library.argumentChecks.empty());
+        ASSERT(library.functions.empty());
 
         ASSERT(Library::ismemory(library.alloc("CreateX")));
         ASSERT_EQUALS(library.allocId("CreateX"), library.deallocId("DeleteX"));
@@ -516,9 +506,7 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT(library.use.empty());
-        ASSERT(library.leakignore.empty());
-        ASSERT(library.argumentChecks.empty());
+        ASSERT(library.functions.empty());
 
         const Library::AllocFunc* af = library.alloc("CreateX");
         ASSERT(af && af->arg == 5);
@@ -539,9 +527,7 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT(library.use.empty());
-        ASSERT(library.leakignore.empty());
-        ASSERT(library.argumentChecks.empty());
+        ASSERT(library.functions.empty());
 
         ASSERT(Library::isresource(library.allocId("CreateX")));
         ASSERT_EQUALS(library.allocId("CreateX"), library.deallocId("DeleteX"));

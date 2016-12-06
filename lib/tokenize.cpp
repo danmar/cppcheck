@@ -8420,9 +8420,9 @@ void Tokenizer::simplifyAttribute()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%type% (") && !_settings->library.isNotLibraryFunction(tok)) {
-            if (_settings->library.functionpure.find(tok->str()) != _settings->library.functionpure.end())
+            if (_settings->library.isFunctionConst(tok->str(), true))
                 tok->isAttributePure(true);
-            if (_settings->library.functionconst.find(tok->str()) != _settings->library.functionconst.end())
+            if (_settings->library.isFunctionConst(tok->str(), false))
                 tok->isAttributeConst(true);
         }
         while (Token::Match(tok, "__attribute__|__attribute (") && tok->next()->link() && tok->next()->link()->next()) {

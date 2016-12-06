@@ -494,7 +494,7 @@ static bool alwaysTrue(const Token *tok)
 
 bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, const Settings *settings, bool cpp)
 {
-    return ((call_func_white_list.find(funcname)!=call_func_white_list.end()) || (settings->library.leakignore.find(funcname) != settings->library.leakignore.end()) || (cpp && funcname == "delete"));
+    return ((call_func_white_list.find(funcname)!=call_func_white_list.end()) || settings->library.isLeakIgnore(funcname) || (cpp && funcname == "delete"));
 }
 
 namespace {
@@ -1318,7 +1318,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     parent = parent->astParent();
                 if (parent && parent->astOperand1() && parent->astOperand1()->isName()) {
                     const std::string &functionName = parent->astOperand1()->str();
-                    if (_settings->library.leakignore.find(functionName) != _settings->library.leakignore.end())
+                    if (_settings->library.isLeakIgnore(functionName))
                         leakignore = true;
                 }
             }
