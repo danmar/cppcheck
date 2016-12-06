@@ -351,19 +351,14 @@ public:
     bool isimporter(const std::string& file, const std::string &importer) const;
 
     bool isreflection(const std::string &token) const {
-        const std::map<std::string,int>::const_iterator it
-            = _reflection.find(token);
-        return it != _reflection.end();
+        return _reflection.find(token) != _reflection.end();
     }
 
     int reflectionArgument(const std::string &token) const {
-        int argIndex = -1;
-        const std::map<std::string,int>::const_iterator it
-            = _reflection.find(token);
-        if (it != _reflection.end()) {
-            argIndex = it->second;
-        }
-        return argIndex;
+        const std::map<std::string, int>::const_iterator it = _reflection.find(token);
+        if (it != _reflection.end())
+            return it->second;
+        return -1;
     }
 
     std::set<std::string> returnuninitdata;
@@ -455,16 +450,16 @@ private:
     public:
         CodeBlock() : _offset(0) {}
 
-        void setStart(const std::string& s) {
+        void setStart(const char* s) {
             _start = s;
         }
-        void setEnd(const std::string& e) {
+        void setEnd(const char* e) {
             _end = e;
         }
         void setOffset(const int o) {
             _offset = o;
         }
-        void addBlock(const std::string& blockName) {
+        void addBlock(const char* blockName) {
             _blocks.insert(blockName);
         }
         const std::string& start() const {
@@ -490,7 +485,6 @@ private:
     std::set<std::string> _files;
     std::map<std::string, AllocFunc> _alloc; // allocation functions
     std::map<std::string, AllocFunc> _dealloc; // deallocation functions
-    std::set<std::string> _functions;
     std::map<std::string, bool> _noreturn; // is function noreturn?
     std::map<std::string, std::string> _returnValue;
     std::map<std::string, std::string> _returnValueType;

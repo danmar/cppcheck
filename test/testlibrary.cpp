@@ -84,7 +84,8 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT(library.functions.empty());
+        ASSERT_EQUALS(library.functions.size(), 1U);
+        ASSERT(library.functions.at("foo").argumentChecks.empty());
         ASSERT(library.isnotnoreturn(tokenList.front()));
     }
 
@@ -342,7 +343,9 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT(library.functions.empty());
+        ASSERT_EQUALS(library.functions.size(), 2U);
+        ASSERT(library.functions.at("Foo::foo").argumentChecks.empty());
+        ASSERT(library.functions.at("bar").argumentChecks.empty());
 
         {
             TokenList tokenList(nullptr);
@@ -369,7 +372,7 @@ private:
 
         Library library;
         readLibrary(library, xmldata);
-        ASSERT(library.functions.empty());
+        ASSERT_EQUALS(library.functions.size(), 1U);
 
         {
             Settings settings;
