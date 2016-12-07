@@ -290,6 +290,8 @@ namespace {
         }
 
         bool conditionIsTrue(const ProjectConfiguration &p) const {
+            if (condition.empty())
+                return true;
             std::string c = '(' + condition + ");";
             replaceAll(c, "$(Configuration)", p.configuration);
             replaceAll(c, "$(Platform)", p.platform);
@@ -443,25 +445,28 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
 
     for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
         for (std::list<ProjectConfiguration>::const_iterator p = projectConfigurationList.begin(); p != projectConfigurationList.end(); ++p) {
+            FileSettings fs;
+            fs.filename = Path::simplifyPath(Path::getPathFromFilename(filename) + *c);
+            fs.cfg = p->name;
+            fs.defines = "_MSC_VER=1900;_WIN32=1";
+            if (p->platform == "Win32")
+                fs.platformType = cppcheck::Platform::Win32W;
+            else if (p->platform == "x64") {
+                fs.platformType = cppcheck::Platform::Win64;
+                fs.defines += ";_WIN64=1";
+            }
+            if (useOfMfc)
+                fs.defines += ";__AFXWIN_H__";
+            std::string additionalIncludePaths;
             for (std::list<ItemDefinitionGroup>::const_iterator i = itemDefinitionGroupList.begin(); i != itemDefinitionGroupList.end(); ++i) {
                 if (!i->conditionIsTrue(*p))
                     continue;
-                FileSettings fs;
-                fs.filename = Path::simplifyPath(Path::getPathFromFilename(filename) + *c);
-                fs.cfg = p->name;
-                fs.defines = "_MSC_VER=1900;_WIN32=1;" + i->preprocessorDefinitions;
-                if (p->platform == "Win32")
-                    fs.platformType = cppcheck::Platform::Win32W;
-                else if (p->platform == "x64") {
-                    fs.platformType = cppcheck::Platform::Win64;
-                    fs.defines += ";_WIN64=1";
-                }
-                if (useOfMfc)
-                    fs.defines += ";__AFXWIN_H__";
-                fs.setDefines(fs.defines);
-                fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + i->additionalIncludePaths), variables);
-                fileSettings.push_back(fs);
+                fs.defines += ';' + i->preprocessorDefinitions;
+                additionalIncludePaths += ';' + i->additionalIncludePaths;
             }
+            fs.setDefines(fs.defines);
+            fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
+            fileSettings.push_back(fs);
         }
     }
 }
