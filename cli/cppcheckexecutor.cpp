@@ -17,6 +17,7 @@
  */
 
 #include "cppcheckexecutor.h"
+#include "analyzerinfo.h"
 #include "cmdlineparser.h"
 #include "cppcheck.h"
 #include "filelister.h"
@@ -803,11 +804,10 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (!settings.buildDir.empty()) {
-        const std::string filename(settings.buildDir + "/files.txt");
-        std::ofstream fout(filename.c_str());
-        for (std::map<std::string, std::size_t>::const_iterator f = _files.begin(); f != _files.end(); ++f) {
-            fout << f->first << '\n';
-        }
+        std::list<std::string> fileNames;
+        for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i)
+            fileNames.push_back(i->first);
+        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.project.fileSettings);
     }
 
     unsigned int returnValue = 0;

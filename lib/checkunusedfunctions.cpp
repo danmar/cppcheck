@@ -312,14 +312,23 @@ namespace {
     };
 }
 
-void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir, const std::map<std::string, std::size_t> &files)
+void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir)
 {
     std::map<std::string, Location> decls;
     std::set<std::string> calls;
 
-    for (std::map<std::string, std::size_t>::const_iterator it = files.begin(); it != files.end(); ++it) {
-        const std::string &sourcefile = it->first;
-        const std::string xmlfile = AnalyzerInformation::getAnalyzerInfoFile(buildDir, sourcefile);
+    const std::string filesTxt(buildDir + "/files.txt");
+    std::ifstream fin(filesTxt.c_str());
+    std::string filesTxtLine;
+    while (std::getline(fin, filesTxtLine)) {
+        const std::string::size_type firstColon = filesTxtLine.find(':');
+        if (firstColon == std::string::npos)
+            continue;
+        const std::string::size_type lastColon = filesTxtLine.rfind(':');
+        if (firstColon == lastColon)
+            continue;
+        const std::string xmlfile = filesTxtLine.substr(0,firstColon);
+        const std::string sourcefile = filesTxtLine.substr(lastColon+1);
 
         tinyxml2::XMLDocument doc;
         tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());

@@ -62,7 +62,7 @@ public:
     std::string analyzerInfo() const;
 
     /** @brief Combine and analyze all analyzerInfos for all TUs */
-    static void analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir, const std::map<std::string, std::size_t> &files);
+    static void analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir);
 
 private:
 

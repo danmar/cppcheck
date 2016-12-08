@@ -153,7 +153,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             // Calculate checksum so it can be compared with old checksum / future checksums
             const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo);
             std::list<ErrorLogger::ErrorMessage> errors;
-            if (!analyzerInformation.analyzeFile(_settings.buildDir, filename, checksum, &errors)) {
+            if (!analyzerInformation.analyzeFile(_settings.buildDir, filename, cfgname, checksum, &errors)) {
                 while (!errors.empty()) {
                     reportErr(errors.front());
                     errors.pop_front();
@@ -737,10 +737,11 @@ void CppCheck::analyseWholeProgram()
 
 void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files)
 {
+    (void)files;
     if (buildDir.empty())
         return;
     if (_settings.isEnabled("unusedFunction"))
-        CheckUnusedFunctions::analyseWholeProgram(this, buildDir, files);
+        CheckUnusedFunctions::analyseWholeProgram(this, buildDir);
 }
 
 bool CppCheck::isUnusedFunctionCheckEnabled() const
