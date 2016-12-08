@@ -54,7 +54,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             continue;
 
         // Don't warn about functions that are marked by __attribute__((constructor)) or __attribute__((destructor))
-        if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != Function::eFunction)
+        if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != Function::eFunction || func->isOperator())
             continue;
 
         // Don't care about templates
@@ -234,14 +234,11 @@ void CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
             continue;
         if (it->first == "main" ||
             (settings.isWindowsPlatform() && (it->first == "WinMain" || it->first == "_tmain")) ||
-            it->first == "if" ||
-            (it->first.compare(0, 8, "operator") == 0 && it->first.size() > 8 && !std::isalnum(it->first[8])))
+            it->first == "if")
             continue;
-        if (! func.usedSameFile) {
+        if (!func.usedSameFile) {
             std::string filename;
-            if (func.filename == "+")
-                filename = "";
-            else
+            if (func.filename != "+")
                 filename = func.filename;
             unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
         } else if (! func.usedOtherFile) {
@@ -355,7 +352,7 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
         const std::string &functionName = decl->first;
 
         if (functionName == "main" || functionName == "WinMain" || functionName == "_tmain" ||
-            functionName == "if" || functionName.compare(0, 8, "operator") == 0)
+            functionName == "if")
             continue;
 
         if (calls.find(functionName) == calls.end()) {

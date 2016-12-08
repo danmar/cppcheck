@@ -247,6 +247,9 @@ private:
     void operator1() {
         check("struct Foo { void operator()(int a) {} };");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo { operator std::string(int a) {} };");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnRef() {
