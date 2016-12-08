@@ -26,8 +26,8 @@ AnalyzerInformation::~AnalyzerInformation()
     close();
 }
 
-static std::string getFilename(const std::string &fullpath) {
-    std::string afile(fullpath);
+static std::string getFilename(const std::string &fullpath)
+{
     std::string::size_type pos1 = fullpath.find_last_of("/\\");
     pos1 = (pos1 == std::string::npos) ? 0U : (pos1 + 1U);
     std::string::size_type pos2 = fullpath.rfind('.');
