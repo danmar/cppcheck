@@ -273,7 +273,9 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
 
 Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    if (settings->isEnabled("unusedFunction") && (settings->jobs == 1 || !settings->buildDir.empty()))
+    if (!settings->isEnabled("unusedFunction"))
+        return nullptr;
+    if (settings->jobs == 1 && settings->buildDir.empty())
         instance.parseTokens(*tokenizer, tokenizer->list.getFiles().front().c_str(), settings);
     return nullptr;
 }
@@ -327,7 +329,7 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
         const std::string::size_type lastColon = filesTxtLine.rfind(':');
         if (firstColon == lastColon)
             continue;
-        const std::string xmlfile = filesTxtLine.substr(0,firstColon);
+        const std::string xmlfile = buildDir + '/' + filesTxtLine.substr(0,firstColon);
         const std::string sourcefile = filesTxtLine.substr(lastColon+1);
 
         tinyxml2::XMLDocument doc;
