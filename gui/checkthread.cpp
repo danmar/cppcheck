@@ -25,7 +25,8 @@
 CheckThread::CheckThread(ThreadResult &result) :
     mState(Ready),
     mResult(result),
-    mCppcheck(result, true)
+    mCppcheck(result, true),
+    mAnalyseWholeProgram(false)
 {
     //ctor
 }
@@ -45,6 +46,7 @@ void CheckThread::Check(const Settings &settings)
 void CheckThread::AnalyseWholeProgram(const QStringList &files)
 {
     mFiles = files;
+    mAnalyseWholeProgram = true;
     start();
 }
 
@@ -52,7 +54,8 @@ void CheckThread::run()
 {
     mState = Running;
 
-    if (!mFiles.isEmpty()) {
+    if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
+        mAnalyseWholeProgram = false;
         qDebug() << "Whole program analysis";
         const std::string &buildDir = mCppcheck.settings().buildDir;
         if (!buildDir.empty()) {

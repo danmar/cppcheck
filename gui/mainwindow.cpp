@@ -388,6 +388,11 @@ void MainWindow::DoCheckProject(ImportProject p)
     if (mProject)
         qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
 
+    if (!checkSettings.buildDir.empty()) {
+        std::list<std::string> sourcefiles;
+        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, p.fileSettings);
+    }
+
     //mThread->SetCheckProject(true);
     mThread->SetProject(p);
     mThread->Check(checkSettings, true);
@@ -439,17 +444,10 @@ void MainWindow::DoCheckFiles(const QStringList &files)
         qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
 
     if (!checkSettings.buildDir.empty()) {
-        QString s = QString::fromStdString(checkSettings.buildDir);
-        if (!s.endsWith('/'))
-            s += '/';
-        s += "files.txt";
-
-        std::ofstream fout(s.toStdString());
-        if (fout.is_open()) {
-            foreach (QString f, fileNames) {
-                fout << f.toStdString() << '\n';
-            }
-        }
+        std::list<std::string> sourcefiles;
+        foreach (QString s, fileNames)
+            sourcefiles.push_back(s.toStdString());
+        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.project.fileSettings);
     }
 
     mThread->SetCheckFiles(true);

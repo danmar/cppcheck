@@ -100,6 +100,7 @@ protected:
 
 private:
     QStringList mFiles;
+    bool mAnalyseWholeProgram;
 };
 /// @}
 #endif // CHECKTHREAD_H
