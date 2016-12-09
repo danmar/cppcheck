@@ -66,6 +66,8 @@ class Token:
         isAssignmentOp     Is this token a assignment operator
         isComparisonOp     Is this token a comparison operator
         isLogicalOp        Is this token a logical operator: && ||
+        isUnsigned         Is this token a unsigned type
+        isSigned           Is this token a signed type
         varId              varId for token, each variable has a unique non-zero id
         variable           Variable information for this token. See the Variable class.
         function           If this token points at a function call, this attribute has the Function
@@ -110,6 +112,8 @@ class Token:
     isAssignmentOp = False
     isComparisonOp = False
     isLogicalOp = False
+    isUnsigned = False
+    isSigned = False
     varId = None
     variableId = None
     variable = None
@@ -141,6 +145,10 @@ class Token:
         type = element.get('type')
         if type == 'name':
             self.isName = True
+            if element.get('isUnsigned'):
+                self.isUnsigned = True
+            if element.get('isSigned'):
+                self.isSigned = True
         elif type == 'number':
             self.isNumber = True
             if element.get('isInt'):

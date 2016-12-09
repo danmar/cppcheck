@@ -3850,9 +3850,13 @@ void Tokenizer::dump(std::ostream &out) const
         out << "    <token id=\"" << tok << "\" file=\"" << ErrorLogger::toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << '\"';
         out << " str=\"" << ErrorLogger::toxml(tok->str()) << '\"';
         out << " scope=\"" << tok->scope() << '\"';
-        if (tok->isName())
+        if (tok->isName()) {
             out << " type=\"name\"";
-        else if (tok->isNumber()) {
+            if (tok->isUnsigned())
+                out << " isUnsigned=\"true\"";
+            else if (tok->isSigned())
+                out << " isSigned=\"true\"";
+        } else if (tok->isNumber()) {
             out << " type=\"number\"";
             if (MathLib::isInt(tok->str()))
                 out << " isInt=\"True\"";
