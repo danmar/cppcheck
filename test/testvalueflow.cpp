@@ -371,6 +371,10 @@ private:
         ASSERT_EQUALS(0, valueOfTok("3 <  (a ? b : 2);", "<").intvalue);
         ASSERT_EQUALS(0, valueOfTok("3 <= (a ? b : 2);", "<=").intvalue);
 
+        ASSERT(tokenValues("(UNKNOWN_TYPE)123;","(").empty());
+        ASSERT(tokenValues("(unsigned char)~0;", "(").empty()); // TODO: should get value 255
+        ASSERT(tokenValues("(int)0;", "(").empty()); // TODO: should get value 0
+
         // Don't calculate if there is UB
         ASSERT(tokenValues(";-1<<10;","<<").empty());
         ASSERT(tokenValues(";10<<-1;","<<").empty());

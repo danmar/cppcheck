@@ -294,12 +294,13 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     if (!parent)
         return;
 
-    // Cast..
+    // TODO: Cast..
+    /*
     if (parent->str() == "(" && tok == parent->link()->next()) {
         setTokenValue(parent,value,settings);
-    }
+    } else .. */
 
-    else if (parent->str() == ":") {
+    if (parent->str() == ":") {
         setTokenValue(parent,value,settings);
     }
 
