@@ -238,6 +238,16 @@ private:
               "  return (short)1E6;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () conversion overflow.\n", removeFloat(errout.str()));
+
+        check("void f(void) {\n"
+              "  return (unsigned char)256.0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () conversion overflow.\n", removeFloat(errout.str()));
+
+        check("void f(void) {\n"
+              "  return (unsigned char)255.5;\n"
+              "}\n");
+        ASSERT_EQUALS("", removeFloat(errout.str()));
     }
 };
 
