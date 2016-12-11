@@ -179,6 +179,9 @@ private:
         TEST_CASE(moveAndAssign1);
         TEST_CASE(moveAndAssign2);
         TEST_CASE(moveAssignMoveAssign);
+        TEST_CASE(moveAndReset1);
+        TEST_CASE(moveAndReset2);
+        TEST_CASE(moveResetMoveReset);
         TEST_CASE(moveAndFunctionParameter);
         TEST_CASE(moveAndFunctionParameterReference);
         TEST_CASE(moveAndFunctionParameterConstReference);
@@ -6187,6 +6190,50 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable a.\n"
                       "[test.cpp:8]: (warning) Access of moved variable a.\n", errout.str());
+    }
+
+    void moveAndReset1() {
+        check("A g(A a);\n"
+              "void f() {\n"
+              "    A a;\n"
+              "    a.reset(g(std::move(a)));\n"
+              "    a.reset(g(std::move(a)));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void moveAndReset2() {
+        check("A g(A a);\n"
+              "void f() {\n"
+              "    A a;\n"
+              "    A b;\n"
+              "    A c;\n"
+              "    b.reset(g(std::move(a)));\n"
+              "    c.reset(g(std::move(a)));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Access of moved variable a.\n", errout.str());
+    }
+
+    void moveResetMoveReset() {
+        check("void h(A a);\n"
+              "void f() {"
+              "    A a;\n"
+              "    g(std::move(a));\n"
+              "    h(a);\n"
+              "    a.reset(b);\n"
+              "    h(a);\n"
+              "    g(std::move(a));\n"
+              "    h(a);\n"
+              "    a.reset(b);\n"
+              "    h(a);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable a.\n"
+                      "[test.cpp:5]: (warning, inconclusive) Access of moved variable a.\n"
+                      "[test.cpp:6]: (warning, inconclusive) Access of moved variable a.\n"
+                      "[test.cpp:7]: (warning, inconclusive) Access of moved variable a.\n"
+                      "[test.cpp:8]: (warning) Access of moved variable a.\n"
+                      "[test.cpp:9]: (warning, inconclusive) Access of moved variable a.\n"
+                      "[test.cpp:10]: (warning, inconclusive) Access of moved variable a.\n", errout.str());
     }
 
     void moveAndFunctionParameter() {

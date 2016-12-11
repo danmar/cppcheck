@@ -1736,6 +1736,12 @@ static bool isStdMoveOrStdForwarded(Token * tok, ValueFlow::Value::MoveKind * mo
     return true;
 }
 
+static bool isOpenParenthesisMemberFunctionCallOfVarId(const Token * openParenthesisToken, unsigned int varId)
+{
+    return Token::Match(openParenthesisToken->tokAt(-3),"%varid% . %name% (", varId) &&
+           openParenthesisToken->tokAt(-2)->originalName() == emptyString;
+}
+
 static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     if (!tokenlist->isCPP() || settings->standards.cpp < Standards::CPP11)
@@ -1757,15 +1763,18 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             ValueFlow::Value::MoveKind moveKind;
             if (!isStdMoveOrStdForwarded(tok, &moveKind, &varTok))
                 continue;
+            const unsigned int varId = varTok->varId();
             // x is not MOVED after assignment if code is:  x = ... std::move(x) .. ;
             const Token *parent = tok->astParent();
-            while (parent && parent->str() != "=" && parent->str() != "return")
+            while (parent && parent->str() != "=" && parent->str() != "return" &&
+                   !(parent->str() == "(" && isOpenParenthesisMemberFunctionCallOfVarId(parent, varId)))
                 parent = parent->astParent();
-            if (parent && parent->str() == "return") // MOVED in return statement
+            if (parent &&
+                (parent->str() == "return" || // MOVED in return statement
+                 parent->str() == "(")) // MOVED in self assignment, isOpenParenthesisMemberFunctionCallOfVarId == true
                 continue;
-            if (parent && parent->astOperand1()->str() == varTok->str())
+            if (parent && parent->astOperand1()->varId() == varId)
                 continue;
-            const unsigned int varid = varTok->varId();
             const Variable *var = varTok->variable();
             if (!var)
                 continue;
@@ -1778,7 +1787,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             std::list<ValueFlow::Value> values;
             values.push_back(value);
 
-            valueFlowForward(varTok->next(), endOfVarScope, var, varid, values, false, tokenlist, errorLogger, settings);
+            valueFlowForward(varTok->next(), endOfVarScope, var, varId, values, false, tokenlist, errorLogger, settings);
         }
     }
 }
