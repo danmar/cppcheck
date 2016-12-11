@@ -264,6 +264,11 @@ private:
               "    cout << 42 / (float)0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    cout << 42 / (int)0;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", "", errout.str());
     }
 
     void zeroDiv2() {
