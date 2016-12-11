@@ -1643,6 +1643,10 @@ private:
         ASSERT_EQUALS(
             "void foo ( ) { int n ; n = 10 ; for ( int i = 0 ; i < 10 ; ++ i ) { } }",
             simplifyKnownVariables(code));
+
+        ASSERT_EQUALS(
+            "void foo ( int i ) { int n ; n = i ; for ( i = 0 ; i < n ; ++ i ) { } }",
+            simplifyKnownVariables("void foo(int i) { int n = i; for (i = 0; i < n; ++i) { } }"));
     }
 
     void simplifyKnownVariables22() {

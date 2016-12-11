@@ -6471,8 +6471,8 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (pointeralias && Token::Match(tok3, ("!!= " + value).c_str()))
             break;
 
-        // Stop if do is found
-        if (tok3->str() == "do")
+        // Stop if a loop is found
+        if (pointeralias && Token::Match(tok3, "do|for|while"))
             break;
 
         // Stop if unknown function call is seen
