@@ -1897,6 +1897,25 @@ private:
                "  f1(0);\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        code = "class A\n"
+               "{\n"
+               "    void f1(int x) { return x; }\n"
+               "    void f2(int x) {\n"
+               "        f1(123);\n"
+               "    }\n"
+               "};";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "class A\n"
+               "{\n"
+               "    virtual void f1(int x) { return x; }\n"
+               "    void f2(int x) {\n"
+               "        f1(123);\n"
+               "    }\n"
+               "};";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
     }
 
     void valueFlowFunctionReturn() {
@@ -1941,6 +1960,30 @@ private:
                "    return 0;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+
+        code = "class A\n"
+               "{\n"
+               "    int f1(int x) {\n"
+               "        return x+1;\n"
+               "    }\n"
+               "    void f2() {\n"
+               "        x = 10 - f1(2);\n"
+               "    }\n"
+               "};";
+        ASSERT_EQUALS(7, valueOfTok(code, "-").intvalue);
+        ASSERT_EQUALS(true, valueOfTok(code, "-").isKnown());
+
+        code = "class A\n"
+               "{\n"
+               "    virtual int f1(int x) {\n"
+               "        return x+1;\n"
+               "    }\n"
+               "    void f2() {\n"
+               "        x = 10 - f1(2);\n"
+               "    }\n"
+               "};";
+        ASSERT_EQUALS(7, valueOfTok(code, "-").intvalue);
+        ASSERT_EQUALS(false, valueOfTok(code, "-").isKnown());
     }
 
     void valueFlowFunctionDefaultParameter() {

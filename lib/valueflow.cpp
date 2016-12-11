@@ -2709,7 +2709,10 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
                 &error);
         if (!error) {
             ValueFlow::Value v(result);
-            v.setKnown();
+            if (function->isVirtual())
+                v.setPossible();
+            else
+                v.setKnown();
             setTokenValue(tok, v, tokenlist->getSettings());
         }
     }
