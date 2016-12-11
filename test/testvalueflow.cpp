@@ -1731,6 +1731,14 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
         ASSERT_EQUALS(true,  testValueOfX(code, 4U, 9));
 
+        code = "void foo() {\n"
+               "  for (int x = 0; x < 10; x++) {\n"
+               "    if (x < value\n"
+               "        && x) {}" // <- maybe x is not 9
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 9));
+
         // ||
         code = "void foo() {\n"
                "  for (int x = 0; x < 10; x++) {\n"

@@ -2301,8 +2301,8 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
 
         if (Token::Match(tok2, "%oror%|&&")) {
             const ProgramMemory programMemory(getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value)));
-            if ((tok2->str() == "&&" && conditionIsFalse(tok2->astOperand1(), programMemory)) ||
-                (tok2->str() == "||" && conditionIsTrue(tok2->astOperand1(), programMemory))) {
+            if ((tok2->str() == "&&" && !conditionIsTrue(tok2->astOperand1(), programMemory)) ||
+                (tok2->str() == "||" && !conditionIsFalse(tok2->astOperand1(), programMemory))) {
                 // Skip second expression..
                 const Token *parent = tok2;
                 while (parent && parent->str() == tok2->str())
