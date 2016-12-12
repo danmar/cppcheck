@@ -1760,6 +1760,24 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
 
         for (Token* tok = const_cast<Token*>(start); tok != scope->classEnd; tok = tok->next()) {
             Token * varTok;
+            if (Token::Match(tok, "%var% . reset|clear (") && tok->next()->originalName() == emptyString) {
+                varTok = tok;
+                ValueFlow::Value value;
+                value.valueType = ValueFlow::Value::MOVED;
+                value.moveKind = ValueFlow::Value::NonMovedVariable;
+                value.setKnown();
+                std::list<ValueFlow::Value> values;
+                values.push_back(value);
+
+                const Variable *var = varTok->variable();
+                if (!var || (!var->isLocal() && !var->isArgument()))
+                    continue;
+                const unsigned int varId = varTok->varId();
+                const Token * const endOfVarScope = var->typeStartToken()->scope()->classEnd;
+                setTokenValue(varTok, value, settings);
+                valueFlowForward(varTok->next(), endOfVarScope, var, varId, values, false, tokenlist, errorLogger, settings);
+                continue;
+            }
             ValueFlow::Value::MoveKind moveKind;
             if (!isStdMoveOrStdForwarded(tok, &moveKind, &varTok))
                 continue;

@@ -6228,12 +6228,7 @@ private:
               "    h(a);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable a.\n"
-                      "[test.cpp:5]: (warning, inconclusive) Access of moved variable a.\n"
-                      "[test.cpp:6]: (warning, inconclusive) Access of moved variable a.\n"
-                      "[test.cpp:7]: (warning, inconclusive) Access of moved variable a.\n"
-                      "[test.cpp:8]: (warning) Access of moved variable a.\n"
-                      "[test.cpp:9]: (warning, inconclusive) Access of moved variable a.\n"
-                      "[test.cpp:10]: (warning, inconclusive) Access of moved variable a.\n", errout.str());
+                      "[test.cpp:8]: (warning) Access of moved variable a.\n", errout.str());
     }
 
     void moveAndFunctionParameter() {
@@ -6301,8 +6296,7 @@ private:
               "    v.clear();\n"
               "    if (v.empty()) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Access of moved variable v.\n"
-                      "[test.cpp:5]: (warning, inconclusive) Access of moved variable v.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void movedPointer() {

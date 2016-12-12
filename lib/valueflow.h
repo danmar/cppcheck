@@ -92,7 +92,7 @@ namespace ValueFlow {
         double floatValue;
 
         /** kind of moved  */
-        enum MoveKind {MovedVariable, ForwardedVariable} moveKind;
+        enum MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
 
         /** For calculated values - variable value that calculated value depends on */
         long long varvalue;
@@ -114,6 +114,8 @@ namespace ValueFlow {
 
         static const char * toString(MoveKind moveKind) {
             switch (moveKind) {
+            case NonMovedVariable:
+                return "NonMovedVariable";
             case MovedVariable:
                 return "MovedVariable";
             case ForwardedVariable:
