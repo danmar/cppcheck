@@ -1742,6 +1742,40 @@ static bool isOpenParenthesisMemberFunctionCallOfVarId(const Token * openParenth
            openParenthesisToken->tokAt(-2)->originalName() == emptyString;
 }
 
+static const Token * nextAfterAstRightmostLeaf(Token const * tok)
+{
+    const Token * rightmostLeaf = tok;
+    if (!rightmostLeaf || !rightmostLeaf->astOperand1())
+        return nullptr;
+    do {
+        if (rightmostLeaf->astOperand2())
+            rightmostLeaf = rightmostLeaf->astOperand2();
+        else
+            rightmostLeaf = rightmostLeaf->astOperand1();
+    } while (rightmostLeaf->astOperand1());
+    return rightmostLeaf->next();
+}
+
+static const Token * findOpenParentesisOfMove(const Token * moveVarTok)
+{
+    const Token * tok = moveVarTok;
+    while (tok && tok->str() != "(")
+        tok = tok->previous();
+    return tok;
+}
+
+static const Token * findEndOfFunctionCallForParameter(const Token * parameterToken)
+{
+    if (!parameterToken)
+        return nullptr;
+    const Token * parent = parameterToken->astParent();
+    while(parent && !parent->isOp() && parent->str() != "(")
+        parent = parent->astParent();
+    if (!parent)
+        return nullptr;
+    return nextAfterAstRightmostLeaf(parent);
+}
+
 static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     if (!tokenlist->isCPP() || settings->standards.cpp < Standards::CPP11)
@@ -1804,24 +1838,12 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             value.setKnown();
             std::list<ValueFlow::Value> values;
             values.push_back(value);
-
-            valueFlowForward(varTok->next(), endOfVarScope, var, varId, values, false, tokenlist, errorLogger, settings);
+            const Token * openParentesisOfMove = findOpenParentesisOfMove(varTok);
+            const Token * endOfFunctionCall = findEndOfFunctionCallForParameter(openParentesisOfMove);
+            if (endOfFunctionCall)
+                valueFlowForward(const_cast<Token *>(endOfFunctionCall), endOfVarScope, var, varId, values, false, tokenlist, errorLogger, settings);
         }
     }
-}
-
-static const Token * nextAfterAstRightmostLeaf(Token const * tok)
-{
-    const Token * rightmostLeaf = tok;
-    if (!rightmostLeaf || !rightmostLeaf->astOperand1())
-        return nullptr;
-    do {
-        if (rightmostLeaf->astOperand2())
-            rightmostLeaf = rightmostLeaf->astOperand2();
-        else
-            rightmostLeaf = rightmostLeaf->astOperand1();
-    } while (rightmostLeaf->astOperand1());
-    return rightmostLeaf->next();
 }
 
 static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)

@@ -779,7 +779,7 @@ public:
     const ValueFlow::Value * getMovedValue() const {
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = values.begin(); it != values.end(); ++it) {
-            if (it->isMovedValue())
+            if (it->isMovedValue() && it->moveKind != ValueFlow::Value::NonMovedVariable)
                 return &(*it);
         }
         return nullptr;

@@ -340,6 +340,13 @@ private:
 
         code = "void f(int i) {\n"
                "    X x;\n"
+               "    y = g(std::move(x), \n"
+               "          x.size());\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+
+        code = "void f(int i) {\n"
+               "    X x;\n"
                "    x = g(std::move(x));\n"
                "    y = x;\n"
                "}";
@@ -352,7 +359,6 @@ private:
                "    return h(std::move(x));\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MovedVariable));
-
     }
 
     void valueFlowCalculations() {
