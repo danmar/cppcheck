@@ -1467,7 +1467,7 @@ static bool valueFlowForward(Token * const               startToken,
             const Token * const arg = tok2->next()->astOperand2();
             if (arg != nullptr && arg->str() != ",") {
                 // Should scope be skipped because variable value is checked?
-                for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end();) {
+                for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end();) {
                     if (conditionIsFalse(arg, getProgramMemory(tok2, varid, *it)))
                         values.erase(it++);
                     else
