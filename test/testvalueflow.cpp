@@ -1796,6 +1796,20 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 5));
 
+        // assert after for loop..
+        code = "static void f() {\n"
+               "  int x;\n"
+               "  int ctls[10];\n"
+               "  for (x = 0; x <= 10; x++) {\n"
+               "    if (cond)\n"
+               "      break;\n"
+               "  }\n"
+               "  assert(x <= 10);\n"
+               "  ctls[x] = 123;\n" // <- x can't be 11
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 11));
+
+
         // hang
         code = "void f() {\n"
                "  for(int i = 0; i < 20; i++)\n"

@@ -1463,6 +1463,19 @@ static bool valueFlowForward(Token * const               startToken,
             }
         }
 
+        else if (Token::Match(tok2, "assert|ASSERT (") && Token::simpleMatch(tok2->linkAt(1), ") ;")) {
+            const Token * const arg = tok2->next()->astOperand2();
+            if (arg != nullptr && arg->str() != ",") {
+                // Should scope be skipped because variable value is checked?
+                for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end();) {
+                    if (conditionIsFalse(arg, getProgramMemory(tok2, varid, *it)))
+                        values.erase(it++);
+                    else
+                        ++it;
+                }
+            }
+        }
+
         else if (tok2->str() == "}" && indentlevel == varusagelevel) {
             ++number_of_if;
 
