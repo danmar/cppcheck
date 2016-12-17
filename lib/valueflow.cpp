@@ -1769,7 +1769,7 @@ static const Token * findEndOfFunctionCallForParameter(const Token * parameterTo
     if (!parameterToken)
         return nullptr;
     const Token * parent = parameterToken->astParent();
-    while(parent && !parent->isOp() && parent->str() != "(")
+    while (parent && !parent->isOp() && parent->str() != "(")
         parent = parent->astParent();
     if (!parent)
         return nullptr;
