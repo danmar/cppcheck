@@ -563,6 +563,12 @@ private:
               "    ab->a[0] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("union { char a[1]; int b; } ab;\n"
+              "void f() {\n"
+              "    ab.a[2] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -1507,6 +1507,9 @@ void CheckBufferOverrun::bufferOverrun()
             if (var->dimension(0) <= 1 && Token::simpleMatch(var->nameToken()->linkAt(1),"] ; }"))
                 continue;
 
+            if (var->scope() && var->scope()->type == Scope::eUnion)
+                continue;
+
             ArrayInfo arrayInfo(var, symbolDatabase);
             arrayInfo.varname(varname);
 
