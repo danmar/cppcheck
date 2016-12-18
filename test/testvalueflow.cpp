@@ -480,6 +480,22 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(-10, values.back().intvalue);
 
+        // sizeof
+        code  = "void f() {\n"
+                "    x = sizeof(int);\n"
+                "}";
+        values = tokenValues(code,"( int )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(settings.sizeof_int, values.back().intvalue);
+
+        code  = "void f() {\n"
+                "    struct S *a[10];"
+                "    x = sizeof(a) / sizeof(a[0]);\n"
+                "}";
+        values = tokenValues(code,"/");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(10, values.back().intvalue);
+
         // function call => calculation
         code  = "void f(int x) {\n"
                 "    a = x + 8;\n"

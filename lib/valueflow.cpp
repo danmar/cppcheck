@@ -649,7 +649,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
         ValueFlow::Value value(0);
         value.setKnown();
         setTokenValue(const_cast<Token *>(tok), value, settings);
-    } else if (Token::simpleMatch(tok, "sizeof (") && tok->tokAt(2)) {
+    } else if (Token::simpleMatch(tok, "sizeof (")) {
         const Token *tok2 = tok->tokAt(2);
         if (tok2->enumerator() && tok2->enumerator()->scope) {
             long long size = settings->sizeof_int;
@@ -681,6 +681,56 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             value.setKnown();
             setTokenValue(const_cast<Token *>(tok), value, settings);
             setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+        } else if (Token::Match(tok, "sizeof ( %var% ) / sizeof (") && tok->next()->astParent() == tok->tokAt(4)) {
+            // Get number of elements in array
+            const Token *sz1 = tok->tokAt(2);
+            const Token *sz2 = tok->tokAt(7);
+            const unsigned int varid1 = sz1->varId();
+            if (varid1 &&
+                sz1->variable() &&
+                sz1->variable()->isArray() &&
+                !sz1->variable()->dimensions().empty() &&
+                sz1->variable()->dimensionKnown(0) &&
+                (Token::Match(sz2, "* %varid% )", varid1) || Token::Match(sz2, "%varid% [ 0 ] )", varid1))) {
+                ValueFlow::Value value(sz1->variable()->dimension(0));
+                value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->tokAt(4)), value, settings);
+            }
+        } else if (!tok2->type()) {
+            const ValueType &vt = ValueType::parseDecl(tok2,settings);
+            if (vt.pointer) {
+                ValueFlow::Value value(settings->sizeof_pointer);
+                value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            } else if (vt.type == ValueType::Type::CHAR) {
+                ValueFlow::Value value(1);
+                value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            } else if (vt.type == ValueType::Type::SHORT) {
+                ValueFlow::Value value(settings->sizeof_short);
+                value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            } else if (vt.type == ValueType::Type::INT) {
+                ValueFlow::Value value(settings->sizeof_int);
+                value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            } else if (vt.type == ValueType::Type::LONG) {
+                ValueFlow::Value value(settings->sizeof_long);
+                value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            } else if (vt.type == ValueType::Type::LONGLONG) {
+                ValueFlow::Value value(settings->sizeof_long_long);
+                value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            } else if (vt.type == ValueType::Type::FLOAT) {
+                ValueFlow::Value value(settings->sizeof_float);
+                value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            } else if (vt.type == ValueType::Type::DOUBLE) {
+                ValueFlow::Value value(settings->sizeof_double);
+                value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            }
         }
         // skip over enum
         tok = tok->linkAt(1);

@@ -4650,6 +4650,13 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
     }
 }
 
+ValueType ValueType::parseDecl(const Token *type, const Settings *settings)
+{
+    ValueType vt;
+    parsedecl(type, &vt, settings->defaultSign == 'u' ? Sign::UNSIGNED : Sign::SIGNED, settings);
+    return vt;
+}
+
 bool ValueType::fromLibraryType(const std::string &typestr, const Settings *settings)
 {
     const Library::PodType* podtype = settings->library.podtype(typestr);

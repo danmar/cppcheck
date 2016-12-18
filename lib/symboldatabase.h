@@ -1153,6 +1153,8 @@ public:
     ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr) {}
     ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), originalTypeName(otn) {}
 
+    static ValueType parseDecl(const Token *type, const Settings *settings);
+
     bool isIntegral() const {
         return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
     }
