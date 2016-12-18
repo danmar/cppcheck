@@ -2320,7 +2320,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             singleNameCount = 1;
         } else if (Token::Match(tok2, "&|&&")) {
             ref = !bracket;
-        } else if (singleNameCount == 1 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "(|[")) {
+        } else if (singleNameCount == 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link()->next(), "(|[")) {
             bracket = true; // Skip: Seems to be valid pointer to array or function pointer
         } else if (tok2->str() == "::") {
             singleNameCount = 0;

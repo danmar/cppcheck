@@ -91,6 +91,7 @@ private:
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
         TEST_CASE(varidFunctionCall4);  // ticket #3280
+        TEST_CASE(varidFunctionCall5);
         TEST_CASE(varidStl);
         TEST_CASE(varid_newauto);       // not declaration: new const auto(0);
         TEST_CASE(varid_delete);
@@ -1111,6 +1112,11 @@ private:
                       tokenize(code2, false, "test.c"));
     }
 
+    void varidFunctionCall5() {
+        const char code[] = "void foo() { (f(x[2]))(x[2]); }";
+        ASSERT_EQUALS("1: void foo ( ) { f ( x [ 2 ] ) ( x [ 2 ] ) ; }\n",
+                      tokenize(code, false, "test.c"));
+    }
 
     void varidStl() {
         const std::string actual = tokenize(

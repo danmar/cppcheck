@@ -1144,7 +1144,7 @@ private:
                       "void(*p2)(char); \n"                         // pointer to function (char) returning void
                       "int(*(*p3)(char))[10];\n"                    // pointer to function (char) returning pointer to array 10 of int
                       "float(*(*p4)(char))(long); \n"               // pointer to function (char) returning pointer to function (long) returning float
-                      "short(*(*(p5) (char))(long))(double); \n"    // pointer to function (char) returning pointer to function (long) returning pointer to function (double) returning short
+                      "short(*(*(*p5) (char))(long))(double);\n"    // pointer to function (char) returning pointer to function (long) returning pointer to function (double) returning short
                       "int(*a1[10])(void); \n"                      // array 10 of pointer to function (void) returning int
                       "float(*(*a2[10])(char))(long);\n"            // array 10 of pointer to func (char) returning pointer to func (long) returning float
                       "short(*(*(*a3[10])(char))(long))(double);\n" // array 10 of pointer to function (char) returning pointer to function (long) returning pointer to function (double) returning short
