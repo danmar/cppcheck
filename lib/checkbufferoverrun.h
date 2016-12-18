@@ -68,13 +68,13 @@ public:
         checkBufferOverrun.checkStructVariable();
         checkBufferOverrun.checkBufferAllocatedWithStrlen();
         checkBufferOverrun.checkInsecureCmdLineArgs();
-        checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.arrayIndexThenCheck();
         checkBufferOverrun.negativeArraySize();
     }
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
+        checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.checkStringArgument();
     }
 
