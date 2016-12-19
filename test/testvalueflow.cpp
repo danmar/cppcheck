@@ -900,6 +900,12 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
 
         code = "void f() {\n"
+               "    bool x = 32;\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
+
+        code = "void f() {\n"
                "    int x = 123;\n"
                "    a = sizeof(x);\n"
                "}";

@@ -1945,6 +1945,16 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             std::list<ValueFlow::Value> values = tok->astOperand2()->values;
             const bool constValue = tok->astOperand2()->isNumber();
 
+            if (tokenlist->isCPP() && Token::simpleMatch(var->typeStartToken(), "bool")) {
+                std::list<ValueFlow::Value>::iterator it;
+                for (it = values.begin(); it != values.end(); ++it) {
+                    if (it->isIntValue())
+                        it->intvalue = (it->intvalue != 0);
+                    if (it->isTokValue())
+                        it ->intvalue = (it->tokvalue != 0);
+                }
+            }
+
             // Static variable initialisation?
             if (var->isStatic() && var->nameToken() == tok->astOperand1()) {
                 for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
