@@ -178,19 +178,20 @@ void CheckAutoVariables::assignFunctionArg()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "[;{}] %var% =|++|--") || Token::Match(tok, "[;{}] ++|-- %var%")) {
-                const Token* vartok = tok->next();
-                if (!vartok->variable())
-                    vartok = vartok->next();
-                if (isNonReferenceArg(vartok) &&
-                    !Token::Match(vartok->next(), "= %varid% ;", vartok->varId()) &&
-                    !variableIsUsedInScope(Token::findsimplematch(vartok->next(), ";"), vartok->varId(), scope) &&
-                    !Token::findsimplematch(vartok, "goto", scope->classEnd)) {
-                    if (vartok->variable()->isPointer() && printWarning)
-                        errorUselessAssignmentPtrArg(vartok);
-                    else if (printStyle)
-                        errorUselessAssignmentArg(vartok);
-                }
+            // TODO: What happens if this is removed?
+            if (tok->astParent())
+                continue;
+            if (!Token::Match(tok, "=|++|--") || !Token::Match(tok->astOperand1(), "%var%"))
+                continue;
+            const Token* const vartok = tok->astOperand1();
+            if (isNonReferenceArg(vartok) &&
+                !Token::Match(vartok->next(), "= %varid% ;", vartok->varId()) &&
+                !variableIsUsedInScope(Token::findsimplematch(vartok->next(), ";"), vartok->varId(), scope) &&
+                !Token::findsimplematch(vartok, "goto", scope->classEnd)) {
+                if (vartok->variable()->isPointer() && printWarning)
+                    errorUselessAssignmentPtrArg(vartok);
+                else if (printStyle)
+                    errorUselessAssignmentArg(vartok);
             }
         }
     }
