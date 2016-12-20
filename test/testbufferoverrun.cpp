@@ -911,48 +911,48 @@ private:
                "    a[-1] = 0;\n"    // negative index
                "    a[" + charMaxPlusOne.str() + "] = 0;\n"   // 128/256 > CHAR_MAX
                "}\n").c_str());
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a["+charMaxPlusOne.str()+"]' accessed at index "+charMaxPlusOne.str()+", which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a["+charMaxPlusOne.str()+"]' accessed at index "+charMaxPlusOne.str()+", which is out of bounds.\n", errout.str());
 
         check("void f(signed char n) {\n"
               "    int a[n];\n"     // n <= SCHAR_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[128] = 0;\n"   // 128 > SCHAR_MAX
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[128]' accessed at index 128, which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a[128]' accessed at index 128, which is out of bounds.\n", errout.str());
 
         check("void f(unsigned char n) {\n"
               "    int a[n];\n"     // n <= UCHAR_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[256] = 0;\n"   // 256 > UCHAR_MAX
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[256]' accessed at index 256, which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a[256]' accessed at index 256, which is out of bounds.\n", errout.str());
 
         check("void f(short n) {\n"
               "    int a[n];\n"     // n <= SHRT_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[32768] = 0;\n" // 32768 > SHRT_MAX
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds.\n", errout.str());
 
         check("void f(unsigned short n) {\n"
               "    int a[n];\n"     // n <= USHRT_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[65536] = 0;\n" // 65536 > USHRT_MAX
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[65536]' accessed at index 65536, which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a[65536]' accessed at index 65536, which is out of bounds.\n", errout.str());
 
         check("void f(signed short n) {\n"
               "    int a[n];\n"     // n <= SHRT_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[32768] = 0;\n" // 32768 > SHRT_MAX
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds.\n", errout.str());
 
         check("void f(int n) {\n"
               "    int a[n];\n"     // n <= INT_MAX
@@ -1618,6 +1618,26 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        {
+            check("int foo() {\n"
+                  "  const size_t A = 4;\n"
+                  "  const size_t B = 2;\n"
+                  "  extern int stuff[A][B];\n"
+                  "  return stuff[0][1];\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+
+            // TODO: better handling of VLAs in symboldatabase. should be
+            //       possible to use ValueFlow values.
+            check("int foo() {\n"
+                  "  const size_t A = 4;\n"
+                  "  const size_t B = 2;\n"
+                  "  extern int stuff[A][B];\n"
+                  "  return stuff[0][1];\n"
+                  "}");
+            TODO_ASSERT_EQUALS("error", "", errout.str());
+        }
     }
 
     void array_index_switch_in_for() {

@@ -1503,6 +1503,15 @@ void CheckBufferOverrun::bufferOverrun()
             if (var->nameToken() == tok || !var->isArray())
                 continue;
 
+            // unknown array dimensions
+            bool known = true;
+            for (unsigned int i = 0; i < var->dimensions().size(); ++i) {
+                known &= (var->dimension(i) >= 1);
+                known &= var->dimensionKnown(i);
+            }
+            if (!known)
+                continue;
+
             // TODO: last array in struct..
             if (var->dimension(0) <= 1 && Token::simpleMatch(var->nameToken()->linkAt(1),"] ; }"))
                 continue;
