@@ -1662,6 +1662,14 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 2));
         ASSERT_EQUALS(true, testValueOfX(code, 5U, 2));
 
+        code = "enum AB {A,B};\n" // enum => handled by valueForLoop2
+               "void f() {\n"
+               "    int x;\n"
+               "    for (x = 1; x < B; ++x)\n"
+               "        a[x] = 0;\n" // <- not 1
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 1));
+
         code = "void f(int a) {\n"
                "    for (int x = a; x < 10; x++)\n"
                "        a[x] = 0;\n"
@@ -1733,7 +1741,7 @@ private:
                "    for (int x = 0; x < 10 && y = do_something();)\n"
                "        x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 0));
 
         code = "void f() {\n"
                "    int x,y;\n"

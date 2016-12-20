@@ -2351,6 +2351,8 @@ static bool valueFlowForLoop2(const Token *tok,
     if (error)
         return false;
     execute(secondExpression, &programMemory, &result, &error);
+    if (result == 0) // 2nd expression is false => no looping
+        return false;
     if (error) {
         // If a variable is reassigned in second expression, return false
         std::stack<const Token *> tokens;
