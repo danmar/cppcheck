@@ -377,7 +377,8 @@ private:
         ASSERT_EQUALS(0, valueOfTok("3 <  (a ? b : 2);", "<").intvalue);
         ASSERT_EQUALS(0, valueOfTok("3 <= (a ? b : 2);", "<=").intvalue);
 
-        ASSERT(tokenValues("(UNKNOWN_TYPE)123;","(").empty());
+        ASSERT_EQUALS(1, valueOfTok("(UNKNOWN_TYPE)1;","(").intvalue);
+        ASSERT(tokenValues("(UNKNOWN_TYPE)1000;","(").empty()); // don't know if there is truncation, sign extension
         ASSERT_EQUALS(255, valueOfTok("(unsigned char)~0;", "(").intvalue);
         ASSERT_EQUALS(0, valueOfTok("(int)0;", "(").intvalue);
         ASSERT_EQUALS(0, valueOfTok("(UNKNOWN_TYPE*)0;","(").intvalue);
