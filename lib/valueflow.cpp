@@ -284,6 +284,21 @@ static bool addValue(Token *tok, const ValueFlow::Value &value)
     return true;
 }
 
+static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign sign, unsigned int bit)
+{
+    if (value.isFloatValue()) {
+        value.valueType = ValueFlow::Value::INT;
+        value.intvalue = value.floatValue;
+    }
+    if (bit < 64) {
+        value.intvalue &= (1ULL << bit) - 1ULL;
+        if (sign == ValueType::Sign::SIGNED && value.intvalue & (1ULL << (bit - 1ULL))) {
+            value.intvalue |= ~((1ULL << bit) - 1ULL);
+        }
+    }
+    return value;
+}
+
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings)
 {
@@ -294,13 +309,23 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     if (!parent)
         return;
 
-    // TODO: Cast..
-    /*
     if (parent->str() == "(" && tok == parent->link()->next()) {
-        setTokenValue(parent,value,settings);
-    } else .. */
+        const ValueType &valueType = ValueType::parseDecl(parent->next(), settings);
+        if (valueType.pointer)
+            setTokenValue(parent,value,settings);
+        else if (valueType.type == ValueType::Type::CHAR)
+            setTokenValue(parent, castValue(value, valueType.sign, settings->char_bit), settings);
+        else if (valueType.type == ValueType::Type::SHORT)
+            setTokenValue(parent, castValue(value, valueType.sign, settings->short_bit), settings);
+        else if (valueType.type == ValueType::Type::INT)
+            setTokenValue(parent, castValue(value, valueType.sign, settings->int_bit), settings);
+        else if (valueType.type == ValueType::Type::LONG)
+            setTokenValue(parent, castValue(value, valueType.sign, settings->long_bit), settings);
+        else if (valueType.type == ValueType::Type::LONGLONG)
+            setTokenValue(parent, castValue(value, valueType.sign, settings->long_long_bit), settings);
+    }
 
-    if (parent->str() == ":") {
+    else if (parent->str() == ":") {
         setTokenValue(parent,value,settings);
     }
 
