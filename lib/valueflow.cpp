@@ -309,7 +309,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     if (!parent)
         return;
 
-    if (parent->str() == "(" && tok == parent->link()->next()) {
+    if (parent->str() == "(" && !parent->astOperand2() && Token::Match(parent,"( %name%")) {
         const ValueType &valueType = ValueType::parseDecl(parent->next(), settings);
         if (valueType.pointer)
             setTokenValue(parent,value,settings);
