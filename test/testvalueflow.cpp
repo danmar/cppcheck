@@ -1974,6 +1974,16 @@ private:
                "};";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
 
+        code = "void foo(int x, int y) {\n"
+               "  if (y == 1) {\n"
+               "    a = x;\n"  // <- x is not 1
+               "  }\n"
+               "}\n"
+               "\n"
+               "void bar() {\n"
+               "  foo(1, 10);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 1));
     }
 
     void valueFlowFunctionReturn() {

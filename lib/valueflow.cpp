@@ -1242,6 +1242,7 @@ static bool valueFlowForward(Token * const               startToken,
                              const unsigned int          varid,
                              std::list<ValueFlow::Value> values,
                              const bool                  constValue,
+                             const bool                  subFunction,
                              TokenList * const           tokenlist,
                              ErrorLogger * const         errorLogger,
                              const Settings * const      settings)
@@ -1363,7 +1364,11 @@ static bool valueFlowForward(Token * const               startToken,
             // Should scope be skipped because variable value is checked?
             std::list<ValueFlow::Value> truevalues;
             for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
-                if (condAlwaysTrue || !conditionIsFalse(condTok, getProgramMemory(tok2, varid, *it)))
+                if (condAlwaysTrue)
+                    truevalues.push_back(*it);
+                else if (subFunction && conditionIsTrue(condTok, getProgramMemory(tok2, varid, *it)))
+                    truevalues.push_back(*it);
+                else if (!subFunction && !conditionIsFalse(condTok, getProgramMemory(tok2, varid, *it)))
                     truevalues.push_back(*it);
             }
             if (truevalues.size() != values.size() || condAlwaysTrue) {
@@ -1376,6 +1381,7 @@ static bool valueFlowForward(Token * const               startToken,
                                  varid,
                                  truevalues,
                                  constValue,
+                                 subFunction,
                                  tokenlist,
                                  errorLogger,
                                  settings);
@@ -1872,7 +1878,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
                 const unsigned int varId = varTok->varId();
                 const Token * const endOfVarScope = var->typeStartToken()->scope()->classEnd;
                 setTokenValue(varTok, value, settings);
-                valueFlowForward(varTok->next(), endOfVarScope, var, varId, values, false, tokenlist, errorLogger, settings);
+                valueFlowForward(varTok->next(), endOfVarScope, var, varId, values, false, false, tokenlist, errorLogger, settings);
                 continue;
             }
             ValueFlow::Value::MoveKind moveKind;
@@ -1904,7 +1910,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             const Token * openParentesisOfMove = findOpenParentesisOfMove(varTok);
             const Token * endOfFunctionCall = findEndOfFunctionCallForParameter(openParentesisOfMove);
             if (endOfFunctionCall)
-                valueFlowForward(const_cast<Token *>(endOfFunctionCall), endOfVarScope, var, varId, values, false, tokenlist, errorLogger, settings);
+                valueFlowForward(const_cast<Token *>(endOfFunctionCall), endOfVarScope, var, varId, values, false, false, tokenlist, errorLogger, settings);
         }
     }
 }
@@ -1965,7 +1971,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             // Skip RHS
             const Token * nextExpression = nextAfterAstRightmostLeaf(tok);
 
-            valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, varid, values, constValue, tokenlist, errorLogger, settings);
+            valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, varid, values, constValue, false, tokenlist, errorLogger, settings);
         }
     }
 }
@@ -2089,7 +2095,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 }
 
                 if (startToken) {
-                    if (!valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings))
+                    if (!valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, false, tokenlist, errorLogger, settings))
                         continue;
                     if (isVariableChanged(startToken, startToken->link(), varid, settings)) {
                         // TODO: The endToken should not be startToken->link() in the valueFlowForward call
@@ -2125,7 +2131,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         // TODO: constValue could be true if there are no assignments in the conditional blocks and
                         //       perhaps if there are no && and no || in the condition
                         bool constValue = false;
-                        valueFlowForward(after->next(), top->scope()->classEnd, var, varid, values, constValue, tokenlist, errorLogger, settings);
+                        valueFlowForward(after->next(), top->scope()->classEnd, var, varid, values, constValue, false, tokenlist, errorLogger, settings);
                     }
                 }
             }
@@ -2503,6 +2509,7 @@ static void valueFlowForLoopSimplifyAfter(Token *fortok, unsigned int varid, con
                      varid,
                      values,
                      false,
+                     false,
                      tokenlist,
                      errorLogger,
                      settings);
@@ -2566,7 +2573,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
     if (!varid2)
         return;
 
-    valueFlowForward(const_cast<Token*>(functionScope->classStart->next()), functionScope->classEnd, arg, varid2, argvalues, false, tokenlist, errorLogger, settings);
+    valueFlowForward(const_cast<Token*>(functionScope->classStart->next()), functionScope->classEnd, arg, varid2, argvalues, false, true, tokenlist, errorLogger, settings);
 }
 
 static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
@@ -2614,7 +2621,7 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                                      settings);
                 }
                 if (vartok->variable()->scope()) // #7257
-                    valueFlowForward(tok, vartok->variable()->scope()->classEnd, vartok->variable(), vartok->varId(), values, false, tokenlist, errorLogger, settings);
+                    valueFlowForward(tok, vartok->variable()->scope()->classEnd, vartok->variable(), vartok->varId(), values, false, false, tokenlist, errorLogger, settings);
             }
         }
     }
