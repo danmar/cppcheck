@@ -42,7 +42,7 @@ private:
         TEST_CASE(checkFloatToIntegerOverflow);
     }
 
-    void check(const char code[], Settings* settings = 0) {
+    void check(const char code[], Settings* settings = 0, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -55,7 +55,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
 
         // Check..
         CheckType checkType(&tokenizer, settings, this);
@@ -136,6 +136,11 @@ private:
               "   if (x==123456) {}\n"
               "   return 123456U * x;\n"
               "}",&settings);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo() {\n"
+              "  x = 1 << 31;\n" // this is technically integer overflow but it's common code
+              "}", &settings, "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 

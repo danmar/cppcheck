@@ -113,7 +113,7 @@ void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Val
 void CheckType::checkIntegerOverflow()
 {
     // unknown sizeof(int) => can't run this checker
-    if (_settings->platformType == Settings::Unspecified)
+    if (_settings->platformType == Settings::Unspecified || _settings->int_bit >= 64)
         return;
 
     // max int value according to platform settings.
@@ -136,8 +136,14 @@ void CheckType::checkIntegerOverflow()
             const ValueFlow::Value *value = tok->getValueGE(maxint + 1, _settings);
             if (!value)
                 value = tok->getValueLE(-maxint - 2, _settings);
-            if (value)
-                integerOverflowError(tok, *value);
+            if (!value)
+                continue;
+
+            // For left shift, it's common practice to shift into the sign bit
+            if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (1LL << _settings->int_bit))
+                continue;
+
+            integerOverflowError(tok, *value);
         }
     }
 }
