@@ -699,6 +699,14 @@ private:
                        "  _tm.dostuff();\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #7822 - Array type
+        checkUninitVar("A *f() {\n"
+                       "    A a,b;\n"
+                       "    b[0] = 0;"
+                       "    return a;\n"
+                       "}", "test.c", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar3() { // #3844
