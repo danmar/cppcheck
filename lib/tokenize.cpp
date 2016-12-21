@@ -41,16 +41,24 @@ namespace {
     // in order to store information about the scope
     struct VarIdscopeInfo {
         VarIdscopeInfo()
-            :isExecutable(false), isStructInit(false), startVarid(0) {
+            :isExecutable(false), isStructInit(false), isEnum(false), startVarid(0) {
         }
-        VarIdscopeInfo(bool _isExecutable, bool _isStructInit, unsigned int _startVarid)
-            :isExecutable(_isExecutable), isStructInit(_isStructInit), startVarid(_startVarid) {
+        VarIdscopeInfo(bool _isExecutable, bool _isStructInit, bool _isEnum, unsigned int _startVarid)
+            :isExecutable(_isExecutable), isStructInit(_isStructInit), isEnum(_isEnum), startVarid(_startVarid) {
         }
 
         const bool isExecutable;
         const bool isStructInit;
+        const bool isEnum;
         const unsigned int startVarid;
     };
+
+    /** Return whether tok is the "{" that starts an enumerator list */
+    bool isEnumStart(const Token* tok) {
+        if (!tok || tok->str() != "{")
+            return false;
+        return (tok->strAt(-1) == "enum") || (tok->strAt(-2) == "enum");
+    }
 }
 
 const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith) const
@@ -2428,7 +2436,7 @@ void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
     for (const Token *tok = startToken->previous(); tok; tok = tok->previous()) {
         if (!tok->isName() && tok->str() != ":")
             break;
-        if (Token::Match(tok, "class|struct %type% [:{]")) {
+        if (Token::Match(tok, "class|struct|enum %type% [:{]")) {
             className = tok->next()->str();
             break;
         }
@@ -2437,6 +2445,7 @@ void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
     // replace varids..
     unsigned int indentlevel = 0;
     bool initList = false;
+    bool inEnum = false;
     const Token *initListArgLastToken = nullptr;
     for (Token *tok = startToken->next(); tok != endToken; tok = tok->next()) {
         if (!tok)
@@ -2450,11 +2459,14 @@ void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
                 initListArgLastToken = tok->link();
         }
         if (tok->str() == "{") {
+            inEnum = isEnumStart(tok);
             if (initList && !initListArgLastToken)
                 initList = false;
             ++indentlevel;
-        } else if (tok->str() == "}")
+        } else if (tok->str() == "}") {
             --indentlevel;
+            inEnum = false;
+        }
         else if (initList && indentlevel == 0 && Token::Match(tok->previous(), "[,:] %name% [({]")) {
             const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
             if (it != variableId.end()) {
@@ -2473,10 +2485,12 @@ void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
                         continue;
                 }
 
-                const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
-                if (it != variableId.end()) {
-                    tok->varId(it->second);
-                    setVarIdStructMembers(&tok, structMembers, &_varId);
+                if (!inEnum) {
+                    const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
+                    if (it != variableId.end()) {
+                        tok->varId(it->second);
+                        setVarIdStructMembers(&tok, structMembers, &_varId);
+                    }
                 }
             }
         } else if (indentlevel == 0 && tok->str() == ":" && !initListArgLastToken)
@@ -2565,7 +2579,7 @@ void Tokenizer::setVarIdPass1()
                 variableId.swap(scopeInfo.top());
                 scopeInfo.pop();
             } else if (tok->str() == "{")
-                scopeStack.push(VarIdscopeInfo(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", _varId));
+                scopeStack.push(VarIdscopeInfo(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/false, _varId));
         } else if (!initlist && tok->str()=="(") {
             const Token * newFunctionDeclEnd = nullptr;
             if (!scopeStack.top().isExecutable)
@@ -2599,7 +2613,7 @@ void Tokenizer::setVarIdPass1()
                             scopeInfo.push(variableId);
                     }
                     initlist = false;
-                    scopeStack.push(VarIdscopeInfo(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", _varId));
+                    scopeStack.push(VarIdscopeInfo(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), _varId));
                 } else { /* if (tok->str() == "}") */
                     bool isNamespace = false;
                     for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous())
@@ -2778,10 +2792,12 @@ void Tokenizer::setVarIdPass1()
                     continue;
             }
 
-            const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
-            if (it != variableId.end()) {
-                tok->varId(it->second);
-                setVarIdStructMembers(&tok, structMembers, &_varId);
+            if (!scopeStack.top().isEnum) {
+                const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
+                if (it != variableId.end()) {
+                    tok->varId(it->second);
+                    setVarIdStructMembers(&tok, structMembers, &_varId);
+                }
             }
         } else if (Token::Match(tok, "::|. %name%")) {
             // Don't set varid after a :: or . token
