@@ -401,6 +401,8 @@ static bool astHasAutoResult(const Token *tok)
         return false;
 
     if (tok->isOp()) {
+        if (tok->tokType() == Token::eIncDecOp)
+            return false;
         if ((tok->str() == "<<" || tok->str() == ">>") && tok->astOperand1()) {
             const Token* tok2 = tok->astOperand1();
             while (tok2 && tok2->str() == "*" && !tok2->astOperand2())

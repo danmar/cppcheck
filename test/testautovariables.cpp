@@ -1022,6 +1022,11 @@ private:
               "    return \"foo\" + str;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int& incValue(int& value) {\n"
+              "    return ++value;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceLambda() {
