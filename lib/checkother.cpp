@@ -2303,6 +2303,8 @@ static bool isNegative(const Token *tok, const Settings *settings)
 
 void CheckOther::checkNegativeBitwiseShift()
 {
+    const bool portability = _settings->isEnabled("portability");
+
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->astOperand1() || !tok->astOperand2())
             continue;
@@ -2312,15 +2314,8 @@ void CheckOther::checkNegativeBitwiseShift()
 
         // don't warn if lhs is a class. this is an overloaded operator then
         if (_tokenizer->isCPP()) {
-            const Token *rhs = tok->astOperand1();
-            while (Token::Match(rhs, "::|."))
-                rhs = rhs->astOperand2();
-            if (!rhs)
-                continue;
-            if (!rhs->isNumber() && !rhs->variable())
-                continue;
-            if (rhs->variable() &&
-                (!rhs->variable()->typeStartToken() || !rhs->variable()->typeStartToken()->isStandardType()))
+            const ValueType * lhsType = tok->astOperand1()->valueType();
+            if (!lhsType || !lhsType->isIntegral())
                 continue;
         }
 
@@ -2336,7 +2331,7 @@ void CheckOther::checkNegativeBitwiseShift()
             continue;
 
         // Get negative rhs value. preferably a value which doesn't have 'condition'.
-        if (isNegative(tok->astOperand1(), _settings))
+        if (portability && isNegative(tok->astOperand1(), _settings))
             negativeBitwiseShiftError(tok, 1);
         else if (isNegative(tok->astOperand2(), _settings))
             negativeBitwiseShiftError(tok, 2);
@@ -2346,8 +2341,11 @@ void CheckOther::checkNegativeBitwiseShift()
 
 void CheckOther::negativeBitwiseShiftError(const Token *tok, int op)
 {
-    if (op == 1) // LHS
-        reportError(tok, Severity::error, "shiftNegative", "Shifting a negative value is undefined behaviour", CWE758, false);
+    if (op == 1)
+        // LHS - this is used by intention in various software, if it
+        // is used often in a project and works as expected then this is
+        // a portability issue
+        reportError(tok, Severity::portability, "shiftNegativeLHS", "Shifting a negative value is technically undefined behaviour", CWE758, false);
     else // RHS
         reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value is undefined behaviour", CWE758, false);
 }

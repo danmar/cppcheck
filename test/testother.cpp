@@ -4618,13 +4618,17 @@ private:
               "   std::cout << 3 << -1 ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+        check("void foo() {\n"
+              "   x = (-10+2) << 3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Shifting a negative value is technically undefined behaviour\n", errout.str());
 
         check("x = y ? z << $-1 : 0;\n");
         ASSERT_EQUALS("", errout.str());
 
         // Negative LHS
         check("const int x = -1 >> 2;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting a negative value is undefined behaviour\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (portability) Shifting a negative value is technically undefined behaviour\n", errout.str());
 
         // #6383 - unsigned type
         check("const int x = (unsigned int)(-1) >> 2;");
@@ -4637,8 +4641,8 @@ private:
               "int shift4() { return -1 << 1 ;}\n");
         ASSERT_EQUALS("[test.cpp:1]: (error) Shifting by a negative value is undefined behaviour\n"
                       "[test.cpp:2]: (error) Shifting by a negative value is undefined behaviour\n"
-                      "[test.cpp:3]: (error) Shifting a negative value is undefined behaviour\n"
-                      "[test.cpp:4]: (error) Shifting a negative value is undefined behaviour\n", errout.str());
+                      "[test.cpp:3]: (portability) Shifting a negative value is technically undefined behaviour\n"
+                      "[test.cpp:4]: (portability) Shifting a negative value is technically undefined behaviour\n", errout.str());
     }
 
     void incompleteArrayFill() {
