@@ -54,7 +54,8 @@ namespace {
     };
 
     /** Return whether tok is the "{" that starts an enumerator list */
-    bool isEnumStart(const Token* tok) {
+    bool isEnumStart(const Token* tok)
+    {
         if (!tok || tok->str() != "{")
             return false;
         return (tok->strAt(-1) == "enum") || (tok->strAt(-2) == "enum");
@@ -2466,8 +2467,7 @@ void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
         } else if (tok->str() == "}") {
             --indentlevel;
             inEnum = false;
-        }
-        else if (initList && indentlevel == 0 && Token::Match(tok->previous(), "[,:] %name% [({]")) {
+        } else if (initList && indentlevel == 0 && Token::Match(tok->previous(), "[,:] %name% [({]")) {
             const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
             if (it != variableId.end()) {
                 tok->varId(it->second);
