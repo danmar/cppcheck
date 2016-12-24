@@ -2,7 +2,7 @@
 set -e # abort on error
 set -x # be verbose
 
-if [[ `pwd` == */test/cfg ]] ; then # we are in test/cfg
+if [[ $(pwd) == */test/cfg ]] ; then # we are in test/cfg
 	CPPCHECK="../../cppcheck"
 	DIR=""
 else # assume we are in repo root

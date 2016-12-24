@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cat $1 | sed s@\"@\\\\\"@g | sed s@^@\"@ | sed s@\$@\\\\n\"@ | sed 's@\t@    @g'
+sed s@\"@\\\\\"@g | sed s@^@\"@ $1 | sed s@\$@\\\\n\"@ | sed 's@\t@    @g'

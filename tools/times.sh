@@ -15,12 +15,12 @@ make clean
 
 git reset --hard HEAD > times.log
 
-for i in `seq 1 50`; do
-    git_head=`git log -1 --format=%h`
+for i in $(seq 1 50); do
+    git_head=$(git log -1 --format=%h)
     # if build fails, make clean and try again
     make SRCDIR=build CXXFLAGS=-O2 -j4 || make clean ; make SRCDIR=build CXXFLAGS=-O2 -j4
     echo "Run number $i"
-    for j in `seq 1 ${iterations}`; do
+    for j in $(seq 1 ${iterations}); do
         ./cppcheck --quiet --showtime=summary --enable=all --inconclusive src 2> /dev/null | tee -a times.log
     done
     grep "Overall" times.log | tail -${iterations} | sed s/s// | awk -v "i=$i" -v "iterations=$iterations" -v "git_head=$git_head"  '{ sum+=$3} END {print "Run " i",  "git_head  "  Average: " sum/iterations}' | tee -a times.log
