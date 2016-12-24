@@ -45,6 +45,7 @@ static const struct CWE CWE561(561U);   // Dead Code
 static const struct CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
 static const struct CWE CWE570(570U);   // Expression is Always False
 static const struct CWE CWE571(571U);   // Expression is Always True
+static const struct CWE CWE672(672U);   // Operation on a Resource after Expiration or Release
 static const struct CWE CWE686(686U);   // Function Call With Incorrect Argument Type
 static const struct CWE CWE687(687U);   // Function Call With Incorrectly Specified Argument Value
 static const struct CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
@@ -2768,6 +2769,6 @@ void CheckOther::accessMovedError(const Token *tok, const std::string &varname, 
         return;
     }
     const std::string errmsg(std::string("Access of ") + kindString + " variable " + varname + ".");
-    reportError(tok, Severity::warning, errorId, errmsg, CWE(0U), inconclusive);
+    reportError(tok, Severity::warning, errorId, errmsg, CWE672, inconclusive);
 }
 
