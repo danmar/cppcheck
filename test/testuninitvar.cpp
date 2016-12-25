@@ -969,6 +969,11 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: y\n", errout.str());
 
+        checkUninitVar("void foo() {\n" // pidgin-2.11.0/finch/libgnt/gnttree.c
+                       "  int x = (x = bar()) ? x : 0;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // ; { .. }
         checkUninitVar("int foo()\n"
                        "{\n"
