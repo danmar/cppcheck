@@ -31,6 +31,7 @@ namespace {
 }
 
 static const CWE CWE476(476U);  // NULL Pointer Dereference
+static const CWE CWE682(682U);	// Incorrect Calculation
 
 //---------------------------------------------------------------------------
 
@@ -538,7 +539,7 @@ void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value 
                 (value && value->condition) ? Severity::warning : Severity::error,
                 (value && value->condition) ? "nullPointerArithmeticRedundantCheck" : "nullPointerArithmetic",
                 errmsg,
-                CWE(0), // unknown - pointer overflow
+                CWE682, // unknown - pointer overflow
                 value && value->inconclusive);
 }
 
