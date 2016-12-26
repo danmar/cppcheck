@@ -719,6 +719,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n" // #5398
+              "    bool success = false;\n"
+              "    int notReducable(someClass.getX(&success));\n"
+              "    if (success) {\n"
+              "        foo(notReducable);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f()\n"
               "{\n"
               "int foo = 0;\n"
