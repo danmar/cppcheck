@@ -31,7 +31,7 @@ namespace {
 }
 
 static const CWE CWE476(476U);  // NULL Pointer Dereference
-static const CWE CWE682(682U);	// Incorrect Calculation
+static const CWE CWE682(682U);  // Incorrect Calculation
 
 //---------------------------------------------------------------------------
 
