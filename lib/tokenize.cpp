@@ -6249,7 +6249,7 @@ bool Tokenizer::simplifyKnownVariables()
                      (Token::Match(tok2, "%name% = %bool%|%char%|%num%|%str%|%name% ;") ||
                       Token::Match(tok2, "%name% [ %num%| ] = %str% ;") ||
                       Token::Match(tok2, "%name% = & %name% ;") ||
-                      Token::Match(tok2, "%name% = & %name% [ 0 ] ;"))) {
+                      (Token::Match(tok2, "%name% = & %name% [ 0 ] ;") && arrays.find(tok2->tokAt(3)->varId()) != arrays.end()))) {
                 const unsigned int varid = tok2->varId();
                 if (varid == 0)
                     continue;

@@ -179,6 +179,7 @@ private:
         TEST_CASE(simplifyKnownVariables59);    // skip for header
         TEST_CASE(simplifyKnownVariables60);    // #6829
         TEST_CASE(simplifyKnownVariables61);    // #7805
+        TEST_CASE(simplifyKnownVariables62);    // #5666 - p=&str[0]
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutAssign3); // #4395 - nested assignments
@@ -2661,6 +2662,17 @@ private:
                              "  enum { XX };\n"
                              "};", /*simplify=*/true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyKnownVariables62() { // #5666
+        ASSERT_EQUALS("void foo ( std :: string str ) {\n"
+                      "char * p ; p = & str [ 0 ] ;\n"
+                      "* p = 0 ;\n"
+                      "}",
+                      tokenizeAndStringify("void foo(std::string str) {\n"
+                                           "  char *p = &str[0];\n"
+                                           "  *p = 0;\n"
+                                           "}", /*simplify=*/true));
     }
 
     void simplifyKnownVariablesBailOutAssign1() {
