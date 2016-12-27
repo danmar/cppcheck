@@ -2575,6 +2575,20 @@ private:
               "    char* s = data();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5144
+        check("C* BuildC( C *previous ) {\n"
+              "  C *result = malloc(100);\n"
+              "  result->previous = previous;\n"
+              "  return result;\n"
+              "}\n"
+              "C *ParseC( ) {\n"
+              "  C *expr1 = NULL;\n"
+              "  while( something() )\n"
+              "    expr1 = BuildC(expr1);\n"
+              "  return expr1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void allocfunc8() {

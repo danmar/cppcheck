@@ -386,6 +386,9 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
         if (Token::Match(tok, "[(,] & %varid% [.,)]", varid)) {
             return No;
         }
+        if (Token::Match(tok, "[;{}] %varid% .", varid)) {
+            return No;
+        }
         if (allocType == No && tok->str() == "return")
             return No;
     }
