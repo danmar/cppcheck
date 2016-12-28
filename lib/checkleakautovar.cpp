@@ -546,7 +546,11 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const Va
             if (!af || af->arg == argNr)
                 changeAllocStatus(varInfo, allocation, tok, arg);
         } else if (Token::Match(arg, "%name% (")) {
-            functionCall(arg, varInfo, allocation, af);
+            const Library::AllocFunc* allocFunc = _settings->library.dealloc(arg);
+            VarInfo::AllocInfo alloc(allocFunc ? allocFunc->groupId : 0, VarInfo::DEALLOC);
+            if (alloc.type == 0)
+                alloc.status = VarInfo::NOALLOC;
+            functionCall(arg, varInfo, alloc, allocFunc);
         }
         argNr++;
     }
