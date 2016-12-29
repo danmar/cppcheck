@@ -431,15 +431,15 @@ Parameter: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="26"/>
         <location filename="mainwindow.cpp" line="308"/>
-        <location filename="mainwindow.cpp" line="418"/>
-        <location filename="mainwindow.cpp" line="475"/>
-        <location filename="mainwindow.cpp" line="569"/>
-        <location filename="mainwindow.cpp" line="591"/>
-        <location filename="mainwindow.cpp" line="954"/>
-        <location filename="mainwindow.cpp" line="1066"/>
-        <location filename="mainwindow.cpp" line="1194"/>
-        <location filename="mainwindow.cpp" line="1373"/>
-        <location filename="mainwindow.cpp" line="1461"/>
+        <location filename="mainwindow.cpp" line="423"/>
+        <location filename="mainwindow.cpp" line="487"/>
+        <location filename="mainwindow.cpp" line="581"/>
+        <location filename="mainwindow.cpp" line="603"/>
+        <location filename="mainwindow.cpp" line="974"/>
+        <location filename="mainwindow.cpp" line="1086"/>
+        <location filename="mainwindow.cpp" line="1214"/>
+        <location filename="mainwindow.cpp" line="1393"/>
+        <location filename="mainwindow.cpp" line="1481"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -626,8 +626,8 @@ Parameter: -l(line) (file)
     </message>
     <message>
         <location filename="mainwindow.ui" line="560"/>
-        <location filename="mainwindow.cpp" line="667"/>
-        <location filename="mainwindow.cpp" line="705"/>
+        <location filename="mainwindow.cpp" line="679"/>
+        <location filename="mainwindow.cpp" line="717"/>
         <source>Information</source>
         <translation>Information</translation>
     </message>
@@ -893,12 +893,12 @@ Parameter: -l(line) (file)
         <translation>&amp;Hilfe</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="505"/>
+        <location filename="mainwindow.cpp" line="517"/>
         <source>Select directory to check</source>
         <translation>Verzeichnis zum Überprüfen auswählen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="419"/>
+        <location filename="mainwindow.cpp" line="424"/>
         <source>No suitable files found to check!</source>
         <translation>Keine passenden Dateien zum Überprüfen gefunden!</translation>
     </message>
@@ -908,22 +908,22 @@ Parameter: -l(line) (file)
         <translation>Schnellfilter:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="493"/>
+        <location filename="mainwindow.cpp" line="505"/>
         <source>C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)</source>
         <translation>C/C++-Sourcecode, Compile-Datenbank, Visual Studio (%1 %2 *.sln *.vcxproj)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="540"/>
+        <location filename="mainwindow.cpp" line="552"/>
         <source>Select configuration</source>
         <translation>Konfiguration wählen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="540"/>
+        <location filename="mainwindow.cpp" line="552"/>
         <source>Select the configuration that will be checked</source>
         <translation>Wählen Sie die Konfiguration, die geprüft werden soll</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="570"/>
+        <location filename="mainwindow.cpp" line="582"/>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
@@ -932,7 +932,7 @@ Do you want to load this project file instead?</source>
 Möchten Sie stattdessen diese öffnen?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="592"/>
+        <location filename="mainwindow.cpp" line="604"/>
         <source>Found project files from the directory.
 
 Do you want to proceed checking without using any of these project files?</source>
@@ -941,68 +941,68 @@ Do you want to proceed checking without using any of these project files?</sourc
 Möchten Sie die Prüfung wirklich durchführen, ohne eine Projektdatei zu verwenden?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="676"/>
+        <location filename="mainwindow.cpp" line="688"/>
         <source>File not found</source>
         <translation>Datei nicht gefunden</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="679"/>
+        <location filename="mainwindow.cpp" line="691"/>
         <source>Bad XML</source>
         <translation>Fehlerhaftes XML</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="682"/>
+        <location filename="mainwindow.cpp" line="694"/>
         <source>Missing attribute</source>
         <translation>Fehlendes Attribut</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="685"/>
+        <location filename="mainwindow.cpp" line="697"/>
         <source>Bad attribute value</source>
         <translation>Falscher Attributwert</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="691"/>
+        <location filename="mainwindow.cpp" line="703"/>
         <source>Duplicate platform type</source>
         <translation>Plattformtyp doppelt</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="694"/>
+        <location filename="mainwindow.cpp" line="706"/>
         <source>Platform type redefined</source>
         <translation>Plattformtyp neu definiert</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="705"/>
+        <location filename="mainwindow.cpp" line="717"/>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
         <translation>Laden der ausgewählten Bibliothek &apos;%1&apos; schlug fehl. %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="786"/>
+        <location filename="mainwindow.cpp" line="806"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located.</source>
         <translation>Laden von %1 fehlgeschlagen. Ihre Cppcheck-Installation ist defekt. Sie können --data-dir=&lt;Verzeichnis&gt; als Kommandozeilenparameter verwenden, um anzugeben, wo die Datei sich befindet.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1108"/>
+        <location filename="mainwindow.cpp" line="1128"/>
         <source>License</source>
         <translation>Lizenz</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1115"/>
+        <location filename="mainwindow.cpp" line="1135"/>
         <source>Authors</source>
         <translation>Autoren</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1128"/>
+        <location filename="mainwindow.cpp" line="1148"/>
         <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML-Dateien Version 2 (*.xml);;XML-Dateien Version 1 (*.xml);;Textdateien (*.txt);;CSV-Dateien (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1130"/>
+        <location filename="mainwindow.cpp" line="1150"/>
         <source>Save the report file</source>
         <translation>Speichert die Berichtdatei</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="970"/>
+        <location filename="mainwindow.cpp" line="990"/>
         <source>XML files (*.xml)</source>
         <translation>XML-Dateien (*.xml)</translation>
     </message>
@@ -1016,12 +1016,12 @@ This is probably because the settings were changed between the Cppcheck versions
 Dies wurde vermutlich durch einen Wechsel der Cppcheck-Version hervorgerufen. Bitte prüfen (und korrigieren) Sie die Einstellungen, andernfalls könnte die Editor-Anwendung nicht korrekt starten.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="476"/>
+        <location filename="mainwindow.cpp" line="488"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>Sie müssen die Projektdatei schließen, bevor Sie neue Dateien oder Verzeichnisse auswählen!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="491"/>
+        <location filename="mainwindow.cpp" line="503"/>
         <source>Select files to check</source>
         <translation>Dateien zum Überprüfen auswählen</translation>
     </message>
@@ -1030,34 +1030,34 @@ Dies wurde vermutlich durch einen Wechsel der Cppcheck-Version hervorgerufen. Bi
         <translation type="obsolete">C/C++-Code (%1)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="667"/>
+        <location filename="mainwindow.cpp" line="679"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
         <translation>Die Bibliothek &apos;%1&apos; enthält unbekannte Elemente:
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="688"/>
+        <location filename="mainwindow.cpp" line="700"/>
         <source>Unsupported format</source>
         <translation>Nicht unterstütztes Format</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="697"/>
+        <location filename="mainwindow.cpp" line="709"/>
         <source>Unknown element</source>
         <translation>Unbekanntes Element</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="700"/>
+        <location filename="mainwindow.cpp" line="712"/>
         <source>Unknown issue</source>
         <translation>Unbekannter Fehler</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="786"/>
+        <location filename="mainwindow.cpp" line="806"/>
         <source>Error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="955"/>
+        <location filename="mainwindow.cpp" line="975"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
@@ -1066,12 +1066,12 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
           Das Einlesen einer XML-Datei löscht die aktuellen Ergebnisse. Fortfahren?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="972"/>
+        <location filename="mainwindow.cpp" line="992"/>
         <source>Open the report file</source>
         <translation>Berichtdatei öffnen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1062"/>
+        <location filename="mainwindow.cpp" line="1082"/>
         <source>Checking is running.
 
 Do you want to stop the checking and exit Cppcheck?</source>
@@ -1080,69 +1080,69 @@ Do you want to stop the checking and exit Cppcheck?</source>
 Möchten Sie die Prüfung abbrechen und Cppcheck beenden?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1137"/>
+        <location filename="mainwindow.cpp" line="1157"/>
         <source>XML files version 1 (*.xml)</source>
         <translation>XML-Dateien Version 1 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1138"/>
+        <location filename="mainwindow.cpp" line="1158"/>
         <source>Deprecated XML format</source>
         <translation>Veraltetes XML-Format</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1138"/>
+        <location filename="mainwindow.cpp" line="1158"/>
         <source>XML format 1 is deprecated and will be removed in cppcheck 1.81.</source>
         <translation>XML-Format 1 ist veraltet und wird in cppcheck 1.81 entfernt.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1144"/>
+        <location filename="mainwindow.cpp" line="1164"/>
         <source>XML files version 2 (*.xml)</source>
         <translation>XML-Dateien Version 2 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1148"/>
+        <location filename="mainwindow.cpp" line="1168"/>
         <source>Text files (*.txt)</source>
         <translation>Textdateien (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1152"/>
+        <location filename="mainwindow.cpp" line="1172"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV-Dateien (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1196"/>
+        <location filename="mainwindow.cpp" line="1216"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1241"/>
-        <location filename="mainwindow.cpp" line="1335"/>
+        <location filename="mainwindow.cpp" line="1261"/>
+        <location filename="mainwindow.cpp" line="1355"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Projektdateien (*.cppcheck);;Alle Dateien(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1243"/>
+        <location filename="mainwindow.cpp" line="1263"/>
         <source>Select Project File</source>
         <translation>Projektdatei auswählen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1271"/>
-        <location filename="mainwindow.cpp" line="1349"/>
+        <location filename="mainwindow.cpp" line="1291"/>
+        <location filename="mainwindow.cpp" line="1369"/>
         <source>Project:</source>
         <translation>Projekt:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1337"/>
+        <location filename="mainwindow.cpp" line="1357"/>
         <source>Select Project Filename</source>
         <translation>Projektnamen auswählen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1374"/>
+        <location filename="mainwindow.cpp" line="1394"/>
         <source>No project file loaded</source>
         <translation>Keine Projektdatei geladen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1456"/>
+        <location filename="mainwindow.cpp" line="1476"/>
         <source>The project file
 
 %1
@@ -1230,7 +1230,7 @@ Options:
     <name>Project</name>
     <message>
         <location filename="project.cpp" line="73"/>
-        <location filename="project.cpp" line="127"/>
+        <location filename="project.cpp" line="97"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -1240,7 +1240,7 @@ Options:
         <translation>Projektdatei konnte nicht gelesen werden.</translation>
     </message>
     <message>
-        <location filename="project.cpp" line="128"/>
+        <location filename="project.cpp" line="98"/>
         <source>Could not write the project file.</source>
         <translation>Projektdatei konnte nicht geschrieben werden.</translation>
     </message>
@@ -1258,7 +1258,7 @@ Options:
         <translation>Projekt</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="276"/>
+        <location filename="projectfiledialog.ui" line="297"/>
         <source>Defines must be separated by a semicolon &apos;;&apos;</source>
         <translation>Definitionen müssen mit einem Semikolon getrennt werden.</translation>
     </message>
@@ -1268,22 +1268,22 @@ Options:
         <translation>Wurzelverzeichnis:</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="62"/>
+        <location filename="projectfiledialog.ui" line="83"/>
         <source>Libraries:</source>
         <translation>Bibliotheken:</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="71"/>
+        <location filename="projectfiledialog.ui" line="92"/>
         <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
         <translation>Hinweis: Legen Sie eigene .cfg-Dateien in den Ordner der Projektdatei. Dann sollten sie oben sichtbar werden.</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="95"/>
+        <location filename="projectfiledialog.ui" line="116"/>
         <source>Visual Studio</source>
         <translation>Visual Studio</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="101"/>
+        <location filename="projectfiledialog.ui" line="122"/>
         <source>Visual Studio
 
 Cppcheck can import visual studio solutions and projects.
@@ -1300,18 +1300,24 @@ Zu prüfende Dateien, Includepfade, Konfigurationen, Definitionen und Plattforme
 Bibliothekseinstellungen werden nicht importiert.</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="119"/>
-        <location filename="projectfiledialog.ui" line="166"/>
+        <location filename="projectfiledialog.ui" line="59"/>
+        <location filename="projectfiledialog.ui" line="140"/>
+        <location filename="projectfiledialog.ui" line="187"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="142"/>
+        <location filename="projectfiledialog.ui" line="49"/>
+        <source>Cppcheck build dir (optional)</source>
+        <translation>Cppcheck-Erstellungsverzeichnis (optional)</translation>
+    </message>
+    <message>
+        <location filename="projectfiledialog.ui" line="163"/>
         <source>CMake</source>
         <translation>CMake</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="148"/>
+        <location filename="projectfiledialog.ui" line="169"/>
         <source>Compile database
 
 Cppcheck can import files to analyse, include paths, defines from the compile database.
@@ -1328,40 +1334,40 @@ Plattformeinstellungen werden nicht bereitgestellt und müssen konfiguriert werd
 Bibliothekseinstellungen werden ebenfalls nicht bereitgestellt, geben Sie also auf deren Konfiguration acht.</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="189"/>
+        <location filename="projectfiledialog.ui" line="210"/>
         <source>Other</source>
         <translation>Andere</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="199"/>
-        <location filename="projectfiledialog.ui" line="392"/>
+        <location filename="projectfiledialog.ui" line="220"/>
+        <location filename="projectfiledialog.ui" line="413"/>
         <source>Paths:</source>
         <translation>Pfade:</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="226"/>
-        <location filename="projectfiledialog.ui" line="320"/>
-        <location filename="projectfiledialog.ui" line="406"/>
+        <location filename="projectfiledialog.ui" line="247"/>
+        <location filename="projectfiledialog.ui" line="341"/>
+        <location filename="projectfiledialog.ui" line="427"/>
         <source>Add...</source>
         <translation>Hinzufügen...</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="233"/>
-        <location filename="projectfiledialog.ui" line="327"/>
-        <location filename="projectfiledialog.ui" line="413"/>
+        <location filename="projectfiledialog.ui" line="254"/>
+        <location filename="projectfiledialog.ui" line="348"/>
+        <location filename="projectfiledialog.ui" line="434"/>
         <source>Edit</source>
         <translation>Bearbeiten</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="240"/>
-        <location filename="projectfiledialog.ui" line="334"/>
-        <location filename="projectfiledialog.ui" line="420"/>
-        <location filename="projectfiledialog.ui" line="483"/>
+        <location filename="projectfiledialog.ui" line="261"/>
+        <location filename="projectfiledialog.ui" line="355"/>
+        <location filename="projectfiledialog.ui" line="441"/>
+        <location filename="projectfiledialog.ui" line="504"/>
         <source>Remove</source>
         <translation>Entfernen</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="289"/>
+        <location filename="projectfiledialog.ui" line="310"/>
         <source>Include Paths:</source>
         <translation>Includepfade:</translation>
     </message>
@@ -1374,37 +1380,37 @@ Bibliothekseinstellungen werden ebenfalls nicht bereitgestellt, geben Sie also a
         <translation type="obsolete">Include-Verzeichnisse:</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="354"/>
+        <location filename="projectfiledialog.ui" line="375"/>
         <source>Up</source>
         <translation>Auf</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="361"/>
+        <location filename="projectfiledialog.ui" line="382"/>
         <source>Down</source>
         <translation>Ab</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="386"/>
+        <location filename="projectfiledialog.ui" line="407"/>
         <source>Exclude</source>
         <translation>Ausschließen</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="445"/>
+        <location filename="projectfiledialog.ui" line="466"/>
         <source>Suppressions</source>
         <translation>Fehlerunterdrückungen</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="451"/>
+        <location filename="projectfiledialog.ui" line="472"/>
         <source>Suppression list:</source>
         <translation>Fehlerunterdrückungsliste:</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="476"/>
+        <location filename="projectfiledialog.ui" line="497"/>
         <source>Add</source>
         <translation>Hinzufügen</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="266"/>
+        <location filename="projectfiledialog.ui" line="287"/>
         <source>Defines:</source>
         <translation>Definitionen:</translation>
     </message>
@@ -1412,52 +1418,57 @@ Bibliothekseinstellungen werden ebenfalls nicht bereitgestellt, geben Sie also a
 <context>
     <name>ProjectFileDialog</name>
     <message>
-        <location filename="projectfiledialog.cpp" line="42"/>
+        <location filename="projectfiledialog.cpp" line="43"/>
         <source>Project file: %1</source>
         <translation>Projektdatei: %1</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="126"/>
+        <location filename="projectfiledialog.cpp" line="177"/>
+        <source>Select Cppcheck build dir</source>
+        <translation>Wähle Cppcheck-Erstellungsverzeichnis</translation>
+    </message>
+    <message>
+        <location filename="projectfiledialog.cpp" line="186"/>
         <source>Compile Database</source>
         <translation>Compile-Datenbank</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="128"/>
+        <location filename="projectfiledialog.cpp" line="188"/>
         <source>Compile database (compile_database.json)</source>
         <translation>Compile-Datenbank (compile_database.json)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="136"/>
+        <location filename="projectfiledialog.cpp" line="196"/>
         <source>Visual Studio</source>
         <translation>Visual Studio</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="138"/>
+        <location filename="projectfiledialog.cpp" line="198"/>
         <source>Visual Studio Solution/Project (*.sln *.vcxproj)</source>
         <translation>Visual-Studio-Projektmappe/-Projekt (*.sln *.vcxproj)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="327"/>
+        <location filename="projectfiledialog.cpp" line="413"/>
         <source>Select include directory</source>
         <translation>Wähle Include-Verzeichnisse</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="350"/>
+        <location filename="projectfiledialog.cpp" line="393"/>
         <source>Select a directory to check</source>
         <translation>Wähle zu prüfendes Verzeichnis</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="390"/>
+        <location filename="projectfiledialog.cpp" line="433"/>
         <source>Select directory to ignore</source>
         <translation>Wähle zu ignorierendes Verzeichnis</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="449"/>
+        <location filename="projectfiledialog.cpp" line="487"/>
         <source>Add Suppression</source>
         <translation>Fehlerunterdrückung hinzufügen</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="450"/>
+        <location filename="projectfiledialog.cpp" line="488"/>
         <source>Select error id suppress:</source>
         <translation>Wähle Fehler-ID zum Unterdrücken:</translation>
     </message>
