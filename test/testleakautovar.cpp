@@ -66,6 +66,7 @@ private:
         TEST_CASE(doublefree3); // #4914
         TEST_CASE(doublefree4); // #5451 - FP when exit is called
         TEST_CASE(doublefree5); // #5522
+        TEST_CASE(doublefree6); // #7685
 
         // exit
         TEST_CASE(exit1);
@@ -820,6 +821,14 @@ private:
               "  free(p);\n"
               "}");
         ASSERT_EQUALS("[test.c:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+    }
+
+    void doublefree6() { // #7685
+        check("void do_wordexp(FILE *f) {\n"
+              "  free(getword(f));\n"
+              "  fclose(f);\n"
+              "}", /*cpp=*/false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void exit1() {
