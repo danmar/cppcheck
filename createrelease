@@ -73,7 +73,9 @@ scp ~/$releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/proj
 make clean && make
 ./cppcheck --version > version.txt
 scp version.txt danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
-docbook2pdf man/manual.docbook
+xsltproc -xinclude -o manual.fo /usr/share/xml/docbook/stylesheet/docbook-xsl/fo/docbook.xsl man/manual.docbook
+fop manual.fo -pdf manual.pdf
+#docbook2pdf man/manual.docbook
 scp manual.pdf danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
 xsltproc -o manual.html /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl man/manual.docbook
 scp manual.html danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
