@@ -1070,6 +1070,10 @@ Library settings are not provided in compile database, be careful about this con
         <source>Include Paths:</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Cppcheck build dir (optional)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProjectFileDialog</name>
@@ -1111,6 +1115,10 @@ Library settings are not provided in compile database, be careful about this con
     </message>
     <message>
         <source>Visual Studio Solution/Project (*.sln *.vcxproj)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Cppcheck build dir</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
