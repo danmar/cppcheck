@@ -70,7 +70,7 @@ git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
 scp ~/$releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
 
 # Generate the manual.pdf, manual.html and version.txt
-make
+make clean && make
 ./cppcheck --version > version.txt
 scp version.txt danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
 docbook2pdf man/manual.docbook
