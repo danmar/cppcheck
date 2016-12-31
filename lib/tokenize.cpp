@@ -3035,7 +3035,7 @@ void Tokenizer::createLinks2()
 
     std::stack<Token*> type;
     for (Token *token = list.front(); token; token = token->next()) {
-        if (Token::Match(token, "struct|class %name% :"))
+        if (Token::Match(token, "struct|class %name% [:<]"))
             isStruct = true;
         else if (Token::Match(token, "[;{}]"))
             isStruct = false;
