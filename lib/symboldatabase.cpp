@@ -37,6 +37,24 @@
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
 {
+    createSymbolDatabaseFindAllScopes();
+    createSymbolDatabaseClassInfo();
+    createSymbolDatabaseVariableInfo();
+    createSymbolDatabaseFunctionScopes();
+    createSymbolDatabaseClassAndStructScopes();
+    createSymbolDatabaseFunctionReturnTypes();
+    createSymbolDatabaseNeedInitialization();
+    createSymbolDatabaseVariableSymbolTable();
+    createSymbolDatabaseSetScopePointers();
+    createSymbolDatabaseSetFunctionPointers();
+    createSymbolDatabaseSetVariablePointers();
+    createSymbolDatabaseSetTypePointers();
+    createSymbolDatabaseEnums();
+    createSymbolDatabaseUnknownArrayDimensions();
+}
+
+void SymbolDatabase::createSymbolDatabaseFindAllScopes()
+{
     // create global scope
     scopeList.push_back(Scope(this, nullptr, nullptr));
 
@@ -45,8 +63,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
     // Store current access in each scope (depends on evaluation progress)
     std::map<const Scope*, AccessControl> access;
-
-    const bool printDebug =_settings->debugwarnings;
 
     // find all scopes
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok ? tok->next() : nullptr) {
@@ -263,7 +279,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             new_scope->definedType = &typeList.back();
             scope->definedTypes.push_back(&typeList.back());
 
-            scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope, &settings->library);
+            scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope, &_settings->library);
 
             const Token *tok2 = tok->next();
 
@@ -780,9 +796,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
                     if (scope->type == Scope::eFor)
-                        scope->checkVariable(tok->tokAt(2), Local, &settings->library); // check for variable declaration and add it to new scope if found
+                        scope->checkVariable(tok->tokAt(2), Local, &_settings->library); // check for variable declaration and add it to new scope if found
                     else if (scope->type == Scope::eCatch)
-                        scope->checkVariable(tok->tokAt(2), Throw, &settings->library); // check for variable declaration and add it to new scope if found
+                        scope->checkVariable(tok->tokAt(2), Throw, &_settings->library); // check for variable declaration and add it to new scope if found
                     tok = scopeStartTok;
                 } else if (tok->str() == "{") {
                     if (tok->previous()->varId())
@@ -810,7 +826,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
         }
     }
+}
 
+void SymbolDatabase::createSymbolDatabaseClassInfo()
+{
     if (!_tokenizer->isC()) {
         // fill in base class info
         for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
@@ -839,7 +858,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 // only find if not already found
                 if (i->scope == nullptr) {
                     // check scope for match
-                    scope = findScope(i->start->tokAt(2), &(*it));
+                    Scope *scope = findScope(i->start->tokAt(2), &(*it));
                     if (scope) {
                         // set found scope
                         i->scope = scope;
@@ -849,11 +868,15 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
         }
     }
+}
 
+
+void SymbolDatabase::createSymbolDatabaseVariableInfo()
+{
     // fill in variable info
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         // find variables
-        it->getVariableList(&settings->library);
+        it->getVariableList(&_settings->library);
     }
 
     // fill in function arguments
@@ -865,19 +888,28 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             func->addArguments(this, &*it);
         }
     }
+}
 
+void SymbolDatabase::createSymbolDatabaseFunctionScopes()
+{
     // fill in function scopes
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         if (it->type == Scope::eFunction)
             functionScopes.push_back(&*it);
     }
+}
 
+void SymbolDatabase::createSymbolDatabaseClassAndStructScopes()
+{
     // fill in class and struct scopes
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         if (it->isClassOrStruct())
             classAndStructScopes.push_back(&*it);
     }
+}
 
+void SymbolDatabase::createSymbolDatabaseFunctionReturnTypes()
+{
     // fill in function return types
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         std::list<Function>::iterator func;
@@ -896,11 +928,14 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
         }
     }
+}
 
-    if (tokenizer->isC()) {
+void SymbolDatabase::createSymbolDatabaseNeedInitialization()
+{
+    if (_tokenizer->isC()) {
         // For C code it is easy, as there are no constructors and no default values
         for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-            scope = &(*it);
+            Scope *scope = &(*it);
             if (scope->definedType)
                 scope->definedType->needInitialization = Type::True;
         }
@@ -913,7 +948,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             unknowns = 0;
 
             for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-                scope = &(*it);
+                Scope *scope = &(*it);
 
                 if (!scope->definedType) {
                     _blankTypes.push_back(Type());
@@ -983,23 +1018,26 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         } while (unknowns && retry < 100);
 
         // this shouldn't happen so output a debug warning
-        if (retry == 100 && printDebug) {
+        if (retry == 100 && _settings->debugwarnings) {
             for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-                scope = &(*it);
+                const Scope *scope = &(*it);
 
                 if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown)
                     debugMessage(scope->classDef, "SymbolDatabase::SymbolDatabase couldn't resolve all user defined types.");
             }
         }
     }
+}
 
+void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
+{
     // create variable symbol table
     _variableList.resize(_tokenizer->varIdCount() + 1);
     std::fill_n(_variableList.begin(), _variableList.size(), (const Variable*)nullptr);
 
     // check all scopes for variables
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        scope = &(*it);
+        Scope *scope = &(*it);
 
         // add all variables
         for (std::list<Variable>::iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
@@ -1057,7 +1095,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
         }
     }
+}
 
+void SymbolDatabase::createSymbolDatabaseSetScopePointers()
+{
     // Set scope pointers
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         Token* start = const_cast<Token*>(it->classStart);
@@ -1092,7 +1133,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
         }
     }
+}
 
+void SymbolDatabase::createSymbolDatabaseSetFunctionPointers()
+{
     // Set function definition and declaration pointers
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         for (std::list<Function>::const_iterator func = it->functionList.begin(); func != it->functionList.end(); ++func) {
@@ -1137,7 +1181,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
         }
     }
+}
 
+void SymbolDatabase::createSymbolDatabaseSetTypePointers()
+{
     // Set type pointers
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
         if (!tok->isName() || tok->varId() || tok->function() || tok->type() || tok->enumerator())
@@ -1147,7 +1194,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         if (type)
             const_cast<Token *>(tok)->type(type);
     }
+}
 
+void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
+{
     // Set variable pointers
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
         if (tok->varId())
@@ -1204,7 +1254,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
         }
     }
+}
 
+void SymbolDatabase::createSymbolDatabaseEnums()
+{
     // fill in enumerators in enum
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         if (it->type != Scope::eEnum)
@@ -1268,7 +1321,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         if (enumerator)
             const_cast<Token *>(tok)->enumerator(enumerator);
     }
+}
 
+void SymbolDatabase::createSymbolDatabaseUnknownArrayDimensions()
+{
     // set all unknown array dimensions
     for (std::size_t i = 1; i <= _tokenizer->varIdCount(); i++) {
         // check each array variable

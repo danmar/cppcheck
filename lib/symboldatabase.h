@@ -1111,6 +1111,22 @@ private:
     friend class Scope;
     friend class Function;
 
+    // Create symboldatabase...
+    void createSymbolDatabaseFindAllScopes();
+    void createSymbolDatabaseClassInfo();
+    void createSymbolDatabaseVariableInfo();
+    void createSymbolDatabaseFunctionScopes();
+    void createSymbolDatabaseClassAndStructScopes();
+    void createSymbolDatabaseFunctionReturnTypes();
+    void createSymbolDatabaseNeedInitialization();
+    void createSymbolDatabaseVariableSymbolTable();
+    void createSymbolDatabaseSetScopePointers();
+    void createSymbolDatabaseSetFunctionPointers();
+    void createSymbolDatabaseSetVariablePointers();
+    void createSymbolDatabaseSetTypePointers();
+    void createSymbolDatabaseEnums();
+    void createSymbolDatabaseUnknownArrayDimensions();
+
     void addClassFunction(Scope **info, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
