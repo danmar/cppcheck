@@ -588,7 +588,7 @@ class MatchCompiler:
     def convertFile(self, srcname, destname, line_directive):
         self._reset()
 
-        fin = io.open(srcname, "rt", encoding="us-ascii")
+        fin = io.open(srcname, "rt", encoding="utf-8")
         srclines = fin.readlines()
         fin.close()
 
@@ -623,7 +623,7 @@ class MatchCompiler:
         if line_directive:
             lineno = '#line 1 "' + srcname + '"\n'
 
-        fout = io.open(destname, 'wt', encoding="us-ascii")
+        fout = io.open(destname, 'wt', encoding="utf-8")
         fout.write(header + strFunctions + lineno + code)
         fout.close()
 
