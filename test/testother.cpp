@@ -192,6 +192,9 @@ private:
         TEST_CASE(partiallyMoved);
         TEST_CASE(moveAndLambda);
         TEST_CASE(forwardAndUsed);
+
+        TEST_CASE(funcArgNamesDifferent);
+        TEST_CASE(funcArgOrderDifferent);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -6348,6 +6351,57 @@ private:
               "    T s = t;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable t.\n", errout.str());
+    }
+
+    void funcArgNamesDifferent() {
+        check("void func1(int a, int b, int c); \n"
+              "void func1(int a, int b, int c) { }\n"
+              "void func2(int a, int b, int c);\n"
+              "void func2(int A, int B, int C) { }\n"
+              "class Fred {\n"
+              "    void func1(int a, int b, int c); \n"
+              "    void func2(int a, int b, int c);\n"
+              "    void func3(int a = 0, int b = 0, int c = 0);\n"
+              "    void func4(int a = 0, int b = 0, int c = 0);\n"
+              "};\n"
+              "void Fred::func1(int a, int b, int c) { }\n"
+              "void Fred::func2(int A, int B, int C) { }\n"
+              "void Fred::func3(int a, int b, int c) { }\n"
+              "void Fred::func4(int A, int B, int C) { }\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style, inconclusive) Function 'func2' argument 1 names different: declaration 'a' definition 'A'.\n"
+                      "[test.cpp:3] -> [test.cpp:4]: (style, inconclusive) Function 'func2' argument 2 names different: declaration 'b' definition 'B'.\n"
+                      "[test.cpp:3] -> [test.cpp:4]: (style, inconclusive) Function 'func2' argument 3 names different: declaration 'c' definition 'C'.\n"
+                      "[test.cpp:7] -> [test.cpp:12]: (style, inconclusive) Function 'func2' argument 1 names different: declaration 'a' definition 'A'.\n"
+                      "[test.cpp:7] -> [test.cpp:12]: (style, inconclusive) Function 'func2' argument 2 names different: declaration 'b' definition 'B'.\n"
+                      "[test.cpp:7] -> [test.cpp:12]: (style, inconclusive) Function 'func2' argument 3 names different: declaration 'c' definition 'C'.\n"
+                      "[test.cpp:9] -> [test.cpp:14]: (style, inconclusive) Function 'func4' argument 1 names different: declaration 'a' definition 'A'.\n"
+                      "[test.cpp:9] -> [test.cpp:14]: (style, inconclusive) Function 'func4' argument 2 names different: declaration 'b' definition 'B'.\n"
+                      "[test.cpp:9] -> [test.cpp:14]: (style, inconclusive) Function 'func4' argument 3 names different: declaration 'c' definition 'C'.\n", errout.str());
+    }
+
+    void funcArgOrderDifferent() {
+        check("void func1(int a, int b, int c);\n"
+              "void func1(int a, int b, int c) { }\n"
+              "void func2(int a, int b, int c);\n"
+              "void func2(int c, int b, int a) { }\n"
+              "void func3(int, int b, int c);\n"
+              "void func3(int c, int b, int a) { }\n"
+              "class Fred {\n"
+              "    void func1(int a, int b, int c);\n"
+              "    void func2(int a, int b, int c);\n"
+              "    void func3(int a = 0, int b = 0, int c = 0);\n"
+              "    void func4(int, int b = 0, int c = 0);\n"
+              "};\n"
+              "void Fred::func1(int a, int b, int c) { }\n"
+              "void Fred::func2(int c, int b, int a) { }\n"
+              "void Fred::func3(int c, int b, int a) { }\n"
+              "void Fred::func4(int c, int b, int a) { }\n",
+              nullptr, false, false);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Function 'func2' argument order different: declaration 'a, b, c' definition 'c, b, a'\n"
+                      "[test.cpp:5] -> [test.cpp:6]: (warning) Function 'func3' argument order different: declaration ', b, c' definition 'c, b, a'\n"
+                      "[test.cpp:9] -> [test.cpp:14]: (warning) Function 'func2' argument order different: declaration 'a, b, c' definition 'c, b, a'\n"
+                      "[test.cpp:10] -> [test.cpp:15]: (warning) Function 'func3' argument order different: declaration 'a, b, c' definition 'c, b, a'\n"
+                      "[test.cpp:11] -> [test.cpp:16]: (warning) Function 'func4' argument order different: declaration ', b, c' definition 'c, b, a'\n", errout.str());
     }
 };
 
