@@ -1559,6 +1559,20 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         }
     }
 
+    // regular C function with missing return or invalid C++ ?
+    else if (Token::Match(tok, "%name% (") && !isReservedName(tok->str()) &&
+             Token::simpleMatch(tok->linkAt(1), ") {") &&
+             (!tok->previous() || Token::Match(tok->previous(), ";|}"))) {
+        if (_tokenizer->isC()) {
+            debugMessage(tok, "SymbolDatabase::isFunction found C function '" + tok->str() + "' without a return type.");
+            *funcStart = tok;
+            *argStart = tok->next();
+            *declEnd = tok->linkAt(1)->next();
+            return true;
+        }
+        _tokenizer->syntaxError(tok);
+    }
+
     return false;
 }
 

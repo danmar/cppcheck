@@ -482,13 +482,13 @@ private:
 
     void garbageCode24() {
         // don't crash (example from #6361)
-        checkCode("float buffer[64];\n"
-                  "main (void)\n"
-                  "{\n"
-                  "  char *cptr;\n"
-                  "  cptr = (char *)buffer;\n"
-                  "  cptr += (-(long int) buffer & (16 * sizeof (float) - 1));\n"
-                  "}\n");
+        ASSERT_THROW(checkCode("float buffer[64];\n"
+                               "main (void)\n"
+                               "{\n"
+                               "  char *cptr;\n"
+                               "  cptr = (char *)buffer;\n"
+                               "  cptr += (-(long int) buffer & (16 * sizeof (float) - 1));\n"
+                               "}\n"), InternalError);
     }
 
     void garbageCode25() {
@@ -695,7 +695,7 @@ private:
     }
 
     void garbageCode74() { // #6751
-        checkCode("_lenraw(const char* digits) { } typedef decltype(sizeof(0)) { } operator");
+        ASSERT_THROW(checkCode("_lenraw(const char* digits) { } typedef decltype(sizeof(0)) { } operator"), InternalError);
     }
 
     void garbageCode76() { // #6754
@@ -707,7 +707,7 @@ private:
     }
 
     void garbageCode78() { // #6756
-        checkCode("( ) { [ ] } ( ) { } const_array_of_int ( ) { } typedef int A [ ] [ ] ; A a = { { } { } }");
+        ASSERT_THROW(checkCode("( ) { [ ] } ( ) { } const_array_of_int ( ) { } typedef int A [ ] [ ] ; A a = { { } { } }"), InternalError);
     }
 
     void garbageCode79() { // #6757
@@ -1004,7 +1004,7 @@ private:
 
     void garbageCode134() {
         // Ticket #5605, #5759, #5762, #5774, #5823, #6059
-        checkCode("foo() template<typename T1 = T2 = typename = unused, T5 = = unused> struct tuple Args> tuple<Args...> { } main() { foo<int,int,int,int,int,int>(); }");
+        ASSERT_THROW(checkCode("foo() template<typename T1 = T2 = typename = unused, T5 = = unused> struct tuple Args> tuple<Args...> { } main() { foo<int,int,int,int,int,int>(); }"), InternalError);
         checkCode("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }");
         checkCode("() template < T = typename = x > struct a {} { f <int> () }");
         checkCode("template < T = typename = > struct a { f <int> }");

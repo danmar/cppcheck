@@ -380,8 +380,12 @@ private:
         if (!tokenizer.tokenize(istr, "test.cpp"))
             return "";
         tokenizer.simplifyTokenList2();
+        const Token * start = tokenizer.tokens();
+        const SymbolDatabase * db = tokenizer.getSymbolDatabase();
+        if (db && db->functionScopes.size())
+            start = db->functionScopes[0]->classStart->next();
 
-        const unsigned int varId(Token::findmatch(tokenizer.tokens(), varname)->varId());
+        const unsigned int varId(Token::findmatch(start, varname)->varId());
 
         // getcode..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings2, nullptr);
@@ -389,7 +393,7 @@ private:
         callstack.push_back(0);
         CheckMemoryLeak::AllocType allocType, deallocType;
         allocType = deallocType = CheckMemoryLeak::No;
-        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varId, allocType, deallocType, classfunc, 1);
+        Token *tokens = checkMemoryLeak.getcode(start, callstack, varId, allocType, deallocType, classfunc, 1);
 
         // stringify..
         std::ostringstream ret;
@@ -554,7 +558,7 @@ private:
         ASSERT_EQUALS(";;if{exit;}", getcode("char *s; if (a) { exit(0); }", "s"));
 
         // list_for_each
-        ASSERT_EQUALS(";;exit;{}", getcode("char *s; list_for_each(x,y,z) { }", "s"));
+        ASSERT_EQUALS(";;exit;{}}", getcode("void f() { char *s; list_for_each(x,y,s) { } }", "s"));
 
         // open/close
         ASSERT_EQUALS(";;alloc;if(var){dealloc;}", getcode("int f; f=open(a,b); if(f>=0)close(f);", "f"));

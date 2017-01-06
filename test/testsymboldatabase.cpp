@@ -309,6 +309,8 @@ private:
         TEST_CASE(variadic1); // #7453
         TEST_CASE(variadic2); // #7649
         TEST_CASE(variadic3); // #7387
+
+        TEST_CASE(noReturnType);
     }
 
     void array() {
@@ -1513,7 +1515,7 @@ private:
         }
     }
 
-    void check(const char code[], bool debug = true) {
+    void check(const char code[], bool debug = true, const char filename[] = "test.cpp") {
         // Clear the error log
         errout.str("");
 
@@ -1523,7 +1525,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
         tokenizer.simplifyTokenList2();
 
         // force symbol database creation
@@ -2028,8 +2030,8 @@ private:
               "static void function_declaration_after(void) __attribute__((__used__));\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("main(int argc, char *argv[]) { }");
-        ASSERT_EQUALS("", errout.str());
+        check("main(int argc, char *argv[]) { }", true, "test.c");
+        ASSERT_EQUALS("[test.c:1]: (debug) SymbolDatabase::isFunction found C function 'main' without a return type.\n", errout.str());
 
         check("namespace boost {\n"
               "    std::locale generate_locale()\n"
@@ -4154,6 +4156,19 @@ private:
 
             const Token *f = Token::findsimplematch(tokenizer.tokens(), "zdcalc ( length");
             ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 1);
+        }
+    }
+
+    void noReturnType() {
+        GET_SYMBOL_DB_C("func() { }");
+
+        ASSERT(db && db->functionScopes.size() == 1);
+        if (db && db->functionScopes.size() == 1) {
+            ASSERT(db->functionScopes[0]->function);
+            if (db->functionScopes[0]->function) {
+                const Token *retDef = db->functionScopes[0]->function->retDef;
+                ASSERT_EQUALS("func", retDef ? retDef->str() : "");
+            }
         }
     }
 };

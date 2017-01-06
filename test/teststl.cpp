@@ -2847,7 +2847,7 @@ private:
               "}\n",true);
         ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Reading from empty STL container 'Vector'\n", errout.str());
 
-        check("f() {\n"
+        check("Vector f() {\n"
               "    try {\n"
               "        std::vector<std::string> Vector;\n"
               "        Vector.push_back(\"123\");\n"

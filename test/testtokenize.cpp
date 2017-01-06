@@ -729,7 +729,7 @@ private:
 
     // #4239 - segfault for "f ( struct { int typedef T x ; } ) { }"
     void tokenize25() {
-        tokenizeAndStringify("f ( struct { int typedef T x ; } ) { }");
+        ASSERT_THROW(tokenizeAndStringify("f ( struct { int typedef T x ; } ) { }"), InternalError);
     }
 
     // #4245 - segfault
