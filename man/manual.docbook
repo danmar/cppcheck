@@ -127,6 +127,14 @@ Checking path/file2.cpp...
       class="directory">src/c</filename> are checked:</para>
 
       <programlisting>cppcheck -isrc/c src</programlisting>
+      
+      <para>This option does not currently work with the 
+      <parameter class="command">--project</parameter> option and is only
+      valid when supplying an input directory.To ignore multiple directories
+      supply the <parameter class="command">-i</parameter> multiple times. 
+      The following command ignores both the src/b and src/c directories.</para>
+      
+      <programlisting>cppcheck -isrc/b -isrc/c</programlisting> 
     </section>
 
     <section>
