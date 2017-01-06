@@ -3056,7 +3056,7 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     const Token *nameTok = classDef;
     if (!classDef) {
         type = Scope::eGlobal;
-    } else if (classDef->str() == "class") {
+    } else if (classDef->str() == "class" && check && check->isCPP()) {
         type = Scope::eClass;
         nameTok = nameTok->next();
     } else if (classDef->str() == "struct") {
