@@ -273,6 +273,7 @@ private:
         TEST_CASE(vardecl24);  // #4187 - variable declaration within lambda function
         TEST_CASE(vardecl25);  // #4799 - segmentation fault
         TEST_CASE(vardecl26);  // #5907 - incorrect handling of extern declarations
+        TEST_CASE(vardecl27);  // #7850 - crash on valid C code
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_template_1);
@@ -3936,6 +3937,16 @@ private:
         const char expected[] = "extern int * new ; extern int obj ; extern int player ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Native, "test.c"));
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    void vardecl27() { // #7850
+        const char code[] = "extern int foo(char);\n"
+                            "void* class(char c) {\n"
+                            "  if (foo(c))\n"
+                            "    return 0;\n"
+                            "  return 0;\n"
+                            "}";
+        tokenizeAndStringify(code, /*simplify=*/false, /*expand=*/true, Settings::Native, "test.c");
     }
 
     void volatile_variables() {
