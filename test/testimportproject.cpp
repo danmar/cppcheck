@@ -33,7 +33,7 @@ private:
         TEST_CASE(setIncludePaths2);
     }
 
-    void setDefines() {
+    void setDefines() const {
         ImportProject::FileSettings fs;
 
         fs.setDefines("A");
@@ -49,7 +49,7 @@ private:
         ASSERT_EQUALS("A=1;B=1", fs.defines);
     }
 
-    void setIncludePaths1() {
+    void setIncludePaths1() const {
         ImportProject::FileSettings fs;
         std::list<std::string> in;
         in.push_back("../include");
@@ -59,7 +59,7 @@ private:
         ASSERT_EQUALS("abc/include/", fs.includePaths.front());
     }
 
-    void setIncludePaths2() {
+    void setIncludePaths2() const {
         ImportProject::FileSettings fs;
         std::list<std::string> in;
         in.push_back("$(SolutionDir)other");

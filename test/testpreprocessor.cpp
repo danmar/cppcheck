@@ -1222,7 +1222,7 @@ private:
         ASSERT_EQUALS("\nabc ( 123 )", OurPreprocessor::expandMacros(filedata));
     }
 
-    void va_args_5() {
+    void va_args_5() const {
         const char filedata1[] = "#define A(...) #__VA_ARGS__\n"
                                  "A(123)\n";
         ASSERT_EQUALS("\n\"123\"", OurPreprocessor::expandMacros(filedata1));

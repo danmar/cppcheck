@@ -341,7 +341,7 @@ private:
         ASSERT_EQUALS(0x0A00000000000000LL, MathLib::toLongNumber("0x0A00000000000000LL"));
     }
 
-    void toDoubleNumber() {
+    void toDoubleNumber() const {
         ASSERT_EQUALS_DOUBLE(10.0  , MathLib::toDoubleNumber("10"));
         ASSERT_EQUALS_DOUBLE(1000.0, MathLib::toDoubleNumber("10E+2"));
         ASSERT_EQUALS_DOUBLE(100.0 , MathLib::toDoubleNumber("1.0E+2"));
@@ -1133,7 +1133,7 @@ private:
         ASSERT_EQUALS("-0"    , MathLib::toString(-0.0L));
     }
 
-    void characterLiteralsNormalization() {
+    void characterLiteralsNormalization() const {
         // `A` is 0x41 and 0101
         ASSERT_EQUALS("A" , MathLib::normalizeCharacterLiteral("\\x41"));
         ASSERT_EQUALS("A" , MathLib::normalizeCharacterLiteral("\\101"));
@@ -1154,7 +1154,7 @@ private:
         ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\c"), InternalError);
     }
 
-    void CPP14DigitSeparators() { // Ticket #7137, #7565
+    void CPP14DigitSeparators() const { // Ticket #7137, #7565
         ASSERT(MathLib::isDigitSeparator("'", 0) == false);
         ASSERT(MathLib::isDigitSeparator("123'0;", 3));
         ASSERT(MathLib::isDigitSeparator("foo(1'2);", 5));

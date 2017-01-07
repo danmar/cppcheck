@@ -1117,7 +1117,7 @@ void TokenList::createAst()
     }
 }
 
-void TokenList::validateAst()
+void TokenList::validateAst() const
 {
     // Check for some known issues in AST to avoid crash/hang later on
     std::set < const Token* > safeAstTokens; // list of "safe" AST tokens without endless recursion
