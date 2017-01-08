@@ -627,7 +627,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                     tok = tok->next();
                     const Token *from = (*it)->next();
                     std::stack<Token *> links;
-                    while (from && (!links.empty() || (from->str() != "," && (indentlevel || from->str() != ">")))) {
+                    while (from && (!links.empty() || indentlevel || !Token::Match(from, ",|>"))) {
                         if (from->str() == "<")
                             ++indentlevel;
                         else if (from->str() == ">")

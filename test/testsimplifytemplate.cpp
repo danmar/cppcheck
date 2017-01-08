@@ -1144,6 +1144,19 @@ private:
                           "template < class T1 , class T2 = B < T1 > > class C { } ; "
                           "template < class T1 = A , typename T2 = B < A > > class D { } ;", tok(code));
         }
+        {
+            // #7548
+            const char code[] = "template<class T, class U> class DefaultMemory {}; "
+                                "template<class Key, class Val, class Mem=DefaultMemory<Key,Val> > class thv_table_c  {}; "
+                                "thv_table_c<void *,void *> id_table_m;";
+            const char exp [] = "template < class T , class U > class DefaultMemory { } ; "
+                                "thv_table_c<void*,void*,DefaultMemory<void*,void*>> id_table_m ; "
+                                "class thv_table_c<void*,void*,DefaultMemory<void*,void*>> { } ;";
+            const char curr[] = "template < class T , class U > class DefaultMemory { } ; "
+                                "thv_table_c<void*,void*,DefaultMemory<Key,Val>> id_table_m ; "
+                                "class thv_table_c<void*,void*,DefaultMemory<Key,Val>> { } ;";
+            TODO_ASSERT_EQUALS(exp, curr, tok(code));
+        }
     }
 
     void template_default_type() {
