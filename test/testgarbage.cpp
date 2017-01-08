@@ -213,6 +213,7 @@ private:
         TEST_CASE(garbageCode182); // #4195
         TEST_CASE(garbageCode183); // #7505
         TEST_CASE(garbageCode184); // #7699
+        TEST_CASE(garbageCode185); // #6011
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1405,6 +1406,18 @@ private:
                   "    NSArray* pScreens = [NSScreen screens];\n"
                   "    return pScreens ? [pScreens count] : 1;\n"
                   "}");
+    }
+
+    void garbageCode185() { // #6011 crash in libreoffice failure to create proper AST
+        checkCode(
+            "namespace binfilter\n"
+            "{\n"
+            "       BOOL EnhWMFReader::ReadEnhWMF()\n"
+            "       {\n"
+            "               pOut->CreateObject( nIndex, GDI_BRUSH, new WinMtfFillStyle( ReadColor(), ( nStyle == BS_HOLLOW ) ? TRUE : FALSE ) );\n"
+            "               return bStatus;\n"
+            "       };\n"
+            "}\n");
     }
 
     void syntaxErrorFirstToken() {
