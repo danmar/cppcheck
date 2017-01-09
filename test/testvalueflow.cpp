@@ -80,6 +80,8 @@ private:
         TEST_CASE(knownValue);
 
         TEST_CASE(valueFlowSizeofForwardDeclaredEnum);
+
+        TEST_CASE(valueFlowGlobalVar);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -2307,6 +2309,32 @@ private:
     void valueFlowSizeofForwardDeclaredEnum() {
         const char *code = "enum E; sz=sizeof(E);";
         valueOfTok(code, "="); // Don't crash (#7775)
+    }
+
+    void valueFlowGlobalVar() {
+        const char *code;
+
+        code = "int x;\n"
+               "void f() {\n"
+               "    x = 4;\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 4));
+
+        code = "int x;\n"
+               "void f() {\n"
+               "    if (x == 4) {}\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 4));
+
+        code = "int x;\n"
+               "void f() {\n"
+               "    x = 42;\n"
+               "    unknownFunction();\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 42));
     }
 };
 

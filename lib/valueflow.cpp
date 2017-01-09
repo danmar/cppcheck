@@ -1327,6 +1327,10 @@ static bool valueFlowForward(Token * const               startToken,
             continue;
         }
 
+        else if (var->isGlobal() && Token::Match(tok2, "%name% (") && Token::Match(tok2->linkAt(1), ") !!{")) {
+            return false;
+        }
+
         if (Token::Match(tok2, "sizeof|typeof|typeid ("))
             tok2 = tok2->linkAt(1);
 
@@ -1653,9 +1657,7 @@ static bool valueFlowForward(Token * const               startToken,
             tok2 = tok2->next();
         }
 
-        if (!tok2) // invalid code #7236
-            return false;
-        if (tok2->varId() == varid) {
+        else if (tok2->varId() == varid) {
             // bailout: assignment
             if (Token::Match(tok2->previous(), "!!* %name% %op%") && tok2->next()->isAssignmentOp()) {
                 // simplify rhs
@@ -1967,7 +1969,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (aliased.find(varid) != aliased.end())
                 continue;
             const Variable *var = tok->astOperand1()->variable();
-            if (!var || (!var->isLocal() && !var->isArgument()))
+            if (!var || (!var->isLocal() && !var->isGlobal() && !var->isArgument()))
                 continue;
 
             const Token * const endOfVarScope = var->typeStartToken()->scope()->classEnd;
@@ -2047,7 +2049,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
             if (varid == 0U)
                 continue;
             const Variable *var = vartok->variable();
-            if (!var || !(var->isLocal() || var->isArgument()))
+            if (!var || !(var->isLocal() || var->isGlobal() || var->isArgument()))
                 continue;
             std::list<ValueFlow::Value> values;
             values.push_back(ValueFlow::Value(tok, numtok ? numtok->values.front().intvalue : 0LL));
