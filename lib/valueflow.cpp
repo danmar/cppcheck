@@ -728,35 +728,27 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             const ValueType &vt = ValueType::parseDecl(tok2,settings);
             if (vt.pointer) {
                 ValueFlow::Value value(settings->sizeof_pointer);
-                value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::CHAR) {
                 ValueFlow::Value value(1);
-                value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::SHORT) {
                 ValueFlow::Value value(settings->sizeof_short);
-                value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::INT) {
                 ValueFlow::Value value(settings->sizeof_int);
-                value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::LONG) {
                 ValueFlow::Value value(settings->sizeof_long);
-                value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::LONGLONG) {
                 ValueFlow::Value value(settings->sizeof_long_long);
-                value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::FLOAT) {
                 ValueFlow::Value value(settings->sizeof_float);
-                value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::DOUBLE) {
                 ValueFlow::Value value(settings->sizeof_double);
-                value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             }
         }
