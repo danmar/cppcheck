@@ -39,11 +39,11 @@
 namespace {
     // local struct used in setVarId
     // in order to store information about the scope
-    struct VarIdscopeInfo {
-        VarIdscopeInfo()
+    struct VarIdScopeInfo {
+        VarIdScopeInfo()
             :isExecutable(false), isStructInit(false), isEnum(false), startVarid(0) {
         }
-        VarIdscopeInfo(bool _isExecutable, bool _isStructInit, bool _isEnum, unsigned int _startVarid)
+        VarIdScopeInfo(bool _isExecutable, bool _isStructInit, bool _isEnum, unsigned int _startVarid)
             :isExecutable(_isExecutable), isStructInit(_isStructInit), isEnum(_isEnum), startVarid(_startVarid) {
         }
 
@@ -2563,9 +2563,9 @@ void Tokenizer::setVarIdPass1()
     std::map<unsigned int, std::map<std::string, unsigned int> > structMembers;
     std::stack< std::map<std::string, unsigned int> > scopeInfo;
 
-    std::stack<VarIdscopeInfo> scopeStack;
+    std::stack<VarIdScopeInfo> scopeStack;
 
-    scopeStack.push(VarIdscopeInfo());
+    scopeStack.push(VarIdScopeInfo());
     std::stack<const Token *> functionDeclEndStack;
     bool initlist = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -2579,7 +2579,7 @@ void Tokenizer::setVarIdPass1()
                 variableId.swap(scopeInfo.top());
                 scopeInfo.pop();
             } else if (tok->str() == "{")
-                scopeStack.push(VarIdscopeInfo(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/false, _varId));
+                scopeStack.push(VarIdScopeInfo(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/false, _varId));
         } else if (!initlist && tok->str()=="(") {
             const Token * newFunctionDeclEnd = nullptr;
             if (!scopeStack.top().isExecutable)
@@ -2613,7 +2613,7 @@ void Tokenizer::setVarIdPass1()
                             scopeInfo.push(variableId);
                     }
                     initlist = false;
-                    scopeStack.push(VarIdscopeInfo(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), _varId));
+                    scopeStack.push(VarIdScopeInfo(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), _varId));
                 } else { /* if (tok->str() == "}") */
                     bool isNamespace = false;
                     for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous())
@@ -2637,7 +2637,7 @@ void Tokenizer::setVarIdPass1()
 
                     scopeStack.pop();
                     if (scopeStack.empty()) {  // should be impossible
-                        scopeStack.push(VarIdscopeInfo());
+                        scopeStack.push(VarIdScopeInfo());
                     }
                 }
             }
