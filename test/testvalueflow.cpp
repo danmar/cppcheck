@@ -493,7 +493,6 @@ private:
         values = tokenValues(code,"( int )");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(settings.sizeof_int, values.back().intvalue);
-        ASSERT_EQUALS(false, values.back().isKnown()); // value is different on different platforms (#7888)
 
         code  = "void f() {\n"
                 "    struct S *a[10];"
