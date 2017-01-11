@@ -903,6 +903,108 @@ static int countPar(const Token *tok1, const Token *tok2)
     return par;
 }
 
+// Clarify '[if|while|function] (x = foo() && bar())'
+void CheckCondition::clarifyAssignmentAndLogicalCondition()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+
+            const Token* root = tok;
+            if(!tok || tok->str() != "(") {
+                continue;
+            }
+
+            if(!tok->astOperand1()
+            ||
+                (!Token::Match(tok->astOperand1(), "if|while")
+                && tok->astOperand1()->tokType() != Token::eFunction)){
+                continue;
+            }
+
+            tok = tok->astOperand2();
+            if(!tok || tok->str() != "="){
+                tok = root->link();
+                continue;
+            }
+
+            // if the condition is protected by a ( then OK
+            if(tok->next()->str() == "("){
+                tok = root->link();
+                continue;
+            }
+
+            tok = tok->astOperand2();
+            if( !tok || tok->tokType() != Token::eLogicalOp){
+                tok = root->link();
+                continue;
+            }
+
+            const Token* tok1 = tok->astOperand1();
+            if(!tok1 || tok1->str() != "("){
+                tok = root->link();
+                continue;
+            }
+
+            tok1 = tok1->astOperand1();
+            if(!tok1){
+                tok = root->link();
+                continue;
+            }
+
+            // in case of member function
+            if(tok1->str() == "::" || tok1->str() == "." || tok1->str() == "->") {
+                tok1 = tok1->astOperand2();
+            }
+
+            if( tok1->tokType() != Token::eFunction){
+                tok = root->link();
+                continue;
+            }
+
+            const Token* tok2 = tok->astOperand1();
+            if(!tok2 || tok2->str() != "("){
+                tok = root->link();
+                continue;
+            }
+
+            tok2 = tok2->astOperand1();
+            if(!tok2){
+                tok = root->link();
+                continue;
+            }
+
+            // in case of member function
+            if(tok2->str() == "::" || tok2->str() == "." || tok2->str() == "->") {
+                tok2 = tok2->astOperand2();
+            }
+
+            if( tok2->tokType() != Token::eFunction){
+                tok = root->link();
+                continue;
+            }
+
+            clarifyAssignmentAndLogicalConditionError(tok);
+            tok = root->link();
+        }
+    }
+}
+
+void CheckCondition::clarifyAssignmentAndLogicalConditionError(const Token* tok)
+{
+    const char* errmsg = "Suspicious condition (assignment + function call after logical op); "
+                         "Clarify expression with parentheses.";
+    reportError(tok,
+            Severity::style,
+            "clarifyAssignmentAndLogicalCondition",
+            errmsg, CWE398, false);
+}
+
 //---------------------------------------------------------------------------
 // Clarify condition '(x = a < 0)' into '((x = a) < 0)' or '(x = (a < 0))'
 // Clarify condition '(a & b == c)' into '((a & b) == c)' or '(a & (b == c))'

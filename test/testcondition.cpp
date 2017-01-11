@@ -79,6 +79,7 @@ private:
         TEST_CASE(clarifyCondition6);     // #3818
         TEST_CASE(clarifyCondition7);
         TEST_CASE(clarifyCondition8);
+        TEST_CASE(clarifyAssignmentAndLogicalCondition); // if (x = foo() && bar())
 
         TEST_CASE(alwaysTrue);
 
@@ -1714,6 +1715,91 @@ private:
         check("struct A { bool a; };\n"
               "bool f(struct A a, bool b) {\n"
               "    return (A::a & b);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // operator precedence of = and && in condition
+    void clarifyAssignmentAndLogicalCondition() {
+        check("extern int foo();\n"
+              "extern bool bar();\n"
+              "void f() {\n"
+              "    if (x = foo() && bar()) {}\n" // don't simplify and verify this code
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Suspicious condition (assignment + function call after logical op); Clarify expression with parentheses.\n", errout.str());
+
+        check("extern int foo();\n"
+              "extern bool bar();\n"
+              "void f() {\n"
+              "    if (x = foo() && bar()) {}\n" // don't simplify and verify this code
+              "    if (x = foo() && bar()) {}\n" // don't simplify and verify this code
+              "}");
+
+        ASSERT_EQUALS("[test.cpp:4]: (style) Suspicious condition (assignment + function call after logical op); Clarify expression with parentheses.\n"
+                "[test.cpp:5]: (style) Suspicious condition (assignment + function call after logical op); Clarify expression with parentheses.\n", errout.str());
+
+        check("struct A {\n"
+              "    static int foo();\n"
+              "    static bool bar();\n"
+              "};\n"
+              "void f() {\n"
+              "    while (x = A::foo() && A::bar()) {}\n" // don't simplify and verify this code
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Suspicious condition (assignment + function call after logical op); Clarify expression with parentheses.\n", errout.str());
+
+        check("struct A {\n"
+              "    int foo();\n"
+              "};\n"
+              "struct B {\n"
+              "    bool bar();\n"
+              "};\n"
+              "void f() {\n"
+              "    A a;\n"
+              "    B b;\n"
+              "    if (x = a.foo() && b.bar()) {}\n" // don't simplify and verify this code
+              "}");
+        ASSERT_EQUALS("[test.cpp:10]: (style) Suspicious condition (assignment + function call after logical op); Clarify expression with parentheses.\n", errout.str());
+
+        check("struct A {\n"
+              "    int foo();\n"
+              "};\n"
+              "struct B {\n"
+              "    bool bar();\n"
+              "};\n"
+              "void f() {\n"
+              "    A* pa;\n"
+              "    B* pb;\n"
+              "    if (x = pa->foo() && pb->bar()) {}\n" // don't simplify and verify this code
+              "}");
+        ASSERT_EQUALS("[test.cpp:10]: (style) Suspicious condition (assignment + function call after logical op); Clarify expression with parentheses.\n", errout.str());
+
+        check("extern int foo();\n"
+              "extern bool bar();\n"
+              "void f1(bool arg);\n"
+              "void f2() {\n"
+              "    f1(x = foo() && bar());" // don't simplify and verify this code
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Suspicious condition (assignment + function call after logical op); Clarify expression with parentheses.\n", errout.str());
+
+        check("extern int foo();\n"
+              "extern bool bar();\n"
+              "void f() {\n"
+              "    x = foo() || bar();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("extern int foo();\n"
+              "extern bool bar();\n"
+              "void f() {\n"
+              "    if (x = (foo() && bar())) {}\n" // don't simplify and verify this code
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("extern int foo();\n"
+              "extern bool bar();\n"
+                "bool x;\n"
+              "void f() {\n"
+              "    if ((x = foo()) && bar()) {}\n" // don't simplify and verify this code
               "}");
         ASSERT_EQUALS("", errout.str());
     }
