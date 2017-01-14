@@ -455,7 +455,9 @@ private:
         ASSERT_EQUALS(";;dealloc;", getcode("void *p; foo(fclose(p));", "p"));
         ASSERT_EQUALS(";;dealloc;", getcode("void *p; foo(close(p));", "p"));
         ASSERT_EQUALS(";;;;", getcode("FILE *f1; FILE *f2; fclose(f1);", "f2"));
-        ASSERT_EQUALS(";;returnuse;", getcode("FILE *f; return fclose(f) == EOF ? 1 : 2;", "f"));
+        ASSERT_EQUALS(";;returndealloc;", getcode("FILE *f; return fclose(f) == EOF ? 1 : 2;", "f"));
+        ASSERT_EQUALS(";;alloc;returndealloc;", getcode("char *c = (char*) malloc(10); return free(c);", "c"));
+        ASSERT_EQUALS(";;returndealloc;", getcode("DIR* d; return closedir(d);", "d"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; s ? free(s) : 0;", "s"));
 
         // if..
