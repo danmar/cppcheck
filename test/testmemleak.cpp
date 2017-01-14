@@ -314,6 +314,7 @@ private:
         TEST_CASE(autoptr1);
         TEST_CASE(if_with_and);
         TEST_CASE(assign_pclose);
+        TEST_CASE(conditional_dealloc_return); // #7820
 
         // Using the function "exit"
         TEST_CASE(exit2);
@@ -3374,6 +3375,39 @@ private:
               "  int a = pclose(f);\n"
               "}", false, true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void conditional_dealloc_return() { // #7820
+        check("void f() {\n"
+              "  FILE *pPipe = popen(\"foo\", \"r\");\n"
+              "  if (feof(pPipe))\n"
+              "    pclose(pPipe);\n"
+              "  return;\n"
+              "}", /*c=*/true, /*posix=*/true);
+        ASSERT_EQUALS("[test.c:5]: (error) Resource leak: pPipe\n", errout.str());
+
+        check("extern int bar();\n"
+              "void f() {\n"
+              "  char *c = (char*) malloc(10);\n"
+              "  if (bar())\n"
+              "    free(c);\n"
+              "  return;\n"
+              "}", /*c=*/true);
+        ASSERT_EQUALS("[test.c:6]: (error) Memory leak: c\n", errout.str());
+
+        check("extern int bar();\n"
+              "extern int baz();\n"
+              "extern void bos(char*);\n"
+              "void f() {\n"
+              "  char *c;\n"
+              "  if(bar()) {\n"
+              "    bos(c);\n"
+              "    c = (char*) malloc(10);\n"
+              "    if (baz())\n"
+              "      free(c);\n"
+              "  };\n"
+              "}", /*c=*/true);
+        ASSERT_EQUALS("[test.c:11]: (error) Memory leak: c\n", errout.str());
     }
 
     void exit2() {
