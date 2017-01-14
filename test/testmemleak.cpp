@@ -184,6 +184,7 @@ private:
         TEST_CASE(if9);     // if (realloc)
         TEST_CASE(if10);    // else if (realloc)
         TEST_CASE(if11);
+        TEST_CASE(if12);    // Ticket #7745
 
         TEST_CASE(forwhile5);
         TEST_CASE(forwhile6);
@@ -1232,6 +1233,16 @@ private:
                            "", errout.str());
     }
 
+    void if12() { // #7745
+        check("void f() {\n"
+              "  FILE *fp = fopen(\"name\", \"r\");\n"
+              "  if (!fp) {\n"
+              "    fp = fopen(\"name\", \"w\");\n"
+              "    fclose(fp);\n"
+              "  }\n"
+              "}", /*c=*/true, /*posix=*/false);
+        ASSERT_EQUALS("[test.c:7]: (error) Resource leak: fp\n", errout.str());
+    }
 
     void forwhile5() {
         check("void f(const char **a)\n"
