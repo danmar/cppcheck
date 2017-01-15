@@ -1964,6 +1964,10 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
         return result->tokAt(2);
     }
 
+    if ((result = Token::findmatch(tokens, "alloc ; loop|while1 {| alloc ;")) != nullptr) {
+        return result->tokAt(3 + (result->strAt(3) == "{"));
+    }
+
     if ((result = Token::findsimplematch(tokens, "; alloc ; if assign ;")) != nullptr) {
         return result->tokAt(4);
     }

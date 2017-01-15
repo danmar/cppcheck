@@ -191,6 +191,7 @@ private:
         TEST_CASE(forwhile9);
         TEST_CASE(forwhile10);
         TEST_CASE(forwhile11);
+        TEST_CASE(forwhile12);
 
         TEST_CASE(switch2);
         TEST_CASE(switch3);
@@ -1337,7 +1338,35 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void forwhile12() {
+        check("extern int bar();\n"
+              "void f() {\n"
+              "  FILE *fp = fopen(\"name\", \"r\" );\n"
+              "  while(bar()) {\n"
+              "    fp = fopen(\"name\", \"w\");\n"
+              "    fclose(fp);\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: fp\n", errout.str());
 
+        check("void f() {\n"
+              "  FILE *fp = fopen(\"name\", \"r\" );\n"
+              "  while(1) {\n"
+              "    fp = fopen(\"name\", \"w\");\n"
+              "    fclose(fp);\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: fp\n", errout.str());
+
+        check("void f() {\n"
+              "  FILE *fp = fopen(\"name\", \"r\" );\n"
+              "  for( ; ; ) {\n"
+              "    fp = fopen(\"name\", \"w\");\n"
+              "    fclose(fp);\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: fp\n", errout.str());
+    }
 
 
     void switch2() {
