@@ -195,7 +195,7 @@ void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const Token *
     // The severity is portability instead of error since this ub doesn't
     // cause bad behaviour on most implementations. people create out
     // of bounds pointers by intention.
-    const std::string expr(tok ? tok->expressionString() : std::string(""));
+    const std::string expr(tok ? tok->expressionString() : std::string());
     std::string errmsg;
     if (index && !index->isNumber()) {
         errmsg = "Undefined behaviour, when '" +

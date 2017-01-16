@@ -106,7 +106,7 @@ std::string Settings::addEnabled(const std::string &str)
             return std::string("cppcheck: there is no --enable parameter with the name '" + str + "'");
     }
 
-    return std::string("");
+    return std::string();
 }
 
 
