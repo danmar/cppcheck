@@ -768,18 +768,18 @@ int main(int argc, char *argv[])
             std::istringstream iss(14+argv[i]);
             if (!(iss >> settings.maxConfigs)) {
                 std::cerr << "argument to '--max-configs=' is not a number." << std::endl;
-                return false;
+                return EXIT_FAILURE;
             }
 
             if (settings.maxConfigs < 1) {
                 std::cerr << "argument to '--max-configs=' must be greater than 0." << std::endl;
-                return false;
+                return EXIT_FAILURE;
             }
 
             maxconfigs = true;
         } else if (std::strncmp(argv[i], "--library=", 10) == 0) {
             if (!tryLoadLibrary(settings.library, argv[0], argv[i]+10))
-                return false;
+                return EXIT_FAILURE;
         } else if (std::strcmp(argv[i], "--std=posix") == 0) {
             settings.standards.posix = true;
         } else if (std::strcmp(argv[i], "--std=c89") == 0) {
