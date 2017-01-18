@@ -1979,8 +1979,8 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
         return result->tokAt(4);
     }
 
-    if (((result = Token::findsimplematch(tokens, "; alloc ; if dealloc ; }")) != nullptr) &&
-        !result->tokAt(7)) {
+    if (((result = Token::findsimplematch(tokens, "; alloc ; if dealloc ; }")) != nullptr) ||
+        ((result = Token::findsimplematch(tokens, "; alloc ; if dealloc ; return ;")) != nullptr)) {
         return result->tokAt(6);
     }
 
