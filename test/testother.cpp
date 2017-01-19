@@ -1386,6 +1386,9 @@ private:
         check("void f(const std::streamoff pos) {}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::initializer_list<int> i) {}");
+        ASSERT_EQUALS("", errout.str());
+
         // #5824
         check("void log(const std::string& file, int line, const std::string& function, const std::string str, ...) {}");
         ASSERT_EQUALS("", errout.str());
