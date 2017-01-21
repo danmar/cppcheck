@@ -730,13 +730,29 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             if (i->isArray() && Token::Match(i->nameToken(), "%name% [ %var% ]")) // Array index variable read.
                 variables.read(i->nameToken()->tokAt(2)->varId(), i->nameToken());
 
-            if (defValTok && defValTok->str() == "=") {
-                if (defValTok->next() && defValTok->next()->str() == "{") {
-                    for (const Token* tok = defValTok; tok && tok != defValTok->linkAt(1); tok = tok->next())
-                        if (tok->varId()) // Variables used to initialize the array read.
-                            variables.read(tok->varId(), i->nameToken());
-                } else
+            if (defValTok && defValTok->next()) {
+                // simple assignment "var = 123"
+                if (defValTok->str() == "=" && defValTok->next()->str() != "{") {
                     doAssignment(variables, i->nameToken(), false, scope);
+                } else {
+                    // could be "var = {...}" OR "var{...}" (since C++11)
+                    const Token* tokBraceStart = NULL;
+                    if (defValTok->str() == "=" && defValTok->next()->str() == "{") {
+                        // "var = {...}"
+                        tokBraceStart = defValTok->next();
+                    } else if (defValTok->str() == "{") {
+                        // "var{...}"
+                        tokBraceStart = defValTok;
+                    }
+                    if (tokBraceStart) {
+                        for (const Token* tok = tokBraceStart->next(); tok && tok != tokBraceStart->link(); tok = tok->next()) {
+                            if (tok->varId()) {
+                                // Variables used to initialize the array read.
+                                variables.read(tok->varId(), i->nameToken());
+                            }
+                        }
+                    }
+                }
             }
         }
     }
