@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="Token">
+    <DisplayString>{_str}</DisplayString>
+  </Type>
+
+  <Type Name="TokenList">
+    <DisplayString>{_front->_str} - {_back->_str}</DisplayString>
+    <Expand>
+      <Item Name="[files]">_files</Item>
+      <CustomListItems Optional="true" MaxItemsPerView="5000">
+        <Variable Name="pCurr" InitialValue="_front" />
+        <Loop>
+          <If Condition="pCurr == _back">
+            <Break Condition="1"/>
+          </If>
+          <Item>pCurr</Item>
+          <Exec>pCurr = pCurr->_next</Exec>
+        </Loop>
+      </CustomListItems>
+      
+    </Expand>
+  </Type>
+
+  <Type Name="Variable">
+    <DisplayString>{_name->_str}</DisplayString>
+  </Type>
+
+  <Type Name="Dimension">
+    <DisplayString Condition="known">{num}</DisplayString>
+    <DisplayString Condition="!known">?</DisplayString>
+  </Type>
+
+  <Type Name="Scope">
+    <DisplayString>{type}: {className}</DisplayString>
+  </Type>
+
+  <Type Name="cppcheck::Platform">
+    <DisplayString>{platformType}</DisplayString>
+  </Type>
+  
+  <Type Name="simplecpp::Location">
+    <DisplayString>{files[fileIndex]} : {line} [col={col}]</DisplayString>
+  </Type>
+    
+    
+  <Type Name="ValueFlow::Value">
+    <DisplayString Condition="valueType==INT">{intvalue} (INT)</DisplayString>
+    <DisplayString Condition="valueType==TOK">{tokvalue} (TOK)</DisplayString>
+    <DisplayString Condition="valueType==FLOAT">{floatValue} (FLOAT)</DisplayString>
+    <!--DisplayString Condition="valueType==MOVED">{moveKind}</DisplayString-->    
+  </Type>
+
+
+  <Type Name="Enumerator">
+    <DisplayString Condition="!name">[UNKNOWN]</DisplayString>
+    <DisplayString Condition="value_known">{name} = {value} (value_known=true)</DisplayString>
+    <DisplayString Condition="!value_known">{name} = ?</DisplayString>
+  </Type>
+  
+  
+</AutoVisualizer>
