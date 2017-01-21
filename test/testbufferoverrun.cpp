@@ -234,6 +234,8 @@ private:
 
         TEST_CASE(negativeMemoryAllocationSizeError) // #389
         TEST_CASE(negativeArraySize);
+
+        TEST_CASE(enumValueArrayBounds); // #7877        
     }
 
 
@@ -3957,6 +3959,24 @@ private:
               "int c[x?y:-1];\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    // #7877
+    void enumValueArrayBounds() {
+        check(
+            "\n enum {"
+            "\n   enum_val = 10 - 1"
+            "\n };"
+            "\n int arr[10];"
+            "\n void main()"
+            "\n {"
+            "\n   arr[enum_val] = 1;"
+            "\n }"
+            "\n"
+        , true, "test.c");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
 };
 
 REGISTER_TEST(TestBufferOverrun)
