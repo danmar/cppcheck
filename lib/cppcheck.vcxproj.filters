@@ -308,4 +308,7 @@
   <ItemGroup>
     <ResourceCompile Include="version.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="cppcheck.natvis" />
+  </ItemGroup>
 </Project>
