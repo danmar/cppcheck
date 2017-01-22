@@ -149,7 +149,7 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates(const Token *to
             continue;
 
         // skip starting tokens.. ;;; typedef typename foo::bar::..
-        while (Token::Match(tok, "[;{}]"))
+        while (Token::simpleMatch(tok, ";"))
             tok = tok->next();
         while (Token::Match(tok, "typedef|typename"))
             tok = tok->next();
