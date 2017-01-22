@@ -175,6 +175,7 @@ private:
 
         TEST_CASE(lambdaFunction); // #5078
         TEST_CASE(namespaces); // #7557
+        TEST_CASE(bracesInitCpp11);// #7895 - "int var{123}" initialization
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -4099,6 +4100,17 @@ private:
                               "     return value;\n"
                               "  }\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void bracesInitCpp11() {
+        functionVariableUsage(
+            "int fun() {\n"
+            " static int fpUnread{0};\n"
+            " const int var{fpUnread++};\n"
+            " return var;\n"
+            "}\n"
+        );
         ASSERT_EQUALS("", errout.str());
     }
 };
