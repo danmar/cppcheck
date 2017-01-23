@@ -195,6 +195,7 @@ private:
 
         TEST_CASE(funcArgNamesDifferent);
         TEST_CASE(funcArgOrderDifferent);
+        TEST_CASE(cpp11FunctionArgInit); // #7846 - "void foo(int declaration = {}) {"
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -6405,6 +6406,18 @@ private:
                       "[test.cpp:9] -> [test.cpp:14]: (warning) Function 'func2' argument order different: declaration 'a, b, c' definition 'c, b, a'\n"
                       "[test.cpp:10] -> [test.cpp:15]: (warning) Function 'func3' argument order different: declaration 'a, b, c' definition 'c, b, a'\n"
                       "[test.cpp:11] -> [test.cpp:16]: (warning) Function 'func4' argument order different: declaration ', b, c' definition 'c, b, a'\n", errout.str());
+    }
+
+    // #7846 - Syntax error when using C++11 braced-initializer in default argument 
+    void cpp11FunctionArgInit() {
+        // syntax error is not expected
+        ASSERT_NO_THROW(check(
+            "\n void foo(int declaration = {}) {"
+            "\n   for (int i = 0; i < 10; i++) {}"
+            "\n }"
+            "\n  "
+        ));
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
