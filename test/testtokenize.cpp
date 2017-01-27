@@ -193,6 +193,7 @@ private:
         TEST_CASE(simplifyKnownVariablesClassMember);  // #2815 - value of class member may be changed by function call
         TEST_CASE(simplifyKnownVariablesFunctionCalls); // Function calls (don't assume pass by reference)
         TEST_CASE(simplifyKnownVariablesReturn);   // 3500 - return
+        TEST_CASE(simplifyKnownVariablesPointerAliasFunctionCall); // #7440
         TEST_CASE(simplifyExternC);
         TEST_CASE(simplifyKeyword); // #5842 - remove C99 static keyword between []
 
@@ -2877,6 +2878,22 @@ private:
                             "    return (x);"
                             "}";
         ASSERT_EQUALS("int a ( ) { return 123 ; }", tokenizeAndStringify(code,true));
+    }
+
+    void simplifyKnownVariablesPointerAliasFunctionCall() { // #7440
+        const char code[] = "int main() {\n"
+                            "  char* data = new char[100];\n"
+                            "  char** dataPtr = &data;\n"
+                            "  printf(\"test\");\n"
+                            "  delete [] *dataPtr;\n"
+                            "}";
+        const char exp[]  = "int main ( ) {\n"
+                              "char * data ; data = new char [ 100 ] ;\n"
+                              "char * * dataPtr ; dataPtr = & data ;\n"
+                              "printf ( \"test\" ) ;\n"
+                              "delete [ ] data ;\n"
+                            "}";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code, /*simplify=*/true));
     }
 
     void simplifyKnownVariablesClassMember() {
