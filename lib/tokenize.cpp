@@ -6413,6 +6413,7 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
 bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const
 {
     const bool pointeralias(valueToken->isName() || Token::Match(valueToken, "& %name% ["));
+    const bool varIsGlobal = (indentlevel == 0);
     const bool printDebug = _settings->debugwarnings;
 
     if (_errorLogger && !list.getFiles().empty())
@@ -6491,12 +6492,9 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (pointeralias && Token::Match(tok3, "do|for|while"))
             break;
 
-        // Stop if unknown function call is seen
-        // If the variable is a global or a member variable it might be
+        // Stop if unknown function call is seen and the variable is global: it might be
         // changed by the function call
-        // TODO: don't bail out if the variable is a local variable,
-        //       then it can't be changed by the function call.
-        if (tok3->str() == ")" && tok3->link() &&
+        if (varIsGlobal && tok3->str() == ")" && tok3->link() &&
             Token::Match(tok3->link()->tokAt(-2), "[;{}] %name% (") &&
             !Token::Match(tok3->link()->previous(), "if|for|while|switch|BOOST_FOREACH"))
             break;

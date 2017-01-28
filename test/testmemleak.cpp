@@ -369,6 +369,7 @@ private:
         TEST_CASE(trac3991);
         TEST_CASE(crash);
         TEST_CASE(trac7680);
+        TEST_CASE(trac7440);
     }
 
     std::string getcode(const char code[], const char varname[], bool classfunc=false) {
@@ -4029,6 +4030,16 @@ private:
         check("void foo() {\n"
               "  int *i = ::new int;\n"
               "  ::delete i;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void trac7440() {
+        check("int main(void) {\n"
+              "  char* data = new char[100];\n"
+              "  char** dataPtr = &data;\n"
+              "  printf(\"test\");\n"
+              "  delete [] *dataPtr;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
