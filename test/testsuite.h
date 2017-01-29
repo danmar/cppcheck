@@ -38,7 +38,6 @@ private:
 protected:
     std::string classname;
     std::string testToRun;
-    bool gcc_style_errors;
     bool quiet_tests;
     std::string currentTest;
 

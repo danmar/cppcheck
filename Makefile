@@ -260,7 +260,7 @@ test:	all
 	./testrunner
 
 check:	all
-	./testrunner -g -q
+	./testrunner -q
 
 checkcfg:	cppcheck
 	./test/cfg/runtests.sh
