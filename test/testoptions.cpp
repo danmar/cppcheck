@@ -32,7 +32,6 @@ private:
         TEST_CASE(no_test_method);
         TEST_CASE(not_quiet);
         TEST_CASE(quiet);
-        TEST_CASE(gcc_errors);
         TEST_CASE(multiple_testcases);
         TEST_CASE(invalid_switches);
     }
@@ -73,11 +72,6 @@ private:
     }
 
 
-    void gcc_errors() const {
-        const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-g"};
-        options args(sizeof argv / sizeof argv[0], argv);
-        ASSERT_EQUALS(true, args.gcc_style_errors());
-    }
 
 
     void multiple_testcases() const {
@@ -88,10 +82,9 @@ private:
 
 
     void invalid_switches() const {
-        const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-a", "-v", "-q", "-g"};
+        const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-a", "-v", "-q"};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS("TestClass::TestMethod", args.which_test());
-        ASSERT_EQUALS(true, args.gcc_style_errors());
         ASSERT_EQUALS(true, args.quiet());
     }
 };
