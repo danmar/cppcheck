@@ -935,23 +935,18 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
             switch (op->str()[0]) {
             case '<':
                 tok->str((v1 << v2).str());
-                ret = true;
                 break;
             case '>':
                 tok->str((v1 >> v2).str());
-                ret = true;
                 break;
             case '&':
                 tok->str((v1 & v2).str());
-                ret = true;
                 break;
             case '|':
                 tok->str((v1 | v2).str());
-                ret = true;
                 break;
             case '^':
                 tok->str((v1 ^ v2).str());
-                ret = true;
                 break;
             };
         }
