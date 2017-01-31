@@ -6408,15 +6408,15 @@ private:
                       "[test.cpp:11] -> [test.cpp:16]: (warning) Function 'func4' argument order different: declaration ', b, c' definition 'c, b, a'\n", errout.str());
     }
 
-    // #7846 - Syntax error when using C++11 braced-initializer in default argument 
+    // #7846 - Syntax error when using C++11 braced-initializer in default argument
     void cpp11FunctionArgInit() {
         // syntax error is not expected
         ASSERT_NO_THROW(check(
-            "\n void foo(int declaration = {}) {"
-            "\n   for (int i = 0; i < 10; i++) {}"
-            "\n }"
-            "\n  "
-        ));
+                            "\n void foo(int declaration = {}) {"
+                            "\n   for (int i = 0; i < 10; i++) {}"
+                            "\n }"
+                            "\n  "
+                        ));
         ASSERT_EQUALS("", errout.str());
     }
 };

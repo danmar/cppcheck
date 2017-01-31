@@ -2888,10 +2888,10 @@ private:
                             "  delete [] *dataPtr;\n"
                             "}";
         const char exp[]  = "int main ( ) {\n"
-                              "char * data ; data = new char [ 100 ] ;\n"
-                              "char * * dataPtr ; dataPtr = & data ;\n"
-                              "printf ( \"test\" ) ;\n"
-                              "delete [ ] data ;\n"
+                            "char * data ; data = new char [ 100 ] ;\n"
+                            "char * * dataPtr ; dataPtr = & data ;\n"
+                            "printf ( \"test\" ) ;\n"
+                            "delete [ ] data ;\n"
                             "}";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code, /*simplify=*/true));
     }
