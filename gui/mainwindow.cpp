@@ -76,7 +76,9 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     // "Filter" toolbar
     mLineEditFilter = new QLineEdit(mUI.mToolBarFilter);
+#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
     mLineEditFilter->setPlaceholderText(tr("Quick Filter:"));
+#endif
     mUI.mToolBarFilter->addWidget(mLineEditFilter);
     connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
     connect(mLineEditFilter, SIGNAL(returnPressed()), this, SLOT(FilterResults()));
