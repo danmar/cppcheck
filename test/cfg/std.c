@@ -48,12 +48,12 @@ void bufferAccessOutOfBounds(void)
     // cppcheck-suppress bufferAccessOutOfBounds
     // cppcheck-suppress redundantCopy
     strncpy(a,"abcde",6);
-    (void)fread(a,1,5,stdin);
+    fread(a,1,5,stdin);
     // cppcheck-suppress bufferAccessOutOfBounds
-    (void)fread(a,1,6,stdin);
+    fread(a,1,6,stdin);
     fwrite(a,1,5,stdout);
     // cppcheck-suppress bufferAccessOutOfBounds
-    (void)fread(a,1,6,stdout);
+    fread(a,1,6,stdout);
 }
 
 // memory leak
