@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ public:
     }
 
 private:
+    Settings settings;
 
     /**
      * Execute check using n jobs for y files which are have
@@ -52,8 +53,7 @@ private:
             filemap[oss.str()] = 1;
         }
 
-        Settings settings;
-        settings._jobs = jobs;
+        settings.jobs = jobs;
         ThreadExecutor executor(filemap, settings, *this);
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.begin(); i != filemap.end(); ++i)
             executor.addFileContent(i->first, data);
@@ -62,6 +62,8 @@ private:
     }
 
     void run() {
+        LOAD_LIB_2(settings.library, "std.cfg");
+
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
         TEST_CASE(no_errors_more_files);
@@ -84,60 +86,54 @@ private:
     }
 
     void many_threads() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n";
-        oss << "  char *a = malloc(10);\n";
-        oss << "  return 0;\n"
-            << "}";
-        check(20, 100, 100, oss.str());
+        check(16, 100, 100,
+              "int main()\n"
+              "{\n"
+              "  char *a = malloc(10);\n"
+              "  return 0;\n"
+              "}");
     }
 
     void no_errors_more_files() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n"
-            << "  return 0;\n"
-            << "}\n";
-        check(2, 3, 0, oss.str());
+        check(2, 3, 0,
+              "int main()\n"
+              "{\n"
+              "  return 0;\n"
+              "}");
     }
 
     void no_errors_less_files() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n"
-            << "  return 0;\n"
-            << "}\n";
-        check(2, 1, 0, oss.str());
+        check(2, 1, 0,
+              "int main()\n"
+              "{\n"
+              "  return 0;\n"
+              "}");
     }
 
     void no_errors_equal_amount_files() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n"
-            << "  return 0;\n"
-            << "}\n";
-        check(2, 2, 0, oss.str());
+        check(2, 2, 0,
+              "int main()\n"
+              "{\n"
+              "  return 0;\n"
+              "}");
     }
 
     void one_error_less_files() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n"
-            << "  {char *a = malloc(10);}\n"
-            << "  return 0;\n"
-            << "}\n";
-        check(2, 1, 1, oss.str());
+        check(2, 1, 1,
+              "int main()\n"
+              "{\n"
+              "  {char *a = malloc(10);}\n"
+              "  return 0;\n"
+              "}");
     }
 
     void one_error_several_files() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n"
-            << "  {char *a = malloc(10);}\n"
-            << "  return 0;\n"
-            << "}\n";
-        check(2, 20, 20, oss.str());
+        check(2, 20, 20,
+              "int main()\n"
+              "{\n"
+              "  {char *a = malloc(10);}\n"
+              "  return 0;\n"
+              "}");
     }
 };
 

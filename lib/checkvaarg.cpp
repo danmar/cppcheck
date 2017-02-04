@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,13 +31,22 @@ namespace {
 // Ensure that correct parameter is passed to va_start()
 //---------------------------------------------------------------------------
 
+// CWE ids used:
+static const struct CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
+static const struct CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
+static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+
 void CheckVaarg::va_start_argument()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
+    const bool printWarnings = _settings->isEnabled("warning");
+
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope* scope = symbolDatabase->functionScopes[i];
         const Function* function = scope->function;
+        if (!function)
+            continue;
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (!tok->scope()->isExecutable())
                 tok = tok->scope()->classEnd;
@@ -48,7 +57,7 @@ void CheckVaarg::va_start_argument()
                 const Variable* var = param2->variable();
                 if (var && var->isReference())
                     referenceAs_va_start_error(param2, var->name());
-                if (var && var->index() + 2 < function->argCount() && _settings->isEnabled("warning")) {
+                if (var && var->index() + 2 < function->argCount() && printWarnings) {
                     std::list<Variable>::const_reverse_iterator it = function->argumentList.rbegin();
                     ++it;
                     wrongParameterTo_va_start_error(tok, var->name(), it->name());
@@ -62,13 +71,13 @@ void CheckVaarg::va_start_argument()
 void CheckVaarg::wrongParameterTo_va_start_error(const Token *tok, const std::string& paramIsName, const std::string& paramShouldName)
 {
     reportError(tok, Severity::warning,
-                "va_start_wrongParameter", "'" + paramIsName + "' given to va_start() is not last named argument of the function. Did you intend to pass '" + paramShouldName + "'?");
+                "va_start_wrongParameter", "'" + paramIsName + "' given to va_start() is not last named argument of the function. Did you intend to pass '" + paramShouldName + "'?", CWE688, false);
 }
 
 void CheckVaarg::referenceAs_va_start_error(const Token *tok, const std::string& paramName)
 {
     reportError(tok, Severity::error,
-                "va_start_referencePassed", "Using reference '" + paramName + "' as parameter for va_start() results in undefined behaviour.");
+                "va_start_referencePassed", "Using reference '" + paramName + "' as parameter for va_start() results in undefined behaviour.", CWE758, false);
 }
 
 //---------------------------------------------------------------------------
@@ -90,7 +99,7 @@ void CheckVaarg::va_list_usage()
         bool exitOnEndOfStatement = false;
 
         const Token* tok = var->nameToken()->next();
-        for (; tok != var->scope()->classEnd; tok = tok->next()) {
+        for (;  tok && tok != var->scope()->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "va_start ( %varid%", var->declarationId())) {
                 if (open)
                     va_start_subsequentCallsError(tok, var->name());
@@ -116,7 +125,14 @@ void CheckVaarg::va_list_usage()
                 tok = tok->linkAt(1);
             } else if (Token::Match(tok, "throw|return"))
                 exitOnEndOfStatement = true;
-            else if (_tokenizer->isCPP() && tok->str() == "try") {
+            else if (tok->str() == "break") {
+                const Scope* scope = tok->scope();
+                while (scope->nestedIn && scope->type != Scope::eFor && scope->type != Scope::eWhile && scope->type != Scope::eDo && scope->type != Scope::eSwitch)
+                    scope = scope->nestedIn;
+                tok = scope->classEnd;
+                if (!tok)
+                    return;
+            } else if (_tokenizer->isCPP() && tok->str() == "try") {
                 open = false;
                 break;
             } else if (!open && tok->varId() == var->declarationId())
@@ -132,17 +148,17 @@ void CheckVaarg::va_list_usage()
 void CheckVaarg::va_end_missingError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
-                "va_end_missing", "va_list '" + varname + "' was opened but not closed by va_end().");
+                "va_end_missing", "va_list '" + varname + "' was opened but not closed by va_end().", CWE664, false);
 }
 
 void CheckVaarg::va_list_usedBeforeStartedError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
-                "va_list_usedBeforeStarted", "va_list '" + varname + "' used before va_start() was called.");
+                "va_list_usedBeforeStarted", "va_list '" + varname + "' used before va_start() was called.", CWE664, false);
 }
 
 void CheckVaarg::va_start_subsequentCallsError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
-                "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() inbetween.");
+                "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() in between.", CWE664, false);
 }

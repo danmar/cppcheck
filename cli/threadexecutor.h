@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <string>
 #include <list>
 #include "errorlogger.h"
+#include "importproject.h"
 
 #if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 #define THREADING_MODEL_FORK
@@ -109,6 +110,7 @@ private:
 
     std::map<std::string, std::string> _fileContents;
     std::map<std::string, std::size_t>::const_iterator _itNextFile;
+    std::list<ImportProject::FileSettings>::const_iterator _itNextFileSettings;
     std::size_t _processedFiles;
     std::size_t _totalFiles;
     std::size_t _processedSize;

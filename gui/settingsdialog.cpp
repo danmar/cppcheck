@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI.mSaveFullPath->setCheckState(BoolToCheckState(settings.value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
     mUI.mInlineSuppressions->setCheckState(BoolToCheckState(settings.value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool()));
     mUI.mEnableInconclusive->setCheckState(BoolToCheckState(settings.value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool()));
+    mUI.mShowStatistics->setCheckState(BoolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
     mUI.mShowErrorId->setCheckState(BoolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
@@ -106,7 +107,7 @@ void SettingsDialog::InitIncludepathsList()
     QSettings settings;
     const QString allPaths = settings.value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString();
     const QStringList paths = allPaths.split(";", QString::SkipEmptyParts);
-    foreach(QString path, paths) {
+    foreach (QString path, paths) {
         AddIncludePath(path);
     }
 }
@@ -115,7 +116,7 @@ void SettingsDialog::InitTranslationsList()
 {
     const QString current = mTranslator->GetCurrentLanguage();
     QList<TranslationInfo> translations = mTranslator->GetTranslations();
-    foreach(TranslationInfo translation, translations) {
+    foreach (TranslationInfo translation, translations) {
         QListWidgetItem *item = new QListWidgetItem;
         item->setText(translation.mName);
         item->setData(LangCodeRole, QVariant(translation.mCode));
@@ -173,6 +174,7 @@ void SettingsDialog::SaveSettingValues() const
     SaveCheckboxValue(&settings, mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
     SaveCheckboxValue(&settings, mUI.mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
     SaveCheckboxValue(&settings, mUI.mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
+    SaveCheckboxValue(&settings, mUI.mShowStatistics, SETTINGS_SHOW_STATISTICS);
     SaveCheckboxValue(&settings, mUI.mShowErrorId, SETTINGS_SHOW_ERROR_ID);
 
     const QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
@@ -211,7 +213,7 @@ void SettingsDialog::AddApplication()
 void SettingsDialog::RemoveApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
-    foreach(QListWidgetItem *item, selected) {
+    foreach (QListWidgetItem *item, selected) {
         const int removeIndex = mUI.mListWidget->row(item);
         const int currentDefault = mTempApplications->GetDefaultApplication();
         mTempApplications->RemoveApplication(removeIndex);
@@ -230,13 +232,16 @@ void SettingsDialog::EditApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
     QListWidgetItem *item = 0;
-    foreach(item, selected) {
+    foreach (item, selected) {
         int row = mUI.mListWidget->row(item);
         Application& app = mTempApplications->GetApplication(row);
         ApplicationDialog dialog(tr("Modify an application"), app, this);
 
         if (dialog.exec() == QDialog::Accepted) {
-            item->setText(app.getName());
+            QString name = app.getName();
+            if (mTempApplications->GetDefaultApplication() == row)
+                name += tr(" [Default]");
+            item->setText(name);
         }
     }
 }
@@ -306,6 +311,11 @@ bool SettingsDialog::ShowNoErrorsMessage() const
 bool SettingsDialog::ShowErrorId() const
 {
     return CheckStateToBool(mUI.mShowErrorId->checkState());
+}
+
+bool SettingsDialog::ShowInconclusive() const
+{
+    return CheckStateToBool(mUI.mEnableInconclusive->checkState());
 }
 
 void SettingsDialog::AddIncludePath()

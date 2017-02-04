@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,8 +73,9 @@ private:
      * @param severity the severity of the bug
      * @param id type of message
      * @param msg text
+     * @param cwe cwe number
      */
-    void reportErr(const Token *location, Severity::SeverityType severity, const std::string &id, const std::string &msg) const;
+    void reportErr(const Token *location, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const;
 
     /**
      * Report error. Similar with the function Check::reportError
@@ -82,8 +83,9 @@ private:
      * @param severity the severity of the bug
      * @param id type of message
      * @param msg text
+     * @param cwe cwe number
      */
-    void reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) const;
+    void reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const;
 
 public:
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e, const Settings *s)
@@ -93,15 +95,7 @@ public:
     /** @brief What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
     enum AllocType { No, Malloc, New, NewArray, File, Fd, Pipe, OtherMem, OtherRes, Many };
 
-    void memoryLeak(const Token *tok, const std::string &varname, AllocType alloctype);
-
-    /**
-     * @brief Get type of deallocation at given position
-     * @param tok position
-     * @param varname variable name
-     * @return type of deallocation
-     */
-    AllocType getDeallocationType(const Token *tok, const std::string &varname) const;
+    void memoryLeak(const Token *tok, const std::string &varname, AllocType alloctype) const;
 
     /**
      * @brief Get type of deallocation at given position
@@ -114,7 +108,7 @@ public:
     /**
      * @brief Get type of allocation at given position
      */
-    AllocType getAllocationType(const Token *tok2, unsigned int varid, std::list<const Function*> *callstack = NULL) const;
+    AllocType getAllocationType(const Token *tok2, unsigned int varid, std::list<const Function*> *callstack = nullptr) const;
 
     /**
      * @brief Get type of reallocation at given position
@@ -155,7 +149,7 @@ public:
     void memleakUponReallocFailureError(const Token *tok, const std::string &varname) const;
 
     /** What type of allocated memory does the given function return? */
-    AllocType functionReturnType(const Function* func, std::list<const Function*> *callstack = NULL) const;
+    AllocType functionReturnType(const Function* func, std::list<const Function*> *callstack = nullptr) const;
 
     /** Function allocates pointed-to argument (a la asprintf)? */
     const char *functionArgAlloc(const Function *func, unsigned int targetpar, AllocType &allocType) const;
@@ -182,7 +176,7 @@ public:
 class CPPCHECKLIB CheckMemoryLeakInFunction : private Check, public CheckMemoryLeak {
 public:
     /** @brief This constructor is used when registering this class */
-    CheckMemoryLeakInFunction() : Check(myName()), CheckMemoryLeak(0, 0, 0), symbolDatabase(NULL) {
+    CheckMemoryLeakInFunction() : Check(myName()), CheckMemoryLeak(0, 0, 0), symbolDatabase(nullptr) {
     }
 
     /** @brief This constructor is used when running checks */
@@ -212,15 +206,6 @@ public:
      * Checking for a memory leak caused by improper realloc usage.
      */
     void checkReallocUsage();
-
-    /**
-     * @brief %Check if there is a "!var" match inside a condition
-     * @param tok      first token to match
-     * @param varid    variable id
-     * @param endpar   if this is true the "!var" must be followed by ")"
-     * @return true if match
-     */
-    static bool notvar(const Token *tok, unsigned int varid, bool endpar = false);
 
     /**
      * Inspect a function call. the call_func and getcode are recursive
@@ -288,28 +273,28 @@ public:
 
     /**
      * Checking the variable varname
-     * @param Tok1 start token
+     * @param startTok start token
      * @param varname name of variable (for error messages)
      * @param varid variable id
      * @param classmember is the scope inside a class member function
      * @param sz size of type.. if the variable is a "int *" then sz should be "sizeof(int)"
      */
-    void checkScope(const Token *Tok1, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
+    void checkScope(const Token *startTok, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
 
 private:
     /** Report all possible errors (for the --errorlist) */
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
-        CheckMemoryLeakInFunction c(0, settings, e);
+        CheckMemoryLeakInFunction c(nullptr, settings, e);
 
-        c.memleakError(0, "varname");
-        c.resourceLeakError(0, "varname");
+        c.memleakError(nullptr, "varname");
+        c.resourceLeakError(nullptr, "varname");
 
-        c.deallocDeallocError(0, "varname");
-        c.deallocuseError(0, "varname");
-        c.mismatchSizeError(0, "sz");
+        c.deallocDeallocError(nullptr, "varname");
+        c.deallocuseError(nullptr, "varname");
+        c.mismatchSizeError(nullptr, "sz");
         std::list<const Token *> callstack;
         c.mismatchAllocDealloc(callstack, "varname");
-        c.memleakUponReallocFailureError(0, "varname");
+        c.memleakUponReallocFailureError(nullptr, "varname");
     }
 
     /**
@@ -457,11 +442,11 @@ private:
     void unsafeArgAllocError(const Token *tok, const std::string &funcName, const std::string &ptrType, const std::string &objType);
 
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
-        CheckMemoryLeakNoVar c(0, settings, e);
+        CheckMemoryLeakNoVar c(nullptr, settings, e);
 
-        c.functionCallLeak(0, "funcName", "funcName");
-        c.returnValueNotUsedError(0, "funcName");
-        c.unsafeArgAllocError(0, "funcName", "shared_ptr", "int");
+        c.functionCallLeak(nullptr, "funcName", "funcName");
+        c.returnValueNotUsedError(nullptr, "funcName");
+        c.unsafeArgAllocError(nullptr, "funcName", "shared_ptr", "int");
     }
 
     static std::string myName() {

@@ -5,7 +5,7 @@ INCLUDEPATH += .
 OBJECTS_DIR = ../../build
 MOC_DIR = ../../build
 
-include(../common.pri)
+include(../../common.pri)
 
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 

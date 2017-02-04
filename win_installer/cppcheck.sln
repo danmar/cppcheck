@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "cppcheck", "cppcheck.wixproj", "{3B772885-4980-4A76-8407-4DABF8F7757C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3B772885-4980-4A76-8407-4DABF8F7757C}.Release|x64.ActiveCfg = Release|x64
+		{3B772885-4980-4A76-8407-4DABF8F7757C}.Release|x64.Build.0 = Release|x64
+		{3B772885-4980-4A76-8407-4DABF8F7757C}.Release|x86.ActiveCfg = Release|x86
+		{3B772885-4980-4A76-8407-4DABF8F7757C}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = TRUE
+	EndGlobalSection
+EndGlobal

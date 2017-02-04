@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,8 @@ private:
     void run() {
         TEST_CASE(simplify_path);
         TEST_CASE(accept_file);
+        TEST_CASE(getCurrentPath);
+        TEST_CASE(isAbsolute);
         TEST_CASE(getRelative);
         TEST_CASE(is_c);
         TEST_CASE(is_cpp);
@@ -75,6 +77,9 @@ private:
         ASSERT_EQUALS("../../../src/test.cpp", Path::simplifyPath("../../../src/test.cpp"));
         ASSERT_EQUALS("src/test.cpp", Path::simplifyPath(".//src/test.cpp"));
         ASSERT_EQUALS("src/test.cpp", Path::simplifyPath(".///src/test.cpp"));
+        ASSERT_EQUALS("test.cpp", Path::simplifyPath("./././././test.cpp"));
+        TODO_ASSERT_EQUALS("src", "src/abc/..", Path::simplifyPath("src/abc/.."));
+        // TODO: don't crash ASSERT_EQUALS("src", Path::simplifyPath("src/abc/../"));
 
         // Handling of UNC paths on Windows
         ASSERT_EQUALS("//src/test.cpp", Path::simplifyPath("//src/test.cpp"));
@@ -105,6 +110,28 @@ private:
         // don't accept any headers
         ASSERT_EQUALS(false, Path::acceptFile("index.h"));
         ASSERT_EQUALS(false, Path::acceptFile("index.hpp"));
+    }
+
+    void getCurrentPath() const {
+        ASSERT_EQUALS(true, Path::isAbsolute(Path::getCurrentPath()));
+    }
+
+    void isAbsolute() const {
+#ifdef _WIN32
+        ASSERT_EQUALS(true, Path::isAbsolute("C:\\foo\\bar"));
+        ASSERT_EQUALS(true, Path::isAbsolute("C:/foo/bar"));
+        ASSERT_EQUALS(true, Path::isAbsolute("\\\\foo\\bar"));
+        ASSERT_EQUALS(false, Path::isAbsolute("foo\\bar"));
+        ASSERT_EQUALS(false, Path::isAbsolute("foo/bar"));
+        ASSERT_EQUALS(false, Path::isAbsolute("foo.cpp"));
+        ASSERT_EQUALS(false, Path::isAbsolute("C:foo.cpp"));
+        ASSERT_EQUALS(false, Path::isAbsolute("C:foo\\bar.cpp"));
+#else
+        ASSERT_EQUALS(true, Path::isAbsolute("/foo/bar"));
+        ASSERT_EQUALS(true, Path::isAbsolute("/"));
+        ASSERT_EQUALS(false, Path::isAbsolute("foo/bar"));
+        ASSERT_EQUALS(false, Path::isAbsolute("foo.cpp"));
+#endif
     }
 
     void getRelative() const {

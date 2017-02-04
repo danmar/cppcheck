@@ -10,7 +10,7 @@
 
 rm times-tags.txt
 
-for i in `seq $1 $2`;
+for i in $(seq $1 $2);
 do
     echo "1.$i"
     echo "1.$i" >> times-tags.txt
@@ -21,5 +21,3 @@ do
     git checkout master
     git branch -D "$i"
 done
-
-

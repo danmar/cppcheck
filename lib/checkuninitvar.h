@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,33 +37,33 @@ class Variable;
 class CPPCHECKLIB CheckUninitVar : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUninitVar */
-    CheckUninitVar() : Check(myName()), testrunner(false) {
+    CheckUninitVar() : Check(myName()) {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckUninitVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger), testrunner(false) {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
-        checkUninitVar.executionPaths();
         checkUninitVar.check();
         checkUninitVar.deadPointer();
     }
 
     /** Check for uninitialized variables */
     void check();
-    void checkScope(const Scope* scope);
+    void checkScope(const Scope* scope, const std::set<std::string> &arrayTypeDefs);
     void checkStruct(const Token *tok, const Variable &structvar);
-    enum Alloc { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL };
+    enum Alloc { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL, ARRAY };
     bool checkScopeForVariable(const Token *tok, const Variable& var, bool* const possibleInit, bool* const noreturn, Alloc* const alloc, const std::string &membervar);
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, Alloc alloc, const std::string &membervar);
     bool checkLoopBody(const Token *tok, const Variable& var, const Alloc alloc, const std::string &membervar, const bool suppressErrors);
-    void checkRhs(const Token *tok, const Variable &var, Alloc alloc, const std::string &membervar);
+    void checkRhs(const Token *tok, const Variable &var, Alloc alloc, unsigned int number_of_if, const std::string &membervar);
     bool isVariableUsage(const Token *vartok, bool ispointer, Alloc alloc) const;
-    static bool isMemberVariableAssignment(const Token *tok, const std::string &membervar);
+    int isFunctionParUsage(const Token *vartok, bool ispointer, Alloc alloc) const;
+    bool isMemberVariableAssignment(const Token *tok, const std::string &membervar) const;
     bool isMemberVariableUsage(const Token *tok, bool isPointer, Alloc alloc, const std::string &membervar) const;
 
     /** ValueFlow-based checking for dead pointer usage */
@@ -80,35 +80,27 @@ public:
         std::set<std::string>  functionCalls;
     };
 
-    /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
-
-    /** @brief Analyse all file infos for all TU */
-    void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger);
-
-    void analyseFunctions(const Tokenizer *tokenizer, std::set<std::string> &f) const;
-
-    /** @brief new type of check: check execution paths */
-    void executionPaths();
-
     void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
+    void uninitvarError(const Token *tok, const std::string &varname, Alloc alloc) {
+        if (alloc == NO_CTOR_CALL || alloc == CTOR_CALL)
+            uninitdataError(tok, varname);
+        else
+            uninitvarError(tok, varname);
+    }
     void uninitStructMemberError(const Token *tok, const std::string &membername);
-
-    /** testrunner: (don't abort() when assertion fails, just write error message) */
-    bool testrunner;
 
 private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckUninitVar c(0, settings, errorLogger);
+        CheckUninitVar c(nullptr, settings, errorLogger);
 
         // error
-        c.uninitstringError(0, "varname", true);
-        c.uninitdataError(0, "varname");
-        c.uninitvarError(0, "varname");
-        c.uninitStructMemberError(0, "a.b");
-        c.deadPointerError(0,0);
+        c.uninitstringError(nullptr, "varname", true);
+        c.uninitdataError(nullptr, "varname");
+        c.uninitvarError(nullptr, "varname");
+        c.uninitStructMemberError(nullptr, "a.b");
+        c.deadPointerError(nullptr, nullptr);
     }
 
     static std::string myName() {

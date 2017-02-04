@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,9 @@
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent),
     mScanDuration(0),
-    mRunningThreadCount(0)
+    mRunningThreadCount(0),
+    mAnalyseWholeProgram(false)
+
 {
     SetThreadCount(1);
 }
@@ -43,6 +45,7 @@ void ThreadHandler::ClearFiles()
 {
     mLastFiles.clear();
     mResults.ClearFiles();
+    mAnalyseWholeProgram = false;
 }
 
 void ThreadHandler::SetFiles(const QStringList &files)
@@ -51,20 +54,35 @@ void ThreadHandler::SetFiles(const QStringList &files)
     mLastFiles = files;
 }
 
-void ThreadHandler::Check(const Settings &settings, bool recheck)
+void ThreadHandler::SetProject(const ImportProject &prj)
 {
-    if (recheck && mRunningThreadCount == 0) {
-        // only recheck changed files
-        mResults.SetFiles(GetReCheckFiles());
-    }
+    mResults.SetProject(prj);
+    mLastFiles.clear();
+}
 
-    if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs == 0) {
+void ThreadHandler::SetCheckFiles(bool all)
+{
+    if (mRunningThreadCount == 0) {
+        mResults.SetFiles(GetReCheckFiles(all));
+    }
+}
+
+void ThreadHandler::SetCheckFiles(QStringList files)
+{
+    if (mRunningThreadCount == 0) {
+        mResults.SetFiles(files);
+    }
+}
+
+void ThreadHandler::Check(const Settings &settings, bool all)
+{
+    if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings.jobs == 0) {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
         emit Done();
         return;
     }
 
-    SetThreadCount(settings._jobs);
+    SetThreadCount(settings.jobs);
 
     mRunningThreadCount = mThreads.size();
 
@@ -78,6 +96,8 @@ void ThreadHandler::Check(const Settings &settings, bool recheck)
 
     // Date and time when checking starts..
     mCheckStartTime = QDateTime::currentDateTime();
+
+    mAnalyseWholeProgram = true;
 
     mTime.start();
 }
@@ -122,10 +142,17 @@ void ThreadHandler::RemoveThreads()
     }
 
     mThreads.clear();
+    mAnalyseWholeProgram = false;
 }
 
 void ThreadHandler::ThreadDone()
 {
+    if (mRunningThreadCount == 1 && mAnalyseWholeProgram) {
+        mThreads[0]->AnalyseWholeProgram(mLastFiles);
+        mAnalyseWholeProgram = false;
+        return;
+    }
+
     mRunningThreadCount--;
     if (mRunningThreadCount == 0) {
         emit Done();
@@ -143,6 +170,7 @@ void ThreadHandler::ThreadDone()
 void ThreadHandler::Stop()
 {
     mCheckStartTime = QDateTime();
+    mAnalyseWholeProgram = false;
     for (int i = 0; i < mThreads.size(); i++) {
         mThreads[i]->stop();
     }
@@ -188,9 +216,9 @@ int ThreadHandler::GetPreviousScanDuration() const
     return mScanDuration;
 }
 
-QStringList ThreadHandler::GetReCheckFiles() const
+QStringList ThreadHandler::GetReCheckFiles(bool all) const
 {
-    if (mLastCheckTime.isNull())
+    if (mLastCheckTime.isNull() || all)
         return mLastFiles;
 
     std::set<QString> modified;
@@ -242,4 +270,14 @@ bool ThreadHandler::NeedsReCheck(const QString &filename, std::set<QString> &mod
     }
 
     return false;
+}
+
+QDateTime ThreadHandler::GetCheckStartTime() const
+{
+    return mCheckStartTime;
+}
+
+void ThreadHandler::SetCheckStartTime(QDateTime checkStartTime)
+{
+    mCheckStartTime = checkStartTime;
 }

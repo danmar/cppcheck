@@ -1,7 +1,7 @@
 #------------------------------------------------------
 # Build type
 #------------------------------------------------------
-set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Configs" FORCE)
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;MinSizeRel" CACHE STRING "Configs" FORCE)
 if(DEFINED CMAKE_BUILD_TYPE)
    SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
 endif()
@@ -23,10 +23,20 @@ option(ANALYZE_DATAFLOW     "Clang dynamic analyzer: general dynamic dataflow an
 option(WARNINGS_ARE_ERRORS  "Treat warnings as errors"                                      OFF)
 option(WARNINGS_ANSI_ISO    "Issue all the mandatory diagnostics Listed in C standard"      ON)
 
-option(BUILD_SHARED_LIBS    "Build shared libraries"                                        ON)
+set(USE_MATCHCOMPILER "Auto" CACHE STRING "Usage of match compliler")
+set_property(CACHE USE_MATCHCOMPILER PROPERTY STRINGS Auto Off On Verify) 
+if (USE_MATCHCOMPILER STREQUAL "Auto")
+    if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(USE_MATCHCOMPILER_OPT "On")
+    else()
+        set(USE_MATCHCOMPILER_OPT "Off")
+    endif()
+else()
+    set(USE_MATCHCOMPILER_OPT ${USE_MATCHCOMPILER})
+endif()
+
 option(BUILD_TESTS          "Build tests"                                                   OFF)
 option(BUILD_GUI            "Build the qt application"                                      OFF)
-option(BUILD_UTILS_TESTS    "Build applications tests using the different modules"          OFF)
 
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
 

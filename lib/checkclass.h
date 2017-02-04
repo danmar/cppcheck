@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ class Function;
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), symbolDatabase(NULL) {
+    CheckClass() : Check(myName()), symbolDatabase(nullptr) {
     }
 
     /** @brief This constructor is used when running checks. */
@@ -100,7 +100,7 @@ public:
      * Important: The checking doesn't work on simplified tokens list.
      */
     void checkMemset();
-    void checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::list<const Scope *> parsedTypes);
+    void checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::set<const Scope *> parsedTypes);
 
     /** @brief 'operator=' should return something and it should not be const. */
     void operatorEq();
@@ -146,7 +146,6 @@ private:
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
     void noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct);
-    void noExplicitCopyMoveConstructorError(const Token *tok, const std::string &classname, bool isStruct);
     //void copyConstructorMallocError(const Token *cctor, const Token *alloc, const std::string& var_name);
     void copyConstructorShallowCopyError(const Token *tok, const std::string& varname);
     void noCopyConstructorError(const Token *tok, const std::string &classname, bool isStruct);
@@ -175,35 +174,34 @@ private:
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckClass c(0, settings, errorLogger);
-        c.noConstructorError(0, "classname", false);
-        c.noExplicitConstructorError(0, "classname", false);
-        c.noExplicitCopyMoveConstructorError(0, "classname", false);
-        //c.copyConstructorMallocError(0, 0, "var");
-        c.copyConstructorShallowCopyError(0, "var");
-        c.noCopyConstructorError(0, "class", false);
-        c.uninitVarError(0, "classname", "varname", false);
-        c.operatorEqVarError(0, "classname", "", false);
-        c.unusedPrivateFunctionError(0, "classname", "funcname");
-        c.memsetError(0, "memfunc", "classname", "class");
-        c.memsetErrorReference(0, "memfunc", "class");
-        c.memsetErrorFloat(0, "class");
-        c.mallocOnClassWarning(0, "malloc", 0);
-        c.mallocOnClassError(0, "malloc", 0, "std::string");
-        c.operatorEqReturnError(0, "class");
-        c.virtualDestructorError(0, "Base", "Derived", false);
-        c.thisSubtractionError(0);
-        c.operatorEqRetRefThisError(0);
-        c.operatorEqMissingReturnStatementError(0, true);
-        c.operatorEqShouldBeLeftUnimplementedError(0);
-        c.operatorEqToSelfError(0);
-        c.checkConstError(0, "class", "function", false);
-        c.checkConstError(0, "class", "function", true);
-        c.initializerListError(0, 0, "class", "variable");
-        c.suggestInitializationList(0, "variable");
-        c.selfInitializationError(0, "var");
-        c.duplInheritedMembersError(0, 0, "class", "class", "variable", false, false);
-        c.copyCtorAndEqOperatorError(0, "class", false, false);
+        CheckClass c(nullptr, settings, errorLogger);
+        c.noConstructorError(nullptr, "classname", false);
+        c.noExplicitConstructorError(nullptr, "classname", false);
+        //c.copyConstructorMallocError(nullptr, 0, "var");
+        c.copyConstructorShallowCopyError(nullptr, "var");
+        c.noCopyConstructorError(nullptr, "class", false);
+        c.uninitVarError(nullptr, "classname", "varname", false);
+        c.operatorEqVarError(nullptr, "classname", "", false);
+        c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
+        c.memsetError(nullptr, "memfunc", "classname", "class");
+        c.memsetErrorReference(nullptr, "memfunc", "class");
+        c.memsetErrorFloat(nullptr, "class");
+        c.mallocOnClassWarning(nullptr, "malloc", 0);
+        c.mallocOnClassError(nullptr, "malloc", 0, "std::string");
+        c.operatorEqReturnError(nullptr, "class");
+        c.virtualDestructorError(nullptr, "Base", "Derived", false);
+        c.thisSubtractionError(nullptr);
+        c.operatorEqRetRefThisError(nullptr);
+        c.operatorEqMissingReturnStatementError(nullptr, true);
+        c.operatorEqShouldBeLeftUnimplementedError(nullptr);
+        c.operatorEqToSelfError(nullptr);
+        c.checkConstError(nullptr, "class", "function", false);
+        c.checkConstError(nullptr, "class", "function", true);
+        c.initializerListError(nullptr, 0, "class", "variable");
+        c.suggestInitializationList(nullptr, "variable");
+        c.selfInitializationError(nullptr, "var");
+        c.duplInheritedMembersError(nullptr, 0, "class", "class", "variable", false, false);
+        c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
     }
 
     static std::string myName() {
@@ -214,7 +212,7 @@ private:
         return "Check the code for each class.\n"
                "- Missing constructors and copy constructors\n"
                //"- Missing allocation of memory in copy constructor\n"
-               "- Constructors which should be explicit are explicit\n"
+               "- Constructors which should be explicit\n"
                "- Are all variables initialized by the constructors?\n"
                "- Are all variables assigned by 'operator='?\n"
                "- Warn if memset, memcpy etc are used on a class\n"
@@ -263,19 +261,19 @@ private:
 
     /**
      * @brief assign a variable in the varlist
-     * @param varname name of variable to mark assigned
+     * @param varid id of variable to mark assigned
      * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
-    static void assignVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage);
+    static void assignVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage);
 
     /**
      * @brief initialize a variable in the varlist
-     * @param varname name of variable to mark initialized
+     * @param varid id of variable to mark initialized
      * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
-    static void initVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage);
+    static void initVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage);
 
     /**
      * @brief set all variables in list assigned

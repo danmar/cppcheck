@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,11 +32,13 @@ private:
         TEST_CASE(isbin);
         TEST_CASE(isdec);
         TEST_CASE(isoct);
-        TEST_CASE(ishex);
-        TEST_CASE(isValidSuffix);
+        TEST_CASE(isFloatHex);
+        TEST_CASE(isIntHex);
+        TEST_CASE(isValidIntegerSuffix);
         TEST_CASE(isnegative);
         TEST_CASE(ispositive);
-        TEST_CASE(isfloat);
+        TEST_CASE(isFloat);
+        TEST_CASE(isDecimalFloat);
         TEST_CASE(isGreater)
         TEST_CASE(isGreaterEqual)
         TEST_CASE(isEqual)
@@ -45,7 +47,9 @@ private:
         TEST_CASE(isLessEqual)
         TEST_CASE(calculate);
         TEST_CASE(calculate1);
-        TEST_CASE(convert);
+        TEST_CASE(typesuffix);
+        TEST_CASE(toLongNumber);
+        TEST_CASE(toDoubleNumber);
         TEST_CASE(naninf);
         TEST_CASE(isNullValue);
         TEST_CASE(incdec);
@@ -54,6 +58,8 @@ private:
         TEST_CASE(tan);
         TEST_CASE(abs);
         TEST_CASE(toString);
+        TEST_CASE(characterLiteralsNormalization);
+        TEST_CASE(CPP14DigitSeparators);
     }
 
     void isGreater() const {
@@ -138,6 +144,7 @@ private:
         ASSERT_EQUALS("1"   , MathLib::divide("3", "2"));
         ASSERT_THROW(MathLib::divide("123", "0"), InternalError); // throw
         ASSERT_THROW(MathLib::divide("-9223372036854775808", "-1"), InternalError); // #4520 - out of range => throw
+        ASSERT_EQUALS("4611686018427387904",  MathLib::divide("-9223372036854775808", "-2")); // #6679
         MathLib::divide("123", "0.0"); // don't throw
 
         // Unknown action should throw exception
@@ -146,24 +153,85 @@ private:
 
     void calculate1() const {
         ASSERT_EQUALS("0"    , MathLib::calculate("2"    , "1"    , '%'));
-        ASSERT_EQUALS("0.0"  , MathLib::calculate("2.0"  , "1.0"  , '%'));
         ASSERT_EQUALS("2"    , MathLib::calculate("12"   , "5"   , '%'));
         ASSERT_EQUALS("1"    , MathLib::calculate("100"  , "3"   , '%'));
+
+#ifndef TEST_MATHLIB_VALUE
+        // floating point modulo is not defined in C/C++
+        ASSERT_EQUALS("0.0"  , MathLib::calculate("2.0"  , "1.0"  , '%'));
         ASSERT_EQUALS("12.0" , MathLib::calculate("12.0" , "13.0" , '%'));
         ASSERT_EQUALS("1.3"  , MathLib::calculate("5.3"  , "2.0" , '%'));
         ASSERT_EQUALS("1.7"  , MathLib::calculate("18.5" , "4.2" , '%'));
-        ASSERT_THROW(MathLib::calculate("123", "0", '%'), InternalError); // throw
         MathLib::calculate("123", "0.0", '%'); // don't throw
+#endif
+
+        ASSERT_THROW(MathLib::calculate("123", "0", '%'), InternalError); // throw
 
         ASSERT_EQUALS("0"    , MathLib::calculate("1"    , "1"    , '^'));
         ASSERT_EQUALS("3"    , MathLib::calculate("2"    , "1"    , '^'));
     }
 
-    void convert() const {
-        // ------------------
-        // tolong conversion:
-        // ------------------
+    void typesuffix() const {
+        ASSERT_EQUALS("2",    MathLib::add("1",    "1"));
+        ASSERT_EQUALS("2U",   MathLib::add("1U",   "1"));
+        ASSERT_EQUALS("2L",   MathLib::add("1L",   "1"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1UL",  "1"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1LL",  "1"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1i64", "1"));
+        ASSERT_EQUALS("2ULL", MathLib::add("1ULL", "1"));
+        ASSERT_EQUALS("2ULL", MathLib::add("1ui64","1"));
 
+        ASSERT_EQUALS("2U",   MathLib::add("1",    "1U"));
+        ASSERT_EQUALS("2U",   MathLib::add("1U",   "1U"));
+        ASSERT_EQUALS("2L",   MathLib::add("1L",   "1U"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1UL",  "1U"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1LL",  "1U"));
+        ASSERT_EQUALS("2ULL", MathLib::add("1ULL", "1U"));
+
+        ASSERT_EQUALS("2L",   MathLib::add("1",    "1L"));
+        ASSERT_EQUALS("2L",   MathLib::add("1U",   "1L"));
+        ASSERT_EQUALS("2L",   MathLib::add("1L",   "1L"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1UL",  "1L"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1LL",  "1L"));
+        ASSERT_EQUALS("2ULL", MathLib::add("1ULL", "1L"));
+
+        ASSERT_EQUALS("2UL",  MathLib::add("1",    "1UL"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1U",   "1UL"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1L",   "1UL"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1UL",  "1UL"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1LL",  "1UL"));
+        ASSERT_EQUALS("2ULL", MathLib::add("1ULL", "1UL"));
+
+        ASSERT_EQUALS("2UL",  MathLib::add("1",    "1LU"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1U",   "1LU"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1L",   "1LU"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1UL",  "1LU"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1LL",  "1LU"));
+        ASSERT_EQUALS("2ULL", MathLib::add("1ULL", "1LU"));
+
+        ASSERT_EQUALS("2LL",  MathLib::add("1",    "1LL"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1U",   "1LL"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1L",   "1LL"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1UL",  "1LL"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1LL",  "1LL"));
+        ASSERT_EQUALS("2ULL", MathLib::add("1ULL", "1LL"));
+
+        ASSERT_EQUALS("2ULL",  MathLib::add("1",    "1ULL"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1U",   "1ULL"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1L",   "1ULL"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1UL",  "1ULL"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1LL",  "1ULL"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1ULL", "1ULL"));
+
+        ASSERT_EQUALS("2ULL",  MathLib::add("1",    "1LLU"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1U",   "1LLU"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1L",   "1LLU"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1UL",  "1LLU"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1LL",  "1LLU"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1ULL", "1LLU"));
+    }
+
+    void toLongNumber() const {
         // from hex
         ASSERT_EQUALS(0     , MathLib::toLongNumber("0x0"));
         ASSERT_EQUALS(0     , MathLib::toLongNumber("-0x0"));
@@ -205,6 +273,49 @@ private:
         ASSERT_EQUALS(100   , MathLib::toLongNumber("+10.0E+1"));
         ASSERT_EQUALS(-1    , MathLib::toLongNumber("-10.0E-1"));
 
+        // from char
+        ASSERT_EQUALS((int)('A'),    MathLib::toLongNumber("'A'"));
+        ASSERT_EQUALS((int)('\x10'), MathLib::toLongNumber("'\\x10'"));
+        ASSERT_EQUALS((int)('\100'), MathLib::toLongNumber("'\\100'"));
+        ASSERT_EQUALS((int)('\200'), MathLib::toLongNumber("'\\200'"));
+#ifdef __GNUC__
+        // BEGIN Implementation-specific results
+        ASSERT_EQUALS((int)('AB'),    MathLib::toLongNumber("'AB'"));
+        ASSERT_EQUALS((int)('ABC'),    MathLib::toLongNumber("'ABC'"));
+        ASSERT_EQUALS((int)('ABCD'),    MathLib::toLongNumber("'ABCD'"));
+        ASSERT_EQUALS((int)('ABCDE'),    MathLib::toLongNumber("'ABCDE'"));
+        // END Implementation-specific results
+#endif
+        ASSERT_EQUALS((int)('\0'),   MathLib::toLongNumber("'\\0'"));
+        ASSERT_EQUALS(0x1B,   MathLib::toLongNumber("'\\e'"));
+        ASSERT_EQUALS((int)('\r'),   MathLib::toLongNumber("'\\r'"));
+        ASSERT_EQUALS((int)('\x12'), MathLib::toLongNumber("'\\x12'"));
+        // may cause some compile problems: ASSERT_EQUALS((int)('\x123'), MathLib::toLongNumber("'\\x123'"));
+        // may cause some compile problems: ASSERT_EQUALS((int)('\x1234'), MathLib::toLongNumber("'\\x1234'"));
+        ASSERT_EQUALS((int)('\3'),  MathLib::toLongNumber("'\\3'"));
+        ASSERT_EQUALS((int)('\34'),  MathLib::toLongNumber("'\\34'"));
+        ASSERT_EQUALS((int)('\034'), MathLib::toLongNumber("'\\034'"));
+        ASSERT_EQUALS((int)('\x34'), MathLib::toLongNumber("'\\x34'"));
+        ASSERT_EQUALS((int)('\134'), MathLib::toLongNumber("'\\134'"));
+        ASSERT_EQUALS((int)('\134t'), MathLib::toLongNumber("'\\134t'")); // Ticket #7452
+        ASSERT_THROW(MathLib::toLongNumber("'\\9'"), InternalError);
+        ASSERT_THROW(MathLib::toLongNumber("'\\934'"), InternalError);
+        // that is not gcc/clang encoding
+        ASSERT_EQUALS(959657011, MathLib::toLongNumber("'\\u9343'"));
+        ASSERT_EQUALS(1714631779, MathLib::toLongNumber("'\\U0001f34c'"));
+        {
+            // some unit-testing for a utility function
+            ASSERT_EQUALS(0, MathLib::characterLiteralToLongNumber(std::string("")));
+            ASSERT_EQUALS(32, MathLib::characterLiteralToLongNumber(std::string(" ")));
+            ASSERT_EQUALS(538976288, MathLib::characterLiteralToLongNumber(std::string("          ")));
+            ASSERT_THROW(MathLib::characterLiteralToLongNumber(std::string("\\u")), InternalError);
+        }
+
+        ASSERT_EQUALS(-8552249625308161526, MathLib::toLongNumber("0x89504e470d0a1a0a"));
+        ASSERT_EQUALS(-8481036456200365558, MathLib::toLongNumber("0x8a4d4e470d0a1a0a"));
+        ASSERT_EQUALS(9894494448401390090ULL, MathLib::toULongNumber("0x89504e470d0a1a0a"));
+        ASSERT_EQUALS(9965707617509186058ULL, MathLib::toULongNumber("0x8a4d4e470d0a1a0a"));
+
         // zero input
         ASSERT_EQUALS(0    , MathLib::toULongNumber("0"));
         ASSERT_EQUALS(0    , MathLib::toULongNumber("-0"));
@@ -221,12 +332,16 @@ private:
         ASSERT_EQUALS(5U, MathLib::toULongNumber("0b101"));
 
         // from long long
-        ASSERT_EQUALS(0xFF00000000000000LL, MathLib::toLongNumber("0xFF00000000000000LL"));
-        ASSERT_EQUALS(0x0A00000000000000LL, MathLib::toLongNumber("0x0A00000000000000LL"));
+        /*
+         * ASSERT_EQUALS(0xFF00000000000000LL, MathLib::toLongNumber("0xFF00000000000000LL"));
+         * This does not work in a portable way!
+         * While it succeeds on 32bit Visual Studio it fails on Linux 64bit because it is greater than 0x7FFFFFFFFFFFFFFF (=LLONG_MAX)
+         */
 
-        // -----------------
-        // to double number:
-        // -----------------
+        ASSERT_EQUALS(0x0A00000000000000LL, MathLib::toLongNumber("0x0A00000000000000LL"));
+    }
+
+    void toDoubleNumber() const {
         ASSERT_EQUALS_DOUBLE(10.0  , MathLib::toDoubleNumber("10"));
         ASSERT_EQUALS_DOUBLE(1000.0, MathLib::toDoubleNumber("10E+2"));
         ASSERT_EQUALS_DOUBLE(100.0 , MathLib::toDoubleNumber("1.0E+2"));
@@ -477,136 +592,161 @@ private:
         ASSERT_EQUALS(false, MathLib::isOct("+042LUL+0"));
     }
 
-    void ishex() const {
+    void isFloatHex() const {
+        // hex number syntax: [sign]0x[hexnumbers][suffix]
+        ASSERT_EQUALS(false, MathLib::isFloatHex(""));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0x1.999999999999ap-4"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0x0.3p10"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0x1.fp3"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0x1P-1"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0xcc.ccccccccccdp-11"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0x3.243F6A88p+03"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0xA.Fp-10"));
+
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0"));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0x"));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0xa"));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("+0x"));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("-0x"));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0x"));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0x."));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0XP"));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0xx"));
+    }
+
+    void isIntHex() const {
         // hex number syntax: [sign]0x[hexnumbers][suffix]
 
         // positive testing
-        ASSERT_EQUALS(true, MathLib::isHex("0xa"));
-        ASSERT_EQUALS(true, MathLib::isHex("0x2AF3"));
-        ASSERT_EQUALS(true, MathLib::isHex("-0xa"));
-        ASSERT_EQUALS(true, MathLib::isHex("-0x2AF3"));
-        ASSERT_EQUALS(true, MathLib::isHex("+0xa"));
-        ASSERT_EQUALS(true, MathLib::isHex("+0x2AF3"));
-        ASSERT_EQUALS(true, MathLib::isHex("0x0"));
-        ASSERT_EQUALS(true, MathLib::isHex("+0x0"));
-        ASSERT_EQUALS(true, MathLib::isHex("-0x0"));
-        ASSERT_EQUALS(true, MathLib::isHex("+0x0U"));
-        ASSERT_EQUALS(true, MathLib::isHex("-0x0U"));
-        ASSERT_EQUALS(true, MathLib::isHex("+0x0L"));
-        ASSERT_EQUALS(true, MathLib::isHex("-0x0L"));
-        ASSERT_EQUALS(true, MathLib::isHex("+0x0LU"));
-        ASSERT_EQUALS(true, MathLib::isHex("-0x0LU"));
-        ASSERT_EQUALS(true, MathLib::isHex("+0x0UL"));
-        ASSERT_EQUALS(true, MathLib::isHex("-0x0UL"));
-        ASSERT_EQUALS(true, MathLib::isHex("+0x0LL"));
-        ASSERT_EQUALS(true, MathLib::isHex("-0x0LL"));
-        ASSERT_EQUALS(true, MathLib::isHex("+0x0ULL"));
-        ASSERT_EQUALS(true, MathLib::isHex("-0x0ULL"));
-        ASSERT_EQUALS(true, MathLib::isHex("+0x0LLU"));
-        ASSERT_EQUALS(true, MathLib::isHex("-0x0LLU"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("0xa"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("0x2AF3"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0xa"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x2AF3"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0xa"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x2AF3"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("0x0"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0U"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0U"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0L"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0L"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0LU"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0LU"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0UL"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0UL"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0LL"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0LL"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0ULL"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0ULL"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0LLU"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0LLU"));
 
         // negative testing
-        ASSERT_EQUALS(false, MathLib::isHex("+0x"));
-        ASSERT_EQUALS(false, MathLib::isHex("-0x"));
-        ASSERT_EQUALS(false, MathLib::isHex("0x"));
-        ASSERT_EQUALS(false, MathLib::isHex("0xx"));
-        ASSERT_EQUALS(false, MathLib::isHex("-0175"));
-        ASSERT_EQUALS(false, MathLib::isHex("-0_garbage_"));
-        ASSERT_EQUALS(false, MathLib::isHex("  "));
-        ASSERT_EQUALS(false, MathLib::isHex(" "));
-        ASSERT_EQUALS(false, MathLib::isHex("0"));
-        ASSERT_EQUALS(false, MathLib::isHex("+0x0Z"));
-        ASSERT_EQUALS(false, MathLib::isHex("-0x0Z"));
-        ASSERT_EQUALS(false, MathLib::isHex("+0x0Uz"));
-        ASSERT_EQUALS(false, MathLib::isHex("-0x0Uz"));
-        ASSERT_EQUALS(false, MathLib::isHex("+0x0Lz"));
-        ASSERT_EQUALS(false, MathLib::isHex("-0x0Lz"));
-        ASSERT_EQUALS(false, MathLib::isHex("+0x0LUz"));
-        ASSERT_EQUALS(false, MathLib::isHex("-0x0LUz"));
-        ASSERT_EQUALS(false, MathLib::isHex("+0x0ULz"));
-        ASSERT_EQUALS(false, MathLib::isHex("-0x0ULz"));
-        ASSERT_EQUALS(false, MathLib::isHex("+0x0LLz"));
-        ASSERT_EQUALS(false, MathLib::isHex("-0x0LLz"));
-        ASSERT_EQUALS(false, MathLib::isHex("+0x0ULLz"));
-        ASSERT_EQUALS(false, MathLib::isHex("-0x0ULLz"));
-        ASSERT_EQUALS(false, MathLib::isHex("+0x0LLUz"));
-        ASSERT_EQUALS(false, MathLib::isHex("-0x0LLUz"));
-        ASSERT_EQUALS(false, MathLib::isHex("0x0+0"));
-        ASSERT_EQUALS(false, MathLib::isHex("e2"));
-        ASSERT_EQUALS(false, MathLib::isHex("+E2"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("+0x"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("-0x"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("0x"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("0xx"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("-0175"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("-0_garbage_"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("  "));
+        ASSERT_EQUALS(false, MathLib::isIntHex(" "));
+        ASSERT_EQUALS(false, MathLib::isIntHex("0"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("+0x0Z"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("-0x0Z"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("+0x0Uz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("-0x0Uz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("+0x0Lz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("-0x0Lz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("+0x0LUz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("-0x0LUz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("+0x0ULz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("-0x0ULz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("+0x0LLz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("-0x0LLz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("+0x0ULLz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("-0x0ULLz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("+0x0LLUz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("-0x0LLUz"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("0x0+0"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("e2"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("+E2"));
 
         // test empty string
-        ASSERT_EQUALS(false, MathLib::isHex(""));
+        ASSERT_EQUALS(false, MathLib::isIntHex(""));
     }
 
-    void isValidSuffix(void) const {
+    void isValidIntegerSuffix(void) const {
         // negative testing
         std::string value = "ux";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "ulx";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "lx";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "lux";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "lll";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "garbage";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "llu ";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "i";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "iX";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "i6X";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "i64X";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "i64 ";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "i66";
-        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         // positive testing
         value = "u";
-        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "ul";
-        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "ull";
-        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "l";
-        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "lu";
-        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "ll";
-        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "llu";
-        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "i64";
-        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
+
+        value = "ui64";
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
     }
 
     void ispositive() const {
@@ -623,113 +763,120 @@ private:
         ASSERT_EQUALS(true , MathLib::isPositive("+1.0E-2"));
 
         // test empty string
-        ASSERT_EQUALS(true, MathLib::isPositive("")); // because it has opposite result to MathLib::isNegative
+        ASSERT_EQUALS(false, MathLib::isPositive("")); // "" is neither positive nor negative
     }
 
-    void isfloat() const {
+    void isFloat() const {
         ASSERT_EQUALS(false, MathLib::isFloat(""));
-        ASSERT_EQUALS(false, MathLib::isFloat("."));
-        ASSERT_EQUALS(false, MathLib::isFloat("..."));
-        ASSERT_EQUALS(false, MathLib::isFloat(".e"));
-        ASSERT_EQUALS(false, MathLib::isFloat(".E"));
-        ASSERT_EQUALS(false, MathLib::isFloat("+E."));
-        ASSERT_EQUALS(false, MathLib::isFloat("+e."));
-        ASSERT_EQUALS(false, MathLib::isFloat("-E."));
-        ASSERT_EQUALS(false, MathLib::isFloat("-e."));
-        ASSERT_EQUALS(false, MathLib::isFloat("-X"));
-        ASSERT_EQUALS(false, MathLib::isFloat("+X"));
-        ASSERT_EQUALS(false, MathLib::isFloat("-."));
-        ASSERT_EQUALS(false, MathLib::isFloat("-."));
-        ASSERT_EQUALS(false, MathLib::isFloat("-"));
-        ASSERT_EQUALS(false, MathLib::isFloat("+"));
-        ASSERT_EQUALS(false, MathLib::isFloat(" "));
-
-        ASSERT_EQUALS(false, MathLib::isFloat("0"));
-        ASSERT_EQUALS(false, MathLib::isFloat("0 "));
-        ASSERT_EQUALS(false, MathLib::isFloat(" 0 "));
-        ASSERT_EQUALS(false, MathLib::isFloat(" 0"));
-
-        ASSERT_EQUALS(true , MathLib::isFloat("0."));
         ASSERT_EQUALS(true , MathLib::isFloat("0.f"));
-        ASSERT_EQUALS(true , MathLib::isFloat("0.F"));
-        ASSERT_EQUALS(true , MathLib::isFloat("0.l"));
-        ASSERT_EQUALS(true , MathLib::isFloat("0.L"));
-        ASSERT_EQUALS(false , MathLib::isFloat("0. "));
-        ASSERT_EQUALS(false , MathLib::isFloat(" 0. "));
-        ASSERT_EQUALS(false , MathLib::isFloat(" 0."));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.f"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0xA.Fp-10"));
+    }
 
-        ASSERT_EQUALS(false , MathLib::isFloat("0.."));
-        ASSERT_EQUALS(false , MathLib::isFloat("..0.."));
-        ASSERT_EQUALS(false , MathLib::isFloat("..0"));
-        ASSERT_EQUALS(true , MathLib::isFloat("0.0"));
-        ASSERT_EQUALS(true , MathLib::isFloat("0.0f"));
-        ASSERT_EQUALS(true , MathLib::isFloat("0.0F"));
-        ASSERT_EQUALS(true , MathLib::isFloat("0.0l"));
-        ASSERT_EQUALS(true , MathLib::isFloat("0.0L"));
-        ASSERT_EQUALS(true , MathLib::isFloat("-0."));
-        ASSERT_EQUALS(true , MathLib::isFloat("+0."));
-        ASSERT_EQUALS(true , MathLib::isFloat("-0.0"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+0.0"));
-        ASSERT_EQUALS(true , MathLib::isFloat("0E0"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+0E0"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+0E0"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+0E+0"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+0E-0"));
-        ASSERT_EQUALS(true , MathLib::isFloat("-0E+0"));
-        ASSERT_EQUALS(true , MathLib::isFloat("-0E-0"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+0.0E+1"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+0.0E-1"));
-        ASSERT_EQUALS(true , MathLib::isFloat("-0.0E+1"));
-        ASSERT_EQUALS(true , MathLib::isFloat("-0.0E-1"));
+    void isDecimalFloat() const {
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat(""));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("."));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("..."));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat(".e"));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat(".E"));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("+E."));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("+e."));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("-E."));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("-e."));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("-X"));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("+X"));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("-."));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("-."));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("-"));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("+"));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat(" "));
 
-        ASSERT_EQUALS(false , MathLib::isFloat("1"));
-        ASSERT_EQUALS(false , MathLib::isFloat("-1"));
-        ASSERT_EQUALS(false , MathLib::isFloat("+1"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1e+1"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+1"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+100"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+100f"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+100F"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+100l"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+100L"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+007")); // to be sure about #5485
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+001f"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+001F"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+001l"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+001L"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1E+10000"));
-        ASSERT_EQUALS(true , MathLib::isFloat("-1E+1"));
-        ASSERT_EQUALS(true , MathLib::isFloat("-1E+10000"));
-        ASSERT_EQUALS(true , MathLib::isFloat(".1250E+04"));
-        ASSERT_EQUALS(true , MathLib::isFloat("-1E-1"));
-        ASSERT_EQUALS(true , MathLib::isFloat("-1E-10000"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1.23e+01"));
-        ASSERT_EQUALS(true , MathLib::isFloat("+1.23E+01"));
-        ASSERT_EQUALS(false , MathLib::isFloat("+1e+x"));
-        ASSERT_EQUALS(false , MathLib::isFloat("+1E+X"));
-        ASSERT_EQUALS(false , MathLib::isFloat("+1E+001lX"));
-        ASSERT_EQUALS(false , MathLib::isFloat("+1E+001LX"));
-        ASSERT_EQUALS(false , MathLib::isFloat("+1E+001f2"));
-        ASSERT_EQUALS(false , MathLib::isFloat("+1E+001F2"));
-        ASSERT_EQUALS(false , MathLib::isFloat("+1e+003x"));
-        ASSERT_EQUALS(false , MathLib::isFloat("+1E+003X"));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("0"));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("0 "));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat(" 0 "));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat(" 0"));
+
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0."));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.f"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.F"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.l"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.L"));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("0. "));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat(" 0. "));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat(" 0."));
+
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("0.."));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("..0.."));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("..0"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.0"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.0f"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.0F"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.0l"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.0L"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("-0."));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+0."));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("-0.0"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+0.0"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0E0"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+0E0"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+0E0"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+0E+0"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+0E-0"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("-0E+0"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("-0E-0"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+0.0E+1"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+0.0E-1"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("-0.0E+1"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("-0.0E-1"));
+
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("1"));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("-1"));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("+1"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1e+1"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+1"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+100"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+100f"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+100F"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+100l"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+100L"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+007")); // to be sure about #5485
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+001f"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+001F"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+001l"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+001L"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1E+10000"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("-1E+1"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("-1E+10000"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat(".1250E+04"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("-1E-1"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("-1E-10000"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1.23e+01"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("+1.23E+01"));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("+1e+x"));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("+1E+X"));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("+1E+001lX"));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("+1E+001LX"));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("+1E+001f2"));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("+1E+001F2"));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("+1e+003x"));
+        ASSERT_EQUALS(false , MathLib::isDecimalFloat("+1E+003X"));
 
 
-        ASSERT_EQUALS(true , MathLib::isFloat("0.4"));
-        ASSERT_EQUALS(true , MathLib::isFloat("2352.3f"));
-        ASSERT_EQUALS(true , MathLib::isFloat("2352.3F"));
-        ASSERT_EQUALS(true , MathLib::isFloat("2352.3l"));
-        ASSERT_EQUALS(true , MathLib::isFloat("2352.3L"));
-        ASSERT_EQUALS(true , MathLib::isFloat("0.00004"));
-        ASSERT_EQUALS(true , MathLib::isFloat("2352.00001f"));
-        ASSERT_EQUALS(true , MathLib::isFloat("2352.00001F"));
-        ASSERT_EQUALS(true , MathLib::isFloat("2352.00001l"));
-        ASSERT_EQUALS(true , MathLib::isFloat("2352.00001L"));
-        ASSERT_EQUALS(true , MathLib::isFloat(".4"));
-        ASSERT_EQUALS(true , MathLib::isFloat(".3e2"));
-        ASSERT_EQUALS(true , MathLib::isFloat("1.0E+1"));
-        ASSERT_EQUALS(true , MathLib::isFloat("1.0E-1"));
-        ASSERT_EQUALS(true , MathLib::isFloat("-1.0E+1"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.4"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("2352.3f"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("2352.3F"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("2352.3l"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("2352.3L"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.00004"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("2352.00001f"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("2352.00001F"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("2352.00001l"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("2352.00001L"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat(".4"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat(".3e2"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("1.0E+1"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("1.0E-1"));
+        ASSERT_EQUALS(true , MathLib::isDecimalFloat("-1.0E+1"));
     }
 
     void naninf() const {
@@ -745,7 +892,7 @@ private:
         ASSERT_EQUALS("inf.0", MathLib::divide("3.0", "0.f")); // inf (#5875)
         ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "0.0")); // -inf (#5142)
         ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "0.0f")); // -inf (#5142)
-        ASSERT_EQUALS("inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
+        ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
     }
 
     void isdec(void) const {
@@ -984,6 +1131,45 @@ private:
         // double (tailing l or L)
         ASSERT_EQUALS("0"     , MathLib::toString(+0.0l));
         ASSERT_EQUALS("-0"    , MathLib::toString(-0.0L));
+    }
+
+    void characterLiteralsNormalization() const {
+        // `A` is 0x41 and 0101
+        ASSERT_EQUALS("A" , MathLib::normalizeCharacterLiteral("\\x41"));
+        ASSERT_EQUALS("A" , MathLib::normalizeCharacterLiteral("\\101"));
+        // Hexa and octal numbers should not only be intepreted in byte 1
+        ASSERT_EQUALS("TESTATEST" , MathLib::normalizeCharacterLiteral("TEST\\x41TEST"));
+        ASSERT_EQUALS("TESTATEST" , MathLib::normalizeCharacterLiteral("TEST\\101TEST"));
+        ASSERT_EQUALS("TESTTESTA" , MathLib::normalizeCharacterLiteral("TESTTEST\\x41"));
+        ASSERT_EQUALS("TESTTESTA" , MathLib::normalizeCharacterLiteral("TESTTEST\\101"));
+        // Single escape sequences
+        ASSERT_EQUALS("\?" , MathLib::normalizeCharacterLiteral("\\?"));
+        ASSERT_EQUALS("\'" , MathLib::normalizeCharacterLiteral("\\'"));
+        // Incomplete hexa and octal sequences
+        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\"), InternalError);
+        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\x"), InternalError);
+        // No octal digit in an octal sequence
+        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\9"), InternalError);
+        // Unsupported single escape sequence
+        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\c"), InternalError);
+    }
+
+    void CPP14DigitSeparators() const { // Ticket #7137, #7565
+        ASSERT(MathLib::isDigitSeparator("'", 0) == false);
+        ASSERT(MathLib::isDigitSeparator("123'0;", 3));
+        ASSERT(MathLib::isDigitSeparator("foo(1'2);", 5));
+        ASSERT(MathLib::isDigitSeparator("foo(1,1'2);", 7));
+        ASSERT(MathLib::isDigitSeparator("int a=1'234-1'2-'0';", 7));
+        ASSERT(MathLib::isDigitSeparator("int a=1'234-1'2-'0';", 13));
+        ASSERT(MathLib::isDigitSeparator("int a=1'234-1'2-'0';", 16) == false);
+        ASSERT(MathLib::isDigitSeparator("int b=1+9'8;", 9));
+        ASSERT(MathLib::isDigitSeparator("if (1'2) { char c = 'c'; }", 5));
+        ASSERT(MathLib::isDigitSeparator("if (120%1'2) { char c = 'c'; }", 9));
+        ASSERT(MathLib::isDigitSeparator("if (120&1'2) { char c = 'c'; }", 9));
+        ASSERT(MathLib::isDigitSeparator("if (120|1'2) { char c = 'c'; }", 9));
+        ASSERT(MathLib::isDigitSeparator("if (120%1'2) { char c = 'c'; }", 24) == false);
+        ASSERT(MathLib::isDigitSeparator("if (120%1'2) { char c = 'c'; }", 26) == false);
+        ASSERT(MathLib::isDigitSeparator("0b0000001'0010'01110", 14));
     }
 };
 

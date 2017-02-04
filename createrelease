@@ -2,22 +2,19 @@
 #
 # A script for creating release packages. The release packages are create in the home directory.
 #
-# Test cppcheck on itself.
-#   cppcheck -q -j2 --inconclusive --enable=all lib
+# self check:
+# ./cppcheck --enable=style --inconclusive cli gui lib
 #
 # Update translations
 #   lupdate gui.pro
 #
 # Make sure "cppcheck --errorlist" works. For example with:
 # make test
-# cppcheck --errorlist > errlist.xml
-# xmllint --noout errlist.xml
-# cppcheck --xml-version=2 --errorlist > errlist.xml
-# xmllint --noout errlist.xml
+# ./cppcheck --errorlist > errlist.xml && xmllint --noout errlist.xml
+# ./cppcheck --xml-version=2 --errorlist > errlist.xml && xmllint --noout errlist.xml
 #
 # Update AUTHORS using output from:
-#   git log --format='%aN' | sort -u > AUTHORS2
-#   diff -y AUTHORS AUTHORS2 | less
+# git log --format='%aN' 1.77..HEAD | sort -u > AUTHORS2 && diff -y AUTHORS AUTHORS2 | less
 #
 # Update version numbers in:
 # sed -i "s/1.[0-9][0-9].99/1.62/" cli/main.cpp
@@ -26,13 +23,11 @@
 # sed -i "s/1.[0-9][0-9] dev/1.62/" win_installer/productInfo.wxi
 # sed -i "s/1.[0-9][0-9].99/1.62/" win_installer/productInfo.wxi
 # Verify:
-# grep '\.99' */*.[ch]*
-# grep '[0-9][0-9] dev' */*.[ch]*
+# grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
 # git commit -a -m "1.43: Set versions"
 #
 # Update the Makefile:
-# make dmake
-# ./dmake --release
+# make dmake && ./dmake --release
 # git commit -a -m "1.43: Updated Makefile"
 #
 # Build and test the windows installer
@@ -50,21 +45,13 @@
 #
 # Update download link on index.php main page
 #
-# Generate the manual.pdf, manual.html and version.txt
-# make
-# ./cppcheck --version > version.txt
-# docbook2pdf man/manual.docbook
-# xsltproc -o manual.html /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl man/manual.docbook
-#
-# Upload manual.pdf , manual.html and version.txt...
-# sftp danielmarjamaki,cppcheck@web.sourceforge.net
 #
 # write a news
 #
 # save "cppcheck --doc" output on wiki, write new release date on wikis
 #
 # compile new democlient:
-# ssh -t danielmarjamaki,cppcheck@shell.sourceforge.net
+# ssh -t danielmarjamaki,cppcheck@shell.sourceforge.net create
 # ./build-cppcheck.sh 1.43
 #
 # run daca with new release
@@ -80,4 +67,15 @@ git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
 git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
 
-scp ../$releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+scp ~/$releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+
+# Generate the manual.pdf, manual.html and version.txt
+make clean && make
+./cppcheck --version > version.txt
+scp version.txt danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
+xsltproc -xinclude -o manual.fo /usr/share/xml/docbook/stylesheet/docbook-xsl/fo/docbook.xsl man/manual.docbook
+fop manual.fo -pdf manual.pdf
+#docbook2pdf man/manual.docbook
+scp manual.pdf danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
+xsltproc -o manual.html /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl man/manual.docbook
+scp manual.html danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/

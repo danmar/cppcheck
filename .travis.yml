@@ -8,7 +8,8 @@ env:
   global:
 #   unfortunately we need this to stay within 50min timelimit given by travis.
 #   this also turns off the debug/warning cxxflags
-    - CXXFLAGS="-O2 -march=native -mtune=native -Wunreachable-code"
+    - ORIGINAL_CXXFLAGS="-include lib/cxx11emu.h -pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wshadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
+    - CXXFLAGS="${ORIGINAL_CXXFLAGS} -O2 -march=native"
   matrix:
 #    special CXXFLAGS for maximum speed, overrides global CXXFLAGS, CHECK_CLANG is the var that controls if we download and check clang in that travis job
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
@@ -30,9 +31,14 @@ before_install:
 
 script:
 # download clang git, compile cppcheck, run cppcheck on clang code to look for crashes in cppcheck. if this is done, terminate build
-  - if [[ "$CHECK_CLANG" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget "https://github.com/llvm-mirror/clang/archive/817ee21333dffb3c77ef845aa1a9f8d1dc94a842.zip" & make -j 4 & wait; unzip 817ee21333dffb3c77ef845aa1a9f8d1dc94a842.zip > /dev/null; touch /tmp/clang.cppcheck; cd ./clang-817ee21333dffb3c77ef845aa1a9f8d1dc94a842 ; ../cppcheck . --max-configs=1 --enable=all --inconclusive --exception-handling -iINPUTS -j 2 |& tee /tmp/clang.cppcheck; cd ../ ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck; exit; fi
+  - if [[ "$CHECK_CLANG" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget "https://github.com/llvm-mirror/clang/archive/c2ca783d8b070d01b8d30b6c1d447563a6412af5.zip" & make -j 4 & wait; unzip c2ca783d8b070d01b8d30b6c1d447563a6412af5.zip > /dev/null; touch /tmp/clang.cppcheck; cd ./clang-c2ca783d8b070d01b8d30b6c1d447563a6412af5 ; ../cppcheck . --max-configs=1 --enable=all --inconclusive --exception-handling -iINPUTS -itest/Driver/Inputs/gen-response.c -j 2 |& tee /tmp/clang.cppcheck; cd ../; fi
+# check llvm as well
+  - if [[ "$CHECK_CLANG" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget "https://github.com/llvm-mirror/llvm/archive/1de675f473fb5c392d06e03cec4e8ee621e544ae.zip"; unzip 1de675f473fb5c392d06e03cec4e8ee621e544ae.zip > /dev/null; touch /tmp/llvm.cppcheck; cd ./llvm-1de675f473fb5c392d06e03cec4e8ee621e544ae ; ../cppcheck . --max-configs=1 --enable=all --inconclusive --exception-handling -j 2 |& tee /tmp/llvm.cppcheck; cd ../ ; echo "LLVM "  ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck; echo "CLANG " ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck; exit; fi
+# check with TEST_MATHLIB_VALUE enabled
+  - touch lib/mathlib.cpp test/testmathlib.cpp
+  - make test -j4 CPPFLAGS=-DTEST_MATHLIB_VALUE
+  - touch lib/mathlib.cpp test/testmathlib.cpp
 # compile cppcheck, default build
-  - make -j4
   - make test -j4
 # compile gui
   - cd gui
@@ -42,8 +48,10 @@ script:
   - cd ../
 # use same hack as for clang to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
   - touch /tmp/cppcheck.cppcheck
-  - ./cppcheck --error-exitcode=1 -Ilib --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions . -j 2 |& tee /tmp/cppcheck.cppcheck
+  - ./cppcheck --error-exitcode=1 -Ilib --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions -itest/synthetic . -j 2 |& tee /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
+# run extra tests
+  - tools/generate_and_run_more_tests.sh
 # check test/cfg
   - make checkcfg
   - cd ./gui
@@ -84,6 +92,7 @@ script:
 # check if Makefile needs to be regenerated
   - git clean -dfx
   - make dmake
+  - make run-dmake
 #   now, if dmake modified the makefile, return false!
   - git diff --exit-code
 

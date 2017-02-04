@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ void Platforms::add(const QString &title, Settings::PlatformType platform)
 
 void Platforms::init()
 {
-    add(tr("Built-in"), Settings::Unspecified);
+    add(tr("Native"), Settings::Native);
     add(tr("Unix 32-bit"), Settings::Unix32);
     add(tr("Unix 64-bit"), Settings::Unix64);
     add(tr("Windows 32-bit ANSI"), Settings::Win32A);

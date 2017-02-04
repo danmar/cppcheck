@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ public:
 private:
     class ArgumentInfo {
     public:
-        ArgumentInfo(const Token *arg, const Settings *settings);
+        ArgumentInfo(const Token *arg, const Settings *settings, bool isCPP);
         ~ArgumentInfo();
 
         bool isArrayOrPointer() const;
@@ -83,15 +83,22 @@ private:
         const Variable *variableInfo;
         const Token *typeToken;
         const Function *functionInfo;
+        Token *tempToken;
         bool element;
         bool _template;
         bool address;
-        Token *tempToken;
+        bool isCPP;
 
     private:
         ArgumentInfo(const ArgumentInfo &); // not implemented
         ArgumentInfo operator = (const ArgumentInfo &); // not implemented
     };
+
+    void checkFormatString(const Token * const tok,
+                           const Token * const formatStringTok,
+                           const Token *       argListTok,
+                           const bool scan,
+                           const bool scanf_s);
 
     // Reporting errors..
     void coutCerrMisusageError(const Token* tok, const std::string& streamName);
@@ -101,7 +108,7 @@ private:
     void writeReadOnlyFileError(const Token *tok);
     void useClosedFileError(const Token *tok);
     void seekOnAppendedFileError(const Token *tok);
-    void invalidScanfError(const Token *tok, bool portability);
+    void invalidScanfError(const Token *tok);
     void wrongPrintfScanfArgumentsError(const Token* tok,
                                         const std::string &function,
                                         unsigned int numFormat,
@@ -119,35 +126,35 @@ private:
     void invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidLengthModifierError(const Token* tok, unsigned int numFormat, const std::string& modifier);
-    void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var);
+    void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var, char c);
     static void argumentType(std::ostream & s, const ArgumentInfo * argInfo);
+    Severity::SeverityType getSeverity(const ArgumentInfo *argInfo) const;
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckIO c(0, settings, errorLogger);
+        CheckIO c(nullptr, settings, errorLogger);
 
-        c.coutCerrMisusageError(0, "cout");
-        c.fflushOnInputStreamError(0, "stdin");
-        c.ioWithoutPositioningError(0);
-        c.readWriteOnlyFileError(0);
-        c.writeReadOnlyFileError(0);
-        c.useClosedFileError(0);
-        c.seekOnAppendedFileError(0);
-        c.invalidScanfError(0, false);
-        c.invalidScanfError(0, true);
-        c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
-        c.invalidScanfArgTypeError_s(0, 1, "s", NULL);
-        c.invalidScanfArgTypeError_int(0, 1, "d", NULL, false);
-        c.invalidScanfArgTypeError_float(0, 1, "f", NULL);
-        c.invalidPrintfArgTypeError_s(0, 1, NULL);
-        c.invalidPrintfArgTypeError_n(0, 1, NULL);
-        c.invalidPrintfArgTypeError_p(0, 1, NULL);
-        c.invalidPrintfArgTypeError_int(0, 1, "X", NULL);
-        c.invalidPrintfArgTypeError_uint(0, 1, "u", NULL);
-        c.invalidPrintfArgTypeError_sint(0, 1, "i", NULL);
-        c.invalidPrintfArgTypeError_float(0, 1, "f", NULL);
-        c.invalidLengthModifierError(0, 1, "I");
-        c.invalidScanfFormatWidthError(0, 10, 5, NULL);
-        c.wrongPrintfScanfPosixParameterPositionError(0, "printf", 2, 1);
+        c.coutCerrMisusageError(nullptr,  "cout");
+        c.fflushOnInputStreamError(nullptr,  "stdin");
+        c.ioWithoutPositioningError(nullptr);
+        c.readWriteOnlyFileError(nullptr);
+        c.writeReadOnlyFileError(nullptr);
+        c.useClosedFileError(nullptr);
+        c.seekOnAppendedFileError(nullptr);
+        c.invalidScanfError(nullptr);
+        c.wrongPrintfScanfArgumentsError(nullptr, "printf",3,2);
+        c.invalidScanfArgTypeError_s(nullptr,  1, "s", nullptr);
+        c.invalidScanfArgTypeError_int(nullptr,  1, "d", nullptr, false);
+        c.invalidScanfArgTypeError_float(nullptr,  1, "f", nullptr);
+        c.invalidPrintfArgTypeError_s(nullptr,  1, nullptr);
+        c.invalidPrintfArgTypeError_n(nullptr,  1, nullptr);
+        c.invalidPrintfArgTypeError_p(nullptr,  1, nullptr);
+        c.invalidPrintfArgTypeError_int(nullptr,  1, "X", nullptr);
+        c.invalidPrintfArgTypeError_uint(nullptr,  1, "u", nullptr);
+        c.invalidPrintfArgTypeError_sint(nullptr,  1, "i", nullptr);
+        c.invalidPrintfArgTypeError_float(nullptr,  1, "f", nullptr);
+        c.invalidLengthModifierError(nullptr,  1, "I");
+        c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr, 's');
+        c.wrongPrintfScanfPosixParameterPositionError(nullptr,  "printf", 2, 1);
     }
 
     static std::string myName() {

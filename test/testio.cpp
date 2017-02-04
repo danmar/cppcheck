@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #include "checkio.h"
 #include "testsuite.h"
 #include "tokenize.h"
-
+#include <cstring>
 
 class TestIO : public TestFixture {
 public:
@@ -32,6 +32,7 @@ private:
     void run() {
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "windows.cfg");
+        LOAD_LIB_2(settings.library, "qt.cfg");
 
         TEST_CASE(coutCerrMisusage);
 
@@ -44,7 +45,7 @@ private:
 
         TEST_CASE(testScanf1); // Scanf without field limiters
         TEST_CASE(testScanf2);
-        TEST_CASE(testScanf3);
+        TEST_CASE(testScanf3); // #3494
         TEST_CASE(testScanf4); // #ticket 2553
 
         TEST_CASE(testScanfArgument);
@@ -57,11 +58,16 @@ private:
         TEST_CASE(testMicrosoftSecurePrintfArgument);
         TEST_CASE(testMicrosoftSecureScanfArgument);
 
+        TEST_CASE(testQStringFormatArguments);
+
         TEST_CASE(testTernary); // ticket #6182
         TEST_CASE(testUnsignedConst); // ticket #6132
+
+        TEST_CASE(testAstType); // #7014
+        TEST_CASE(testPrintf0WithSuffix); // ticket #7069
     }
 
-    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
+    void check(const std::string &code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
         // Clear the error buffer..
         errout.str("");
 
@@ -88,9 +94,6 @@ private:
         checkIO.checkFileUsage();
         checkIO.invalidScanf();
     }
-
-
-
 
     void coutCerrMisusage() {
         check(
@@ -479,6 +482,18 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void chdcd_parse_nero(FILE *infile) {\n"
+              "    switch (mode) {\n"
+              "        case 0x0300:\n"
+              "            fclose(infile);\n"
+              "            exit(0);\n"
+              "        case 0x0500:\n"
+              "            fclose(infile);\n"
+              "            return;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #4649
         check("void foo() {\n"
               "    struct {FILE *f1; FILE *f2;} a;\n"
@@ -495,6 +510,16 @@ private:
               "    while (fclose(a)) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Used file that is not opened.\n", errout.str());
+
+        // #6823
+        check("void foo() {\n"
+              "    FILE f[2];\n"
+              "    f[0] = fopen(\"1\", \"w\");\n"
+              "    f[1] = fopen(\"2\", \"w\");\n"
+              "    fclose(f[0]);\n"
+              "    fclose(f[1]);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void fileIOwithoutPositioning() {
@@ -626,6 +651,14 @@ private:
               "    fflush(f);\n"
               "}");
         ASSERT_EQUALS("", errout.str()); // #5578
+
+        check("void foo() {\n"
+              "    FILE* f = fopen(\"\", \"a\");\n"
+              "    fclose(f);\n"
+              "    f = fopen(\"\", \"r\");\n"
+              "    fseek(f, 0, SEEK_SET);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str()); // #6566
     }
 
     void fflushOnInputStream() {
@@ -673,11 +706,11 @@ private:
               "    scanf(\"%dx%s\", &b, bar);\n"
               "    fclose(file);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) scanf without field width limits can crash with huge input data.\n"
-                      "[test.cpp:5]: (warning) scanf without field width limits can crash with huge input data.\n"
-                      "[test.cpp:6]: (warning) scanf without field width limits can crash with huge input data.\n"
-                      "[test.cpp:7]: (warning) scanf without field width limits can crash with huge input data.\n"
-                      "[test.cpp:8]: (warning) scanf without field width limits can crash with huge input data.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) fscanf() without field width limits can crash with huge input data.\n"
+                      "[test.cpp:5]: (warning) scanf() without field width limits can crash with huge input data.\n"
+                      "[test.cpp:6]: (warning) scanf() without field width limits can crash with huge input data.\n"
+                      "[test.cpp:7]: (warning) sscanf() without field width limits can crash with huge input data.\n"
+                      "[test.cpp:8]: (warning) scanf() without field width limits can crash with huge input data.\n", errout.str());
     }
 
     void testScanf2() {
@@ -692,18 +725,14 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning) scanf format string requires 0 parameters but 1 is given.\n", errout.str());
     }
 
-    void testScanf3() {
-        check("void foo() {\n"
-              "    scanf(\"%d\", &a);\n"
-              "    scanf(\"%n\", &a);\n" // No warning on %n, since it doesn't expect user input
-              "    scanf(\"%c\", &c);\n" // No warning on %c; it expects only one character
-              "}", false, true, Settings::Unspecified);
-        ASSERT_EQUALS("[test.cpp:2]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.\n", errout.str());
-
-        check("void foo() {\n"
-              "    scanf(\"%d\", &a);\n"
-              "}", false, true, Settings::Win32A);
-        ASSERT_EQUALS("", errout.str());
+    void testScanf3() { // ticket #3494
+        check("void f() {\n"
+              "  char str[8];\n"
+              "  scanf(\"%7c\", str);\n"
+              "  scanf(\"%8c\", str);\n"
+              "  scanf(\"%9c\", str);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Width 9 given in format string (no. 1) is larger than destination buffer 'str[8]', use %8c to prevent overflowing it.\n", errout.str());
     }
 
     void testScanf4() { // ticket #2553
@@ -716,7 +745,106 @@ private:
     }
 
 
+    std::string testScanfCode(const std::string & format, const std::string & type) {
+        return "void f() { " + type + " x; scanf(\"" + format + "\", &x); }";
+    }
 
+    std::string testScanfErr(const std::string & format, const std::string & formatStr, const std::string & type) {
+        return "[test.cpp:1]: (warning) " + format + " in format string (no. 1) requires '" + formatStr + " *' but the argument type is '" + type + " *'.\n";
+    }
+
+    std::string testScanfErrAka(const std::string & format, const std::string & formatStr, const std::string & type, const std::string & akaType) {
+        return "[test.cpp:1]: (portability) " + format + " in format string (no. 1) requires '" + formatStr + " *' but the argument type is '" + type + " * {aka " + akaType + " *}'.\n";
+    }
+
+    void testScanfNoWarn(const char *filename, unsigned int linenr,
+                         const std::string & format, const std::string & /* formatStr */ , const std::string & type) {
+        const std::string code = testScanfCode(format, type);
+
+        check(code, true, false, Settings::Unix32);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, false, Settings::Unix64);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, false, Settings::Win32A);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, false, Settings::Win64);
+        assertEquals(filename, linenr, "", errout.str());
+    }
+
+    void testScanfWarn(const char *filename, unsigned int linenr,
+                       const std::string & format, const std::string & formatStr, const std::string & type) {
+        const std::string code = testScanfCode(format, type);
+        const std::string testScanfErrString = testScanfErr(format,formatStr,type);
+
+        check(code, true, false, Settings::Unix32);
+        assertEquals(filename, linenr, testScanfErrString, errout.str());
+        check(code, true, false, Settings::Unix64);
+        assertEquals(filename, linenr, testScanfErrString, errout.str());
+        check(code, true, false, Settings::Win32A);
+        assertEquals(filename, linenr, testScanfErrString, errout.str());
+        check(code, true, false, Settings::Win64);
+        assertEquals(filename, linenr, testScanfErrString, errout.str());
+    }
+
+    void testScanfWarnAka(const char *filename, unsigned int linenr,
+                          const std::string & format, const std::string & formatStr, const std::string & type,
+                          const std::string & akaType, const std::string & akaTypeWin64) {
+        const std::string code = testScanfCode(format, type);
+        const std::string testScanfErrAkaString = testScanfErrAka(format,formatStr,type,akaType);
+        const std::string testScanfErrAkaWin64String = testScanfErrAka(format,formatStr,type,akaTypeWin64);
+
+        check(code, true, true, Settings::Unix32);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Unix64);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Win32A);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Win64);
+        assertEquals(filename, linenr, testScanfErrAkaWin64String, errout.str());
+    }
+
+    void testScanfWarnAkaWin64(const char *filename, unsigned int linenr,
+                               const std::string & format, const std::string & formatStr, const std::string & type,
+                               const std::string & akaTypeWin64) {
+        const std::string code = testScanfCode(format, type);
+        const std::string testScanfErrAkaWin64String = testScanfErrAka(format,formatStr,type,akaTypeWin64);
+
+        check(code, true, true, Settings::Unix32);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, true, Settings::Unix64);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, true, Settings::Win32A);
+        assertEquals(filename, linenr, "", errout.str());
+        check(code, true, true, Settings::Win64);
+        assertEquals(filename, linenr, testScanfErrAkaWin64String, errout.str());
+    }
+
+    void testScanfWarnAkaWin32(const char *filename, unsigned int linenr,
+                               const std::string & format, const std::string & formatStr, const std::string & type,
+                               const std::string & akaType) {
+        const std::string code = testScanfCode(format, type);
+        const std::string testScanfErrAkaString = testScanfErrAka(format,formatStr,type,akaType);
+
+        check(code, true, true, Settings::Unix32);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Unix64);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Win32A);
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        check(code, true, true, Settings::Win64);
+        assertEquals(filename, linenr, "", errout.str());
+    }
+
+#define TEST_SCANF_NOWARN(FORMAT, FORMATSTR, TYPE) \
+    testScanfNoWarn(__FILE__, __LINE__, FORMAT, FORMATSTR, TYPE)
+#define TEST_SCANF_WARN(FORMAT, FORMATSTR, TYPE) \
+    testScanfWarn(__FILE__, __LINE__, FORMAT, FORMATSTR, TYPE)
+#define TEST_SCANF_WARN_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE, AKATYPE_WIN64) \
+    testScanfWarnAka(__FILE__, __LINE__, FORMAT, FORMATSTR, TYPE, AKATYPE, AKATYPE_WIN64)
+#define TEST_SCANF_WARN_AKA_WIN64(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64) \
+    testScanfWarnAkaWin64(__FILE__, __LINE__, FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64)
+#define TEST_SCANF_WARN_AKA_WIN32(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32) \
+    testScanfWarnAkaWin32(__FILE__, __LINE__, FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32)
 
     void testScanfArgument() {
         check("void foo() {\n"
@@ -770,7 +898,7 @@ private:
               "}", true);
         ASSERT_EQUALS("[test.cpp:5]: (warning, inconclusive) Width 3 given in format string (no. 1) is smaller than destination buffer 'output[5]'.\n"
                       "[test.cpp:7]: (error) Width 5 given in format string (no. 1) is larger than destination buffer 'output[5]', use %4s to prevent overflowing it.\n"
-                      "[test.cpp:4]: (warning) scanf without field width limits can crash with huge input data.\n", errout.str());
+                      "[test.cpp:4]: (warning) sscanf() without field width limits can crash with huge input data.\n", errout.str());
 
         check("void foo() {\n"
               "    const size_t BUFLENGTH(2048);\n"
@@ -782,1495 +910,436 @@ private:
               "}", true);
         ASSERT_EQUALS("", errout.str());
 
-        {
-            const char * code = "const unsigned int * foo() { }\n"
-                                "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          \"str\", L\"str\", foo(), &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:29]: (warning) %u in format string (no. 1) requires 'unsigned int *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 2) requires 'unsigned int *' but the argument type is 'char *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 4) requires 'unsigned int *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 5) requires 'unsigned int *' but the argument type is 'short *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 6) requires 'unsigned int *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 7) requires 'unsigned int *' but the argument type is 'int *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 9) requires 'unsigned int *' but the argument type is 'long *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 10) requires 'unsigned int *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 11) requires 'unsigned int *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 12) requires 'unsigned int *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 13) requires 'unsigned int *' but the argument type is 'float *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 14) requires 'unsigned int *' but the argument type is 'double *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 15) requires 'unsigned int *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 16) requires 'unsigned int *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 17) requires 'unsigned int *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 18) requires 'unsigned int *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 19) requires 'unsigned int *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 20) requires 'unsigned int *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 21) requires 'unsigned int *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 22) requires 'unsigned int *' but the argument type is 'void *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 23) requires 'unsigned int *' but the argument type is 'const char *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 24) requires 'unsigned int *' but the argument type is 'const wchar_t *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 25) requires 'unsigned int *' but the argument type is 'const unsigned int *'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 28) requires 'unsigned int *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 29) requires 'unsigned int *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 30) requires 'unsigned int *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 31) requires 'unsigned int *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %u in format string (no. 32) requires 'unsigned int *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:29]: (warning) %u in format string (no. 1) requires 'unsigned int *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 2) requires 'unsigned int *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 4) requires 'unsigned int *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 5) requires 'unsigned int *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 6) requires 'unsigned int *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 7) requires 'unsigned int *' but the argument type is 'int *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 9) requires 'unsigned int *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 10) requires 'unsigned int *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 11) requires 'unsigned int *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 12) requires 'unsigned int *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 13) requires 'unsigned int *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 14) requires 'unsigned int *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 15) requires 'unsigned int *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 16) requires 'unsigned int *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 17) requires 'unsigned int *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 18) requires 'unsigned int *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 19) requires 'unsigned int *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 20) requires 'unsigned int *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 21) requires 'unsigned int *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 22) requires 'unsigned int *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 23) requires 'unsigned int *' but the argument type is 'const char *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 24) requires 'unsigned int *' but the argument type is 'const wchar_t *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 25) requires 'unsigned int *' but the argument type is 'const unsigned int *'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 28) requires 'unsigned int *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 29) requires 'unsigned int *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 30) requires 'unsigned int *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 31) requires 'unsigned int *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %u in format string (no. 32) requires 'unsigned int *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
+        TEST_SCANF_WARN("%u", "unsigned int", "bool");
+        TEST_SCANF_WARN("%u", "unsigned int", "char");
+        TEST_SCANF_WARN("%u", "unsigned int", "signed char");
+        TEST_SCANF_WARN("%u", "unsigned int", "unsigned char");
+        TEST_SCANF_WARN("%u", "unsigned int", "signed short");
+        TEST_SCANF_WARN("%u", "unsigned int", "unsigned short");
+        TEST_SCANF_WARN("%u", "unsigned int", "signed int");
+        TEST_SCANF_NOWARN("%u", "unsigned int", "unsigned int");
+        TEST_SCANF_WARN("%u", "unsigned int", "signed long");
+        TEST_SCANF_WARN("%u", "unsigned int", "unsigned long");
+        TEST_SCANF_WARN("%u", "unsigned int", "signed long long");
+        TEST_SCANF_WARN("%u", "unsigned int", "unsigned long long");
+        TEST_SCANF_WARN("%u", "unsigned int", "float");
+        TEST_SCANF_WARN("%u", "unsigned int", "double");
+        TEST_SCANF_WARN("%u", "unsigned int", "long double");
+        TEST_SCANF_WARN("%u", "unsigned int", "void *");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-            check(code, true, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
+        TEST_SCANF_WARN("%lu","unsigned long","bool");
+        TEST_SCANF_WARN("%lu","unsigned long","char");
+        TEST_SCANF_WARN("%lu","unsigned long","signed char");
+        TEST_SCANF_WARN("%lu","unsigned long","unsigned char");
+        TEST_SCANF_WARN("%lu","unsigned long","signed short");
+        TEST_SCANF_WARN("%lu","unsigned long","unsigned short");
+        TEST_SCANF_WARN("%lu","unsigned long","signed int");
+        TEST_SCANF_WARN("%lu","unsigned long","unsigned int");
+        TEST_SCANF_WARN("%lu","unsigned long","signed long");
+        TEST_SCANF_NOWARN("%lu","unsigned long","unsigned long");
+        TEST_SCANF_WARN("%lu","unsigned long","signed long long");
+        TEST_SCANF_WARN("%lu","unsigned long","unsigned long long");
+        TEST_SCANF_WARN("%lu","unsigned long","float");
+        TEST_SCANF_WARN("%lu","unsigned long","double");
+        TEST_SCANF_WARN("%lu","unsigned long","long double");
+        TEST_SCANF_WARN("%lu","unsigned long","void *");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","size_t","unsigned long","unsigned long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","uintmax_t","unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","std::size_t","unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lu","unsigned long","std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA_WIN64("%lu","unsigned long","std::uintptr_t", "unsigned long long");
 
-        {
-            const char * code = "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:28]: (warning) %lu in format string (no. 1) requires 'unsigned long *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 2) requires 'unsigned long *' but the argument type is 'char *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 3) requires 'unsigned long *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 4) requires 'unsigned long *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 5) requires 'unsigned long *' but the argument type is 'short *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 6) requires 'unsigned long *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 7) requires 'unsigned long *' but the argument type is 'int *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 8) requires 'unsigned long *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 9) requires 'unsigned long *' but the argument type is 'long *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 11) requires 'unsigned long *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 12) requires 'unsigned long *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 13) requires 'unsigned long *' but the argument type is 'float *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 14) requires 'unsigned long *' but the argument type is 'double *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 15) requires 'unsigned long *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 16) requires 'unsigned long *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 17) requires 'unsigned long *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 18) requires 'unsigned long *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 19) requires 'unsigned long *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 20) requires 'unsigned long *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 21) requires 'unsigned long *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 22) requires 'unsigned long *' but the argument type is 'void *'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 25) requires 'unsigned long *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 26) requires 'unsigned long *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 27) requires 'unsigned long *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %lu in format string (no. 28) requires 'unsigned long *' but the argument type is 'std::intptr_t * {aka long *}'.\n");
-            std::string result_win64("[test.cpp:28]: (warning) %lu in format string (no. 1) requires 'unsigned long *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 2) requires 'unsigned long *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 3) requires 'unsigned long *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 4) requires 'unsigned long *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 5) requires 'unsigned long *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 6) requires 'unsigned long *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 7) requires 'unsigned long *' but the argument type is 'int *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 8) requires 'unsigned long *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 9) requires 'unsigned long *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 11) requires 'unsigned long *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 12) requires 'unsigned long *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 13) requires 'unsigned long *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 14) requires 'unsigned long *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 15) requires 'unsigned long *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 16) requires 'unsigned long *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 17) requires 'unsigned long *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 18) requires 'unsigned long *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 19) requires 'unsigned long *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 20) requires 'unsigned long *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 21) requires 'unsigned long *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 22) requires 'unsigned long *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 25) requires 'unsigned long *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 26) requires 'unsigned long *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 27) requires 'unsigned long *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 28) requires 'unsigned long *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %lu in format string (no. 29) requires 'unsigned long *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
+        TEST_SCANF_WARN("%llu","unsigned long long","bool");
+        TEST_SCANF_WARN("%llu","unsigned long long","char");
+        TEST_SCANF_WARN("%llu","unsigned long long","signed char");
+        TEST_SCANF_WARN("%llu","unsigned long long","unsigned char");
+        TEST_SCANF_WARN("%llu","unsigned long long","signed short");
+        TEST_SCANF_WARN("%llu","unsigned long long","unsigned short");
+        TEST_SCANF_WARN("%llu","unsigned long long","signed int");
+        TEST_SCANF_WARN("%llu","unsigned long long","unsigned int");
+        TEST_SCANF_WARN("%llu","unsigned long long","signed long");
+        TEST_SCANF_WARN("%llu","unsigned long long","unsigned long");
+        TEST_SCANF_WARN("%llu","unsigned long long","signed long long");
+        TEST_SCANF_NOWARN("%llu","unsigned long long","unsigned long long");
+        TEST_SCANF_WARN("%llu","unsigned long long","float");
+        TEST_SCANF_WARN("%llu","unsigned long long","double");
+        TEST_SCANF_WARN("%llu","unsigned long long","long double");
+        TEST_SCANF_WARN("%llu","unsigned long long","void *");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::intptr_t", "signed long", "signed long long");
+        //TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::uintptr_t", "unsigned long long");
 
-            check(code, true, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
+        TEST_SCANF_WARN("%hu", "unsigned short", "bool");
+        TEST_SCANF_WARN("%hu", "unsigned short", "char");
+        TEST_SCANF_WARN("%hu", "unsigned short", "signed char");
+        TEST_SCANF_WARN("%hu", "unsigned short", "unsigned char");
+        TEST_SCANF_WARN("%hu", "unsigned short", "signed short");
+        TEST_SCANF_NOWARN("%hu", "unsigned short", "unsigned short");
+        TEST_SCANF_WARN("%hu", "unsigned short", "signed int");
+        TEST_SCANF_WARN("%hu", "unsigned short", "unsigned int");
+        TEST_SCANF_WARN("%hu", "unsigned short", "signed long");
+        TEST_SCANF_WARN("%hu", "unsigned short", "unsigned long");
+        TEST_SCANF_WARN("%hu", "unsigned short", "signed long long");
+        TEST_SCANF_WARN("%hu", "unsigned short", "unsigned long long");
+        TEST_SCANF_WARN("%hu", "unsigned short", "float");
+        TEST_SCANF_WARN("%hu", "unsigned short", "double");
+        TEST_SCANF_WARN("%hu", "unsigned short", "long double");
+        TEST_SCANF_WARN("%hu", "unsigned short", "void *");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-        {
-            const char * code = "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:28]: (warning) %llu in format string (no. 1) requires 'unsigned long long *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 2) requires 'unsigned long long *' but the argument type is 'char *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 3) requires 'unsigned long long *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 4) requires 'unsigned long long *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 5) requires 'unsigned long long *' but the argument type is 'short *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 6) requires 'unsigned long long *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 7) requires 'unsigned long long *' but the argument type is 'int *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 8) requires 'unsigned long long *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 9) requires 'unsigned long long *' but the argument type is 'long *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 10) requires 'unsigned long long *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 11) requires 'unsigned long long *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 13) requires 'unsigned long long *' but the argument type is 'float *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 14) requires 'unsigned long long *' but the argument type is 'double *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 15) requires 'unsigned long long *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 16) requires 'unsigned long long *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 17) requires 'unsigned long long *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 18) requires 'unsigned long long *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 19) requires 'unsigned long long *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 20) requires 'unsigned long long *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 21) requires 'unsigned long long *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 22) requires 'unsigned long long *' but the argument type is 'void *'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 25) requires 'unsigned long long *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 26) requires 'unsigned long long *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 27) requires 'unsigned long long *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 28) requires 'unsigned long long *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %llu in format string (no. 29) requires 'unsigned long long *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:28]: (warning) %llu in format string (no. 1) requires 'unsigned long long *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 2) requires 'unsigned long long *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 3) requires 'unsigned long long *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 4) requires 'unsigned long long *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 5) requires 'unsigned long long *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 6) requires 'unsigned long long *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 7) requires 'unsigned long long *' but the argument type is 'int *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 8) requires 'unsigned long long *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 9) requires 'unsigned long long *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 10) requires 'unsigned long long *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 11) requires 'unsigned long long *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 13) requires 'unsigned long long *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 14) requires 'unsigned long long *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 15) requires 'unsigned long long *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 16) requires 'unsigned long long *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 17) requires 'unsigned long long *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 18) requires 'unsigned long long *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 19) requires 'unsigned long long *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 20) requires 'unsigned long long *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 21) requires 'unsigned long long *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 22) requires 'unsigned long long *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 25) requires 'unsigned long long *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 26) requires 'unsigned long long *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 27) requires 'unsigned long long *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %llu in format string (no. 28) requires 'unsigned long long *' but the argument type is 'std::intptr_t * {aka long long *}'.\n");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "bool");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "char");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "signed char");
+        TEST_SCANF_NOWARN("%hhu", "unsigned char", "unsigned char");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "signed short");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "unsigned short");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "signed int");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "unsigned int");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "signed long");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "unsigned long");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "signed long long");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "unsigned long long");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "float");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "double");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "long double");
+        TEST_SCANF_WARN("%hhu", "unsigned char", "void *");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-            check(code, true, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "bool");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "char");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "signed char");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "unsigned char");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "signed short");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "unsigned short");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "signed int");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "unsigned int");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "signed long");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "unsigned long");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "signed long long");
+        TEST_SCANF_NOWARN("%Lu", "unsigned long long", "unsigned long long");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "float");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "double");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "long double");
+        TEST_SCANF_WARN("%Lu", "unsigned long long", "void *");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::intptr_t", "signed long", "signed long long");
+        // TODO TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-        {
-            const char * code = "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu %hu\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:28]: (warning) %hu in format string (no. 1) requires 'unsigned short *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 2) requires 'unsigned short *' but the argument type is 'char *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 3) requires 'unsigned short *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 4) requires 'unsigned short *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 5) requires 'unsigned short *' but the argument type is 'short *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 7) requires 'unsigned short *' but the argument type is 'int *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 8) requires 'unsigned short *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 9) requires 'unsigned short *' but the argument type is 'long *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 10) requires 'unsigned short *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 11) requires 'unsigned short *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 12) requires 'unsigned short *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 13) requires 'unsigned short *' but the argument type is 'float *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 14) requires 'unsigned short *' but the argument type is 'double *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 15) requires 'unsigned short *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 16) requires 'unsigned short *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 17) requires 'unsigned short *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 18) requires 'unsigned short *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 19) requires 'unsigned short *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 20) requires 'unsigned short *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 21) requires 'unsigned short *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 22) requires 'unsigned short *' but the argument type is 'void *'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 25) requires 'unsigned short *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 26) requires 'unsigned short *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 27) requires 'unsigned short *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 28) requires 'unsigned short *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hu in format string (no. 29) requires 'unsigned short *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:28]: (warning) %hu in format string (no. 1) requires 'unsigned short *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 2) requires 'unsigned short *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 3) requires 'unsigned short *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 4) requires 'unsigned short *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 5) requires 'unsigned short *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 7) requires 'unsigned short *' but the argument type is 'int *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 8) requires 'unsigned short *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 9) requires 'unsigned short *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 10) requires 'unsigned short *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 11) requires 'unsigned short *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 12) requires 'unsigned short *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 13) requires 'unsigned short *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 14) requires 'unsigned short *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 15) requires 'unsigned short *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 16) requires 'unsigned short *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 17) requires 'unsigned short *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 18) requires 'unsigned short *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 19) requires 'unsigned short *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 20) requires 'unsigned short *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 21) requires 'unsigned short *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 22) requires 'unsigned short *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 25) requires 'unsigned short *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 26) requires 'unsigned short *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 27) requires 'unsigned short *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 28) requires 'unsigned short *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hu in format string (no. 29) requires 'unsigned short *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "bool");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "char");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "signed char");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "unsigned char");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "signed short");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "unsigned short");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "signed int");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "unsigned int");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "signed long");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "unsigned long");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "signed long long");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "unsigned long long");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "float");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "double");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "long double");
+        TEST_SCANF_WARN("%ju", "uintmax_t", "void *");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_NOWARN("%ju", "uintmax_t", "uintmax_t");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-            check(code, true, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
+        TEST_SCANF_WARN("%zu", "size_t", "bool");
+        TEST_SCANF_WARN("%zu", "size_t", "char");
+        TEST_SCANF_WARN("%zu", "size_t", "signed char");
+        TEST_SCANF_WARN("%zu", "size_t", "unsigned char");
+        TEST_SCANF_WARN("%zu", "size_t", "signed short");
+        TEST_SCANF_WARN("%zu", "size_t", "unsigned short");
+        TEST_SCANF_WARN("%zu", "size_t", "signed int");
+        TEST_SCANF_WARN("%zu", "size_t", "unsigned int");
+        TEST_SCANF_WARN("%zu", "size_t", "signed long");
+        TEST_SCANF_WARN("%zu", "size_t", "unsigned long");
+        TEST_SCANF_WARN("%zu", "size_t", "signed long long");
+        TEST_SCANF_WARN("%zu", "size_t", "unsigned long long");
+        TEST_SCANF_WARN("%zu", "size_t", "float");
+        TEST_SCANF_WARN("%zu", "size_t", "double");
+        TEST_SCANF_WARN("%zu", "size_t", "long double");
+        TEST_SCANF_WARN("%zu", "size_t", "void *");
+        TEST_SCANF_NOWARN("%zu", "size_t", "size_t");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_NOWARN("%zu", "size_t", "std::size_t");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%zu", "size_t", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-        {
-            const char * code = "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:28]: (warning) %hhu in format string (no. 1) requires 'unsigned char *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 2) requires 'unsigned char *' but the argument type is 'char *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 3) requires 'unsigned char *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 5) requires 'unsigned char *' but the argument type is 'short *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 6) requires 'unsigned char *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 7) requires 'unsigned char *' but the argument type is 'int *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 8) requires 'unsigned char *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 9) requires 'unsigned char *' but the argument type is 'long *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 10) requires 'unsigned char *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 11) requires 'unsigned char *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 12) requires 'unsigned char *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 13) requires 'unsigned char *' but the argument type is 'float *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 14) requires 'unsigned char *' but the argument type is 'double *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 15) requires 'unsigned char *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 16) requires 'unsigned char *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 17) requires 'unsigned char *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 18) requires 'unsigned char *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 19) requires 'unsigned char *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 20) requires 'unsigned char *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 21) requires 'unsigned char *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 22) requires 'unsigned char *' but the argument type is 'void *'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 25) requires 'unsigned char *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 26) requires 'unsigned char *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 27) requires 'unsigned char *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 28) requires 'unsigned char *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %hhu in format string (no. 29) requires 'unsigned char *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:28]: (warning) %hhu in format string (no. 1) requires 'unsigned char *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 2) requires 'unsigned char *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 3) requires 'unsigned char *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 5) requires 'unsigned char *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 6) requires 'unsigned char *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 7) requires 'unsigned char *' but the argument type is 'int *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 8) requires 'unsigned char *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 9) requires 'unsigned char *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 10) requires 'unsigned char *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 11) requires 'unsigned char *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 12) requires 'unsigned char *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 13) requires 'unsigned char *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 14) requires 'unsigned char *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 15) requires 'unsigned char *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 16) requires 'unsigned char *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 17) requires 'unsigned char *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 18) requires 'unsigned char *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 19) requires 'unsigned char *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 20) requires 'unsigned char *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 21) requires 'unsigned char *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 22) requires 'unsigned char *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 25) requires 'unsigned char *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 26) requires 'unsigned char *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 27) requires 'unsigned char *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 28) requires 'unsigned char *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %hhu in format string (no. 29) requires 'unsigned char *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "bool");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "char");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "signed char");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "unsigned char");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "signed short");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "unsigned short");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "signed int");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "unsigned int");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "signed long");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "unsigned long");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "signed long long");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "unsigned long long");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "float");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "double");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "long double");
+        TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "void *");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-            check(code, true, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "bool");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "char");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "signed char");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "unsigned char");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "signed short");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "unsigned short");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "signed int");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "unsigned int");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "signed long");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "unsigned long");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "signed long long");
+        TEST_SCANF_NOWARN("%I64u", "unsigned __int64", "unsigned long long");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "float");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "double");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "long double");
+        TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "size_t", "unsigned long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "uintmax_t", "unsigned long");
+        TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "std::size_t", "unsigned long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "std::uintptr_t", "unsigned long");
 
-        {
-            const char * code = "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:28]: (warning) %Lu in format string (no. 1) requires 'unsigned long long *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 2) requires 'unsigned long long *' but the argument type is 'char *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 3) requires 'unsigned long long *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 4) requires 'unsigned long long *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 5) requires 'unsigned long long *' but the argument type is 'short *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 6) requires 'unsigned long long *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 7) requires 'unsigned long long *' but the argument type is 'int *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 8) requires 'unsigned long long *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 9) requires 'unsigned long long *' but the argument type is 'long *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 10) requires 'unsigned long long *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 11) requires 'unsigned long long *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 13) requires 'unsigned long long *' but the argument type is 'float *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 14) requires 'unsigned long long *' but the argument type is 'double *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 15) requires 'unsigned long long *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 16) requires 'unsigned long long *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 17) requires 'unsigned long long *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 18) requires 'unsigned long long *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 19) requires 'unsigned long long *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 20) requires 'unsigned long long *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 21) requires 'unsigned long long *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 22) requires 'unsigned long long *' but the argument type is 'void *'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 25) requires 'unsigned long long *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 26) requires 'unsigned long long *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 27) requires 'unsigned long long *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 28) requires 'unsigned long long *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %Lu in format string (no. 29) requires 'unsigned long long *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:28]: (warning) %Lu in format string (no. 1) requires 'unsigned long long *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 2) requires 'unsigned long long *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 3) requires 'unsigned long long *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 4) requires 'unsigned long long *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 5) requires 'unsigned long long *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 6) requires 'unsigned long long *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 7) requires 'unsigned long long *' but the argument type is 'int *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 8) requires 'unsigned long long *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 9) requires 'unsigned long long *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 10) requires 'unsigned long long *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 11) requires 'unsigned long long *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 13) requires 'unsigned long long *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 14) requires 'unsigned long long *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 15) requires 'unsigned long long *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 16) requires 'unsigned long long *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 17) requires 'unsigned long long *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 18) requires 'unsigned long long *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 19) requires 'unsigned long long *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 20) requires 'unsigned long long *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 21) requires 'unsigned long long *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 22) requires 'unsigned long long *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 25) requires 'unsigned long long *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 26) requires 'unsigned long long *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 27) requires 'unsigned long long *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %Lu in format string (no. 28) requires 'unsigned long long *' but the argument type is 'std::intptr_t * {aka long long *}'.\n");
+        TEST_SCANF_WARN("%d", "int", "bool");
+        TEST_SCANF_WARN("%d", "int", "char");
+        TEST_SCANF_WARN("%d", "int", "signed char");
+        TEST_SCANF_WARN("%d", "int", "unsigned char");
+        TEST_SCANF_WARN("%d", "int", "signed short");
+        TEST_SCANF_WARN("%d", "int", "unsigned short");
+        TEST_SCANF_NOWARN("%d", "int", "signed int");
+        TEST_SCANF_WARN("%d", "int", "unsigned int");
+        TEST_SCANF_WARN("%d", "int", "signed long");
+        TEST_SCANF_WARN("%d", "int", "unsigned long");
+        TEST_SCANF_WARN("%d", "int", "signed long long");
+        TEST_SCANF_WARN("%d", "int", "unsigned long long");
+        TEST_SCANF_WARN("%d", "int", "float");
+        TEST_SCANF_WARN("%d", "int", "double");
+        TEST_SCANF_WARN("%d", "int", "long double");
+        TEST_SCANF_WARN("%d", "int", "void *");
+        TEST_SCANF_WARN_AKA("%d", "int", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-            check(code, true, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
+        TEST_SCANF_WARN("%x", "unsigned int", "bool");
+        TEST_SCANF_WARN("%x", "unsigned int", "char");
+        TEST_SCANF_WARN("%x", "unsigned int", "signed char");
+        TEST_SCANF_WARN("%x", "unsigned int", "unsigned char");
+        TEST_SCANF_WARN("%x", "unsigned int", "signed short");
+        TEST_SCANF_WARN("%x", "unsigned int", "unsigned short");
+        TEST_SCANF_WARN("%x", "unsigned int", "signed int");
+        TEST_SCANF_NOWARN("%x", "unsigned int", "unsigned int");
+        TEST_SCANF_WARN("%x", "unsigned int", "signed long");
+        TEST_SCANF_WARN("%x", "unsigned int", "unsigned long");
+        TEST_SCANF_WARN("%x", "unsigned int", "signed long long");
+        TEST_SCANF_WARN("%x", "unsigned int", "unsigned long long");
+        TEST_SCANF_WARN("%x", "unsigned int", "float");
+        TEST_SCANF_WARN("%x", "unsigned int", "double");
+        TEST_SCANF_WARN("%x", "unsigned int", "long double");
+        TEST_SCANF_WARN("%x", "unsigned int", "void *");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-        {
-            const char * code = "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju %ju\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
+        TEST_SCANF_WARN("%f", "float", "bool");
+        TEST_SCANF_WARN("%f", "float", "char");
+        TEST_SCANF_WARN("%f", "float", "signed char");
+        TEST_SCANF_WARN("%f", "float", "unsigned char");
+        TEST_SCANF_WARN("%f", "float", "signed short");
+        TEST_SCANF_WARN("%f", "float", "unsigned short");
+        TEST_SCANF_WARN("%f", "float", "signed int");
+        TEST_SCANF_WARN("%f", "float", "unsigned int");
+        TEST_SCANF_WARN("%f", "float", "signed long");
+        TEST_SCANF_WARN("%f", "float", "unsigned long");
+        TEST_SCANF_WARN("%f", "float", "signed long long");
+        TEST_SCANF_WARN("%f", "float", "unsigned long long");
+        TEST_SCANF_NOWARN("%f", "float", "float");
+        TEST_SCANF_WARN("%f", "float", "double");
+        TEST_SCANF_WARN("%f", "float", "long double");
+        TEST_SCANF_WARN("%f", "float", "void *");
+        TEST_SCANF_WARN_AKA("%f", "float", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-            std::string result("[test.cpp:28]: (warning) %ju in format string (no. 1) requires 'uintmax_t *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 2) requires 'uintmax_t *' but the argument type is 'char *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 3) requires 'uintmax_t *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 4) requires 'uintmax_t *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 5) requires 'uintmax_t *' but the argument type is 'short *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 6) requires 'uintmax_t *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 7) requires 'uintmax_t *' but the argument type is 'int *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 8) requires 'uintmax_t *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 9) requires 'uintmax_t *' but the argument type is 'long *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 10) requires 'uintmax_t *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 11) requires 'uintmax_t *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 12) requires 'uintmax_t *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 13) requires 'uintmax_t *' but the argument type is 'float *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 14) requires 'uintmax_t *' but the argument type is 'double *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 15) requires 'uintmax_t *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 16) requires 'uintmax_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 17) requires 'uintmax_t *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 18) requires 'uintmax_t *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 19) requires 'uintmax_t *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 21) requires 'uintmax_t *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 22) requires 'uintmax_t *' but the argument type is 'void *'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 25) requires 'uintmax_t *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 26) requires 'uintmax_t *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 27) requires 'uintmax_t *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 28) requires 'uintmax_t *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %ju in format string (no. 29) requires 'uintmax_t *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:28]: (warning) %ju in format string (no. 1) requires 'uintmax_t *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 2) requires 'uintmax_t *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 3) requires 'uintmax_t *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 4) requires 'uintmax_t *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 5) requires 'uintmax_t *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 6) requires 'uintmax_t *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 7) requires 'uintmax_t *' but the argument type is 'int *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 8) requires 'uintmax_t *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 9) requires 'uintmax_t *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 10) requires 'uintmax_t *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 11) requires 'uintmax_t *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 12) requires 'uintmax_t *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 13) requires 'uintmax_t *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 14) requires 'uintmax_t *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 15) requires 'uintmax_t *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 16) requires 'uintmax_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 17) requires 'uintmax_t *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 18) requires 'uintmax_t *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 19) requires 'uintmax_t *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 21) requires 'uintmax_t *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 22) requires 'uintmax_t *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 25) requires 'uintmax_t *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 26) requires 'uintmax_t *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 27) requires 'uintmax_t *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 28) requires 'uintmax_t *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %ju in format string (no. 29) requires 'uintmax_t *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
+        TEST_SCANF_WARN("%lf", "double", "bool");
+        TEST_SCANF_WARN("%lf", "double", "char");
+        TEST_SCANF_WARN("%lf", "double", "signed char");
+        TEST_SCANF_WARN("%lf", "double", "unsigned char");
+        TEST_SCANF_WARN("%lf", "double", "signed short");
+        TEST_SCANF_WARN("%lf", "double", "unsigned short");
+        TEST_SCANF_WARN("%lf", "double", "signed int");
+        TEST_SCANF_WARN("%lf", "double", "unsigned int");
+        TEST_SCANF_WARN("%lf", "double", "signed long");
+        TEST_SCANF_WARN("%lf", "double", "unsigned long");
+        TEST_SCANF_WARN("%lf", "double", "signed long long");
+        TEST_SCANF_WARN("%lf", "double", "unsigned long long");
+        TEST_SCANF_WARN("%lf", "double", "float");
+        TEST_SCANF_NOWARN("%lf", "double", "double");
+        TEST_SCANF_WARN("%lf", "double", "long double");
+        TEST_SCANF_WARN("%lf", "double", "void *");
+        TEST_SCANF_WARN_AKA("%lf", "double", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-            check(code, true, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
+        TEST_SCANF_WARN("%Lf", "long double", "bool");
+        TEST_SCANF_WARN("%Lf", "long double", "char");
+        TEST_SCANF_WARN("%Lf", "long double", "signed char");
+        TEST_SCANF_WARN("%Lf", "long double", "unsigned char");
+        TEST_SCANF_WARN("%Lf", "long double", "signed short");
+        TEST_SCANF_WARN("%Lf", "long double", "unsigned short");
+        TEST_SCANF_WARN("%Lf", "long double", "signed int");
+        TEST_SCANF_WARN("%Lf", "long double", "unsigned int");
+        TEST_SCANF_WARN("%Lf", "long double", "signed long");
+        TEST_SCANF_WARN("%Lf", "long double", "unsigned long");
+        TEST_SCANF_WARN("%Lf", "long double", "signed long long");
+        TEST_SCANF_WARN("%Lf", "long double", "unsigned long long");
+        TEST_SCANF_WARN("%Lf", "long double", "float");
+        TEST_SCANF_WARN("%Lf", "long double", "double");
+        TEST_SCANF_NOWARN("%Lf", "long double", "long double");
+        TEST_SCANF_WARN("%Lf", "long double", "void *");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-        {
-            const char * code = "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu %zu\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:28]: (warning) %zu in format string (no. 1) requires 'size_t *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 2) requires 'size_t *' but the argument type is 'char *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 3) requires 'size_t *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 4) requires 'size_t *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 5) requires 'size_t *' but the argument type is 'short *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 6) requires 'size_t *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 7) requires 'size_t *' but the argument type is 'int *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 8) requires 'size_t *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 9) requires 'size_t *' but the argument type is 'long *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 10) requires 'size_t *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 11) requires 'size_t *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 12) requires 'size_t *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 13) requires 'size_t *' but the argument type is 'float *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 14) requires 'size_t *' but the argument type is 'double *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 15) requires 'size_t *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 17) requires 'size_t *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 18) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 19) requires 'size_t *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 20) requires 'size_t *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 21) requires 'size_t *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 22) requires 'size_t *' but the argument type is 'void *'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 26) requires 'size_t *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 27) requires 'size_t *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 28) requires 'size_t *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:28]: (warning) %zu in format string (no. 29) requires 'size_t *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:28]: (warning) %zu in format string (no. 1) requires 'size_t *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 2) requires 'size_t *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 3) requires 'size_t *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 4) requires 'size_t *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 5) requires 'size_t *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 6) requires 'size_t *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 7) requires 'size_t *' but the argument type is 'int *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 8) requires 'size_t *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 9) requires 'size_t *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 10) requires 'size_t *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 11) requires 'size_t *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 12) requires 'size_t *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 13) requires 'size_t *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 14) requires 'size_t *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 15) requires 'size_t *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 17) requires 'size_t *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 18) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 19) requires 'size_t *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 20) requires 'size_t *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 21) requires 'size_t *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 22) requires 'size_t *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 26) requires 'size_t *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 27) requires 'size_t *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 28) requires 'size_t *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:28]: (warning) %zu in format string (no. 29) requires 'size_t *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
-
-            check(code, true, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
-
-        check("void foo() {\n"
-              "    bool b;\n"
-              "    char c;\n"
-              "    signed char sc;\n"
-              "    unsigned char uc;\n"
-              "    short s;\n"
-              "    unsigned short us;\n"
-              "    int i;\n"
-              "    unsigned int ui;\n"
-              "    long l;\n"
-              "    unsigned long ul;\n"
-              "    long long ll;\n"
-              "    unsigned long long ull;\n"
-              "    float f;\n"
-              "    double d;\n"
-              "    long double ld;\n"
-              "    size_t st;\n"
-              "    ssize_t sst;\n"
-              "    ptrdiff_t pt;\n"
-              "    intmax_t it;\n"
-              "    uintmax_t ut;\n"
-              "    void * vp;\n"
-              "    std::size_t stdst;\n"
-              "    std::ssize_t stdsst;\n"
-              "    std::ptrdiff_t stdpt;\n"
-              "    std::intptr_t stdipt;\n"
-              "    std::uintptr_t stduipt;\n"
-              "    scanf(\"%tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu %tu\",\n"
-              "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-              "          &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-              "}\n", false, false, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:28]: (warning) %tu in format string (no. 1) requires 'unsigned ptrdiff_t *' but the argument type is 'bool *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 2) requires 'unsigned ptrdiff_t *' but the argument type is 'char *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 3) requires 'unsigned ptrdiff_t *' but the argument type is 'signed char *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 4) requires 'unsigned ptrdiff_t *' but the argument type is 'unsigned char *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 5) requires 'unsigned ptrdiff_t *' but the argument type is 'short *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 6) requires 'unsigned ptrdiff_t *' but the argument type is 'unsigned short *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 7) requires 'unsigned ptrdiff_t *' but the argument type is 'int *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 8) requires 'unsigned ptrdiff_t *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 9) requires 'unsigned ptrdiff_t *' but the argument type is 'long *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 10) requires 'unsigned ptrdiff_t *' but the argument type is 'unsigned long *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 11) requires 'unsigned ptrdiff_t *' but the argument type is 'long long *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 12) requires 'unsigned ptrdiff_t *' but the argument type is 'unsigned long long *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 13) requires 'unsigned ptrdiff_t *' but the argument type is 'float *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 14) requires 'unsigned ptrdiff_t *' but the argument type is 'double *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 15) requires 'unsigned ptrdiff_t *' but the argument type is 'long double *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 16) requires 'unsigned ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 17) requires 'unsigned ptrdiff_t *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 18) requires 'unsigned ptrdiff_t *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 19) requires 'unsigned ptrdiff_t *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 20) requires 'unsigned ptrdiff_t *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 21) requires 'unsigned ptrdiff_t *' but the argument type is 'void * *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 22) requires 'unsigned ptrdiff_t *' but the argument type is 'void *'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 25) requires 'unsigned ptrdiff_t *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 26) requires 'unsigned ptrdiff_t *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 27) requires 'unsigned ptrdiff_t *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 28) requires 'unsigned ptrdiff_t *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %tu in format string (no. 29) requires 'unsigned ptrdiff_t *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n", errout.str());
-
-        check("void foo() {\n"
-              "    bool b;\n"
-              "    char c;\n"
-              "    signed char sc;\n"
-              "    unsigned char uc;\n"
-              "    short s;\n"
-              "    unsigned short us;\n"
-              "    int i;\n"
-              "    unsigned int ui;\n"
-              "    long l;\n"
-              "    unsigned long ul;\n"
-              "    long long ll;\n"
-              "    unsigned long long ull;\n"
-              "    float f;\n"
-              "    double d;\n"
-              "    long double ld;\n"
-              "    size_t st;\n"
-              "    ssize_t sst;\n"
-              "    ptrdiff_t pt;\n"
-              "    intmax_t it;\n"
-              "    uintmax_t ut;\n"
-              "    void * vp;\n"
-              "    std::size_t stdst;\n"
-              "    std::ssize_t stdsst;\n"
-              "    std::ptrdiff_t stdpt;\n"
-              "    std::intptr_t stdipt;\n"
-              "    std::uintptr_t stduipt;\n"
-              "    scanf(\"%I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u %I64u\",\n"
-              "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-              "          &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-              "}\n", false, false, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:28]: (warning) %I64u in format string (no. 1) requires 'unsigned __int64 *' but the argument type is 'bool *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is 'char *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 3) requires 'unsigned __int64 *' but the argument type is 'signed char *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 4) requires 'unsigned __int64 *' but the argument type is 'unsigned char *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 5) requires 'unsigned __int64 *' but the argument type is 'short *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 6) requires 'unsigned __int64 *' but the argument type is 'unsigned short *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 7) requires 'unsigned __int64 *' but the argument type is 'int *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 8) requires 'unsigned __int64 *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 9) requires 'unsigned __int64 *' but the argument type is 'long *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 10) requires 'unsigned __int64 *' but the argument type is 'unsigned long *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 11) requires 'unsigned __int64 *' but the argument type is 'long long *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 13) requires 'unsigned __int64 *' but the argument type is 'float *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 14) requires 'unsigned __int64 *' but the argument type is 'double *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 15) requires 'unsigned __int64 *' but the argument type is 'long double *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 16) requires 'unsigned __int64 *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 17) requires 'unsigned __int64 *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 18) requires 'unsigned __int64 *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 19) requires 'unsigned __int64 *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 20) requires 'unsigned __int64 *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 21) requires 'unsigned __int64 *' but the argument type is 'void * *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 22) requires 'unsigned __int64 *' but the argument type is 'void *'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 25) requires 'unsigned __int64 *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 26) requires 'unsigned __int64 *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 27) requires 'unsigned __int64 *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 28) requires 'unsigned __int64 *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                      "[test.cpp:28]: (warning) %I64u in format string (no. 29) requires 'unsigned __int64 *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n", errout.str());
-
-        {
-            const char * code = "const int * foo() { }\n"
-                                "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          \"str\", L\"str\", foo(), &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:29]: (warning) %d in format string (no. 1) requires 'int *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'char *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 3) requires 'int *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 4) requires 'int *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 5) requires 'int *' but the argument type is 'short *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 6) requires 'int *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 8) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 9) requires 'int *' but the argument type is 'long *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 10) requires 'int *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 11) requires 'int *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 12) requires 'int *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 13) requires 'int *' but the argument type is 'float *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 14) requires 'int *' but the argument type is 'double *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 15) requires 'int *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 16) requires 'int *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 17) requires 'int *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 18) requires 'int *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 19) requires 'int *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 20) requires 'int *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 21) requires 'int *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 22) requires 'int *' but the argument type is 'void *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 23) requires 'int *' but the argument type is 'const char *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 24) requires 'int *' but the argument type is 'const wchar_t *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 25) requires 'int *' but the argument type is 'const int *'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 28) requires 'int *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 29) requires 'int *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 30) requires 'int *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 31) requires 'int *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %d in format string (no. 32) requires 'int *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:29]: (warning) %d in format string (no. 1) requires 'int *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 3) requires 'int *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 4) requires 'int *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 5) requires 'int *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 6) requires 'int *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 8) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 9) requires 'int *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 10) requires 'int *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 11) requires 'int *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 12) requires 'int *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 13) requires 'int *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 14) requires 'int *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 15) requires 'int *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 16) requires 'int *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 17) requires 'int *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 18) requires 'int *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 19) requires 'int *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 20) requires 'int *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 21) requires 'int *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 22) requires 'int *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 23) requires 'int *' but the argument type is 'const char *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 24) requires 'int *' but the argument type is 'const wchar_t *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 25) requires 'int *' but the argument type is 'const int *'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 28) requires 'int *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 29) requires 'int *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 30) requires 'int *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 31) requires 'int *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %d in format string (no. 32) requires 'int *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
-
-            check(code, true, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
-
-        {
-            const char * code = "const unsigned int * foo() { }\n"
-                                "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          \"str\", L\"str\", foo(), &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:29]: (warning) %x in format string (no. 1) requires 'unsigned int *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 2) requires 'unsigned int *' but the argument type is 'char *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 4) requires 'unsigned int *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 5) requires 'unsigned int *' but the argument type is 'short *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 6) requires 'unsigned int *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 9) requires 'unsigned int *' but the argument type is 'long *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 10) requires 'unsigned int *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 11) requires 'unsigned int *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 12) requires 'unsigned int *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 13) requires 'unsigned int *' but the argument type is 'float *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 14) requires 'unsigned int *' but the argument type is 'double *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 15) requires 'unsigned int *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 16) requires 'unsigned int *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 17) requires 'unsigned int *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 18) requires 'unsigned int *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 19) requires 'unsigned int *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 20) requires 'unsigned int *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 21) requires 'unsigned int *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 22) requires 'unsigned int *' but the argument type is 'void *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 23) requires 'unsigned int *' but the argument type is 'const char *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 24) requires 'unsigned int *' but the argument type is 'const wchar_t *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 25) requires 'unsigned int *' but the argument type is 'const unsigned int *'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 28) requires 'unsigned int *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 29) requires 'unsigned int *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 30) requires 'unsigned int *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 31) requires 'unsigned int *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %x in format string (no. 32) requires 'unsigned int *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:29]: (warning) %x in format string (no. 1) requires 'unsigned int *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 2) requires 'unsigned int *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 4) requires 'unsigned int *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 5) requires 'unsigned int *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 6) requires 'unsigned int *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 9) requires 'unsigned int *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 10) requires 'unsigned int *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 11) requires 'unsigned int *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 12) requires 'unsigned int *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 13) requires 'unsigned int *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 14) requires 'unsigned int *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 15) requires 'unsigned int *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 16) requires 'unsigned int *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 17) requires 'unsigned int *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 18) requires 'unsigned int *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 19) requires 'unsigned int *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 20) requires 'unsigned int *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 21) requires 'unsigned int *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 22) requires 'unsigned int *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 23) requires 'unsigned int *' but the argument type is 'const char *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 24) requires 'unsigned int *' but the argument type is 'const wchar_t *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 25) requires 'unsigned int *' but the argument type is 'const unsigned int *'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 28) requires 'unsigned int *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 29) requires 'unsigned int *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 30) requires 'unsigned int *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 31) requires 'unsigned int *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %x in format string (no. 32) requires 'unsigned int *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
-
-            check(code, true, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
-
-        {
-            const char * code = "const float * foo() { }\n"
-                                "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          \"str\", L\"str\", foo(), &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:29]: (warning) %f in format string (no. 1) requires 'float *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 2) requires 'float *' but the argument type is 'char *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 3) requires 'float *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 4) requires 'float *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 5) requires 'float *' but the argument type is 'short *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 6) requires 'float *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 7) requires 'float *' but the argument type is 'int *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 8) requires 'float *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 9) requires 'float *' but the argument type is 'long *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 10) requires 'float *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 11) requires 'float *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 12) requires 'float *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 14) requires 'float *' but the argument type is 'double *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 15) requires 'float *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 16) requires 'float *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 17) requires 'float *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 18) requires 'float *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 19) requires 'float *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 20) requires 'float *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 21) requires 'float *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 22) requires 'float *' but the argument type is 'void *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 23) requires 'float *' but the argument type is 'const char *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 24) requires 'float *' but the argument type is 'const wchar_t *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 25) requires 'float *' but the argument type is 'const float *'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 28) requires 'float *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 29) requires 'float *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 30) requires 'float *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 31) requires 'float *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %f in format string (no. 32) requires 'float *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:29]: (warning) %f in format string (no. 1) requires 'float *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 2) requires 'float *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 3) requires 'float *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 4) requires 'float *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 5) requires 'float *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 6) requires 'float *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 7) requires 'float *' but the argument type is 'int *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 8) requires 'float *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 9) requires 'float *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 10) requires 'float *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 11) requires 'float *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 12) requires 'float *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 14) requires 'float *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 15) requires 'float *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 16) requires 'float *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 17) requires 'float *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 18) requires 'float *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 19) requires 'float *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 20) requires 'float *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 21) requires 'float *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 22) requires 'float *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 23) requires 'float *' but the argument type is 'const char *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 24) requires 'float *' but the argument type is 'const wchar_t *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 25) requires 'float *' but the argument type is 'const float *'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 28) requires 'float *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 29) requires 'float *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 30) requires 'float *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 31) requires 'float *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %f in format string (no. 32) requires 'float *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
-
-            check(code, true, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, true, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
-
-        {
-            const char * code = "const double * foo() { }\n"
-                                "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          \"str\", L\"str\", foo(), &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:29]: (warning) %lf in format string (no. 1) requires 'double *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 2) requires 'double *' but the argument type is 'char *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 3) requires 'double *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 4) requires 'double *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 5) requires 'double *' but the argument type is 'short *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 6) requires 'double *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 7) requires 'double *' but the argument type is 'int *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 8) requires 'double *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 9) requires 'double *' but the argument type is 'long *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 10) requires 'double *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 11) requires 'double *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 12) requires 'double *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 13) requires 'double *' but the argument type is 'float *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 15) requires 'double *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 16) requires 'double *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 17) requires 'double *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 18) requires 'double *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 19) requires 'double *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 20) requires 'double *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 21) requires 'double *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 22) requires 'double *' but the argument type is 'void *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 23) requires 'double *' but the argument type is 'const char *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 24) requires 'double *' but the argument type is 'const wchar_t *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 25) requires 'double *' but the argument type is 'const double *'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 28) requires 'double *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 29) requires 'double *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 30) requires 'double *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 31) requires 'double *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %lf in format string (no. 32) requires 'double *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:29]: (warning) %lf in format string (no. 1) requires 'double *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 2) requires 'double *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 3) requires 'double *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 4) requires 'double *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 5) requires 'double *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 6) requires 'double *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 7) requires 'double *' but the argument type is 'int *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 8) requires 'double *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 9) requires 'double *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 10) requires 'double *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 11) requires 'double *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 12) requires 'double *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 13) requires 'double *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 15) requires 'double *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 16) requires 'double *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 17) requires 'double *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 18) requires 'double *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 19) requires 'double *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 20) requires 'double *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 21) requires 'double *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 22) requires 'double *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 23) requires 'double *' but the argument type is 'const char *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 24) requires 'double *' but the argument type is 'const wchar_t *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 25) requires 'double *' but the argument type is 'const double *'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 28) requires 'double *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 29) requires 'double *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 30) requires 'double *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 31) requires 'double *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %lf in format string (no. 32) requires 'double *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
-
-            check(code, false, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
-
-        {
-            const char * code = "const long double * foo() { }\n"
-                                "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf %Lf\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          \"str\", L\"str\", foo(), &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:29]: (warning) %Lf in format string (no. 1) requires 'long double *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 2) requires 'long double *' but the argument type is 'char *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 3) requires 'long double *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 4) requires 'long double *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 5) requires 'long double *' but the argument type is 'short *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 6) requires 'long double *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 7) requires 'long double *' but the argument type is 'int *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 8) requires 'long double *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 9) requires 'long double *' but the argument type is 'long *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 10) requires 'long double *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 11) requires 'long double *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 12) requires 'long double *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 13) requires 'long double *' but the argument type is 'float *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 14) requires 'long double *' but the argument type is 'double *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 16) requires 'long double *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 17) requires 'long double *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 18) requires 'long double *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 19) requires 'long double *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 20) requires 'long double *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 21) requires 'long double *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 22) requires 'long double *' but the argument type is 'void *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 23) requires 'long double *' but the argument type is 'const char *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 24) requires 'long double *' but the argument type is 'const wchar_t *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 25) requires 'long double *' but the argument type is 'const long double *'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 28) requires 'long double *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 29) requires 'long double *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 30) requires 'long double *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 31) requires 'long double *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %Lf in format string (no. 32) requires 'long double *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:29]: (warning) %Lf in format string (no. 1) requires 'long double *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 2) requires 'long double *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 3) requires 'long double *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 4) requires 'long double *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 5) requires 'long double *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 6) requires 'long double *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 7) requires 'long double *' but the argument type is 'int *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 8) requires 'long double *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 9) requires 'long double *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 10) requires 'long double *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 11) requires 'long double *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 12) requires 'long double *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 13) requires 'long double *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 14) requires 'long double *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 16) requires 'long double *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 17) requires 'long double *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 18) requires 'long double *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 19) requires 'long double *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 20) requires 'long double *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 21) requires 'long double *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 22) requires 'long double *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 23) requires 'long double *' but the argument type is 'const char *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 24) requires 'long double *' but the argument type is 'const wchar_t *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 25) requires 'long double *' but the argument type is 'const long double *'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 28) requires 'long double *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 29) requires 'long double *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 30) requires 'long double *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 31) requires 'long double *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %Lf in format string (no. 32) requires 'long double *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
-
-            check(code, false, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
-
-        {
-            const char * code = "const int * foo() { }\n"
-                                "void foo() {\n"
-                                "    bool b;\n"
-                                "    char c;\n"
-                                "    signed char sc;\n"
-                                "    unsigned char uc;\n"
-                                "    short s;\n"
-                                "    unsigned short us;\n"
-                                "    int i;\n"
-                                "    unsigned int ui;\n"
-                                "    long l;\n"
-                                "    unsigned long ul;\n"
-                                "    long long ll;\n"
-                                "    unsigned long long ull;\n"
-                                "    float f;\n"
-                                "    double d;\n"
-                                "    long double ld;\n"
-                                "    size_t st;\n"
-                                "    ssize_t sst;\n"
-                                "    ptrdiff_t pt;\n"
-                                "    intmax_t it;\n"
-                                "    uintmax_t ut;\n"
-                                "    void * vp;\n"
-                                "    std::size_t stdst;\n"
-                                "    std::ssize_t stdsst;\n"
-                                "    std::ptrdiff_t stdpt;\n"
-                                "    std::intptr_t stdipt;\n"
-                                "    std::uintptr_t stduipt;\n"
-                                "    scanf(\"%n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n %n\",\n"
-                                "          &b, &c, &sc, &uc, &s, &us, &i, &ui, &l, &ul, &ll, &ull, &f, &d, &ld, &st, &sst, &pt, &it, &ut, &vp, vp,\n"
-                                "          \"str\", L\"str\", foo(), &unknown, unknown, &stdst, &stdsst, &stdpt, &stdipt, &stduipt);\n"
-                                "}\n";
-            std::string result("[test.cpp:29]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'bool *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 2) requires 'int *' but the argument type is 'char *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 3) requires 'int *' but the argument type is 'signed char *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 4) requires 'int *' but the argument type is 'unsigned char *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 5) requires 'int *' but the argument type is 'short *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 6) requires 'int *' but the argument type is 'unsigned short *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 8) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 9) requires 'int *' but the argument type is 'long *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 10) requires 'int *' but the argument type is 'unsigned long *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 11) requires 'int *' but the argument type is 'long long *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 12) requires 'int *' but the argument type is 'unsigned long long *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 13) requires 'int *' but the argument type is 'float *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 14) requires 'int *' but the argument type is 'double *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 15) requires 'int *' but the argument type is 'long double *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 16) requires 'int *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 17) requires 'int *' but the argument type is 'ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 18) requires 'int *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 19) requires 'int *' but the argument type is 'intmax_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 20) requires 'int *' but the argument type is 'uintmax_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 21) requires 'int *' but the argument type is 'void * *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 22) requires 'int *' but the argument type is 'void *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 23) requires 'int *' but the argument type is 'const char *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 24) requires 'int *' but the argument type is 'const wchar_t *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 25) requires 'int *' but the argument type is 'const int *'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 28) requires 'int *' but the argument type is 'std::size_t * {aka unsigned long *}'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 29) requires 'int *' but the argument type is 'std::ssize_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 30) requires 'int *' but the argument type is 'std::ptrdiff_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 31) requires 'int *' but the argument type is 'std::intptr_t * {aka long *}'.\n"
-                               "[test.cpp:29]: (warning) %n in format string (no. 32) requires 'int *' but the argument type is 'std::uintptr_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:29]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'bool *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 2) requires 'int *' but the argument type is 'char *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 3) requires 'int *' but the argument type is 'signed char *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 4) requires 'int *' but the argument type is 'unsigned char *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 5) requires 'int *' but the argument type is 'short *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 6) requires 'int *' but the argument type is 'unsigned short *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 8) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 9) requires 'int *' but the argument type is 'long *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 10) requires 'int *' but the argument type is 'unsigned long *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 11) requires 'int *' but the argument type is 'long long *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 12) requires 'int *' but the argument type is 'unsigned long long *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 13) requires 'int *' but the argument type is 'float *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 14) requires 'int *' but the argument type is 'double *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 15) requires 'int *' but the argument type is 'long double *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 16) requires 'int *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 17) requires 'int *' but the argument type is 'ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 18) requires 'int *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 19) requires 'int *' but the argument type is 'intmax_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 20) requires 'int *' but the argument type is 'uintmax_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 21) requires 'int *' but the argument type is 'void * *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 22) requires 'int *' but the argument type is 'void *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 23) requires 'int *' but the argument type is 'const char *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 24) requires 'int *' but the argument type is 'const wchar_t *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 25) requires 'int *' but the argument type is 'const int *'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 28) requires 'int *' but the argument type is 'std::size_t * {aka unsigned long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 29) requires 'int *' but the argument type is 'std::ssize_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 30) requires 'int *' but the argument type is 'std::ptrdiff_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 31) requires 'int *' but the argument type is 'std::intptr_t * {aka long long *}'.\n"
-                                     "[test.cpp:29]: (warning) %n in format string (no. 32) requires 'int *' but the argument type is 'std::uintptr_t * {aka unsigned long long *}'.\n");
-
-            check(code, false, false, Settings::Unix32);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Unix64);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Win32A);
-            ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Win64);
-            ASSERT_EQUALS(result_win64, errout.str());
-        }
+        TEST_SCANF_WARN("%n", "int", "bool");
+        TEST_SCANF_WARN("%n", "int", "char");
+        TEST_SCANF_WARN("%n", "int", "signed char");
+        TEST_SCANF_WARN("%n", "int", "unsigned char");
+        TEST_SCANF_WARN("%n", "int", "signed short");
+        TEST_SCANF_WARN("%n", "int", "unsigned short");
+        TEST_SCANF_NOWARN("%n", "int", "signed int");
+        TEST_SCANF_WARN("%n", "int", "unsigned int");
+        TEST_SCANF_WARN("%n", "int", "signed long");
+        TEST_SCANF_WARN("%n", "int", "unsigned long");
+        TEST_SCANF_WARN("%n", "int", "signed long long");
+        TEST_SCANF_WARN("%n", "int", "unsigned long long");
+        TEST_SCANF_WARN("%n", "int", "float");
+        TEST_SCANF_WARN("%n", "int", "double");
+        TEST_SCANF_WARN("%n", "int", "long double");
+        TEST_SCANF_WARN("%n", "int", "void *");
+        TEST_SCANF_WARN_AKA("%n", "int", "size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "uintmax_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "std::size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "std::ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         check("void g() {\n" // #5104
               "    myvector<int> v1(1);\n"
@@ -2295,16 +1364,16 @@ private:
                                 "    scanf(\"%zd\", &s2);\n"
                                 "    scanf(\"%zd\", &s3);\n"
                                 "}\n";
-            std::string result("[test.cpp:5]: (warning) %zd in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n");
-            std::string result_win64("[test.cpp:5]: (warning) %zd in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n");
+            std::string result("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n");
+            std::string result_win64("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n");
 
-            check(code, false, false, Settings::Unix32);
+            check(code, false, true, Settings::Unix32);
             ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Unix64);
+            check(code, false, true, Settings::Unix64);
             ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Win32A);
+            check(code, false, true, Settings::Win32A);
             ASSERT_EQUALS(result, errout.str());
-            check(code, false, false, Settings::Win64);
+            check(code, false, true, Settings::Win64);
             ASSERT_EQUALS(result_win64, errout.str());
         }
         {
@@ -2313,18 +1382,18 @@ private:
                   "    scanf(\"%s\n\", c);\n"
                   "}\n");
             ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires a 'char *' but the argument type is 'const char *'.\n"
-                          "[test.cpp:3]: (warning) scanf without field width limits can crash with huge input data.\n", errout.str());
+                          "[test.cpp:3]: (warning) scanf() without field width limits can crash with huge input data.\n", errout.str());
         }
 
     }
 
     void testPrintfArgument() {
         check("void foo() {\n"
-              "    printf(\"%u\");\n"
-              "    printf(\"%u%s\", 123);\n"
-              "    printf(\"%u%s%d\", 0, bar());\n"
-              "    printf(\"%u%%%s%d\", 0, bar());\n"
-              "    printf(\"%udfd%%dfa%s%d\", 0, bar());\n"
+              "    printf(\"%i\");\n"
+              "    printf(\"%i%s\", 123);\n"
+              "    printf(\"%i%s%d\", 0, bar());\n"
+              "    printf(\"%i%%%s%d\", 0, bar());\n"
+              "    printf(\"%idfd%%dfa%s%d\", 0, bar());\n"
               "    fprintf(stderr,\"%u%s\");\n"
               "    snprintf(str,10,\"%u%s\");\n"
               "    sprintf(string1, \"%-*.*s\", 32, string2);\n" // #3364
@@ -2342,28 +1411,28 @@ private:
 
         check("void foo(char *str) {\n"
               "    printf(\"\", 0);\n"
-              "    printf(\"%u\", 123, bar());\n"
-              "    printf(\"%u%s\", 0, bar(), 43123);\n"
+              "    printf(\"%i\", 123, bar());\n"
+              "    printf(\"%i%s\", 0, bar(), 43123);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) printf format string requires 0 parameters but 1 is given.\n"
                       "[test.cpp:3]: (warning) printf format string requires 1 parameter but 2 are given.\n"
                       "[test.cpp:4]: (warning) printf format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n" // swprintf exists as MSVC extension and as standard function: #4790
-              "    swprintf(string1, L\"%u\", 32, string2);\n" // MSVC implementation
+              "    swprintf(string1, L\"%i\", 32, string2);\n" // MSVC implementation
               "    swprintf(string1, L\"%s%s\", L\"a\", string2);\n" // MSVC implementation
-              "    swprintf(string1, 6, L\"%u\", 32, string2);\n" // Standard implementation
-              "    swprintf(string1, 6, L\"%u%s\", 32, string2);\n" // Standard implementation
+              "    swprintf(string1, 6, L\"%i\", 32, string2);\n" // Standard implementation
+              "    swprintf(string1, 6, L\"%i%s\", 32, string2);\n" // Standard implementation
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) swprintf format string requires 1 parameter but 2 are given.\n"
                       "[test.cpp:4]: (warning) swprintf format string requires 1 parameter but 2 are given.\n", errout.str());
 
         check("void foo(char *str) {\n"
-              "    printf(\"%u\", 0);\n"
-              "    printf(\"%u%s\", 123, bar());\n"
-              "    printf(\"%u%s%d\", 0, bar(), 43123);\n"
-              "    printf(\"%u%%%s%d\", 0, bar(), 43123);\n"
-              "    printf(\"%udfd%%dfa%s%d\", 0, bar(), 43123);\n"
+              "    printf(\"%i\", 0);\n"
+              "    printf(\"%i%s\", 123, bar());\n"
+              "    printf(\"%i%s%d\", 0, bar(), 43123);\n"
+              "    printf(\"%i%%%s%d\", 0, bar(), 43123);\n"
+              "    printf(\"%idfd%%dfa%s%d\", 0, bar(), 43123);\n"
               "    printf(\"%\"PRId64\"\n\", 123);\n"
               "    fprintf(stderr,\"%\"PRId64\"\n\", 123);\n"
               "    snprintf(str,10,\"%\"PRId64\"\n\", 123);\n"
@@ -2496,7 +1565,7 @@ private:
               "  printf(\"%hhx %hhd\", sc, uc);\n"
               "  printf(\"%hd %hu\", si, usi);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hhd in format string (no. 2) requires 'char' but the argument type is 'unsigned char'.\n", errout.str());
 
         check("void foo(long long int lli, unsigned long long int ulli, long int li, unsigned long int uli) {\n"
               "  printf(\"%llo %llx\", lli, ulli);\n"
@@ -2540,66 +1609,66 @@ private:
               "  printf(\"%ld\", i);\n"
               "  printf(\"%lld\", i);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %hd in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:3]: (warning) %hhd in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hd in format string (no. 1) requires 'short' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:3]: (warning) %hhd in format string (no. 1) requires 'char' but the argument type is 'unsigned int'.\n"
                       "[test.cpp:4]: (warning) %ld in format string (no. 1) requires 'long' but the argument type is 'unsigned int'.\n"
                       "[test.cpp:5]: (warning) %lld in format string (no. 1) requires 'long long' but the argument type is 'unsigned int'.\n" , errout.str());
 
         check("void foo(size_t s, ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
-              "}", false, false, Settings::Unix32);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (warning) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long}'.\n", errout.str());
+              "}", false, true, Settings::Unix32);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long}'.\n", errout.str());
 
         check("void foo(std::size_t s, std::ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
-              "}", false, false, Settings::Unix32);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (warning) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long}'.\n", errout.str());
+              "}", false, true, Settings::Unix32);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long}'.\n", errout.str());
 
         check("void foo(size_t s, ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
-              "}", false, false, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (warning) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long}'.\n", errout.str());
+              "}", false, true, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long}'.\n", errout.str());
 
         check("void foo(std::size_t s, std::ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
-              "}", false, false, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (warning) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long}'.\n", errout.str());
+              "}", false, true, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long}'.\n", errout.str());
 
         check("void foo(size_t s, ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
-              "}", false, false, Settings::Win32A);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (warning) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long}'.\n", errout.str());
+              "}", false, true, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long}'.\n", errout.str());
 
         check("void foo(std::size_t s, std::ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
-              "}", false, false, Settings::Win32A);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (warning) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long}'.\n", errout.str());
+              "}", false, true, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long}'.\n", errout.str());
 
         check("void foo(size_t s, ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
-              "}", false, false, Settings::Win64);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:3]: (warning) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long long}'.\n", errout.str());
+              "}", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long long}'.\n", errout.str());
 
         check("void foo(std::size_t s, std::ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
-              "}", false, false, Settings::Win64);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:3]: (warning) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long long}'.\n", errout.str());
+              "}", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long long}'.\n", errout.str());
 
         check("void foo(unsigned int i) {\n"
               "  printf(\"%ld\", i);\n"
@@ -2633,21 +1702,21 @@ private:
               "        f[0].d, f[0].baz.i, f[0].bar[0].i);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:13]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'double'.\n"
-                      "[test.cpp:13]: (warning) %f in format string (no. 2) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:13]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'int'.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 2) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'signed int'.\n"
                       "[test.cpp:13]: (warning) %d in format string (no. 4) requires 'int' but the argument type is 'double'.\n"
-                      "[test.cpp:13]: (warning) %f in format string (no. 5) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:13]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'int'.\n", errout.str());
+                      "[test.cpp:13]: (warning) %f in format string (no. 5) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'signed int'.\n", errout.str());
 
         check("short f() { return 0; }\n"
               "void foo() { printf(\"%d %u %lu %I64u %I64d %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'short'.\n"
-                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'short'.\n"
-                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires 'unsigned __int64' but the argument type is 'short'.\n"
-                      "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires '__int64' but the argument type is 'short'.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'short'.\n"
-                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires 'long double' but the argument type is 'short'.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'short'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed short'.\n"
+                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed short'.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires 'unsigned __int64' but the argument type is 'signed short'.\n"
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires '__int64' but the argument type is 'signed short'.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'signed short'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires 'long double' but the argument type is 'signed short'.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'signed short'.\n", errout.str());
 
         check("unsigned short f() { return 0; }\n"
               "void foo() { printf(\"%u %d %ld %I64d %I64u %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
@@ -2660,13 +1729,13 @@ private:
 
         check("int f() { return 0; }\n"
               "void foo() { printf(\"%d %u %lu %I64u %I64d %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires 'unsigned __int64' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires '__int64' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires 'long double' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires 'unsigned __int64' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires '__int64' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires 'long double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'signed int'.\n", errout.str());
 
         check("unsigned int f() { return 0; }\n"
               "void foo() { printf(\"%u %d %ld %I64d %I64u %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
@@ -2680,13 +1749,13 @@ private:
 
         check("long f() { return 0; }\n"
               "void foo() { printf(\"%ld %u %lu %I64u %I64d %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'long'.\n"
-                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'long'.\n"
-                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires 'unsigned __int64' but the argument type is 'long'.\n"
-                      "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires '__int64' but the argument type is 'long'.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'long'.\n"
-                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires 'long double' but the argument type is 'long'.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'long'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed long'.\n"
+                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed long'.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires 'unsigned __int64' but the argument type is 'signed long'.\n"
+                      "[test.cpp:2]: (warning) %I64d in format string (no. 5) requires '__int64' but the argument type is 'signed long'.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'signed long'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires 'long double' but the argument type is 'signed long'.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'signed long'.\n", errout.str());
 
         check("unsigned long f() { return 0; }\n"
               "void foo() { printf(\"%lu %d %ld %I64d %I64u %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
@@ -2700,12 +1769,12 @@ private:
 
         check("long long f() { return 0; }\n"
               "void foo() { printf(\"%lld %u %lu %I64u %I64d %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'long long'.\n"
-                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'long long'.\n"
-                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires 'unsigned __int64' but the argument type is 'long long'.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'long long'.\n"
-                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires 'long double' but the argument type is 'long long'.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'long long'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed long long'.\n"
+                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed long long'.\n"
+                      "[test.cpp:2]: (warning) %I64u in format string (no. 4) requires 'unsigned __int64' but the argument type is 'signed long long'.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'signed long long'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 7) requires 'long double' but the argument type is 'signed long long'.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 8) requires an address but the argument type is 'signed long long'.\n", errout.str());
 
         check("unsigned long long f() { return 0; }\n"
               "void foo() { printf(\"%llu %d %ld %I64d %I64u %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
@@ -2751,19 +1820,19 @@ private:
 
         check("namespace bar { int f() { return 0; } }\n"
               "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar::f(), bar::f(), bar::f(), bar::f(), bar::f(), bar::f()); }");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Fred { int i; } f;\n"
               "void foo() { printf(\"%d %u %lu %f %Lf %p\", f.i, f.i, f.i, f.i, f.i, f.i); }");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'int'.\n"
-                      "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %p in format string (no. 6) requires an address but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Fred { unsigned int u; } f;\n"
               "void foo() { printf(\"%u %d %ld %f %Lf %p\", f.u, f.u, f.u, f.u, f.u, f.u); }");
@@ -2786,66 +1855,71 @@ private:
               "    printf(\"%s\", newline ? a : str + len);\n"
               "    printf(\"%s\", newline + newline);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Fred { int i; } f;\n"
               "struct Fred & bar() { };\n"
               "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Fred { int i; } f;\n"
               "const struct Fred & bar() { };\n"
               "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Fred { int i; } f;\n"
               "static const struct Fred & bar() { };\n"
               "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Fred { int i; } f[2];\n"
               "struct Fred * bar() { return f; };\n"
               "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i); }");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Fred { int i; } f[2];\n"
               "const struct Fred * bar() { return f; };\n"
               "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i); }");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Fred { int i; } f[2];\n"
               "static const struct Fred * bar() { return f; };\n"
               "void foo() { printf(\"%d %u %lu %f %Lf %p\", bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i, bar()[0].i); }");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'int'.\n"
-                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 5) requires 'long double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %p in format string (no. 6) requires an address but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Fred { int32_t i; } f;\n"
               "struct Fred & bar() { };\n"
               "void foo() { printf(\"%d %ld %u %lu %f %Lf\", bar().i, bar().i, bar().i, bar().i, bar().i, bar().i); }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %ld in format string (no. 2) requires 'long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %u in format string (no. 3) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %lu in format string (no. 4) requires 'unsigned long' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 5) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:3]: (warning) %Lf in format string (no. 6) requires 'long double' but the argument type is 'signed int'.\n",
+                      errout.str());
 
         // #4984
         check("void f(double *x) {\n"
@@ -2858,14 +1932,14 @@ private:
               "void f() {\n"
               "    printf(\"%f\", foo()[0]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
 
         check("struct Base { int length() { } };\n"
               "struct Derived : public Base { };\n"
               "void foo(Derived * d) {\n"
               "    printf(\"%f\", d.length());\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'int'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
 
         check("std::vector<int> v;\n"
               "void foo() {\n"
@@ -2886,67 +1960,67 @@ private:
               "void foo() {\n"
               "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
               "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
-              "}\n", false, false, Settings::Win32A);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:4]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (warning) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+              "}\n", false, true, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
 
         check("std::vector<int> v;\n"
               "std::string s;\n"
               "void foo() {\n"
               "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
               "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
-              "}\n", false, false, Settings::Win64);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:4]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:5]: (warning) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:5]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long long}'.\n", errout.str());
+              "}\n", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long long}'.\n", errout.str());
 
         check("std::vector<int> v;\n"
               "std::string s;\n"
               "void foo() {\n"
               "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
               "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
-              "}\n", false, false, Settings::Unix32);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:4]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (warning) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+              "}\n", false, true, Settings::Unix32);
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
 
         check("std::vector<int> v;\n"
               "std::string s;\n"
               "void foo() {\n"
               "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
               "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
-              "}\n", false, false, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:4]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (warning) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+              "}\n", false, true, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
 
         check("class Fred : public std::vector<int> {} v;\n"
               "std::string s;\n"
               "void foo() {\n"
               "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
               "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
-              "}\n", false, false, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:4]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (warning) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+              "}\n", false, true, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
 
         check("class Fred : public std::vector<int> {} v;\n"
               "void foo() {\n"
               "    printf(\"%d %u %f\", v[0], v[0], v[0]);\n"
-              "}\n", false, false, Settings::Unix64);
+              "}\n", false, true, Settings::Unix64);
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'int'.\n", errout.str());
 
         check("std::string s;\n"
               "void foo() {\n"
               "    printf(\"%s %p %u %d %f\", s.c_str(), s.c_str(), s.c_str(), s.c_str(), s.c_str());\n"
-              "}\n", false, false, Settings::Unix64);
+              "}\n", false, true, Settings::Unix64);
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 3) requires 'unsigned int' but the argument type is 'const char *'.\n"
                       "[test.cpp:3]: (warning) %d in format string (no. 4) requires 'int' but the argument type is 'const char *'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 5) requires 'double' but the argument type is 'const char *'.\n", errout.str());
@@ -2962,64 +2036,107 @@ private:
               "    printf(\"%u %u\", array.size(), s);\n"
               "    printf(\"%lu %lu\", array.size(), s);\n"
               "    printf(\"%llu %llu\", array.size(), s);\n"
-              "}\n", false, false, Settings::Unix64);
+              "}\n", false, true, Settings::Unix64);
         ASSERT_EQUALS("[test.cpp:8]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'char *'.\n"
                       "[test.cpp:8]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'char *'.\n"
                       "[test.cpp:8]: (warning) %u in format string (no. 3) requires 'unsigned int' but the argument type is 'char *'.\n"
-                      "[test.cpp:9]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:9]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:10]: (warning) %lu in format string (no. 1) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:10]: (warning) %lu in format string (no. 2) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:11]: (warning) %llu in format string (no. 1) requires 'unsigned long long' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:11]: (warning) %llu in format string (no. 2) requires 'unsigned long long' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+                      "[test.cpp:9]: (portability) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:9]: (portability) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:10]: (portability) %lu in format string (no. 1) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:10]: (portability) %lu in format string (no. 2) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:11]: (portability) %llu in format string (no. 1) requires 'unsigned long long' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:11]: (portability) %llu in format string (no. 2) requires 'unsigned long long' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
 
-        check("bool b; bool bf(){ return 0; }\n"
-              "char c; char cf(){ return 0; }\n"
-              "signed char sc; signed char scf(){ return 0; }\n"
-              "unsigned char uc; unsigned char ucf(){ return 0; }\n"
-              "short s; short sf(){ return 0; }\n"
-              "unsigned short us; unsigned short usf(){ return 0; }\n"
-              "size_t st; size_t stf(){ return 0; }\n"
-              "ptrdiff_t pt; ptrdiff_t ptf(){ return 0; }\n"
-              "char * pc; char * pcf(){ return 0; }\n"
+        check("bool b; bool bf();\n"
+              "char c; char cf();\n"
+              "signed char sc; signed char scf();\n"
+              "unsigned char uc; unsigned char ucf();\n"
+              "short s; short sf();\n"
+              "unsigned short us; unsigned short usf();\n"
+              "size_t st; size_t stf();\n"
+              "ptrdiff_t pt; ptrdiff_t ptf();\n"
+              "char * pc; char * pcf();\n"
               "char cl[] = \"123\";\n"
               "char ca[3];\n"
               "void foo() {\n"
               "    printf(\"%td %zd %d %d %d %d %d %d %d %d %d %d %d\", pt, pt, b, c, sc, uc, s, us, st, pt, pc, cl, ca);\n"
-              "    printf(\"%ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld\", b, c, sc, uc, s, us, st, pt, pc, cl, ca);\n"
-              "    printf(\"%td %zd %d %d %d %d %d %d %d %d %d\", ptf(), ptf(), bf(), cf(), scf(), ucf(), sf(), usf(), stf(), ptf(), pcf());\n"
-              "    printf(\"%ld %ld %ld %ld %ld %ld %ld %ld %ld\", bf(), cf(), scf(), ucf(), sf(), usf(), stf(), ptf(), pcf());\n"
-              "}\n", false, false, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:13]: (warning) %zd in format string (no. 2) requires 'ssize_t' but the argument type is 'ptrdiff_t {aka long}'.\n"
-                      "[test.cpp:13]: (warning) %d in format string (no. 9) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:13]: (warning) %d in format string (no. 10) requires 'int' but the argument type is 'ptrdiff_t {aka long}'.\n"
+              "}\n", false, true, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:13]: (portability) %zd in format string (no. 2) requires 'ssize_t' but the argument type is 'ptrdiff_t {aka long}'.\n"
+                      "[test.cpp:13]: (portability) %d in format string (no. 9) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:13]: (portability) %d in format string (no. 10) requires 'int' but the argument type is 'ptrdiff_t {aka long}'.\n"
                       "[test.cpp:13]: (warning) %d in format string (no. 11) requires 'int' but the argument type is 'char *'.\n"
                       "[test.cpp:13]: (warning) %d in format string (no. 12) requires 'int' but the argument type is 'char *'.\n"
-                      "[test.cpp:13]: (warning) %d in format string (no. 13) requires 'int' but the argument type is 'char *'.\n"
-                      "[test.cpp:14]: (warning) %ld in format string (no. 1) requires 'long' but the argument type is 'bool'.\n"
-                      "[test.cpp:14]: (warning) %ld in format string (no. 2) requires 'long' but the argument type is 'char'.\n"
-                      "[test.cpp:14]: (warning) %ld in format string (no. 3) requires 'long' but the argument type is 'signed char'.\n"
-                      "[test.cpp:14]: (warning) %ld in format string (no. 4) requires 'long' but the argument type is 'unsigned char'.\n"
-                      "[test.cpp:14]: (warning) %ld in format string (no. 5) requires 'long' but the argument type is 'short'.\n"
-                      "[test.cpp:14]: (warning) %ld in format string (no. 6) requires 'long' but the argument type is 'unsigned short'.\n"
-                      "[test.cpp:14]: (warning) %ld in format string (no. 7) requires 'long' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:14]: (warning) %ld in format string (no. 8) requires 'long' but the argument type is 'ptrdiff_t {aka long}'.\n"
-                      "[test.cpp:14]: (warning) %ld in format string (no. 9) requires 'long' but the argument type is 'char *'.\n"
-                      "[test.cpp:14]: (warning) %ld in format string (no. 10) requires 'long' but the argument type is 'char *'.\n"
-                      "[test.cpp:14]: (warning) %ld in format string (no. 11) requires 'long' but the argument type is 'char *'.\n"
-                      "[test.cpp:15]: (warning) %zd in format string (no. 2) requires 'ssize_t' but the argument type is 'ptrdiff_t {aka long}'.\n"
-                      "[test.cpp:15]: (warning) %d in format string (no. 9) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:15]: (warning) %d in format string (no. 10) requires 'int' but the argument type is 'ptrdiff_t {aka long}'.\n"
-                      "[test.cpp:15]: (warning) %d in format string (no. 11) requires 'int' but the argument type is 'char *'.\n"
-                      "[test.cpp:16]: (warning) %ld in format string (no. 1) requires 'long' but the argument type is 'bool'.\n"
-                      "[test.cpp:16]: (warning) %ld in format string (no. 2) requires 'long' but the argument type is 'char'.\n"
-                      "[test.cpp:16]: (warning) %ld in format string (no. 3) requires 'long' but the argument type is 'signed char'.\n"
-                      "[test.cpp:16]: (warning) %ld in format string (no. 4) requires 'long' but the argument type is 'unsigned char'.\n"
-                      "[test.cpp:16]: (warning) %ld in format string (no. 5) requires 'long' but the argument type is 'short'.\n"
-                      "[test.cpp:16]: (warning) %ld in format string (no. 6) requires 'long' but the argument type is 'unsigned short'.\n"
-                      "[test.cpp:16]: (warning) %ld in format string (no. 7) requires 'long' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:16]: (warning) %ld in format string (no. 8) requires 'long' but the argument type is 'ptrdiff_t {aka long}'.\n"
-                      "[test.cpp:16]: (warning) %ld in format string (no. 9) requires 'long' but the argument type is 'char *'.\n", errout.str());
+                      "[test.cpp:13]: (warning) %d in format string (no. 13) requires 'int' but the argument type is 'char *'.\n", errout.str());
+
+        check("bool b; bool bf();\n"
+              "char c; char cf();\n"
+              "signed char sc; signed char scf();\n"
+              "unsigned char uc; unsigned char ucf();\n"
+              "short s; short sf();\n"
+              "unsigned short us; unsigned short usf();\n"
+              "size_t st; size_t stf();\n"
+              "ptrdiff_t pt; ptrdiff_t ptf();\n"
+              "char * pc; char * pcf();\n"
+              "char cl[] = \"123\";\n"
+              "char ca[3];\n"
+              "void foo() {\n"
+              "    printf(\"%ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld\", b, c, sc, uc, s, us, st, pt, pc, cl, ca);\n"
+              "}\n", false, true, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:13]: (warning) %ld in format string (no. 1) requires 'long' but the argument type is 'bool'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 2) requires 'long' but the argument type is 'char'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 3) requires 'long' but the argument type is 'signed char'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 4) requires 'long' but the argument type is 'unsigned char'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 5) requires 'long' but the argument type is 'short'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 6) requires 'long' but the argument type is 'unsigned short'.\n"
+                      "[test.cpp:13]: (portability) %ld in format string (no. 7) requires 'long' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:13]: (portability) %ld in format string (no. 8) requires 'long' but the argument type is 'ptrdiff_t {aka long}'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 9) requires 'long' but the argument type is 'char *'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 10) requires 'long' but the argument type is 'char *'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 11) requires 'long' but the argument type is 'char *'.\n", errout.str());
+
+
+        check("bool b; bool bf();\n"
+              "char c; char cf();\n"
+              "signed char sc; signed char scf();\n"
+              "unsigned char uc; unsigned char ucf();\n"
+              "short s; short sf();\n"
+              "unsigned short us; unsigned short usf();\n"
+              "size_t st; size_t stf();\n"
+              "ptrdiff_t pt; ptrdiff_t ptf();\n"
+              "char * pc; char * pcf();\n"
+              "char cl[] = \"123\";\n"
+              "char ca[3];\n"
+              "void foo() {\n"
+              "    printf(\"%td %zd %d %d %d %d %d %d %d %d %d\", ptf(), ptf(), bf(), cf(), scf(), ucf(), sf(), usf(), stf(), ptf(), pcf());\n"
+              "}\n", false, true, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:13]: (portability) %zd in format string (no. 2) requires 'ssize_t' but the argument type is 'ptrdiff_t {aka signed long}'.\n"
+                      "[test.cpp:13]: (portability) %d in format string (no. 9) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:13]: (portability) %d in format string (no. 10) requires 'int' but the argument type is 'ptrdiff_t {aka signed long}'.\n"
+                      "[test.cpp:13]: (warning) %d in format string (no. 11) requires 'int' but the argument type is 'char *'.\n", errout.str());
+
+        check("bool b; bool bf();\n"
+              "char c; char cf();\n"
+              "signed char sc; signed char scf();\n"
+              "unsigned char uc; unsigned char ucf();\n"
+              "short s; short sf();\n"
+              "unsigned short us; unsigned short usf();\n"
+              "size_t st; size_t stf();\n"
+              "ptrdiff_t pt; ptrdiff_t ptf();\n"
+              "char * pc; char * pcf();\n"
+              "char cl[] = \"123\";\n"
+              "char ca[3];\n"
+              "void foo() {\n"
+              "    printf(\"%ld %ld %ld %ld %ld %ld %ld %ld %ld\", bf(), cf(), scf(), ucf(), sf(), usf(), stf(), ptf(), pcf());\n"
+              "}\n", false, true, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:13]: (warning) %ld in format string (no. 1) requires 'long' but the argument type is 'bool'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 2) requires 'long' but the argument type is 'char'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 3) requires 'long' but the argument type is 'signed char'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 4) requires 'long' but the argument type is 'unsigned char'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 5) requires 'long' but the argument type is 'signed short'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 6) requires 'long' but the argument type is 'unsigned short'.\n"
+                      "[test.cpp:13]: (portability) %ld in format string (no. 7) requires 'long' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:13]: (portability) %ld in format string (no. 8) requires 'long' but the argument type is 'ptrdiff_t {aka signed long}'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 9) requires 'long' but the argument type is 'char *'.\n", errout.str());
 
         check("struct A {};\n"
               "class B : public std::vector<const int *> {} b;\n"
@@ -3030,8 +2147,8 @@ private:
               "    printf(\"%p %d\", b[0], b[0]);\n"
               "    printf(\"%p %d\", c[0], c[0]);\n"
               "    printf(\"%p %d\", s.c_str(), s.c_str());\n"
-              "}\n", false, false, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:6]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'size_t {aka unsigned long}'.\n"
+              "}\n", false, true, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:6]: (portability) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'size_t {aka unsigned long}'.\n"
                       "[test.cpp:7]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const int *'.\n"
                       "[test.cpp:8]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const struct A *'.\n"
                       "[test.cpp:9]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const char *'.\n", errout.str());
@@ -3055,16 +2172,16 @@ private:
               "buffer<int> b;\n"
               "void foo() {\n"
               "    printf(\"%u\", b.size());\n"
-              "}\n", false, false, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:7]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+              "}\n", false, true, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:7]: (portability) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
 
         check("DWORD a;\n"
               "DWORD_PTR b;\n"
               "void foo() {\n"
               "    printf(\"%u %u\", a, b);\n"
-              "}\n", false, false, Settings::Win32A);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'DWORD {aka unsigned long}'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'DWORD_PTR {aka unsigned long}'.\n", errout.str());
+              "}\n", false, true, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'DWORD {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (portability) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'DWORD_PTR {aka unsigned long}'.\n", errout.str());
 
         check("unsigned long a[] = { 1, 2 };\n"
               "void foo() {\n"
@@ -3095,10 +2212,10 @@ private:
               "    long * l;\n"
               "    printf(\"%d %x %u %f\", l[i], l[i], l[i], l[i]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'long'.\n"
-                      "[test.cpp:3]: (warning) %x in format string (no. 2) requires 'unsigned int' but the argument type is 'long'.\n"
-                      "[test.cpp:3]: (warning) %u in format string (no. 3) requires 'unsigned int' but the argument type is 'long'.\n"
-                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'long'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'signed long'.\n"
+                      "[test.cpp:3]: (warning) %x in format string (no. 2) requires 'unsigned int' but the argument type is 'signed long'.\n"
+                      "[test.cpp:3]: (warning) %u in format string (no. 3) requires 'unsigned int' but the argument type is 'signed long'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 4) requires 'double' but the argument type is 'signed long'.\n", errout.str());
 
         check("void f() {\n" // #5104
               "    myvector<unsigned short> v1(1,0);\n"
@@ -3145,7 +2262,7 @@ private:
               "    printf( \"%s - %s\", StringByReturnValue(), IntByReturnValue() );\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'std::string'.\n"
-                      "[test.cpp:4]: (warning) %s in format string (no. 2) requires 'char *' but the argument type is 'int'.\n", errout.str());
+                      "[test.cpp:4]: (warning) %s in format string (no. 2) requires 'char *' but the argument type is 'signed int'.\n", errout.str());
 
         check("template <class T, size_t S>\n"
               "struct Array {\n"
@@ -3160,6 +2277,83 @@ private:
         ASSERT_EQUALS("[test.cpp:9]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.\n"
                       "[test.cpp:9]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'float'.\n", errout.str());
 
+        // Ticket #7445
+        check("struct S { unsigned short x; } s = {0};\n"
+              "void foo() {\n"
+              "    printf(\"%d\", s.x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Ticket #7601
+        check("void foo(int i, unsigned int ui, long long ll, unsigned long long ull) {\n"
+              "    printf(\"%Ld %Lu %Ld %Lu\", i, ui, ll, ull);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %Ld in format string (no. 1) requires 'long long' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %Lu in format string (no. 2) requires 'unsigned long long' but the argument type is 'unsigned int'.\n", errout.str());
+
+        check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
+              "    printf(\"%hhd %hhd %hhd %hhd %hhd %hhd %hhd %hhd\", c, uc, s, us, i, ui, l, ul);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hhd in format string (no. 2) requires 'char' but the argument type is 'unsigned char'.\n"
+                      "[test.cpp:2]: (warning) %hhd in format string (no. 3) requires 'char' but the argument type is 'short'.\n"
+                      "[test.cpp:2]: (warning) %hhd in format string (no. 4) requires 'char' but the argument type is 'unsigned short'.\n"
+                      "[test.cpp:2]: (warning) %hhd in format string (no. 5) requires 'char' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hhd in format string (no. 6) requires 'char' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:2]: (warning) %hhd in format string (no. 7) requires 'char' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hhd in format string (no. 8) requires 'char' but the argument type is 'unsigned long'.\n", errout.str());
+
+        check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
+              "    printf(\"%hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu\", c, uc, s, us, i, ui, l, ul);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hhu in format string (no. 1) requires 'unsigned char' but the argument type is 'char'.\n"
+                      "[test.cpp:2]: (warning) %hhu in format string (no. 3) requires 'unsigned char' but the argument type is 'short'.\n"
+                      "[test.cpp:2]: (warning) %hhu in format string (no. 4) requires 'unsigned char' but the argument type is 'unsigned short'.\n"
+                      "[test.cpp:2]: (warning) %hhu in format string (no. 5) requires 'unsigned char' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hhu in format string (no. 6) requires 'unsigned char' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:2]: (warning) %hhu in format string (no. 7) requires 'unsigned char' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hhu in format string (no. 8) requires 'unsigned char' but the argument type is 'unsigned long'.\n", errout.str());
+
+        check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
+              "    printf(\"%hhx %hhx %hhx %hhx %hhx %hhx %hhx %hhx\", c, uc, s, us, i, ui, l, ul);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hhx in format string (no. 3) requires 'unsigned char' but the argument type is 'short'.\n"
+                      "[test.cpp:2]: (warning) %hhx in format string (no. 4) requires 'unsigned char' but the argument type is 'unsigned short'.\n"
+                      "[test.cpp:2]: (warning) %hhx in format string (no. 5) requires 'unsigned char' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hhx in format string (no. 6) requires 'unsigned char' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:2]: (warning) %hhx in format string (no. 7) requires 'unsigned char' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hhx in format string (no. 8) requires 'unsigned char' but the argument type is 'unsigned long'.\n", errout.str());
+
+        check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
+              "    printf(\"%hd %hd %hd %hd %hd %hd %hd %hd\", c, uc, s, us, i, ui, l, ul);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hd in format string (no. 1) requires 'short' but the argument type is 'char'.\n"
+                      "[test.cpp:2]: (warning) %hd in format string (no. 2) requires 'short' but the argument type is 'unsigned char'.\n"
+                      "[test.cpp:2]: (warning) %hd in format string (no. 4) requires 'short' but the argument type is 'unsigned short'.\n"
+                      "[test.cpp:2]: (warning) %hd in format string (no. 5) requires 'short' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hd in format string (no. 6) requires 'short' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:2]: (warning) %hd in format string (no. 7) requires 'short' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hd in format string (no. 8) requires 'short' but the argument type is 'unsigned long'.\n", errout.str());
+
+        check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
+              "    printf(\"%hu %hu %hu %hu %hu %hu %hu %hu\", c, uc, s, us, i, ui, l, ul);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hu in format string (no. 1) requires 'unsigned short' but the argument type is 'char'.\n"
+                      "[test.cpp:2]: (warning) %hu in format string (no. 2) requires 'unsigned short' but the argument type is 'unsigned char'.\n"
+                      "[test.cpp:2]: (warning) %hu in format string (no. 3) requires 'unsigned short' but the argument type is 'short'.\n"
+                      "[test.cpp:2]: (warning) %hu in format string (no. 5) requires 'unsigned short' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hu in format string (no. 6) requires 'unsigned short' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:2]: (warning) %hu in format string (no. 7) requires 'unsigned short' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hu in format string (no. 8) requires 'unsigned short' but the argument type is 'unsigned long'.\n", errout.str());
+
+        check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
+              "    printf(\"%hx %hx %hx %hx %hx %hx %hx %hx\", c, uc, s, us, i, ui, l, ul);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hx in format string (no. 1) requires 'unsigned short' but the argument type is 'char'.\n"
+                      "[test.cpp:2]: (warning) %hx in format string (no. 2) requires 'unsigned short' but the argument type is 'unsigned char'.\n"
+                      "[test.cpp:2]: (warning) %hx in format string (no. 5) requires 'unsigned short' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hx in format string (no. 6) requires 'unsigned short' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:2]: (warning) %hx in format string (no. 7) requires 'unsigned short' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hx in format string (no. 8) requires 'unsigned short' but the argument type is 'unsigned long'.\n", errout.str());
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
@@ -3200,13 +2394,13 @@ private:
               "    printf(\"%I32d %I32u %I32x\", u32, u32, u32);\n"
               "    printf(\"%I64d %I64u %I64x\", i64, i64, i64);\n"
               "    printf(\"%I64d %I64u %I64x\", u64, u64, u64);\n"
-              "}", false, false, Settings::Win32A);
-        ASSERT_EQUALS("[test.cpp:8]: (warning) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka long}'.\n"
-                      "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka int}'.\n"
-                      "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
-                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka long long}'.\n"
-                      "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires '__int64' but the argument type is 'unsigned __int64 {aka unsigned long long}'.\n", errout.str());
+              "}", false, true, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka long}'.\n"
+                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka int}'.\n"
+                      "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
+                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka long long}'.\n"
+                      "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64' but the argument type is 'unsigned __int64 {aka unsigned long long}'.\n", errout.str());
 
         check("void foo() {\n"
               "    size_t s;\n"
@@ -3221,13 +2415,13 @@ private:
               "    printf(\"%I32d %I32u %I32x\", u32, u32, u32);\n"
               "    printf(\"%I64d %I64u %I64x\", i64, i64, i64);\n"
               "    printf(\"%I64d %I64u %I64x\", u64, u64, u64);\n"
-              "}", false, false, Settings::Win64);
-        ASSERT_EQUALS("[test.cpp:8]: (warning) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka long long}'.\n"
-                      "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka int}'.\n"
-                      "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
-                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka long long}'.\n"
-                      "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires '__int64' but the argument type is 'unsigned __int64 {aka unsigned long long}'.\n", errout.str());
+              "}", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka long long}'.\n"
+                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka int}'.\n"
+                      "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
+                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka long long}'.\n"
+                      "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64' but the argument type is 'unsigned __int64 {aka unsigned long long}'.\n", errout.str());
 
         check("void foo() {\n"
               "    size_t s;\n"
@@ -3265,23 +2459,23 @@ private:
         // ticket #5264
         check("void foo(LPARAM lp, WPARAM wp, LRESULT lr) {\n"
               "    printf(\"%Ix %Ix %Ix\", lp, wp, lr);\n"
-              "}\n", false, false, Settings::Win64);
+              "}\n", false, true, Settings::Win64);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(LPARAM lp, WPARAM wp, LRESULT lr) {\n"
               "    printf(\"%Ix %Ix %Ix\", lp, wp, lr);\n"
-              "}\n", false, false, Settings::Win32A);
+              "}\n", false, true, Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(UINT32 a, ::UINT32 b, Fred::UINT32 c) {\n"
               "    printf(\"%d %d %d\n\", a, b, c);\n"
-              "};\n", false, false, Settings::Win32A);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n"
-                      "[test.cpp:2]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n", errout.str());
+              "};\n", false, true, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %d in format string (no. 1) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n"
+                      "[test.cpp:2]: (portability) %d in format string (no. 2) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n", errout.str());
 
         check("void foo(LPCVOID a, ::LPCVOID b, Fred::LPCVOID c) {\n"
               "    printf(\"%d %d %d\n\", a, b, c);\n"
-              "};\n", false, false, Settings::Win32A);
+              "};\n", false, true, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'const void *'.\n"
                       "[test.cpp:2]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const void *'.\n", errout.str());
 
@@ -3301,13 +2495,13 @@ private:
               "    scanf(\"%I32d %I32u %I32x\", &u32, &u32, &u32);\n"
               "    scanf(\"%I64d %I64u %I64x\", &i64, &i64, &i64);\n"
               "    scanf(\"%I64d %I64u %I64x\", &u64, &u64, &u64);\n"
-              "}", false, false, Settings::Win32A);
-        ASSERT_EQUALS("[test.cpp:8]: (warning) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka long *}'.\n"
-                      "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka int *}'.\n"
-                      "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
-                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka long long *}'.\n"
-                      "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout.str());
+              "}", false, true, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
+                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long *}'.\n"
+                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
+                      "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
+                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
+                      "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout.str());
 
         check("void foo() {\n"
               "    size_t s;\n"
@@ -3322,13 +2516,13 @@ private:
               "    scanf(\"%I32d %I32u %I32x\", &u32, &u32, &u32);\n"
               "    scanf(\"%I64d %I64u %I64x\", &i64, &i64, &i64);\n"
               "    scanf(\"%I64d %I64u %I64x\", &u64, &u64, &u64);\n"
-              "}", false, false, Settings::Win64);
-        ASSERT_EQUALS("[test.cpp:8]: (warning) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                      "[test.cpp:9]: (warning) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka long long *}'.\n"
-                      "[test.cpp:10]: (warning) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka int *}'.\n"
-                      "[test.cpp:11]: (warning) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
-                      "[test.cpp:12]: (warning) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka long long *}'.\n"
-                      "[test.cpp:13]: (warning) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout.str());
+              "}", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
+                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long long *}'.\n"
+                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
+                      "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
+                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
+                      "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout.str());
 
         check("void foo() {\n"
               "    size_t s;\n"
@@ -3370,7 +2564,7 @@ private:
               "    String string;\n"
               "    string.Format(\"%I32d\", u32);\n"
               "    string.AppendFormat(\"%I32d\", u32);\n"
-              "}", false, false, Settings::Win32A);
+              "}", false, true, Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
@@ -3378,7 +2572,7 @@ private:
               "    CString string;\n"
               "    string.Format(\"%I32d\", u32);\n"
               "    string.AppendFormat(\"%I32d\", u32);\n"
-              "}", false, false, Settings::Unix32);
+              "}", false, true, Settings::Unix32);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
@@ -3386,9 +2580,11 @@ private:
               "    CString string;\n"
               "    string.Format(\"%I32d\", u32);\n"
               "    string.AppendFormat(\"%I32d\", u32);\n"
-              "}", false, false, Settings::Win32A);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
-                      "[test.cpp:5]: (warning) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n", errout.str());
+              "    CString::Format(\"%I32d\", u32);\n"
+              "}", false, true, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
+                      "[test.cpp:5]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
+                      "[test.cpp:6]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n", errout.str());
     }
 
     void testMicrosoftSecurePrintfArgument() {
@@ -3547,6 +2743,7 @@ private:
         check("void foo() {\n"
               "    char lineBuffer [600];\n"
               "    const char * const format = \"%15s%17s%17s%17s%17s\n\";\n"
+              "    sprintf_s(lineBuffer, 600, format, \"type\", \"sum\", \"avg\", \"min\", \"max\");\n"
               "    sprintf_s(lineBuffer, format, \"type\", \"sum\", \"avg\", \"min\", \"max\");\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
@@ -3554,7 +2751,7 @@ private:
         check("void foo() {\n"
               "    const char * const format1 = \"%15s%17s%17s%17s%17s\n\";\n"
               "    const char format2[] = \"%15s%17s%17s%17s%17s\n\";\n"
-              "    const char * const format3 = format1;\n" // we should warn about this someday
+              "    const char * const format3 = format1;\n"
               "    int i = 0;\n"
               "    sprintf_s(lineBuffer, format1, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "    sprintf_s(lineBuffer, format2, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
@@ -3565,19 +2762,34 @@ private:
               "    printf(format1, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "    printf(format2, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "    printf(format3, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
+              "    sprintf_s(lineBuffer, 100, format1, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
+              "    sprintf_s(lineBuffer, 100, format2, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
+              "    sprintf_s(lineBuffer, 100, format3, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:6]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:6]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
                       "[test.cpp:7]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:7]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
+                      "[test.cpp:8]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:8]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
                       "[test.cpp:9]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:9]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
                       "[test.cpp:10]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:10]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
+                      "[test.cpp:11]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:11]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
                       "[test.cpp:12]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:12]: (warning) printf format string requires 5 parameters but 6 are given.\n"
                       "[test.cpp:13]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
-                      "[test.cpp:13]: (warning) printf format string requires 5 parameters but 6 are given.\n", errout.str());
+                      "[test.cpp:13]: (warning) printf format string requires 5 parameters but 6 are given.\n"
+                      "[test.cpp:14]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:14]: (warning) printf format string requires 5 parameters but 6 are given.\n"
+                      "[test.cpp:15]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:15]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
+                      "[test.cpp:16]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:16]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
+                      "[test.cpp:17]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:17]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n", errout.str());
 
     }
 
@@ -3589,7 +2801,7 @@ private:
               "    _tscanf_s(_T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) _tscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -3599,7 +2811,7 @@ private:
               "    _tscanf_s(_T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) _tscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -3609,7 +2821,7 @@ private:
               "    scanf_s(\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) scanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -3619,7 +2831,7 @@ private:
               "    wscanf_s(L\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) wscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -3630,7 +2842,7 @@ private:
               "    _stscanf_s(txt, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:6]: (warning) _stscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -3641,7 +2853,7 @@ private:
               "    _stscanf_s(txt, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:6]: (warning) _stscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -3652,7 +2864,7 @@ private:
               "    sscanf_s(txt, \"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:6]: (warning) sscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -3663,7 +2875,7 @@ private:
               "    swscanf_s(txt, L\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:6]: (warning) swscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -3673,7 +2885,7 @@ private:
               "    _ftscanf_s(fp, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) _ftscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -3683,7 +2895,7 @@ private:
               "    _ftscanf_s(fp, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) _ftscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -3693,7 +2905,7 @@ private:
               "    fscanf_s(fp, \"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) fscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -3703,7 +2915,7 @@ private:
               "    fwscanf_s(fp, L\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'int *'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
                       "[test.cpp:5]: (warning) fwscanf_s format string requires 6 parameters but 7 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -3711,6 +2923,20 @@ private:
               "    wscanf_s(L\"%4[^-]\", msStr1, _countof(msStr1));\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testQStringFormatArguments() {
+        check("void foo(float f) {\n"
+              "    QString string;\n"
+              "    string.sprintf(\"%d\", f);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'float'.\n", errout.str());
+
+        check("void foo(float f) {\n"
+              "    QString string;\n"
+              "    string = QString::asprintf(\"%d\", f);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'float'.\n", errout.str());
     }
 
     void testTernary() {  // ticket #6182
@@ -3724,6 +2950,37 @@ private:
         check("void test() {\n"
               "    unsigned const x = 5;\n"
               "    printf(\"%u\", x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testAstType() { // ticket #7014
+        check("void test() {\n"
+              "    printf(\"%c\", \"hello\"[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test() {\n"
+              "    printf(\"%lld\", (long long)1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test() {\n"
+              "    printf(\"%i\", (short *)x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %i in format string (no. 1) requires 'int' but the argument type is 'signed short *'.\n", errout.str());
+
+        check("int (*fp)();\n" // #7178 - function pointer call
+              "void test() {\n"
+              "    printf(\"%i\", fp());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testPrintf0WithSuffix() { // ticket #7069
+        check("void foo() {\n"
+              "    printf(\"%u %lu %llu\", 0U, 0UL, 0ULL);\n"
+              "    printf(\"%u %lu %llu\", 0u, 0ul, 0ull);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ public:
         alloctype.erase(varid);
         possibleUsage.erase(varid);
         conditionalAlloc.erase(varid);
+        referenced.erase(varid);
     }
 
     void swap(VarInfo &other) {
@@ -104,7 +105,7 @@ private:
                     std::set<unsigned int> notzero);
 
     /** parse function call */
-    void functionCall(const Token *tok, VarInfo *varInfo, const VarInfo::AllocInfo& allocation);
+    void functionCall(const Token *tok, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
 
     /** parse changes in allocation status */
     void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
@@ -125,10 +126,10 @@ private:
     void configurationInfo(const Token* tok, const std::string &functionName);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckLeakAutoVar c(0, settings, errorLogger);
-        c.deallocReturnError(0, "p");
-        c.configurationInfo(0, "f");  // user configuration is needed to complete analysis
-        c.doubleFreeError(0, "varname", 0);
+        CheckLeakAutoVar c(nullptr, settings, errorLogger);
+        c.deallocReturnError(nullptr, "p");
+        c.configurationInfo(nullptr, "f");  // user configuration is needed to complete analysis
+        c.doubleFreeError(nullptr, "varname", 0);
     }
 
     static std::string myName() {

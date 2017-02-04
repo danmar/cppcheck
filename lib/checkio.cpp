@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include "tokenize.h"
 #include "symboldatabase.h"
+#include "utils.h"
 
 #include <cctype>
 #include <cstdlib>
@@ -32,6 +33,15 @@ namespace {
     CheckIO instance;
 }
 
+// CVE ID used:
+static const CWE CWE119(119U);  // Improper Restriction of Operations within the Bounds of a Memory Buffer
+static const CWE CWE398(398U);  // Indicator of Poor Code Quality
+static const CWE CWE664(664U);  // Improper Control of a Resource Through its Lifetime
+static const CWE CWE685(685U);  // Function Call With Incorrect Number of Arguments
+static const CWE CWE686(686U);  // Function Call With Incorrect Argument Type
+static const CWE CWE687(687U);  // Function Call With Incorrectly Specified Argument Value
+static const CWE CWE704(704U);  // Incorrect Type Conversion or Cast
+static const CWE CWE910(910U);  // Use of Expired File Descriptor
 
 //---------------------------------------------------------------------------
 //    std::cout << std::cout;
@@ -60,7 +70,7 @@ void CheckIO::checkCoutCerrMisusage()
 
 void CheckIO::coutCerrMisusageError(const Token* tok, const std::string& streamName)
 {
-    reportError(tok, Severity::error, "coutCerrMisusage", "Invalid usage of output stream: '<< std::" + streamName + "'.");
+    reportError(tok, Severity::error, "coutCerrMisusage", "Invalid usage of output stream: '<< std::" + streamName + "'.", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -93,13 +103,16 @@ struct Filepointer {
     }
 };
 
+namespace {
+    const std::set<std::string> whitelist = make_container< std::set<std::string> > ()
+                                            << "clearerr" << "feof" << "ferror" << "fgetpos" << "ftell" << "setbuf" << "setvbuf" << "ungetc" << "ungetwc";
+}
+
 void CheckIO::checkFileUsage()
 {
-    static const char* _whitelist[] = {
-        "clearerr", "feof", "ferror", "fgetpos", "ftell", "setbuf", "setvbuf", "ungetc", "ungetwc"
-    };
-    static const std::set<std::string> whitelist(_whitelist, _whitelist + sizeof(_whitelist)/sizeof(*_whitelist));
     const bool windows = _settings->isWindowsPlatform();
+    const bool printPortability = _settings->isEnabled("portability");
+    const bool printWarnings = _settings->isEnabled("warning");
 
     std::map<unsigned int, Filepointer> filepointers;
 
@@ -140,7 +153,7 @@ void CheckIO::checkFileUsage()
                         i->second.lastOperation = Filepointer::UNKNOWN_OP;
                     }
                 }
-            } else if (tok->str() == "return" || tok->str() == "continue" || tok->str() == "break") { // Reset upon return, continue or break
+            } else if (tok->str() == "return" || tok->str() == "continue" || tok->str() == "break" || _settings->library.isnoreturn(tok)) { // Reset upon return, continue or break
                 for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
                     i->second.mode_indent = 0;
                     i->second.mode = UNKNOWN_OM;
@@ -165,7 +178,7 @@ void CheckIO::checkFileUsage()
                     tok->strAt(-1) == "=") {
                     if (tok->str() != "tmpfile") {
                         const Token* modeTok = tok->tokAt(2)->nextArgument();
-                        if (modeTok && modeTok->type() == Token::eString)
+                        if (modeTok && modeTok->tokType() == Token::eString)
                             mode = modeTok->strValue();
                     } else
                         mode = "wb+";
@@ -173,13 +186,13 @@ void CheckIO::checkFileUsage()
                     operation = Filepointer::OPEN;
                 } else if (windows && Token::Match(tok, "fopen_s|freopen_s|_wfopen_s|_wfreopen_s ( & %name%")) {
                     const Token* modeTok = tok->tokAt(2)->nextArgument()->nextArgument();
-                    if (modeTok && modeTok->type() == Token::eString)
+                    if (modeTok && modeTok->tokType() == Token::eString)
                         mode = modeTok->strValue();
                     fileTok = tok->tokAt(3);
                     operation = Filepointer::OPEN;
                 } else if ((tok->str() == "rewind" || tok->str() == "fseek" || tok->str() == "fsetpos" || tok->str() == "fflush") ||
                            (windows && tok->str() == "_fseeki64")) {
-                    if (_settings->isEnabled("portability") && tok->str() == "fflush") {
+                    if (printPortability && tok->str() == "fflush") {
                         fileTok = tok->tokAt(2);
                         if (fileTok) {
                             if (fileTok->str() == "stdin")
@@ -220,7 +233,7 @@ void CheckIO::checkFileUsage()
                     if ((tok->str() == "ungetc" || tok->str() == "ungetwc") && fileTok)
                         fileTok = fileTok->nextArgument();
                     operation = Filepointer::UNIMPORTANT;
-                } else if (!Token::Match(tok, "if|for|while|catch|switch") && _settings->library.functionpure.find(tok->str()) == _settings->library.functionpure.end()) {
+                } else if (!Token::Match(tok, "if|for|while|catch|switch") && !_settings->library.isFunctionConst(tok->str(), true)) {
                     const Token* const end2 = tok->linkAt(1);
                     if (scope->functionOf && scope->functionOf->isClassOrStruct() && !scope->function->isStatic() && ((tok->strAt(-1) != "::" && tok->strAt(-1) != ".") || tok->strAt(-2) == "this")) {
                         if (!tok->function() || (tok->function()->nestedIn && tok->function()->nestedIn->isClassOrStruct())) {
@@ -248,7 +261,7 @@ void CheckIO::checkFileUsage()
                 while (Token::Match(fileTok, "%name% ."))
                     fileTok = fileTok->tokAt(2);
 
-                if (!fileTok || !fileTok->varId())
+                if (!fileTok || !fileTok->varId() || fileTok->strAt(1) == "[")
                     continue;
 
                 if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
@@ -264,13 +277,14 @@ void CheckIO::checkFileUsage()
                             f.append_mode = Filepointer::APPEND_EX;
                         else
                             f.append_mode = Filepointer::APPEND;
-                    }
+                    } else
+                        f.append_mode = Filepointer::UNKNOWN_AM;
                     f.mode_indent = indent;
                     break;
                 case Filepointer::POSITIONING:
                     if (f.mode == CLOSED)
                         useClosedFileError(tok);
-                    else if (f.append_mode == Filepointer::APPEND && tok->str() != "fflush" && _settings->isEnabled("warning"))
+                    else if (f.append_mode == Filepointer::APPEND && tok->str() != "fflush" && printWarnings)
                         seekOnAppendedFileError(tok);
                     break;
                 case Filepointer::READ:
@@ -324,38 +338,38 @@ void CheckIO::checkFileUsage()
 void CheckIO::fflushOnInputStreamError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::portability,
-                "fflushOnInputStream", "fflush() called on input stream '" + varname + "' may result in undefined behaviour on non-linux systems.");
+                "fflushOnInputStream", "fflush() called on input stream '" + varname + "' may result in undefined behaviour on non-linux systems.", CWE398, false);
 }
 
 void CheckIO::ioWithoutPositioningError(const Token *tok)
 {
     reportError(tok, Severity::error,
-                "IOWithoutPositioning", "Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.");
+                "IOWithoutPositioning", "Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.", CWE664, false);
 }
 
 void CheckIO::readWriteOnlyFileError(const Token *tok)
 {
 
     reportError(tok, Severity::error,
-                "readWriteOnlyFile", "Read operation on a file that was opened only for writing.");
+                "readWriteOnlyFile", "Read operation on a file that was opened only for writing.", CWE664, false);
 }
 
 void CheckIO::writeReadOnlyFileError(const Token *tok)
 {
     reportError(tok, Severity::error,
-                "writeReadOnlyFile", "Write operation on a file that was opened only for reading.");
+                "writeReadOnlyFile", "Write operation on a file that was opened only for reading.", CWE664, false);
 }
 
 void CheckIO::useClosedFileError(const Token *tok)
 {
     reportError(tok, Severity::error,
-                "useClosedFile", "Used file that is not opened.");
+                "useClosedFile", "Used file that is not opened.", CWE910, false);
 }
 
 void CheckIO::seekOnAppendedFileError(const Token *tok)
 {
     reportError(tok, Severity::warning,
-                "seekOnAppendedFile", "Repositioning operation performed on a file opened in append mode has no effect.");
+                "seekOnAppendedFile", "Repositioning operation performed on a file opened in append mode has no effect.", CWE398, false);
 }
 
 
@@ -364,12 +378,9 @@ void CheckIO::seekOnAppendedFileError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckIO::invalidScanf()
 {
-    const bool warning = _settings->isEnabled("warning");
-    const bool portability = _settings->isEnabled("portability");
-    if (!warning && !portability)
+    if (!_settings->isEnabled("warning"))
         return;
 
-    const bool windows = _settings->isWindowsPlatform();
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
     std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t j = 0; j < functions; ++j) {
@@ -380,7 +391,7 @@ void CheckIO::invalidScanf()
                 formatToken = tok->tokAt(2);
             else if (Token::Match(tok, "sscanf|vsscanf|fscanf|vfscanf (")) {
                 const Token* nextArg = tok->tokAt(2)->nextArgument();
-                if (nextArg && nextArg->type() == Token::eString)
+                if (nextArg && nextArg->tokType() == Token::eString)
                     formatToken = nextArg;
                 else
                     continue;
@@ -403,10 +414,8 @@ void CheckIO::invalidScanf()
                 }
 
                 else if (std::isalpha((unsigned char)formatstr[i]) || formatstr[i] == '[') {
-                    if (warning && (formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's')))  // #3490 - field width limits are only necessary for string input
-                        invalidScanfError(tok, false);
-                    else if (portability && formatstr[i] != 'n' && formatstr[i] != 'c' && !windows)
-                        invalidScanfError(tok, true); // Warn about libc bug in versions prior to 2.13-25
+                    if (formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's'))  // #3490 - field width limits are only necessary for string input
+                        invalidScanfError(tok);
                     format = false;
                 }
             }
@@ -414,50 +423,30 @@ void CheckIO::invalidScanf()
     }
 }
 
-void CheckIO::invalidScanfError(const Token *tok, bool portability)
+void CheckIO::invalidScanfError(const Token *tok)
 {
-    if (portability)
-        reportError(tok, Severity::portability,
-                    "invalidscanf_libc", "scanf without field width limits can crash with huge input data on some versions of libc.\n"
-                    "scanf without field width limits can crash with huge input data on libc versions older than 2.13-25. Add a field "
-                    "width specifier to fix this problem:\n"
-                    "    %i => %3i\n"
-                    "\n"
-                    "Sample program that can crash:\n"
-                    "\n"
-                    "#include <stdio.h>\n"
-                    "int main()\n"
-                    "{\n"
-                    "    int a;\n"
-                    "    scanf(\"%i\", &a);\n"
-                    "    return 0;\n"
-                    "}\n"
-                    "\n"
-                    "To make it crash:\n"
-                    "perl -e 'print \"5\"x2100000' | ./a.out");
-    else
-        reportError(tok, Severity::warning,
-                    "invalidscanf", "scanf without field width limits can crash with huge input data.\n"
-                    "scanf without field width limits can crash with huge input data. Add a field width "
-                    "specifier to fix this problem:\n"
-                    "    %s => %20s\n"
-                    "\n"
-                    "Sample program that can crash:\n"
-                    "\n"
-                    "#include <stdio.h>\n"
-                    "int main()\n"
-                    "{\n"
-                    "    char c[5];\n"
-                    "    scanf(\"%s\", c);\n"
-                    "    return 0;\n"
-                    "}\n"
-                    "\n"
-                    "Typing in 5 or more characters may make the program crash. The correct usage "
-                    "here is 'scanf(\"%4s\", c);', as the maximum field width does not include the "
-                    "terminating null byte.\n"
-                    "Source: http://linux.die.net/man/3/scanf\n"
-                    "Source: http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/libkern/stdio/scanf.c"
-                   );
+    std::string fname = (tok ? tok->str() : std::string("scanf"));
+    reportError(tok, Severity::warning,
+                "invalidscanf", fname + "() without field width limits can crash with huge input data.\n" +
+                fname + "() without field width limits can crash with huge input data. Add a field width "
+                "specifier to fix this problem.\n"
+                "\n"
+                "Sample program that can crash:\n"
+                "\n"
+                "#include <stdio.h>\n"
+                "int main()\n"
+                "{\n"
+                "    char c[5];\n"
+                "    scanf(\"%s\", c);\n"
+                "    return 0;\n"
+                "}\n"
+                "\n"
+                "Typing in 5 or more characters may make the program crash. The correct usage "
+                "here is 'scanf(\"%4s\", c);', as the maximum field width does not include the "
+                "terminating null byte.\n"
+                "Source: http://linux.die.net/man/3/scanf\n"
+                "Source: http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/libkern/stdio/scanf.c",
+                CWE119, false);
 }
 
 //---------------------------------------------------------------------------
@@ -486,18 +475,8 @@ static bool findFormat(unsigned int arg, const Token *firstArg,
                  argTok->variable()->dimensionKnown(0) &&
                  argTok->variable()->dimension(0) != 0))) {
         *formatArgTok = argTok->nextArgument();
-        *formatStringTok = nullptr;
-        if (argTok->variable()) {
-            const Token *varTok = argTok->variable()->nameToken();
-            if (Token::Match(varTok, "%name% ; %name% = %str% ;") &&
-                varTok->str() == varTok->strAt(2) &&
-                Token::Match(varTok->tokAt(-4), "const char|wchar_t * const")) {
-                *formatStringTok = varTok->tokAt(4);
-            } else if (Token::Match(varTok, "%name% [ %num% ] = %str% ;") &&
-                       Token::Match(varTok->tokAt(-2), "const char|wchar_t")) {
-                *formatStringTok = varTok->tokAt(5);
-            }
-        }
+        if (!argTok->values.empty() && argTok->values.front().isTokValue() && argTok->values.front().tokvalue && argTok->values.front().tokvalue->tokType() == Token::eString)
+            *formatStringTok = argTok->values.front().tokvalue;
         return true;
     }
     return false;
@@ -512,8 +491,7 @@ static inline bool typesMatch(const std::string& iToTest, const std::string& iTy
 void CheckIO::checkWrongPrintfScanfArguments()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const bool warning = _settings->isEnabled("warning");
-    const bool windows = _settings->isWindowsPlatform();
+    const bool isWindows = _settings->isWindowsPlatform();
 
     std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t j = 0; j < functions; ++j) {
@@ -523,44 +501,30 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
             const Token* argListTok = 0; // Points to first va_list argument
             const Token* formatStringTok = 0; // Points to format string token
-            std::string formatString;
 
             bool scan = false;
             bool scanf_s = false;
             int formatStringArgNo = -1;
 
-            if (Token::Match(tok->next(), "( %any%") && _settings->library.formatstr_function(tok->str())) {
-                const std::map<int, Library::ArgumentChecks>& argumentChecks = _settings->library.argumentChecks.at(tok->str());
-                for (std::map<int, Library::ArgumentChecks>::const_iterator i = argumentChecks.begin(); i != argumentChecks.end(); ++i) {
-                    if (i->second.formatstr) {
-                        formatStringArgNo = i->first - 1;
-                        break;
-                    }
-                }
-
-                scan = _settings->library.formatstr_scan(tok->str());
-                scanf_s = _settings->library.formatstr_secure(tok->str());
+            if (tok->strAt(1) == "(" && _settings->library.formatstr_function(tok)) {
+                formatStringArgNo = _settings->library.formatstr_argno(tok);
+                scan = _settings->library.formatstr_scan(tok);
+                scanf_s = _settings->library.formatstr_secure(tok);
             }
 
             if (formatStringArgNo >= 0) {
                 // formatstring found in library. Find format string and first argument belonging to format string.
                 if (!findFormat(static_cast<unsigned int>(formatStringArgNo), tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
-            } else if (windows && Token::Match(tok, "Format|AppendFormat (") &&
-                       Token::Match(tok->tokAt(-2), "%var% .") && tok->tokAt(-2)->variable() &&
-                       tok->tokAt(-2)->variable()->typeStartToken()->str() == "CString") {
-                // Find second parameter and format string
-                if (!findFormat(0, tok->tokAt(2), &formatStringTok, &argListTok))
-                    continue;
             } else if (Token::simpleMatch(tok, "swprintf (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) {
                 // Find third parameter and format string
                 if (!findFormat(1, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
             } else if (Token::simpleMatch(tok, "swprintf (") && !Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) {
-                // Find forth parameter and format string
+                // Find fourth parameter and format string
                 if (!findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
-            } else if (windows && Token::Match(tok, "sprintf_s|swprintf_s (")) {
+            } else if (isWindows && Token::Match(tok, "sprintf_s|swprintf_s (")) {
                 // template <size_t size> int sprintf_s(char (&buffer)[size], const char *format, ...);
                 if (findFormat(1, tok->tokAt(2), &formatStringTok, &argListTok)) {
                     if (!formatStringTok)
@@ -571,7 +535,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                     if (!formatStringTok)
                         continue;
                 }
-            } else if (windows && Token::Match(tok, "_snprintf_s|_snwprintf_s (")) {
+            } else if (isWindows && Token::Match(tok, "_snprintf_s|_snwprintf_s (")) {
                 // template <size_t size> int _snprintf_s(char (&buffer)[size], size_t count, const char *format, ...);
                 if (findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok)) {
                     if (!formatStringTok)
@@ -586,926 +550,1055 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 continue;
             }
 
-            if (formatStringTok)
-                formatString = formatStringTok->str();
-            else
+            if (!formatStringTok)
                 continue;
 
-            // Count format string parameters..
-            unsigned int numFormat = 0;
-            unsigned int numSecure = 0;
-            bool percent = false;
-            const Token* argListTok2 = argListTok;
-            std::set<unsigned int> parameterPositionsUsed;
-            for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
-                if (*i == '%') {
-                    percent = !percent;
-                } else if (percent && *i == '[') {
-                    while (i != formatString.end()) {
-                        if (*i == ']') {
+            checkFormatString(tok, formatStringTok, argListTok, scan, scanf_s);
+        }
+    }
+}
+
+void CheckIO::checkFormatString(const Token * const tok,
+                                const Token * const formatStringTok,
+                                const Token *       argListTok,
+                                const bool scan,
+                                const bool scanf_s)
+{
+    const bool printWarning = _settings->isEnabled("warning");
+    const std::string &formatString = formatStringTok->str();
+
+    // Count format string parameters..
+    unsigned int numFormat = 0;
+    unsigned int numSecure = 0;
+    bool percent = false;
+    const Token* argListTok2 = argListTok;
+    std::set<unsigned int> parameterPositionsUsed;
+    for (std::string::const_iterator i = formatString.begin(); i != formatString.end(); ++i) {
+        if (*i == '%') {
+            percent = !percent;
+        } else if (percent && *i == '[') {
+            while (i != formatString.end()) {
+                if (*i == ']') {
+                    numFormat++;
+                    if (argListTok)
+                        argListTok = argListTok->nextArgument();
+                    percent = false;
+                    break;
+                }
+                ++i;
+            }
+            if (scanf_s) {
+                numSecure++;
+                if (argListTok) {
+                    argListTok = argListTok->nextArgument();
+                }
+            }
+            if (i == formatString.end())
+                break;
+        } else if (percent) {
+            percent = false;
+
+            bool _continue = false;
+            bool skip = false;
+            std::string width;
+            unsigned int parameterPosition = 0;
+            bool hasParameterPosition = false;
+            while (i != formatString.end() && *i != '[' && !std::isalpha((unsigned char)*i)) {
+                if (*i == '*') {
+                    skip = true;
+                    if (scan)
+                        _continue = true;
+                    else {
+                        numFormat++;
+                        if (argListTok)
+                            argListTok = argListTok->nextArgument();
+                    }
+                } else if (std::isdigit(*i)) {
+                    width += *i;
+                } else if (*i == '$') {
+                    parameterPosition = static_cast<unsigned int>(std::atoi(width.c_str()));
+                    hasParameterPosition = true;
+                    width.clear();
+                }
+                ++i;
+            }
+            if (i != formatString.end() && *i == '[') {
+                while (i != formatString.end()) {
+                    if (*i == ']') {
+                        if (!skip) {
                             numFormat++;
                             if (argListTok)
                                 argListTok = argListTok->nextArgument();
-                            percent = false;
-                            break;
                         }
-                        ++i;
-                    }
-                    if (scanf_s) {
-                        numSecure++;
-                        if (argListTok) {
-                            argListTok = argListTok->nextArgument();
-                        }
-                    }
-                    if (i == formatString.end())
                         break;
-                } else if (percent) {
-                    percent = false;
-
-                    bool _continue = false;
-                    bool skip = false;
-                    std::string width;
-                    unsigned int parameterPosition = 0;
-                    bool hasParameterPosition = false;
-                    while (i != formatString.end() && *i != '[' && !std::isalpha((unsigned char)*i)) {
-                        if (*i == '*') {
-                            skip = true;
-                            if (scan)
-                                _continue = true;
-                            else {
-                                numFormat++;
-                                if (argListTok)
-                                    argListTok = argListTok->nextArgument();
-                            }
-                        } else if (std::isdigit(*i)) {
-                            width += *i;
-                        } else if (*i == '$') {
-                            parameterPosition = static_cast<unsigned int>(std::atoi(width.c_str()));
-                            hasParameterPosition = true;
-                            width.clear();
-                        }
-                        ++i;
                     }
-                    if (i != formatString.end() && *i == '[') {
-                        while (i != formatString.end()) {
-                            if (*i == ']') {
-                                if (!skip) {
-                                    numFormat++;
-                                    if (argListTok)
+                    ++i;
+                }
+                if (scanf_s && !skip) {
+                    numSecure++;
+                    if (argListTok) {
+                        argListTok = argListTok->nextArgument();
+                    }
+                }
+                _continue = true;
+            }
+            if (i == formatString.end())
+                break;
+            if (_continue)
+                continue;
+
+            if (scan || *i != 'm') { // %m is a non-standard extension that requires no parameter on print functions.
+                ++numFormat;
+
+                // Handle parameter positions (POSIX extension) - Ticket #4900
+                if (hasParameterPosition) {
+                    if (parameterPositionsUsed.find(parameterPosition) == parameterPositionsUsed.end())
+                        parameterPositionsUsed.insert(parameterPosition);
+                    else // Parameter already referenced, hence don't consider it a new format
+                        --numFormat;
+                }
+
+                // Perform type checks
+                ArgumentInfo argInfo(argListTok, _settings, _tokenizer->isCPP());
+
+                if (argInfo.typeToken && !argInfo.isLibraryType(_settings)) {
+                    if (scan) {
+                        std::string specifier;
+                        bool done = false;
+                        while (!done) {
+                            switch (*i) {
+                            case 's':
+                                specifier += *i;
+                                if (argInfo.variableInfo && argInfo.isKnownType() && argInfo.variableInfo->isArray() && (argInfo.variableInfo->dimensions().size() == 1) && argInfo.variableInfo->dimensions()[0].known) {
+                                    if (!width.empty()) {
+                                        int numWidth = std::atoi(width.c_str());
+                                        if (numWidth != (argInfo.variableInfo->dimension(0) - 1))
+                                            invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, 's');
+                                    }
+                                }
+                                if (argListTok && argListTok->tokType() != Token::eString &&
+                                    argInfo.isKnownType() && argInfo.isArrayOrPointer() &&
+                                    (!Token::Match(argInfo.typeToken, "char|wchar_t") ||
+                                     argInfo.typeToken->strAt(-1) == "const")) {
+                                    if (!(argInfo.isArrayOrPointer() && argInfo.element && !argInfo.typeToken->isStandardType()))
+                                        invalidScanfArgTypeError_s(tok, numFormat, specifier, &argInfo);
+                                }
+                                if (scanf_s) {
+                                    numSecure++;
+                                    if (argListTok) {
                                         argListTok = argListTok->nextArgument();
+                                    }
+                                }
+                                done = true;
+                                break;
+                            case 'c':
+                                if (argInfo.variableInfo && argInfo.isKnownType() && argInfo.variableInfo->isArray() && (argInfo.variableInfo->dimensions().size() == 1) && argInfo.variableInfo->dimensions()[0].known) {
+                                    if (!width.empty()) {
+                                        int numWidth = std::atoi(width.c_str());
+                                        if (numWidth > argInfo.variableInfo->dimension(0))
+                                            invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, 'c');
+                                    }
+                                }
+                                if (scanf_s) {
+                                    numSecure++;
+                                    if (argListTok) {
+                                        argListTok = argListTok->nextArgument();
+                                    }
+                                }
+                                done = true;
+                                break;
+                            case 'x':
+                            case 'X':
+                            case 'o':
+                                specifier += *i;
+                                if (argInfo.typeToken->tokType() == Token::eString)
+                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                else if (argInfo.isKnownType()) {
+                                    if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
+                                        if (argInfo.typeToken->isStandardType() || !argInfo.element)
+                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                    } else if (!argInfo.isArrayOrPointer() ||
+                                               argInfo.typeToken->strAt(-1) == "const") {
+                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                    } else {
+                                        switch (specifier[0]) {
+                                        case 'h':
+                                            if (specifier[1] == 'h') {
+                                                if (argInfo.typeToken->str() != "char")
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            } else if (argInfo.typeToken->str() != "short")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 'l':
+                                            if (specifier[1] == 'l') {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                                else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                         typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
+                                                         typesMatch(argInfo.typeToken->originalName(), "intmax_t", "u"))
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                     typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
+                                                     typesMatch(argInfo.typeToken->originalName(), "intmax_t", "u"))
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 'I':
+                                            if (specifier.find("I64") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            } else if (specifier.find("I32") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            } else if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") &&
+                                                       !typesMatch(argInfo.typeToken->originalName(), "size_t"))
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 'j':
+                                            if (argInfo.typeToken->originalName() != "uintmax_t")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 'z':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 't':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 'L':
+                                            if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        default:
+                                            if (argInfo.typeToken->str() != "int" || !argInfo.typeToken->isUnsigned())
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                     typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
+                                                     typesMatch(argInfo.typeToken->originalName(), "intmax_t", "u"))
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        }
+                                    }
+                                }
+                                done = true;
+                                break;
+                            case 'n':
+                            case 'd':
+                            case 'i':
+                                specifier += *i;
+                                if (argInfo.typeToken->tokType() == Token::eString)
+                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                else if (argInfo.isKnownType()) {
+                                    if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
+                                        if (argInfo.typeToken->isStandardType() || !argInfo.element)
+                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                    } else if (argInfo.typeToken->isUnsigned() ||
+                                               !argInfo.isArrayOrPointer() ||
+                                               argInfo.typeToken->strAt(-1) == "const") {
+                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                    } else {
+                                        switch (specifier[0]) {
+                                        case 'h':
+                                            if (specifier[1] == 'h') {
+                                                if (argInfo.typeToken->str() != "char")
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            } else if (argInfo.typeToken->str() != "short")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            break;
+                                        case 'l':
+                                            if (specifier[1] == 'l') {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                                else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
+                                                         argInfo.typeToken->originalName() == "intmax_t")
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
+                                                     argInfo.typeToken->originalName() == "intmax_t")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            break;
+                                        case 'I':
+                                            if (specifier.find("I64") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            } else if (specifier.find("I32") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            } else if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            break;
+                                        case 'j':
+                                            if (argInfo.typeToken->originalName() != "intmax_t")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            break;
+                                        case 'z':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") &&
+                                                !typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            break;
+                                        case 't':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            break;
+                                        case 'L':
+                                            if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            break;
+                                        default:
+                                            if (argInfo.typeToken->str() != "int")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
+                                                     argInfo.typeToken->originalName() == "intmax_t")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
+                                            break;
+                                        }
+                                    }
+                                }
+                                done = true;
+                                break;
+                            case 'u':
+                                specifier += *i;
+                                if (argInfo.typeToken->tokType() == Token::eString)
+                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                else if (argInfo.isKnownType()) {
+                                    if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
+                                        if (argInfo.typeToken->isStandardType() || !argInfo.element)
+                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                    } else if (!argInfo.typeToken->isUnsigned() ||
+                                               !argInfo.isArrayOrPointer() ||
+                                               argInfo.typeToken->strAt(-1) == "const") {
+                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                    } else {
+                                        switch (specifier[0]) {
+                                        case 'h':
+                                            if (specifier[1] == 'h') {
+                                                if (argInfo.typeToken->str() != "char")
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            } else if (argInfo.typeToken->str() != "short")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 'l':
+                                            if (specifier[1] == 'l') {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                                else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                         argInfo.typeToken->originalName() == "uintmax_t")
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                     argInfo.typeToken->originalName() == "uintmax_t")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 'I':
+                                            if (specifier.find("I64") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            } else if (specifier.find("I32") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
+                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            } else if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 'j':
+                                            if (argInfo.typeToken->originalName() != "uintmax_t")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 'z':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 't':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        case 'L':
+                                            if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                     argInfo.typeToken->originalName() == "uintmax_t")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        default:
+                                            if (argInfo.typeToken->str() != "int")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                     typesMatch(argInfo.typeToken->originalName(), "ssize_t") ||
+                                                     argInfo.typeToken->originalName() == "uintmax_t")
+                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                            break;
+                                        }
+                                    }
+                                }
+                                done = true;
+                                break;
+                            case 'e':
+                            case 'E':
+                            case 'f':
+                            case 'g':
+                            case 'G':
+                            case 'a':
+                                specifier += *i;
+                                if (argInfo.typeToken->tokType() == Token::eString)
+                                    invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                else if (argInfo.isKnownType()) {
+                                    if (!Token::Match(argInfo.typeToken, "float|double")) {
+                                        if (argInfo.typeToken->isStandardType())
+                                            invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                    } else if (!argInfo.isArrayOrPointer() ||
+                                               argInfo.typeToken->strAt(-1) == "const") {
+                                        invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                    } else {
+                                        switch (specifier[0]) {
+                                        case 'l':
+                                            if (specifier[1] == 'l') {
+                                                if (argInfo.typeToken->str() != "double" || !argInfo.typeToken->isLong())
+                                                    invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                            } else if (argInfo.typeToken->str() != "double" || argInfo.typeToken->isLong())
+                                                invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'L':
+                                            if (argInfo.typeToken->str() != "double" || !argInfo.typeToken->isLong())
+                                                invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        default:
+                                            if (argInfo.typeToken->str() != "float")
+                                                invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        }
+                                    }
+                                }
+                                done = true;
+                                break;
+                            case 'I':
+                                if ((i+1 != formatString.end() && *(i+1) == '6' &&
+                                     i+2 != formatString.end() && *(i+2) == '4') ||
+                                    (i+1 != formatString.end() && *(i+1) == '3' &&
+                                     i+2 != formatString.end() && *(i+2) == '2')) {
+                                    specifier += *i++;
+                                    specifier += *i++;
+                                    if ((i+1) != formatString.end() && !isalpha(*(i+1))) {
+                                        specifier += *i;
+                                        invalidLengthModifierError(tok, numFormat, specifier);
+                                        done = true;
+                                    } else {
+                                        specifier += *i++;
+                                    }
+                                } else {
+                                    if ((i+1) != formatString.end() && !isalpha(*(i+1))) {
+                                        specifier += *i;
+                                        invalidLengthModifierError(tok, numFormat, specifier);
+                                        done = true;
+                                    } else {
+                                        specifier += *i++;
+                                    }
                                 }
                                 break;
+                            case 'h':
+                            case 'l':
+                                if (i+1 != formatString.end() && *(i+1) == *i)
+                                    specifier += *i++;
+                            // fallthrough
+                            case 'j':
+                            case 'q':
+                            case 't':
+                            case 'z':
+                            case 'L':
+                                // Expect an alphabetical character after these specifiers
+                                if (i != formatString.end() && !isalpha(*(i+1))) {
+                                    specifier += *i;
+                                    invalidLengthModifierError(tok, numFormat, specifier);
+                                    done = true;
+                                } else {
+                                    specifier += *i++;
+                                }
+                                break;
+                            default:
+                                done = true;
+                                break;
                             }
-                            ++i;
                         }
-                        if (scanf_s && !skip) {
-                            numSecure++;
-                            if (argListTok) {
-                                argListTok = argListTok->nextArgument();
-                            }
-                        }
-                        _continue = true;
-                    }
-                    if (i == formatString.end())
-                        break;
-                    if (_continue)
-                        continue;
-
-                    if (scan || *i != 'm') { // %m is a non-standard extension that requires no parameter on print functions.
-                        ++numFormat;
-
-                        // Handle parameter positions (POSIX extension) - Ticket #4900
-                        if (hasParameterPosition) {
-                            if (parameterPositionsUsed.find(parameterPosition) == parameterPositionsUsed.end())
-                                parameterPositionsUsed.insert(parameterPosition);
-                            else // Parameter already referenced, hence don't consider it a new format
-                                --numFormat;
-                        }
-
-                        // Perform type checks
-                        ArgumentInfo argInfo(argListTok, _settings);
-
-                        if (argInfo.typeToken && !argInfo.isLibraryType(_settings)) {
-                            if (scan) {
-                                std::string specifier;
-                                bool done = false;
-                                while (!done) {
-                                    switch (*i) {
-                                    case 's':
-                                        specifier += *i;
-                                        if (argInfo.variableInfo && argInfo.isKnownType() && argInfo.variableInfo->isArray() && (argInfo.variableInfo->dimensions().size() == 1) && argInfo.variableInfo->dimensions()[0].known) {
-                                            if (!width.empty()) {
-                                                int numWidth = std::atoi(width.c_str());
-                                                if (numWidth != (argInfo.variableInfo->dimension(0) - 1))
-                                                    invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo);
-                                            }
-                                        }
-                                        if (argListTok && argListTok->type() != Token::eString &&
-                                            argInfo.isKnownType() && argInfo.isArrayOrPointer() &&
-                                            (!Token::Match(argInfo.typeToken, "char|wchar_t") ||
-                                             argInfo.typeToken->strAt(-1) == "const")) {
-                                            if (!(argInfo.isArrayOrPointer() && argInfo.element && !argInfo.typeToken->isStandardType()))
-                                                invalidScanfArgTypeError_s(tok, numFormat, specifier, &argInfo);
-                                        }
-                                        if (scanf_s) {
-                                            numSecure++;
-                                            if (argListTok) {
-                                                argListTok = argListTok->nextArgument();
-                                            }
-                                        }
-                                        done = true;
-                                        break;
-                                    case 'c':
-                                        if (scanf_s) {
-                                            numSecure++;
-                                            if (argListTok) {
-                                                argListTok = argListTok->nextArgument();
-                                            }
-                                        }
-                                        done = true;
-                                        break;
-                                    case 'x':
-                                    case 'X':
-                                    case 'o':
-                                        specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
-                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                        else if (argInfo.isKnownType()) {
-                                            if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
-                                                if (argInfo.typeToken->isStandardType() || !argInfo.element)
-                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                            } else if (!argInfo.isArrayOrPointer() ||
-                                                       argInfo.typeToken->strAt(-1) == "const") {
-                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                            } else {
-                                                switch (specifier[0]) {
-                                                case 'h':
-                                                    if (specifier[1] == 'h') {
-                                                        if (argInfo.typeToken->str() != "char")
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    } else if (argInfo.typeToken->str() != "short")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 'l':
-                                                    if (specifier[1] == 'l') {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                        else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                                 typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                                 typesMatch(argInfo.typeToken->originalName(), "intmax_t", "u"))
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                             typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                             typesMatch(argInfo.typeToken->originalName(), "intmax_t", "u"))
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 'I':
-                                                    if (specifier.find("I64") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    } else if (specifier.find("I32") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    } else if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") &&
-                                                               !typesMatch(argInfo.typeToken->originalName(), "size_t"))
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 'j':
-                                                    if (argInfo.typeToken->originalName() != "uintmax_t")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 'z':
-                                                    if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 't':
-                                                    if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 'L':
-                                                    if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                default:
-                                                    if (argInfo.typeToken->str() != "int")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                             typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                             typesMatch(argInfo.typeToken->originalName(), "intmax_t", "u"))
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        done = true;
-                                        break;
-                                    case 'n':
-                                    case 'd':
-                                    case 'i':
-                                        specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
-                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                        else if (argInfo.isKnownType()) {
-                                            if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
-                                                if (argInfo.typeToken->isStandardType() || !argInfo.element)
-                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                            } else if (argInfo.typeToken->isUnsigned() ||
-                                                       !argInfo.isArrayOrPointer() ||
-                                                       argInfo.typeToken->strAt(-1) == "const") {
-                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                            } else {
-                                                switch (specifier[0]) {
-                                                case 'h':
-                                                    if (specifier[1] == 'h') {
-                                                        if (argInfo.typeToken->str() != "char")
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    } else if (argInfo.typeToken->str() != "short")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    break;
-                                                case 'l':
-                                                    if (specifier[1] == 'l') {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                        else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                                 argInfo.typeToken->originalName() == "intmax_t")
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                             argInfo.typeToken->originalName() == "intmax_t")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    break;
-                                                case 'I':
-                                                    if (specifier.find("I64") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    } else if (specifier.find("I32") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    } else if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    break;
-                                                case 'j':
-                                                    if (argInfo.typeToken->originalName() != "intmax_t")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    break;
-                                                case 'z':
-                                                    if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") &&
-                                                        !typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    break;
-                                                case 't':
-                                                    if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    break;
-                                                case 'L':
-                                                    if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    break;
-                                                default:
-                                                    if (argInfo.typeToken->str() != "int")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                             argInfo.typeToken->originalName() == "intmax_t")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        done = true;
-                                        break;
-                                    case 'u':
-                                        specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
-                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                        else if (argInfo.isKnownType()) {
-                                            if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
-                                                if (argInfo.typeToken->isStandardType() || !argInfo.element)
-                                                    invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                            } else if (!argInfo.typeToken->isUnsigned() ||
-                                                       !argInfo.isArrayOrPointer() ||
-                                                       argInfo.typeToken->strAt(-1) == "const") {
-                                                invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                            } else {
-                                                switch (specifier[0]) {
-                                                case 'h':
-                                                    if (specifier[1] == 'h') {
-                                                        if (argInfo.typeToken->str() != "char")
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    } else if (argInfo.typeToken->str() != "short")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 'l':
-                                                    if (specifier[1] == 'l') {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                        else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                                 argInfo.typeToken->originalName() == "uintmax_t")
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                             argInfo.typeToken->originalName() == "uintmax_t")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 'I':
-                                                    if (specifier.find("I64") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    } else if (specifier.find("I32") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
-                                                            invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    } else if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 'j':
-                                                    if (argInfo.typeToken->originalName() != "uintmax_t")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 'z':
-                                                    if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 't':
-                                                    if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                case 'L':
-                                                    if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                             argInfo.typeToken->originalName() == "uintmax_t")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                default:
-                                                    if (argInfo.typeToken->str() != "int")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                             typesMatch(argInfo.typeToken->originalName(), "ssize_t") ||
-                                                             argInfo.typeToken->originalName() == "uintmax_t")
-                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        done = true;
-                                        break;
-                                    case 'e':
-                                    case 'E':
-                                    case 'f':
-                                    case 'g':
-                                    case 'G':
-                                    case 'a':
-                                        specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
-                                            invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                        else if (argInfo.isKnownType()) {
-                                            if (!Token::Match(argInfo.typeToken, "float|double")) {
-                                                if (argInfo.typeToken->isStandardType())
-                                                    invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                            } else if (!argInfo.isArrayOrPointer() ||
-                                                       argInfo.typeToken->strAt(-1) == "const") {
-                                                invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                            } else {
-                                                switch (specifier[0]) {
-                                                case 'l':
-                                                    if (specifier[1] == 'l') {
-                                                        if (argInfo.typeToken->str() != "double" || !argInfo.typeToken->isLong())
-                                                            invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                                    } else if (argInfo.typeToken->str() != "double" || argInfo.typeToken->isLong())
-                                                        invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 'L':
-                                                    if (argInfo.typeToken->str() != "double" || !argInfo.typeToken->isLong())
-                                                        invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                default:
-                                                    if (argInfo.typeToken->str() != "float")
-                                                        invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        done = true;
-                                        break;
-                                    case 'I':
-                                        if ((i+1 != formatString.end() && *(i+1) == '6' &&
-                                             i+2 != formatString.end() && *(i+2) == '4') ||
-                                            (i+1 != formatString.end() && *(i+1) == '3' &&
-                                             i+2 != formatString.end() && *(i+2) == '2')) {
-                                            specifier += *i++;
-                                            specifier += *i++;
-                                            if ((i+1) != formatString.end() && !isalpha(*(i+1))) {
-                                                specifier += *i;
-                                                invalidLengthModifierError(tok, numFormat, specifier);
-                                                done = true;
-                                            } else {
-                                                specifier += *i++;
-                                            }
-                                        } else {
-                                            if ((i+1) != formatString.end() && !isalpha(*(i+1))) {
-                                                specifier += *i;
-                                                invalidLengthModifierError(tok, numFormat, specifier);
-                                                done = true;
-                                            } else {
-                                                specifier += *i++;
-                                            }
-                                        }
-                                        break;
-                                    case 'h':
-                                    case 'l':
-                                        if (i+1 != formatString.end() && *(i+1) == *i)
-                                            specifier += *i++;
-                                        // fallthrough
-                                    case 'j':
-                                    case 'q':
-                                    case 't':
-                                    case 'z':
-                                    case 'L':
-                                        // Expect an alphabetical character after these specifiers
-                                        if (i != formatString.end() && !isalpha(*(i+1))) {
-                                            specifier += *i;
-                                            invalidLengthModifierError(tok, numFormat, specifier);
-                                            done = true;
-                                        } else {
-                                            specifier += *i++;
-                                        }
-                                        break;
-                                    default:
-                                        done = true;
-                                        break;
+                    } else if (!scan && printWarning) {
+                        std::string specifier;
+                        bool done = false;
+                        while (!done) {
+                            switch (*i) {
+                            case 's':
+                                if (argListTok->tokType() != Token::eString &&
+                                    argInfo.isKnownType() && !argInfo.isArrayOrPointer()) {
+                                    if (!Token::Match(argInfo.typeToken, "char|wchar_t")) {
+                                        if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                            invalidPrintfArgTypeError_s(tok, numFormat, &argInfo);
                                     }
                                 }
-                            } else if (!scan && warning) {
-                                std::string specifier;
-                                bool done = false;
-                                while (!done) {
-                                    switch (*i) {
-                                    case 's':
-                                        if (argListTok->type() != Token::eString &&
-                                            argInfo.isKnownType() && !argInfo.isArrayOrPointer()) {
-                                            if (!Token::Match(argInfo.typeToken, "char|wchar_t")) {
-                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
-                                                    invalidPrintfArgTypeError_s(tok, numFormat, &argInfo);
-                                            }
-                                        }
-                                        done = true;
-                                        break;
-                                    case 'n':
-                                        if ((argInfo.isKnownType() && (!argInfo.isArrayOrPointer() || argInfo.typeToken->strAt(-1) == "const")) || argListTok->type() == Token::eString)
-                                            invalidPrintfArgTypeError_n(tok, numFormat, &argInfo);
-                                        done = true;
-                                        break;
-                                    case 'c':
-                                    case 'x':
-                                    case 'X':
-                                    case 'o':
-                                        specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
+                                done = true;
+                                break;
+                            case 'n':
+                                if ((argInfo.isKnownType() && (!argInfo.isArrayOrPointer() || argInfo.typeToken->strAt(-1) == "const")) || argListTok->tokType() == Token::eString)
+                                    invalidPrintfArgTypeError_n(tok, numFormat, &argInfo);
+                                done = true;
+                                break;
+                            case 'c':
+                            case 'x':
+                            case 'X':
+                            case 'o':
+                                specifier += *i;
+                                if (argInfo.typeToken->tokType() == Token::eString)
+                                    invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                else if (argInfo.isKnownType()) {
+                                    if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                        // use %p on pointers and arrays
+                                        invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                    } else if (!Token::Match(argInfo.typeToken, "bool|short|long|int|char|wchar_t")) {
+                                        if (!(!argInfo.isArrayOrPointer() && argInfo.element))
                                             invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                        else if (argInfo.isKnownType()) {
-                                            if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                                // use %p on pointers and arrays
-                                                invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                            } else if (!Token::Match(argInfo.typeToken, "bool|short|long|int|char|wchar_t")) {
-                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                    } else {
+                                        switch (specifier[0]) {
+                                        case 'h':
+                                            if (specifier[1] == 'h') {
+                                                if (argInfo.typeToken->str() != "char")
                                                     invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                            } else {
-                                                switch (specifier[0]) {
-                                                case 'l':
-                                                    if (specifier[1] == 'l') {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                                    } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
-                                                        invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 'j':
-                                                    if (!(argInfo.typeToken->originalName() == "intmax_t" ||
-                                                          argInfo.typeToken->originalName() == "uintmax_t"))
-                                                        invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 'z':
-                                                    if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
-                                                        invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 't':
-                                                    if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
-                                                        invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 'I':
-                                                    if (specifier.find("I64") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                                    } else if (specifier.find("I32") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
-                                                            invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                                    } else if (!(typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                                 typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                                 argInfo.typeToken->originalName() == "WPARAM" ||
-                                                                 argInfo.typeToken->originalName() == "UINT_PTR" ||
-                                                                 argInfo.typeToken->originalName() == "LONG_PTR" ||
-                                                                 argInfo.typeToken->originalName() == "LPARAM" ||
-                                                                 argInfo.typeToken->originalName() == "LRESULT"))
-                                                        invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                default:
-                                                    if (!Token::Match(argInfo.typeToken, "bool|char|short|wchar_t|int"))
-                                                        invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                }
-                                            }
-                                        } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                            // use %p on pointers and arrays
-                                            invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            } else if (argInfo.typeToken->str() != "short")
+                                                invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'l':
+                                            if (specifier[1] == 'l') {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
+                                                invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'j':
+                                            if (!(argInfo.typeToken->originalName() == "intmax_t" ||
+                                                  argInfo.typeToken->originalName() == "uintmax_t"))
+                                                invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'z':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
+                                                invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 't':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
+                                                invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'I':
+                                            if (specifier.find("I64") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            } else if (specifier.find("I32") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
+                                                    invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            } else if (!(typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                         typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
+                                                         argInfo.typeToken->originalName() == "WPARAM" ||
+                                                         argInfo.typeToken->originalName() == "UINT_PTR" ||
+                                                         argInfo.typeToken->originalName() == "LONG_PTR" ||
+                                                         argInfo.typeToken->originalName() == "LPARAM" ||
+                                                         argInfo.typeToken->originalName() == "LRESULT"))
+                                                invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        default:
+                                            if (!Token::Match(argInfo.typeToken, "bool|char|short|wchar_t|int"))
+                                                invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                            break;
                                         }
-                                        done = true;
-                                        break;
-                                    case 'd':
-                                    case 'i':
-                                        specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString) {
+                                    }
+                                } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                    // use %p on pointers and arrays
+                                    invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                }
+                                done = true;
+                                break;
+                            case 'd':
+                            case 'i':
+                                specifier += *i;
+                                if (argInfo.typeToken->tokType() == Token::eString) {
+                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                } else if (argInfo.isKnownType()) {
+                                    if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                        // use %p on pointers and arrays
+                                        invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                    } else if (argInfo.typeToken->isUnsigned() && !Token::Match(argInfo.typeToken, "char|short")) {
+                                        if (!(!argInfo.isArrayOrPointer() && argInfo.element))
                                             invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                        } else if (argInfo.isKnownType()) {
-                                            if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                                // use %p on pointers and arrays
+                                    } else if (!Token::Match(argInfo.typeToken, "bool|char|short|int|long")) {
+                                        if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                            invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                    } else {
+                                        switch (specifier[0]) {
+                                        case 'h':
+                                            if (specifier[1] == 'h') {
+                                                if (!(argInfo.typeToken->str() == "char" && !argInfo.typeToken->isUnsigned()))
+                                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            } else if (!(argInfo.typeToken->str() == "short" && !argInfo.typeToken->isUnsigned()))
                                                 invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                            } else if (argInfo.typeToken->isUnsigned() && !Token::Match(argInfo.typeToken, "char|short")) {
-                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                            break;
+                                        case 'l':
+                                            if (specifier[1] == 'l') {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                     invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                            } else if (!Token::Match(argInfo.typeToken, "bool|char|short|int|long")) {
-                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                                else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
+                                                         argInfo.typeToken->originalName() == "intmax_t")
                                                     invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                            } else {
-                                                switch (specifier[0]) {
-                                                case 'l':
-                                                    if (specifier[1] == 'l') {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                        else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                                 argInfo.typeToken->originalName() == "intmax_t")
-                                                            invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                    } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
-                                                        invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                    else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                             argInfo.typeToken->originalName() == "intmax_t")
-                                                        invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 'j':
-                                                    if (argInfo.typeToken->originalName() != "intmax_t")
-                                                        invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 't':
-                                                    if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
-                                                        invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 'I':
-                                                    if (specifier.find("I64") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                    } else if (specifier.find("I32") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
-                                                            invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                    } else if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
-                                                        invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 'z':
-                                                    if (!typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
-                                                        invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                default:
-                                                    if (!Token::Match(argInfo.typeToken, "bool|char|short|int"))
-                                                        invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                    else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                             argInfo.typeToken->originalName() == "intmax_t")
-                                                        invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                }
-                                            }
-                                        } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                            // use %p on pointers and arrays
-                                            invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                        }
-                                        done = true;
-                                        break;
-                                    case 'u':
-                                        specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString) {
-                                            invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                        } else if (argInfo.isKnownType()) {
-                                            if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                                // use %p on pointers and arrays
+                                            } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
+                                                     argInfo.typeToken->originalName() == "intmax_t")
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'j':
+                                            if (argInfo.typeToken->originalName() != "intmax_t")
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 't':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'I':
+                                            if (specifier.find("I64") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            } else if (specifier.find("I32") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
+                                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            } else if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'z':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
                                                 invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                            } else if (!argInfo.typeToken->isUnsigned() && argInfo.typeToken->str() != "bool") {
-                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
-                                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                            } else if (!Token::Match(argInfo.typeToken, "bool|char|short|long|int")) {
-                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
-                                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                            } else {
-                                                switch (specifier[0]) {
-                                                case 'l':
-                                                    if (specifier[1] == 'l') {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                        else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                                 argInfo.typeToken->originalName() == "uintmax_t")
-                                                            invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
-                                                        invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                             argInfo.typeToken->originalName() == "uintmax_t")
-                                                        invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 'j':
-                                                    if (argInfo.typeToken->originalName() != "uintmax_t")
-                                                        invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 'z':
-                                                    if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
-                                                        invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                case 'I':
-                                                    if (specifier.find("I64") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
-                                                            invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    } else if (specifier.find("I32") != std::string::npos) {
-                                                        if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
-                                                            invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    } else if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
-                                                        invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                default:
-                                                    if (!Token::Match(argInfo.typeToken, "bool|char|short|int"))
-                                                        invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                             argInfo.typeToken->originalName() == "intmax_t")
-                                                        invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    break;
-                                                }
-                                            }
-                                        } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                            break;
+                                        case 'L':
+                                            if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        default:
+                                            if (!Token::Match(argInfo.typeToken, "bool|char|short|int"))
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
+                                                     argInfo.typeToken->originalName() == "intmax_t")
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        }
+                                    }
+                                } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                    // use %p on pointers and arrays
+                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                }
+                                done = true;
+                                break;
+                            case 'u':
+                                specifier += *i;
+                                if (argInfo.typeToken->tokType() == Token::eString) {
+                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                } else if (argInfo.isKnownType()) {
+                                    if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                        // use %p on pointers and arrays
+                                        invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                    } else if (!argInfo.typeToken->isUnsigned() && argInfo.typeToken->str() != "bool") {
+                                        if (!(!argInfo.isArrayOrPointer() && argInfo.element))
                                             invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                    } else if (!Token::Match(argInfo.typeToken, "bool|char|short|long|int")) {
+                                        if (!(!argInfo.isArrayOrPointer() && argInfo.element))
+                                            invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                    } else {
+                                        switch (specifier[0]) {
+                                        case 'h':
+                                            if (specifier[1] == 'h') {
+                                                if (!(argInfo.typeToken->str() == "char" && argInfo.typeToken->isUnsigned()))
+                                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            } else if (!(argInfo.typeToken->str() == "short" && argInfo.typeToken->isUnsigned()))
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'l':
+                                            if (specifier[1] == 'l') {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                                else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                         argInfo.typeToken->originalName() == "uintmax_t")
+                                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                     argInfo.typeToken->originalName() == "uintmax_t")
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'j':
+                                            if (argInfo.typeToken->originalName() != "uintmax_t")
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'z':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'I':
+                                            if (specifier.find("I64") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            } else if (specifier.find("I32") != std::string::npos) {
+                                                if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
+                                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            } else if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        case 'L':
+                                            if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            break;
+                                        default:
+                                            if (!Token::Match(argInfo.typeToken, "bool|char|short|int"))
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                     argInfo.typeToken->originalName() == "intmax_t")
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            break;
                                         }
-                                        done = true;
-                                        break;
-                                    case 'p':
-                                        if (argInfo.typeToken->type() == Token::eString)
-                                            invalidPrintfArgTypeError_p(tok, numFormat, &argInfo);
-                                        else if (argInfo.isKnownType() && !argInfo.isArrayOrPointer())
-                                            invalidPrintfArgTypeError_p(tok, numFormat, &argInfo);
-                                        done = true;
-                                        break;
-                                    case 'e':
-                                    case 'E':
-                                    case 'f':
-                                    case 'g':
-                                    case 'G':
-                                        specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
+                                    }
+                                } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                }
+                                done = true;
+                                break;
+                            case 'p':
+                                if (argInfo.typeToken->tokType() == Token::eString)
+                                    invalidPrintfArgTypeError_p(tok, numFormat, &argInfo);
+                                else if (argInfo.isKnownType() && !argInfo.isArrayOrPointer())
+                                    invalidPrintfArgTypeError_p(tok, numFormat, &argInfo);
+                                done = true;
+                                break;
+                            case 'e':
+                            case 'E':
+                            case 'f':
+                            case 'g':
+                            case 'G':
+                                specifier += *i;
+                                if (argInfo.typeToken->tokType() == Token::eString)
+                                    invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                else if (argInfo.isKnownType()) {
+                                    if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                        // use %p on pointers and arrays
+                                        invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                    } else if (!Token::Match(argInfo.typeToken, "float|double")) {
+                                        if (!(!argInfo.isArrayOrPointer() && argInfo.element))
                                             invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                        else if (argInfo.isKnownType()) {
-                                            if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                                // use %p on pointers and arrays
-                                                invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                            } else if (!Token::Match(argInfo.typeToken, "float|double")) {
-                                                if (!(!argInfo.isArrayOrPointer() && argInfo.element))
-                                                    invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                            } else if ((specifier[0] == 'L' && (!argInfo.typeToken->isLong() || argInfo.typeToken->str() != "double")) ||
-                                                       (specifier[0] != 'L' && argInfo.typeToken->isLong()))
-                                                invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                        } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                            // use %p on pointers and arrays
-                                            invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                        }
-                                        done = true;
-                                        break;
-                                    case 'h': // Can be 'hh' (signed char or unsigned char) or 'h' (short int or unsigned short int)
-                                    case 'l': // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
-                                        // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
-                                        if (i != formatString.end() && *(i+1) == *i) {
-                                            if (i+1 != formatString.end()) {
-                                                if (!isalpha(*(i+2))) {
-                                                    std::string modifier;
-                                                    modifier += *i;
-                                                    modifier += *(i+1);
-                                                    invalidLengthModifierError(tok, numFormat, modifier);
-                                                    done = true;
-                                                } else {
-                                                    specifier = *i++;
-                                                    specifier += *i++;
-                                                }
-                                            } else {
-                                                done = true;
-                                            }
-                                        } else {
-                                            if (i != formatString.end()) {
-                                                if (!isalpha(*(i+1))) {
-                                                    std::string modifier;
-                                                    modifier += *i;
-                                                    invalidLengthModifierError(tok, numFormat, modifier);
-                                                    done = true;
-                                                } else {
-                                                    specifier = *i++;
-                                                }
-                                            } else {
-                                                done = true;
-                                            }
-                                        }
-                                        break;
-                                    case 'I': // Microsoft extension: I for size_t and ptrdiff_t, I32 for __int32, and I64 for __int64
-                                        if ((*(i+1) == '3' && *(i+2) == '2') ||
-                                            (*(i+1) == '6' && *(i+2) == '4')) {
-                                            specifier += *i++;
-                                            specifier += *i++;
-                                        }
-                                        // fallthrough
-                                    case 'j': // intmax_t or uintmax_t
-                                    case 'z': // size_t
-                                    case 't': // ptrdiff_t
-                                    case 'L': // long double
-                                        // Expect an alphabetical character after these specifiers
-                                        if (i != formatString.end() && !isalpha(*(i+1))) {
-                                            specifier += *i;
-                                            invalidLengthModifierError(tok, numFormat, specifier);
+                                    } else if ((specifier[0] == 'L' && (!argInfo.typeToken->isLong() || argInfo.typeToken->str() != "double")) ||
+                                               (specifier[0] != 'L' && argInfo.typeToken->isLong()))
+                                        invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                    // use %p on pointers and arrays
+                                    invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                }
+                                done = true;
+                                break;
+                            case 'h': // Can be 'hh' (signed char or unsigned char) or 'h' (short int or unsigned short int)
+                            case 'l': // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
+                                // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
+                                if (i != formatString.end() && *(i+1) == *i) {
+                                    if (i+1 != formatString.end()) {
+                                        if (!isalpha(*(i+2))) {
+                                            std::string modifier;
+                                            modifier += *i;
+                                            modifier += *(i+1);
+                                            invalidLengthModifierError(tok, numFormat, modifier);
                                             done = true;
                                         } else {
+                                            specifier = *i++;
                                             specifier += *i++;
                                         }
-                                        break;
-                                    default:
+                                    } else {
                                         done = true;
-                                        break;
+                                    }
+                                } else {
+                                    if (i != formatString.end()) {
+                                        if (!isalpha(*(i+1))) {
+                                            std::string modifier;
+                                            modifier += *i;
+                                            invalidLengthModifierError(tok, numFormat, modifier);
+                                            done = true;
+                                        } else {
+                                            specifier = *i++;
+                                        }
+                                    } else {
+                                        done = true;
                                     }
                                 }
+                                break;
+                            case 'I': // Microsoft extension: I for size_t and ptrdiff_t, I32 for __int32, and I64 for __int64
+                                if ((*(i+1) == '3' && *(i+2) == '2') ||
+                                    (*(i+1) == '6' && *(i+2) == '4')) {
+                                    specifier += *i++;
+                                    specifier += *i++;
+                                }
+                            // fallthrough
+                            case 'j': // intmax_t or uintmax_t
+                            case 'z': // size_t
+                            case 't': // ptrdiff_t
+                            case 'L': // long double
+                                // Expect an alphabetical character after these specifiers
+                                if (i != formatString.end() && !isalpha(*(i+1))) {
+                                    specifier += *i;
+                                    invalidLengthModifierError(tok, numFormat, specifier);
+                                    done = true;
+                                } else {
+                                    specifier += *i++;
+                                }
+                                break;
+                            default:
+                                done = true;
+                                break;
                             }
                         }
-
-                        if (argListTok)
-                            argListTok = argListTok->nextArgument(); // Find next argument
                     }
                 }
-            }
 
-            // Count printf/scanf parameters..
-            unsigned int numFunction = 0;
-            while (argListTok2) {
-                numFunction++;
-                argListTok2 = argListTok2->nextArgument(); // Find next argument
+                if (argListTok)
+                    argListTok = argListTok->nextArgument(); // Find next argument
             }
-
-            if (warning) {
-                // Check that all parameter positions reference an actual parameter
-                for (std::set<unsigned int>::const_iterator it = parameterPositionsUsed.begin() ; it != parameterPositionsUsed.end() ; ++it) {
-                    if ((*it == 0) || (*it > numFormat))
-                        wrongPrintfScanfPosixParameterPositionError(tok, tok->str(), *it, numFormat);
-                }
-            }
-
-            // Mismatching number of parameters => warning
-            if ((numFormat + numSecure) != numFunction)
-                wrongPrintfScanfArgumentsError(tok, tok->originalName().empty() ? tok->str() : tok->originalName(), numFormat + numSecure, numFunction);
         }
     }
+
+    // Count printf/scanf parameters..
+    unsigned int numFunction = 0;
+    while (argListTok2) {
+        numFunction++;
+        argListTok2 = argListTok2->nextArgument(); // Find next argument
+    }
+
+    if (printWarning) {
+        // Check that all parameter positions reference an actual parameter
+        for (std::set<unsigned int>::const_iterator it = parameterPositionsUsed.begin() ; it != parameterPositionsUsed.end() ; ++it) {
+            if ((*it == 0) || (*it > numFormat))
+                wrongPrintfScanfPosixParameterPositionError(tok, tok->str(), *it, numFormat);
+        }
+    }
+
+    // Mismatching number of parameters => warning
+    if ((numFormat + numSecure) != numFunction)
+        wrongPrintfScanfArgumentsError(tok, tok->originalName().empty() ? tok->str() : tok->originalName(), numFormat + numSecure, numFunction);
 }
 
 // We currently only support string literals, variables, and functions.
 /// @todo add non-string literals, and generic expressions
 
-CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
-    : variableInfo(0)
-    , typeToken(0)
-    , functionInfo(0)
+CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings, bool _isCPP)
+    : variableInfo(nullptr)
+    , typeToken(nullptr)
+    , functionInfo(nullptr)
+    , tempToken(nullptr)
     , element(false)
     , _template(false)
     , address(false)
-    , tempToken(0)
+    , isCPP(_isCPP)
 {
-    if (tok) {
-        if (tok->type() == Token::eString) {
-            typeToken = tok;
+    if (!tok)
+        return;
+
+    // Use AST type info
+    // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
+    if (!Token::Match(tok, "%str%|%name% ,|)")) {
+        const Token *top = tok;
+        while (top->astParent() && top->astParent()->str() != "," && !(top->astParent()->str() == "(" && top->astParent()->astOperand2()))
+            top = top->astParent();
+        const ValueType *valuetype = top->argumentType();
+        if (valuetype && valuetype->type >= ValueType::Type::BOOL) {
+            typeToken = tempToken = new Token(0);
+            if (valuetype->constness & 1) {
+                tempToken->str("const");
+                tempToken->insertToken("a");
+                tempToken = tempToken->next();
+            }
+            if (valuetype->type == ValueType::BOOL)
+                tempToken->str("bool");
+            else if (valuetype->type == ValueType::CHAR)
+                tempToken->str("char");
+            else if (valuetype->type == ValueType::SHORT)
+                tempToken->str("short");
+            else if (valuetype->type == ValueType::INT)
+                tempToken->str("int");
+            else if (valuetype->type == ValueType::LONG)
+                tempToken->str("long");
+            else if (valuetype->type == ValueType::LONGLONG) {
+                tempToken->str("long");
+                tempToken->isLong(true);
+            } else if (valuetype->type == ValueType::FLOAT)
+                tempToken->str("float");
+            else if (valuetype->type == ValueType::DOUBLE)
+                tempToken->str("double");
+            else if (valuetype->type == ValueType::LONGDOUBLE) {
+                tempToken->str("double");
+                tempToken->isLong(true);
+            }
+            if (valuetype->isIntegral()) {
+                if (valuetype->sign == ValueType::Sign::UNSIGNED)
+                    tempToken->isUnsigned(true);
+                else if (valuetype->sign == ValueType::Sign::SIGNED)
+                    tempToken->isSigned(true);
+            }
+            if (!valuetype->originalTypeName.empty())
+                tempToken->originalName(valuetype->originalTypeName);
+            for (unsigned int p = 0; p < valuetype->pointer; p++)
+                tempToken->insertToken("*");
+            tempToken = const_cast<Token*>(typeToken);
             return;
-        } else if (tok->str() == "&" || tok->type() == Token::eVariable ||
-                   tok->type() == Token::eFunction || Token::Match(tok, "%type% ::") ||
-                   (Token::Match(tok, "static_cast|reinterpret_cast|const_cast <") &&
-                    Token::simpleMatch(tok->linkAt(1), "> (") &&
-                    Token::Match(tok->linkAt(1)->linkAt(1), ") ,|)"))) {
-            if (Token::Match(tok, "static_cast|reinterpret_cast|const_cast")) {
-                typeToken = tok->tokAt(2);
-                while (typeToken->str() == "const" || typeToken->str() == "extern")
-                    typeToken = typeToken->next();
-                return;
-            }
-            if (tok->str() == "&") {
-                address = true;
-                tok = tok->next();
-            }
-            while (Token::Match(tok, "%type% ::"))
-                tok = tok->tokAt(2);
-            if (!tok || !(tok->type() == Token::eVariable || tok->type() == Token::eFunction))
-                return;
-            const Token *varTok = nullptr;
-            const Token *tok1 = tok->next();
-            for (; tok1; tok1 = tok1->next()) {
-                if (tok1->str() == "," || tok1->str() == ")") {
-                    if (tok1->previous()->str() == "]") {
-                        varTok = tok1->linkAt(-1)->previous();
-                        if (varTok->str() == ")" && varTok->link()->previous()->type() == Token::eFunction) {
-                            const Function * function = varTok->link()->previous()->function();
-                            if (function && function->retDef) {
-                                typeToken = function->retDef;
-                                while (typeToken->str() == "const" || typeToken->str() == "extern")
-                                    typeToken = typeToken->next();
-                                functionInfo = function;
-                                element = true;
+        }
+    }
+
+
+    if (tok->tokType() == Token::eString) {
+        typeToken = tok;
+        return;
+    } else if (tok->str() == "&" || tok->tokType() == Token::eVariable ||
+               tok->tokType() == Token::eFunction || Token::Match(tok, "%type% ::") ||
+               (Token::Match(tok, "static_cast|reinterpret_cast|const_cast <") &&
+                Token::simpleMatch(tok->linkAt(1), "> (") &&
+                Token::Match(tok->linkAt(1)->linkAt(1), ") ,|)"))) {
+        if (Token::Match(tok, "static_cast|reinterpret_cast|const_cast")) {
+            typeToken = tok->tokAt(2);
+            while (typeToken->str() == "const" || typeToken->str() == "extern")
+                typeToken = typeToken->next();
+            return;
+        }
+        if (tok->str() == "&") {
+            address = true;
+            tok = tok->next();
+        }
+        while (Token::Match(tok, "%type% ::"))
+            tok = tok->tokAt(2);
+        if (!tok || !(tok->tokType() == Token::eVariable || tok->tokType() == Token::eFunction))
+            return;
+        const Token *varTok = nullptr;
+        const Token *tok1 = tok->next();
+        for (; tok1; tok1 = tok1->next()) {
+            if (tok1->str() == "," || tok1->str() == ")") {
+                if (tok1->previous()->str() == "]") {
+                    varTok = tok1->linkAt(-1)->previous();
+                    if (varTok->str() == ")" && varTok->link()->previous()->tokType() == Token::eFunction) {
+                        const Function * function = varTok->link()->previous()->function();
+                        if (function && function->retType && function->retType->isEnumType()) {
+                            if (function->retType->classScope->enumType)
+                                typeToken = function->retType->classScope->enumType;
+                            else {
+                                tempToken = new Token(0);
+                                tempToken->fileIndex(tok1->fileIndex());
+                                tempToken->linenr(tok1->linenr());
+                                tempToken->str("int");
+                                typeToken = tempToken;
                             }
-                            return;
-                        }
-                    } else if (tok1->previous()->str() == ")" && tok1->linkAt(-1)->previous()->type() == Token::eFunction) {
-                        const Function * function = tok1->linkAt(-1)->previous()->function();
-                        if (function && function->retDef) {
+                        } else if (function && function->retDef) {
                             typeToken = function->retDef;
                             while (typeToken->str() == "const" || typeToken->str() == "extern")
                                 typeToken = typeToken->next();
                             functionInfo = function;
-                            element = false;
+                            element = true;
                         }
                         return;
-                    } else
-                        varTok = tok1->previous();
-                    break;
-                } else if (tok1->str() == "(" || tok1->str() == "{" || tok1->str() == "[")
-                    tok1 = tok1->link();
-                else if (tok1->link() && tok1->str() == "<")
-                    tok1 = tok1->link();
-
-                // check for some common well known functions
-                else if ((Token::Match(tok1->previous(), "%var% . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous())) ||
-                         (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous()->link()->previous()))) {
-                    tempToken = new Token(0);
-                    tempToken->fileIndex(tok1->fileIndex());
-                    tempToken->linenr(tok1->linenr());
-                    if (tok1->next()->str() == "size") {
-                        // size_t is platform dependent
-                        if (settings->sizeof_size_t == 8) {
-                            tempToken->str("long");
-                            if (settings->sizeof_long != 8)
-                                tempToken->isLong(true);
-                        } else if (settings->sizeof_size_t == 4) {
-                            if (settings->sizeof_long == 4) {
-                                tempToken->str("long");
-                            } else {
-                                tempToken->str("int");
-                            }
+                    }
+                } else if (tok1->previous()->str() == ")" && tok1->linkAt(-1)->previous()->tokType() == Token::eFunction) {
+                    const Function * function = tok1->linkAt(-1)->previous()->function();
+                    if (function && function->retType && function->retType->isEnumType()) {
+                        if (function->retType->classScope->enumType)
+                            typeToken = function->retType->classScope->enumType;
+                        else {
+                            tempToken = new Token(0);
+                            tempToken->fileIndex(tok1->fileIndex());
+                            tempToken->linenr(tok1->linenr());
+                            tempToken->str("int");
+                            typeToken = tempToken;
                         }
-
-                        tempToken->originalName("size_t");
-                        tempToken->isUnsigned(true);
-                    } else if (tok1->next()->str() == "empty") {
-                        tempToken->str("bool");
-                    } else if (tok1->next()->str() == "c_str") {
-                        tempToken->str("const");
-                        tempToken->insertToken("*");
-                        if (typeToken->strAt(2) == "string")
-                            tempToken->insertToken("char");
-                        else
-                            tempToken->insertToken("wchar_t");
+                    } else if (function && function->retDef) {
+                        typeToken = function->retDef;
+                        while (typeToken->str() == "const" || typeToken->str() == "extern")
+                            typeToken = typeToken->next();
+                        functionInfo = function;
+                        element = false;
                     }
-                    typeToken = tempToken;
                     return;
-                }
-
-                // check for std::vector::at() and std::string::at()
-                else if (Token::Match(tok1->previous(), "%var% . at (") &&
-                         Token::Match(tok1->linkAt(2), ") [,)]")) {
+                } else
                     varTok = tok1->previous();
-                    variableInfo = varTok->variable();
+                break;
+            } else if (tok1->str() == "(" || tok1->str() == "{" || tok1->str() == "[")
+                tok1 = tok1->link();
+            else if (tok1->link() && tok1->str() == "<")
+                tok1 = tok1->link();
 
-                    if (!variableInfo || !isStdVectorOrString()) {
-                        variableInfo = 0;
-                        typeToken = 0;
+            // check for some common well known functions
+            else if (isCPP && ((Token::Match(tok1->previous(), "%var% . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous())) ||
+                               (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous()->link()->previous())))) {
+                tempToken = new Token(0);
+                tempToken->fileIndex(tok1->fileIndex());
+                tempToken->linenr(tok1->linenr());
+                if (tok1->next()->str() == "size") {
+                    // size_t is platform dependent
+                    if (settings->sizeof_size_t == 8) {
+                        tempToken->str("long");
+                        if (settings->sizeof_long != 8)
+                            tempToken->isLong(true);
+                    } else if (settings->sizeof_size_t == 4) {
+                        if (settings->sizeof_long == 4) {
+                            tempToken->str("long");
+                        } else {
+                            tempToken->str("int");
+                        }
                     }
 
-                    return;
-                } else if (!(tok1->str() == "." || tok1->type() == Token::eVariable || tok1->type() == Token::eFunction))
-                    return;
+                    tempToken->originalName("size_t");
+                    tempToken->isUnsigned(true);
+                } else if (tok1->next()->str() == "empty") {
+                    tempToken->str("bool");
+                } else if (tok1->next()->str() == "c_str") {
+                    tempToken->str("const");
+                    tempToken->insertToken("*");
+                    if (typeToken->strAt(2) == "string")
+                        tempToken->insertToken("char");
+                    else
+                        tempToken->insertToken("wchar_t");
+                }
+                typeToken = tempToken;
+                return;
             }
 
-            if (varTok) {
+            // check for std::vector::at() and std::string::at()
+            else if (Token::Match(tok1->previous(), "%var% . at (") &&
+                     Token::Match(tok1->linkAt(2), ") [,)]")) {
+                varTok = tok1->previous();
                 variableInfo = varTok->variable();
-                element = tok1->previous()->str() == "]";
 
-                // look for std::vector operator [] and use template type as return type
-                if (variableInfo) {
-                    if (element && isStdVectorOrString()) { // isStdVectorOrString sets type token if true
-                        element = false;    // not really an array element
-                    } else
-                        typeToken = variableInfo->typeStartToken();
+                if (!variableInfo || !isStdVectorOrString()) {
+                    variableInfo = 0;
+                    typeToken = 0;
                 }
 
                 return;
+            } else if (!(tok1->str() == "." || tok1->tokType() == Token::eVariable || tok1->tokType() == Token::eFunction))
+                return;
+        }
+
+        if (varTok) {
+            variableInfo = varTok->variable();
+            element = tok1->previous()->str() == "]";
+
+            // look for std::vector operator [] and use template type as return type
+            if (variableInfo) {
+                if (element && isStdVectorOrString()) { // isStdVectorOrString sets type token if true
+                    element = false;    // not really an array element
+                } else if (variableInfo->isEnumType()) {
+                    if (variableInfo->type() && variableInfo->type()->classScope && variableInfo->type()->classScope->enumType)
+                        typeToken = variableInfo->type()->classScope->enumType;
+                    else {
+                        tempToken = new Token(0);
+                        tempToken->fileIndex(tok1->fileIndex());
+                        tempToken->linenr(tok1->linenr());
+                        tempToken->str("int");
+                        typeToken = tempToken;
+                    }
+                } else
+                    typeToken = variableInfo->typeStartToken();
             }
+
+            return;
         }
     }
 }
@@ -1520,17 +1613,15 @@ CheckIO::ArgumentInfo::~ArgumentInfo()
     }
 }
 
+namespace {
+    const std::set<std::string> stl_vector = make_container< std::set<std::string> >() << "array" << "vector";
+    const std::set<std::string> stl_string = make_container< std::set<std::string> >() << "string" << "u16string" << "u32string" << "wstring";
+}
+
 bool CheckIO::ArgumentInfo::isStdVectorOrString()
 {
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_vector[] = {
-        "array", "vector"
-    };
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_string[] = {
-        "string", "u16string", "u32string", "wstring"
-    };
-
+    if (!isCPP)
+        return false;
     if (variableInfo->isStlType(stl_vector)) {
         typeToken = variableInfo->typeStartToken()->tokAt(4);
         _template = true;
@@ -1546,16 +1637,18 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
         typeToken = tempToken;
         return true;
     } else if (variableInfo->type() && !variableInfo->type()->derivedFrom.empty()) {
-        for (std::size_t i = 0, e = variableInfo->type()->derivedFrom.size(); i != e; ++i) {
-            if (Token::Match(variableInfo->type()->derivedFrom[i].nameTok, "std :: vector|array <")) {
-                typeToken = variableInfo->type()->derivedFrom[i].nameTok->tokAt(4);
+        const std::vector<Type::BaseInfo>& derivedFrom = variableInfo->type()->derivedFrom;
+        for (std::size_t i = 0, size = derivedFrom.size(); i < size; ++i) {
+            const Token* nameTok = derivedFrom[i].nameTok;
+            if (Token::Match(nameTok, "std :: vector|array <")) {
+                typeToken = nameTok->tokAt(4);
                 _template = true;
                 return true;
-            } else if (Token::Match(variableInfo->type()->derivedFrom[i].nameTok, "std :: string|wstring")) {
+            } else if (Token::Match(nameTok, "std :: string|wstring")) {
                 tempToken = new Token(0);
                 tempToken->fileIndex(variableInfo->typeStartToken()->fileIndex());
                 tempToken->linenr(variableInfo->typeStartToken()->linenr());
-                if (variableInfo->type()->derivedFrom[i].nameTok->strAt(2) == "string")
+                if (nameTok->strAt(2) == "string")
                     tempToken->str("char");
                 else
                     tempToken->str("wchar_t");
@@ -1582,22 +1675,20 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
     return false;
 }
 
+namespace {
+    const std::set<std::string> stl_container = make_container< std::set<std::string> >() <<
+            "array" << "bitset" << "deque" << "forward_list" <<
+            "hash_map" << "hash_multimap" << "hash_set" <<
+            "list" << "map" << "multimap" << "multiset" <<
+            "priority_queue" << "queue" << "set" << "stack" <<
+            "unordered_map" << "unordered_multimap" << "unordered_multiset" << "unordered_set" << "vector"
+            ;
+}
+
 bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
 {
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_container[] = {
-        "array", "bitset", "deque", "forward_list",
-        "hash_map", "hash_multimap", "hash_set",
-        "list", "map", "multimap", "multiset",
-        "priority_queue", "queue", "set", "stack",
-        "unordered_map", "unordered_multimap", "unordered_multiset", "unordered_set",
-        "vector"
-    };
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_string[]= {
-        "string", "u16string", "u32string", "wstring"
-    };
-
+    if (!isCPP)
+        return false;
     if (tok && tok->variable()) {
         const Variable* variable = tok->variable();
         if (variable->isStlType(stl_container)) {
@@ -1608,7 +1699,7 @@ bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
             return true;
         } else if (variable->type() && !variable->type()->derivedFrom.empty()) {
             const std::vector<Type::BaseInfo>& derivedFrom = variable->type()->derivedFrom;
-            for (std::size_t i = 0, e = derivedFrom.size(); i != e; ++i) {
+            for (std::size_t i = 0, size = derivedFrom.size(); i < size; ++i) {
                 const Token* nameTok = derivedFrom[i].nameTok;
                 if (Token::Match(nameTok, "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <")) {
                     typeToken = nameTok->tokAt(4);
@@ -1632,7 +1723,7 @@ bool CheckIO::ArgumentInfo::isArrayOrPointer() const
         return variableInfo->isArrayOrPointer();
     } else {
         const Token *tok = typeToken;
-        while (tok && Token::Match(tok, "const|struct"))
+        while (Token::Match(tok, "const|struct"))
             tok = tok->next();
         if (tok && tok->strAt(1) == "*")
             return true;
@@ -1686,7 +1777,7 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
            << (numFunction != 1 ? " are" : " is")
            << " given.";
 
-    reportError(tok, severity, "wrongPrintfScanfArgNum", errmsg.str());
+    reportError(tok, severity, "wrongPrintfScanfArgNum", errmsg.str(), CWE685, false);
 }
 
 void CheckIO::wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
@@ -1701,12 +1792,13 @@ void CheckIO::wrongPrintfScanfPosixParameterPositionError(const Token* tok, cons
     } else {
         errmsg << "referencing parameter " << index << " while " << numFunction << " arguments given";
     }
-    reportError(tok, Severity::warning, "wrongPrintfScanfParameterPositionError", errmsg.str());
+    reportError(tok, Severity::warning, "wrongPrintfScanfParameterPositionError", errmsg.str(), CWE685, false);
 }
 
 void CheckIO::invalidScanfArgTypeError_s(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
-    if (!_settings->isEnabled("warning"))
+    const Severity::SeverityType severity = getSeverity(argInfo);
+    if (!_settings->isEnabled(Severity::toString(severity)))
         return;
     std::ostringstream errmsg;
     errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires a \'";
@@ -1717,11 +1809,12 @@ void CheckIO::invalidScanfArgTypeError_s(const Token* tok, unsigned int numForma
     errmsg << " *\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidScanfArgType_s", errmsg.str());
+    reportError(tok, severity, "invalidScanfArgType_s", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidScanfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo, bool isUnsigned)
 {
-    if (!_settings->isEnabled("warning"))
+    const Severity::SeverityType severity = getSeverity(argInfo);
+    if (!_settings->isEnabled(Severity::toString(severity)))
         return;
     std::ostringstream errmsg;
     errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires \'";
@@ -1761,11 +1854,12 @@ void CheckIO::invalidScanfArgTypeError_int(const Token* tok, unsigned int numFor
     errmsg << " *\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidScanfArgType_int", errmsg.str());
+    reportError(tok, severity, "invalidScanfArgType_int", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidScanfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
-    if (!_settings->isEnabled("warning"))
+    const Severity::SeverityType severity = getSeverity(argInfo);
+    if (!_settings->isEnabled(Severity::toString(severity)))
         return;
     std::ostringstream errmsg;
     errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires \'";
@@ -1778,38 +1872,41 @@ void CheckIO::invalidScanfArgTypeError_float(const Token* tok, unsigned int numF
     errmsg << " *\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidScanfArgType_float", errmsg.str());
+    reportError(tok, severity, "invalidScanfArgType_float", errmsg.str(), CWE686, false);
 }
 
 void CheckIO::invalidPrintfArgTypeError_s(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo)
 {
-    if (!_settings->isEnabled("warning"))
+    const Severity::SeverityType severity = getSeverity(argInfo);
+    if (!_settings->isEnabled(Severity::toString(severity)))
         return;
     std::ostringstream errmsg;
     errmsg << "%s in format string (no. " << numFormat << ") requires \'char *\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_s", errmsg.str());
+    reportError(tok, severity, "invalidPrintfArgType_s", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidPrintfArgTypeError_n(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo)
 {
-    if (!_settings->isEnabled("warning"))
+    const Severity::SeverityType severity = getSeverity(argInfo);
+    if (!_settings->isEnabled(Severity::toString(severity)))
         return;
     std::ostringstream errmsg;
     errmsg << "%n in format string (no. " << numFormat << ") requires \'int *\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_n", errmsg.str());
+    reportError(tok, severity, "invalidPrintfArgType_n", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidPrintfArgTypeError_p(const Token* tok, unsigned int numFormat, const ArgumentInfo* argInfo)
 {
-    if (!_settings->isEnabled("warning"))
+    const Severity::SeverityType severity = getSeverity(argInfo);
+    if (!_settings->isEnabled(Severity::toString(severity)))
         return;
     std::ostringstream errmsg;
     errmsg << "%p in format string (no. " << numFormat << ") requires an address but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_p", errmsg.str());
+    reportError(tok, severity, "invalidPrintfArgType_p", errmsg.str(), CWE686, false);
 }
 static void printfFormatType(std::ostream& os, const std::string& specifier, bool isUnsigned)
 {
@@ -1819,6 +1916,11 @@ static void printfFormatType(std::ostream& os, const std::string& specifier, boo
             os << (isUnsigned ? "unsigned " : "") << "long long";
         else
             os << (isUnsigned ? "unsigned " : "") << "long";
+    } else if (specifier[0] == 'h') {
+        if (specifier[1] == 'h')
+            os << (isUnsigned ? "unsigned " : "") << "char";
+        else
+            os << (isUnsigned ? "unsigned " : "") << "short";
     } else if (specifier.find("I32") != std::string::npos) {
         os << (isUnsigned ? "unsigned " : "") << "__int32";
     } else if (specifier.find("I64") != std::string::npos) {
@@ -1846,7 +1948,8 @@ static void printfFormatType(std::ostream& os, const std::string& specifier, boo
 }
 void CheckIO::invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
-    if (!_settings->isEnabled("warning"))
+    const Severity::SeverityType severity = getSeverity(argInfo);
+    if (!_settings->isEnabled(Severity::toString(severity)))
         return;
     std::ostringstream errmsg;
     errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires ";
@@ -1854,11 +1957,12 @@ void CheckIO::invalidPrintfArgTypeError_int(const Token* tok, unsigned int numFo
     errmsg << " but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_int", errmsg.str());
+    reportError(tok, severity, "invalidPrintfArgType_int", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
-    if (!_settings->isEnabled("warning"))
+    const Severity::SeverityType severity = getSeverity(argInfo);
+    if (!_settings->isEnabled(Severity::toString(severity)))
         return;
     std::ostringstream errmsg;
     errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires ";
@@ -1866,12 +1970,13 @@ void CheckIO::invalidPrintfArgTypeError_uint(const Token* tok, unsigned int numF
     errmsg << " but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_uint", errmsg.str());
+    reportError(tok, severity, "invalidPrintfArgType_uint", errmsg.str(), CWE686, false);
 }
 
 void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
-    if (!_settings->isEnabled("warning"))
+    const Severity::SeverityType severity = getSeverity(argInfo);
+    if (!_settings->isEnabled(Severity::toString(severity)))
         return;
     std::ostringstream errmsg;
     errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires ";
@@ -1879,11 +1984,12 @@ void CheckIO::invalidPrintfArgTypeError_sint(const Token* tok, unsigned int numF
     errmsg << " but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_sint", errmsg.str());
+    reportError(tok, severity, "invalidPrintfArgType_sint", errmsg.str(), CWE686, false);
 }
 void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo)
 {
-    if (!_settings->isEnabled("warning"))
+    const Severity::SeverityType severity = getSeverity(argInfo);
+    if (!_settings->isEnabled(Severity::toString(severity)))
         return;
     std::ostringstream errmsg;
     errmsg << "%" << specifier << " in format string (no. " << numFormat << ") requires \'";
@@ -1892,7 +1998,12 @@ void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int num
     errmsg << "double\' but the argument type is ";
     argumentType(errmsg, argInfo);
     errmsg << ".";
-    reportError(tok, Severity::warning, "invalidPrintfArgType_float", errmsg.str());
+    reportError(tok, severity, "invalidPrintfArgType_float", errmsg.str(), CWE686, false);
+}
+
+Severity::SeverityType CheckIO::getSeverity(const CheckIO::ArgumentInfo *argInfo) const
+{
+    return (argInfo && argInfo->typeToken && !argInfo->typeToken->originalName().empty()) ? Severity::portability : Severity::warning;
 }
 
 void CheckIO::argumentType(std::ostream& os, const ArgumentInfo * argInfo)
@@ -1900,7 +2011,7 @@ void CheckIO::argumentType(std::ostream& os, const ArgumentInfo * argInfo)
     if (argInfo) {
         os << "\'";
         const Token *type = argInfo->typeToken;
-        if (type->type() == Token::eString) {
+        if (type->tokType() == Token::eString) {
             if (type->isLong())
                 os << "const wchar_t *";
             else
@@ -1950,10 +2061,10 @@ void CheckIO::invalidLengthModifierError(const Token* tok, unsigned int numForma
         return;
     std::ostringstream errmsg;
     errmsg << "'" << modifier << "' in format string (no. " << numFormat << ") is a length modifier and cannot be used without a conversion specifier.";
-    reportError(tok, Severity::warning, "invalidLengthModifierError", errmsg.str());
+    reportError(tok, Severity::warning, "invalidLengthModifierError", errmsg.str(), CWE704, false);
 }
 
-void CheckIO::invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var)
+void CheckIO::invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var, char c)
 {
     MathLib::bigint arrlen = 0;
     std::string varname;
@@ -1969,10 +2080,10 @@ void CheckIO::invalidScanfFormatWidthError(const Token* tok, unsigned int numFor
             return;
         errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is smaller than destination buffer"
                << " '" << varname << "[" << arrlen << "]'.";
-        reportError(tok, Severity::warning, "invalidScanfFormatWidth_smaller", errmsg.str(), true);
+        reportError(tok, Severity::warning, "invalidScanfFormatWidth_smaller", errmsg.str(), CWE(0U), true);
     } else {
         errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is larger than destination buffer '"
-               << varname << "[" << arrlen << "]', use %" << (arrlen - 1) << "s to prevent overflowing it.";
-        reportError(tok, Severity::error, "invalidScanfFormatWidth", errmsg.str(), false);
+               << varname << "[" << arrlen << "]', use %" << (c == 'c' ? arrlen : (arrlen - 1)) << c << " to prevent overflowing it.";
+        reportError(tok, Severity::error, "invalidScanfFormatWidth", errmsg.str(), CWE687, false);
     }
 }

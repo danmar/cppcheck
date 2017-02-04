@@ -1,0 +1,46 @@
+#!/bin/sh
+
+# Usage: add this file to your project's .git/hooks directory. Rename it to
+# just 'pre-commit'.
+# Now, when you change some files in repository and try to commit these
+# changes, git will run this script right before commit. Cppcheck will scan
+# changed/new files in repository. If it finds some issues, script returns with
+# exit code 1, rejecting commit. Otherwise, script returns 0, and you can
+# actually commit your changes.
+#
+# Example:
+# $ cat hello.c
+# int main() {
+#    int *s = malloc(10);
+# }
+# $ git add hello.c
+# $ git commit
+# Checking hello.c...
+# [hello.c:3]: (error) Memory leak: s
+# [hello.c:2]: (error) The allocated size 10 is not a multiple of the underlying type's size.
+#
+# $ vim hello.c
+# $ cat hello.c
+# int main() {
+# }
+# $ git add hello.c
+# $ git commit
+# Checking hello.c...
+# $
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+# We should pass only added or modified C/C++ source files to cppcheck.
+changed_files=$(git diff-index --cached $against | \
+	grep -E '[MA]	.*\.(c|cpp|cc|cxx)$' | cut -d'	' -f 2)
+
+if [ -n "$changed_files" ]; then
+	cppcheck --error-exitcode=1 $changed_files
+	exit $?
+fi

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,12 +58,12 @@ private:
     void va_start_subsequentCallsError(const Token *tok, const std::string& varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckVaarg c(0, settings, errorLogger);
-        c.wrongParameterTo_va_start_error(0, "arg1", "arg2");
-        c.referenceAs_va_start_error(0, "arg1");
-        c.va_end_missingError(0, "vl");
-        c.va_list_usedBeforeStartedError(0, "vl");
-        c.va_start_subsequentCallsError(0, "vl");
+        CheckVaarg c(nullptr, settings, errorLogger);
+        c.wrongParameterTo_va_start_error(nullptr, "arg1", "arg2");
+        c.referenceAs_va_start_error(nullptr, "arg1");
+        c.va_end_missingError(nullptr, "vl");
+        c.va_list_usedBeforeStartedError(nullptr, "vl");
+        c.va_start_subsequentCallsError(nullptr, "vl");
     }
 
     static std::string myName() {

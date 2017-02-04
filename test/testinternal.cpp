@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,11 @@ public:
     }
 
 private:
+    Settings settings;
+
     void run() {
+        settings.addEnabled("internal");
+
         TEST_CASE(simplePatternInTokenMatch)
         TEST_CASE(complexPatternInTokenSimpleMatch)
         TEST_CASE(simplePatternSquareBrackets)
@@ -45,9 +49,6 @@ private:
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("internal");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -308,6 +309,12 @@ private:
               "    return tok->next()->next()->str();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::str()' can be simplified.\n", errout.str());
+
+        check("void f() {\n"
+              "    return tok->previous()->next()->str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::previous()' followed by 'Token::next()' can be simplified.\n", errout.str());
+
     }
 
     void internalError() {

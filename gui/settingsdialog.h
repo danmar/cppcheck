@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,6 +77,14 @@ public:
     * @return Should error id column be displayed
     */
     bool ShowErrorId() const;
+
+
+    /**
+    * @brief Get checkbox value for mEnableInconclusive
+    *
+    * @return Should inconclusive column be displayed
+    */
+    bool ShowInconclusive() const;
 
     /**
     * @brief Get checkbox value for mSaveAllErrors

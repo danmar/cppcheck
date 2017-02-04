@@ -68,4 +68,3 @@ $ make reduce
 ### * tools/times.sh
 
 Script to generate a `times.log` file that contains timing information of the last 20 revisions.
-

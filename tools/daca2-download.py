@@ -1,10 +1,10 @@
 #!/usr/bin/python
 #
-# 1. Create a folder daca2 in your HOME folder
-# 2. Put cppcheck-O2 in daca2. It should be built with all optimisations.
-# 3. Optional: Put a file called "suppressions.txt" in the daca2 folder.
-# 4. Optional: tweak FTPSERVER and FTPPATH in this script below.
-# 5. Run the daca2 script:  python daca2.py FOLDER
+# Downloads all daca2 source code packages.
+#
+# Usage:
+# $ mkdir ~/daca2-packages && python daca2-download.py
+
 
 import subprocess
 import sys
@@ -14,8 +14,7 @@ import os
 import datetime
 import time
 
-DEBIAN = ['ftp://ftp.sunet.se/pub/Linux/distributions/Debian/debian/',
-          'http://ftp.sunet.se/pub/Linux/distributions/Debian/debian/',
+DEBIAN = ['ftp://ftp.se.debian.org/debian/',
           'ftp://ftp.debian.org/debian/']
 
 
@@ -90,14 +89,14 @@ def removeAll():
                     shutil.rmtree(filename, onerror=handleRemoveReadonly)
                 else:
                     os.remove(filename)
-        except WindowsError, err:
+        except WindowsError as err:
             time.sleep(30)
             if count == 0:
                 print('Failed to cleanup files/folders')
                 print(err)
                 sys.exit(1)
             continue
-        except OSError, err:
+        except OSError as err:
             time.sleep(30)
             if count == 0:
                 print('Failed to cleanup files/folders')
@@ -124,6 +123,7 @@ def removeLargeFiles(path):
             # remove non-source files
             elif g[-2:] != '.C' and g[-2:] != '.c' and g[-4:] != '.cc' and g[-4:] != '.cpp' and g[-4:] != '.cxx' and g[-2:] != '.h' and g[-2:] != '.H' and g[-4:] != '.c++' and g[-4:] != '.hpp' and g[-4:] != '.tpp' and g[-4:] != '.t++':
                 os.remove(g)
+
 
 def downloadpackage(filepath, outpath):
     # remove all files/folders

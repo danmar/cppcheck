@@ -1,28 +1,38 @@
 CONFIG += qtestlib
-#DEPENDPATH += . ..
-INCLUDEPATH += . ../.. ../../../lib
+greaterThan(QT_MAJOR_VERSION, 4) {
+    QT += widgets # In Qt 5 widgets are in separate module
+    QT += printsupport # In Qt 5 QPrinter/QPrintDialog are in separate module
+}
+INCLUDEPATH += $${PWD}/..
 
-LIBS += -L../../../externals -lpcre
-INCLUDEPATH += ../../externals
+LIBS += -L$$PWD/../../externals
+INCLUDEPATH += $${PWD}/../../externals
 
-BASEPATH = ../../../lib/
-include($$PWD/../../lib/lib.pri)
+include($${PWD}/../../lib/lib.pri)
 
 # GUI
-SOURCES += ../../erroritem.cpp \
-    ../../filelist.cpp \
-    ../../projectfile.cpp \
-    ../../report.cpp \
-    ../../translationhandler.cpp \
-    ../../xmlreport.cpp \
-    ../../xmlreportv1.cpp \
-    ../../xmlreportv2.cpp
+SOURCES += $${PWD}/../erroritem.cpp \
+    $${PWD}/../filelist.cpp \
+    $${PWD}/../projectfile.cpp \
+    $${PWD}/../report.cpp \
+    $${PWD}/../translationhandler.cpp \
+    $${PWD}/../xmlreport.cpp \
+    $${PWD}/../xmlreportv1.cpp \
+    $${PWD}/../xmlreportv2.cpp
 
-HEADERS += ../../erroritem.h \
-    ../../filelist.h \
-    ../../projectfile.h \
-    ../../report.h \
-    ../../translationhandler.h \
-    ../../xmlreport.h \
-    ../../xmlreportv1.h \
-    ../../xmlreportv2.h
+HEADERS += $${PWD}/../erroritem.h \
+    $${PWD}/../filelist.h \
+    $${PWD}/../projectfile.h \
+    $${PWD}/../report.h \
+    $${PWD}/../translationhandler.h \
+    $${PWD}/../xmlreport.h \
+    $${PWD}/../xmlreportv1.h \
+    $${PWD}/../xmlreportv2.h
+
+contains(QMAKE_CC, gcc) {
+    QMAKE_CXXFLAGS += -std=c++11
+}
+
+contains(QMAKE_CXX, clang++) {
+    QMAKE_CXXFLAGS += -std=c++11
+}

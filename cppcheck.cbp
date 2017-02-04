@@ -144,8 +144,6 @@
 		<Unit filename="lib/cppcheck.h" />
 		<Unit filename="lib/errorlogger.cpp" />
 		<Unit filename="lib/errorlogger.h" />
-		<Unit filename="lib/executionpath.cpp" />
-		<Unit filename="lib/executionpath.h" />
 		<Unit filename="lib/mathlib.cpp" />
 		<Unit filename="lib/mathlib.h" />
 		<Unit filename="lib/path.cpp" />

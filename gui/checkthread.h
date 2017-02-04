@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,12 @@ public:
     void Check(const Settings &settings);
 
     /**
+    * @brief Run whole program analysis
+    * @param files    All files
+    */
+    void AnalyseWholeProgram(const QStringList &files);
+
+    /**
     * @brief method that is run in a thread
     *
     */
@@ -91,7 +97,10 @@ protected:
     *
     */
     CppCheck mCppcheck;
+
 private:
+    QStringList mFiles;
+    bool mAnalyseWholeProgram;
 };
 /// @}
 #endif // CHECKTHREAD_H

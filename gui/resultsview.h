@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 class ErrorItem;
 class ApplicationList;
 class QModelIndex;
+class QPrinter;
 class QSettings;
 class CheckStatistics;
 
@@ -44,7 +45,7 @@ class ResultsView : public QWidget {
 public:
 
     explicit ResultsView(QWidget * parent = 0);
-    void Initialize(QSettings *settings, ApplicationList *list);
+    void Initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
     virtual ~ResultsView();
 
     /**
@@ -68,6 +69,11 @@ public:
     void Clear(const QString &filename);
 
     /**
+     * @brief Remove a recheck file from the results.
+     */
+    void ClearRecheckFile(const QString &filename);
+
+    /**
     * @brief Save results to a file
     *
     * @param filename Filename to save results to
@@ -83,12 +89,14 @@ public:
     * @param saveAllErrors Save all visible errors
     * @param showNoErrorsMessage Show "no errors"?
     * @param showErrorId Show error id?
+    * @param showInconclusive Show inconclusive?
     */
     void UpdateSettings(bool showFullPath,
                         bool saveFullPath,
                         bool saveAllErrors,
                         bool showNoErrorsMessage,
-                        bool showErrorId);
+                        bool showErrorId,
+                        bool showInconclusive);
 
     /**
     * @brief Set the directory we are checking
@@ -97,6 +105,14 @@ public:
     * @param dir Directory we are checking
     */
     void SetCheckDirectory(const QString &dir);
+
+    /**
+    * @brief Get the directory we are checking
+    *
+    * @return Directory containing source files
+    */
+
+    QString GetCheckDirectory(void);
 
     /**
     * @brief Inform the view that checking has started
@@ -178,6 +194,13 @@ signals:
     */
     void ResultsHidden(bool hidden);
 
+    /**
+    * @brief Signal to perform recheck of selected files
+    *
+    * @param selectedFilesList list of selected files
+    */
+    void CheckSelected(QStringList selectedFilesList);
+
 public slots:
 
     /**
@@ -222,12 +245,23 @@ public slots:
     */
     void UpdateDetails(const QModelIndex &index);
 
-protected:
     /**
-    * @brief Have any errors been found
+    * @brief Slot opening a print dialog to print the current report
     */
-    bool mErrorsFound;
+    void Print();
 
+    /**
+    * @brief Slot printing the current report to the printer.
+    * @param printer The printer used for printing the report.
+    */
+    void Print(QPrinter* printer);
+
+    /**
+    * @brief Slot opening a print preview dialog
+    */
+    void PrintPreview();
+
+protected:
     /**
     * @brief Should we show a "No errors found dialog" every time no errors were found?
     */

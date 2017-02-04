@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -796,7 +796,7 @@ void CheckOther::invalidScanf()
 
         bool format = false;
 
-        // scan the string backwards, so we dont need to keep states
+        // scan the string backwards, so we don't need to keep states
         const std::string &formatstr(formatToken->str());
         for (unsigned int i = 1; i < formatstr.length(); i++) {
             if (formatstr[i] == '%')

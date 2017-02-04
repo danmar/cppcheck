@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,10 @@
 #include "config.h"
 #include "check.h"
 
+namespace tinyxml2 {
+    class XMLElement;
+}
+
 /// @addtogroup Checks
 /** @brief Check for functions never called */
 /// @{
@@ -43,22 +47,27 @@ public:
     // Parse current tokens and determine..
     // * Check what functions are used
     // * What functions are declared
-    void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
+    void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings, bool clear=true);
 
-    void check(ErrorLogger * const errorLogger);
+    void check(ErrorLogger * const errorLogger, const Settings& settings);
 
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
 
     /** @brief Analyse all file infos for all TU */
-    void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger);
+    void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
 
     static CheckUnusedFunctions instance;
+
+    std::string analyzerInfo() const;
+
+    /** @brief Combine and analyze all analyzerInfos for all TUs */
+    static void analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir);
 
 private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckUnusedFunctions c(0, settings, errorLogger);
+        CheckUnusedFunctions c(nullptr, settings, errorLogger);
         c.unusedFunctionError(errorLogger, "", 0, "funcName");
     }
 
@@ -72,9 +81,7 @@ private:
     /**
      * Dummy implementation, just to provide error for --errorlist
      */
-    void runSimplifiedChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
-
-    }
+    void runSimplifiedChecks(const Tokenizer *, const Settings *, ErrorLogger *) {}
 
     static std::string myName() {
         return "Unused functions";
@@ -96,6 +103,15 @@ private:
     };
 
     std::map<std::string, FunctionUsage> _functions;
+
+    class CPPCHECKLIB FunctionDecl {
+    public:
+        explicit FunctionDecl(const Function *f);
+        std::string functionName;
+        unsigned int lineNumber;
+    };
+    std::list<FunctionDecl> _functionDecl;
+    std::set<std::string> _functionCalls;
 };
 /// @}
 //---------------------------------------------------------------------------

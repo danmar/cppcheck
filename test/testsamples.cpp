@@ -1,6 +1,6 @@
 /*
 * Cppcheck - A tool for static C/C++ code analysis
-* Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+* Copyright (C) 2007-2016 Cppcheck team.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 #include "testsuite.h"
 #include "cppcheckexecutor.h"
 #include "path.h"
+#include "pathmatch.h"
+#include "redirect.h"
 #include <fstream>
 #include <cstring>
 #include <algorithm>
@@ -40,10 +42,12 @@ private:
         REDIRECT;
 
         std::map<std::string, std::size_t> files;
+        const std::vector<std::string> masks;
+        const PathMatch matcher(masks);
 #ifdef _WIN32
-        FileLister::recursiveAddFiles(files, "..\\samples");
+        FileLister::recursiveAddFiles(files, "..\\samples", matcher);
 #else
-        FileLister::recursiveAddFiles(files, "samples");
+        FileLister::recursiveAddFiles(files, "samples", matcher);
 #endif
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i) {
             CLEAR_REDIRECT_ERROUT;

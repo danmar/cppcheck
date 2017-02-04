@@ -5,10 +5,9 @@ DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
     ../lib
-
-# In Qt 5 widgets are in separate module
 greaterThan(QT_MAJOR_VERSION, 4) {
-    QT += widgets
+    QT += widgets # In Qt 5 widgets are in separate module
+    QT += printsupport # In Qt 5 QPrinter/QPrintDialog are in separate module
 }
 
 contains(LINKCORE, [yY][eE][sS]) {
@@ -45,12 +44,15 @@ FORMS = about.ui \
         application.ui \
         file.ui \
         logview.ui \
-        main.ui \
-        projectfile.ui \
+        mainwindow.ui \
+        projectfiledialog.ui \
         resultsview.ui \
         scratchpad.ui \
         settings.ui \
-        stats.ui
+        stats.ui \
+        librarydialog.ui \
+        libraryaddfunctiondialog.ui \
+        libraryeditargdialog.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_es.ts \
@@ -88,6 +90,7 @@ HEADERS += aboutdialog.h \
            logview.h \
            mainwindow.h \
            platforms.h \
+           printablereport.h \
            project.h \
            projectfile.h \
            projectfiledialog.h \
@@ -104,7 +107,11 @@ HEADERS += aboutdialog.h \
            txtreport.h \
            xmlreport.h \
            xmlreportv1.h \
-           xmlreportv2.h
+           xmlreportv2.h \
+    librarydialog.h \
+    cppchecklibrarydata.h \
+    libraryaddfunctiondialog.h \
+    libraryeditargdialog.h
 
 SOURCES += aboutdialog.cpp \
            application.cpp \
@@ -121,6 +128,7 @@ SOURCES += aboutdialog.cpp \
            main.cpp \
            mainwindow.cpp\
            platforms.cpp \
+           printablereport.cpp \
            project.cpp \
            projectfile.cpp \
            projectfiledialog.cpp \
@@ -137,21 +145,25 @@ SOURCES += aboutdialog.cpp \
            txtreport.cpp \
            xmlreport.cpp \
            xmlreportv1.cpp \
-           xmlreportv2.cpp
+           xmlreportv2.cpp \
+    librarydialog.cpp \
+    cppchecklibrarydata.cpp \
+    libraryaddfunctiondialog.cpp \
+    libraryeditargdialog.cpp
 
 win32 {
-    DEFINES += _CRT_SECURE_NO_WARNINGS
     RC_FILE = cppcheck-gui.rc
     HEADERS += ../lib/version.h
-    LIBS += -lshlwapi
+    contains(LINKCORE, [yY][eE][sS]) {
+    } else {
+        LIBS += -lshlwapi
+    }
 }
 
 contains(QMAKE_CC, gcc) {
-    QMAKE_CXXFLAGS += -std=c++0x
+    QMAKE_CXXFLAGS += -std=c++0x -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare
 }
 
-macx {
-    contains(QMAKE_CXX, clang++) {
-        QMAKE_CXXFLAGS += -std=c++11
-    }
+contains(QMAKE_CXX, clang++) {
+    QMAKE_CXXFLAGS += -std=c++11
 }

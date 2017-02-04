@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include <QSettings>
 #include "common.h"
 #include "projectfiledialog.h"
+#include "projectfile.h"
 #include "library.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -53,12 +54,12 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     if (!datadir.isEmpty())
         searchPaths << datadir << datadir + "/cfg";
     QStringList libs;
-    foreach(const QString sp, searchPaths) {
+    foreach (const QString sp, searchPaths) {
         QDir dir(sp);
         dir.setSorting(QDir::Name);
         dir.setNameFilters(QStringList("*.cfg"));
         dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
-        foreach(QFileInfo item, dir.entryInfoList()) {
+        foreach (QFileInfo item, dir.entryInfoList()) {
             QString library = item.fileName();
             {
                 Library lib;
@@ -75,20 +76,23 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
         }
     }
     qSort(libs);
-    foreach(const QString library, libs) {
+    foreach (const QString library, libs) {
         QCheckBox *checkbox = new QCheckBox(this);
         checkbox->setText(library);
-        mUI.librariesLayout->addWidget(checkbox);
+        mUI.mLayoutLibraries->addWidget(checkbox);
         mLibraryCheckboxes << checkbox;
     }
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(mUI.mBtnBrowseBuildDir, SIGNAL(clicked()), this, SLOT(BrowseBuildDir()));
+    connect(mUI.mBtnBrowseCompileDatabase, SIGNAL(clicked()), this, SLOT(BrowseCompileDatabase()));
+    connect(mUI.mBtnBrowseVisualStudio, SIGNAL(clicked()), this, SLOT(BrowseVisualStudio()));
+    connect(mUI.mBtnAddCheckPath, SIGNAL(clicked()), this, SLOT(AddCheckPath()));
+    connect(mUI.mBtnEditCheckPath, SIGNAL(clicked()), this, SLOT(EditCheckPath()));
+    connect(mUI.mBtnRemoveCheckPath, SIGNAL(clicked()), this, SLOT(RemoveCheckPath()));
     connect(mUI.mBtnAddInclude, SIGNAL(clicked()), this, SLOT(AddIncludeDir()));
-    connect(mUI.mBtnAddPath, SIGNAL(clicked()), this, SLOT(AddPath()));
     connect(mUI.mBtnEditInclude, SIGNAL(clicked()), this, SLOT(EditIncludeDir()));
     connect(mUI.mBtnRemoveInclude, SIGNAL(clicked()), this, SLOT(RemoveIncludeDir()));
-    connect(mUI.mBtnEditPath, SIGNAL(clicked()), this, SLOT(EditPath()));
-    connect(mUI.mBtnRemovePath, SIGNAL(clicked()), this, SLOT(RemovePath()));
     connect(mUI.mBtnAddIgnorePath, SIGNAL(clicked()), this, SLOT(AddExcludePath()));
     connect(mUI.mBtnEditIgnorePath, SIGNAL(clicked()), this, SLOT(EditExcludePath()));
     connect(mUI.mBtnRemoveIgnorePath, SIGNAL(clicked()), this, SLOT(RemoveExcludePath()));
@@ -117,6 +121,84 @@ void ProjectFileDialog::SaveSettings() const
     settings.setValue(SETTINGS_PROJECT_DIALOG_HEIGHT, size().height());
 }
 
+void ProjectFileDialog::LoadFromProjectFile(const ProjectFile *projectFile)
+{
+    SetRootPath(projectFile->GetRootPath());
+    SetBuildDir(projectFile->GetBuildDir());
+    SetIncludepaths(projectFile->GetIncludeDirs());
+    SetDefines(projectFile->GetDefines());
+    SetCheckPaths(projectFile->GetCheckPaths());
+    SetImportProject(projectFile->GetImportProject());
+    SetExcludedPaths(projectFile->GetExcludedPaths());
+    SetLibraries(projectFile->GetLibraries());
+    SetSuppressions(projectFile->GetSuppressions());
+}
+
+void ProjectFileDialog::SaveToProjectFile(ProjectFile *projectFile) const
+{
+    projectFile->SetRootPath(GetRootPath());
+    projectFile->SetBuildDir(GetBuildDir());
+    projectFile->SetImportProject(GetImportProject());
+    projectFile->SetIncludes(GetIncludePaths());
+    projectFile->SetDefines(GetDefines());
+    projectFile->SetCheckPaths(GetCheckPaths());
+    projectFile->SetExcludedPaths(GetExcludedPaths());
+    projectFile->SetLibraries(GetLibraries());
+    projectFile->SetSuppressions(GetSuppressions());
+}
+
+QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool trailingSlash)
+{
+    const QFileInfo inf(mFilePath);
+    const QString rootpath = inf.absolutePath();
+    QString selectedDir = QFileDialog::getExistingDirectory(this,
+                          caption,
+                          rootpath);
+
+    if (selectedDir.isEmpty())
+        return QString();
+
+    // Check if the path is relative to project file's path and if so
+    // make it a relative path instead of absolute path.
+    const QDir dir(rootpath);
+    const QString relpath(dir.relativeFilePath(selectedDir));
+    if (!relpath.startsWith("."))
+        selectedDir = relpath;
+
+    // Trailing slash..
+    if (trailingSlash && !selectedDir.endsWith('/'))
+        selectedDir += '/';
+
+    return selectedDir;
+}
+
+void ProjectFileDialog::BrowseBuildDir()
+{
+    const QString dir(getExistingDirectory(tr("Select Cppcheck build dir"), false));
+    if (!dir.isEmpty())
+        mUI.mEditBuildDir->setText(dir);
+}
+
+void ProjectFileDialog::BrowseCompileDatabase()
+{
+    const QFileInfo inf(mFilePath);
+    const QDir &dir = inf.absoluteDir();
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Compile Database"),
+                       dir.canonicalPath(),
+                       tr("Compile database (compile_database.json)"));
+    mUI.mEditCompileDatabase->setText(dir.relativeFilePath(fileName));
+}
+
+void ProjectFileDialog::BrowseVisualStudio()
+{
+    const QFileInfo inf(mFilePath);
+    const QDir &dir = inf.absoluteDir();
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Visual Studio"),
+                       dir.canonicalPath(),
+                       tr("Visual Studio Solution/Project (*.sln *.vcxproj)"));
+    mUI.mEditVisualStudio->setText(dir.relativeFilePath(fileName));
+}
+
 void ProjectFileDialog::AddIncludeDir(const QString &dir)
 {
     if (dir.isNull() || dir.isEmpty())
@@ -128,7 +210,7 @@ void ProjectFileDialog::AddIncludeDir(const QString &dir)
     mUI.mListIncludeDirs->addItem(item);
 }
 
-void ProjectFileDialog::AddPath(const QString &path)
+void ProjectFileDialog::AddCheckPath(const QString &path)
 {
     if (path.isNull() || path.isEmpty())
         return;
@@ -136,7 +218,7 @@ void ProjectFileDialog::AddPath(const QString &path)
     const QString newpath = QDir::toNativeSeparators(path);
     QListWidgetItem *item = new QListWidgetItem(newpath);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
-    mUI.mListPaths->addItem(item);
+    mUI.mListCheckPaths->addItem(item);
 }
 
 void ProjectFileDialog::AddExcludePath(const QString &path)
@@ -156,6 +238,16 @@ QString ProjectFileDialog::GetRootPath() const
     root = root.trimmed();
     root = QDir::fromNativeSeparators(root);
     return root;
+}
+
+QString ProjectFileDialog::GetBuildDir() const
+{
+    return mUI.mEditBuildDir->text();
+}
+
+QString ProjectFileDialog::GetImportProject() const
+{
+    return mUI.mEditCompileDatabase->text() + mUI.mEditVisualStudio->text();
 }
 
 QStringList ProjectFileDialog::GetIncludePaths() const
@@ -183,12 +275,12 @@ QStringList ProjectFileDialog::GetDefines() const
     return defines;
 }
 
-QStringList ProjectFileDialog::GetPaths() const
+QStringList ProjectFileDialog::GetCheckPaths() const
 {
-    const int count = mUI.mListPaths->count();
+    const int count = mUI.mListCheckPaths->count();
     QStringList paths;
     for (int i = 0; i < count; i++) {
-        QListWidgetItem *item = mUI.mListPaths->item(i);
+        QListWidgetItem *item = mUI.mListCheckPaths->item(i);
         paths << QDir::fromNativeSeparators(item->text());
     }
     return paths;
@@ -208,7 +300,7 @@ QStringList ProjectFileDialog::GetExcludedPaths() const
 QStringList ProjectFileDialog::GetLibraries() const
 {
     QStringList libraries;
-    foreach(const QCheckBox *checkbox, mLibraryCheckboxes) {
+    foreach (const QCheckBox *checkbox, mLibraryCheckboxes) {
         if (checkbox->isChecked())
             libraries << checkbox->text();
     }
@@ -228,13 +320,27 @@ QStringList ProjectFileDialog::GetSuppressions() const
 
 void ProjectFileDialog::SetRootPath(const QString &root)
 {
-    QString newroot = QDir::toNativeSeparators(root);
-    mUI.mEditProjectRoot->setText(newroot);
+    mUI.mEditProjectRoot->setText(QDir::toNativeSeparators(root));
+}
+
+void ProjectFileDialog::SetBuildDir(const QString &buildDir)
+{
+    mUI.mEditBuildDir->setText(buildDir);
+}
+
+void ProjectFileDialog::SetImportProject(const QString &importProject)
+{
+    mUI.mEditCompileDatabase->setText("");
+    mUI.mEditVisualStudio->setText("");
+    if (importProject.endsWith("compile_database.json", Qt::CaseInsensitive))
+        mUI.mEditCompileDatabase->setText(importProject);
+    else if (importProject.endsWith(".sln",Qt::CaseInsensitive) || importProject.endsWith(".vcxproj",Qt::CaseInsensitive))
+        mUI.mEditVisualStudio->setText(importProject);
 }
 
 void ProjectFileDialog::SetIncludepaths(const QStringList &includes)
 {
-    foreach(QString dir, includes) {
+    foreach (QString dir, includes) {
         AddIncludeDir(dir);
     }
 }
@@ -243,7 +349,7 @@ void ProjectFileDialog::SetDefines(const QStringList &defines)
 {
     QString definestr;
     QString define;
-    foreach(define, defines) {
+    foreach (define, defines) {
         definestr += define;
         definestr += ";";
     }
@@ -253,16 +359,16 @@ void ProjectFileDialog::SetDefines(const QStringList &defines)
     mUI.mEditDefines->setText(definestr);
 }
 
-void ProjectFileDialog::SetPaths(const QStringList &paths)
+void ProjectFileDialog::SetCheckPaths(const QStringList &paths)
 {
-    foreach(QString path, paths) {
-        AddPath(path);
+    foreach (QString path, paths) {
+        AddCheckPath(path);
     }
 }
 
 void ProjectFileDialog::SetExcludedPaths(const QStringList &paths)
 {
-    foreach(QString path, paths) {
+    foreach (QString path, paths) {
         AddExcludePath(path);
     }
 }
@@ -282,40 +388,31 @@ void ProjectFileDialog::SetSuppressions(const QStringList &suppressions)
     mUI.mListSuppressions->sortItems();
 }
 
-void ProjectFileDialog::AddIncludeDir()
+void ProjectFileDialog::AddCheckPath()
 {
-    const QFileInfo inf(mFilePath);
-    const QString rootpath = inf.absolutePath();
-    QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select include directory"),
-                          rootpath);
-
-    if (!selectedDir.isEmpty()) {
-        // Check if the path is relative to project file's path and if so
-        // make it a relative path instead of absolute path.
-        const QDir dir(selectedDir);
-        QString absPath = dir.absolutePath();
-        if (absPath.startsWith(rootpath)) {
-            // Remove also the slash from begin of new relative path
-            selectedDir = absPath.remove(0, rootpath.length() + 1);
-        }
-        if (!selectedDir.endsWith("/"))
-            selectedDir += '/';
-        AddIncludeDir(selectedDir);
-    }
+    QString dir = getExistingDirectory(tr("Select a directory to check"), false);
+    if (!dir.isEmpty())
+        AddCheckPath(dir);
 }
 
-void ProjectFileDialog::AddPath()
+void ProjectFileDialog::EditCheckPath()
 {
-    QFileInfo inf(mFilePath);
-    const QString rootpath = inf.absolutePath();
-    QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select a directory to check"),
-                          rootpath);
+    QListWidgetItem *item = mUI.mListCheckPaths->currentItem();
+    mUI.mListCheckPaths->editItem(item);
+}
 
-    if (!selectedDir.isEmpty()) {
-        AddPath(selectedDir);
-    }
+void ProjectFileDialog::RemoveCheckPath()
+{
+    const int row = mUI.mListCheckPaths->currentRow();
+    QListWidgetItem *item = mUI.mListCheckPaths->takeItem(row);
+    delete item;
+}
+
+void ProjectFileDialog::AddIncludeDir()
+{
+    const QString dir = getExistingDirectory(tr("Select include directory"), true);
+    if (!dir.isEmpty())
+        AddIncludeDir(dir);
 }
 
 void ProjectFileDialog::RemoveIncludeDir()
@@ -331,33 +428,11 @@ void ProjectFileDialog::EditIncludeDir()
     mUI.mListIncludeDirs->editItem(item);
 }
 
-void ProjectFileDialog::EditPath()
-{
-    QListWidgetItem *item = mUI.mListPaths->currentItem();
-    mUI.mListPaths->editItem(item);
-}
-
-void ProjectFileDialog::RemovePath()
-{
-    const int row = mUI.mListPaths->currentRow();
-    QListWidgetItem *item = mUI.mListPaths->takeItem(row);
-    delete item;
-}
-
 void ProjectFileDialog::AddExcludePath()
 {
-    QFileInfo inf(mFilePath);
-    const QString rootpath = inf.absolutePath();
-
-    QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select directory to ignore"),
-                          rootpath);
-
-    if (!selectedDir.isEmpty()) {
-        if (!selectedDir.endsWith('/'))
-            selectedDir += '/';
-        AddExcludePath(selectedDir);
-    }
+    QString dir = getExistingDirectory(tr("Select directory to ignore"), true);
+    if (!dir.isEmpty())
+        AddExcludePath(dir);
 }
 
 void ProjectFileDialog::EditExcludePath()

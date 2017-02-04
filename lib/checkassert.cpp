@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@
 
 //---------------------------------------------------------------------------
 
+// CWE ids used
+static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 
 // Register this check class (by creating a static instance of it)
 namespace {
@@ -42,9 +44,9 @@ void CheckAssert::assertWithSideEffects()
 
         const Token *endTok = tok->next()->link();
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
-            checkVariableAssignment(tmp);
+            checkVariableAssignment(tmp, tok->scope());
 
-            if (tmp->type() == Token::eFunction) {
+            if (tmp->tokType() == Token::eFunction) {
                 const Function* f = tmp->function();
 
                 if (f->nestedIn->isClassOrStruct() && !f->isStatic() && !f->isConst())
@@ -54,7 +56,7 @@ void CheckAssert::assertWithSideEffects()
                     if (!scope) continue;
 
                     for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
-                        if (tok2->type() != Token::eAssignmentOp && tok2->type() != Token::eIncDecOp)
+                        if (tok2->tokType() != Token::eAssignmentOp && tok2->tokType() != Token::eIncDecOp)
                             continue;
 
                         const Variable* var = tok2->previous()->variable();
@@ -92,7 +94,7 @@ void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& f
                 "Non-pure function: '" + functionName + "' is called inside assert statement. "
                 "Assert statements are removed from release builds so the code inside "
                 "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.");
+                "builds, this is a bug.", CWE398, false);
 }
 
 void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& varname)
@@ -102,23 +104,33 @@ void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& v
                 "Variable '" + varname + "' is modified insert assert statement. "
                 "Assert statements are removed from release builds so the code inside "
                 "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.");
+                "builds, this is a bug.", CWE398, false);
 }
 
 // checks if side effects happen on the variable prior to tmp
-void CheckAssert::checkVariableAssignment(const Token* assignTok)
+void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *assertionScope)
 {
-    const Variable* v = assignTok->previous()->variable();
-    if (!v) return;
+    const Variable* prevVar = assignTok->previous()->variable();
+    if (!prevVar)
+        return;
+
+    // Variable declared in inner scope in assert => don't warn
+    if (assertionScope != prevVar->scope()) {
+        const Scope *s = prevVar->scope();
+        while (s && s != assertionScope)
+            s = s->nestedIn;
+        if (s == assertionScope)
+            return;
+    }
 
     // assignment
-    if (assignTok->isAssignmentOp() || assignTok->type() == Token::eIncDecOp) {
+    if (assignTok->isAssignmentOp() || assignTok->tokType() == Token::eIncDecOp) {
+        if (prevVar->isConst())
+            return;
 
-        if (v->isConst()) return;
-
-        assignmentInAssertError(assignTok, v->name());
+        assignmentInAssertError(assignTok, prevVar->name());
     }
-    // TODO: function calls on v
+    // TODO: function calls on prevVar
 }
 
 bool CheckAssert::inSameScope(const Token* returnTok, const Token* assignTok)

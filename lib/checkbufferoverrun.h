@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +25,13 @@
 #include "config.h"
 #include "check.h"
 #include "mathlib.h"
+
 #include <list>
 #include <vector>
 #include <string>
+
+// CWE ids used
+static const struct CWE CWE119(119U); // Improper Restriction of Operations within the Bounds of a Memory Buffer
 
 class Variable;
 
@@ -47,32 +51,41 @@ class CPPCHECKLIB CheckBufferOverrun : public Check {
 public:
 
     /** This constructor is used when registering the CheckClass */
-    CheckBufferOverrun() : Check(myName()) {
+    CheckBufferOverrun() : Check(myName()), symbolDatabase(nullptr) {
     }
 
     /** This constructor is used when running checks. */
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+        , symbolDatabase(tokenizer?tokenizer->getSymbolDatabase():nullptr) {
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
-        checkBufferOverrun.bufferOverrun();
-        checkBufferOverrun.bufferOverrun2();
+        checkBufferOverrun.checkGlobalAndLocalVariable();
+        if (tokenizer && tokenizer->isMaxTime())
+            return;
+        checkBufferOverrun.checkStructVariable();
+        checkBufferOverrun.checkBufferAllocatedWithStrlen();
+        checkBufferOverrun.checkInsecureCmdLineArgs();
         checkBufferOverrun.arrayIndexThenCheck();
+        checkBufferOverrun.negativeArraySize();
     }
 
-    /** @brief %Check for buffer overruns */
-    void bufferOverrun();
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+        CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
+        checkBufferOverrun.bufferOverrun();
+        checkBufferOverrun.checkStringArgument();
+    }
 
-    /** @brief %Check for buffer overruns #2 (single pass, use ast and valueflow) */
-    void bufferOverrun2();
+    /** @brief %Check for buffer overruns (single pass, use ast and valueflow) */
+    void bufferOverrun();
 
     /** @brief Using array index before bounds check */
     void arrayIndexThenCheck();
 
-    /** @brief %Check for buffer overruns by inspecting execution paths */
-    void executionPaths();
+    /** @brief negative size for array */
+    void negativeArraySize();
 
     /**
      * @brief Get minimum length of format string result
@@ -114,7 +127,7 @@ public:
 
     public:
         ArrayInfo();
-        ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const Library *library, const unsigned int forcedeclid = 0);
+        ArrayInfo(const Variable *var, const SymbolDatabase *symbolDatabase, const unsigned int forcedeclid = 0);
 
         /**
          * Create array info with specified data
@@ -160,10 +173,15 @@ public:
         void varname(const std::string &name) {
             _varname = name;
         }
+
+        MathLib::bigint numberOfElements() const;
+        MathLib::bigint totalIndex(const std::vector<ValueFlow::Value> &indexes) const;
     };
 
     /** Check for buffer overruns (based on ArrayInfo) */
     void checkScope(const Token *tok, const ArrayInfo &arrayInfo);
+    void checkScope(const Token *tok, std::map<unsigned int, ArrayInfo> arrayInfo);
+    void checkScope_inner(const Token *tok, const ArrayInfo &arrayInfo);
 
     /** Check for buffer overruns */
     void checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo);
@@ -171,11 +189,11 @@ public:
     /**
      * Helper function for checkFunctionCall - check a function parameter
      * \param tok token for the function name
-     * \param par on what parameter is the array used
+     * \param paramIndex on what parameter is the array used
      * \param arrayInfo the array information
      * \param callstack call stack. This is used to prevent recursion and to provide better error messages. Pass a empty list from checkScope etc.
      */
-    void checkFunctionParameter(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack);
+    void checkFunctionParameter(const Token &tok, const unsigned int paramIndex, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack);
 
     /**
      * Helper function that checks if the array is used and if so calls the checkFunctionCall
@@ -191,6 +209,8 @@ public:
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
+        std::string toString() const;
+
         struct ArrayUsage {
             MathLib::bigint   index;
             std::string       fileName;
@@ -198,7 +218,7 @@ public:
         };
 
         /* key:arrayName */
-        std::map<std::string, struct ArrayUsage> arrayUsage;
+        std::map<std::string, ArrayUsage> arrayUsage;
 
         /* key:arrayName, data:arraySize */
         std::map<std::string, MathLib::bigint>  arraySize;
@@ -208,9 +228,17 @@ public:
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
 
     /** @brief Analyse all file infos for all TU */
-    void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger);
+    void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
+
+    /**
+     * Calculates sizeof value for given type.
+     * @param type Token which will contain e.g. "int", "*", or string.
+     * @return sizeof for given type, or 0 if it can't be calculated.
+     */
+    unsigned int sizeOfType(const Token *type) const;
 
 private:
+    const SymbolDatabase *symbolDatabase;
 
     static bool isArrayOfStruct(const Token* tok, int &position);
     void arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
@@ -218,6 +246,7 @@ private:
     void bufferOverrunError(const std::list<const Token *> &callstack, const std::string &varnames = emptyString);
     void strncatUsageError(const Token *tok);
     void negativeMemoryAllocationSizeError(const Token *tok); // provide a negative value to memory allocation function
+    void negativeArraySizeError(const Token *tok);
     void outOfBoundsError(const Token *tok, const std::string &what, const bool show_size_info, const MathLib::bigint &supplied_size, const MathLib::bigint &actual_size);
     void sizeArgumentAsCharError(const Token *tok);
     void terminateStrncpyError(const Token *tok, const std::string &varname);
@@ -234,24 +263,24 @@ private:
 
 public:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckBufferOverrun c(0, settings, errorLogger);
-        std::vector<MathLib::bigint> indexes;
-        indexes.push_back(2);
-        c.arrayIndexOutOfBoundsError(0, ArrayInfo(0, "array", 1, 2), indexes);
-        c.bufferOverrunError(0, std::string("buffer"));
-        c.strncatUsageError(0);
-        c.outOfBoundsError(0, "index", true, 2, 1);
-        c.sizeArgumentAsCharError(0);
-        c.terminateStrncpyError(0, "buffer");
-        c.bufferNotZeroTerminatedError(0, "buffer", "strncpy");
-        c.negativeIndexError(0, -1);
-        c.cmdLineArgsError(0);
+        CheckBufferOverrun c(nullptr, settings, errorLogger);
+        const std::vector<MathLib::bigint> indexes(2, 1);
+        c.arrayIndexOutOfBoundsError(nullptr, ArrayInfo(0, "array", 1, 2), indexes);
+        c.bufferOverrunError(nullptr, std::string("buffer"));
+        c.strncatUsageError(nullptr);
+        c.outOfBoundsError(nullptr, "index", true, 2, 1);
+        c.sizeArgumentAsCharError(nullptr);
+        c.terminateStrncpyError(nullptr, "buffer");
+        c.bufferNotZeroTerminatedError(nullptr, "buffer", "strncpy");
+        c.negativeIndexError(nullptr, -1);
+        c.cmdLineArgsError(nullptr);
         c.pointerOutOfBoundsError(nullptr, nullptr, 0);
-        c.arrayIndexThenCheckError(0, "index");
-        c.possibleBufferOverrunError(0, "source", "destination", false);
-        c.argumentSizeError(0, "function", "array");
-        c.negativeMemoryAllocationSizeError(0);
-        c.reportError(nullptr, Severity::warning, "arrayIndexOutOfBoundsCond", "Array 'x[10]' accessed at index 20, which is out of bounds. Otherwise condition 'y==20' is redundant.");
+        c.arrayIndexThenCheckError(nullptr, "index");
+        c.possibleBufferOverrunError(nullptr, "source", "destination", false);
+        c.argumentSizeError(nullptr, "function", "array");
+        c.negativeMemoryAllocationSizeError(nullptr);
+        c.negativeArraySizeError(nullptr);
+        c.reportError(nullptr, Severity::warning, "arrayIndexOutOfBoundsCond", "Array 'x[10]' accessed at index 20, which is out of bounds. Otherwise condition 'y==20' is redundant.", CWE119, false);
     }
 private:
 

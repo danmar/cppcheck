@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,19 +99,19 @@ private:
     void arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const {
-        CheckSizeof c(0, settings, errorLogger);
+        CheckSizeof c(nullptr, settings, errorLogger);
 
-        c.sizeofForArrayParameterError(0);
-        c.sizeofForPointerError(0, "varname");
-        c.divideBySizeofError(0, "memset");
-        c.sizeofForNumericParameterError(0);
-        c.sizeofsizeofError(0);
-        c.sizeofCalculationError(0, false);
-        c.multiplySizeofError(0);
-        c.divideSizeofError(0);
-        c.sizeofVoidError(0);
-        c.sizeofDereferencedVoidPointerError(0, "varname");
-        c.arithOperationsOnVoidPointerError(0, "varname", "vartype");
+        c.sizeofForArrayParameterError(nullptr);
+        c.sizeofForPointerError(nullptr, "varname");
+        c.divideBySizeofError(nullptr, "memset");
+        c.sizeofForNumericParameterError(nullptr);
+        c.sizeofsizeofError(nullptr);
+        c.sizeofCalculationError(nullptr, false);
+        c.multiplySizeofError(nullptr);
+        c.divideSizeofError(nullptr);
+        c.sizeofVoidError(nullptr);
+        c.sizeofDereferencedVoidPointerError(nullptr, "varname");
+        c.arithOperationsOnVoidPointerError(nullptr, "varname", "vartype");
     }
 
     static std::string myName() {

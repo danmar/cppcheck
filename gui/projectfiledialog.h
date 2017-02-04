@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,15 @@
 #include <QStringList>
 #include <QCheckBox>
 
-#include "ui_projectfile.h"
+#include "ui_projectfiledialog.h"
 
 class QWidget;
 
 /// @addtogroup GUI
 /// @{
 
+
+class ProjectFile;
 
 /**
 * @brief A dialog for editing project file data.
@@ -41,11 +43,19 @@ public:
     ProjectFileDialog(const QString &path, QWidget *parent = 0);
     virtual ~ProjectFileDialog();
 
+    void LoadFromProjectFile(const ProjectFile *projectFile);
+    void SaveToProjectFile(ProjectFile *projectFile) const;
+
     /**
     * @brief Return project root path from the dialog control.
     * @return Project root path.
     */
     QString GetRootPath() const;
+
+    QString GetImportProject() const;
+
+    /** Get Cppcheck build dir */
+    QString GetBuildDir() const;
 
     /**
     * @brief Return include paths from the dialog control.
@@ -63,7 +73,7 @@ public:
     * @brief Return check paths from the dialog control.
     * @return List of check paths.
     */
-    QStringList GetPaths() const;
+    QStringList GetCheckPaths() const;
 
     /**
     * @brief Return excluded paths from the dialog control.
@@ -89,6 +99,11 @@ public:
     */
     void SetRootPath(const QString &root);
 
+    /** Set build dir */
+    void SetBuildDir(const QString &buildDir);
+
+    void SetImportProject(const QString &importProject);
+
     /**
     * @brief Set include paths to dialog control.
     * @param includes List of include paths to set to dialog control.
@@ -105,7 +120,7 @@ public:
     * @brief Set check paths to dialog control.
     * @param paths List of path names to set to dialog control.
     */
-    void SetPaths(const QStringList &paths);
+    void SetCheckPaths(const QStringList &paths);
 
     /**
     * @brief Set excluded paths to dialog control.
@@ -126,16 +141,42 @@ public:
     void SetSuppressions(const QStringList &suppressions);
 
 protected slots:
+
+    /**
+    * @brief Browse for build dir.
+    */
+    void BrowseBuildDir();
+
+    /**
+    * @brief Browse for Visual Studio solution/project.
+    */
+    void BrowseVisualStudio();
+
+    /**
+    * @brief Browse for Compile Database.
+    */
+    void BrowseCompileDatabase();
+
+    /**
+    * @brief Add new path to check.
+    */
+    void AddCheckPath();
+
+    /**
+    * @brief Edit path in the list.
+    */
+    void EditCheckPath();
+
+    /**
+    * @brief Remove path from the list.
+    */
+    void RemoveCheckPath();
+
     /**
     * @brief Browse for include directory.
     * Allow user to add new include directory to the list.
     */
     void AddIncludeDir();
-
-    /**
-    * @brief Add new path to check.
-    */
-    void AddPath();
 
     /**
     * @brief Remove include directory from the list.
@@ -146,16 +187,6 @@ protected slots:
     * @brief Edit include directory in the list.
     */
     void EditIncludeDir();
-
-    /**
-    * @brief Edit path in the list.
-    */
-    void EditPath();
-
-    /**
-    * @brief Remove path from the list.
-    */
-    void RemovePath();
 
     /**
     * @brief Add new path to exclude.
@@ -214,7 +245,7 @@ protected:
     * @brief Add new path to check.
     * @param path Path to add.
     */
-    void AddPath(const QString &path);
+    void AddCheckPath(const QString &path);
 
     /**
     * @brief Add new path to ignore list.
@@ -232,6 +263,8 @@ private:
 
     /** @brief Library checkboxes */
     QList<QCheckBox*> mLibraryCheckboxes;
+
+    QString getExistingDirectory(const QString &caption, bool trailingSlash);
 };
 
 /// @}

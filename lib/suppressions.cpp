@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "suppressions.h"
-#include "settings.h"
 #include "path.h"
 
 #include <algorithm>
@@ -66,11 +65,11 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
             // is a line number..
 
             // Get position of last colon
-            const std::string::size_type pos = file.rfind(":");
+            const std::string::size_type pos = file.rfind(':');
 
             // if a colon is found and there is no dot after it..
             if (pos != std::string::npos &&
-                file.find(".", pos) == std::string::npos) {
+                file.find('.', pos) == std::string::npos) {
                 // Try to parse out the line number
                 try {
                     std::istringstream istr1(file.substr(pos+1));
@@ -199,7 +198,7 @@ bool Suppressions::FileMatcher::isSuppressed(const std::string &file, unsigned i
 
 bool Suppressions::FileMatcher::isSuppressedLocal(const std::string &file, unsigned int line)
 {
-    std::map<std::string, std::map<unsigned int, bool> >::iterator f = _files.find(file);
+    std::map<std::string, std::map<unsigned int, bool> >::iterator f = _files.find(Path::fromNativeSeparators(file));
     if (f != _files.end()) {
         std::map<unsigned int, bool>::iterator l = f->second.find(0U);
         if (l != f->second.end()) {
@@ -223,11 +222,6 @@ std::string Suppressions::addSuppression(const std::string &errorId, const std::
         return "Failed to add suppression. No id.";
     }
     if (errorId != "*") {
-        // Support "stlBoundries", as that was the name of the errorId until v1.59.
-        if (errorId == "stlBoundries") {
-            return _suppressions["stlBoundaries"].addFile(file, line);
-        }
-
         for (std::string::size_type pos = 0; pos < errorId.length(); ++pos) {
             if (errorId[pos] < 0 || (!std::isalnum(errorId[pos]) && errorId[pos] != '_')) {
                 return "Failed to add suppression. Invalid id \"" + errorId + "\"";
@@ -247,10 +241,11 @@ bool Suppressions::isSuppressed(const std::string &errorId, const std::string &f
         if (_suppressions["*"].isSuppressed(file, line))
             return true;
 
-    if (_suppressions.find(errorId) == _suppressions.end())
+    std::map<std::string, FileMatcher>::iterator suppression = _suppressions.find(errorId);
+    if (suppression == _suppressions.end())
         return false;
 
-    return _suppressions[errorId].isSuppressed(file, line);
+    return suppression->second.isSuppressed(file, line);
 }
 
 bool Suppressions::isSuppressedLocal(const std::string &errorId, const std::string &file, unsigned int line)
@@ -259,34 +254,35 @@ bool Suppressions::isSuppressedLocal(const std::string &errorId, const std::stri
         if (_suppressions["*"].isSuppressedLocal(file, line))
             return true;
 
-    if (_suppressions.find(errorId) == _suppressions.end())
+    std::map<std::string, FileMatcher>::iterator suppression = _suppressions.find(errorId);
+    if (suppression == _suppressions.end())
         return false;
 
-    return _suppressions[errorId].isSuppressedLocal(file, line);
+    return suppression->second.isSuppressedLocal(file, line);
 }
 
 std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
 {
-    std::list<SuppressionEntry> r;
+    std::list<SuppressionEntry> result;
     for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {
         if (!unusedFunctionChecking && i->first == "unusedFunction")
             continue;
 
-        std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(file);
+        std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(Path::fromNativeSeparators(file));
         if (f != i->second._files.end()) {
             for (std::map<unsigned int, bool>::const_iterator l = f->second.begin(); l != f->second.end(); ++l) {
                 if (!l->second) {
-                    r.push_back(SuppressionEntry(i->first, f->first, l->first));
+                    result.push_back(SuppressionEntry(i->first, f->first, l->first));
                 }
             }
         }
     }
-    return r;
+    return result;
 }
 
 std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const
 {
-    std::list<SuppressionEntry> r;
+    std::list<SuppressionEntry> result;
     for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {
         if (!unusedFunctionChecking && i->first == "unusedFunction")
             continue;
@@ -295,10 +291,10 @@ std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedGlobalSuppre
         for (std::map<std::string, std::map<unsigned int, bool> >::const_iterator g = i->second._globs.begin(); g != i->second._globs.end(); ++g) {
             for (std::map<unsigned int, bool>::const_iterator l = g->second.begin(); l != g->second.end(); ++l) {
                 if (!l->second) {
-                    r.push_back(SuppressionEntry(i->first, g->first, l->first));
+                    result.push_back(SuppressionEntry(i->first, g->first, l->first));
                 }
             }
         }
     }
-    return r;
+    return result;
 }

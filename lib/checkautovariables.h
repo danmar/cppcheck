@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,6 +68,7 @@ public:
 
 private:
     static bool isPtrArg(const Token *tok);
+    static bool isArrayArg(const Token *tok);
     static bool isRefPtrArg(const Token *tok);
     static bool isNonReferenceArg(const Token *tok);
     static bool isAutoVar(const Token *tok);
@@ -78,7 +79,7 @@ private:
      * @param tok pointing at the "return" token
      * @return true if a temporary object is returned
      */
-    bool returnTemporary(const Token *tok) const;
+    static bool returnTemporary(const Token *tok);
 
     void errorReturnAddressToAutoVariable(const Token *tok);
     void errorReturnPointerToLocalArray(const Token *tok);
@@ -91,16 +92,16 @@ private:
     void errorUselessAssignmentPtrArg(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckAutoVariables c(0,settings,errorLogger);
-        c.errorAutoVariableAssignment(0, false);
-        c.errorReturnAddressToAutoVariable(0);
-        c.errorReturnPointerToLocalArray(0);
-        c.errorReturnReference(0);
-        c.errorReturnTempReference(0);
-        c.errorInvalidDeallocation(0);
-        c.errorReturnAddressOfFunctionParameter(0, "parameter");
-        c.errorUselessAssignmentArg(0);
-        c.errorUselessAssignmentPtrArg(0);
+        CheckAutoVariables c(nullptr,settings,errorLogger);
+        c.errorAutoVariableAssignment(nullptr, false);
+        c.errorReturnAddressToAutoVariable(nullptr);
+        c.errorReturnPointerToLocalArray(nullptr);
+        c.errorReturnReference(nullptr);
+        c.errorReturnTempReference(nullptr);
+        c.errorInvalidDeallocation(nullptr);
+        c.errorReturnAddressOfFunctionParameter(nullptr, "parameter");
+        c.errorUselessAssignmentArg(nullptr);
+        c.errorUselessAssignmentPtrArg(nullptr);
     }
 
     static std::string myName() {

@@ -1,13 +1,11 @@
-PCRE is a library that is used by the optional "rules" feature. (It adds
-some additional features to the command line client.) It's readily available
-on Linux and Mac OS X, but must be obtained separately for Windows.
+PCRE is a library that is used by the optional "rules" feature for the command
+line version of cppcheck. It is readily available on Linux and Mac OS X, but
+must be obtained separately for Windows.
 
 If you're using qmake to generate makefiles, the following behavior applies:
 
 - If you're not on Windows, it assumes by default that you have PCRE and want
-  to enable rules support.
-
-- If you're not on Windows, you can disable rules support (removing the PCRE
+  to enable rules support. You can disable rules support (removing the PCRE
   dependency) by passing HAVE_RULES=no to qmake.
 
 - If you are on Windows, but have PCRE available, you can enable rules support
@@ -17,27 +15,28 @@ If you're using qmake to generate makefiles, the following behavior applies:
     build.bat, you need to run set HAVE_RULES=yes before each run of build.bat
 
 
-Some temporary build instructions. This is work in progress.
-
+Build instructions
+------------------
 
 Windows
+-------
 
 Visual Studio
 
 To build PCRE, download the source code from www.pcre.org and
-CMake (http://www.cmake.org/cmake/resources/software.html).
-Then I assume you use MSVC 2010 otherwise adapt the commands for your version.
+CMake (https://cmake.org/download/). We assume you use Visual Studio 2015 -
+otherwise adapt the commands for your version.
 
 VS Solution file
-  cmake . -G "Visual Studio 10"
+  cmake . -G "Visual Studio 14 2015"
   Open PCRE.sln with VS IDE or via cmd:
-    call "%VS100COMNTOOLS%..\..\VC\vcvarsall.bat" x86
+    call "%VS140COMNTOOLS%..\..\VC\vcvarsall.bat" x86
     MSBuild PCRE.sln /target:Build /property:Configuration="Release"
 
-  For 64-bit run: cmake . -G "Visual Studio 10 Win64"
+  For 64-bit target: cmake . -G "Visual Studio 14 2015 Win64"
 
 or using NMake
-  call "%VS100COMNTOOLS%..\..\VC\vcvarsall.bat" x86
+  call "%VS140COMNTOOLS%..\..\VC\vcvarsall.bat" x86
   cmake . -G "NMake Makefiles"
   nmake
 
@@ -47,14 +46,16 @@ or using MSYS
 
 
 Linux
+-----
 
-The normal Makefile should work
+The normal Makefile should work.
 
 Install PCRE on Ubuntu might be needed:
   sudo apt-get install libpcre3 libpcre3-dev
 
 
 Mac OSX
+-------
 
 Install PCRE:
 
@@ -65,4 +66,3 @@ Ensure /path/to/pcre.h is in CXXFLAGS, e.g:
   export CXXFLAGS=${CXXFLAGS}:/opt/local/include
 
 Or for MSVC copy pcre.lib and pcre.h in /externals directory.
-

@@ -29,15 +29,9 @@
     <ClInclude Include="filelister.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pathmatch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pathmatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="threadexecutor.cpp">

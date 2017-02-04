@@ -1,4 +1,8 @@
-# Cppcheck [![Build Status](https://travis-ci.org/danmar/cppcheck.svg?branch=master)](https://travis-ci.org/danmar/cppcheck) [![Coverity Scan Build Status](https://scan.coverity.com/projects/512/badge.svg)](https://scan.coverity.com/projects/512) [![Build status AppVeyor](https://ci.appveyor.com/api/projects/status/y242bl0lc5chu6j1?svg=true)](https://ci.appveyor.com/project/danmar/cppcheck)
+# **Cppcheck** 
+
+|Linux Build Status|Windows Build Status|Coverity Scan Build Status|
+|:--:|:--:|:--:|
+|[![Linux Build Status](https://img.shields.io/travis/danmar/cppcheck/master.svg?label=Linux%20build)](https://travis-ci.org/danmar/cppcheck)|[![Windows Build Status](https://img.shields.io/appveyor/ci/danmar/cppcheck/master.svg?label=Windows%20build)](https://ci.appveyor.com/project/danmar/cppcheck/branch/master)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|
 
 ## Donations
 
@@ -26,10 +30,12 @@ When building the command line tool, [PCRE](http://www.pcre.org/) is optional. I
 
 There are multiple compilation choices:
 * qmake - cross platform build tool
-* Windows: Visual Studio (VS 2010 and above) or Qt Creator or MinGW
+* cmake - cross platform build tool
+* Windows: Visual Studio (VS 2010 and above)
+* Windows: Qt Creator + mingw
 * gnu make
-* g++ 4.4 (and above)
-* clang++ 2.9 (and above)
+* g++ 4.6 (or later)
+* clang++
 
 ### qmake
 
@@ -43,14 +49,9 @@ make
 
 ### Visual Studio
 
-Use the cppcheck.sln file. The rules are normally enabled.
+Use the cppcheck.sln file. The file is configured for Visual Studio 2015, but the platform toolset can be changed easily to older or newer versions. The solution contains platform targets for both x86 and x64.
 
-To compile with rules (PCRE dependency):
-* the PCRE dll is needed. It can be downloaded from [here](http://cppcheck.sourceforge.net/pcre-8.10-vs.zip).
-
-To compile without rules (no dependencies):
-* remove the preprocessor define `HAVE_RULES` from the project
-* remove the pcre.lib from the project
+To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration. pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /externals then.
 
 ### Qt Creator + MinGW
 
@@ -59,7 +60,7 @@ http://software-download.name/pcre-library-windows/
 
 ### GNU make
 
-Simple build (no dependencies):
+Simple, unoptimized build (no dependencies):
 
 ```shell
 make
@@ -68,7 +69,7 @@ make
 The recommended release build is:
 
 ```shell
-make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
+make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
 ```
 
 Flags:
@@ -81,6 +82,9 @@ Flags:
 
 3.  `HAVE_RULES=yes`  
     Enable rules (PCRE is required if this is used)
+
+4.  `CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"`
+    Enables most compiler optimizations, disables cppcheck-internal debugging code and enables basic compiler warnings.
 
 ### g++ (for experts)
 

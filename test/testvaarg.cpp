@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,12 +26,11 @@ public:
     TestVaarg() : TestFixture("TestVaarg") {}
 
 private:
+    Settings settings;
+
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("warning");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -44,11 +43,14 @@ private:
     }
 
     void run() {
+        settings.addEnabled("warning");
+
         TEST_CASE(wrongParameterTo_va_start);
         TEST_CASE(referenceAs_va_start);
         TEST_CASE(va_end_missing);
         TEST_CASE(va_list_usedBeforeStarted);
         TEST_CASE(va_start_subsequentCalls);
+        TEST_CASE(unknownFunctionScope);
     }
 
     void wrongParameterTo_va_start() {
@@ -198,6 +200,69 @@ private:
               "    va_end(v2);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7527
+        check("void foo(int flag1, int flag2, ...) {\n"
+              "    switch (flag1) {\n"
+              "    default:\n"
+              "        va_list vargs;\n"
+              "        va_start(vargs, flag2);\n"
+              "        if (flag2) {\n"
+              "            va_end(vargs);\n"
+              "            break;\n"
+              "        }\n"
+              "        int data = va_arg(vargs, int);\n"
+              "        va_end(vargs);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #7533
+        check("void action_push(int type, ...) {\n"
+              "    va_list args;\n"
+              "    va_start(args, type);\n"
+              "    switch (push_mode) {\n"
+              "    case UNDO:\n"
+              "        list_add(&act->node, &to_redo);\n"
+              "        break;\n"
+              "    case REDO:\n"
+              "        list_add(&act->node, &to_undo);\n"
+              "        break;\n"
+              "    }\n"
+              "    va_end(args);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void action_push(int type, ...) {\n"
+              "    va_list args;\n"
+              "    va_start(args, type);\n"
+              "    switch (push_mode) {\n"
+              "    case UNDO:\n"
+              "        list_add(&act->node, &to_redo);\n"
+              "        va_end(args);\n"
+              "        break;\n"
+              "    case REDO:\n"
+              "        list_add(&act->node, &to_undo);\n"
+              "        va_end(args);\n"
+              "        break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void action_push(int type, ...) {\n"
+              "    va_list args;\n"
+              "    va_start(args, type);\n"
+              "    switch (push_mode) {\n"
+              "    case UNDO:\n"
+              "        list_add(&act->node, &to_redo);\n"
+              "        break;\n"
+              "    case REDO:\n"
+              "        list_add(&act->node, &to_undo);\n"
+              "        va_end(args);\n"
+              "        break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:13]: (error) va_list 'args' was opened but not closed by va_end().\n", errout.str());
     }
 
     void va_start_subsequentCalls() {
@@ -207,7 +272,7 @@ private:
               "    va_start(arg_ptr, szBuffer);\n"
               "    va_end(arg_ptr);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) va_start() or va_copy() called subsequently on 'arg_ptr' without va_end() inbetween.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) va_start() or va_copy() called subsequently on 'arg_ptr' without va_end() in between.\n", errout.str());
 
         check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
               "    va_list vl1;\n"
@@ -215,7 +280,7 @@ private:
               "    va_copy(vl1, vl1);\n"
               "    va_end(vl1);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) va_start() or va_copy() called subsequently on 'vl1' without va_end() inbetween.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) va_start() or va_copy() called subsequently on 'vl1' without va_end() in between.\n", errout.str());
 
         check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
               "    va_list arg_ptr;\n"
@@ -225,6 +290,26 @@ private:
               "    va_end(arg_ptr);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void unknownFunctionScope() {
+        check("void BG_TString::Format() {\n"
+              "  BG_TChar * f;\n"
+              "  va_start(args,f);\n"
+              "  BG_TString result(f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #7559
+        check("void mowgli_object_message_broadcast(mowgli_object_t *self, const char *name, ...) {\n"
+              "  va_list va;\n"
+              "  MOWGLI_LIST_FOREACH(n, self->klass->message_handlers.head) {\n"
+              "    if (!strcasecmp(sig2->name, name))\n"
+              "      break;\n"
+              "  }\n"
+              "  va_start(va, name);\n"
+              "  va_end(va);\n"
+              "}");
     }
 };
 

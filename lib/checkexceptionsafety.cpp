@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,6 +77,7 @@ void CheckExceptionSafety::deallocThrow()
     if (!_settings->isEnabled("warning"))
         return;
 
+    const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // Deallocate a global/member pointer and then throw exception
@@ -113,7 +114,7 @@ void CheckExceptionSafety::deallocThrow()
             for (const Token *tok2 = tok; tok2 != end2; tok2 = tok2->next()) {
                 // Throw after delete -> Dead pointer
                 if (tok2->str() == "throw") {
-                    if (_settings->inconclusive) { // For inconclusive checking, throw directly.
+                    if (printInconclusive) { // For inconclusive checking, throw directly.
                         deallocThrowError(tok2, tok->str());
                         break;
                     }
@@ -154,9 +155,11 @@ void CheckExceptionSafety::checkRethrowCopy()
         const unsigned int varid = i->classStart->tokAt(-2)->varId();
         if (varid) {
             for (const Token* tok = i->classStart->next(); tok && tok != i->classEnd; tok = tok->next()) {
-                if (Token::simpleMatch(tok, "catch (") && tok->next()->link() && tok->next()->link()->next()) // Don't check inner catch - it is handled in another iteration of outer loop.
+                if (Token::simpleMatch(tok, "catch (") && tok->next()->link() && tok->next()->link()->next()) { // Don't check inner catch - it is handled in another iteration of outer loop.
                     tok = tok->next()->link()->next()->link();
-                else if (Token::Match(tok, "throw %varid% ;", varid))
+                    if (!tok)
+                        break;
+                } else if (Token::Match(tok, "throw %varid% ;", varid))
                     rethrowCopyError(tok, tok->strAt(1));
             }
         }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,6 +92,7 @@ public:
      * it is bad to dereference it after the erase.
      */
     void erase();
+    void eraseCheckLoopVar(const Scope &scope, const Variable *var);
 
 
     /**
@@ -150,13 +151,9 @@ public:
     void readingEmptyStlContainer();
 
 private:
+    bool isIterator(const Variable *var) const;
 
-    /**
-     * Helper function used by the 'erase' function
-     * This function parses a loop
-     * @param it iterator token
-     */
-    void eraseCheckLoop(const Token *it);
+    void readingEmptyStlContainer_parseUsage(const Token* tok, const Library::Container* container, std::map<unsigned int, const Library::Container*>& empty, bool noerror);
 
     void missingComparisonError(const Token *incrementToken1, const Token *incrementToken2);
     void string_c_strThrowError(const Token *tok);
@@ -170,7 +167,7 @@ private:
     void mismatchingContainersError(const Token *tok);
     void invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name);
     void invalidPointerError(const Token *tok, const std::string &func, const std::string &pointer_name);
-    void stlBoundariesError(const Token *tok, const std::string &container_name);
+    void stlBoundariesError(const Token *tok);
     void if_findError(const Token *tok, bool str);
     void sizeError(const Token *tok);
     void redundantIfRemoveError(const Token *tok);
@@ -191,34 +188,34 @@ private:
     void readingEmptyStlContainerError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckStl c(0, settings, errorLogger);
-        c.invalidIteratorError(0, "iterator");
-        c.iteratorsError(0, "container1", "container2");
-        c.mismatchingContainersError(0);
-        c.dereferenceErasedError(0, 0, "iter");
-        c.stlOutOfBoundsError(0, "i", "foo", false);
-        c.invalidIteratorError(0, "push_back|push_front|insert", "iterator");
-        c.invalidPointerError(0, "push_back", "pointer");
-        c.stlBoundariesError(0, "container");
-        c.if_findError(0, false);
-        c.if_findError(0, true);
-        c.string_c_strError(0);
-        c.string_c_strReturn(0);
-        c.string_c_strParam(0, 0);
-        c.sizeError(0);
-        c.missingComparisonError(0, 0);
-        c.redundantIfRemoveError(0);
-        c.autoPointerError(0);
-        c.autoPointerContainerError(0);
-        c.autoPointerArrayError(0);
-        c.autoPointerMallocError(0, "malloc");
-        c.uselessCallsReturnValueError(0, "str", "find");
-        c.uselessCallsSwapError(0, "str");
-        c.uselessCallsSubstrError(0, false);
-        c.uselessCallsEmptyError(0);
-        c.uselessCallsRemoveError(0, "remove");
-        c.dereferenceInvalidIteratorError(0, "i");
-        c.readingEmptyStlContainerError(0);
+        CheckStl c(nullptr, settings, errorLogger);
+        c.invalidIteratorError(nullptr, "iterator");
+        c.iteratorsError(nullptr, "container1", "container2");
+        c.mismatchingContainersError(nullptr);
+        c.dereferenceErasedError(nullptr, nullptr, "iter");
+        c.stlOutOfBoundsError(nullptr, "i", "foo", false);
+        c.invalidIteratorError(nullptr, "push_back|push_front|insert", "iterator");
+        c.invalidPointerError(nullptr, "push_back", "pointer");
+        c.stlBoundariesError(nullptr);
+        c.if_findError(nullptr, false);
+        c.if_findError(nullptr, true);
+        c.string_c_strError(nullptr);
+        c.string_c_strReturn(nullptr);
+        c.string_c_strParam(nullptr, 0);
+        c.sizeError(nullptr);
+        c.missingComparisonError(nullptr, 0);
+        c.redundantIfRemoveError(nullptr);
+        c.autoPointerError(nullptr);
+        c.autoPointerContainerError(nullptr);
+        c.autoPointerArrayError(nullptr);
+        c.autoPointerMallocError(nullptr, "malloc");
+        c.uselessCallsReturnValueError(nullptr, "str", "find");
+        c.uselessCallsSwapError(nullptr, "str");
+        c.uselessCallsSubstrError(nullptr, false);
+        c.uselessCallsEmptyError(nullptr);
+        c.uselessCallsRemoveError(nullptr, "remove");
+        c.dereferenceInvalidIteratorError(nullptr, "i");
+        c.readingEmptyStlContainerError(nullptr);
     }
 
     static std::string myName() {

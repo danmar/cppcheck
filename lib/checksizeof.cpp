@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "symboldatabase.h"
 #include <algorithm>
 #include <cctype>
+
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -29,6 +31,10 @@ namespace {
     CheckSizeof instance;
 }
 
+// CWE IDs used:
+static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const struct CWE CWE467(467U);   // Use of sizeof() on a Pointer Type
+static const struct CWE CWE682(682U);   // Incorrect Calculation
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckSizeof::checkSizeofForNumericParameter()
@@ -55,7 +61,7 @@ void CheckSizeof::sizeofForNumericParameterError(const Token *tok)
                 "sizeofwithnumericparameter", "Suspicious usage of 'sizeof' with a numeric constant as parameter.\n"
                 "It is unusual to use a constant value with sizeof. For example, 'sizeof(10)'"
                 " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 10. 'sizeof('A')'"
-                " and 'sizeof(char)' can return different results.");
+                " and 'sizeof(char)' can return different results.", CWE682, false);
 }
 
 
@@ -78,7 +84,7 @@ void CheckSizeof::checkSizeofForArrayParameter()
                 }
 
                 const Variable *var = varTok->variable();
-                if (var && var->isArray() && var->isArgument())
+                if (var && var->isArray() && var->isArgument() && !var->isReference())
                     sizeofForArrayParameterError(tok);
             }
         }
@@ -97,7 +103,7 @@ void CheckSizeof::sizeofForArrayParameterError(const Token *tok)
                 "         return sizeof(a);\n"
                 "     }\n"
                 "returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 100 (the "
-                "size of the array in bytes)."
+                "size of the array in bytes).", CWE467, false
                );
 }
 
@@ -120,27 +126,22 @@ void CheckSizeof::checkSizeofForPointerSize()
             // Once leaving those tests, it is mandatory to have:
             // - variable matching the used pointer
             // - tokVar pointing on the argument where sizeof may be used
-            if (Token::Match(tok, "[*;{}] %var% = malloc|alloca (")) {
-                variable = tok->next();
-                tokSize = tok->tokAt(5);
-                tokFunc = tok->tokAt(3);
-            } else if (Token::Match(tok, "[*;{}] %var% = calloc (")) {
-                variable = tok->next();
-                tokSize = tok->tokAt(5)->nextArgument();
-                tokFunc = tok->tokAt(3);
-            } else if (Token::Match(tok, "return malloc|alloca (")) {
-                tokSize = tok->tokAt(3);
-                tokFunc = tok->next();
-            } else if (Token::simpleMatch(tok, "return calloc (")) {
-                tokSize = tok->tokAt(3)->nextArgument();
-                tokFunc = tok->next();
-            } else if (Token::simpleMatch(tok, "memset (")) {
+            if (Token::Match(tok->tokAt(2), "malloc|alloca|calloc (")) {
+                if (Token::Match(tok, "%var% ="))
+                    variable = tok;
+                else if (tok->strAt(1) == ")" && Token::Match(tok->linkAt(1)->tokAt(-2), "%var% ="))
+                    variable = tok->linkAt(1)->tokAt(-2);
+                else if (tok->link() && Token::Match(tok, "> ( malloc|alloca|calloc (") && Token::Match(tok->link()->tokAt(-3), "%var% ="))
+                    variable = tok->link()->tokAt(-3);
+                tokSize = tok->tokAt(4);
+                tokFunc = tok->tokAt(2);
+            } else if (Token::simpleMatch(tok, "memset (") && tok->strAt(-1) != ".") {
                 variable = tok->tokAt(2);
                 tokSize = variable->nextArgument();
                 if (tokSize)
                     tokSize = tokSize->nextArgument();
                 tokFunc = tok;
-            } else if (Token::Match(tok, "memcpy|memcmp|memmove|strncpy|strncmp|strncat (")) {
+            } else if (Token::Match(tok, "memcpy|memcmp|memmove|strncpy|strncmp|strncat (") && tok->strAt(-1) != ".") {
                 variable = tok->tokAt(2);
                 variable2 = variable->nextArgument();
                 if (!variable2)
@@ -151,15 +152,33 @@ void CheckSizeof::checkSizeofForPointerSize()
                 continue;
             }
 
+            if (tokFunc && tokFunc->str() == "calloc")
+                tokSize = tokSize->nextArgument();
+
             if (tokFunc && tokSize) {
                 for (const Token* tok2 = tokSize; tok2 != tokFunc->linkAt(1); tok2 = tok2->next()) {
-                    if (Token::simpleMatch(tok2, "/ sizeof"))
+                    if (Token::simpleMatch(tok2, "/ sizeof")) {
+                        // Allow division with sizeof(char)
+                        if (Token::simpleMatch(tok2->next(), "sizeof (")) {
+                            const Token *sztok = tok2->tokAt(2)->astOperand2();
+                            const ValueType *vt = ((sztok != nullptr) ? sztok->valueType() : nullptr);
+                            if (vt && vt->type == ValueType::CHAR && vt->pointer == 0)
+                                continue;
+                        }
+
                         divideBySizeofError(tok2, tokFunc->str());
+                    }
                 }
             }
 
-            if (!variable)
+            if (!variable || !tokSize)
                 continue;
+
+            while (Token::Match(variable, "%var% ::|."))
+                variable = variable->tokAt(2);
+
+            while (Token::Match(variable2, "%var% ::|."))
+                variable2 = variable2->tokAt(2);
 
             // Ensure the variables are in the symbol database
             // Also ensure the variables are pointers
@@ -186,16 +205,36 @@ void CheckSizeof::checkSizeofForPointerSize()
             // This is to allow generic operations with sizeof
             for (; tokSize && tokSize->str() != ")" && tokSize->str() != "," && tokSize->str() != "sizeof"; tokSize = tokSize->next()) {}
 
-            // Now check for the sizeof usage. Once here, everything using sizeof(varid) or sizeof(&varid)
-            // looks suspicious
-            // Do it for first variable
-            if (variable && (Token::Match(tokSize, "sizeof ( &| %varid% )", variable->varId()) ||
-                             Token::Match(tokSize, "sizeof &| %varid% !!.", variable->varId()))) {
-                sizeofForPointerError(variable, variable->str());
-            } else if (variable2 && (Token::Match(tokSize, "sizeof ( &| %varid% )", variable2->varId()) ||
-                                     Token::Match(tokSize, "sizeof &| %varid% !!.", variable2->varId()))) {
-                sizeofForPointerError(variable2, variable2->str());
+            if (tokSize->str() != "sizeof")
+                continue;
+
+            // Now check for the sizeof usage: Does the level of pointer indirection match?
+            if (tokSize->linkAt(1)->strAt(-1) == "*") {
+                if (variable && variable->valueType() && variable->valueType()->pointer == 1 && variable->valueType()->type != ValueType::VOID)
+                    sizeofForPointerError(variable, variable->str());
+                else if (variable2 && variable2->valueType() && variable2->valueType()->pointer == 1 && variable2->valueType()->type != ValueType::VOID)
+                    sizeofForPointerError(variable2, variable2->str());
             }
+
+            if (Token::simpleMatch(tokSize, "sizeof ( &"))
+                tokSize = tokSize->tokAt(3);
+            else if (Token::Match(tokSize, "sizeof (|&"))
+                tokSize = tokSize->tokAt(2);
+            else
+                tokSize = tokSize->next();
+
+            while (Token::Match(tokSize, "%var% ::|."))
+                tokSize = tokSize->tokAt(2);
+
+            if (Token::Match(tokSize, "%var% [|("))
+                continue;
+
+            // Now check for the sizeof usage again. Once here, everything using sizeof(varid) or sizeof(&varid)
+            // looks suspicious
+            if (variable && tokSize->varId() == variable->varId())
+                sizeofForPointerError(variable, variable->str());
+            if (variable2 && tokSize->varId() == variable2->varId())
+                sizeofForPointerError(variable2, variable2->str());
         }
     }
 }
@@ -206,13 +245,13 @@ void CheckSizeof::sizeofForPointerError(const Token *tok, const std::string &var
                 "Size of pointer '" + varname + "' used instead of size of its data.\n"
                 "Size of pointer '" + varname + "' used instead of size of its data. "
                 "This is likely to lead to a buffer overflow. You probably intend to "
-                "write 'sizeof(*" + varname + ")'.");
+                "write 'sizeof(*" + varname + ")'.", CWE467, false);
 }
 
 void CheckSizeof::divideBySizeofError(const Token *tok, const std::string &memfunc)
 {
     reportError(tok, Severity::warning, "sizeofDivisionMemfunc",
-                "Division by result of sizeof(). " + memfunc + "() expects a size in bytes, did you intend to multiply instead?");
+                "Division by result of sizeof(). " + memfunc + "() expects a size in bytes, did you intend to multiply instead?", CWE682, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -236,7 +275,7 @@ void CheckSizeof::sizeofsizeofError(const Token *tok)
                 "sizeofsizeof", "Calling 'sizeof' on 'sizeof'.\n"
                 "Calling sizeof for 'sizeof looks like a suspicious code and "
                 "most likely there should be just one 'sizeof'. The current "
-                "code is equivalent to 'sizeof(size_t)'");
+                "code is equivalent to 'sizeof(size_t)'", CWE682, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -246,10 +285,23 @@ void CheckSizeof::sizeofCalculation()
     if (!_settings->isEnabled("warning"))
         return;
 
+    const bool printInconclusive = _settings->inconclusive;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
+
+            // ignore if the `sizeof` result is cast to void inside a macro, i.e. the calculation is
+            // expected to be parsed but skipped, such as in a disabled custom ASSERT() macro
+            if (tok->isExpandedMacro() && tok->previous()) {
+                const Token *cast_end = (tok->previous()->str() == "(") ? tok->previous() : tok;
+                if (Token::simpleMatch(cast_end->tokAt(-3), "( void )") ||
+                    Token::simpleMatch(cast_end->previous(), "static_cast<void>")) {
+                    continue;
+                }
+            }
+
             const Token *argument = tok->next()->astOperand2();
-            if (argument && argument->isCalculation() && (!argument->isExpandedMacro() || _settings->inconclusive))
+            if (argument && argument->isCalculation() && (!argument->isExpandedMacro() || printInconclusive))
                 sizeofCalculationError(argument, argument->isExpandedMacro());
         }
     }
@@ -258,7 +310,7 @@ void CheckSizeof::sizeofCalculation()
 void CheckSizeof::sizeofCalculationError(const Token *tok, bool inconclusive)
 {
     reportError(tok, Severity::warning,
-                "sizeofCalculation", "Found calculation inside sizeof().", inconclusive);
+                "sizeofCalculation", "Found calculation inside sizeof().", CWE682, inconclusive);
 }
 
 //-----------------------------------------------------------------------------
@@ -286,7 +338,7 @@ void CheckSizeof::suspiciousSizeofCalculation()
 void CheckSizeof::multiplySizeofError(const Token *tok)
 {
     reportError(tok, Severity::warning,
-                "multiplySizeof", "Multiplying sizeof() with sizeof() indicates a logic error.", true);
+                "multiplySizeof", "Multiplying sizeof() with sizeof() indicates a logic error.", CWE682, true);
 }
 
 void CheckSizeof::divideSizeofError(const Token *tok)
@@ -294,7 +346,7 @@ void CheckSizeof::divideSizeofError(const Token *tok)
     reportError(tok, Severity::warning,
                 "divideSizeof", "Division of result of sizeof() on pointer type.\n"
                 "Division of result of sizeof() on pointer type. sizeof() returns the size of the pointer, "
-                "not the size of the memory area it points to.", true);
+                "not the size of the memory area it points to.", CWE682, true);
 }
 
 void CheckSizeof::sizeofVoid()
@@ -305,47 +357,30 @@ void CheckSizeof::sizeofVoid()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof ( )")) { // "sizeof(void)" gets simplified to sizeof ( )
             sizeofVoidError(tok);
-        } else if (Token::Match(tok, "sizeof ( * %var% )") && tok->tokAt(3)->variable() &&
-                   (Token::Match(tok->tokAt(3)->variable()->typeStartToken(), "void * !!*")) &&
-                   (!tok->tokAt(3)->variable()->isArray())) { // sizeof(*p) where p is of type "void*"
-            sizeofDereferencedVoidPointerError(tok, tok->strAt(3));
-        } else if (Token::Match(tok, "%name% +|-|++|--") ||
-                   Token::Match(tok, "+|-|++|-- %name%")) { // Arithmetic operations on variable of type "void*"
-            const int index = (tok->isName()) ? 0 : 1;
-            const Variable* var = tok->tokAt(index)->variable();
-            if (var && !var->isArray() && Token::Match(var->typeStartToken(), "void * !!*")) {
-                std::string varname = tok->strAt(index);
-                // In case this 'void *' var is a member then go back to the main object
-                const Token* tok2 = tok->tokAt(index);
-                if (index == 0) {
-                    bool isMember = false;
-                    while (Token::simpleMatch(tok2->previous(), ".")) {
-                        isMember = true;
-                        if (Token::simpleMatch(tok2->tokAt(-2), ")"))
-                            tok2 = tok2->linkAt(-2);
-                        else if (Token::simpleMatch(tok2->tokAt(-2), "]"))
-                            tok2 = tok2->linkAt(-2)->previous();
-                        else
-                            tok2 = tok2->tokAt(-2);
-                    }
-                    if (isMember) {
-                        // Get 'struct.member' complete name (without spaces)
-                        varname = tok2->stringifyList(tok->next());
-                        varname.erase(std::remove_if(varname.begin(), varname.end(),
-                                                     static_cast<int (*)(int)>(std::isspace)), varname.end());
-                    }
-                }
-                // Check for cast on operations with '+|-'
-                if (Token::Match(tok, "%name% +|-")) {
-                    // Check for cast expression
-                    if (Token::simpleMatch(tok2->previous(), ")") && !Token::Match(tok2->previous()->link(), "( const| void *"))
-                        continue;
-                    if (tok2->strAt(-1) == "&") // Check for reference operator
-                        continue;
-                }
-                arithOperationsOnVoidPointerError(tok, varname,
-                                                  var->typeStartToken()->stringifyList(var->typeEndToken()->next()));
-            }
+        } else if (Token::simpleMatch(tok, "sizeof (") && tok->next()->astOperand2()) {
+            const ValueType *vt = tok->next()->astOperand2()->valueType();
+            if (vt && vt->type == ValueType::Type::VOID && vt->pointer == 0U)
+                sizeofDereferencedVoidPointerError(tok, tok->strAt(3));
+        } else if (tok->str() == "-") {
+            // only warn for: 'void *' - 'integral'
+            const ValueType *vt1  = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+            const ValueType *vt2  = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+            bool op1IsvoidPointer = (vt1 && vt1->type == ValueType::Type::VOID && vt1->pointer == 1U);
+            bool op2IsIntegral    = (vt2 && vt2->isIntegral() && vt2->pointer == 0U);
+            if (op1IsvoidPointer && op2IsIntegral)
+                arithOperationsOnVoidPointerError(tok, tok->astOperand1()->expressionString(), vt1->str());
+        } else if (Token::Match(tok, "+|++|--|+=|-=")) { // Arithmetic operations on variable of type "void*"
+            const ValueType *vt1 = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+            const ValueType *vt2 = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+
+            bool voidpointer1 = (vt1 && vt1->type == ValueType::Type::VOID && vt1->pointer == 1U);
+            bool voidpointer2 = (vt2 && vt2->type == ValueType::Type::VOID && vt2->pointer == 1U);
+
+            if (voidpointer1)
+                arithOperationsOnVoidPointerError(tok, tok->astOperand1()->expressionString(), vt1->str());
+
+            if (!tok->isAssignmentOp() && voidpointer2)
+                arithOperationsOnVoidPointerError(tok, tok->astOperand2()->expressionString(), vt2->str());
         }
     }
 }
@@ -354,19 +389,19 @@ void CheckSizeof::sizeofVoidError(const Token *tok)
 {
     const std::string message = "Behaviour of 'sizeof(void)' is not covered by the ISO C standard.";
     const std::string verbose = message + " A value for 'sizeof(void)' is defined only as part of a GNU C extension, which defines 'sizeof(void)' to be 1.";
-    reportError(tok, Severity::portability, "sizeofVoid", message + "\n" + verbose);
+    reportError(tok, Severity::portability, "sizeofVoid", message + "\n" + verbose, CWE682, false);
 }
 
 void CheckSizeof::sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname)
 {
     const std::string message = "'*" + varname + "' is of type 'void', the behaviour of 'sizeof(void)' is not covered by the ISO C standard.";
     const std::string verbose = message + " A value for 'sizeof(void)' is defined only as part of a GNU C extension, which defines 'sizeof(void)' to be 1.";
-    reportError(tok, Severity::portability, "sizeofDereferencedVoidPointer", message + "\n" + verbose);
+    reportError(tok, Severity::portability, "sizeofDereferencedVoidPointer", message + "\n" + verbose, CWE682, false);
 }
 
 void CheckSizeof::arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype)
 {
     const std::string message = "'" + varname + "' is of type '" + vartype + "'. When using void pointers in calculations, the behaviour is undefined.";
     const std::string verbose = message + " Arithmetic operations on 'void *' is a GNU C extension, which defines the 'sizeof(void)' to be 1.";
-    reportError(tok, Severity::portability, "arithOperationsOnVoidPointer", message + "\n" + verbose);
+    reportError(tok, Severity::portability, "arithOperationsOnVoidPointer", message + "\n" + verbose, CWE467, false);
 }

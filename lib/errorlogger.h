@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +21,28 @@
 #define errorloggerH
 //---------------------------------------------------------------------------
 
-#include <list>
-#include <string>
-
 #include "config.h"
 #include "suppressions.h"
 
+#include <list>
+#include <string>
+
+/**
+ * CWE id (Common Weakness Enumeration)
+ * See https://cwe.mitre.org/ for further reference.
+ * */
+struct CWE {
+    explicit CWE(unsigned short ID) : id(ID) {}
+    unsigned short id;
+};
+
+
+
 class Token;
 class TokenList;
+namespace tinyxml2 {
+    class XMLElement;
+}
 
 /// @addtogroup Core
 /// @{
@@ -119,7 +133,7 @@ public:
         case debug:
             return "debug";
         };
-        throw InternalError(NULL, "Unknown severity");
+        throw InternalError(nullptr, "Unknown severity");
     }
     static SeverityType fromString(const std::string &severity) {
         if (severity.empty())
@@ -192,14 +206,17 @@ public:
             std::string stringify() const;
 
             unsigned int line;
+
         private:
             std::string _file;
-
         };
 
-        ErrorMessage(const std::list<FileLocation> &callStack, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
+        ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file0, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
+        ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file0, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive);
         ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive);
+        ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive);
         ErrorMessage();
+        explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
 
         /**
          * Format the error message in XML format
@@ -230,6 +247,7 @@ public:
         std::string file0;
 
         Severity::SeverityType _severity;
+        CWE _cwe;
         bool _inconclusive;
 
         /** set short and verbose messages */
@@ -254,6 +272,8 @@ public:
          * @param replaceWith What will replace the found item
          */
         static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
+
+        static std::string fixInvalidChars(const std::string& raw);
 
         /** Short message */
         std::string _shortMessage;
@@ -308,6 +328,13 @@ public:
     void reportUnmatchedSuppressions(const std::list<Suppressions::SuppressionEntry> &unmatched);
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
+
+    /**
+     * Convert XML-sensitive characters into XML entities
+     * @param str The input string containing XML-sensitive characters
+     * @return The output string containing XML entities
+     */
+    static std::string toxml(const std::string &str);
 };
 
 /// @}

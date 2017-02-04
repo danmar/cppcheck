@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Lo
  * @brief Array dimension information.
  */
 struct Dimension {
-    Dimension() : start(NULL), end(NULL), num(0), known(true) { }
+    Dimension() : start(nullptr), end(nullptr), num(0), known(true) { }
 
     const Token *start;  // size start token
     const Token *end;    // size end token
@@ -70,7 +70,7 @@ public:
     class BaseInfo {
     public:
         BaseInfo() :
-            type(NULL), nameTok(NULL), access(Public), isVirtual(false) {
+            type(nullptr), nameTok(nullptr), access(Public), isVirtual(false) {
         }
 
         std::string name;
@@ -86,7 +86,7 @@ public:
 
     struct FriendInfo {
         FriendInfo() :
-            nameStart(NULL), nameEnd(NULL), type(NULL) {
+            nameStart(nullptr), nameEnd(nullptr), type(nullptr) {
         }
 
         const Token* nameStart;
@@ -103,13 +103,26 @@ public:
         classScope(classScope_),
         enclosingScope(enclosingScope_),
         needInitialization(Unknown) {
+        if (classDef_ && classDef_->str() == "enum")
+            needInitialization = True;
     }
 
-    const std::string& name() const {
-        const Token* next = classDef->next();
-        if (next->isName())
-            return next->str();
-        return emptyString;
+    const std::string& name() const;
+
+    const std::string& type() const {
+        return classDef ? classDef->str() : emptyString;
+    }
+
+    bool isClassType() const {
+        return classDef && classDef->str() == "class";
+    }
+
+    bool isEnumType() const {
+        return classDef && classDef->str() == "enum";
+    }
+
+    bool isStructType() const {
+        return classDef && classDef->str() == "struct";
     }
 
     const Token *initBaseInfo(const Token *tok, const Token *tok1);
@@ -118,10 +131,30 @@ public:
 
     /**
     * Check for circulare dependencies, i.e. loops within the class hierarchie
-    * @param anchestors list of anchestors. For internal usage only, clients should not supply this argument.
+    * @param ancestors list of ancestors. For internal usage only, clients should not supply this argument.
     * @return true if there is a circular dependency
     */
-    bool hasCircularDependencies(std::set<BaseInfo>* anchestors = 0) const;
+    bool hasCircularDependencies(std::set<BaseInfo>* ancestors = nullptr) const;
+
+    /**
+    * Check for dependency
+    * @param ancestor potential ancestor
+    * @return true if there is a dependency
+    */
+    bool findDependency(const Type* ancestor) const;
+
+    bool isDerivedFrom(const std::string & ancestor) const;
+};
+
+class CPPCHECKLIB Enumerator {
+public:
+    explicit Enumerator(const Scope * scope_) : scope(scope_), name(nullptr), value(0), start(nullptr), end(nullptr), value_known(false) { }
+    const Scope * scope;
+    const Token * name;
+    MathLib::bigint value;
+    const Token * start;
+    const Token * end;
+    bool value_known;
 };
 
 /** @brief Information about a member variable. */
@@ -140,8 +173,8 @@ class CPPCHECKLIB Variable {
         fHasDefault  = (1 << 9), /** @brief function argument with default value */
         fIsStlType   = (1 << 10), /** @brief STL type ('std::') */
         fIsStlString = (1 << 11), /** @brief std::string|wstring|basic_string&lt;T&gt;|u16string|u32string */
-        fIsIntType   = (1 << 12), /** @brief Integral type */
-        fIsFloatType = (1 << 13)  /** @brief Floating point type */
+        fIsFloatType = (1 << 12), /** @brief Floating point type */
+        fIsVolatile  = (1 << 13)  /** @brief volatile */
     };
 
     /**
@@ -322,6 +355,14 @@ public:
     }
 
     /**
+     * Is variable volatile.
+     * @return true if volatile, false if not
+     */
+    bool isVolatile() const {
+        return getFlag(fIsVolatile);
+    }
+
+    /**
      * Is variable static.
      * @return true if static, false if not
      */
@@ -366,7 +407,7 @@ public:
      * @return true if array, false if not
      */
     bool isArray() const {
-        return getFlag(fIsArray);
+        return getFlag(fIsArray) && !getFlag(fIsPointer);
     }
 
     /**
@@ -376,6 +417,20 @@ public:
     bool isPointer() const {
         return getFlag(fIsPointer);
     }
+
+    /**
+     * Is variable a pointer to an array
+     * @return true if pointer to array, false otherwise
+     */
+    bool isPointerToArray() const {
+        return isPointer() && getFlag(fIsArray);
+    }
+
+    /**
+     * Is variable an array of pointers
+     * @return true if array or pointers, false otherwise
+     */
+    bool isPointerArray() const;
 
     /**
      * Is array or pointer variable.
@@ -488,12 +543,25 @@ public:
      *   ...
      *   const char *str[] = {"string", "wstring"};
      *   sVar->isStlType(str) == true
-     * @param stlTypes array of stl types in alphabetical order
+     * @param stlType stl type
      * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
      */
-    template <std::size_t array_length>
-    bool isStlType(const char* const(&stlTypes)[array_length]) const {
-        return isStlType() && std::binary_search(stlTypes, stlTypes + array_length, _start->strAt(2));
+    bool isStlType(const std::string& stlType) const {
+        return isStlType() && stlType==_start->strAt(2);
+    }
+
+    /**
+     * Checks if the variable is of any of the STL types passed as arguments ('std::')
+     * E.g.:
+     *   std::string s;
+     *   ...
+     *   const std::set<std::string> str = make_container< std::set<std::string> >() << "string" << "wstring";
+     *   sVar->isStlType(str) == true
+     * @param stlTypes set of stl types
+     * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
+     */
+    bool isStlType(const std::set<std::string>& stlTypes) const {
+        return isStlType() && stlTypes.find(_start->strAt(2))!=stlTypes.end();
     }
 
     /**
@@ -505,13 +573,12 @@ public:
     }
 
     /**
-     * Determine whether it's an integral number type
-     * @return true if the type is known and it's an integral type (bool, char, short, int, long long and their unsigned counter parts) or a pointer/array to it
-     */
-    bool isIntegralType() const {
-        return getFlag(fIsIntType);
+    * Determine whether it's an enumeration type
+    * @return true if the type is known and it's an enumeration type
+    */
+    bool isEnumType() const {
+        return type() && type()->isEnumType();
     }
-
 
 private:
     // only symbol database can change the type
@@ -559,21 +626,24 @@ private:
 class CPPCHECKLIB Function {
     /** @brief flags mask used to access specific bit. */
     enum {
-        fHasBody       = (1 << 0),  /** @brief has implementation */
-        fIsInline      = (1 << 1),  /** @brief implementation in class definition */
-        fIsConst       = (1 << 2),  /** @brief is const */
-        fIsVirtual     = (1 << 3),  /** @brief is virtual */
-        fIsPure        = (1 << 4),  /** @brief is pure virtual */
-        fIsStatic      = (1 << 5),  /** @brief is static */
-        fIsStaticLocal = (1 << 6),  /** @brief is static local */
-        fIsExtern      = (1 << 7),  /** @brief is extern */
-        fIsFriend      = (1 << 8),  /** @brief is friend */
-        fIsExplicit    = (1 << 9),  /** @brief is explicit */
-        fIsDefault     = (1 << 10), /** @brief is default */
-        fIsDelete      = (1 << 11), /** @brief is delete */
-        fIsNoExcept    = (1 << 12), /** @brief is noexcept */
-        fIsThrow       = (1 << 13), /** @brief is throw */
-        fIsOperator    = (1 << 14)  /** @brief is operator */
+        fHasBody        = (1 << 0),  /** @brief has implementation */
+        fIsInline       = (1 << 1),  /** @brief implementation in class definition */
+        fIsConst        = (1 << 2),  /** @brief is const */
+        fIsVirtual      = (1 << 3),  /** @brief is virtual */
+        fIsPure         = (1 << 4),  /** @brief is pure virtual */
+        fIsStatic       = (1 << 5),  /** @brief is static */
+        fIsStaticLocal  = (1 << 6),  /** @brief is static local */
+        fIsExtern       = (1 << 7),  /** @brief is extern */
+        fIsFriend       = (1 << 8),  /** @brief is friend */
+        fIsExplicit     = (1 << 9),  /** @brief is explicit */
+        fIsDefault      = (1 << 10), /** @brief is default */
+        fIsDelete       = (1 << 11), /** @brief is delete */
+        fIsNoExcept     = (1 << 12), /** @brief is noexcept */
+        fIsThrow        = (1 << 13), /** @brief is throw */
+        fIsOperator     = (1 << 14), /** @brief is operator */
+        fHasLvalRefQual = (1 << 15), /** @brief has & lvalue ref-qualifier */
+        fHasRvalRefQual = (1 << 16), /** @brief has && rvalue ref-qualifier */
+        fIsVariadic     = (1 << 17)  /** @brief is variadic */
     };
 
     /**
@@ -598,14 +668,14 @@ public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
 
     Function()
-        : tokenDef(NULL),
-          argDef(NULL),
-          token(NULL),
-          arg(NULL),
-          retDef(NULL),
-          retType(NULL),
-          functionScope(NULL),
-          nestedIn(NULL),
+        : tokenDef(nullptr),
+          argDef(nullptr),
+          token(nullptr),
+          arg(nullptr),
+          retDef(nullptr),
+          retType(nullptr),
+          functionScope(nullptr),
+          nestedIn(nullptr),
           initArgCount(0),
           type(eFunction),
           access(Public),
@@ -705,6 +775,15 @@ public:
     bool isOperator() const {
         return getFlag(fIsOperator);
     }
+    bool hasLvalRefQualifier() const {
+        return getFlag(fHasLvalRefQual);
+    }
+    bool hasRvalRefQualifier() const {
+        return getFlag(fHasRvalRefQual);
+    }
+    bool isVariadic() const {
+        return getFlag(fIsVariadic);
+    }
 
     void hasBody(bool state) {
         setFlag(fHasBody, state);
@@ -751,6 +830,15 @@ public:
     void isOperator(bool state) {
         setFlag(fIsOperator, state);
     }
+    void hasLvalRefQualifier(bool state) {
+        setFlag(fHasLvalRefQual, state);
+    }
+    void hasRvalRefQualifier(bool state) {
+        setFlag(fHasRvalRefQual, state);
+    }
+    void isVariadic(bool state) {
+        setFlag(fIsVariadic, state);
+    }
 
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition
@@ -769,6 +857,12 @@ public:
 
     static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
+    /**
+     * @return token to ":" if the function is a constructor
+     * and it contains member initialization otherwise a nullptr is returned
+     */
+    const Token * constructorMemberInitialization() const;
+
 private:
     bool isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const;
 
@@ -785,7 +879,7 @@ public:
         const Scope *scope;
     };
 
-    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda };
+    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda, eEnum };
 
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
@@ -811,12 +905,26 @@ public:
     const Scope *functionOf; // scope this function belongs to
     Function *function; // function info for this function
 
+    // enum specific fields
+    const Token * enumType;
+    bool enumClass;
+
+    std::vector<Enumerator> enumeratorList;
+
+    const Enumerator * findEnumerator(const std::string & name) const {
+        for (std::size_t i = 0, end = enumeratorList.size(); i < end; ++i) {
+            if (enumeratorList[i].name->str() == name)
+                return &enumeratorList[i];
+        }
+        return nullptr;
+    }
+
     bool isClassOrStruct() const {
         return (type == eClass || type == eStruct);
     }
 
     bool isExecutable() const {
-        return type != eClass && type != eStruct && type != eUnion && type != eGlobal && type != eNamespace;
+        return type != eClass && type != eStruct && type != eUnion && type != eGlobal && type != eNamespace && type != eEnum;
     }
 
     bool isLocal() const {
@@ -826,12 +934,16 @@ public:
                 type == eTry || type == eCatch);
     }
 
+    // Is there lambda/inline function(s) in this scope?
+    bool hasInlineOrLambdaFunction() const;
+
     /**
      * @brief find a function
      * @param tok token of function call
+     * @param requireConst if const refers to a const variable only const methods should be matched
      * @return pointer to function if found or NULL if not found
      */
-    const Function *findFunction(const Token *tok) const;
+    const Function *findFunction(const Token *tok, bool requireConst=false) const;
 
     /**
      * @brief find if name is in nested list
@@ -841,12 +953,12 @@ public:
 
     const Scope *findRecordInNestedList(const std::string & name) const;
     Scope *findRecordInNestedList(const std::string & name) {
-        return const_cast<Scope *>(static_cast<const Scope *>(this)->findRecordInNestedList(name));
+        return const_cast<Scope *>(const_cast<const Scope *>(this)->findRecordInNestedList(name));
     }
 
     const Type* findType(const std::string& name) const;
     Type* findType(const std::string& name) {
-        return const_cast<Type*>(static_cast<const Scope *>(this)->findType(name));
+        return const_cast<Type*>(const_cast<const Scope *>(this)->findType(name));
     }
 
     /**
@@ -876,14 +988,6 @@ public:
         functionMap.insert(make_pair(back->tokenDef->str(), back));
     }
 
-    /**
-     * @brief get the number of nested scopes that are not functions
-     *
-     * @return the number of user defined types (class, struct, union)
-     * that are defined in this user defined type or namespace.
-     */
-    unsigned int getNestedNonFunctions() const;
-
     bool hasDefaultConstructor() const;
 
     AccessControl defaultAccess() const;
@@ -904,6 +1008,8 @@ public:
      */
     const Variable *getVariable(const std::string &varname) const;
 
+    const Token * addEnum(const Token * tok, bool isCpp);
+
 private:
     /**
      * @brief helper function for getVariableList()
@@ -912,7 +1018,7 @@ private:
      * @param typetok populated with pointer to the type token, if found
      * @return true if tok points to a variable declaration, false otherwise
      */
-    bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
+    bool isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const;
 
     void findFunctionInBase(const std::string & name, size_t args, std::vector<const Function *> & matches) const;
 };
@@ -953,19 +1059,12 @@ public:
 
     const Type* findType(const Token *tok, const Scope *startScope) const;
     Type* findType(const Token *tok, Scope *startScope) const {
-        return const_cast<Type*>(this->findType(tok, static_cast<const Scope *>(startScope)));
+        return const_cast<Type*>(this->findType(tok, const_cast<const Scope *>(startScope)));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
     Scope *findScope(const Token *tok, Scope *startScope) const {
-        return const_cast<Scope *>(this->findScope(tok, static_cast<const Scope *>(startScope)));
-    }
-
-    bool isClassOrStruct(const std::string &type) const {
-        for (std::list<Type>::const_iterator i = typeList.begin(); i != typeList.end(); ++i)
-            if (i->name() == type)
-                return true;
-        return false;
+        return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
     }
 
     const Variable *getVariableFromVarId(std::size_t varId) const {
@@ -981,25 +1080,67 @@ public:
      */
     void debugMessage(const Token *tok, const std::string &msg) const;
 
-    void printOut(const char * title = NULL) const;
+    void printOut(const char * title = nullptr) const;
     void printVariable(const Variable *var, const char *indent) const;
     void printXml(std::ostream &out) const;
 
     bool isCPP() const;
 
+    /*
+     * @brief Do a sanity check
+     */
+    void validate() const;
+
+    void validateExecutableScopes() const;
+    /**
+     * @brief Check variable list, e.g. variables w/o scope
+     */
+    void validateVariables() const;
+
+    /** Set valuetype in provided tokenlist */
+    static void setValueTypeInTokenList(Token *tokens, bool cpp, const Settings *settings);
+
+    /**
+     * Calculates sizeof value for given type.
+     * @param type Token which will contain e.g. "int", "*", or string.
+     * @return sizeof for given type, or 0 if it can't be calculated.
+     */
+    unsigned int sizeOfType(const Token *type) const;
+
 private:
     friend class Scope;
     friend class Function;
+
+    // Create symboldatabase...
+    void createSymbolDatabaseFindAllScopes();
+    void createSymbolDatabaseClassInfo();
+    void createSymbolDatabaseVariableInfo();
+    void createSymbolDatabaseFunctionScopes();
+    void createSymbolDatabaseClassAndStructScopes();
+    void createSymbolDatabaseFunctionReturnTypes();
+    void createSymbolDatabaseNeedInitialization();
+    void createSymbolDatabaseVariableSymbolTable();
+    void createSymbolDatabaseSetScopePointers();
+    void createSymbolDatabaseSetFunctionPointers();
+    void createSymbolDatabaseSetVariablePointers();
+    void createSymbolDatabaseSetTypePointers();
+    void createSymbolDatabaseEnums();
+    void createSymbolDatabaseUnknownArrayDimensions();
 
     void addClassFunction(Scope **info, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **info, const Token **tok);
-    static bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart);
+    bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
     const Type *findTypeInNested(const Token *tok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
     Function *findFunctionInScope(const Token *func, const Scope *ns);
+    const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
 
+    /** Whether iName is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
+    bool isReservedName(const std::string& iName) const;
+
+    const Enumerator * findEnumerator(const Token * tok) const;
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;
@@ -1011,5 +1152,38 @@ private:
     /** list for missing types */
     std::list<Type> _blankTypes;
 };
+
+/** Value type */
+class CPPCHECKLIB ValueType {
+public:
+    enum Sign {UNKNOWN_SIGN, SIGNED, UNSIGNED} sign;
+    enum Type {UNKNOWN_TYPE, NONSTD, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE} type;
+    unsigned int pointer; // 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
+    unsigned int constness;  // bit 0=data, bit 1=*, bit 2=**
+    const Scope *typeScope;
+    std::string originalTypeName;
+
+    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), pointer(0U), constness(0U), typeScope(nullptr) {}
+    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), originalTypeName(vt.originalTypeName) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), pointer(p), constness(0U), typeScope(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), originalTypeName(otn) {}
+
+    static ValueType parseDecl(const Token *type, const Settings *settings);
+
+    bool isIntegral() const {
+        return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
+    }
+
+    bool isFloat() const {
+        return (type == ValueType::Type::FLOAT || type == ValueType::Type::DOUBLE);
+    }
+
+    bool fromLibraryType(const std::string &typestr, const Settings *settings);
+
+    std::string str() const;
+};
+
+
 //---------------------------------------------------------------------------
 #endif // symboldatabaseH

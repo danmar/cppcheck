@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,9 +27,11 @@ public:
     }
 
 private:
-
+    Settings settings;
 
     void run() {
+        settings.addEnabled("portability");
+
         TEST_CASE(novardecl);
         TEST_CASE(functionpar);
         TEST_CASE(structmember);
@@ -41,9 +43,6 @@ private:
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("portability");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -139,7 +138,7 @@ private:
               "    int x = 10;\n"
               "    int *a = x * x;\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning an integer to a pointer is not portable.\n", errout.str());
 
         check("void foo(int *start, int *end) {\n"
               "    int len;\n"
@@ -166,6 +165,13 @@ private:
 
         check("int foo(int i) {\n"
               "    return i;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo {};\n"
+              "\n"
+              "int* dostuff(Foo foo) {\n"
+              "  return foo;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -200,6 +206,22 @@ private:
         check("static void __iomem *f(unsigned int port_no) {\n"
               "  void __iomem *mmio = hpriv->mmio;\n"
               "  return mmio + (port_no * 0x80);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #7247: don't check return statements in nested functions..
+        check("int foo() {\n"
+              "  struct {\n"
+              "    const char * name() { return \"abc\"; }\n"
+              "  } table;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #7451: Lambdas
+        check("const int* test(std::vector<int> outputs, const std::string& text) {\n"
+              "  auto it = std::find_if(outputs.begin(), outputs.end(), \n"
+              "     [&](int ele) { return \"test\" == text; });\n"
+              "  return nullptr;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

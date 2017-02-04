@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "settings.h"
 #include "errorlogger.h"
 #include "check.h"
+#include "analyzerinfo.h"
 
 #include <string>
 #include <list>
@@ -68,6 +69,7 @@ public:
       *  settings()).
       */
     unsigned int check(const std::string &path);
+    unsigned int check(const ImportProject::FileSettings &fs);
 
     /**
       * @brief Check the file.
@@ -117,11 +119,6 @@ public:
      */
     void getErrorMessages();
 
-    /**
-     * @brief Analyse file - It's public so unit tests can be written
-     */
-    void analyseFile(std::istream &f, const std::string &filename);
-
     void tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations);
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
@@ -129,12 +126,18 @@ public:
         _simplify = false;
     }
 
-    /** analyse whole program, run this after all TUs has been scanned. */
+    /** Analyse whole program, run this after all TUs has been scanned.
+     * This is deprecated and the plan is to remove this when
+     * .analyzeinfo is good enough
+     */
     void analyseWholeProgram();
+
+    /** analyse whole program use .analyzeinfo files */
+    void analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files);
 
     /** Check if the user wants to check for unused functions
      * and if it's possible at all */
-    bool unusedFunctionCheckIsEnabled() const;
+    bool isUnusedFunctionCheckEnabled() const;
 
 private:
 
@@ -144,13 +147,29 @@ private:
     /**
      * @brief Process one file.
      * @param filename file name
+     * @param cfgname  cfg name
      * @param fileStream stream the file content can be read from
      * @return amount of errors found
      */
-    unsigned int processFile(const std::string& filename, std::istream& fileStream);
+    unsigned int processFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream);
 
-    /** @brief Check file */
-    bool checkFile(const std::string &code, const char FileName[], std::set<unsigned long long>& checksums);
+    /**
+     * @brief Check raw tokens
+     * @param tokenizer
+     */
+    void checkRawTokens(const Tokenizer &tokenizer);
+
+    /**
+     * @brief Check normal tokens
+     * @param tokenizer
+     */
+    void checkNormalTokens(const Tokenizer &tokenizer);
+
+    /**
+     * @brief Check simplified tokens
+     * @param tokenizer
+     */
+    void checkSimplifiedTokens(const Tokenizer &tokenizer);
 
     /**
      * @brief Execute rules, if any
@@ -174,19 +193,6 @@ private:
      * @param outmsg Message to show, e.g. "Checking main.cpp..."
      */
     virtual void reportOut(const std::string &outmsg);
-
-    /**
-     * @brief Check given code. If error is found, return true
-     * and print out source of the file. Try to reduce the code
-     * while still showing the error.
-     */
-    bool findError(std::string code, const char FileName[]);
-
-    /**
-     * @brief Replace "from" strings with "to" strings in "code"
-     * and return it.
-     */
-    static void replaceAll(std::string& code, const std::string &from, const std::string &to);
 
     std::list<std::string> _errorList;
     Settings _settings;
@@ -215,6 +221,8 @@ private:
 
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> fileInfo;
+
+    AnalyzerInformation analyzerInformation;
 };
 
 /// @}

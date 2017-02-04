@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,10 @@ public:
         _settings = settings;
     }
 
+    const Settings *getSettings() const {
+        return _settings;
+    }
+
     /** @return the source file path. e.g. "file.cpp" */
     const std::string& getSourceFilePath() const;
 
@@ -59,7 +63,7 @@ public:
      */
     static void deleteTokens(Token *tok);
 
-    void addtoken(const std::string & str, const unsigned int lineno, const unsigned int fileno, bool split = false);
+    void addtoken(std::string str, const unsigned int lineno, const unsigned int fileno, bool split = false);
     void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);
 
     static void insertTokens(Token *dest, const Token *src, unsigned int n);
@@ -126,18 +130,33 @@ public:
     */
     unsigned long long calculateChecksum() const;
 
+    /**
+     * Create abstract syntax tree.
+     */
     void createAst();
 
+    /**
+     * Check abstract syntax tree.
+     * Throws InternalError on failure
+     */
+    void validateAst() const;
+
+    /**
+     * Verify that the given token is an element of the tokenlist.
+     * That method is implemented for debugging purposes.
+     * @param[in] tok token to be checked
+     * \return true if token was found in tokenlist, false else. In case of nullptr true is returned.
+     */
+    bool validateToken(const Token* tok) const;
+
 private:
+
     /** Disable copy constructor, no implementation */
     TokenList(const TokenList &);
 
     /** Disable assignment operator, no implementation */
     TokenList &operator=(const TokenList &);
 
-public:
-
-private: /// private
     /** Token list */
     Token *_front, *_back;
 

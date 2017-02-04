@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,8 @@ private:
         TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
         TEST_CASE(globalsuppress_unusedFunction); // #4946
         TEST_CASE(suppressionWithRelativePaths); // #4733
+        TEST_CASE(suppressingSyntaxErrors); // #7076
+        TEST_CASE(suppressingSyntaxErrorsInline); // #5917
     }
 
     void suppressionsBadId1() const {
@@ -129,21 +131,21 @@ private:
     }
 
     // Check the suppression
-    void checkSuppression(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppression(const char code[], const std::string &suppression = emptyString) {
         std::map<std::string, std::string> files;
         files["test.cpp"] = code;
 
-        checkSuppression(files, suppression);
+        return checkSuppression(files, suppression);
     }
 
     // Check the suppression for multiple files
-    void checkSuppression(std::map<std::string, std::string> &files, const std::string &suppression = emptyString) {
+    unsigned int checkSuppression(std::map<std::string, std::string> &files, const std::string &suppression = emptyString) {
         // Clear the error log
         errout.str("");
 
         CppCheck cppCheck(*this, true);
         Settings& settings = cppCheck.settings();
-        settings._inlineSuppressions = true;
+        settings.inlineSuppressions = true;
         settings.addEnabled("information");
         settings.jointSuppressionReport = true;
         if (!suppression.empty()) {
@@ -151,15 +153,18 @@ private:
             ASSERT_EQUALS("", r);
         }
 
+        unsigned int exitCode = 0;
         for (std::map<std::string, std::string>::const_iterator file = files.begin(); file != files.end(); ++file) {
-            cppCheck.check(file->first, file->second);
+            exitCode |= cppCheck.check(file->first, file->second);
         }
         cppCheck.analyseWholeProgram();
 
         reportSuppressions(settings, files);
+
+        return exitCode;
     }
 
-    void checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
         errout.str("");
         output.str("");
 
@@ -167,8 +172,8 @@ private:
         files["test.cpp"] = 1;
 
         Settings settings;
-        settings._jobs = 1;
-        settings._inlineSuppressions = true;
+        settings.jobs = 1;
+        settings.inlineSuppressions = true;
         settings.addEnabled("information");
         if (!suppression.empty()) {
             ASSERT_EQUALS("", settings.nomsg.addSuppressionLine(suppression));
@@ -177,16 +182,18 @@ private:
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
             executor.addFileContent(i->first, code);
 
-        executor.check();
+        unsigned int exitCode = executor.check();
 
         std::map<std::string, std::string> files_for_report;
         for (std::map<std::string, std::size_t>::const_iterator file = files.begin(); file != files.end(); ++file)
             files_for_report[file->first] = "";
 
         reportSuppressions(settings, files_for_report);
+
+        return exitCode;
     }
 
-    void runChecks(void (TestSuppressions::*check)(const char[], const std::string &)) {
+    void runChecks(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
         // check to make sure the appropriate error is present
         (this->*check)("void f() {\n"
                        "    int a;\n"
@@ -297,6 +304,18 @@ private:
                        "");
         ASSERT_EQUALS("", errout.str());
 
+        // suppress uninitvar inline, with asm before (#6813)
+        (this->*check)("void f() {\n"
+                       "    __asm {\n"
+                       "        foo\n"
+                       "    }"
+                       "    int a;\n"
+                       "    // cppcheck-suppress uninitvar\n"
+                       "    a++;\n"
+                       "}",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
         // suppress uninitvar inline, without error present
         (this->*check)("void f() {\n"
                        "    int a;\n"
@@ -305,6 +324,18 @@ private:
                        "}\n",
                        "");
         ASSERT_EQUALS("[test.cpp:4]: (information) Unmatched suppression: uninitvar\n", errout.str());
+
+        // #5746 - exitcode
+        ASSERT_EQUALS(1U,
+                      (this->*check)("int f() {\n"
+                                     "  int a; return a;\n"
+                                     "}\n",
+                                     ""));
+        ASSERT_EQUALS(0U,
+                      (this->*check)("int f() {\n"
+                                     "  int a; return a;\n"
+                                     "}\n",
+                                     "uninitvar"));
     }
 
     void suppressionsSettings() {
@@ -331,6 +362,9 @@ private:
         Suppressions suppressions;
         suppressions.addSuppressionLine("*:test\\*");
         ASSERT_EQUALS(true, suppressions.isSuppressed("someid", "test/foo/bar.cpp", 142));
+
+        suppressions.addSuppressionLine("abc:include/1.h");
+        ASSERT_EQUALS(true, suppressions.isSuppressed("abc", "include\\1.h", 142));
     }
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
@@ -358,9 +392,9 @@ private:
         CppCheck cppCheck(*this, true);
         Settings& settings = cppCheck.settings();
         settings.addEnabled("style");
-        settings._inlineSuppressions = true;
-        settings._relativePaths = true;
-        settings._basePaths.push_back("/somewhere");
+        settings.inlineSuppressions = true;
+        settings.relativePaths = true;
+        settings.basePaths.push_back("/somewhere");
         const char code[] =
             "struct Point\n"
             "{\n"
@@ -371,6 +405,30 @@ private:
             "};";
         cppCheck.check("/somewhere/test.cpp", code);
         ASSERT_EQUALS("",errout.str());
+    }
+
+    void suppressingSyntaxErrors() { // syntaxErrors should be suppressable (#7076)
+        std::map<std::string, std::string> files;
+        files["test.cpp"] = "if if\n";
+
+        checkSuppression(files, "syntaxError:test.cpp:1");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void suppressingSyntaxErrorsInline() { // syntaxErrors should be suppressable (#5917)
+        std::map<std::string, std::string> files;
+        files["test.cpp"] = "double result(0.0);\n"
+                            "_asm\n"
+                            "{\n"
+                            "   // cppcheck-suppress syntaxError\n"
+                            "   push  EAX               ; save EAX for callers \n"
+                            "   mov   EAX,Real10        ; get the address pointed to by Real10\n"
+                            "   fld   TBYTE PTR [EAX]   ; load an extended real (10 bytes)\n"
+                            "   fstp  QWORD PTR result  ; store a double (8 bytes)\n"
+                            "   pop   EAX               ; restore EAX\n"
+                            "}";
+        checkSuppression(files, "");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

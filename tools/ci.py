@@ -32,6 +32,8 @@ def upload(file_to_upload, destination):
         pass
 
 # git push
+
+
 def gitpush():
     try:
         password = sys.argv[1]

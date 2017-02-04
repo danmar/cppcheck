@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ public:
     void assertWithSideEffects();
 
 protected:
-    void checkVariableAssignment(const Token* tmp);
+    void checkVariableAssignment(const Token* tmp, const Scope *assertionScope);
     static bool inSameScope(const Token* returnTok, const Token* assignTok);
 
 private:
@@ -57,9 +57,9 @@ private:
     void assignmentInAssertError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckAssert c(0, settings, errorLogger);
-        c.sideEffectInAssertError(0, "function");
-        c.assignmentInAssertError(0, "var");
+        CheckAssert c(nullptr, settings, errorLogger);
+        c.sideEffectInAssertError(nullptr, "function");
+        c.assignmentInAssertError(nullptr, "var");
     }
 
     static std::string myName() {

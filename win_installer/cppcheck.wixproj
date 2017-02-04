@@ -14,7 +14,14 @@
 
     <ProjectGuid>{3b772885-4980-4a76-8407-4dabf8f7757c}</ProjectGuid>
   </PropertyGroup>
-
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+  </PropertyGroup>
   <ItemGroup>
     <WixExtension Include="WixUIExtension">
       <Name>WixUIExtension</Name>

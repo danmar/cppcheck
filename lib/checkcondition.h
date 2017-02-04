@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,10 @@ public:
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
         checkCondition.multiCondition();
         checkCondition.clarifyCondition();   // not simplified because ifAssign
+        checkCondition.oppositeInnerCondition();
+        checkCondition.checkIncorrectLogicOperator();
+        checkCondition.checkInvalidTestForOverflow();
+        checkCondition.alwaysTrueFalse();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -56,8 +60,6 @@ public:
         checkCondition.assignIf();
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
-        checkCondition.oppositeInnerCondition();
-        checkCondition.checkIncorrectLogicOperator();
         checkCondition.checkModuloAlwaysTrueFalse();
     }
 
@@ -93,8 +95,15 @@ public:
     /** @brief Suspicious condition (assignment+comparison) */
     void clarifyCondition();
 
+    /** @brief Condition is always true/false */
+    void alwaysTrueFalse();
+
+    /** @brief %Check for invalid test for overflow 'x+100 < x' */
+    void checkInvalidTestForOverflow();
+
 private:
 
+    bool isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const;
     void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
     void mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2);
     void badBitmaskCheckError(const Token *tok);
@@ -108,26 +117,32 @@ private:
 
     void oppositeInnerConditionError(const Token *tok1, const Token* tok2);
 
-    void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always);
-    void redundantConditionError(const Token *tok, const std::string &text);
+    void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive);
+    void redundantConditionError(const Token *tok, const std::string &text, bool inconclusive);
 
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
 
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckCondition c(0, settings, errorLogger);
+    void alwaysTrueFalseError(const Token *tok, bool knownResult);
 
-        c.assignIfError(0, 0, "", false);
-        c.badBitmaskCheckError(0);
-        c.comparisonError(0, "&", 6, "==", 1, false);
-        c.multiConditionError(0,1);
-        c.mismatchingBitAndError(0, 0xf0, 0, 1);
-        c.oppositeInnerConditionError(0, 0);
-        c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
-        c.redundantConditionError(0, "If x > 11 the condition x > 10 is always true.");
-        c.moduloAlwaysTrueFalseError(0, "1");
-        c.clarifyConditionError(0, true, false);
+    void invalidTestForOverflow(const Token* tok, bool result);
+
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+        CheckCondition c(nullptr, settings, errorLogger);
+
+        c.assignIfError(nullptr, 0, "", false);
+        c.badBitmaskCheckError(nullptr);
+        c.comparisonError(nullptr, "&", 6, "==", 1, false);
+        c.multiConditionError(nullptr,1);
+        c.mismatchingBitAndError(nullptr, 0xf0, 0, 1);
+        c.oppositeInnerConditionError(nullptr, 0);
+        c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false);
+        c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
+        c.moduloAlwaysTrueFalseError(nullptr, "1");
+        c.clarifyConditionError(nullptr, true, false);
+        c.alwaysTrueFalseError(nullptr, true);
+        c.invalidTestForOverflow(nullptr, false);
     }
 
     static std::string myName() {
@@ -142,9 +157,11 @@ private:
                "- Detect matching 'if' and 'else if' conditions\n"
                "- Mismatching bitand (a &= 0xf0; a &= 1; => a = 0)\n"
                "- Find dead code which is inaccessible due to the counter-conditions check in nested if statements\n"
-               "- condition that is always true/false\n"
-               "- mutual exclusion over || always evaluating to true\n"
-               "- Comparisons of modulo results that are always true/false.\n";
+               "- Condition that is always true/false\n"
+               "- Mutual exclusion over || always evaluating to true\n"
+               "- Comparisons of modulo results that are always true/false.\n"
+               "- Known variable values => condition is always true/false\n"
+               "- Invalid test for overflow (for example 'ptr+u < ptr'). Condition is always false unless there is overflow, and overflow is UB.\n";
     }
 };
 /// @}

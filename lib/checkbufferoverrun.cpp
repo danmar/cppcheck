@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,12 +25,13 @@
 #include "tokenize.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
+#include "astutils.h"
 
 #include <algorithm>
 #include <sstream>
 #include <list>
-#include <cassert>     // <- assert
 #include <cstdlib>
+#include <stack>
 
 //---------------------------------------------------------------------------
 
@@ -38,6 +39,17 @@
 namespace {
     CheckBufferOverrun instance;
 }
+
+//---------------------------------------------------------------------------
+
+// CWE ids used:
+static const CWE CWE131(131U);  // Incorrect Calculation of Buffer Size
+static const CWE CWE170(170U);  // Improper Null Termination
+static const CWE CWE398(398U);  // Indicator of Poor Code Quality
+static const CWE CWE682(682U);  // Incorrect Calculation
+static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE786(786U);  // Access of Memory Location Before Start of Buffer
+static const CWE CWE788(788U);  // Access of Memory Location After End of Buffer
 
 //---------------------------------------------------------------------------
 
@@ -59,25 +71,11 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
 {
     std::ostringstream oss;
     makeArrayIndexOutOfBoundsError(oss, arrayInfo, index);
-    reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str());
+    reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str(), CWE788, false);
 }
 
 void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index)
 {
-    std::ostringstream errmsg;
-
-    errmsg << "Array '" << arrayInfo.varname();
-    for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
-        errmsg << "[" << arrayInfo.num(i) << "]";
-    if (index.size() == 1)
-        errmsg << "' accessed at index " << index[0].intvalue << ", which is out of bounds.";
-    else {
-        errmsg << "' index " << arrayInfo.varname();
-        for (std::size_t i = 0; i < index.size(); ++i)
-            errmsg << "[" << index[i].intvalue << "]";
-        errmsg << " out of bounds.";
-    }
-
     const Token *condition = nullptr;
     for (std::size_t i = 0; i < index.size(); ++i) {
         if (condition == nullptr)
@@ -87,13 +85,39 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
     if (condition != nullptr) {
         if (!_settings->isEnabled("warning"))
             return;
-        errmsg << " Otherwise condition '" << condition->expressionString() << "' is redundant.";
+
+        std::ostringstream errmsg;
+        errmsg << ValueFlow::eitherTheConditionIsRedundant(condition) << " or the array '" << arrayInfo.varname();
+        for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
+            errmsg << "[" << arrayInfo.num(i) << "]";
+        if (index.size() == 1)
+            errmsg << "' is accessed at index " << index[0].intvalue << ", which is out of bounds.";
+        else {
+            errmsg << "' index " << arrayInfo.varname();
+            for (std::size_t i = 0; i < index.size(); ++i)
+                errmsg << "[" << index[i].intvalue << "]";
+            errmsg << " is out of bounds.";
+        }
+
         std::list<const Token *> callstack;
         callstack.push_back(tok);
         callstack.push_back(condition);
-        reportError(callstack, Severity::warning, "arrayIndexOutOfBoundsCond", errmsg.str());
+        reportError(callstack, Severity::warning, "arrayIndexOutOfBoundsCond", errmsg.str(), CWE119, false);
     } else {
-        reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str());
+        std::ostringstream errmsg;
+        errmsg << "Array '" << arrayInfo.varname();
+        for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
+            errmsg << "[" << arrayInfo.num(i) << "]";
+        if (index.size() == 1)
+            errmsg << "' accessed at index " << index[0].intvalue << ", which is out of bounds.";
+        else {
+            errmsg << "' index " << arrayInfo.varname();
+            for (std::size_t i = 0; i < index.size(); ++i)
+                errmsg << "[" << index[i].intvalue << "]";
+            errmsg << " out of bounds.";
+        }
+
+        reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str(), CWE119, false);
     }
 }
 
@@ -119,7 +143,7 @@ static std::string bufferOverrunMessage(std::string varnames)
 
 void CheckBufferOverrun::bufferOverrunError(const Token *tok, const std::string &varnames)
 {
-    reportError(tok, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames));
+    reportError(tok, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames), CWE788, false);
 }
 
 
@@ -134,12 +158,12 @@ void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std:
         reportError(tok, Severity::warning, "possibleBufferAccessOutOfBounds",
                     "Possible buffer overflow if strlen(" + src + ") is larger than sizeof(" + dst + ")-strlen(" + dst +").\n"
                     "Possible buffer overflow if strlen(" + src + ") is larger than sizeof(" + dst + ")-strlen(" + dst +"). "
-                    "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
+                    "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.", CWE398, false);
     else
         reportError(tok, Severity::warning, "possibleBufferAccessOutOfBounds",
                     "Possible buffer overflow if strlen(" + src + ") is larger than or equal to sizeof(" + dst + ").\n"
                     "Possible buffer overflow if strlen(" + src + ") is larger than or equal to sizeof(" + dst + "). "
-                    "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
+                    "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.", CWE398, false);
 }
 
 void CheckBufferOverrun::strncatUsageError(const Token *tok)
@@ -152,7 +176,7 @@ void CheckBufferOverrun::strncatUsageError(const Token *tok)
                 "At most, strncat appends the 3rd parameter's amount of characters and adds a terminating null byte.\n"
                 "The safe way to use strncat is to subtract one from the remaining space in the buffer and use it as 3rd parameter."
                 "Source: http://www.cplusplus.com/reference/cstring/strncat/\n"
-                "Source: http://www.opensource.apple.com/source/Libc/Libc-167/gen.subproj/i386.subproj/strncat.c");
+                "Source: http://www.opensource.apple.com/source/Libc/Libc-167/gen.subproj/i386.subproj/strncat.c", CWE119, false);
 }
 
 void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &what, const bool show_size_info, const MathLib::bigint &supplied_size, const MathLib::bigint &actual_size)
@@ -163,15 +187,15 @@ void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &w
     if (show_size_info)
         oss << ": Supplied size " << supplied_size << " is larger than actual size " << actual_size;
     oss << '.';
-    reportError(tok, Severity::error, "outOfBounds", oss.str());
+    reportError(tok, Severity::error, "outOfBounds", oss.str(), CWE788, false);
 }
 
 void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const Token *index, const MathLib::bigint indexvalue)
 {
-    // The severity is portability instead of error since this ub doesnt
+    // The severity is portability instead of error since this ub doesn't
     // cause bad behaviour on most implementations. people create out
     // of bounds pointers by intention.
-    const std::string expr(tok ? tok->expressionString() : std::string(""));
+    const std::string expr(tok ? tok->expressionString() : std::string());
     std::string errmsg;
     if (index && !index->isNumber()) {
         errmsg = "Undefined behaviour, when '" +
@@ -184,7 +208,7 @@ void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const Token *
     }
     std::string verbosemsg(errmsg + ". From chapter 6.5.6 in the C specification:\n"
                            "\"When an expression that has integer type is added to or subtracted from a pointer, ..\" and then \"If both the pointer operand and the result point to elements of the same array object, or one past the last element of the array object, the evaluation shall not produce an overflow; otherwise, the behavior is undefined.\"");
-    reportError(tok, Severity::portability, "pointerOutOfBounds", errmsg + ".\n" + verbosemsg);
+    reportError(tok, Severity::portability, "pointerOutOfBounds", errmsg + ".\n" + verbosemsg, CWE398, false);
     /*
          "Undefined behaviour: The result of this pointer arithmetic does not point into
          or just one element past the end of the " + object + ".
@@ -197,7 +221,7 @@ void CheckBufferOverrun::sizeArgumentAsCharError(const Token *tok)
 {
     if (_settings && !_settings->isEnabled("warning"))
         return;
-    reportError(tok, Severity::warning, "sizeArgumentAsChar", "The size argument is given as a char constant.");
+    reportError(tok, Severity::warning, "sizeArgumentAsChar", "The size argument is given as a char constant.", CWE682, false);
 }
 
 
@@ -207,12 +231,12 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::stri
                 "The buffer '" + varname + "' may not be null-terminated after the call to strncpy().\n"
                 "If the source string's size fits or exceeds the given size, strncpy() does not add a "
                 "zero at the end of the buffer. This causes bugs later in the code if the code "
-                "assumes buffer is null-terminated.", true);
+                "assumes buffer is null-terminated.", CWE170, true);
 }
 
 void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
 {
-    reportError(tok, Severity::error, "insecureCmdLineArgs", "Buffer overrun possible for long command line arguments.");
+    reportError(tok, Severity::error, "insecureCmdLineArgs", "Buffer overrun possible for long command line arguments.", CWE119, false);
 }
 
 void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function)
@@ -221,12 +245,12 @@ void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const st
                                "The buffer '" + varname + "' is not null-terminated after the call to " + function + "(). "
                                "This will cause bugs later in the code if the code assumes the buffer is null-terminated.";
 
-    reportError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg, true);
+    reportError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg, CWE170, true);
 }
 
 void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname)
 {
-    reportError(tok, Severity::warning, "argumentSize", "The array '" + varname + "' is too small, the function '" + functionName + "' expects a bigger one.");
+    reportError(tok, Severity::warning, "argumentSize", "The array '" + varname + "' is too small, the function '" + functionName + "' expects a bigger one.", CWE398, false);
 }
 
 void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
@@ -234,7 +258,7 @@ void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
     reportError(tok, Severity::error, "negativeMemoryAllocationSize",
                 "Memory allocation size is negative.\n"
                 "Memory allocation size is negative."
-                "Negative allocation size has no specified behaviour.");
+                "Negative allocation size has no specified behaviour.", CWE131, false);
 }
 
 //---------------------------------------------------------------------------
@@ -244,6 +268,14 @@ void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
 // Check array usage..
 //---------------------------------------------------------------------------
 
+
+static bool isAddressOf(const Token *tok)
+{
+    const Token *tok2 = tok->astParent();
+    while (Token::Match(tok2, "%name%|.|::|["))
+        tok2 = tok2->astParent();
+    return tok2 && tok2->str() == "&" && !(tok2->astOperand1() && tok2->astOperand2());
+}
 
 /**
  * bailout if variable is used inside if/else/switch block or if there is "break"
@@ -281,7 +313,7 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
 }
 //---------------------------------------------------------------------------
 
-static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &minsizes, const Token * const ftok, const std::size_t arraySize, const Token **charSizeToken, const Settings * const settings)
+static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &minsizes, const Token * const ftok, const MathLib::bigint arraySize, const Token **charSizeToken, const Settings * const settings)
 {
     if (charSizeToken)
         *charSizeToken = nullptr;
@@ -304,16 +336,16 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
         case Library::ArgumentChecks::MinSize::ARGVALUE:
             if (Token::Match(argtok, "%num% ,|)")) {
                 const MathLib::bigint sz = MathLib::toLongNumber(argtok->str());
-                if ((std::size_t)sz > arraySize)
+                if (sz > arraySize)
                     error = true;
-            } else if (argtok->type() == Token::eChar && Token::Match(argtok->next(), ",|)") && charSizeToken)
+            } else if (argtok->tokType() == Token::eChar && Token::Match(argtok->next(), ",|)") && charSizeToken)
                 *charSizeToken = argtok; //sizeArgumentAsCharError(argtok);
             break;
         case Library::ArgumentChecks::MinSize::MUL:
             // TODO: handle arbitrary arg2
             if (minsize->arg2 == minsize->arg+1 && Token::Match(argtok, "%num% , %num% ,|)")) {
                 const MathLib::bigint sz = MathLib::toLongNumber(argtok->str()) * MathLib::toLongNumber(argtok->strAt(2));
-                if ((std::size_t)sz > arraySize)
+                if (sz > arraySize)
                     error = true;
             }
             break;
@@ -339,7 +371,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
         }
         break;
         case Library::ArgumentChecks::MinSize::SIZEOF:
-            if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
+            if (argtok->tokType() == Token::eString && Token::getStrLength(argtok) >= arraySize)
                 error = true;
             break;
         case Library::ArgumentChecks::MinSize::NONE:
@@ -349,20 +381,23 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
     return error;
 }
 
-void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int par, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack)
+void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int paramIndex, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack)
 {
-    const std::list<Library::ArgumentChecks::MinSize> * const minsizes = _settings->library.argminsizes(&ftok,par);
+    const std::list<Library::ArgumentChecks::MinSize> * const minsizes = _settings->library.argminsizes(&ftok, paramIndex);
 
-    if (minsizes && (!(Token::simpleMatch(ftok.previous(), ".") || Token::Match(ftok.tokAt(-2), "!!std ::")))) {
-        if (arrayInfo.element_size() == 0)
-            return;
-
+    if (minsizes) {
         MathLib::bigint arraySize = arrayInfo.element_size();
+        if (arraySize == 0)
+            return;
         for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
             arraySize *= arrayInfo.num(i);
 
+        // dimension is 0 or unknown => bailout
+        if (arraySize == 0)
+            return;
+
         const Token *charSizeToken = nullptr;
-        if (checkMinSizes(*minsizes, &ftok, (std::size_t)arraySize, &charSizeToken, _settings))
+        if (checkMinSizes(*minsizes, &ftok, arraySize, &charSizeToken, _settings))
             bufferOverrunError(callstack, arrayInfo.varname());
         if (charSizeToken)
             sizeArgumentAsCharError(charSizeToken);
@@ -375,10 +410,10 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
 
         if (func && func->hasBody()) {
             // Get corresponding parameter..
-            const Variable* const parameter = func->getArgumentVar(par-1);
+            const Variable* const parameter = func->getArgumentVar(paramIndex-1);
 
             // Ensure that it has a compatible size..
-            if (!parameter || _tokenizer->sizeOfType(parameter->typeStartToken()) != arrayInfo.element_size())
+            if (!parameter || sizeOfType(parameter->typeStartToken()) != arrayInfo.element_size())
                 return;
 
             // No variable id occur for instance when:
@@ -445,19 +480,19 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
 
         // If argument is '%type% a[num]' then check bounds against num
         if (func) {
-            const Variable* const argument = func->getArgumentVar(par-1);
+            const Variable* const argument = func->getArgumentVar(paramIndex-1);
             const Token *nameToken;
             if (argument && Token::Match(argument->typeStartToken(), "%type% %var% [ %num% ] [,)[]")
                 && (nameToken = argument->nameToken()) != nullptr) {
                 const Token *tok2 = nameToken->next();
 
-                MathLib::bigint argsize = _tokenizer->sizeOfType(argument->typeStartToken());
+                MathLib::bigint argsize = sizeOfType(argument->typeStartToken());
                 if (argsize == 100) // unknown size
                     argsize = 0;
-                while (Token::Match(tok2, "[ %num% ] [,)[]")) {
+                do {
                     argsize *= MathLib::toLongNumber(tok2->strAt(1));
                     tok2 = tok2->tokAt(3);
-                }
+                } while (Token::Match(tok2, "[ %num% ] [,)[]"));
 
                 MathLib::bigint arraysize = arrayInfo.element_size();
                 if (arraysize == 100) // unknown size
@@ -481,7 +516,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
         return;
 
     // Prevent recursion
-    for (std::list<const Token*>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
+    for (std::list<const Token*>::const_iterator it = callstack.cbegin(); it != callstack.cend(); ++it) {
         // Same function name => bail out
         if (tok->str() == (*it)->str())
             return;
@@ -508,7 +543,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
 void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo)
 {
     const MathLib::bigint size = arrayInfo.num(0);
-    if (size == 0)  // unknown size
+    if (size <= 0)  // unknown size
         return;
 
     if (tok->str() == "return") {
@@ -517,6 +552,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             return;
     }
 
+    const bool printInconclusive = _settings->inconclusive;
     const MathLib::bigint total_size = arrayInfo.element_size() * size;
     const unsigned int declarationId = arrayInfo.declarationId();
 
@@ -524,13 +560,13 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     for (std::size_t i = 0; i < varname.size(); ++i)
         varnames += (i == 0 ? "" : " . ") + varname[i];
 
-    const unsigned char varcount = static_cast<unsigned char>(varname.empty() ? 0U : (varname.size() - 1) * 2U);
+    const int varcount = varname.empty() ? 0 : static_cast<int>((varname.size() - 1) * 2U);
 
     // ValueFlow array index..
     if ((declarationId > 0 && Token::Match(tok, "%varid% [", declarationId)) ||
-        (declarationId == 0 && Token::Match(tok, (varnames + " [").c_str()))) {
+        (declarationId == 0 && Token::simpleMatch(tok, (varnames + " [").c_str()))) {
 
-        const Token *tok2 = tok;
+        const Token *tok2 = tok->next();
         while (tok2->str() != "[")
             tok2 = tok2->next();
         valueFlowCheckArrayIndex(tok2, arrayInfo);
@@ -540,7 +576,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     // out of bounds then this flag will be set.
     bool pointerIsOutOfBounds = false;
 
-    const bool isPortabilityEnabled = _settings->isEnabled("portability");
+    const bool printPortability = _settings->isEnabled("portability");
 
     for (const Token* const end = tok->scope()->classEnd; tok && tok != end; tok = tok->next()) {
         if (declarationId != 0 && Token::Match(tok, "%varid% = new|malloc|realloc", declarationId)) {
@@ -632,7 +668,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
                             // The access is still within the memory range for the array
                             // so it may be intentional.
-                            else if (_settings->inconclusive) {
+                            else if (printInconclusive) {
                                 arrayIndexOutOfBoundsError(tok->tokAt(1 + varcount), arrayInfo, indexes);
                                 break; // only warn about the first one
                             }
@@ -645,33 +681,37 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         }
 
         // memset, memcmp, memcpy, strncpy, fgets..
-        if (declarationId == 0 && size > 0) {
+        if (declarationId == 0 && size > 0 && Token::Match(tok, "%name% ( !!)")) {
             std::list<const Token *> callstack;
             callstack.push_back(tok);
-            if (Token::Match(tok, ("%name% ( " + varnames + " ,").c_str()))
+            const Token* tok2 = tok->tokAt(2);
+            if (Token::Match(tok2, (varnames + " ,").c_str()))
                 checkFunctionParameter(*tok, 1, arrayInfo, callstack);
-            if (Token::Match(tok, ("%name% ( %name% , " + varnames + " ,").c_str()))
+            tok2 = tok2->nextArgument();
+            if (Token::Match(tok2, (varnames + " ,").c_str()))
                 checkFunctionParameter(*tok, 2, arrayInfo, callstack);
         }
 
         if (total_size > 0) {
             // Writing data into array..
-            if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) ||
-                (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))) {
-                const std::size_t len = Token::getStrLength(tok->tokAt(varcount + 4));
-                if (len >= (unsigned int)total_size) {
-                    bufferOverrunError(tok, declarationId > 0 ? emptyString : varnames);
-                    continue;
-                }
-            } else if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %var% )", declarationId)) ||
-                       (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %var% )").c_str()))) {
-                const Variable *var = tok->tokAt(varcount + 4)->variable();
-                if (var && var->isArray() && var->dimensions().size() == 1) {
-                    const MathLib::bigint len = var->dimension(0);
-                    if (len > total_size) {
-                        if (_settings->inconclusive)
-                            possibleBufferOverrunError(tok, tok->strAt(4), tok->strAt(2), tok->str() == "strcat");
+            if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str%|%var% )", declarationId)) ||
+                (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str%|%var% )").c_str()))) {
+                const Token* lastParamTok = tok->tokAt(varcount + 4);
+                if (lastParamTok->tokType() == Token::Type::eString) {
+                    const std::size_t len = Token::getStrLength(lastParamTok);
+                    if (len >= total_size) {
+                        bufferOverrunError(tok, declarationId > 0 ? emptyString : varnames);
                         continue;
+                    }
+                } else {
+                    const Variable *var = lastParamTok->variable();
+                    if (var && var->isArray() && var->dimensions().size() == 1) {
+                        const MathLib::bigint len = var->dimension(0);
+                        if (len > total_size) {
+                            if (printInconclusive)
+                                possibleBufferOverrunError(tok, tok->strAt(4), tok->strAt(2), tok->str() == "strcat");
+                            continue;
+                        }
                     }
                 }
             }
@@ -682,14 +722,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 std::size_t charactersAppend = 0;
                 const Token *tok2 = tok;
 
-                while (Token::Match(tok2, strcatPattern.c_str(), declarationId)) {
+                do {
                     charactersAppend += Token::getStrLength(tok2->tokAt(4 + varcount));
                     if (charactersAppend >= static_cast<std::size_t>(total_size)) {
                         bufferOverrunError(tok2);
                         break;
                     }
                     tok2 = tok2->tokAt(7 + varcount);
-                }
+                } while (Token::Match(tok2, strcatPattern.c_str(), declarationId));
             }
 
             // Check function call..
@@ -707,7 +747,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // undefined behaviour: result of pointer arithmetic is out of bounds
         if (declarationId && Token::Match(tok, "= %varid% + %num% ;", declarationId)) {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
-            if (isPortabilityEnabled && index > size)
+            if (printPortability && index > size)
                 pointerOutOfBoundsError(tok->tokAt(2));
             if (index >= size && Token::Match(tok->tokAt(-2), "[;{}] %varid% =", declarationId))
                 pointerIsOutOfBounds = true;
@@ -718,6 +758,31 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         }
     }
 }
+
+static std::vector<ValueFlow::Value> valueFlowGetArrayIndexes(const Token * const tok, bool conditional, std::size_t dimensions)
+{
+    unsigned int indexvarid = 0;
+    const std::vector<ValueFlow::Value> empty;
+    std::vector<ValueFlow::Value> indexes;
+    for (const Token *tok2 = tok; indexes.size() < dimensions && Token::Match(tok2, "["); tok2 = tok2->link()->next()) {
+        if (!tok2->astOperand2())
+            return empty;
+
+        const ValueFlow::Value *index = tok2->astOperand2()->getMaxValue(conditional);
+        if (!index)
+            return empty;
+        if (indexvarid == 0U)
+            indexvarid = index->varId;
+        if (index->varId > 0 && indexvarid != index->varId)
+            return empty;
+        if (index->intvalue < 0)
+            return empty;
+        indexes.push_back(*index);
+    }
+
+    return indexes;
+}
+
 
 void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo)
 {
@@ -733,14 +798,9 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
                 return;
         }
     */
+    const bool printInconclusive = _settings->inconclusive;
     // Taking address?
-    bool addressOf = false;
-    {
-        const Token *tok2 = tok->astParent();
-        while (Token::Match(tok2, "%name%|.|::|["))
-            tok2 = tok2->astParent();
-        addressOf = tok2 && tok2->str() == "&" && !(tok2->astOperand1() && tok2->astOperand2());
-    }
+    const bool addressOf = isAddressOf(tok);
 
     // Look for errors first
     for (int warn = 0; warn == 0 || warn == 1; ++warn) {
@@ -755,75 +815,43 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
         }
 
         // Index out of bounds..
-        std::vector<ValueFlow::Value> indexes;
-        unsigned int valuevarid = 0;
-        for (const Token *tok2 = tok; indexes.size() < arrayInfo.num().size() && Token::Match(tok2, "["); tok2 = tok2->link()->next()) {
-            if (!tok2->astOperand2()) {
-                indexes.clear();
-                break;
-            }
-            const ValueFlow::Value *value = tok2->astOperand2()->getMaxValue(warn == 1);
-            if (!value) {
-                indexes.clear();
-                break;
-            }
-            if (valuevarid == 0U)
-                valuevarid = value->varId;
-            if (value->varId > 0 && valuevarid != value->varId) {
-                indexes.clear();
-                break;
-            }
-            if (value->intvalue < 0) {
-                indexes.clear();
-                break;
-            }
-            indexes.push_back(*value);
+        const std::vector<ValueFlow::Value> indexes(valueFlowGetArrayIndexes(tok, warn==1, arrayInfo.num().size()));
+        if (indexes.size() != arrayInfo.num().size())
+            continue;
+
+        // Check if the indexes point outside the whole array..
+        // char a[10][10];
+        // a[0][20]  <-- ok.
+        // a[9][20]  <-- error.
+
+        // total number of elements of array..
+        const MathLib::bigint totalElements = arrayInfo.numberOfElements();
+
+        // total index..
+        const MathLib::bigint totalIndex = arrayInfo.totalIndex(indexes);
+
+        // totalElements <= 0 => Unknown size
+        if (totalElements <= 0)
+            continue;
+
+        if (addressOf && totalIndex == totalElements)
+            continue;
+
+        // Is totalIndex in bounds?
+        if (totalIndex >= totalElements) {
+            arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
+            break;
         }
-        if (indexes.size() == arrayInfo.num().size()) {
-            // Check if the indexes point outside the whole array..
-            // char a[10][10];
-            // a[0][20]  <-- ok.
-            // a[9][20]  <-- error.
 
-            // total number of elements of array..
-            MathLib::bigint totalElements = 1;
-
-            // total index..
-            MathLib::bigint totalIndex = 0;
-
-            // calculate the totalElements and totalIndex..
+        // Is any array index out of bounds?
+        if (printInconclusive) {
+            // check each index for overflow
             for (std::size_t i = 0; i < indexes.size(); ++i) {
-                const std::size_t ri = indexes.size() - 1 - i;
-                totalIndex += indexes[ri].intvalue * totalElements;
-                totalElements *= arrayInfo.num(ri);
-            }
-
-            // totalElements <= 0 => Unknown size
-            if (totalElements <= 0)
-                continue;
-
-            // taking address of 1 past end?
-            if (addressOf && totalIndex == totalElements)
-                continue;
-
-            // Is totalIndex in bounds?
-            if (totalIndex >= totalElements) {
-                arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
-                break;
-            }
-
-            // Is any array index out of bounds?
-            else {
-                // check each index for overflow
-                for (std::size_t i = 0; i < indexes.size(); ++i) {
-                    if (indexes[i].intvalue >= arrayInfo.num(i)) {
-                        // The access is still within the memory range for the array
-                        // so it may be intentional.
-                        if (_settings->inconclusive) {
-                            arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
-                            break; // only warn about the first one
-                        }
-                    }
+                if (indexes[i].intvalue >= arrayInfo.num(i)) {
+                    // The access is still within the memory range for the array
+                    // so it may be intentional.
+                    arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
+                    break; // only warn about the first one
                 }
             }
         }
@@ -834,137 +862,233 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
 
 void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo)
 {
-    assert(tok->previous() != nullptr);
-    const MathLib::bigint total_size = arrayInfo.num(0) * arrayInfo.element_size();
-
-    const unsigned int declarationId = arrayInfo.declarationId();
-
-    const bool isPortabilityEnabled = _settings->isEnabled("portability");
-    const bool isWarningEnabled = _settings->isEnabled("warning");
-
     bool reassigned = false;
 
     for (const Token* const end = tok->scope()->classEnd; tok != end; tok = tok->next()) {
         if (reassigned && tok->str() == ";")
             break;
 
-        if (tok->varId() == declarationId) {
-            if (tok->strAt(1) == "=") {
-                reassigned = true;
-            }
+        if (tok->varId() != arrayInfo.declarationId())
+            continue;
 
-            else if (tok->strAt(1) == "[") {
-                valueFlowCheckArrayIndex(tok->next(), arrayInfo);
-            }
+        if (tok->strAt(1) == "=") {
+            reassigned = true;
+        }
 
-            else if (isPortabilityEnabled && !tok->isCast() && tok->astParent() && tok->astParent()->str() == "+") {
-                // undefined behaviour: result of pointer arithmetic is out of bounds
-                const Token *index;
-                if (tok == tok->astParent()->astOperand1())
-                    index = tok->astParent()->astOperand2();
-                else
-                    index = tok->astParent()->astOperand1();
-                if (index) {
-                    const ValueFlow::Value *value = index->getValueGE(arrayInfo.num(0) + 1U, _settings);
-                    if (!value)
-                        value = index->getValueLE(-1, _settings);
-                    if (value)
-                        pointerOutOfBoundsError(tok->astParent(), index, value->intvalue);
-                }
-            }
+        checkScope_inner(tok, arrayInfo);
+    }
+}
 
-            else if (isPortabilityEnabled && tok->astParent() && tok->astParent()->str() == "-") {
-                const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(declarationId);
-                if (var && var->isArray()) {
-                    const Token *index = tok->astParent()->astOperand2();
-                    const ValueFlow::Value *value = index ? index->getValueGE(1,_settings) : nullptr;
-                    if (index && !value)
-                        value = index->getValueLE(-1 - arrayInfo.num(0), _settings);
-                    if (value)
-                        pointerOutOfBoundsError(tok->astParent(), index, value->intvalue);
-                }
+void CheckBufferOverrun::checkScope(const Token *tok, std::map<unsigned int, ArrayInfo> arrayInfos)
+{
+    unsigned int reassigned = 0;
+
+    for (const Token* const end = tok->scope()->classEnd; tok != end; tok = tok->next()) {
+        if (reassigned && tok->str() == ";") {
+            arrayInfos.erase(reassigned);
+            reassigned = 0;
+        }
+
+        if (!tok->variable() || tok->variable()->nameToken() == tok)
+            continue;
+
+        std::map<unsigned int, ArrayInfo>::const_iterator arrayInfo = arrayInfos.find(tok->varId());
+        if (arrayInfo == arrayInfos.cend())
+            continue;
+
+        if (tok->strAt(1) == "=") {
+            reassigned = tok->varId();
+        }
+
+        checkScope_inner(tok, arrayInfo->second);
+    }
+}
+
+void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arrayInfo)
+{
+    const bool printPortability = _settings->isEnabled("portability");
+    const bool printWarning = _settings->isEnabled("warning");
+    const bool printInconclusive = _settings->inconclusive;
+
+    if (tok->strAt(1) == "[") {
+        valueFlowCheckArrayIndex(tok->next(), arrayInfo);
+    }
+
+    else if (printPortability && !tok->isCast() && tok->astParent() && tok->astParent()->str() == "+") {
+        // undefined behaviour: result of pointer arithmetic is out of bounds
+        const Token *index;
+        if (tok == tok->astParent()->astOperand1())
+            index = tok->astParent()->astOperand2();
+        else
+            index = tok->astParent()->astOperand1();
+        if (index) {
+            const ValueFlow::Value *value = index->getValueGE(arrayInfo.num(0) + 1U, _settings);
+            if (!value)
+                value = index->getValueLE(-1, _settings);
+            if (value)
+                pointerOutOfBoundsError(tok->astParent(), index, value->intvalue);
+        }
+    }
+
+    else if (printPortability && tok->astParent() && tok->astParent()->str() == "-") {
+        const Variable *var = symbolDatabase->getVariableFromVarId(arrayInfo.declarationId());
+        if (var && var->isArray()) {
+            const Token *index = tok->astParent()->astOperand2();
+            const ValueFlow::Value *value = index ? index->getValueGE(1,_settings) : nullptr;
+            if (index && !value)
+                value = index->getValueLE(-1 - arrayInfo.num(0), _settings);
+            if (value)
+                pointerOutOfBoundsError(tok->astParent(), index, value->intvalue);
+        }
+    }
+
+    if (!tok->scope()->isExecutable()) // No executable code outside of executable scope - continue to increase performance
+        return;
+
+    const Token* tok2 = tok->astParent();
+    if (tok2) {
+        while (tok2->astParent() && !Token::Match(tok2->astParent(), "[,(]"))
+            tok2 = tok2->astParent();
+        while (tok2->astParent() && tok2->astParent()->str() == ",")
+            tok2 = tok2->astParent();
+        if (tok2->astParent() && tok2->astParent()->str() == "(")
+            tok2 = tok2->astParent();
+
+        if (tok2->str() != "(")
+            return;
+
+        tok2 = tok2->previous();
+
+        // Check function call..
+        checkFunctionCall(tok2, arrayInfo, std::list<const Token*>());
+
+        const MathLib::biguint total_size = arrayInfo.num(0) * arrayInfo.element_size();
+
+        if (printWarning && printInconclusive && Token::Match(tok2, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", arrayInfo.declarationId())) {
+            if (Token::getStrLength(tok2->tokAt(4)) >= total_size) {
+                const MathLib::biguint num = MathLib::toULongNumber(tok2->strAt(6));
+                if (total_size == num)
+                    bufferNotZeroTerminatedError(tok2, tok2->strAt(2), tok2->str());
             }
         }
 
-        else if (!tok->scope()->isExecutable()) // No executable code outside of executable scope - continue to increase performance
-            continue;
+        if (printWarning && Token::Match(tok2, "strncpy|strncat ( %varid% ,", arrayInfo.declarationId()) && Token::Match(tok2->linkAt(1)->tokAt(-2), ", %num% )")) {
+            const Token* param3 = tok2->linkAt(1)->previous();
 
-        else if (Token::Match(tok, "%name% (")) {
-            // Check function call..
-            checkFunctionCall(tok, arrayInfo, std::list<const Token*>());
+            // check for strncpy which is not terminated
+            if (tok2->str() == "strncpy") {
+                // strncpy takes entire variable length as input size
+                const MathLib::biguint num = MathLib::toULongNumber(param3->str());
 
-            if (isWarningEnabled && _settings->inconclusive && Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
-                if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size) {
-                    const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(6));
-                    if (total_size == num)
-                        bufferNotZeroTerminatedError(tok, tok->strAt(2), tok->str());
-                }
-            }
-
-            if (isWarningEnabled && Token::Match(tok, "strncpy|strncat ( %varid% ,", declarationId) && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
-                const Token* param3 = tok->linkAt(1)->previous();
-
-                // check for strncpy which is not terminated
-                if (tok->str() == "strncpy") {
-                    // strncpy takes entire variable length as input size
-                    const MathLib::bigint num = MathLib::toLongNumber(param3->str());
-
-                    // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
-                    if (num >= total_size && _settings->inconclusive) {
-                        const Token *tok2 = tok->next()->link()->next();
-                        for (; tok2; tok2 = tok2->next()) {
-                            const Token* tok3 = tok->tokAt(2);
-                            if (tok2->varId() == tok3->varId()) {
-                                if (!Token::Match(tok2, "%varid% [ %any% ] = 0 ;", tok3->varId())) {
-                                    terminateStrncpyError(tok, tok3->str());
-                                }
-
-                                break;
-                            }
+                // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
+                if (printInconclusive && num >= total_size) {
+                    const Token *tok4 = tok2->next()->link()->next();
+                    for (; tok4; tok4 = tok4->next()) {
+                        const Token* tok3 = tok2->tokAt(2);
+                        if (tok4->varId() == tok3->varId()) {
+                            const Token *eq = nullptr;
+                            if (Token::Match(tok4, "%varid% [", tok3->varId()) && Token::simpleMatch(tok4->linkAt(1), "] ="))
+                                eq = tok4->linkAt(1)->next();
+                            const Token *rhs = eq ? eq->astOperand2() : nullptr;
+                            if (!(rhs && rhs->hasKnownIntValue() && rhs->getValue(0)))
+                                terminateStrncpyError(tok2, tok3->str());
+                            break;
                         }
                     }
                 }
-
-                // Dangerous usage of strncat..
-                else if (tok->str() == "strncat") {
-                    const MathLib::bigint n = MathLib::toLongNumber(param3->str());
-                    if (n >= total_size)
-                        strncatUsageError(tok);
-                }
-
-                // Dangerous usage of strncpy + strncat..
-                if (Token::Match(param3->tokAt(2), "; strncat ( %varid% ,", declarationId) && Token::Match(param3->linkAt(4)->tokAt(-2), ", %num% )")) {
-                    const MathLib::bigint n = MathLib::toLongNumber(param3->str()) + MathLib::toLongNumber(param3->linkAt(4)->strAt(-1));
-                    if (n > total_size)
-                        strncatUsageError(param3->tokAt(3));
-                }
             }
 
-            // Writing data into array..
-            if (total_size > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) {
-                const std::size_t len = Token::getStrLength(tok->tokAt(4));
-                if (len >= (unsigned int)total_size) {
-                    bufferOverrunError(tok, arrayInfo.varname());
-                    continue;
+            // Dangerous usage of strncat..
+            else if (tok2->str() == "strncat") {
+                const MathLib::biguint n = MathLib::toULongNumber(param3->str());
+                if (n >= total_size)
+                    strncatUsageError(tok2);
+            }
+
+            // Dangerous usage of strncpy + strncat..
+            if (Token::Match(param3->tokAt(2), "; strncat ( %varid% ,", arrayInfo.declarationId()) && Token::Match(param3->linkAt(4)->tokAt(-2), ", %num% )")) {
+                const MathLib::biguint n = MathLib::toULongNumber(param3->str()) + MathLib::toULongNumber(param3->linkAt(4)->strAt(-1));
+                if (n > total_size)
+                    strncatUsageError(param3->tokAt(3));
+            }
+        }
+
+        // Writing data into array..
+        if (total_size > 0) {
+            if (Token::Match(tok2, "strcpy ( %varid% , %str% )", arrayInfo.declarationId())) {
+                const std::size_t len = Token::getStrLength(tok2->tokAt(4));
+                if (len >= total_size) {
+                    bufferOverrunError(tok2, arrayInfo.varname());
+                    return;
                 }
             }
 
             // Detect few strcat() calls
-            if (total_size > 0 && Token::Match(tok, "strcat ( %varid% , %str% ) ;", declarationId)) {
-                std::size_t charactersAppend = 0;
-                const Token *tok2 = tok;
+            MathLib::biguint charactersAppend = 0;
+            const Token *tok3 = tok2;
 
-                while (tok2 && Token::Match(tok2, "strcat ( %varid% , %str% ) ;", declarationId)) {
-                    charactersAppend += Token::getStrLength(tok2->tokAt(4));
-                    if (charactersAppend >= (unsigned int)total_size) {
-                        bufferOverrunError(tok2, arrayInfo.varname());
-                        break;
-                    }
-                    tok2 = tok2->tokAt(7);
+            while (Token::Match(tok3, "strcat ( %varid% , %str% ) ;", arrayInfo.declarationId())) {
+                charactersAppend += Token::getStrLength(tok3->tokAt(4));
+                if (charactersAppend >= total_size) {
+                    bufferOverrunError(tok3, arrayInfo.varname());
+                    break;
                 }
+                tok3 = tok3->tokAt(7);
             }
         }
     }
+}
+
+//---------------------------------------------------------------------------
+// Negative size in array declarations
+//---------------------------------------------------------------------------
+
+static bool isVLAIndex(const Token *index)
+{
+    std::stack<const Token *> tokens;
+    tokens.push(index);
+    while (!tokens.empty()) {
+        const Token *tok = tokens.top();
+        tokens.pop();
+        if (!tok)
+            continue;
+        if (tok->varId() != 0U)
+            return true;
+        if (tok->str() == "?") {
+            // this is a VLA index if both expressions around the ":" is VLA index
+            if (tok->astOperand2() &&
+                tok->astOperand2()->str() == ":" &&
+                isVLAIndex(tok->astOperand2()->astOperand1()) &&
+                isVLAIndex(tok->astOperand2()->astOperand2()))
+                return true;
+            continue;
+        }
+        tokens.push(tok->astOperand1());
+        tokens.push(tok->astOperand2());
+    }
+    return false;
+}
+
+void CheckBufferOverrun::negativeArraySize()
+{
+    for (unsigned int i = 1; i <= _tokenizer->varIdCount(); i++) {
+        const Variable * const var = symbolDatabase->getVariableFromVarId(i);
+        if (!var || !var->isArray())
+            continue;
+        const Token * const nameToken = var->nameToken();
+        if (!Token::Match(nameToken, "%var% [") || !nameToken->next()->astOperand2())
+            continue;
+        const ValueFlow::Value *sz = nameToken->next()->astOperand2()->getValueLE(-1,_settings);
+        // don't warn about constant negative index because that is a compiler error
+        if (sz && isVLAIndex(nameToken->next()->astOperand2()))
+            negativeArraySizeError(nameToken);
+    }
+}
+
+void CheckBufferOverrun::negativeArraySizeError(const Token *tok)
+{
+    reportError(tok, Severity::error, "negativeArraySize",
+                "Declaration of array '" + (tok ? tok->str() : std::string()) + "' with negative size is undefined behaviour", CWE758, false);
 }
 
 //---------------------------------------------------------------------------
@@ -998,36 +1122,84 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 {
     // check string literals
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%str% [ %num% ]")) {
-            const std::size_t strLen = tok->str().size() - 2; // Don't count enclosing quotes
-            const std::size_t index = (std::size_t)std::atoi(tok->strAt(2).c_str());
-            if (index > strLen)
+        if (Token::Match(tok, "%str% [") && tok->next()->astOperand2()) {
+            const std::size_t size = Token::getStrSize(tok);
+            const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
+            if (value && value->intvalue >= (isAddressOf(tok) ? size + 1U : size))
                 bufferOverrunError(tok, tok->str());
+        }
+
+        if (Token::Match(tok, "%var% [") && tok->next()->astOperand2() && tok->variable() && tok->variable()->isPointer()) {
+            const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
+            if (!value)
+                continue;
+
+            for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it) {
+                if (!it->isTokValue() || !it->tokvalue)
+                    continue;
+                const Variable *var = it->tokvalue->variable();
+                if (var && var->isArray()) {
+                    if (astCanonicalType(tok) != astCanonicalType(it->tokvalue))
+                        continue;
+
+                    const ArrayInfo arrayInfo(var, symbolDatabase);
+                    const MathLib::bigint elements = arrayInfo.numberOfElements();
+                    if (elements <= 0) // unknown size
+                        continue;
+
+                    const std::vector<ValueFlow::Value> indexes(valueFlowGetArrayIndexes(tok->next(), false, var->dimensions().size()));
+                    if (indexes.size() != var->dimensions().size())
+                        continue;
+
+                    const MathLib::bigint index = arrayInfo.totalIndex(indexes);
+                    if (index < (isAddressOf(tok) ? elements + 1U : elements))
+                        continue;
+
+                    std::list<const Token *> callstack;
+                    callstack.push_back(it->tokvalue);
+                    callstack.push_back(tok);
+
+                    std::vector<MathLib::bigint> indexes2;
+                    for (unsigned int i = 0; i < indexes.size(); ++i)
+                        indexes2.push_back(indexes[i].intvalue);
+
+                    arrayIndexOutOfBoundsError(callstack, arrayInfo, indexes2);
+                }
+            }
         }
     }
 
     // check all known fixed size arrays first by just looking them up
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
-    for (unsigned int i = 1; i <= _tokenizer->varIdCount(); i++) {
-        const Variable * const var = symbolDatabase->getVariableFromVarId(i);
-        if (var && var->isArray() && var->dimension(0) > 0) {
-            const Token *tok = var->nameToken();
-            while (tok && tok->str() != ";") {
-                if (tok->str() == "{") {
-                    if (Token::simpleMatch(tok->previous(), "= {"))
-                        tok = tok->link();
-                    else
-                        break;
-                }
-                tok = tok->next();
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.cbegin(); scope != symbolDatabase->scopeList.cend(); ++scope) {
+        std::map<unsigned int, ArrayInfo> arrayInfos;
+        for (std::list<Variable>::const_iterator var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var) {
+            if (var->isArray() && var->dimension(0) > 0) {
+                _errorLogger->reportProgress(_tokenizer->list.getSourceFilePath(),
+                                             "Check (BufferOverrun::checkGlobalAndLocalVariable 1)",
+                                             var->nameToken()->progressValue());
+
+                if (_tokenizer->isMaxTime())
+                    return;
+
+                const Token *tok = var->nameToken();
+                do {
+                    if (tok->str() == "{") {
+                        if (Token::simpleMatch(tok->previous(), "= {"))
+                            tok = tok->link();
+                        else
+                            break;
+                    }
+                    tok = tok->next();
+                } while (tok && tok->str() != ";");
+                if (!tok)
+                    break;
+                if (tok->str() == "{")
+                    tok = tok->next();
+                arrayInfos[var->declarationId()] = ArrayInfo(&*var, symbolDatabase, var->declarationId());
             }
-            if (!tok)
-                break;
-            if (tok->str() == "{")
-                tok = tok->next();
-            const ArrayInfo arrayInfo(var, _tokenizer, &_settings->library, i);
-            checkScope(tok, arrayInfo);
         }
+        if (!arrayInfos.empty())
+            checkScope(scope->classStart ? scope->classStart : _tokenizer->tokens(), arrayInfos);
     }
 
     // find all dynamically allocated arrays next
@@ -1037,50 +1209,47 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
         for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             // if the previous token exists, it must be either a variable name or "[;{}]"
-            if (tok->previous() && (!tok->previous()->isName() && !Token::Match(tok->previous(), "[;{}]")))
+            if (tok->previous() && !tok->previous()->isName() && !Token::Match(tok->previous(), "[;{}]"))
                 continue;
 
             // size : Max array index
             MathLib::bigint size = 0;
 
-            // type : The type of a array element
-            std::string type;
-
             // varid : The variable id for the array
             const Variable *var = nullptr;
 
-            // nextTok : number of tokens used in variable declaration - used to skip to next statement.
-            int nextTok = 0;
+            // nextTok : used to skip to next statement.
+            const Token * nextTok = tok;
 
             _errorLogger->reportProgress(_tokenizer->list.getSourceFilePath(),
-                                         "Check (BufferOverrun::checkGlobalAndLocalVariable)",
+                                         "Check (BufferOverrun::checkGlobalAndLocalVariable 2)",
                                          tok->progressValue());
 
-            if (Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]")) {
-                size = MathLib::toLongNumber(tok->strAt(6));
-                type = tok->strAt(4);
+            if (_tokenizer->isMaxTime())
+                return;
+
+            if (_tokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% [")) {
+                if (tok->tokAt(5)->astOperand2() == nullptr || tok->tokAt(5)->astOperand2()->getMaxValue(false) == nullptr)
+                    continue;
+                size = tok->tokAt(5)->astOperand2()->getMaxValue(false)->intvalue;
                 var = tok->next()->variable();
-                nextTok = 8;
+                nextTok = tok->linkAt(5)->next();
                 if (size < 0) {
                     negativeMemoryAllocationSizeError(tok->next()->next());
                 }
-            } else if (Token::Match(tok, "[*;{}] %var% = new %type% ( %num% )")) {
+            } else if (_tokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% (|;")) {
                 size = 1;
-                type = tok->strAt(4);
                 var = tok->next()->variable();
-                nextTok = 8;
-            } else if (Token::Match(tok, "[;{}] %var% = %str% ;") &&
-                       tok->next()->variable() &&
-                       tok->next()->variable()->isPointer()) {
-                size = 1 + int(tok->tokAt(3)->strValue().size());
-                type = "char";
+                if (tok->strAt(5) == ";")
+                    nextTok = tok->tokAt(6);
+                else
+                    nextTok = tok->linkAt(5)->next();
+            } else if (Token::Match(tok, "[*;{}] %var% = malloc|alloca (") && Token::simpleMatch(tok->linkAt(4), ") ;")) {
+                if (tok->tokAt(4)->astOperand2() == nullptr || tok->tokAt(4)->astOperand2()->getMaxValue(false) == nullptr)
+                    continue;
+                size = tok->tokAt(4)->astOperand2()->getMaxValue(false)->intvalue;
                 var = tok->next()->variable();
-                nextTok = 4;
-            } else if (Token::Match(tok, "[*;{}] %var% = malloc|alloca ( %num% ) ;")) {
-                size = MathLib::toLongNumber(tok->strAt(5));
-                type = "char";   // minimum type, typesize=1
-                var = tok->next()->variable();
-                nextTok = 7;
+                nextTok = tok->linkAt(4)->tokAt(2);
 
                 if (size < 0) {
                     negativeMemoryAllocationSizeError(tok->next()->next());
@@ -1090,15 +1259,12 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 if (!var || !var->isPointer() || var->typeStartToken()->next() != var->typeEndToken())
                     continue;
 
-                // get type of variable
-                type = var->typeStartToken()->str();
-
                 // malloc() gets count of bytes and not count of
                 // elements, so we should calculate count of elements
                 // manually
-                const unsigned int sizeOfType = _tokenizer->sizeOfType(var->typeStartToken());
-                if (sizeOfType > 0) {
-                    size /= static_cast<int>(sizeOfType);
+                const unsigned int typeSize = sizeOfType(var->typeStartToken());
+                if (typeSize > 0) {
+                    size /= static_cast<int>(typeSize);
                 }
                 if (size < 0) {
                     negativeMemoryAllocationSizeError(tok->next()->next());
@@ -1110,15 +1276,13 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (var == 0)
                 continue;
 
-            Token sizeTok(0);
-            sizeTok.str(type);
-            const MathLib::bigint totalSize = size * static_cast<int>(_tokenizer->sizeOfType(&sizeTok));
+            const MathLib::bigint totalSize = size * static_cast<int>(sizeOfType(var->typeStartToken()));
             if (totalSize == 0)
                 continue;
 
             std::vector<std::string> v;
             ArrayInfo temp(var->declarationId(), tok->next()->str(), totalSize / size, size);
-            checkScope(tok->tokAt(nextTok), v, temp);
+            checkScope(nextTok, v, temp);
         }
     }
 }
@@ -1131,8 +1295,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
 void CheckBufferOverrun::checkStructVariable()
 {
-    const SymbolDatabase * symbolDatabase = _tokenizer->getSymbolDatabase();
-
     // find every class and struct
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
@@ -1143,7 +1305,7 @@ void CheckBufferOverrun::checkStructVariable()
         for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
             if (var->isArray()) {
                 // create ArrayInfo from the array variable
-                ArrayInfo arrayInfo(&*var, _tokenizer, &_settings->library);
+                ArrayInfo arrayInfo(&*var, symbolDatabase);
 
                 // find every function
                 const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -1298,19 +1460,10 @@ void CheckBufferOverrun::checkStructVariable()
         }
     }
 }
+
 //---------------------------------------------------------------------------
 
 void CheckBufferOverrun::bufferOverrun()
-{
-    checkGlobalAndLocalVariable();
-    checkStructVariable();
-    checkBufferAllocatedWithStrlen();
-    checkStringArgument();
-    checkInsecureCmdLineArgs();
-}
-//---------------------------------------------------------------------------
-
-void CheckBufferOverrun::bufferOverrun2()
 {
     // singlepass checking using ast, symboldatabase and valueflow
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -1324,31 +1477,49 @@ void CheckBufferOverrun::bufferOverrun2()
             continue;
 
         // Set full varname..
-        std::string varname(tok->str());
+        std::string varname;
         if (tok->astParent() && tok->astParent()->str() == ".") {
             const Token *parent = tok->astParent();
             while (parent->astParent() && parent->astParent()->str() == ".")
                 parent = parent->astParent();
             varname = parent->expressionString();
-        }
+        } else
+            varname = tok->str();
 
+
+        const Variable * const var = tok->variable();
+        if (!var)
+            continue;
 
         const Token * const strtoken = tok->getValueTokenMinStrSize();
-        if (strtoken) {
+        if (strtoken && !var->isArray()) {
+            // TODO: check for access to symbol inside the array bounds, but outside the stored string:
+            //  char arr[10] = "123";
+            //  arr[7] = 'x'; // warning: arr[7] is inside the array bounds, but past the string's end
+
             ArrayInfo arrayInfo(tok->varId(), varname, 1U, Token::getStrSize(strtoken));
             valueFlowCheckArrayIndex(tok->next(), arrayInfo);
-        }
+        } else {
+            if (var->nameToken() == tok || !var->isArray())
+                continue;
 
-        else {
-            const Variable * const var = tok->variable();
-            if (!var || var->nameToken() == tok || !var->isArray())
+            // unknown array dimensions
+            bool known = true;
+            for (unsigned int i = 0; i < var->dimensions().size(); ++i) {
+                known &= (var->dimension(i) >= 1);
+                known &= var->dimensionKnown(i);
+            }
+            if (!known)
                 continue;
 
             // TODO: last array in struct..
             if (var->dimension(0) <= 1 && Token::simpleMatch(var->nameToken()->linkAt(1),"] ; }"))
                 continue;
 
-            ArrayInfo arrayInfo(var, _tokenizer, &_settings->library);
+            if (var->scope() && var->scope()->type == Scope::eUnion)
+                continue;
+
+            ArrayInfo arrayInfo(var, symbolDatabase);
             arrayInfo.varname(varname);
 
             valueFlowCheckArrayIndex(tok->next(), arrayInfo);
@@ -1383,6 +1554,8 @@ MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input
             case 'X':
             case 'i':
                 i_d_x_f_found = true;
+                handleNextParameter = true;
+                break;
             case 'c':
             case 'e':
             case 'E':
@@ -1395,13 +1568,13 @@ MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input
                 break;
             case 'd':
                 i_d_x_f_found = true;
-                if (paramIter != parameters.end() && *paramIter && (*paramIter)->type() != Token::eString)
+                if (paramIter != parameters.end() && *paramIter && (*paramIter)->tokType() != Token::eString)
                     parameterLength = (*paramIter)->str().length();
 
                 handleNextParameter = true;
                 break;
             case 's':
-                if (paramIter != parameters.end() && *paramIter && (*paramIter)->type() == Token::eString)
+                if (paramIter != parameters.end() && *paramIter && (*paramIter)->tokType() == Token::eString)
                     parameterLength = Token::getStrLength(*paramIter);
 
                 handleNextParameter = true;
@@ -1455,7 +1628,7 @@ MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input
         }
     }
 
-    return (MathLib::biguint)input_string_size;
+    return input_string_size;
 }
 
 
@@ -1470,8 +1643,6 @@ MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input
 //---------------------------------------------------------------------------
 void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
 {
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -1484,7 +1655,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
                 dstVarId = tok->varId();
                 srcVarId = tok->tokAt(6)->varId();
                 tok      = tok->tokAt(8);
-            } else if (Token::Match(tok, "%var% = new char [ strlen ( %name% ) ]")) {
+            } else if (_tokenizer->isCPP() && Token::Match(tok, "%var% = new char [ strlen ( %name% ) ]")) {
                 dstVarId = tok->varId();
                 srcVarId = tok->tokAt(7)->varId();
                 tok      = tok->tokAt(9);
@@ -1518,7 +1689,6 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
 //---------------------------------------------------------------------------
 void CheckBufferOverrun::checkStringArgument()
 {
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t functionIndex = 0; functionIndex < functions; ++functionIndex) {
         const Scope * const scope = symbolDatabase->functionScopes[functionIndex];
@@ -1528,7 +1698,7 @@ void CheckBufferOverrun::checkStringArgument()
 
             unsigned int argnr = 1;
             for (const Token *argtok = tok->tokAt(2); argtok; argtok = argtok->nextArgument(), argnr++) {
-                if (!Token::Match(argtok, "%name%|%str% ,|)"))
+                if (!Token::Match(argtok, "%str% ,|)"))
                     continue;
                 const Token *strtoken = argtok->getValueTokenMinStrSize();
                 if (!strtoken)
@@ -1556,8 +1726,6 @@ void CheckBufferOverrun::checkStringArgument()
 //---------------------------------------------------------------------------
 void CheckBufferOverrun::checkInsecureCmdLineArgs()
 {
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Function * function = symbolDatabase->functionScopes[i]->function;
@@ -1601,7 +1769,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, MathLib::bigint in
 {
     std::ostringstream ostr;
     ostr << "Array index " << index << " is out of bounds.";
-    reportError(tok, Severity::error, "negativeIndex", ostr.str());
+    reportError(tok, Severity::error, "negativeIndex", ostr.str(), CWE786, false);
 }
 
 void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::Value &index)
@@ -1610,7 +1778,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::V
     ostr << "Array index " << index.intvalue << " is out of bounds.";
     if (index.condition)
         ostr << " Otherwise there is useless condition at line " << index.condition->linenr() << ".";
-    reportError(tok, index.condition ? Severity::warning : Severity::error, "negativeIndex", ostr.str(), index.inconclusive);
+    reportError(tok, index.condition ? Severity::warning : Severity::error, "negativeIndex", ostr.str(), CWE786, index.inconclusive);
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo()
@@ -1618,22 +1786,17 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo()
 {
 }
 
-CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const Library *library, const unsigned int forcedeclid)
+CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const SymbolDatabase * symDb, const unsigned int forcedeclid)
     : _varname(var->name()), _declarationId((forcedeclid == 0U) ? var->declarationId() : forcedeclid)
 {
     for (std::size_t i = 0; i < var->dimensions().size(); i++)
         _num.push_back(var->dimension(i));
     if (var->typeEndToken()->str() == "*")
-        _element_size = tokenizer->sizeOfType(var->typeEndToken());
-    else if (var->typeStartToken()->str() == "struct")
+        _element_size = symDb->sizeOfType(var->typeEndToken());
+    else if (var->typeStartToken()->strAt(-1) == "struct")
         _element_size = 100;
     else {
-        _element_size = tokenizer->sizeOfType(var->typeEndToken());
-        if (!_element_size) { // try libary
-            const Library::PodType* podtype = library->podtype(var->typeEndToken()->str());
-            if (podtype)
-                _element_size = podtype->size;
-        }
+        _element_size = symDb->sizeOfType(var->typeEndToken());
     }
 }
 
@@ -1660,6 +1823,30 @@ CheckBufferOverrun::ArrayInfo CheckBufferOverrun::ArrayInfo::limit(MathLib::bigi
     return ArrayInfo(_declarationId, _varname, _element_size, n - uvalue);
 }
 
+MathLib::bigint CheckBufferOverrun::ArrayInfo::numberOfElements() const
+{
+    if (_num.empty())
+        return 0;
+
+    // total number of elements of array..
+    MathLib::bigint ret = 1;
+    for (std::size_t i = 0; i < _num.size(); ++i) {
+        ret *= _num[i];
+    }
+    return ret;
+}
+
+MathLib::bigint CheckBufferOverrun::ArrayInfo::totalIndex(const std::vector<ValueFlow::Value> &indexes) const
+{
+    MathLib::bigint index = 0;
+    MathLib::bigint elements = 1;
+    for (std::size_t i = 0; i < _num.size(); ++i) {
+        const std::size_t ri = _num.size() - 1U - i;
+        index += indexes[ri].intvalue * elements;
+        elements *= _num[ri];
+    }
+    return index;
+}
 
 
 void CheckBufferOverrun::arrayIndexThenCheck()
@@ -1667,11 +1854,15 @@ void CheckBufferOverrun::arrayIndexThenCheck()
     if (!_settings->isEnabled("style"))
         return;
 
-    const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * const scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "sizeof (")) {
+                tok = tok->linkAt(1);
+                continue;
+            }
+
             if (Token::Match(tok, "%name% [ %var% ]")) {
                 tok = tok->tokAt(2);
 
@@ -1688,9 +1879,11 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                     return;
 
                 // skip comparison
-                if (tok->type() == Token::eComparisonOp)
+                if (tok->tokType() == Token::eComparisonOp)
                     tok = tok->tokAt(2);
 
+                if (!tok)
+                    break;
                 // skip close parentheses
                 if (tok->str() == ")")
                     tok = tok->next();
@@ -1713,7 +1906,25 @@ void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::s
                 "Defensive programming: The variable '" + indexName + "' is used as an array index before it "
                 "is checked that is within limits. This can mean that the array might be accessed out of bounds. "
                 "Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the array will "
-                "not be accessed if the index is out of limits.");
+                "not be accessed if the index is out of limits.", CWE398, false);
+}
+
+std::string CheckBufferOverrun::MyFileInfo::toString() const
+{
+    std::ostringstream ret;
+    for (std::map<std::string, struct CheckBufferOverrun::MyFileInfo::ArrayUsage>::const_iterator it = arrayUsage.begin(); it != arrayUsage.end(); ++it) {
+        ret << "    <ArrayUsage"
+            << " array=\"" << ErrorLogger::toxml(it->first) << '\"'
+            << " index=\"" << it->second.index << '\"'
+            << " fileName=\"" << ErrorLogger::toxml(it->second.fileName) << '\"'
+            << " linenr=\"" << it->second.linenr << "\"/>\n";
+    }
+    for (std::map<std::string, MathLib::bigint>::const_iterator it = arraySize.begin(); it != arraySize.end(); ++it) {
+        ret << "    <ArraySize"
+            << " array=\"" << ErrorLogger::toxml(it->first) << '\"'
+            << " size=\"" << it->second << "\"/>\n";
+    }
+    return ret.str();
 }
 
 Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
@@ -1723,10 +1934,10 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
     MyFileInfo *fileInfo = new MyFileInfo;
 
     // Array usage..
-    const SymbolDatabase* const symbolDatabase = tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
+    const SymbolDatabase* const symbolDB = tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDB->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * const scope = symbolDatabase->functionScopes[i];
+        const Scope * const scope = symbolDB->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% [")          &&
                 Token::Match(tok->linkAt(1), "] !![") &&
@@ -1736,7 +1947,7 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
                 tok->next()->astOperand2()) {
                 const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
                 if (value && value->intvalue > 0) {
-                    const int arrayIndex = value->intvalue;
+                    const MathLib::bigint arrayIndex = value->intvalue;
                     std::map<std::string, struct MyFileInfo::ArrayUsage>::iterator it = fileInfo->arrayUsage.find(tok->str());
                     if (it != fileInfo->arrayUsage.end() && it->second.index >= arrayIndex)
                         continue;
@@ -1751,7 +1962,7 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
     }
 
     // Arrays..
-    const std::list<Variable> &varlist = symbolDatabase->scopeList.front().varlist;
+    const std::list<Variable> &varlist = symbolDB->scopeList.front().varlist;
     for (std::list<Variable>::const_iterator it = varlist.begin(); it != varlist.end(); ++it) {
         const Variable &var = *it;
         if (!var.isStatic() && var.isArray() && var.dimensions().size() == 1U && var.dimension(0U) > 0U)
@@ -1761,7 +1972,7 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
     return fileInfo;
 }
 
-void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger)
+void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings&, ErrorLogger &errorLogger)
 {
     // Merge all fileInfo
     MyFileInfo all;
@@ -1802,11 +2013,20 @@ void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &
             ostr << "Array " << it->first << '[' << sz->second << "] accessed at index " << it->second.index << " which is out of bounds";
 
             const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                   emptyString,
                                                    Severity::error,
                                                    ostr.str(),
                                                    "arrayIndexOutOfBounds",
-                                                   false);
+                                                   CWE788, false);
             errorLogger.reportErr(errmsg);
         }
     }
+}
+
+unsigned int CheckBufferOverrun::sizeOfType(const Token *type) const
+{
+    if (symbolDatabase)
+        return symbolDatabase->sizeOfType(type);
+
+    return 0;
 }

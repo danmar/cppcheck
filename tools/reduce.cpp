@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ private:
     std::time_t stopTime;
 
 public:
-    CppcheckExecutor(const ReduceSettings & settings)
+    explicit CppcheckExecutor(const ReduceSettings & settings)
         : ErrorLogger()
         , cppcheck(*this,false)
         , foundLine(false)
@@ -634,6 +634,50 @@ static bool cleanupStatements(const ReduceSettings &settings, std::vector<std::s
     return changed;
 }
 
+static bool tryLoadLibrary(Library& destination, const char* basepath, const char* filename)
+{
+    const Library::Error err = destination.load(basepath, filename);
+
+    if (err.errorcode == Library::UNKNOWN_ELEMENT)
+        std::cout << "reduce: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;
+    else if (err.errorcode != Library::OK) {
+        std::string errmsg;
+        switch (err.errorcode) {
+        case Library::OK:
+            break;
+        case Library::FILE_NOT_FOUND:
+            errmsg = "File not found";
+            break;
+        case Library::BAD_XML:
+            errmsg = "Bad XML";
+            break;
+        case Library::UNKNOWN_ELEMENT:
+            errmsg = "Unexpected element";
+            break;
+        case Library::MISSING_ATTRIBUTE:
+            errmsg = "Missing attribute";
+            break;
+        case Library::BAD_ATTRIBUTE_VALUE:
+            errmsg = "Bad attribute value";
+            break;
+        case Library::UNSUPPORTED_FORMAT:
+            errmsg = "File is of unsupported format version";
+            break;
+        case Library::DUPLICATE_PLATFORM_TYPE:
+            errmsg = "Duplicate platform type";
+            break;
+        case Library::PLATFORM_TYPE_REDEFINED:
+            errmsg = "Platform type redefined";
+            break;
+        }
+        if (!err.reason.empty())
+            errmsg += " '" + err.reason + "'";
+        std::cout << "reduce: Failed to load library configuration file '" << filename << "'. " << errmsg << std::endl;
+        return false;
+    }
+    return true;
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -674,7 +718,7 @@ int main(int argc, char *argv[])
                 if (path[path.length()-1] != '/')
                     path += '/';
 
-                settings._includePaths.push_back(path);
+                settings.includePaths.push_back(path);
             }
         } else if (strncmp(argv[i], "--maxtime=", 10) == 0)
             settings.maxtime = std::atoi(argv[i] + 10);
@@ -702,7 +746,7 @@ int main(int argc, char *argv[])
         } else if (std::strcmp(argv[i], "--debug-warnings") == 0)
             settings.debugwarnings = true;
         else if (std::strcmp(argv[i], "-f") == 0 || std::strcmp(argv[i], "--force") == 0)
-            settings._force = true;
+            settings.force = true;
         else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
             std::string errmsg = settings.addEnabled(argv[i] + 9);
             if (!errmsg.empty()) {
@@ -719,21 +763,36 @@ int main(int argc, char *argv[])
         } else if (std::strcmp(argv[i], "--inconclusive") == 0)
             settings.inconclusive = true;
         else if (std::strncmp(argv[i], "--max-configs=", 14) == 0) {
-            settings._force = false;
+            settings.force = false;
 
             std::istringstream iss(14+argv[i]);
-            if (!(iss >> settings._maxConfigs)) {
+            if (!(iss >> settings.maxConfigs)) {
                 std::cerr << "argument to '--max-configs=' is not a number." << std::endl;
-                return false;
+                return EXIT_FAILURE;
             }
 
-            if (settings._maxConfigs < 1) {
+            if (settings.maxConfigs < 1) {
                 std::cerr << "argument to '--max-configs=' must be greater than 0." << std::endl;
-                return false;
+                return EXIT_FAILURE;
             }
 
             maxconfigs = true;
-        } else if (settings.filename==NULL && strchr(argv[i],'.'))
+        } else if (std::strncmp(argv[i], "--library=", 10) == 0) {
+            if (!tryLoadLibrary(settings.library, argv[0], argv[i]+10))
+                return EXIT_FAILURE;
+        } else if (std::strcmp(argv[i], "--std=posix") == 0) {
+            settings.standards.posix = true;
+        } else if (std::strcmp(argv[i], "--std=c89") == 0) {
+            settings.standards.c = Standards::C89;
+        } else if (std::strcmp(argv[i], "--std=c99") == 0) {
+            settings.standards.c = Standards::C99;
+        } else if (std::strcmp(argv[i], "--std=c11") == 0) {
+            settings.standards.c = Standards::C11;
+        } else if (std::strcmp(argv[i], "--std=c++03") == 0) {
+            settings.standards.cpp = Standards::CPP03;
+        } else if (std::strcmp(argv[i], "--std=c++11") == 0) {
+            settings.standards.cpp = Standards::CPP11;
+        } else if (settings.filename==nullptr && strchr(argv[i],'.'))
             settings.filename = argv[i];
         else if (settings.linenr == 0U && MathLib::isInt(argv[i]))
             settings.linenr = std::atoi(argv[i]);
@@ -743,15 +802,15 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (def && !settings._force && !maxconfigs)
-        settings._maxConfigs = 1U;
+    if (def && !settings.force && !maxconfigs)
+        settings.maxConfigs = 1U;
 
-    if (settings._force)
-        settings._maxConfigs = ~0U;
+    if (settings.force)
+        settings.maxConfigs = ~0U;
 
-    if ((!settings.hang && settings.linenr == 0U) || settings.filename == NULL) {
+    if ((!settings.hang && settings.linenr == 0U) || settings.filename == nullptr) {
         std::cerr << "Syntax:" << std::endl
-                  << argv[0] << " [--stdout] [--cfg=X] [--hang] [--maxtime=60] [-D define] [-I includepath] [--force] [--enable=<id>] [--inconclusive] [--debug-warnings] [--max-configs=<limit>] filename [linenr]" << std::endl;
+                  << argv[0] << " [--stdout] [--cfg=X] [--hang] [--maxtime=60] [-D define] [-I includepath] [--force] [--enable=<id>] [--inconclusive] [--debug-warnings] [--max-configs=<limit>] [--platform=<type>] [--library=<cfg>] [--std=<id>] filename [linenr]" << std::endl;
         return EXIT_FAILURE;
     }
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ class Variable;
 /// @{
 
 
-/** @brief checks dealing with suspicous usage of boolean type (not for evaluating conditions) */
+/** @brief checks dealing with suspicious usage of boolean type (not for evaluating conditions) */
 
 class CPPCHECKLIB CheckBool : public Check {
 public:
@@ -102,7 +102,6 @@ private:
     void comparisonOfTwoFuncsReturningBoolError(const Token *tok, const std::string &expression1, const std::string &expression2);
     void comparisonOfBoolWithBoolError(const Token *tok, const std::string &expression);
     void incrementBooleanError(const Token *tok);
-    void comparisonOfBoolWithIntError(const Token *tok, const std::string &expression, bool n0o1);
     void comparisonOfBoolWithInvalidComparator(const Token *tok, const std::string &expression);
     void assignBoolToPointerError(const Token *tok);
     void assignBoolToFloatError(const Token *tok);
@@ -111,17 +110,17 @@ private:
     void pointerArithBoolError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckBool c(0, settings, errorLogger);
+        CheckBool c(nullptr, settings, errorLogger);
 
-        c.assignBoolToPointerError(0);
-        c.comparisonOfFuncReturningBoolError(0, "func_name");
-        c.comparisonOfTwoFuncsReturningBoolError(0, "func_name1", "func_name2");
-        c.comparisonOfBoolWithBoolError(0, "var_name");
-        c.incrementBooleanError(0);
-        c.comparisonOfBoolWithIntError(0, "varname", true);
-        c.bitwiseOnBooleanError(0, "varname", "&&");
-        c.comparisonOfBoolExpressionWithIntError(0, true);
-        c.pointerArithBoolError(0);
+        c.assignBoolToPointerError(nullptr);
+        c.assignBoolToFloatError(nullptr);
+        c.comparisonOfFuncReturningBoolError(nullptr, "func_name");
+        c.comparisonOfTwoFuncsReturningBoolError(nullptr, "func_name1", "func_name2");
+        c.comparisonOfBoolWithBoolError(nullptr, "var_name");
+        c.incrementBooleanError(nullptr);
+        c.bitwiseOnBooleanError(nullptr, "varname", "&&");
+        c.comparisonOfBoolExpressionWithIntError(nullptr, true);
+        c.pointerArithBoolError(nullptr);
     }
 
     static std::string myName() {
@@ -131,7 +130,6 @@ private:
     std::string classInfo() const {
         return "Boolean type checks\n"
                "- using increment on boolean\n"
-               "- comparison of a boolean with a non-zero integer\n"
                "- comparison of a boolean expression with an integer other than 0 or 1\n"
                "- comparison of a function returning boolean value using relational operator\n"
                "- comparison of a boolean value with boolean value using relational operator\n"

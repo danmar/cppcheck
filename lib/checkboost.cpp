@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 namespace {
     CheckBoost instance;
 }
+
+static const CWE CWE664(664);
 
 void CheckBoost::checkBoostForeachModification()
 {
@@ -55,6 +57,6 @@ void CheckBoost::checkBoostForeachModification()
 void CheckBoost::boostForeachError(const Token *tok)
 {
     reportError(tok, Severity::error, "boostForeachError",
-                "BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside."
+                "BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.", CWE664, false
                );
 }

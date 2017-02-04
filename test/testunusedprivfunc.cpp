@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,11 @@ public:
     }
 
 private:
+    Settings settings;
+
     void run() {
+        settings.addEnabled("style");
+
         TEST_CASE(test1);
         TEST_CASE(test2);
         TEST_CASE(test3);
@@ -75,12 +79,11 @@ private:
     }
 
 
-    void check(const char code[]) {
+    void check(const char code[], Settings::PlatformType platform = Settings::Native) {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("style");
+        settings.platform(platform);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -389,6 +392,17 @@ private:
               "    };\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"  // #6968 - outer definition
+              "public:\n"
+              "  class B;\n"
+              "private:\n"
+              "  void f() {}\n"
+              "}\n"
+              "class A::B {"
+              "  B() { A a; a.f(); }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -467,6 +481,24 @@ private:
               "    void func() {}\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("class Base {\n"
+              "public:\n"
+              "    void dostuff() {\n"
+              "      f();\n"
+              "    }\n"
+              "\n"
+              "private:\n"
+              "    virtual Base* f() = 0;\n"
+              "};\n"
+              "\n"
+              "class Derived : public Base {\n"
+              "private:\n"
+              "    Derived* f() {\n"
+              "      return 0;\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void friendClass() {
@@ -517,7 +549,7 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "    __property int x = {read=getx}\n"
-              "};");
+              "};", Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -530,7 +562,7 @@ private:
               "    }\n"
               "public:\n"
               "    Foo() { }\n"
-              "};");
+              "};", Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -721,7 +753,7 @@ private:
               "    C a;\n"
               "}");
 
-        ASSERT_EQUALS("[test.cpp:10]: (style) Unused private function: 'InfiniteA::foo'\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void staticVariable() {

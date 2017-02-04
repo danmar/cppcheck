@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='windows-1252'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <?include productInfo.wxi ?>
   <?include config.wxi ?>
@@ -37,6 +37,7 @@
             <File Id='Qt5Coredll' Name='Qt5Core.dll' Source='$(var.QtDllDir)\Qt5Core.dll' />
             <File Id='Qt5Guidll' Name='Qt5Gui.dll' Source='$(var.QtDllDir)\Qt5Gui.dll' />
             <File Id='Qt5Widgetsdll' Name='Qt5Widgets.dll' Source='$(var.QtDllDir)\Qt5Widgets.dll' />
+            <File Id='Qt5PrintSupportdll' Name='Qt5PrintSupport.dll' Source='$(var.QtDllDir)\Qt5PrintSupport.dll' />
           </Component>
           <Directory Id='QtPlatformsFolder' Name='platforms'>
             <Component Id='QtPlatforms' DiskId='1' Guid='$(var.qtplatformsGUID)'>
@@ -64,46 +65,35 @@
               <File Id='std.cfg' Name='std.cfg' Source='$(var.CfgsDir)\std.cfg' />
             </Component>
             <Component Id='OptionalCfgs' Guid='$(var.optionalCfgsGUID)'>
+              <File Id='avr.cfg' Name='avr.cfg' Source='$(var.CfgsDir)\avr.cfg' />
+              <File Id='gnu.cfg' Name='gnu.cfg' Source='$(var.CfgsDir)\gnu.cfg' />
               <File Id='gtk.cfg' Name='gtk.cfg' Source='$(var.CfgsDir)\gtk.cfg' />
+              <File Id='microsoft_sal.cfg' Name='microsoft_sal.cfg' Source='$(var.CfgsDir)\microsoft_sal.cfg' />
               <File Id='posix.cfg' Name='posix.cfg' Source='$(var.CfgsDir)\posix.cfg' />
               <File Id='qt.cfg' Name='qt.cfg' Source='$(var.CfgsDir)\qt.cfg' />
               <File Id='sdl.cfg' Name='sdl.cfg' Source='$(var.CfgsDir)\sdl.cfg' />
               <File Id='windows.cfg' Name='windows.cfg' Source='$(var.CfgsDir)\windows.cfg' />
-              <File Id='microsoft_sal.cfg' Name='microsoft_sal.cfg' Source='$(var.CfgsDir)\microsoft_sal.cfg' />
-              <File Id='avr.cfg' Name='avr.cfg' Source='$(var.CfgsDir)\avr.cfg' />
+              <File Id='wxwidgets.cfg' Name='wxwidgets.cfg' Source='$(var.CfgsDir)\wxwidgets.cfg' />
+            </Component>
+          </Directory>
+          <Directory Id='PtfsFolder' Name='platforms'>
+            <Component Id='OptionalPtfs' Guid='$(var.optionalPtfsGUID)'>
+              <File Id='unix32unsigned.xml' Name='unix32-unsigned.xml' Source='$(var.PtfsDir)\unix32-unsigned.xml' />
+              <File Id='unix64unsigned.xml' Name='unix64-unsigned.xml' Source='$(var.PtfsDir)\unix64-unsigned.xml' />
+            </Component>
+          </Directory>
+          <Directory Id='AddonsFolder' Name='addons'>
+            <Component Id='Addons' Guid='$(var.addonsGUID)'>
+              <File Id='cppcheckdata.py' Name='cppcheckdata.py' Source='$(var.AddonsDir)\cppcheckdata.py' />
+              <File Id='cert.py' Name='cert.py' Source='$(var.AddonsDir)\cert.py' />
+              <File Id='naming.py' Name='naming.py' Source='$(var.AddonsDir)\naming.py' />
+              <File Id='threadsafety.py' Name='threadsafety.py' Source='$(var.AddonsDir)\threadsafety.py' />
             </Component>
           </Directory>
           <Component Id='BaseDocs' Guid='$(var.basedocsGUID)'>
             <File Id='authors.txt' Name='authors.txt' DiskId='1' Source='..\authors' />
             <File Id='readme.txt' Name='readme.txt' DiskId='1' Source='..\readme.txt' />
-          </Component>
-
-          <!-- Cleanup runtime files installed by previous InnoSetup installer.
-               Also remove old gui.exe which is now cppcheck-gui.exe.
-               Remove old Swedish translation file which was renamed.
-               Remove old English translation that is not needed.
-               Remove locally installed help file that didn't work.
-               Remove Qt DLLs not needed anymore
-          -->
-          <Component Id='InnoSetupCleanup' Guid='4A3F299D-1EE1-468b-814B-D6577F0698CA'>
-            <RemoveFile Id="msvcp90.dll" On="install" Name="msvcp90.dll" />
-            <RemoveFile Id="msvcr90.dll" On="install" Name="msvcr90.dll" />
-            <RemoveFile Id="Microsoft.VC90.CRT.manifest" On="install" Name="Microsoft.VC90.CRT.manifest" />
-            <RemoveFile Id='libgcc_s_dw2_1_dll' On='install' Name='libgcc_s_dw2-1.dll' />
-            <RemoveFile Id='mingwm10dll' On='install' Name='mingwm10.dll' />
-            <RemoveFile Id='libpcre0dll' On='install' Name='libpcre-0.dll' />
-            <RemoveFile Id="gui.exe" On="install" Name="gui.exe" />
-            <RemoveFile Id="cppcheck_se.qm" On="install" Name="cppcheck_se.qm" />
-            <RemoveFile Id="cppcheck_en.qm" On="install" Name="cppcheck_en.qm" />
-            <RemoveFile Id="cppcheck_pl.qm" On="install" Name="cppcheck_pl.qm" />
-            <RemoveFile Id="onlinehelp.qhc" On="install" Name="onlinehelp.qhc" />
-            <RemoveFile Id="qtclucene4dll" On="install" Name="qtclucene4.dll" />
-            <RemoveFile Id="qthelp4dll" On="install" Name="qthelp4.dll" />
-            <RemoveFile Id="qtnetwork4dll" On="install" Name="qtnetwork4.dll" />
-            <RemoveFile Id="qtsql4dll" On="install" Name="qtsql4.dll" />
-            <RemoveFile Id='qtxml4dll' On='install' Name='qtxml4.dll' />
-            <RemoveFile Id='qtcore4dll' On='install' Name='qtcore4.dll' />
-            <RemoveFile Id='qtgui4dll' On='install' Name='qtgui4.dll' />
+            <File Id='GPLv3.txt' Name='GPLv3.txt' DiskId='1' Source='GPLv3.txt' />
           </Component>
         </Directory>
         <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />
@@ -119,13 +109,13 @@
       </Directory>
     </Directory>
 
+    <Property Id="INSTALLLEVEL" Value="1" />
     <Feature Id='Complete' Title='$(var.ProductName)' Description='The complete package.'
       Display='expand' Level='1' AllowAdvertise='no' ConfigurableDirectory='INSTALLDIR' >
       <Feature Id='CppcheckCore' Display='hidden' AllowAdvertise='no' Title='Cppcheck-Core' Description='Cppcheck core components' Level='1'>
         <ComponentRef Id='cppcheckcore.dll' />
         <ComponentRef Id='RegistryEntries' />
         <ComponentRef Id='BaseDocs' />
-        <ComponentRef Id='InnoSetupCleanup' />
         <ComponentRef Id='MandatoryCfgs' />
       </Feature>
       <Feature Id='CLI' Title='Command line interface' AllowAdvertise='no' Description='Cppcheck as a command line tool' Level='1'>
@@ -143,13 +133,19 @@
       <Feature Id='ConfigFiles' Title='Additional configurations' AllowAdvertise='no' Description='Provide additional configuration files, for example for WinAPI, GTK and SDL' Level='1'>
         <ComponentRef Id='OptionalCfgs' />
       </Feature>
-      <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2010 Runtime Components">
+      <Feature Id='PlatformFiles' Title='Additional platforms' AllowAdvertise='no' Description='Provide additional platform files, for example unix platforms with unsigned types as default' Level='1'>
+        <ComponentRef Id='OptionalPtfs' />
+      </Feature>
+      <Feature Id='PythonAddons' Title='Python addons' AllowAdvertise='no' Description='Contains several addons requiring python' Level='2'>
+        <ComponentRef Id='Addons' />
+      </Feature>
+      <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2015 Runtime Components">
         <MergeRef Id="CRT"/>
       </Feature>
     </Feature>
 
     <MajorUpgrade DowngradeErrorMessage='Downgrade is not allowed'/>
-    <!--Remove pre 1.57 versions which can't be upgraded with MajorUpgrade-->
+    <!--Remove some pre 1.57 versions which can't be upgraded with MajorUpgrade-->
     <InstallExecuteSequence>
       <Custom Action='UninstallOld152' After='InstallFinalize'>NOT Installed</Custom>
       <Custom Action='UninstallOld153' After='InstallFinalize'>NOT Installed</Custom>
@@ -164,12 +160,48 @@
     <CustomAction Id='UninstallOld156' Directory='System32' ExeCommand="msiexec.exe /X {1CC8C271-A877-4DF0-B1DE-C1B7D83521BC} /qn" Execute="immediate" Return="asyncNoWait"/>
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
-    <UIRef Id="WixUI_FeatureTree"/>
+    <UI>
+      <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
+      <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
+      <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="9" Bold="yes" />
+
+      <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
+      <Property Id="WixUI_Mode" Value="FeatureTree" />
+
+      <DialogRef Id="ErrorDlg" />
+      <DialogRef Id="FatalError" />
+      <DialogRef Id="FilesInUse" />
+      <DialogRef Id="MsiRMFilesInUse" />
+      <DialogRef Id="PrepareDlg" />
+      <DialogRef Id="ProgressDlg" />
+      <DialogRef Id="ResumeDlg" />
+      <DialogRef Id="UserExit" />
+
+      <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999">1</Publish>
+
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="CustomizeDlg">NOT Installed</Publish>
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg">Installed AND PATCH</Publish>
+
+      <Publish Dialog="CustomizeDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg" Order="1">Installed</Publish>
+      <Publish Dialog="CustomizeDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="2">NOT Installed</Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="CustomizeDlg" Order="1">NOT Installed OR WixUI_InstallMode = "Change"</Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg" Order="2">Installed AND NOT PATCH</Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="3">Installed AND PATCH</Publish>
+
+      <Publish Dialog="MaintenanceWelcomeDlg" Control="Next" Event="NewDialog" Value="MaintenanceTypeDlg">1</Publish>
+
+      <Publish Dialog="MaintenanceTypeDlg" Control="ChangeButton" Event="NewDialog" Value="CustomizeDlg">1</Publish>
+      <Publish Dialog="MaintenanceTypeDlg" Control="RepairButton" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+      <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+      <Publish Dialog="MaintenanceTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlg">1</Publish>
+    </UI>
+    <UIRef Id="WixUI_Common" />
 
     <Icon Id='cppcheckgui.exe' SourceFile='$(var.GuiBuildDir)\cppcheck-gui.exe' />
     <Property Id="ARPPRODUCTICON" Value="cppcheckgui.exe" />
 
-    <WixVariable Id="WixUILicenseRtf" Value="GPLv3.rtf" />
     <WixVariable Id="WixUIBannerBmp" Value="images\banner.jpg" />
     <WixVariable Id="WixUIDialogBmp" Value="images\dialog.jpg" />
   </Product>

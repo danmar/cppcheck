@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug-PCRE|Win32">
       <Configuration>Debug-PCRE</Configuration>
@@ -35,8 +35,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\externals\simplecpp\simplecpp.cpp" />
     <ClCompile Include="..\externals\tinyxml\tinyxml2.cpp" />
-    <ClCompile Include="check.cpp" />
+    <ClCompile Include="analyzerinfo.cpp" />
+    <ClCompile Include="astutils.cpp" />
+    <ClCompile Include="check.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="check64bit.cpp" />
     <ClCompile Include="checkassert.cpp" />
     <ClCompile Include="checkautovariables.cpp" />
@@ -45,15 +57,14 @@
     <ClCompile Include="checkbufferoverrun.cpp" />
     <ClCompile Include="checkclass.cpp" />
     <ClCompile Include="checkcondition.cpp" />
+    <ClCompile Include="checkfunctions.cpp" />
     <ClCompile Include="checkstring.cpp" />
     <ClCompile Include="checkexceptionsafety.cpp" />
     <ClCompile Include="checkinternal.cpp" />
     <ClCompile Include="checkio.cpp" />
     <ClCompile Include="checkleakautovar.cpp" />
     <ClCompile Include="checkmemoryleak.cpp" />
-    <ClCompile Include="checknonreentrantfunctions.cpp" />
     <ClCompile Include="checknullpointer.cpp" />
-    <ClCompile Include="checkobsolescentfunctions.cpp" />
     <ClCompile Include="checkother.cpp" />
     <ClCompile Include="checkpostfixoperator.cpp" />
     <ClCompile Include="checksizeof.cpp" />
@@ -65,11 +76,13 @@
     <ClCompile Include="checkvaarg.cpp" />
     <ClCompile Include="cppcheck.cpp" />
     <ClCompile Include="errorlogger.cpp" />
-    <ClCompile Include="executionpath.cpp" />
     <ClCompile Include="library.cpp" />
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="path.cpp" />
+    <ClCompile Include="pathmatch.cpp" />
+    <ClCompile Include="platform.cpp" />
     <ClCompile Include="preprocessor.cpp" />
+    <ClCompile Include="importproject.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="suppressions.cpp" />
     <ClCompile Include="symboldatabase.cpp" />
@@ -81,7 +94,10 @@
     <ClCompile Include="valueflow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\externals\simplecpp\simplecpp.h" />
     <ClInclude Include="..\externals\tinyxml\tinyxml2.h" />
+    <ClInclude Include="analyzerinfo.h" />
+    <ClInclude Include="astutils.h" />
     <ClInclude Include="check.h" />
     <ClInclude Include="check64bit.h" />
     <ClInclude Include="checkassert.h" />
@@ -91,15 +107,14 @@
     <ClInclude Include="checkbufferoverrun.h" />
     <ClInclude Include="checkclass.h" />
     <ClInclude Include="checkcondition.h" />
+    <ClInclude Include="checkfunctions.h" />
     <ClInclude Include="checkstring.h" />
     <ClInclude Include="checkexceptionsafety.h" />
     <ClInclude Include="checkinternal.h" />
     <ClInclude Include="checkio.h" />
     <ClInclude Include="checkleakautovar.h" />
     <ClInclude Include="checkmemoryleak.h" />
-    <ClInclude Include="checknonreentrantfunctions.h" />
     <ClInclude Include="checknullpointer.h" />
-    <ClInclude Include="checkobsolescentfunctions.h" />
     <ClInclude Include="checkother.h" />
     <ClInclude Include="checkpostfixoperator.h" />
     <ClInclude Include="checksizeof.h" />
@@ -112,11 +127,13 @@
     <ClInclude Include="config.h" />
     <ClInclude Include="cppcheck.h" />
     <ClInclude Include="errorlogger.h" />
-    <ClInclude Include="executionpath.h" />
     <ClInclude Include="library.h" />
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="path.h" />
+    <ClInclude Include="pathmatch.h" />
+    <ClInclude Include="platform.h" />
     <ClInclude Include="preprocessor.h" />
+    <ClInclude Include="importproject.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="suppressions.h" />
     <ClInclude Include="symboldatabase.h" />
@@ -125,11 +142,15 @@
     <ClInclude Include="token.h" />
     <ClInclude Include="tokenize.h" />
     <ClInclude Include="tokenlist.h" />
+    <ClInclude Include="utils.h" />
     <ClInclude Include="valueflow.h" />
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="cppcheck.natvis" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C183DB5B-AD6C-423D-80CA-1F9549555A1A}</ProjectGuid>
@@ -140,49 +161,49 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -254,11 +275,15 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
-      <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -276,11 +301,15 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
-      <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -298,11 +327,15 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
-      <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -318,14 +351,18 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
-      <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>pcre64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -344,13 +381,19 @@
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -374,13 +417,19 @@
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -405,13 +454,19 @@
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -434,16 +489,22 @@
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\externals;..\externals\simplecpp;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4018;4244;4251;4389;4482;4512;4701</DisableSpecificWarnings>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>pcre64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>

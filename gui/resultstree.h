@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ class ErrorLine;
 class QModelIndex;
 class QWidget;
 class QItemSelectionModel;
+class ThreadHandler;
 
 /// @addtogroup GUI
 /// @{
@@ -49,7 +50,7 @@ class ResultsTree : public QTreeView {
 public:
     explicit ResultsTree(QWidget * parent = 0);
     virtual ~ResultsTree();
-    void Initialize(QSettings *settings, ApplicationList *list);
+    void Initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
 
     /**
     * @brief Add a new item to the tree
@@ -68,6 +69,11 @@ public:
      * @brief Clear errors for a specific file from the tree
      */
     void Clear(const QString &filename);
+
+    /**
+     * @brief Clear errors of a file selected for recheck
+     */
+    void ClearRecheckFile(const QString &filename);
 
     /**
     * @brief Function to show/hide certain type of errors
@@ -104,8 +110,9 @@ public:
     * @param saveFullPath Save full path of files in reports
     * @param saveAllErrors Save all visible errors
     * @param showErrorId Show error id
+    * @param showInconclusive Show inconclusive column
     */
-    void UpdateSettings(bool showFullPath, bool saveFullPath, bool saveAllErrors, bool showErrorId);
+    void UpdateSettings(bool showFullPath, bool saveFullPath, bool saveAllErrors, bool showErrorId, bool showInconclusive);
 
     /**
     * @brief Set the directory we are checking
@@ -114,6 +121,14 @@ public:
     * @param dir Directory we are checking
     */
     void SetCheckDirectory(const QString &dir);
+
+    /**
+    * @brief Get the directory we are checking
+    *
+    * @return Directory containing source files
+    */
+
+    QString GetCheckDirectory(void);
 
     /**
     * @brief Check if there are any visible results in view.
@@ -145,6 +160,11 @@ public:
     void ShowIdColumn(bool show);
 
     /**
+    * @brief Show optional column "Inconclusve"
+    */
+    void ShowInconclusiveColumn(bool show);
+
+    /**
     * @brief Returns true if column "Id" is shown
     */
     bool ShowIdColumn() const {
@@ -156,6 +176,7 @@ public:
      */
     ShowTypes mShowSeverities;
 
+    virtual void keyPressEvent(QKeyEvent *event);
 
 signals:
     /**
@@ -164,6 +185,13 @@ signals:
     * @param hidden true if there are some hidden results, or false if there are not
     */
     void ResultsHidden(bool hidden);
+
+    /**
+    * @brief Signal to perform selected files recheck
+    *
+    * @param selectedItems list of selected files
+    */
+    void CheckSelected(QStringList selectedItems);
 
     /**
     * @brief Signal for selection change in result tree.
@@ -218,10 +246,21 @@ protected slots:
     void HideResult();
 
     /**
+    * @brief Slot for rechecking selected files
+    *
+    */
+    void RecheckSelectedFiles();
+
+    /**
     * @brief Slot for context menu item to hide all messages with the current message Id
     *
     */
     void HideAllIdResult();
+
+    /**
+    * @brief Slot for context menu item to open the folder containing the current file.
+    */
+    void OpenContainingFolder();
 
     /**
     * @brief Slot for selection change in the results tree.
@@ -285,7 +324,15 @@ protected:
     * @param target Error tree item to open
     * @param fullPath Are we copying full path or only filename?
     */
-    void CopyPath(QStandardItem *target, bool fullPath);
+    void CopyPathToClipboard(QStandardItem *target, bool fullPath);
+
+    /**
+    * @brief Helper function returning the filename/full path of the error tree item \a target.
+    *
+    * @param target The error tree item containing the filename/full path
+    * @param fullPath Whether or not to retrieve the full path or only the filename.
+    */
+    QString GetFilePath(QStandardItem *target, bool fullPath);
 
     /**
     * @brief Context menu event (user right clicked on the tree)
@@ -301,12 +348,14 @@ protected:
     * @param item Error line data
     * @param hide Should this be hidden (true) or shown (false)
     * @param icon Should a default backtrace item icon be added
+    * @param childOfMessage Is this a child element of a message?
     * @return newly created QStandardItem *
     */
     QStandardItem *AddBacktraceFiles(QStandardItem *parent,
                                      const ErrorLine &item,
                                      const bool hide,
-                                     const QString &icon);
+                                     const QString &icon,
+                                     bool childOfMessage);
 
 
     /**
@@ -346,6 +395,15 @@ protected:
     static QStandardItem *CreateNormalItem(const QString &name);
 
     /**
+    * @brief Create new normal item.
+    *
+    * Normal item has left alignment and text set also as tooltip.
+    * @param checked checked
+    * @return new QStandardItem
+    */
+    static QStandardItem *CreateCheckboxItem(bool checked);
+
+    /**
     * @brief Create new line number item.
     *
     * Line number item has right align and text set as tooltip.
@@ -372,13 +430,6 @@ protected:
     * @return QStandardItem to be used as a parent for all errors for specified file
     */
     QStandardItem *EnsureFileItem(const QString &fullpath, const QString &file0, bool hide);
-
-    /**
-    * @brief Show a file item
-    *
-    * @param name Filename of the fileitem
-    */
-    void ShowFileItem(const QString &name);
 
     /**
     * @brief Item model for tree
@@ -448,6 +499,7 @@ protected:
 
 private:
     QItemSelectionModel *mSelectionModel;
+    ThreadHandler *mThread;
 };
 /// @}
 #endif // RESULTSTREE_H

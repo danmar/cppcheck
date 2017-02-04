@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,11 @@
 namespace {
     CheckPostfixOperator instance;
 }
+
+
+// CWE ids used
+static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
+
 
 void CheckPostfixOperator::postfixOperator()
 {
@@ -74,5 +79,5 @@ void CheckPostfixOperator::postfixOperatorError(const Token *tok)
                 "Pre-increment/decrement can be more efficient than "
                 "post-increment/decrement. Post-increment/decrement usually "
                 "involves keeping a copy of the previous value around and "
-                "adds a little extra code.");
+                "adds a little extra code.", CWE398, false);
 }

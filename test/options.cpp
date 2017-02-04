@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+// Copyright (C) 2007-2016 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 #include "options.h"
 
 options::options(int argc, const char* argv[])
-    :_options(&argv[1], &argv[0] + argc)
+    :_options(argv + 1, argv + argc)
     ,_which_test("")
     ,_gcc_style_errors(_options.count("-g") != 0)
     ,_quiet(_options.count("-q") != 0)

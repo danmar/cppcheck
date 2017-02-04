@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ int XmlReport::determineVersion(const QString &filename)
             }
             break;
 
-            // Not handled
+        // Not handled
         case QXmlStreamReader::EndElement:
         case QXmlStreamReader::NoToken:
         case QXmlStreamReader::Invalid:

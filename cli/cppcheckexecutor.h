@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #define CPPCHECKEXECUTOR_H
 
 #include "errorlogger.h"
+#include <cstdio>
 #include <ctime>
 #include <set>
 #include <string>
@@ -89,17 +90,17 @@ public:
     static void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal);
 
     /**
-     * @param fn file name to be used from exception handler
+     * @param fp Output file
      */
-    static void setExceptionOutput(const std::string& fn);
+    static void setExceptionOutput(FILE* fp);
     /**
-    * @return file name to be used for output from exception handler
+    * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
     */
-    static const std::string& getExceptionOutput();
+    static FILE* getExceptionOutput();
 
     /**
     * Tries to load a library and prints warning/error messages
-    * @return false, if an error occured (except unknown XML elements)
+    * @return false, if an error occurred (except unknown XML elements)
     */
     static bool tryLoadLibrary(Library& destination, const char* basepath, const char* filename);
 
@@ -171,7 +172,7 @@ private:
     /**
      * Output file name for exception handler
      */
-    static std::string exceptionOutput;
+    static FILE* exceptionOutput;
 
     /**
      * Has --errorlist been given?

@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LibraryDialog</class>
+ <widget class="QDialog" name="LibraryDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>869</width>
+    <height>588</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Library Editor</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="buttonOpen">
+       <property name="text">
+        <string>Open</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonSave">
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonSaveAs">
+       <property name="text">
+        <string>Save as</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Functions</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QPushButton" name="sortFunctions">
+           <property name="text">
+            <string>Sort</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QListWidget" name="functions">
+         <property name="editTriggers">
+          <set>QAbstractItemView::DoubleClicked</set>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QPushButton" name="addFunction">
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Filter:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="filter"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Comments</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QPlainTextEdit" name="comments">
+            <property name="lineWrapMode">
+             <enum>QPlainTextEdit::NoWrap</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>noreturn</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="noreturn">
+           <item>
+            <property name="text">
+             <string>False</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>True</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Unknown</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="useretval">
+         <property name="text">
+          <string>return value must be used</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="leakignore">
+         <property name="text">
+          <string>ignore function in leaks checking</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Arguments</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="arguments"/>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QPushButton" name="editArgButton">
+           <property name="text">
+            <string>Edit</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonOpen</sender>
+   <signal>clicked()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>openCfg()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>59</x>
+     <y>18</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>66</x>
+     <y>34</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>useretval</sender>
+   <signal>clicked()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>changeFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>550</x>
+     <y>157</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>561</x>
+     <y>157</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>leakignore</sender>
+   <signal>clicked()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>changeFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>531</x>
+     <y>183</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>540</x>
+     <y>182</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonSave</sender>
+   <signal>clicked()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>saveCfg()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>118</x>
+     <y>16</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>130</x>
+     <y>32</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>addFunction</sender>
+   <signal>clicked()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>addFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>53</x>
+     <y>564</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>63</x>
+     <y>582</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>editArgButton</sender>
+   <signal>clicked()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>editArg()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>488</x>
+     <y>580</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>497</x>
+     <y>580</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>arguments</sender>
+   <signal>itemDoubleClicked(QListWidgetItem*)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>editArg()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>529</x>
+     <y>223</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>543</x>
+     <y>223</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sortFunctions</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>sortFunctions(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>45</x>
+     <y>66</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>58</x>
+     <y>66</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>filter</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>filterFunctions(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>429</x>
+     <y>575</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>273</x>
+     <y>582</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>functions</sender>
+   <signal>itemSelectionChanged()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>selectFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>190</x>
+     <y>141</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>203</x>
+     <y>140</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>noreturn</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>changeFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>545</x>
+     <y>137</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>552</x>
+     <y>138</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>functions</sender>
+   <signal>itemChanged(QListWidgetItem*)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>editFunctionName(QListWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>217</x>
+     <y>104</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>235</x>
+     <y>104</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>noreturn</sender>
+   <signal>editTextChanged(QString)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>changeFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>548</x>
+     <y>128</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>555</x>
+     <y>128</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>comments</sender>
+   <signal>textChanged()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>changeFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>567</x>
+     <y>50</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>584</x>
+     <y>48</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonSaveAs</sender>
+   <signal>clicked()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>saveCfgAs()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>211</x>
+     <y>31</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>232</x>
+     <y>33</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>addFunction()</slot>
+  <slot>argumentChanged(QListWidgetItem*)</slot>
+  <slot>changeFunction()</slot>
+  <slot>editArg()</slot>
+  <slot>filterFunctions(QString)</slot>
+  <slot>openCfg()</slot>
+  <slot>saveCfg()</slot>
+  <slot>selectFunction()</slot>
+  <slot>sortFunctions(bool)</slot>
+  <slot>editFunctionName(QListWidgetItem*)</slot>
+  <slot>saveCfgAs()</slot>
+ </slots>
+</ui>

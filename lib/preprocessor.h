@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,15 +21,41 @@
 #define preprocessorH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+#include "simplecpp.h"
+
 #include <map>
 #include <istream>
 #include <string>
 #include <list>
 #include <set>
-#include "config.h"
 
 class ErrorLogger;
 class Settings;
+
+/**
+ * @brief A preprocessor directive
+ * Each preprocessor directive (\#include, \#define, \#undef, \#if, \#ifdef, \#else, \#endif)
+ * will be recorded as an instance of this class.
+ *
+ * file and linenr denote the location where where the directive is defined.
+ *
+ */
+
+class CPPCHECKLIB Directive {
+public:
+    /** name of (possibly included) file where directive is defined */
+    std::string file;
+
+    /** line number in (possibly included) file where directive is defined */
+    unsigned int linenr;
+
+    /** the actual directive text */
+    std::string str;
+
+    /** record a directive (possibly filtering src) */
+    Directive(const std::string &_file, const int _linenr, const std::string &_str);
+};
 
 /// @addtogroup Core
 /// @{
@@ -54,10 +80,28 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    Preprocessor(Settings *settings = nullptr, ErrorLogger *errorLogger = nullptr);
+    Preprocessor(Settings& settings, ErrorLogger *errorLogger = nullptr);
+    virtual ~Preprocessor();
 
     static bool missingIncludeFlag;
     static bool missingSystemIncludeFlag;
+
+    void inlineSuppressions(const simplecpp::TokenList &tokens);
+
+    void setDirectives(const simplecpp::TokenList &tokens);
+
+    /** list of all directives met while preprocessing file */
+    const std::list<Directive> &getDirectives() const {
+        return directives;
+    }
+
+    std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
+
+    void loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
+
+    void removeComments();
+
+    void setPlatformInfo(simplecpp::TokenList *tokens) const;
 
     /**
      * Extract the code for each configuration
@@ -91,14 +135,7 @@ public:
      */
     void preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths);
 
-    /** Just read the code into a string. Perform simple cleanup of the code */
-    std::string read(std::istream &istr, const std::string &filename);
-
-    /** read preprocessor statements into a string. */
-    static std::string readpreprocessor(std::istream &istr, const unsigned int bom);
-
-    /** should __cplusplus be defined? */
-    static bool cplusplus(const Settings *settings, const std::string &filename);
+    std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations);
 
     /**
      * Get preprocessed code for a given configuration
@@ -109,14 +146,6 @@ public:
     std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
 
     /**
-     * simplify condition
-     * @param variables Variable values
-     * @param condition The condition to simplify
-     * @param match if true, 'defined(A)' is replaced with 0 if A is not defined
-     */
-    void simplifyCondition(const std::map<std::string, std::string> &variables, std::string &condition, bool match);
-
-    /**
      * preprocess all whitespaces
      * @param processedFile The data to be processed
      */
@@ -124,81 +153,22 @@ public:
 
     /**
      * make sure empty configuration macros are not used in code. the given code must be a single configuration
-     * @param code The input code
      * @param cfg configuration
+     * @param macroUsageList macro usage list
      * @return true => configuration is valid
      */
-    bool validateCfg(const std::string &code, const std::string &cfg);
-    void validateCfgError(const std::string &cfg, const std::string &macro);
-
-    void handleUndef(std::list<std::string> &configurations) const;
+    bool validateCfg(const std::string &cfg, const std::list<simplecpp::MacroUsage> &macroUsageList);
+    void validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro);
 
     /**
-     * report error
-     * @param fileName name of file that the error was found in
-     * @param linenr linenr in file
-     * @param errorLogger Error logger to write error to
-     * @param errorType id string for error
-     * @param errorText Plain text
-     */
-    static void writeError(const std::string &fileName, const unsigned int linenr, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText);
-
-    /**
-     * Replace "#if defined" with "#ifdef" where possible
+     * Calculate CRC32 checksum. Using toolinfo, tokens1, filedata.
      *
-     * @param str The string to be converted
-     * @return The replaced string
+     * @param tokens1    Sourcefile tokens
+     * @param toolinfo   Arbitrary extra toolinfo
+     * @return CRC32 checksum
      */
-    std::string replaceIfDefined(const std::string &str) const;
+    unsigned int calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
 
-    /**
-     * expand macros in code. ifdefs etc are ignored so the code must be a single configuration
-     * @param code The input code
-     * @param filename filename of source file
-     * @param cfg user given -D configuration
-     * @param errorLogger Error logger to write errors to (if any)
-     * @return the expanded string
-     */
-    static std::string expandMacros(const std::string &code, std::string filename, const std::string &cfg, ErrorLogger *errorLogger);
-
-    /**
-     * Remove comments from code. This should only be called from read().
-     * If there are inline suppressions, the _settings member is modified
-     * @param str Code processed by read().
-     * @param filename filename
-     * @return code without comments
-     */
-    std::string removeComments(const std::string &str, const std::string &filename);
-
-    /**
-     * Cleanup 'if 0' from the code
-     * @param code Code processed by read().
-     * @return code without 'if 0'
-     */
-    static std::string removeIf0(const std::string &code);
-
-    /**
-     * Remove redundant parentheses from preprocessor commands. This should only be called from read().
-     * @param str Code processed by read().
-     * @return code with reduced parentheses
-     */
-    static std::string removeParentheses(const std::string &str);
-
-    /**
-     * clean up #-preprocessor lines (only)
-     * @param processedFile The data to be processed
-     */
-    static std::string preprocessCleanupDirectives(const std::string &processedFile);
-
-    /**
-     * Returns the string between double quote characters or \< \> characters.
-     * @param str e.g. \code#include "menu.h"\endcode or \code#include <menu.h>\endcode
-     * After function call it will contain e.g. "menu.h" without double quotes.
-     * @return NoHeader empty string if double quotes or \< \> were not found.
-     *         UserHeader if file surrounded with "" was found
-     *         SystemHeader if file surrounded with \<\> was found
-     */
-    static Preprocessor::HeaderTypes getHeaderFileName(std::string &str);
 private:
 
     /**
@@ -209,68 +179,33 @@ private:
      */
     static std::string removeSpaceNearNL(const std::string &str);
 
-    static std::string getdef(std::string line, bool def);
-
 public:
 
-    /**
-     * Get all possible configurations sorted in alphabetical order.
-     * By looking at the ifdefs and ifndefs in filedata
-     */
-    std::list<std::string> getcfgs(const std::string &filedata, const std::string &filename, const std::map<std::string, std::string> &defs);
-
-    /**
-     * Remove asm(...) from a string
-     * @param str Code
-     */
-    static void removeAsm(std::string &str);
-
-    /**
-     * Evaluate condition 'numerically'
-     * @param cfg configuration
-     * @param def condition
-     * @return result when evaluating the condition
-     */
-    bool match_cfg_def(std::map<std::string, std::string> cfg, std::string def);
 
     static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
-
-    /**
-     * handle includes for a specific configuration
-     * @param code code in string
-     * @param filePath filename of code
-     * @param includePaths Paths where headers might be
-     * @param defs defines (only values)
-     * @param pragmaOnce includes that has already been included and contains a \#pragma once statement
-     * @param includes provide a empty list. this is just used to prevent recursive inclusions.
-     * \return resulting string
-     */
-    std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::set<std::string> &pragmaOnce, std::list<std::string> includes);
 
     void setFile0(const std::string &f) {
         file0 = f;
     }
 
+    /**
+     * dump all directives present in source file
+     */
+    void dump(std::ostream &out) const;
+
+    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
+
 private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
-
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
-    /**
-     * Search includes from code and append code from the included
-     * file
-     * @param[in,out] code The source code to modify
-     * @param filePath Relative path to file to check e.g. "src/main.cpp"
-     * @param includePaths List of paths where include files should be searched from,
-     * single path can be e.g. in format "include/".
-     * There must be a path separator at the end. Default parameter is empty list.
-     * Note that if path from given filename is also extracted and that is used as
-     * a last include path if include file was not found from earlier paths.
-     */
-    void handleIncludes(std::string &code, const std::string &filePath, const std::list<std::string> &includePaths);
-
-    Settings *_settings;
+    Settings& _settings;
     ErrorLogger *_errorLogger;
+
+    /** list of all directives met while preprocessing file */
+    std::list<Directive> directives;
+
+    std::map<std::string, simplecpp::TokenList *> tokenlists;
 
     /** filename for cpp/c file - useful when reporting errors */
     std::string file0;

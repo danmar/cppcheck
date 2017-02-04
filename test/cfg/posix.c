@@ -19,49 +19,55 @@
 #include <time.h>
 #include <unistd.h>
 
-void bufferAccessOutOfBounds(int fd) {
-  char a[5];
-  read(fd,a,5);
-  // cppcheck-suppress bufferAccessOutOfBounds
-  read(fd,a,6);
-  write(fd,a,5);
-  // cppcheck-suppress bufferAccessOutOfBounds
-  write(fd,a,6);
-  recv(fd,a,5,0);
-  // cppcheck-suppress bufferAccessOutOfBounds
-  recv(fd,a,6,0);
-  recvfrom(fd,a,5,0,0x0,0x0);
-  // cppcheck-suppress bufferAccessOutOfBounds
-  recvfrom(fd,a,6,0,0x0,0x0);
-  send(fd,a,5,0);
-  // cppcheck-suppress bufferAccessOutOfBounds
-  send(fd,a,6,0);
-  sendto(fd,a,5,0,0x0,0x0);
-  // cppcheck-suppress bufferAccessOutOfBounds
-  sendto(fd,a,6,0,0x0,0x0);
-  // cppcheck-suppress constStatement
-  0;
+void bufferAccessOutOfBounds(int fd)
+{
+    char a[5];
+    read(fd,a,5);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    read(fd,a,6);
+    write(fd,a,5);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    write(fd,a,6);
+    recv(fd,a,5,0);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    recv(fd,a,6,0);
+    recvfrom(fd,a,5,0,0x0,0x0);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    recvfrom(fd,a,6,0,0x0,0x0);
+    send(fd,a,5,0);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    send(fd,a,6,0);
+    sendto(fd,a,5,0,0x0,0x0);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    sendto(fd,a,6,0,0x0,0x0);
+    // cppcheck-suppress constStatement
+    0;
 }
 
-void nullPointer(char *p) {
+void nullPointer(char *p)
+{
     // cppcheck-suppress ignoredReturnValue
-    isatty (0);
-    mkdir (p, 0);
-    getcwd (0, 0);
+    isatty(0);
+    mkdir(p, 0);
+    getcwd(0, 0);
     // cppcheck-suppress nullPointer
-    readdir (0);
+    // cppcheck-suppress readdirCalled
+    readdir(0);
     // cppcheck-suppress nullPointer
+    // cppcheck-suppress utimeCalled
     utime(NULL, NULL);
 }
 
-void memleak_getaddrinfo() {
-  //TODO: nothing to report yet, see http://sourceforge.net/p/cppcheck/discussion/general/thread/d9737d5d/
-  struct addrinfo * res=NULL;
-  getaddrinfo("node", NULL, NULL, &res);
-  freeaddrinfo(res);
+void memleak_getaddrinfo()
+{
+    //TODO: nothing to report yet, see http://sourceforge.net/p/cppcheck/discussion/general/thread/d9737d5d/
+    struct addrinfo * res=NULL;
+    getaddrinfo("node", NULL, NULL, &res);
+    freeaddrinfo(res);
 }
 
-void memleak_mmap(int fd) {
+void memleak_mmap(int fd)
+{
     // cppcheck-suppress unreadVariable
     void *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
     // cppcheck-suppress memleak
@@ -74,40 +80,48 @@ void resourceLeak_fdopen(int fd) {
 }
 */
 
-void resourceLeak_fdopendir(int fd) {
+void resourceLeak_fdopendir(int fd)
+{
     // cppcheck-suppress unreadVariable
     DIR* leak1 = fdopendir(fd);
     // cppcheck-suppress resourceLeak
 }
 
-void resourceLeak_opendir(void) {
+void resourceLeak_opendir(void)
+{
     // cppcheck-suppress unreadVariable
     DIR* leak1 = opendir("abc");
     // cppcheck-suppress resourceLeak
 }
 
-void resourceLeak_socket(void) {
+void resourceLeak_socket(void)
+{
     // cppcheck-suppress unreadVariable
     int s = socket(AF_INET, SOCK_STREAM, 0);
     // cppcheck-suppress resourceLeak
 }
 
-void noleak(int x, int y, int z) {
-    DIR *p1 = fdopendir(x); closedir(p1);
-    DIR *p2 = opendir("abc"); closedir(p2);
-    int s = socket(AF_INET,SOCK_STREAM,0); close(s);
-/* TODO: add configuration for open/fdopen
-    // #2830
-    int fd = open("path", O_RDONLY);
-    FILE *f = fdopen(fd, "rt");
-    fclose(f);
-*/
+void noleak(int x, int y, int z)
+{
+    DIR *p1 = fdopendir(x);
+    closedir(p1);
+    DIR *p2 = opendir("abc");
+    closedir(p2);
+    int s = socket(AF_INET,SOCK_STREAM,0);
+    close(s);
+    /* TODO: add configuration for open/fdopen
+        // #2830
+        int fd = open("path", O_RDONLY);
+        FILE *f = fdopen(fd, "rt");
+        fclose(f);
+    */
 }
 
 
 // unused return value
 
-void ignoredReturnValue(void *addr, int fd) {
+void ignoredReturnValue(void *addr, int fd)
+{
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     mmap(addr, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
@@ -120,28 +134,37 @@ void ignoredReturnValue(void *addr, int fd) {
 
 // valid range
 
-void invalidFunctionArg() {
+void invalidFunctionArg()
+{
     // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress usleepCalled
     usleep(-1);
+    // cppcheck-suppress usleepCalled
     usleep(0);
+    // cppcheck-suppress usleepCalled
     usleep(999999);
     // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress usleepCalled
     usleep(1000000);
 }
 
-void uninitvar(int fd) {
+void uninitvar(int fd)
+{
     int x;
     char buf[2];
-    int decimal, sign;  
+    int decimal, sign;
     double d;
+    void *p;
     // cppcheck-suppress uninitvar
     write(x,"ab",2);
     // cppcheck-suppress uninitvar
-    write(fd,buf,2);
+    write(fd,buf,2); // #6325
     // cppcheck-suppress uninitvar
     write(fd,"ab",x);
-    
-    
+    // cppcheck-suppress uninitvar
+    write(fd,p,2);
+
+
     /* int regcomp(regex_t *restrict preg, const char *restrict pattern, int cflags); */
     regex_t reg;
     const char * pattern;
@@ -151,23 +174,36 @@ void uninitvar(int fd) {
     pattern="";
     // cppcheck-suppress uninitvar
     regcomp(&reg, pattern, cflags);
-    regerror (0, &reg, 0, 0);
+    regerror(0, &reg, 0, 0);
     // cppcheck-suppress uninitvar
     // cppcheck-suppress unreadVariable
+    // cppcheck-suppress ecvtCalled
     char *buffer = ecvt(d, 11, &decimal, &sign);
+    // cppcheck-suppress gcvtCalled
     gcvt(3.141, 2, buf);
-    
+
     char *filename;
     struct utimbuf *times;
     // cppcheck-suppress uninitvar
+    // cppcheck-suppress utimeCalled
     utime(filename, times);
     struct timeval times1[2];
     // cppcheck-suppress uninitvar
+    // cppcheck-suppress utimeCalled
     utime(filename, times1);
 }
 
+void uninitvar_getcwd(void)
+{
+    char *buf;
+    size_t size;
+    // cppcheck-suppress uninitvar
+    (void)getcwd(buf,size);
+}
 
-void uninitvar_types(void) {
+
+void uninitvar_types(void)
+{
     // cppcheck-suppress unassignedVariable
     blkcnt_t b;
     // cppcheck-suppress uninitvar
@@ -178,8 +214,26 @@ void uninitvar_types(void) {
     d.d_ino + 1;
 }
 
-void timet_h() {
-  struct timespec* ptp;
-  // cppcheck-suppress uninitvar
-  clock_settime(CLOCK_REALTIME, ptp);
+void timet_h(struct timespec* ptp1)
+{
+    clockid_t clk_id;
+    struct timespec* ptp;
+    // cppcheck-suppress uninitvar
+    clock_settime(CLOCK_REALTIME, ptp);
+    // cppcheck-suppress uninitvar
+    clock_settime(clk_id, ptp);
+    // cppcheck-suppress uninitvar
+    clock_settime(clk_id, ptp1);
+
+    struct timespec tp;
+    // cppcheck-suppress uninitvar
+    clock_settime(CLOCK_REALTIME, &tp); // #6577 - false negative
+    // cppcheck-suppress uninitvar
+    // cppcheck-suppress clock_settimeCalled
+    clock_settime(clk_id, &tp);
+
+    time_t clock = time(0);
+    char buf[26];
+    // cppcheck-suppress ctime_rCalled
+    ctime_r(&clock, buf);
 }

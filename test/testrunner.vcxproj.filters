@@ -64,13 +64,7 @@
     <ClCompile Include="testmemleak.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testnonreentrantfunctions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="testnullpointer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="testobsolescentfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testoptions.cpp">
@@ -128,9 +122,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testunusedvar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cli\pathmatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\cli\filelister.cpp">
@@ -202,6 +193,12 @@
     <ClCompile Include="testgarbage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testtokenlist.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testfunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="options.h">
@@ -214,9 +211,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="testutils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\cli\pathmatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\cli\filelister.h">

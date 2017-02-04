@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,11 +68,11 @@ private:
     void returnPointerError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        Check64BitPortability c(0, settings, errorLogger);
-        c.assignmentAddressToIntegerError(0);
-        c.assignmentIntegerToAddressError(0);
-        c.returnIntegerError(0);
-        c.returnPointerError(0);
+        Check64BitPortability c(nullptr, settings, errorLogger);
+        c.assignmentAddressToIntegerError(nullptr);
+        c.assignmentIntegerToAddressError(nullptr);
+        c.returnIntegerError(nullptr);
+        c.returnPointerError(nullptr);
     }
 
     static std::string myName() {

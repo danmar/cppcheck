@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # Cppcheck - A tool for static C/C++ code analysis
-# Copyright (C) 2007-2015 Daniel Marjamaeki and Cppcheck team.
+# Copyright (C) 2007-2016 Cppcheck team.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ class Extract:
 
         testclass = None
         functionName = None
+        code = None
 
         fin = open(filename, 'r')
         for line in fin:
@@ -76,19 +77,20 @@ class Extract:
                 code = res.group(1)
 
             # code..
-            res = re.match('\\s+' + string, line)
-            if res is not None:
-                code = code + res.group(1)
+            if code is not None:
+                res = re.match('\\s+' + string, line)
+                if res is not None:
+                    code = code + res.group(1)
 
             # assert
             res = re.match('\\s+ASSERT_EQUALS\\(\\"([^"]*)\\",', line)
-            if res is not None and len(code) > 10:
+            if res is not None and code is not None:
                 node = {'testclass': testclass,
                         'functionName': functionName,
                         'code': code,
                         'expected': res.group(1)}
                 self.nodes.append(node)
-                code = ''
+                code = None
 
         # close test file
         fin.close()

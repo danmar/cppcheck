@@ -1,0 +1,1380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<book>
+  <bookinfo>
+    <title>Cppcheck 1.73 dev</title>
+
+    <date>2015-09-09</date>
+  </bookinfo>
+
+  <chapter>
+    <title>イントロダクション</title>
+
+    <para>Cppcheck は C/C++の静的解析ツールです。C/C++ コンパイラやその他の解析ツールとは異なり、シンタックスエラーを検出しません。	その代わりに、Cppcheckは、コンパイラが通常、検出に失敗するような種類のバグを検出します。このプロジェクトのゴールは、擬陽性 0 です。</para>
+
+    <para>サポートしているプログラムのソースコードとプラットフォーム：</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>さまざまなコンパイラの拡張構文や、インラインアセンブル等を含む、非標準的なソースコードをチェックできます。</para>
+      </listitem>
+
+      <listitem>
+        <para>Cppcheck は 最新のC++規格をサポートしている、あらゆるC++コンパイラでコンパイルできるようにしています。</para>
+      </listitem>
+
+      <listitem>
+        <para>Cppcheck は 十分なCPUパワーとメモリーのある、あらゆるプラットフォームで動作するようにしています。</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Cppcheckに限界があることをご理解ください。Cppcheckの報告しているエラーに稀に間違いのあることがあります。また、Cppcheck が検出しないバグが残っていることもあります。</para>
+
+    <para>ソフトウェアを注意深くテストすれば、Cppcheckを使うより、より多くのバグを検出することができるでしょう。ソフトウェアを注意深く実装すれば、Cppcheckを使うより、より多くのバグを検出することができるでしょう。しかし、あなたのソフトウェアを実装するときやテストするときに見逃したバグのいくつかを Cppcheckが検出できるでしょう。</para>
+  </chapter>
+
+  <chapter>
+    <title>はじめ方</title>
+
+    <section>
+      <title>最初のテスト</title>
+
+      <para>これは単純なソースコードです。</para>
+
+      <programlisting>int main()
+{
+    char a[10];
+    a[10] = 0;
+    return 0;
+}</programlisting>
+
+      <para>このソースコードを<filename>file1.c</filename>に保存して次のコマンドを実行します。</para>
+
+      <programlisting>cppcheck file1.c</programlisting>
+
+      <para>cppcheck は次のように出力するでしょう。</para>
+
+      <programlisting>Checking file1.c...
+[file1.c:4]: (error) Array 'a[10]' index 10 out of bounds</programlisting>
+    </section>
+
+    <section>
+      <title>フォルダ内の全てのファイルをチェックする</title>
+
+      <para>通常、プログラムは多くのソースファイルから構成されます。そして、それら全てをチェックしたいでしょう。Cppcheck は一つのディレクトリ以下の全てのソースファイルをチェックできます。</para>
+
+      <programlisting>cppcheck path</programlisting>
+
+      <para>ここで&quot;path&quot;はディレクトリのパスです。このようにすれば cppcheck はディレクトリ以下の全てのファイルを再帰的にチェックします。</para>
+
+      <programlisting>Checking path/file1.cpp...
+1/2 files checked 50% done
+Checking path/file2.cpp...
+2/2 files checked 100% done</programlisting>
+    </section>
+
+    <section>
+      <title>チェックからファイルやフォルダを除外する</title>
+
+      <para>ファイルやフォルダをチェック対象から除外する方法は二つあります。最初の方法は、あなたがチェックしたいファイルやフォルダだけをcppcheckに指定することです。</para>
+
+      <programlisting>cppcheck src/a src/b</programlisting>
+
+      <para><filename class="directory">src/a</filename> と <filename class="directory">src/b</filename> 以下の全てのファイルだけをチェックします。</para>
+
+      <para>第二の方法は、<parameter class="command">-i</parameter>オプションと共に除外したいファイルやフォルダを指定することです。次のコマンドでは<filename class="directory">src/c</filename>以下のファイルをチェックしません。</para>
+
+      <programlisting>cppcheck -isrc/c src</programlisting>
+    </section>
+
+    <section>
+      <title>インクルードパス指定</title>
+
+      <para>インクルードパスを追加するには<parameter class="command">-I</parameter>オプションに続けてパスを指定します。</para>
+
+      <para>Cppcheckのプリプロセッサは基本的に他のプリプロセッサと同様にインクルードを扱います。しかし、その他のプリプロセッサはヘッダファイルが見つからない場合に停止するのとは違って、cppcheckはただ単に、メッセージ情報を表示してソースコードの解析を続けます。</para>
+
+      <para>cppcheckは常にソースコード全体を確認する必要がないので、このような仕様になっています。実際に、全てのインクルードパスを与えないことを推奨しています。もちろん、クラスのメンバーの実装を確認した上でクラスの宣言をCppcheckでチェックするのは有用ではありますが、標準ライブラリのヘッダーをCppcheckに確認させるのは有用ではありません。というのは、チェックにかかる時間が長くなり、あまりよくない結果が表示されるからです。そのような場合、.cfg ファイル (後述します)によってcppcheckに関数や型の実装の情報を提供する方がよいでしょう。</para>
+    </section>
+
+    <section>
+      <title>Severities(厳格度)</title>
+
+      <para>メッセージのseverities(厳格度)には次のものがあります。:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>error</term>
+
+          <listitem>
+            <para>バグが検出されたときに使用します。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>warning</term>
+
+          <listitem>
+            <para>防衛的プログラミングでバグを避けるための提案です。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>style</term>
+
+          <listitem>
+            <para>コードの可読性の向上に関連した、スタイル関連の指摘(未使用関数、冗長なコードなど)</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>performance</term>
+
+          <listitem>
+            <para>コードの高速化のための提案。これらの提案は、一般的な知識に基づいたものでしかありません。このメッセージの修正によって計測できるほど処理速度が向上するかどうかはわかりません。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>portability</term>
+
+          <listitem>
+            <para>移植性についての警告。64 bit CPUへの移植性。コンパイラ依存(独自拡張)ソースコードについての警告など。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>information</term>
+
+          <listitem>
+            <para>設定上の問題設定を変更している間だけ有効にすることをお勧めします。</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>メッセージの表示</title>
+
+      <para>デフォルトでは<parameter class="command">error</parameter>のメッセージだけを表示します。<parameter class="command">--enable</parameter>を使用すると他のチェックを有効にできます。</para>
+
+      <programlisting># warning のメッセージを有効にします。
+cppcheck --enable=warning file.c
+
+# performanceのメッセージを有効にします。
+cppcheck --enable=performance file.c
+
+# informationのメッセージを有効にします。
+cppcheck --enable=information file.c
+
+# 歴史的な理由により --enable=style を指定すると warning, performance,
+# portability と styleのメッセージを有効にします。古いxml形式を使用しているときには、これらの厳格度を&quot;style&quot;として報告されます。
+cppcheck --enable=style file.c
+
+# warning と performance のメッセージを有効にします。
+cppcheck --enable=warning,performance file.c
+
+# unusedFunction のチェックを有効にします。今回は --enable=styleでは有効にできない。
+# というのは、これではライブラリではうまく動作しないからです。
+cppcheck --enable=unusedFunction file.c
+
+# 全てのメッセージを有効にします。
+cppcheck --enable=all</programlisting>
+
+      <para><literal>--enable=unusedFunction</literal>はプログラム全体をチェックするときにだけ有効にしてください。また、<literal>--enable=all</literal>もプログラム全体をチェックするときにだけ有効にしてください。というのは、unusedFunction チェックは、関数が呼び出されなかったときに警告するチェックだからです。関数呼び出しがチェック範囲にみつからなかったという可能性のノイズになります。</para>
+
+      <section>
+        <title>疑いのあるチェック</title>
+
+        <para>Cppcheckはデフォルトで解析に疑いのない場合にだけエラーメッセージを表示します。しかし、<parameter class="command">--inconclusive</parameter>オプションを使用すると、解析に疑いのある場合であってもエラーメッセージを表示します。</para>
+
+        <programlisting>cppcheck --inconclusive path</programlisting>
+
+        <para>これは、もちろん、実際に問題がないものに対しても、警告することになります。このオプションは、疑いのある警告を表示してもよい場合に限り、使用してください。</para>
+      </section>
+    </section>
+
+    <section>
+      <title>結果をファイルに保存</title>
+
+      <para>多くの場合、チェックの結果をファイルに保存したいと考えるでしょう。通常のシェルのリダイレクション機能を使って、エラー出力をファイルに保存することができます。</para>
+
+      <programlisting>cppcheck file1.c 2&gt; err.txt</programlisting>
+    </section>
+
+    <section>
+      <title>マルチスレッドチェック</title> 
+
+      <para>オプションの<literal>-j</literal> を使用してスレッド数を指定することができます。例えば、4スレッドを使ってフォルダ以下の全てのファイルをチェックする場合は次のように実行します。</para>
+
+      <programlisting>cppcheck -j 4 path</programlisting>
+
+      <para>このチェックでは未使用関数の検出(unusedFunction checking)は無効になることに注意してください。</para>
+    </section>
+
+    <section>
+      <title>プラットフォーム</title>
+
+      <para>あなたがターゲットとするプラットフォームの設定を使用すべきです。</para>
+
+      <para>デフォルトで、Cppcheckはネイティブのプラットフォームの設定を使用しますので、あなたのソースコードがローカルの環境でコンパイルし実行する場合には正常に動作するでしょう。</para>
+
+      <para>Cppcheck にはビルトインのプラットフォーム設定として、<literal>unix</literal>と<literal>windows</literal>をターゲットにしたものがあります。コマンドラインオプションの<literal>--platform</literal>を使ってプラットフォーム設定を指定できます。</para>
+
+      <para>XMLファイルで自身のプラットフォームにあった設定ファイルを作成することもできます。ここに例をあげます。:</para>
+
+      <programlisting>&lt;?xml version=&quot;1&quot;?&gt;
+&lt;platform&gt;
+  &lt;char_bit&gt;8&lt;/char_bit&gt;
+  &lt;default-sign&gt;signed&lt;/default-sign&gt;
+  &lt;sizeof&gt;
+    &lt;short&gt;2&lt;/short&gt;
+    &lt;int&gt;4&lt;/int&gt;
+    &lt;long&gt;4&lt;/long&gt;
+    &lt;long-long&gt;8&lt;/long-long&gt;
+    &lt;float&gt;4&lt;/float&gt;
+    &lt;double&gt;8&lt;/double&gt;
+    &lt;long-double&gt;12&lt;/long-double&gt;
+    &lt;pointer&gt;4&lt;/pointer&gt;
+    &lt;size_t&gt;4&lt;/size_t&gt;
+    &lt;wchar_t&gt;2&lt;/wchar_t&gt;
+  &lt;/sizeof&gt;
+&lt;/platform&gt;</programlisting>
+    </section>
+  </chapter>
+
+  <chapter id="preprocessor-configurations">
+    <title>プリプロセッサの設定</title>
+
+    <para>Cppcheckはデフォルトでプリプロセッサのデファインのコンパイルスイッチ設定の組み合わせを全てチェックします。(ただし、これらのうち #error を除く)</para>
+
+    <para>これを変更するには -D を使います。また -D を使用した場合、cppcheckは与えられたコンパイルスイッチだけが有効でその他は設定されていないとしてチェックします。これは、コンパイラのように動作します。また、 <literal>--force</literal> や <literal><literal>--max-configs</literal></literal> を使用すると、コンパイルスイッチの組み合わせの上限を上書きしてチェックすることができます。</para>
+
+    <programlisting># 全てのコンパイルスイッチの組み合わせをチェックする。
+cppcheck file.c
+
+# Aのコンパイルスイッチが有効になっている場合の組み合わせをチェックする
+cppcheck -DA file.c
+
+# check all configurations when macro A is defined
+cppcheck -DA --force file.c</programlisting>
+
+    <para>また、もう一つのオプションに-U があります。これはシンボルのundefとなります。使用例:</para>
+
+    <programlisting>cppcheck -UX file.c</programlisting>
+
+    <para>これはXが定義されていないことを意味します。Cppcheck は Xが定義されている組み合わせをチェックしません。</para>
+  </chapter>
+
+  <chapter>
+    <title>XML出力</title>
+
+    <para>Cppcheckは出力を<literal>XML</literal>形式に変更できます。XML出力には古い<literal>XML</literal> 形式(version 1) と新しい<literal>XML</literal> 形式(version 2)があります。可能であれば、新しい形式をご利用ください。</para>
+
+    <para>古い形式は後方互換性のためだけに残してあります。現在、変更の予定はありませんが、いつかは古い形式をサポートしなくなります。<parameter>--xml</parameter> オプションでフォーマットを指定します。</para>
+
+    <para>新しい形式は古い形式にあったいくつかの問題を解消しています。新しい形式も、おそらくいつかは、新しい属性や要素を追加するなど変更されるかもしれません。Cppcheckでファイルをチェックし、新しい<literal>XML</literal>形式で出力するコマンドのサンプルです。:</para>
+
+    <programlisting>cppcheck --xml-version=2 file1.cpp</programlisting>
+
+    <para>ここにバージョン2の出力の例を挙げます。:</para>
+
+    <programlisting>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;results version=&quot;2&quot;&gt;
+  &lt;cppcheck version=&quot;1.66&quot;&gt;
+  &lt;errors&gt;
+    &lt;error id=&quot;someError&quot; severity=&quot;error&quot; msg=&quot;short error text&quot;
+           verbose=&quot;long error text&quot; inconclusive=&quot;true&quot; cwe=&quot;312&quot;&gt;
+      &lt;location file=&quot;file.c&quot; line=&quot;1&quot;/&gt;
+    &lt;/error&gt;
+  &lt;/errors&gt;
+&lt;/results&gt;</programlisting>
+
+    <section>
+      <title>&lt;error&gt; 要素</title>
+
+      <para>それぞれのエラーは<literal>&lt;error&gt;</literal>要素に記載されます。属性:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term><sgmltag class="attribute">id</sgmltag></term>
+
+          <listitem>
+            <para>エラーのidこれは、妥当なシンボル名です。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag class="attribute">severity</sgmltag></term>
+
+          <listitem>
+            <para>以下のいずれかです: <literal>error</literal>, <literal>warning</literal>, <literal>style</literal>, <literal>performance</literal>, <literal>portability</literal>, <literal>information</literal></para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag class="attribute">msg</sgmltag></term>
+
+          <listitem>
+            <para>短い形式のエラーメッセージ</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag>verbose</sgmltag></term>
+
+          <listitem>
+            <para>長い形式のエラーメッセージ</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag>inconclusive</sgmltag></term>
+
+          <listitem>
+            <para>この属性は、メッセージに疑いのある場合にのみ使用されます。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag>cwe</sgmltag></term>
+
+          <listitem>
+            <para>メッセージのCWE ID。こ属性は、メッセージのCWE IDが判明している場合のみ使用されます。</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>&lt;location&gt;要素</title>
+
+      <para>エラーに関連する全ての位置情報は<literal>&lt;location&gt;</literal> 要素内にリストアップされます。主要な位置は、リストの最初の要素になります。</para>
+
+      <para>属性:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term><sgmltag class="attribute">file</sgmltag></term>
+
+          <listitem>
+            <para>ファイル名相対パスまたは絶対パスのどちらかです。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag class="attribute">line</sgmltag></term>
+
+          <listitem>
+            <para>数</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag>msg</sgmltag></term>
+
+          <listitem>
+            <para>この属性は使用しません。ただし将来のいつか、それぞれの位置に短いメッセージを追加するようになるかもしれません。</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>出力の形式の変更</title>
+
+    <para>もし、テンプレートを使用して、出力の形式を変更することができます。</para>
+
+    <para>Visual Studioに互換性のある形式が必要な場合には、<parameter class="command">--template=vs</parameter>を使用します。</para>
+
+    <programlisting>cppcheck --template=vs gui/test.cpp</programlisting>
+
+    <para>このオプションは出力形式を次のように変更します。:</para>
+
+    <programlisting>Checking gui/test.cpp...
+gui/test.cpp(31): error: Memory leak: b
+gui/test.cpp(16): error: Mismatching allocation and deallocation: k</programlisting>
+
+    <para>gcc に互換性のある形式が必要な場合には、<parameter class="command">--template=gcc</parameter>を使用します。:</para>
+
+    <programlisting>cppcheck --template=gcc gui/test.cpp</programlisting>
+
+    <para>このオプションは出力形式を次のように変更します。:</para>
+
+    <programlisting>Checking gui/test.cpp...
+gui/test.cpp:31: error: Memory leak: b
+gui/test.cpp:16: error: Mismatching allocation and deallocation: k</programlisting>
+
+    <para>それ以外に、自分自身の作成したパターンで指定することもできます。例としてコンマ区切りで出力してみましょう。:</para>
+
+    <programlisting>cppcheck --template=&quot;{file},{line},{severity},{id},{message}&quot; gui/test.cpp</programlisting>
+
+    <para>このオプションは出力形式を次のように変更します。:</para>
+
+    <programlisting>Checking gui/test.cpp...
+gui/test.cpp,31,error,memleak,Memory leak: b
+gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocation: k</programlisting>
+
+    <para>以下のようなフォーマット指定項目がサポートされています。</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>callstack</term>
+
+        <listitem>
+          <para>callstack ただし可能な場合に限る。</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>file</term>
+
+        <listitem>
+          <para>ファイル名</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>id</term>
+
+        <listitem>
+          <para>メッセージid</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>line</term>
+
+        <listitem>
+          <para>行数</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>message</term>
+
+        <listitem>
+          <para>長い形式のメッセージ</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>severity</term>
+
+        <listitem>
+		<para>メッセージの種類、レベル</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>その他エスケープシーケンス \b (バックスペース), \n (改行), \r (改ページ) , \t (タブ) がサポートされています。</para>
+  </chapter>
+
+  <chapter>
+    <title>出力の抑制</title>
+
+    <para>ある種のエラーをフィルタリングしたい場合、出力を抑制することができます。</para>
+
+    <section>
+      <title>エラー種による出力の抑制</title>
+
+      <para>エラーの種類によって出力を抑制することができます。つぎのいずれかの形式で出力を抑制します。:</para>
+
+      <programlisting>[error id]:[filename]:[line]
+[error id]:[filename2]
+[error id]</programlisting>
+
+      <para>この<replaceable>error id</replaceable> は抑制したいエラーのidです。このエラーのIDを簡単に調べるには、<parameter class="command">--xml</parameter>オプションをコマンドラインで与えます。そのXML出力から、<replaceable>id</replaceable>の文字列が取得できます。このエラーのIDに<literal>*</literal>を指定して全ての種類のメッセージを抑制することができます。(これは指定したファイルに限ることができます。)</para>
+
+      <para>また<replaceable>filename</replaceable>にはワイルドキャラクターである、<literal>*</literal> または <literal>?</literal>を含めることができます。前者には全ての文字列にマッチし、後者は任意の一文字にマッチします。またWindowsを含む全てのOSで、パス区切りに&quot;/&quot; を使うことをお勧めします。</para>
+
+      <section>
+        <title>コマンドライン抑制</title>
+
+        <para><parameter class="command">--suppress=</parameter>のコマンドラインオプションを使用して、コマンドラインで抑制を指定することができます。例:</para>
+
+        <programlisting>cppcheck --suppress=memleak:src/file1.cpp src/</programlisting>
+      </section>
+
+      <section>
+        <title>ファイルで抑制リストを指定</title>
+
+        <para>また、抑制ファイルを作成することもできます。例:</para>
+
+        <programlisting>// src/file1.cppのmemleak と exceptNew の エラーを抑制
+memleak:src/file1.cpp
+exceptNew:src/file1.cpp
+
+// 全てのファイルのuninitvarエラーを抑制する。
+uninitvar</programlisting>
+
+        <para>空行やコメント行を抑制ファイルに記載することができます。</para>
+
+        <para>そして、この抑制ファイルは次のようにして使用します。:</para>
+
+        <programlisting>cppcheck --suppressions-list=suppressions.txt src/</programlisting>
+      </section>
+    </section>
+
+    <section>
+      <title>インライン出力抑制</title>
+
+      <para>エラー出力の抑制をソースコーオ中に直接、コメントの形で記載することもできます。このコメントには特別なキーワードを含めて記載します。ただし、インライン出力を抑制するコメントをソースコードに追加すると、ソースコードの可読性が少し悪くなってしまうかもしれません。</para>
+
+      <para>このソースコードは通常エラメッセージを出力する例です。:</para>
+
+      <programlisting>void f() {
+    char arr[5];
+    arr[10] = 0;
+}</programlisting>
+
+      <para>前のソースコードに対する出力は次のようになります。:</para>
+
+      <programlisting># cppcheck test.c
+Checking test.c...
+[test.c:3]: (error) Array 'arr[5]' index 10 out of bounds</programlisting>
+
+      <para>このエラーメッセージを抑制するには次のようなコメントを追加します。:</para>
+
+      <programlisting>void f() {
+    char arr[5];
+
+    // cppcheck-suppress arrayIndexOutOfBounds
+    arr[10] = 0;
+}</programlisting>
+
+      <para>これで、--inline-suppr オプションの準備ができました。次のようにcppcheckを起動するとエラーが抑制されます。:</para>
+
+      <programlisting>cppcheck --inline-suppr test.c</programlisting>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>ライブラリ設定</title>
+
+    <para>windows, posix, gtk, qt,他の外部のライブラリを使用した場合、<literal>Cppcheck</literal>は外部の関数がどのようなものであるかがわかりません。<literal>Cppcheck</literal> はそのため、メモリリークやバッファオーバーフロー、ヌルポインタのデリファレンスの可能性といったさまざまな問題が検出できません。これを解決するには設定ファイル(.cfg file)を使用します。</para>
+
+    <para>もしあなたが有名なライブラリの設定ファイルを作成したときには、私達のサイトにアップロードしてくれると非常に助かります。</para>
+
+    <section>
+      <title>カスタム設定ファイル(.cfg file)の使用</title>
+
+      <para>あなたのプロジェクト専用の設定ファイルを作成し、使用することができます。そのためには、<literal>--check-library</literal> と<literal>--enable=information</literal> を使用して設定のためのヒントを入手します。</para>
+
+      <para>コマンドラインのcppcheck はカスタマイズした設定ファイル(.cfg files)を作業パスから読み込もうとします。作業パスはcppcheckを実行しているパスですでそこに設定ファイルがあると考えます。</para>
+
+      <para>GUIのcppcheckはプロジェクトのファイルパスから設定ファイルを読み込もうとします。カスタマイズした設定ファイル(.cfg file)は <literal>プロジェクトファイルの編集</literal> ダイアログで確認できます。このタイアログを表示させるには<literal>ファイル</literal> メニューから開いてください。</para>
+    </section>
+
+    <section>
+      <title>メモリーリソースのリーク</title>
+
+      <para>Cppcheck はリークのチェックについての設定できます。</para>
+
+      <section>
+        <title>alloc と dealloc</title>
+
+        <para>ここにサンプルのプログラムがあります。:</para>
+
+        <para><programlisting>void test()
+{
+    HPEN pen = CreatePen(PS_SOLID, 1, RGB(255,0,0));
+}</programlisting></para>
+
+        <para>このサンプルには、リーソースのリークがあります。<literal>CreatePen()</literal>はWindowsの関数でpenを作成します。しかし、Cppcheck はこの関数が返す値を解放しなければならないことがわかりません。そのためエラーメッセージは表示されません。:</para>
+
+        <programlisting># cppcheck pen1.c
+Checking pen1.c...</programlisting>
+
+        <para>もし、windowsの設定ファイルを<literal>Cppcheck</literal>に提供すれば、この問題を指摘することができるようになります。:</para>
+
+        <programlisting># cppcheck --library=windows.cfg pen1.c
+Checking pen1.c...
+[pen1.c:3]: (error) Resource leak: pen</programlisting>
+
+        <para>これが最小限の<literal>windows.cfg</literal> ファイルです:</para>
+
+        <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;resource&gt;
+    &lt;alloc&gt;CreatePen&lt;/alloc&gt;
+    &lt;dealloc&gt;DeleteObject&lt;/dealloc&gt;
+  &lt;/resource&gt;
+&lt;/def&gt;</programlisting>
+      </section>
+
+      <section>
+        <title>leak-ignore とuse</title>
+
+        <para>しばしば、割り当てられたポインタを関数に渡すことがあります。例:</para>
+
+        <programlisting>void test()
+{
+    char *p = malloc(100);
+    dostuff(p);
+}</programlisting>
+
+        <para>もし設定ファイルがなく、Cppcheckが<literal>dostuff</literal>の仕様を把握していなければ、Cppcheckは<literal>dostuff</literal>がメモリーについて配慮しており、メモリーリークは発生しないと仮定します。</para>
+
+        <para><literal>dostuff</literal>がメモリーについて配慮せず、解放などを行なっていないことを指定するためには、<literal>leak-ignore</literal>を使用します。:</para>
+
+        <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;function name=&quot;dostuff&quot;&gt;
+    &lt;leak-ignore/&gt;
+    &lt;arg nr=&quot;1&quot;/&gt;
+    &lt;arg nr=&quot;2&quot;/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+
+        <para>これとは逆に<literal>dostuff</literal>がメモリーについて配慮している場合には次のように設定します。:</para>
+
+        <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;memory&gt;
+    &lt;alloc&gt;malloc&lt;/alloc&gt;
+    &lt;dealloc&gt;free&lt;/dealloc&gt;
+    &lt;use&gt;dostuff&lt;/use&gt;
+  &lt;/memory&gt;
+&lt;/def&gt;</programlisting>
+
+        <para>なお、この<literal><literal>&lt;use&gt;</literal></literal>設定には論理的には全く無意味です。この設定がない場合でも同じエラーが表示されます。これは<literal>--check-library</literal>のinformationメッセージを減らすために使用します。</para>
+      </section>
+    </section>
+
+    <section>
+      <title>関数引数: 未初期化メモリ</title>
+
+      <para>ここにサンプルのプログラムがあります。:</para>
+
+      <programlisting>void test()
+{
+    char buffer1[1024];
+    char buffer2[1024];
+    CopyMemory(buffer1, buffer2, 1024);
+}</programlisting>
+
+      <para>このプログラムのバグは buffer2 が初期化されていないことです。CopyMemory 関数の第二引数は初期化されている必要があります。しかし、<literal>Cppcheck</literal>は関数に未初期化の変数を渡してもよいと仮定しています。:</para>
+
+      <programlisting># cppcheck uninit.c 
+Checking uninit.c...</programlisting>
+
+      <para>もし、windowsの設定ファイルをCppcheckに提供すれば、この問題を指摘することができるようになります。:</para>
+
+      <programlisting># cppcheck --library=windows.cfg uninit.c 
+Checking uninit.c...
+[uninit.c:5]: (error) Uninitialized variable: buffer2</programlisting>
+
+      <para>これが最小限の<literal>windows.cfg</literal>ファイルです。:</para>
+
+      <para><programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;function name=&quot;CopyMemory&quot;&gt;
+    &lt;arg nr=&quot;1&quot;/&gt;
+    &lt;arg nr=&quot;2&quot;&gt;
+      &lt;not-uninit/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr=&quot;3&quot;/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting></para>
+    </section>
+
+    <section>
+      <title>関数引数: ヌルポインタ</title>
+
+      <para>Cppcheckは、関数にヌルポインタを渡してもよいと仮定しています。ここにサンプルのプログラムがあります。:</para>
+
+      <programlisting>void test()
+{
+    CopyMemory(NULL, NULL, 1024);
+}</programlisting>
+
+      <para>MSDNの文書はこれが問題あるかないかを明らかにしていません。しかし、ここでは問題ありと仮定します。Cppcheck は関数にヌルポインタを渡してもよいと仮定していますので、エラーを出力しません。:</para>
+
+      <programlisting># cppcheck null.c 
+Checking null.c...</programlisting>
+
+      <para>もし、windowsの設定ファイルを<literal>Cppcheck</literal>に提供すれば、この問題を指摘することができるようになります。:</para>
+
+      <programlisting>cppcheck --library=windows.cfg null.c 
+Checking null.c...
+[null.c:3]: (error) Null pointer dereference</programlisting>
+
+      <para>これが最小限の<literal>windows.cfg</literal> ファイルです:</para>
+
+      <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;function name=&quot;CopyMemory&quot;&gt;
+    &lt;arg nr=&quot;1&quot;&gt;
+      &lt;not-null/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr=&quot;2&quot;/&gt;
+    &lt;arg nr=&quot;3&quot;/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>関数引数: フォーマット文字列</title>
+
+      <para>フォーマット文字列を扱う関数を定義できます。例:</para>
+
+      <programlisting>void test()
+{
+    do_something(&quot;%i %i\n&quot;, 1024);
+}</programlisting>
+
+      <para>これについてもエラーは報告されません。:</para>
+
+      <programlisting># cppcheck formatstring.c 
+Checking formatstring.c...</programlisting>
+
+      <para>引数がフォーマット文字列であることを出力する設定ファイルが作成できます。設定ファイルの例です。:</para>
+
+      <para><programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;function name=&quot;do_something&quot;&gt;
+    &lt;formatstr type=&quot;printf&quot;/&gt;
+    &lt;arg nr=&quot;1&quot;&gt;
+      &lt;formatstr/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>これで、Cppcheckはエラーを報告することができるようになりました。:</para>
+
+      <programlisting>cppcheck --library=test.cfg formatstring.c 
+Checking formatstring.c...
+[formatstring.c:3]: (error) do_something format string requires 2 parameters but only 1 is given.</programlisting>
+
+      <para>このフォーマット文字列の<literal>type</literal>属性は次のどちらかになります。:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>printf - printf のルールに従うフォーマット文字列</para>
+        </listitem>
+
+        <listitem>
+          <para>scanf - scanf のルールに従うフォーマット文字列</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>関数引数: 値の範囲</title>
+
+      <para>有効な値の範囲が定義できます。想像してください。:</para>
+
+      <programlisting>void test()
+{
+    do_something(1024);
+}</programlisting>
+
+      <para>これについてもエラーは報告されません。:</para>
+
+      <programlisting># cppcheck valuerange.c 
+Checking valuerange.c...</programlisting>
+
+      <para>1024 が 範囲外の値であることを出力する設定ファイルが作成できます。設定ファイルの例です。:</para>
+
+      <para><programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;function name=&quot;do_something&quot;&gt;
+    &lt;arg nr=&quot;1&quot;&gt;
+      &lt;valid&gt;0:1023&lt;/valid&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>これで、Cppcheckはエラーを報告することができるようになりました。:</para>
+
+      <programlisting>cppcheck --library=test.cfg range.c 
+Checking range.c...
+[range.c:3]: (error) Invalid do_something() argument nr 1. The value is 1024 but the valid values are '0-1023'.</programlisting>
+
+      <para>validの要素で次のような表現が利用できます。:</para>
+
+      <programlisting>0,3,5  =&gt; 0, 3 それに 5 だけが有効な値です。
+-10:20  =&gt;  -10 から 20 までの値(両端含む)が有効な値です。
+:0  =&gt;  0または0未満の値が有効な値です。
+0:  =&gt;  0または0以上の値が有効な値です。
+0,2:32  =&gt;  0 または2から32までの値(両端含む)が有効な値です。 </programlisting>
+    </section>
+
+    <section>
+      <title>関数引数: 最小サイズ</title>
+
+      <para>いくつかの関数はバッファーを引数にとります。バッファの最小サイズを指定することができます。(要素数ではなくバイト数です。)想像してください。:</para>
+
+      <programlisting>void test()
+{
+    char str[5];
+    do_something(str,&quot;12345&quot;);
+}</programlisting>
+
+      <para>これについてもエラーは報告されません。:</para>
+
+      <programlisting># cppcheck minsize.c 
+Checking minsize.c...</programlisting>
+
+      <para>設定ファイルで、例えば、引数1のバッファのサイズが引数2の文字列長より大きくなればならないと警告するような設定ファイルを作成できます。例を挙げます。:</para>
+
+      <para><programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;function name=&quot;do_something&quot;&gt;
+    &lt;arg nr=&quot;1&quot;&gt;
+      &lt;minsize type=&quot;strlen&quot; arg=&quot;2&quot;/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr=&quot;2&quot;/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>これで、Cppcheckはこのエラーを報告することができるようになりました。:</para>
+
+      <programlisting>cppcheck --library=1.cfg minsize.c
+Checking minsize.c...
+[minsize.c:4]: (error) Buffer is accessed out of bounds: str
+</programlisting>
+
+      <para>minsizes はいくつかの種類があります。:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>strlen</term>
+
+          <listitem>
+            <para>バッファーのサイズが、その他の引数の文字列長より大きくなければなりません。例: std.cfg のstrcpyの設定を参照してください。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>argvalue</term>
+
+          <listitem>
+            <para>バッファーのサイズがその他の引数の値より大きくなればなりません。例: std.cfg のmemsetの設定を参照してください。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>sizeof</term>
+
+          <listitem>
+            <para>バッファーのサイズがその他の引数のバッファーのサイズより大きくなればなりません。例: std.cfg のstrcnpyの設定を参照してください</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>mul</term>
+
+          <listitem>
+            <para>バッファーのサイズがその他の2つの引数の値の積より大きくなればなりません。典型的な使用例としては、一つの引数が構造体などの要素のサイズを指定し、もうひとつの引数が要素の個数を定義するような場合です。例: std.cfg のfreadの設定を参照してください</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>noreturn</title>
+
+      <para>Cppcheck はこの関数がいつも値を返すとは仮定していません。ここにサンプルのプログラムがあります。:</para>
+
+      <programlisting>void test(int x)
+{
+    int data, buffer[1024];
+    if (x == 1)
+        data = 123;
+    else
+        ZeroMemory(buffer, sizeof(buffer));
+    buffer[0] = data;  // &lt;- error: xが1でないとき初期化されていない
+}</programlisting>
+
+      <para>理屈の上では、<literal>ZeroMemory</literal>がプログラムを終了させてもバグはありません。そのため Cppcheckはエラーを報告しません。:</para>
+
+      <programlisting># cppcheck noreturn.c 
+Checking noreturn.c...</programlisting>
+
+      <para>しかし、<literal>--check-library</literal> と<literal>--enable=information</literal>をつかうとエラーが出力されます。:</para>
+
+      <programlisting># cppcheck --check-library --enable=information noreturn.c 
+Checking noreturn.c...
+[noreturn.c:7]: (information) --check-library: Function ZeroMemory() should have &lt;noreturn&gt; configuration
+</programlisting>
+
+      <para>もし適切な <literal>windows.cfg</literal> が提供されていましたら、このバグは検出されます。:</para>
+
+      <programlisting># cppcheck --library=windows.cfg noreturn.c 
+Checking noreturn.c...
+[noreturn.c:8]: (error) Uninitialized variable: data</programlisting>
+
+      <para>これが最小限の<literal>windows.cfg</literal> ファイルです:</para>
+
+      <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;function name=&quot;ZeroMemory&quot;&gt;
+    &lt;noreturn&gt;false&lt;/noreturn&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>use-retval</title>
+
+      <para>他になにも指定されていない限り、cppcheckは関数が返り値を無視していても問題ないと仮定します。:</para>
+
+      <programlisting>bool test(const char* a, const char* b)
+{
+    strcmp(a, b);  // &lt;- bug: strcmp の呼び出しは副作用を持ちませんが返り値を無視している。
+    return true;
+}</programlisting>
+
+      <para><literal>strcmp</literal> が副作用を持つ場合、パラメータが関数に渡されている結果を無視しても問題はなく、このような仮定は正しいといえます。:</para>
+
+      <programlisting># cppcheck useretval.c 
+Checking useretval.c...</programlisting>
+
+      <para>もし適切な<literal>lib.cfg</literal> が提供されていましたら、このバグは検出されます。:</para>
+
+      <programlisting># cppcheck --library=lib.cfg --enable=warning useretval.c 
+Checking useretval.c...
+[noreturn.c:3]: (warning) Return value of function strcmp() is not used.</programlisting>
+
+      <para>これが最小限の<literal>lib.cfg</literal> ファイルです。:</para>
+
+      <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;function name=&quot;strcmp&quot;&gt;
+    &lt;use-retval/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>define</title>
+
+      <para>ライブラリはマクロプリプロセッサのdefineを使用することができます。例:</para>
+
+      <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;define name=&quot;NULL_VALUE&quot; value=&quot;0&quot;/&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>プリプロセッサの段階でソースコード中に &quot;NULL_VALUE&quot; が現れるごとに、&quot;0&quot;で置き換えます。</para>
+    </section>
+
+    <section>
+      <title>podtype</title>
+
+      <para>多くのソースコードで、プラットフォームに依存しない型をtypedefによって定義しています。&quot;podtype&quot;のタグによって、cppcheckがこれらのサポートするために必要な情報を提供できます。このような情報のない場合、cppcheckは次の例でみるような &quot;uint16_t&quot; 型を理解できません。</para>
+
+      <programlisting>void test() {
+    uint16_t a;
+}</programlisting>
+
+      <para>そのため、未使用変数である、'a'が未使用であるとのメッセージが表示されません。</para>
+
+      <programlisting># cppcheck --enable=style unusedvar.cpp 
+Checking unusedvar.cpp...</programlisting>
+
+      <para>もし uint16_t が以下のように定義されていた場合、結果にメッセージが反映されます。</para>
+
+      <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;podtype name=&quot;uint16_t&quot; sign=&quot;u&quot; size=&quot;2&quot;/&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>型のサイズはバイトサイズで指定します。符号の &quot;sign&quot; 属性は 符号ありの &quot;s&quot; か 符号無し &quot;u&quot; のどちらかです。これらの属性はオプションです。このライブラリを使用しますと、cppcheckはメッセージを表示できるようになります。</para>
+
+      <programlisting># cppcheck --library=lib.cfg --enable=style unusedvar.cpp 
+Checking unusedvar.cpp...
+[unusedvar.cpp:2]: (style) Unused variable: a</programlisting>
+    </section>
+
+    <section>
+      <title>container</title>
+
+      <para>C++ ライブラリの多くや STL 自身は、非常によく似た機能性をもつコンテナを提供する。ライブラリによってその動作をcppcheckに伝えることができる。それぞれのコンテナの設定にはユニークなIDが必要とします。コンテナの設定には、startPatternを加えることができます(オプション)。この startPatternはToken::Match パターンとendPattern に有効でなけばなりません。また、このendPatternはリンクしているトークンと比較されるものです。オブション属性の&quot;inherits&quot;は事前に定義されたコンテナのIDをとります。</para>
+
+      <para>&lt;container&gt;タグの内部で、&lt;size&gt;、&lt;access&gt;、&lt;other&gt;を選択して使用して関数を定義できます。これらのタグはそれぞれ、&quot;resize&quot; やその結果を与えるような動作を指定することができます。その例 &quot;end-iterator&quot;を示します。</para>
+
+      <para>次の例は、std::vectorの為の定義を示しています。std::vectorは&quot;stdContainer&quot;の定義に基づいていますが、ここには表示していません。:</para>
+
+      <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;def&gt;
+  &lt;container id=&quot;stdVector&quot; startPattern=&quot;std :: vector &amp;lt;&quot; inherits=&quot;stdContainer&quot;&gt;
+    &lt;size&gt;
+      &lt;function name=&quot;push_back&quot; action=&quot;push&quot;/&gt;
+      &lt;function name=&quot;pop_back&quot; action=&quot;pop&quot;/&gt;
+    &lt;/size&gt;
+    &lt;access indexOperator=&quot;array-like&quot;&gt;
+      &lt;function name=&quot;at&quot; yields=&quot;at_index&quot;/&gt;
+      &lt;function name=&quot;front&quot; yields=&quot;item&quot;/&gt;
+      &lt;function name=&quot;back&quot; yields=&quot;item&quot;/&gt;
+    &lt;/access&gt;
+  &lt;/container&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>関数strcpyの設定例</title>
+
+      <para>標準関数のstrcpyのための適切な設定は次のようになる。:</para>
+
+      <programlisting>  &lt;function name=&quot;strcpy&quot;&gt;
+    &lt;leak-ignore/&gt;
+    &lt;noreturn&gt;false&lt;/noreturn&gt;
+    &lt;arg nr=&quot;1&quot;&gt;
+      &lt;not-null/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr=&quot;2&quot;&gt;
+      &lt;not-null/&gt;
+      &lt;not-uninit/&gt;
+      &lt;strz/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;</programlisting>
+
+      <para>この<literal>&lt;leak-ignore/&gt;</literal> は、リークチェック中に関数呼び出しを無視するように、Cppcheckに伝えます。この関数は、割り当てられたメモリを解放しないことを意味しています。</para>
+
+      <para>この<literal>&lt;noreturn&gt;</literal> は、この関数が、返り値を返すかどうかをCppchecに伝えます。</para>
+
+      <para>この関数は第一引数にポインタを取ります。しかしこのポインタは、ヌルポインタであってはなりません。というのは<literal>&lt;not-null&gt;</literal>が使用されているからです。</para>
+
+      <para>この関数は第二引数にポインタを取ります。このポインタはヌルポインタであってはなりません。また、このポインタは初期化されたデータを指していなければなりません。<literal>&lt;not-null&gt;</literal> と <literal>&lt;not-uninit&gt;</literal> は正しく使用されています。さらにいえば、このポインタは0終端文字列(zero-terminated string)でなければなりません。そのため&lt;strz&gt;が使用されています。</para>
+    </section>
+
+    <section>
+      <title>全ての引数に対する指定</title>
+
+      <para>引数の数に <literal>-1</literal>を指定すると、チェック時にその関数の全ての引数に適用されます。それぞれの引数に対する設定は、全ての引数に対する指定を上書きします。</para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>ルール(Rules)</title>
+
+    <para>正規表現を使用して、ユーザーがルール(rule)を定義することができます。</para>
+
+    <para>これらのカスタムルールは、ソースコードを高度に分析した結果を使用することができません。しかしソースコード中の非常にシンプルなパターンについて簡単にルールを作成することができます。</para>
+
+    <para>ルールの作成を始めるには次の関連記事を参照してください。:</para>
+
+    <para><ulink url="http://sourceforge.net/projects/cppcheck/files/Articles/">http://sourceforge.net/projects/cppcheck/files/Articles/</ulink></para>
+
+    <para>ルールのファイルフォーマットは次のとおりです。:</para>
+
+    <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;rule&gt;
+  &lt;tokenlist&gt;LIST&lt;/tokenlist&gt;
+  &lt;pattern&gt;PATTERN&lt;/pattern&gt;
+  &lt;message&gt;
+    &lt;id&gt;ID&lt;/id&gt;
+    &lt;severity&gt;SEVERITY&lt;/severity&gt;
+    &lt;summary&gt;SUMMARY&lt;/summary&gt;
+  &lt;/message&gt;
+&lt;/rule&gt;</programlisting>
+
+    <para>patternタグ中にCDATAを含めた場合、XMLに干渉する可能性がありますので使用時はご注意ください。:</para>
+
+    <programlisting>&lt;![CDATA[some&lt;strange&gt;pattern]]&gt;</programlisting>
+
+    <section>
+      <title>&lt;tokenlist&gt;</title>
+
+      <para>この<literal>&lt;tokenlist&gt;</literal> 要素はオプションです。この要素がある場合、どのトークンをチェックするかを指示することができます。この<literal>LIST</literal>は<literal>define</literal>, <literal>raw</literal>, <literal>normal</literal> , <literal>simple</literal>のいずれかです。</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>define</term>
+
+          <listitem>
+            <para>#define プリプロセッサの記述をチェックするために使用します。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>raw</term>
+
+          <listitem>
+            <para>プリプロセッサの出力をチェックするために使用します。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>normal</term>
+
+          <listitem>
+            <para><literal>normal</literal> のトークンリストをチェックするために使用します。ソースコードをある程度、単純化した結果をチェックすることになります。</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>simple</term>
+
+          <listitem>
+            <para>単純なトークンリストをチェックするために使用します。ソースコードを完全に単純化した結果をチェックすることになります。ほとんどの Cppcheckのチェックには、この 単純ばトークンリストを使用します。</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>もし&lt;tokenlist&gt;要素を省略した場合、<literal>simple</literal> が使用されます。</para>
+    </section>
+
+    <section>
+      <title>&lt;pattern&gt;</title>
+
+      <para>この<literal>PATTERN</literal> にはPerlの正規表現と互換性のある正規表現 <literal>PCRE</literal>を指定します。</para>
+    </section>
+
+    <section>
+      <title>&lt;id&gt;</title>
+
+      <para>この ID にはユーザーが定義した message idを指定します。</para>
+    </section>
+
+    <section>
+      <title>&lt;severity&gt;</title>
+
+      <para>この<literal>SEVERITY</literal>には<literal>Cppcheck</literal> の厳格度(severities)である、次のいずれかを指定します。: <literal>information</literal>, <literal>performance</literal>, <literal>portability</literal>, <literal>style</literal>, <literal>warning</literal>,<literal>error</literal></para>
+    </section>
+
+    <section>
+      <title>&lt;summary&gt;</title>
+
+      <para>オプションです。メッセージのサマリーです。もしこのsummaryトークンが指定されていなければ、マッチしたトークンが出力されます。</para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Cppcheck アドオン</title>
+
+    <para>Cppcheckのアドオンは、個別のスクリプトや個別のプログラムとして実装されています。Cppcheckのアドオンを使用すると次のような利点があります。</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>洗練された分析の結果を使用した個別の、外部チェックを追加できます。</para>
+      </listitem>
+
+      <listitem>
+        <para>ソースコードが可視化できます。</para>
+      </listitem>
+
+      <listitem>
+        <para>その他</para>
+      </listitem>
+    </itemizedlist>
+
+    <section>
+      <title>Cppcheckアドオンの使用方法</title>
+
+      <para>現在、アドオンを使用するには2段階の操作が必要です。:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Cppcheckを実行し、ダンプファイルを生成します。</para>
+        </listitem>
+
+        <listitem>
+          <para>アドオンでダンプファイルを処理します。</para>
+        </listitem>
+      </orderedlist>
+
+      <para><literal>--dump</literal>フラグを使用するとダンプファイルを生成できます。foo/ フォルダ以下の全てのソースファイルからダンプファイルを生成するには次のようにします。</para>
+
+      <programlisting>cppcheck --dump foo/</programlisting>
+
+      <para>foo/ フォルダ以下の全てのダンプファイルをアドオンで処理するには次のようにします。</para>
+
+      <programlisting>python addon.py foo/*.dump</programlisting>
+
+      <section>
+        <title>Cppcheckアドオンの見つけ方</title>
+
+        <para>ダウンロードできる、アドオンがいくつかあります。</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Cppcheck プロジェクトはいくつかのアドオンを以下の場所で提供しています。: <uri>http://github.com/danmar/cppcheck/blob/master/addons</uri></para>
+          </listitem>
+
+          <listitem>
+            <para>ublinterは規格で定義されていない未定義動作に注力した&quot;lint&quot;です。: <uri>http://github.com/danmar/ublinter</uri></para>
+          </listitem>
+        </itemizedlist>
+
+        <para>あなたのアドオンの情報をご紹介ください。(商用、フリーを問いません。)</para>
+      </section>
+    </section>
+
+    <section>
+      <title>Cppcheck アドオンの作成</title>
+
+      <para>Cppcheck は XML形式でダンプファイルを生成できます。このファイルには以下のようなものが含まれています。:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>トークンリスト(Token list)</para>
+        </listitem>
+
+        <listitem>
+          <para>シンタックスツリー(Syntax trees)</para>
+        </listitem>
+
+        <listitem>
+          <para>シンボルデータベース(関数、クラス、変数、スコープ)</para>
+        </listitem>
+
+        <listitem>
+          <para>既知の値(value flow analysis)</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Cppcheckはアドオンを直接実行することはできません。直接実行するためにインターフェースはありません。これは、次のような制限がないことを意味します。:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>アドオンを作成しリリースする際に、どのようなライセンスでも適用できます。</para>
+        </listitem>
+
+        <listitem>
+          <para>アドオンの作成に、どのようなスクリプト言語やプログラミング言語で作成できます。</para>
+        </listitem>
+
+        <listitem>
+          <para>アドオン作成者がユーザーインターフェースと出力を決定できます。</para>
+        </listitem>
+
+        <listitem>
+          <para>警告の生成以外の目的にもアドオン使用できます。</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>アドオン作成者の利便性のために、Cppcheck プロジェクトは PythonからCppcheckのデータにアクセスするための cppcheckdata.pyを提供しています。cppcheckdata.pyの使用はオプションです。</para>
+
+      <section>
+        <title>使用例1 - 全トークンの表示</title>
+
+        <para>Script:</para>
+
+        <programlisting>import sys
+import cppcheckdata
+
+def printtokens(data):
+    for token in data.tokenlist:
+        print(token.str)
+
+for arg in sys.argv[1:]:
+    printtokens(cppcheckdata.parse(arg))</programlisting>
+      </section>
+
+      <section>
+        <title>使用例2 - 全関数リストアップ</title>
+
+        <para>Script:</para>
+
+        <programlisting>import sys
+import cppcheckdata
+
+def printfunctions(data):
+    for scope in data.scopes:
+        if scope.type == 'Function':
+            print(scope.className)
+
+for arg in sys.argv[1:]:
+    printfunctions(cppcheckdata.parse(arg))</programlisting>
+      </section>
+
+      <section>
+        <title>使用例 3 - 全クラスリストアップ</title>
+
+        <para>Script:</para>
+
+        <programlisting>import sys
+import cppcheckdata
+
+def printclasses(data):
+    for scope in data.scopes:
+        if scope.type == 'Class':
+            print(scope.className)
+
+for arg in sys.argv[1:]:
+    printfunctions(cppcheckdata.parse(arg))</programlisting>
+      </section>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>HTML 形式での報告</title>
+
+    <para>cppcheckのXML出力をHTML形式に変更できます。これを利用するには、Python と pygments module (<ulink url="http://pygments.org/">http://pygments.org/</ulink>) が必要です。Cppcheckのソースツリーに<filename class="directory">htmlreport</filename>というフォルダがあります。このフォルダには、CppcheckのXMLファイルをHTML出力に変換するスクリプトがあります。</para>
+
+    <para>このコマンドでヘルプ画面を生成するには次のように実行します。</para>
+
+    <programlisting>htmlreport/cppcheck-htmlreport -h</programlisting>
+
+    <para>出力画面には次の内容が表示されます。:</para>
+
+    <programlisting>Usage: cppcheck-htmlreport [options]
+
+Options:
+  -h, --help      show this help message and exit
+  --file=FILE     The cppcheck xml output file to read defects from.
+                  Default is reading from stdin.
+  --report-dir=REPORT_DIR
+                  The directory where the html report content is written.
+  --source-dir=SOURCE_DIR
+                  Base directory where source code files can be found.</programlisting>
+
+    <para>使用例:</para>
+
+    <programlisting>./cppcheck gui/test.cpp --xml 2&gt; err.xml
+htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.</programlisting>
+  </chapter>
+
+  <chapter>
+    <title>グラフィカルインターフェースGUI</title>
+
+    <section>
+      <title>イントロダクション</title>
+
+      <para>Cppcheck GUIが利用できます。</para>
+
+      <para>メイン画面は、このソフトを起動時に表示されます。</para>
+    </section>
+
+    <section>
+      <title>ソースコードのチェック</title>
+
+      <para><guimenu>Check</guimenu>メニューを使用します。</para>
+    </section>
+
+    <section>
+      <title>結果の確認</title>
+
+      <para>結果はリスト表示されます。</para>
+
+      <para><guimenu>View</guimenu> メニューを操作して、メッセージの種類毎に表示/非表示を切り替えできます。</para>
+
+      <para>結果をXML ファイルに保存して、後で確認できます。<literal>Save results to file</literal> と <literal>Open XML</literal>を参照してください。</para>
+    </section>
+
+    <section>
+      <title>設定</title>
+
+      <para><guimenu>Language</guimenu>メニューからいつでも使用言語を変更できます。</para>
+
+      <para>設定は、<menuchoice> <guimenu>Edit</guimenu> <guimenuitem>Preferences</guimenuitem> </menuchoice>で変更できます。</para>
+    </section>
+
+    <section>
+      <title>プロジェクトファイル</title>
+
+      <para>プロジェクトファイルは、プロジェクト固有の設定を保存するのに使用します。固有の設定には次のものがあります。:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>インクルードパス</para>
+        </listitem>
+
+        <listitem>
+          <para>プリプロセッサのdefine</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>このマニュアルの<link linkend="preprocessor-configurations">3 章</link>にあるように、全てのコンパイルスイッチの組み合わせをチェックします。コンパイルスイッチの組み合わせを制限したい場合にだけ、プリプロセッサのdefineを指定してください。</para>
+    </section>
+  </chapter>
+</book>

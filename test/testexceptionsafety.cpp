@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,11 @@ public:
     }
 
 private:
+    Settings settings;
 
     void run() {
+        settings.addEnabled("all");
+
         TEST_CASE(destructors);
         TEST_CASE(deallocThrow1);
         TEST_CASE(deallocThrow2);
@@ -52,8 +55,6 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("all");
         settings.inconclusive = inconclusive;
 
         // Tokenize..
@@ -81,11 +82,6 @@ private:
               "    throw e;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Class x is not safe, destructor throws exception\n", errout.str());
-
-        check("x::~x() {\n"
-              "    throw e;\n"
-              "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Class x is not safe, destructor throws exception\n", "", errout.str());
 
         // #3858 - throwing exception in try block in destructor.
         check("class x {\n"

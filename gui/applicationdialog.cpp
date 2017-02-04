@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,11 +53,11 @@ ApplicationDialog::~ApplicationDialog()
 void ApplicationDialog::Browse()
 {
     QString filter;
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     // In Windows (almost) all executables have .exe extension
     // so it does not make sense to show everything.
     filter += tr("Executable files (*.exe);;All files(*.*)");
-#endif // Q_WS_WIN
+#endif // Q_OS_WIN
     QString selectedFile = QFileDialog::getOpenFileName(this,
                            tr("Select viewer application"),
                            GetPath(SETTINGS_LAST_APP_PATH),

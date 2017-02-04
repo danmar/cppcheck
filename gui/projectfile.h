@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,54 +41,74 @@ public:
     ProjectFile(const QString &filename, QObject *parent = 0);
 
     /**
-    * @brief Read the project file.
-    * @param filename Filename (can be also given to constructor).
-    */
+     * @brief Read the project file.
+     * @param filename Filename (can be also given to constructor).
+     */
     bool Read(const QString &filename = QString());
 
     /**
-    * @brief Get project root path.
-    * @return project root path.
-    */
+     * @brief Get project root path.
+     * @return project root path.
+     */
     QString GetRootPath() const {
         return mRootPath;
+    }
+
+    QString GetBuildDir() const {
+        return mBuildDir;
+    }
+
+    QString GetImportProject() const {
+        return mImportProject;
     }
 
     /**
     * @brief Get list of include directories.
     * @return list of directories.
     */
-    QStringList GetIncludeDirs() const;
+    QStringList GetIncludeDirs() const {
+        return ProjectFile::fromNativeSeparators(mIncludeDirs);
+    }
 
     /**
     * @brief Get list of defines.
     * @return list of defines.
     */
-    QStringList GetDefines() const;
+    QStringList GetDefines() const {
+        return mDefines;
+    }
 
     /**
     * @brief Get list of paths to check.
     * @return list of paths.
     */
-    QStringList GetCheckPaths() const;
+    QStringList GetCheckPaths() const {
+        return ProjectFile::fromNativeSeparators(mPaths);
+    }
 
     /**
     * @brief Get list of paths to exclude from the check.
     * @return list of paths.
     */
-    QStringList GetExcludedPaths() const;
+    QStringList GetExcludedPaths() const {
+        return ProjectFile::fromNativeSeparators(mExcludedPaths);
+    }
 
     /**
     * @brief Get list libraries.
     * @return list of libraries.
     */
-    QStringList GetLibraries() const;
+    QStringList GetLibraries() const {
+        return mLibraries;
+    }
 
     /**
     * @brief Get list suppressions.
     * @return list of suppressions.
     */
-    QStringList GetSuppressions() const;
+    QStringList GetSuppressions() const {
+        return mSuppressions;
+    }
 
     /**
     * @brief Get filename for the project file.
@@ -106,46 +126,55 @@ public:
         mRootPath = rootpath;
     }
 
+
+    void SetBuildDir(const QString &buildDir) {
+        mBuildDir = buildDir;
+    }
+
+    void SetImportProject(const QString &importProject) {
+        mImportProject = importProject;
+    }
+
     /**
-    * @brief Set list of includes.
-    * @param includes List of defines.
-    */
+     * @brief Set list of includes.
+     * @param includes List of defines.
+     */
     void SetIncludes(const QStringList &includes);
 
     /**
-    * @brief Set list of defines.
-    * @param defines List of defines.
-    */
+     * @brief Set list of defines.
+     * @param defines List of defines.
+     */
     void SetDefines(const QStringList &defines);
 
     /**
-    * @brief Set list of paths to check.
-    * @param paths List of paths.
-    */
+     * @brief Set list of paths to check.
+     * @param paths List of paths.
+     */
     void SetCheckPaths(const QStringList &paths);
 
     /**
-    * @brief Set list of paths to exclude from the check.
-    * @param paths List of paths.
-    */
+     * @brief Set list of paths to exclude from the check.
+     * @param paths List of paths.
+     */
     void SetExcludedPaths(const QStringList &paths);
 
     /**
-    * @brief Set list of libraries.
-    * @param libraries List of libraries.
-    */
+     * @brief Set list of libraries.
+     * @param libraries List of libraries.
+     */
     void SetLibraries(const QStringList &libraries);
 
     /**
-    * @brief Set list of suppressions.
-    * @param suppressions List of suppressions.
-    */
+     * @brief Set list of suppressions.
+     * @param suppressions List of suppressions.
+     */
     void SetSuppressions(const QStringList &suppressions);
 
     /**
-    * @brief Write project file (to disk).
-    * @param filename Filename to use.
-    */
+     * @brief Write project file (to disk).
+     * @param filename Filename to use.
+     */
     bool Write(const QString &filename = QString());
 
     /**
@@ -158,9 +187,9 @@ public:
     static void WriteStringList(QXmlStreamWriter &xmlWriter, const QStringList &stringlist, const char startelementname[], const char stringelementname[]);
 
     /**
-    * @brief Set filename for the project file.
-    * @param filename Filename to use.
-    */
+     * @brief Set filename for the project file.
+     * @param filename Filename to use.
+     */
     void SetFilename(const QString &filename) {
         mFilename = filename;
     }
@@ -168,81 +197,100 @@ public:
 protected:
 
     /**
-    * @brief Read optional root path from XML.
-    * @param reader XML stream reader.
-    */
+     * @brief Read optional root path from XML.
+     * @param reader XML stream reader.
+     */
     void ReadRootPath(QXmlStreamReader &reader);
 
+    void ReadBuildDir(QXmlStreamReader &reader);
+
     /**
-    * @brief Read list of include directories from XML.
-    * @param reader XML stream reader.
-    */
+     * @brief Read importproject from XML.
+     * @param reader XML stream reader.
+     */
+    void ReadImportProject(QXmlStreamReader &reader);
+
+    /**
+     * @brief Read list of include directories from XML.
+     * @param reader XML stream reader.
+     */
     void ReadIncludeDirs(QXmlStreamReader &reader);
 
     /**
-    * @brief Read list of defines from XML.
-    * @param reader XML stream reader.
-    */
+     * @brief Read list of defines from XML.
+     * @param reader XML stream reader.
+     */
     void ReadDefines(QXmlStreamReader &reader);
 
     /**
-    * @brief Read list paths to check.
-    * @param reader XML stream reader.
-    */
+     * @brief Read list paths to check.
+     * @param reader XML stream reader.
+     */
     void ReadCheckPaths(QXmlStreamReader &reader);
 
     /**
-    * @brief Read lists of excluded paths.
-    * @param reader XML stream reader.
-    */
+     * @brief Read lists of excluded paths.
+     * @param reader XML stream reader.
+     */
     void ReadExcludes(QXmlStreamReader &reader);
 
     /**
-     * @brief Read string list
-     * @param stringlist   destination string list
-     * @param reader       XML stream reader
-     * @param elementname  elementname for each string
-     */
+      * @brief Read string list
+      * @param stringlist   destination string list
+      * @param reader       XML stream reader
+      * @param elementname  elementname for each string
+      */
     void ReadStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
 
 private:
 
     /**
-    * @brief Filename (+path) of the project file.
-    */
+     * @brief Convert paths
+     */
+    static QStringList fromNativeSeparators(const QStringList &paths);
+
+    /**
+     * @brief Filename (+path) of the project file.
+     */
     QString mFilename;
 
     /**
-    * @brief Root path (optional) for the project.
-    * This is the project root path. If it is present then all relative paths in
-    * the project file are relative to this path. Otherwise paths are relative
-    * to project file's path.
-    */
+     * @brief Root path (optional) for the project.
+     * This is the project root path. If it is present then all relative paths in
+     * the project file are relative to this path. Otherwise paths are relative
+     * to project file's path.
+     */
     QString mRootPath;
 
+    /** Cppcheck build dir */
+    QString mBuildDir;
+
+    /** Visual studio project/solution , compile database */
+    QString mImportProject;
+
     /**
-    * @brief List of include directories used to search include files.
-    */
+     * @brief List of include directories used to search include files.
+     */
     QStringList mIncludeDirs;
 
     /**
-    * @brief List of defines.
-    */
+     * @brief List of defines.
+     */
     QStringList mDefines;
 
     /**
-    * @brief List of paths to check.
-    */
+     * @brief List of paths to check.
+     */
     QStringList mPaths;
 
     /**
-    * @brief Paths excluded from the check.
-    */
+     * @brief Paths excluded from the check.
+     */
     QStringList mExcludedPaths;
 
     /**
-    * @brief List of libraries.
-    */
+     * @brief List of libraries.
+     */
     QStringList mLibraries;
 
     /**

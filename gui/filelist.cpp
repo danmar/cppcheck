@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include "filelist.h"
+#include "path.h"
+#include "pathmatch.h"
 
 QStringList FileList::GetDefaultFilters()
 {
@@ -35,7 +37,7 @@ bool FileList::FilterMatches(const QFileInfo &inf)
         const QStringList filters = FileList::GetDefaultFilters();
         QString ext("*.");
         ext += inf.suffix();
-        if (filters.contains(ext))
+        if (filters.contains(ext, Qt::CaseInsensitive))
             return true;
     }
     return false;
@@ -68,7 +70,7 @@ void FileList::AddDirectory(const QString &directory, bool recursive)
         dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
         QFileInfoList list = dir.entryInfoList();
         QFileInfo item;
-        foreach(item, list) {
+        foreach (item, list) {
             const QString path = item.canonicalFilePath();
             AddDirectory(path, recursive);
         }
@@ -78,7 +80,7 @@ void FileList::AddDirectory(const QString &directory, bool recursive)
 void FileList::AddPathList(const QStringList &paths)
 {
     QString path;
-    foreach(path, paths) {
+    foreach (path, paths) {
         QFileInfo inf(path);
         if (inf.isFile())
             AddFile(path);
@@ -91,7 +93,7 @@ QStringList FileList::GetFileList() const
 {
     if (mExcludedPaths.empty()) {
         QStringList names;
-        foreach(QFileInfo item, mFileList) {
+        foreach (QFileInfo item, mFileList) {
             QString name = QDir::fromNativeSeparators(item.canonicalFilePath());
             names << name;
         }
@@ -106,28 +108,28 @@ void FileList::AddExcludeList(const QStringList &paths)
     mExcludedPaths = paths;
 }
 
+static std::vector<std::string> toStdStringList(const QStringList &stringList)
+{
+    std::vector<std::string> ret;
+    foreach (const QString &s, stringList) {
+        ret.push_back(s.toStdString());
+    }
+    return ret;
+}
+
 QStringList FileList::ApplyExcludeList() const
 {
+#ifdef _WIN32
+    const PathMatch pathMatch(toStdStringList(mExcludedPaths), true);
+#else
+    const PathMatch pathMatch(toStdStringList(mExcludedPaths), false);
+#endif
+
     QStringList paths;
-    foreach(QFileInfo item, mFileList) {
+    foreach (QFileInfo item, mFileList) {
         QString name = QDir::fromNativeSeparators(item.canonicalFilePath());
-        if (!Match(name))
+        if (!pathMatch.Match(name.toStdString()))
             paths << name;
     }
     return paths;
-}
-
-bool FileList::Match(const QString &path) const
-{
-    for (int i = 0; i < mExcludedPaths.size(); i++) {
-        if (mExcludedPaths[i].endsWith('/')) {
-            const QString pathexclude("/" + mExcludedPaths[i]);
-            if (path.indexOf(pathexclude) != -1)
-                return true;
-        } else {
-            if (path.endsWith(mExcludedPaths[i]))
-                return true;
-        }
-    }
-    return false;
 }

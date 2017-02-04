@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 #include "tokenize.h"
 #include "checkstring.h"
 #include "testsuite.h"
-#include "preprocessor.h"
 #include "testutils.h"
 
 
@@ -30,8 +29,14 @@ public:
     }
 
 private:
+    Settings settings;
 
     void run() {
+        settings.addEnabled("warning");
+        settings.addEnabled("style");
+
+        TEST_CASE(stringLiteralWrite);
+
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(suspiciousStringCompare);
         TEST_CASE(suspiciousStringCompare_char);
@@ -39,7 +44,6 @@ private:
         TEST_CASE(strPlusChar1);     // "/usr" + '/'
         TEST_CASE(strPlusChar2);     // "/usr" + ch
         TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
-        TEST_CASE(strPlusChar4);     // ast
 
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
@@ -52,10 +56,6 @@ private:
     void check(const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -70,29 +70,42 @@ private:
         checkString.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void check_preprocess_suppress(const char precode[]) {
-        // Clear the error buffer..
-        errout.str("");
+    void stringLiteralWrite() {
+        check("void f() {\n"
+              "  char *abc = \"abc\";\n"
+              "  abc[0] = 'a';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (error) Modifying string literal \"abc\" directly or indirectly is undefined behaviour.\n", errout.str());
 
-        Settings settings;
-        settings.addEnabled("warning");
+        check("void f() {\n"
+              "  char *abc = \"abc\";\n"
+              "  *abc = 'a';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (error) Modifying string literal \"abc\" directly or indirectly is undefined behaviour.\n", errout.str());
 
-        // Preprocess file..
-        Preprocessor preprocessor(&settings, this);
-        std::list<std::string> configurations;
-        std::string filedata;
-        std::istringstream fin(precode);
-        preprocessor.preprocess(fin, filedata, configurations, "test.cpp", settings._includePaths);
-        const std::string code = preprocessor.getcode(filedata, "", "test.cpp");
+        check("void f() {\n"
+              "  QString abc = \"abc\";\n"
+              "  abc[0] = 'a';\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        check("void foo_FP1(char *p) {\n"
+              "  p[1] = 'B';\n"
+              "}\n"
+              "void foo_FP2(void) {\n"
+              "  char* s = \"Y\";\n"
+              "  foo_FP1(s);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (error) Modifying string literal \"Y\" directly or indirectly is undefined behaviour.\n", errout.str());
 
-        // Check..
-        CheckString checkString(&tokenizer, &settings, this);
-        checkString.checkAlwaysTrueOrFalseStringCompare();
+        check("void foo_FP1(char *p) {\n"
+              "  p[1] = 'B';\n"
+              "}\n"
+              "void foo_FP2(void) {\n"
+              "  char s[10] = \"Y\";\n"
+              "  foo_FP1(s);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueFalseStringCompare() {
@@ -129,7 +142,7 @@ private:
               "     if (!memcmp(p + offset, p, 42)){}\n"
               "     if (!memcmp(offset + p, p, 42)){}\n"
               "     if (!memcmp(p, offset + p, 42)){}\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // avoid false positives when the address is modified #6415
@@ -138,7 +151,7 @@ private:
               "     if (!memcmp(c + offset, c, 42)){}\n"
               "     if (!memcmp(offset + c, c, 42)){}\n"
               "     if (!memcmp(c, offset + c, 42)){}\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // avoid false positives when the address is modified #6415
@@ -147,103 +160,101 @@ private:
               "     if (!memcmp(s.c_str() + offset, s.c_str(), 42)){}\n"
               "     if (!memcmp(offset + s.c_str(), s.c_str(), 42)){}\n"
               "     if (!memcmp(s.c_str(), offset + s.c_str(), 42)){}\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check_preprocess_suppress(
-            "#define MACRO \"00FF00\"\n"
-            "int main()\n"
-            "{\n"
-            "  if (strcmp(MACRO,\"00FF00\") == 0)"
-            "  {"
-            "    std::cout << \"Equal\n\""
-            "  }"
-            "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Unnecessary comparison of static strings.\n", errout.str());
-
-        check_preprocess_suppress(
-            "int main()\n"
-            "{\n"
-            "  if (stricmp(\"hotdog\",\"HOTdog\") == 0)"
-            "  {"
-            "    std::cout << \"Equal\n\""
-            "  }"
-            "}");
+        check("int main()\n"
+              "{\n"
+              "  if (strcmp(\"00FF00\", \"00FF00\") == 0)"
+              "  {"
+              "    std::cout << \"Equal\n\""
+              "  }"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
-        check_preprocess_suppress(
-            "#define MACRO \"Hotdog\"\n"
-            "int main()\n"
-            "{\n"
-            "  if (QString::compare(\"Hamburger\", MACRO) == 0)"
-            "  {"
-            "    std::cout << \"Equal\n\""
-            "  }"
-            "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Unnecessary comparison of static strings.\n", errout.str());
-
-        check_preprocess_suppress(
-            "int main()\n"
-            "{\n"
-            "  if (QString::compare(argv[2], \"hotdog\") == 0)"
-            "  {"
-            "    std::cout << \"Equal\n\""
-            "  }"
-            "}");
+        check("void f() {\n"
+              "  if (strcmp($\"00FF00\", \"00FF00\") == 0) {}"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
-        check_preprocess_suppress(
-            "int main()\n"
-            "{\n"
-            "  if (strncmp(\"hotdog\",\"hotdog\", 6) == 0)"
-            "  {"
-            "    std::cout << \"Equal\n\""
-            "  }"
-            "}");
+        check("void f() {\n"
+              "  if ($strcmp(\"00FF00\", \"00FF00\") == 0) {}"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int main()\n"
+              "{\n"
+              "  if (stricmp(\"hotdog\",\"HOTdog\") == 0)"
+              "  {"
+              "    std::cout << \"Equal\n\""
+              "  }"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
-        check(
-            "int foo(const char *buf)\n"
-            "{\n"
-            "  if (strcmp(buf, buf) == 0)"
-            "  {"
-            "    std::cout << \"Equal\n\""
-            "  }"
-            "}");
+        check("int main()\n"
+              "{\n"
+              "  if (QString::compare(\"Hamburger\", \"Hotdog\") == 0)"
+              "  {"
+              "    std::cout << \"Equal\n\""
+              "  }"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n", errout.str());
+
+        check("int main()\n"
+              "{\n"
+              "  if (QString::compare(argv[2], \"hotdog\") == 0)"
+              "  {"
+              "    std::cout << \"Equal\n\""
+              "  }"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int main()\n"
+              "{\n"
+              "  if (strncmp(\"hotdog\",\"hotdog\", 6) == 0)"
+              "  {"
+              "    std::cout << \"Equal\n\""
+              "  }"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n", errout.str());
+
+        check("int foo(const char *buf)\n"
+              "{\n"
+              "  if (strcmp(buf, buf) == 0)"
+              "  {"
+              "    std::cout << \"Equal\n\""
+              "  }"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of identical string variables.\n", errout.str());
 
-        check(
-            "int foo(const std::string& buf)\n"
-            "{\n"
-            "  if (stricmp(buf.c_str(), buf.c_str()) == 0)"
-            "  {"
-            "    std::cout << \"Equal\n\""
-            "  }"
-            "}");
+        check("int foo(const std::string& buf)\n"
+              "{\n"
+              "  if (stricmp(buf.c_str(), buf.c_str()) == 0)"
+              "  {"
+              "    std::cout << \"Equal\n\""
+              "  }"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of identical string variables.\n", errout.str());
 
-        check_preprocess_suppress(
-            "int main() {\n"
-            "  if (\"str\" == \"str\") {\n"
-            "    std::cout << \"Equal\n\"\n"
-            "  }\n"
-            "}");
+        check("int main() {\n"
+              "  if (\"str\" == \"str\") {\n"
+              "    std::cout << \"Equal\n\"\n"
+              "  }\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
-        check_preprocess_suppress(
-            "int main() {\n"
-            "  if (\"str\" != \"str\") {\n"
-            "    std::cout << \"Equal\n\"\n"
-            "  }\n"
-            "}");
+        check("int main() {\n"
+              "  if (\"str\" != \"str\") {\n"
+              "    std::cout << \"Equal\n\"\n"
+              "  }\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
-        check_preprocess_suppress(
-            "int main() {\n"
-            "  if (a+\"str\" != \"str\"+b) {\n"
-            "    std::cout << \"Equal\n\"\n"
-            "  }\n"
-            "}");
+        check("int main() {\n"
+              "  if (a+\"str\" != \"str\"+b) {\n"
+              "    std::cout << \"Equal\n\"\n"
+              "  }\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -323,10 +334,10 @@ private:
 
         // Ticket #5734
         check("int foo(char c) {\n"
-              "return c == '42';}", "test.cpp");
+              "return c == '4';}", "test.cpp");
         ASSERT_EQUALS("", errout.str());
         check("int foo(char c) {\n"
-              "return c == '42';}", "test.c");
+              "return c == '4';}", "test.c");
         ASSERT_EQUALS("", errout.str());
         check("int foo(char c) {\n"
               "return c == \"42\"[0];}", "test.cpp");
@@ -356,7 +367,7 @@ private:
 
     void suspiciousStringCompare_char() {
         check("bool foo(char* c) {\n"
-              "    return c == '\\0';\n"
+              "    return c == 'x';\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
 
@@ -488,11 +499,6 @@ private:
               "    std::string path = temp + '/' + \"sub\" + '/';\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void strPlusChar4() {
-        // don't crash
-        check("int test() { int +; }");
     }
 
 

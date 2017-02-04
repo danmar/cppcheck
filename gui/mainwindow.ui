@@ -1,0 +1,766 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>640</width>
+    <height>480</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Cppcheck</string>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>22</width>
+    <height>22</height>
+   </size>
+  </property>
+  <widget class="QWidget" name="mCentral">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>16777215</height>
+    </size>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="ResultsView" name="mResults" native="true"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="mMenuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>640</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="mMenuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="mActionOpenXML"/>
+    <addaction name="separator"/>
+    <addaction name="mActionNewProjectFile"/>
+    <addaction name="mActionOpenProjectFile"/>
+    <addaction name="mActionEditProjectFile"/>
+    <addaction name="mActionCloseProjectFile"/>
+    <addaction name="separator"/>
+    <addaction name="mActionProjectMRU"/>
+    <addaction name="mActionSave"/>
+    <addaction name="separator"/>
+    <addaction name="mActionPrintPreview"/>
+    <addaction name="mActionPrint"/>
+    <addaction name="separator"/>
+    <addaction name="mActionQuit"/>
+   </widget>
+   <widget class="QMenu" name="mMenuView">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <widget class="QMenu" name="mMenuToolbars">
+     <property name="title">
+      <string>&amp;Toolbars</string>
+     </property>
+     <addaction name="mActionToolBarMain"/>
+     <addaction name="mActionToolBarView"/>
+     <addaction name="mActionToolBarFilter"/>
+    </widget>
+    <addaction name="mMenuToolbars"/>
+    <addaction name="separator"/>
+    <addaction name="mActionShowErrors"/>
+    <addaction name="mActionShowWarnings"/>
+    <addaction name="mActionShowStyle"/>
+    <addaction name="mActionShowPortability"/>
+    <addaction name="mActionShowPerformance"/>
+    <addaction name="mActionShowInformation"/>
+    <addaction name="mActionCheckAll"/>
+    <addaction name="mActionUncheckAll"/>
+    <addaction name="separator"/>
+    <addaction name="mActionCollapseAll"/>
+    <addaction name="mActionExpandAll"/>
+    <addaction name="separator"/>
+    <addaction name="mActionShowHidden"/>
+    <addaction name="separator"/>
+    <addaction name="mActionShowScratchpad"/>
+    <addaction name="mActionViewLog"/>
+    <addaction name="mActionViewStats"/>
+    <addaction name="mActionLibraryEditor"/>
+   </widget>
+   <widget class="QMenu" name="mMenuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="mActionHelpContents"/>
+    <addaction name="mActionLicense"/>
+    <addaction name="mActionAuthors"/>
+    <addaction name="separator"/>
+    <addaction name="mActionAbout"/>
+   </widget>
+   <widget class="QMenu" name="mMenuCheck">
+    <property name="title">
+     <string>&amp;Check</string>
+    </property>
+    <widget class="QMenu" name="menuCpp_standard">
+     <property name="title">
+      <string>C++ standard</string>
+     </property>
+     <addaction name="mActionCpp03"/>
+     <addaction name="mActionCpp11"/>
+    </widget>
+    <widget class="QMenu" name="menuC_standard">
+     <property name="title">
+      <string>C standard</string>
+     </property>
+     <addaction name="mActionC89"/>
+     <addaction name="mActionC99"/>
+     <addaction name="mActionC11"/>
+    </widget>
+    <addaction name="mActionCheckFiles"/>
+    <addaction name="mActionCheckDirectory"/>
+    <addaction name="mActionRecheckModified"/>
+    <addaction name="mActionRecheckAll"/>
+    <addaction name="mActionStop"/>
+    <addaction name="separator"/>
+    <addaction name="menuC_standard"/>
+    <addaction name="menuCpp_standard"/>
+    <addaction name="mActionPosix"/>
+    <addaction name="separator"/>
+    <addaction name="mActionAutoDetectLanguage"/>
+    <addaction name="mActionEnforceCpp"/>
+    <addaction name="mActionEnforceC"/>
+    <addaction name="separator"/>
+    <addaction name="mActionPlatforms"/>
+   </widget>
+   <widget class="QMenu" name="mMenuEdit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="mActionClearResults"/>
+    <addaction name="mActionSettings"/>
+   </widget>
+   <addaction name="mMenuFile"/>
+   <addaction name="mMenuEdit"/>
+   <addaction name="mMenuView"/>
+   <addaction name="mMenuCheck"/>
+   <addaction name="mMenuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="mToolBarMain">
+   <property name="windowTitle">
+    <string>Standard</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="mActionCheckDirectory"/>
+   <addaction name="mActionOpenProjectFile"/>
+   <addaction name="mActionShowScratchpad"/>
+   <addaction name="mActionSave"/>
+   <addaction name="mActionRecheckModified"/>
+   <addaction name="mActionRecheckAll"/>
+   <addaction name="mActionStop"/>
+   <addaction name="mActionClearResults"/>
+   <addaction name="mActionSettings"/>
+   <addaction name="mActionAbout"/>
+  </widget>
+  <widget class="QToolBar" name="mToolBarView">
+   <property name="windowTitle">
+    <string>Categories</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="mActionShowErrors"/>
+   <addaction name="mActionShowWarnings"/>
+   <addaction name="mActionShowStyle"/>
+   <addaction name="mActionShowPortability"/>
+   <addaction name="mActionShowPerformance"/>
+   <addaction name="mActionShowInformation"/>
+  </widget>
+  <widget class="QToolBar" name="mToolBarFilter">
+   <property name="windowTitle">
+    <string>Filter</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <action name="mActionLicense">
+   <property name="text">
+    <string>&amp;License...</string>
+   </property>
+  </action>
+  <action name="mActionAuthors">
+   <property name="text">
+    <string>A&amp;uthors...</string>
+   </property>
+  </action>
+  <action name="mActionAbout">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/help-browser.png</normaloff>:/images/help-browser.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;About...</string>
+   </property>
+  </action>
+  <action name="mActionCheckFiles">
+   <property name="text">
+    <string>&amp;Files...</string>
+   </property>
+   <property name="iconText">
+    <string>Check files</string>
+   </property>
+   <property name="toolTip">
+    <string>Check files</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="mActionCheckDirectory">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/cppcheck-gui.png</normaloff>:/cppcheck-gui.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Directory...</string>
+   </property>
+   <property name="iconText">
+    <string>Check directory</string>
+   </property>
+   <property name="toolTip">
+    <string>Check directory</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="mActionRecheckModified">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/view-refresh.png</normaloff>:/images/view-refresh.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Recheck modified files</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="mActionRecheckAll">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/view-recheck.png</normaloff>:/images/view-recheck.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Recheck all files</string>
+   </property>
+  </action>
+  <action name="mActionStop">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/process-stop.png</normaloff>:/images/process-stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Stop</string>
+   </property>
+   <property name="iconText">
+    <string>Stop checking</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop checking</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
+   </property>
+  </action>
+  <action name="mActionSave">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/media-floppy.png</normaloff>:/images/media-floppy.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save results to file...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="mActionQuit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+  </action>
+  <action name="mActionClearResults">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/edit-clear.png</normaloff>:/images/edit-clear.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Clear results</string>
+   </property>
+  </action>
+  <action name="mActionSettings">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/preferences-system.png</normaloff>:/images/preferences-system.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Preferences</string>
+   </property>
+  </action>
+  <action name="mActionShowStyle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/applications-development.png</normaloff>:/images/applications-development.png</iconset>
+   </property>
+   <property name="text">
+    <string>Style warnings</string>
+   </property>
+   <property name="iconText">
+    <string>Show style warnings</string>
+   </property>
+   <property name="toolTip">
+    <string>Show style warnings</string>
+   </property>
+  </action>
+  <action name="mActionShowErrors">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/showerrors.png</normaloff>:/images/showerrors.png</iconset>
+   </property>
+   <property name="text">
+    <string>Errors</string>
+   </property>
+   <property name="iconText">
+    <string>Show errors</string>
+   </property>
+   <property name="toolTip">
+    <string>Show errors</string>
+   </property>
+  </action>
+  <action name="mActionCheckAll">
+   <property name="text">
+    <string>&amp;Check all</string>
+   </property>
+  </action>
+  <action name="mActionUncheckAll">
+   <property name="text">
+    <string>&amp;Uncheck all</string>
+   </property>
+  </action>
+  <action name="mActionCollapseAll">
+   <property name="text">
+    <string>Collapse &amp;all</string>
+   </property>
+  </action>
+  <action name="mActionExpandAll">
+   <property name="text">
+    <string>&amp;Expand all</string>
+   </property>
+  </action>
+  <action name="mActionToolBarMain">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Standard</string>
+   </property>
+   <property name="toolTip">
+    <string>Standard items</string>
+   </property>
+  </action>
+  <action name="mActionHelpContents">
+   <property name="text">
+    <string>&amp;Contents</string>
+   </property>
+   <property name="statusTip">
+    <string>Open the help contents</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="actionToolbar">
+   <property name="text">
+    <string>Toolbar</string>
+   </property>
+  </action>
+  <action name="mActionToolBarView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Categories</string>
+   </property>
+   <property name="toolTip">
+    <string>Error categories</string>
+   </property>
+  </action>
+  <action name="mActionOpenXML">
+   <property name="text">
+    <string>&amp;Open XML...</string>
+   </property>
+  </action>
+  <action name="mActionOpenProjectFile">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/openproject.png</normaloff>:/images/openproject.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open P&amp;roject File...</string>
+   </property>
+  </action>
+  <action name="mActionShowScratchpad">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/scratchpad.png</normaloff>:/images/scratchpad.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show S&amp;cratchpad...</string>
+   </property>
+  </action>
+  <action name="mActionNewProjectFile">
+   <property name="text">
+    <string>&amp;New Project File...</string>
+   </property>
+  </action>
+  <action name="mActionViewLog">
+   <property name="text">
+    <string>&amp;Log View</string>
+   </property>
+   <property name="toolTip">
+    <string>Log View</string>
+   </property>
+  </action>
+  <action name="mActionCloseProjectFile">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>C&amp;lose Project File</string>
+   </property>
+  </action>
+  <action name="mActionEditProjectFile">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Edit Project File...</string>
+   </property>
+  </action>
+  <action name="mActionViewStats">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/text-x-generic.png</normaloff>:/images/text-x-generic.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Statistics</string>
+   </property>
+  </action>
+  <action name="mActionShowWarnings">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/showwarnings.png</normaloff>:/images/showwarnings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Warnings</string>
+   </property>
+   <property name="iconText">
+    <string>Show warnings</string>
+   </property>
+   <property name="toolTip">
+    <string>Show warnings</string>
+   </property>
+  </action>
+  <action name="mActionShowPerformance">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/showperformance.png</normaloff>:/images/showperformance.png</iconset>
+   </property>
+   <property name="text">
+    <string>Performance warnings</string>
+   </property>
+   <property name="iconText">
+    <string>Show performance warnings</string>
+   </property>
+   <property name="toolTip">
+    <string>Show performance warnings</string>
+   </property>
+  </action>
+  <action name="mActionShowHidden">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show &amp;hidden</string>
+   </property>
+  </action>
+  <action name="mActionShowInformation">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/dialog-information.png</normaloff>:/images/dialog-information.png</iconset>
+   </property>
+   <property name="text">
+    <string>Information</string>
+   </property>
+   <property name="toolTip">
+    <string>Show information messages</string>
+   </property>
+  </action>
+  <action name="mActionShowPortability">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/applications-system.png</normaloff>:/images/applications-system.png</iconset>
+   </property>
+   <property name="text">
+    <string>Portability</string>
+   </property>
+   <property name="toolTip">
+    <string>Show portability warnings</string>
+   </property>
+  </action>
+  <action name="mActionToolBarFilter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Filter</string>
+   </property>
+   <property name="toolTip">
+    <string>Filter results</string>
+   </property>
+  </action>
+  <action name="mActionProjectMRU">
+   <property name="text">
+    <string notr="true">Project MRU placeholder</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="mActionPlatformWin32ANSI">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Windows 32-bit ANSI</string>
+   </property>
+  </action>
+  <action name="mActionPlatformWin32Unicode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Windows 32-bit Unicode</string>
+   </property>
+  </action>
+  <action name="mActionPlatformUnix32Bit">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Unix 32-bit</string>
+   </property>
+  </action>
+  <action name="mActionPlatformUnix64Bit">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Unix 64-bit</string>
+   </property>
+  </action>
+  <action name="mActionPlatformWin64">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Windows 64-bit</string>
+   </property>
+  </action>
+  <action name="mActionPlatforms">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Platforms</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="mActionCpp11">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C++11</string>
+   </property>
+  </action>
+  <action name="mActionC99">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C99</string>
+   </property>
+  </action>
+  <action name="mActionPosix">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Posix</string>
+   </property>
+  </action>
+  <action name="mActionC11">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C11</string>
+   </property>
+  </action>
+  <action name="mActionC89">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C89</string>
+   </property>
+  </action>
+  <action name="mActionCpp03">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C++03</string>
+   </property>
+  </action>
+  <action name="mActionPrint">
+   <property name="text">
+    <string>&amp;Print...</string>
+   </property>
+   <property name="toolTip">
+    <string>Print the Current Report</string>
+   </property>
+  </action>
+  <action name="mActionPrintPreview">
+   <property name="text">
+    <string>Print Pre&amp;view...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open a Print Preview Dialog for the Current Results</string>
+   </property>
+  </action>
+  <action name="mActionLibraryEditor">
+   <property name="text">
+    <string>Library Editor...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open library editor</string>
+   </property>
+  </action>
+  <action name="mActionAutoDetectLanguage">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Auto-detect language</string>
+   </property>
+  </action>
+  <action name="mActionEnforceCpp">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enforce C++</string>
+   </property>
+  </action>
+  <action name="mActionEnforceC">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enforce C</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ResultsView</class>
+   <extends>QWidget</extends>
+   <header>resultsview.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="gui.qrc"/>
+ </resources>
+ <connections/>
+</ui>

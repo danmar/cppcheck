@@ -5,6 +5,7 @@ INCLUDEPATH += ../externals/tinyxml
 
 SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testassert.cpp \
+           $${BASEPATH}/testastutils.cpp \
            $${BASEPATH}/testautovariables.cpp \
            $${BASEPATH}/testbool.cpp \
            $${BASEPATH}/testboost.cpp \
@@ -18,7 +19,9 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testerrorlogger.cpp \
            $${BASEPATH}/testexceptionsafety.cpp \
            $${BASEPATH}/testfilelister.cpp \
+           $${BASEPATH}/testfunctions.cpp \
            $${BASEPATH}/testgarbage.cpp \
+           $${BASEPATH}/testimportproject.cpp \
            $${BASEPATH}/testincompletestatement.cpp \
            $${BASEPATH}/testinternal.cpp \
            $${BASEPATH}/testio.cpp \
@@ -26,9 +29,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testlibrary.cpp \
            $${BASEPATH}/testmathlib.cpp \
            $${BASEPATH}/testmemleak.cpp \
-           $${BASEPATH}/testnonreentrantfunctions.cpp \
            $${BASEPATH}/testnullpointer.cpp \
-           $${BASEPATH}/testobsolescentfunctions.cpp \
            $${BASEPATH}/testoptions.cpp \
            $${BASEPATH}/testother.cpp \
            $${BASEPATH}/testpath.cpp \
@@ -50,6 +51,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testtimer.cpp \
            $${BASEPATH}/testtoken.cpp \
            $${BASEPATH}/testtokenize.cpp \
+           $${BASEPATH}/testtokenlist.cpp \
            $${BASEPATH}/testtype.cpp \
            $${BASEPATH}/testuninitvar.cpp \
            $${BASEPATH}/testunusedfunctions.cpp \

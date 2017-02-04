@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     QSettings* settings = new QSettings("Cppcheck", "Cppcheck-GUI", &app);
 
     // Set data dir..
-    foreach(const QString arg, app.arguments()) {
+    foreach (const QString arg, app.arguments()) {
         if (arg.startsWith("--data-dir=")) {
             settings->setValue("DATADIR", arg.mid(11));
             return 0;
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     if (!CheckArgs(app.arguments()))
         return 0;
 
-    app.setWindowIcon(QIcon(":icon.png"));
+    app.setWindowIcon(QIcon(":cppcheck-gui.png"));
 
     // Register this metatype that is used to transfer error info
     qRegisterMetaType<ErrorItem>("ErrorItem");

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,6 +104,7 @@ protected:
      * Print message (to console?).
      */
     static void PrintMessage(const std::string &message);
+    static void PrintMessage(const char* message);
 
 private:
     std::vector<std::string> _pathnames;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,10 @@
 
 #include "testsuite.h"
 #include "options.h"
+#include "redirect.h"
 
-#include <iostream>
 #include <cstdio>
+#include <iostream>
 #include <list>
 
 std::ostringstream errout;
@@ -86,7 +87,6 @@ bool TestFixture::prepareTest(const char testname[])
         } else {
             std::cout << classname << "::" << testname << std::endl;
         }
-        _lib = Library();
         currentTest = classname + "::" + testname;
         return true;
     }
@@ -215,6 +215,18 @@ void TestFixture::todoAssertEquals(const char *filename, unsigned int linenr, lo
     todoAssertEquals(filename, linenr, wantedStr.str(), currentStr.str(), actualStr.str());
 }
 
+void TestFixture::assertThrow(const char *filename, unsigned int linenr) const
+{
+    ++fails_counter;
+    if (gcc_style_errors) {
+        errmsg << filename << ':' << linenr << " Assertion succeeded. "
+               << "The expected exception was thrown" << std::endl;
+    } else {
+        errmsg << "Assertion succeeded in " << filename << " at line " << linenr << std::endl
+               << "The expected exception was thrown" << std::endl << "_____" << std::endl;
+    }
+}
+
 void TestFixture::assertThrowFail(const char *filename, unsigned int linenr) const
 {
     ++fails_counter;
@@ -224,6 +236,18 @@ void TestFixture::assertThrowFail(const char *filename, unsigned int linenr) con
     } else {
         errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
                << "The expected exception was not thrown" << std::endl << "_____" << std::endl;
+    }
+}
+
+void TestFixture::assertNoThrowFail(const char *filename, unsigned int linenr) const
+{
+    ++fails_counter;
+    if (gcc_style_errors) {
+        errmsg << filename << ':' << linenr << " Assertion failed. "
+               << "Unexpected exception was thrown" << std::endl;
+    } else {
+        errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
+               << "Unexpected exception was thrown" << std::endl << "_____" << std::endl;
     }
 }
 
@@ -245,18 +269,6 @@ void TestFixture::run(const std::string &str)
         run();
 }
 
-void TestFixture::warn(const char msg[]) const
-{
-    warnings << "Warning: " << currentTest << " " << msg << std::endl;
-}
-
-void TestFixture::warnUnsimplified(const std::string& unsimplified, const std::string& simplified)
-{
-    warn(("Unsimplified code in test case. It looks like this test "
-          "should either be cleaned up or moved to TestTokenizer or "
-          "TestSimplifyTokens instead.\nactual=" + unsimplified + "\nexpected=" + simplified).c_str());
-}
-
 void TestFixture::processOptions(const options& args)
 {
     quiet_tests = args.quiet();
@@ -266,7 +278,7 @@ void TestFixture::processOptions(const options& args)
 std::size_t TestFixture::runTests(const options& args)
 {
     std::string classname(args.which_test());
-    std::string testname("");
+    std::string testname;
     if (classname.find("::") != std::string::npos) {
         testname = classname.substr(classname.find("::") + 2);
         classname.erase(classname.find("::"));

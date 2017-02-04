@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,11 @@
 #include <sstream>
 #include <cstring>
 #include <cctype>
+#ifndef _WIN32
+#include <unistd.h>
+#else
+#include <direct.h>
+#endif
 
 /** Is the filesystem case insensitive? */
 static bool caseInsensitiveFilesystem()
@@ -60,22 +65,15 @@ std::string Path::fromNativeSeparators(std::string path)
 
 std::string Path::simplifyPath(std::string originalPath)
 {
-    const bool isUnc = originalPath.size() > 2 && originalPath[0] == '/' && originalPath[1] == '/';
+    const bool isUnc = originalPath.compare(0,2,"//") == 0;
 
     // Remove ./, .//, ./// etc. at the beginning
-    if (originalPath.size() > 2 && originalPath[0] == '.' &&
-        originalPath[1] == '/') {
-        size_t toErase = 2;
-        for (std::size_t i = 2; i < originalPath.size(); i++) {
-            if (originalPath[i] == '/')
-                toErase++;
-            else
-                break;
-        }
+    while (originalPath.compare(0,2,"./") == 0) { // remove "./././"
+        const size_t toErase = originalPath.find_first_not_of('/', 2);
         originalPath = originalPath.erase(0, toErase);
     }
 
-    std::string subPath = "";
+    std::string subPath;
     std::vector<std::string> pathParts;
     for (std::size_t i = 0; i < originalPath.size(); ++i) {
         if (originalPath[i] == '/' || originalPath[i] == '\\') {
@@ -190,13 +188,46 @@ std::string Path::getFilenameExtensionInLowerCase(const std::string &path)
     return extension;
 }
 
+const std::string Path::getCurrentPath()
+{
+    char currentPath[4096];
+
+#ifndef _WIN32
+    if (getcwd(currentPath, 4096) != 0)
+#else
+    if (_getcwd(currentPath, 4096) != 0)
+#endif
+        return std::string(currentPath);
+
+    return emptyString;
+}
+
+bool Path::isAbsolute(const std::string& path)
+{
+    const std::string& nativePath = toNativeSeparators(path);
+
+#ifdef _WIN32
+    if (path.length() < 2)
+        return false;
+
+    // On Windows, 'C:\foo\bar' is an absolute path, while 'C:foo\bar' is not
+    if (nativePath.compare(0, 2, "\\\\") == 0 || (std::isalpha(nativePath[0]) != 0 && nativePath.compare(1, 2, ":\\") == 0))
+        return true;
+#else
+    if (!nativePath.empty() && nativePath[0] == '/')
+        return true;
+#endif
+
+    return false;
+}
+
 std::string Path::getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths)
 {
     for (std::vector<std::string>::const_iterator i = basePaths.begin(); i != basePaths.end(); ++i) {
         if (absolutePath == *i || i->empty()) // Seems to be a file, or path is empty
             continue;
 
-        bool endsWithSep = (*i)[i->length()-1] == '/';
+        bool endsWithSep = i->back() == '/';
         if (absolutePath.compare(0, i->length(), *i) == 0 && absolutePath[i->length() - (endsWithSep?1:0)] == '/') {
             std::string rest = absolutePath.substr(i->length() + (endsWithSep?0:1));
             return rest;
@@ -220,6 +251,8 @@ bool Path::isCPP(const std::string &path)
         extension == ".cc" ||
         extension == ".c++" ||
         extension == ".hpp" ||
+        extension == ".hxx" ||
+        extension == ".hh" ||
         extension == ".tpp" ||
         extension == ".txx") {
         return true;
@@ -248,7 +281,7 @@ std::string Path::getAbsoluteFilePath(const std::string& filePath)
     if (_fullpath(absolute, filePath.c_str(), _MAX_PATH))
         absolute_path = absolute;
 #elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__)
-    char * absolute = realpath(filePath.c_str(), NULL);
+    char * absolute = realpath(filePath.c_str(), nullptr);
     if (absolute)
         absolute_path = absolute;
     free(absolute);

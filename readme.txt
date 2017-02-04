@@ -25,10 +25,12 @@ Compiling
 
     There are multiple compilation choices:
       * qmake - cross platform build tool
+      * cmake - cross platform build tool
       * Windows: Visual Studio
       * Windows: Qt Creator + mingw
       * gnu make
-      * g++
+      * g++ 4.6 (or later)
+      * clang++
 
     qmake
     =====
@@ -39,15 +41,12 @@ Compiling
 
     Visual Studio
     =============
-        Use the cppcheck.sln file. The rules are normally enabled.
+        Use the cppcheck.sln file. The file is configured for Visual Studio 2015, but the platform
+        toolset can be changed easily to older or newer versions. The solution contains platform
+        targets for both x86 and x64.
 
-        To compile with rules (pcre dependency):
-            * the pcre dll is needed. it can be downloaded from:
-                http://cppcheck.sourceforge.net/pcre-8.10-vs.zip
-
-        To compile without rules (no dependencies):
-            * remove the preprocessor define HAVE_RULES from the project
-            * remove the pcre.lib from the project
+        To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration.
+        pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /externals then.
 
     Qt Creator + mingw
     ==================

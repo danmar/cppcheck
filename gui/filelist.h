@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,13 +68,13 @@ public:
     */
     void AddExcludeList(const QStringList &paths);
 
-protected:
-
     /**
     * @brief Return list of default filename extensions included.
     * @return list of default filename extensions included.
     */
     static QStringList GetDefaultFilters();
+
+protected:
 
     /**
     * @brief Test if filename matches the filename extensions filtering.
@@ -90,13 +90,6 @@ protected:
     * @return Filtered list of paths.
     */
     QStringList ApplyExcludeList() const;
-
-    /**
-    * @brief Test if path matches any of the exclude filters.
-    * @param path Path to test against exclude filters.
-    * @return true if any of the filters matches, false otherwise.
-    */
-    bool Match(const QString &path) const;
 
 private:
     QFileInfoList mFileList;

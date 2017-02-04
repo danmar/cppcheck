@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include <set>
 #include <map>
 
+class PathMatch;
+
 /// @addtogroup CLI
 /// @{
 
@@ -36,10 +38,11 @@ public:
      * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx) are added.
      * @param files output map that associates the size of each file with its name
      * @param path root path
+     * @param ignored ignored paths
      */
-    static void recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path) {
+    static void recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const PathMatch& ignored) {
         const std::set<std::string> extra;
-        recursiveAddFiles(files, path, extra);
+        recursiveAddFiles(files, path, extra, ignored);
     }
 
     /**
@@ -50,8 +53,9 @@ public:
      * @param files output map that associates the size of each file with its name
      * @param path root path
      * @param extra Extra file extensions
+     * @param ignored ignored paths
      */
-    static void recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra);
+    static void recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored);
 
     /**
      * @brief (Recursively) add source files to a map.
@@ -61,9 +65,10 @@ public:
      * @param files output map that associates the size of each file with its name
      * @param path root path
      * @param extra Extra file extensions
-     * @param extra recursive Enable recursion
+     * @param recursive Enable recursion
+     * @param ignored ignored paths
      */
-    static void addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive);
+    static void addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored);
 
     /**
      * @brief Is given path a directory?
@@ -76,19 +81,6 @@ public:
       * @return true if path points to file and the file exists.
       */
     static bool fileExists(const std::string &path);
-
-#ifndef _WIN32
-    static std::string getAbsolutePath(const std::string& path);
-
-private:
-
-    static void addFiles2(std::set<std::string> &seen_paths,
-                          std::map<std::string, std::size_t> &files,
-                          const std::string &path,
-                          const std::set<std::string> &extra,
-                          bool recursive);
-#endif
-
 };
 
 /// @}

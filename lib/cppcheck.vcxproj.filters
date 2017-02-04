@@ -32,13 +32,7 @@
     <ClCompile Include="checkmemoryleak.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="checknonreentrantfunctions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="checknullpointer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="checkobsolescentfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="checkother.cpp">
@@ -63,9 +57,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="errorlogger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="executionpath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mathlib.cpp">
@@ -143,6 +134,24 @@
     <ClCompile Include="checktype.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="astutils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkfunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\externals\simplecpp\simplecpp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="importproject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="platform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pathmatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -157,13 +166,7 @@
     <ClInclude Include="checkmemoryleak.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="checknonreentrantfunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="checknullpointer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="checkobsolescentfunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkother.h">
@@ -191,9 +194,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="errorlogger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="executionpath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mathlib.h">
@@ -283,8 +283,32 @@
     <ClInclude Include="checktype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="astutils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkfunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\externals\simplecpp\simplecpp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="importproject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pathmatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="cppcheck.natvis" />
   </ItemGroup>
 </Project>

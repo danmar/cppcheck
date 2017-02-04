@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2016 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <set>
 #include <list>
 #include <string>
+#include <ctime>
 #include <vector>
 #include "config.h"
 
@@ -51,10 +52,10 @@ public:
     static void cleanupAfterSimplify(Token *tokens);
 
     /**
-     * @return 0 if there are no syntax errors or return token which identifies
-     * the location of syntax error.
+     * \param[in] tokens token list
+     * @return false if there are no syntax errors or true
      */
-    static const Token* hasComplicatedSyntaxErrorsInTemplates(Token *tokens);
+    static void checkComplicatedSyntaxErrorsInTemplates(const Token *tokens);
 
     /**
      * is the token pointing at a template parameters block
@@ -98,7 +99,7 @@ public:
      * @param patternAfter pattern that must match the tokens after the ">"
      * @return match => true
      */
-    static bool instantiateMatch(const Token *instance, const std::string &name, std::size_t numberOfArguments, const char patternAfter[]);
+    static bool instantiateMatch(const Token *instance, const std::string &name, const std::size_t numberOfArguments, const char patternAfter[]);
 
     /**
      * Match template declaration/instantiation
@@ -112,9 +113,9 @@ public:
         TokenList& tokenlist,
         const Token *tok,
         const std::string &name,
-        std::vector<const Token *> &typeParametersInDeclaration,
+        const std::vector<const Token *> &typeParametersInDeclaration,
         const std::string &newName,
-        std::vector<const Token *> &typesUsedInTemplateInstantiation,
+        const std::vector<const Token *> &typesUsedInTemplateInstantiation,
         std::list<Token *> &templateInstantiations);
 
     /**
@@ -137,6 +138,7 @@ public:
      * @param errorlogger error logger
      * @param _settings settings
      * @param tok token where the template declaration begins
+     * @param maxtime time when the simplification will stop
      * @param templateInstantiations a list of template usages (not necessarily just for this template)
      * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
      * @return true if the template was instantiated
@@ -146,6 +148,7 @@ public:
         ErrorLogger* errorlogger,
         const Settings *_settings,
         const Token *tok,
+        const std::time_t maxtime,
         std::list<Token *> &templateInstantiations,
         std::set<std::string> &expandedtemplates);
 
@@ -154,12 +157,14 @@ public:
      * @param tokenlist token list
      * @param errorlogger error logger
      * @param _settings settings
+     * @param maxtime time when the simplification should be stopped
      * @param _codeWithTemplates output parameter that is set if code contains templates
      */
     static void simplifyTemplates(
         TokenList& tokenlist,
         ErrorLogger* errorlogger,
         const Settings *_settings,
+        const std::time_t maxtime,
         bool &_codeWithTemplates);
 
     /**
@@ -185,6 +190,9 @@ private:
      * Remove a specific "template < ..." template class/function
      */
     static bool removeTemplate(Token *tok);
+
+    /** Syntax error */
+    static void syntaxError(const Token *tok);
 
 };
 
