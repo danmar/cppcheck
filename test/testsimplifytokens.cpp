@@ -2507,8 +2507,8 @@ private:
                       "TClass :: TClass ( const TClass & other ) "
                       "{ "
                       "operator= ( other ) ; "
-                      "} class SharedPtr<Y> { "
-                      "SharedPtr<Y> & operator= ( SharedPtr<Y> const & r ) ; "
+                      "} class SharedPtr < Y > { "
+                      "SharedPtr < Y > & operator= ( SharedPtr < Y > const & r ) ; "
                       "} ;",
                       tok("template<class T>\n"
                           "    class SharedPtr {\n"

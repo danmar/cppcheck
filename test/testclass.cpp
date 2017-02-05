@@ -2140,7 +2140,7 @@ private:
                                "};\n"
                                "\n"
                                "AA<double> *p = new B; delete p;");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Class 'AA<double>' which is inherited by class 'B' does not have a virtual destructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Class 'AA < double >' which is inherited by class 'B' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructorInconclusive() {
