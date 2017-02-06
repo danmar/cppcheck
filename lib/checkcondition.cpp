@@ -239,7 +239,7 @@ static bool inBooleanFunction(const Token *tok)
         const Function *func = scope->function;
         if (func) {
             const Token *ret = func->retDef;
-            while (ret && Token::Match(ret, "static|const"))
+            while (Token::Match(ret, "static|const"))
                 ret = ret->next();
             return ret && (ret->str() == "bool");
         }

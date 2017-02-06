@@ -3079,7 +3079,7 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     // skip over qualification if present
     if (nameTok && nameTok->str() == "::")
         nameTok = nameTok->next();
-    while (nameTok && Token::Match(nameTok, "%type% ::"))
+    while (Token::Match(nameTok, "%type% ::"))
         nameTok = nameTok->tokAt(2);
     if (nameTok && ((type == Scope::eEnum && Token::Match(nameTok, ":|{")) || nameTok->str() != "{")) // anonymous and unnamed structs/unions don't have a name
 

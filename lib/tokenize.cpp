@@ -1816,7 +1816,7 @@ void Tokenizer::combineOperators()
             else if (c1 == '-' && c2 == '>') {
                 // If the preceding sequence is "( & %name% )", replace it by "%name%"
                 Token *t = tok->tokAt(-4);
-                if (t && Token::Match(t, "( & %name% )")) {
+                if (Token::Match(t, "( & %name% )")) {
                     t->deleteThis();
                     t->deleteThis();
                     t->deleteNext();
@@ -7000,7 +7000,7 @@ bool Tokenizer::simplifyRedundantParentheses()
         if (Token::Match(tok->previous(), "*|& ( %name% )")) {
             // We may have a variable declaration looking like "type_name *(var_name)"
             Token *tok2 = tok->tokAt(-2);
-            while (tok2 && Token::Match(tok2, "%type%|static|const|extern") && tok2->str() != "operator") {
+            while (Token::Match(tok2, "%type%|static|const|extern") && tok2->str() != "operator") {
                 tok2 = tok2->previous();
             }
             if (tok2 && !Token::Match(tok2, "[;,{]")) {
@@ -8614,10 +8614,10 @@ void Tokenizer::simplifyKeyword()
             // 2) void f() final;  <- function is final
             if (Token::Match(tok, ") const|override|final")) {
                 Token* specifier = tok->tokAt(2);
-                while (specifier && Token::Match(specifier, "const|override|final")) {
+                while (Token::Match(specifier, "const|override|final")) {
                     specifier=specifier->next();
                 }
-                if (specifier && Token::Match(specifier, "[{;]")) {
+                if (Token::Match(specifier, "[{;]")) {
                     specifier = tok->next();
                     while (!Token::Match(specifier, "[{;]")) {
                         if (specifier->str()=="final")
