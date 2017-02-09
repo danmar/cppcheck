@@ -2336,7 +2336,7 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
 
 
 //---------------------------------------------------------------------------
-// Check for members hiding inherited members with the same name
+// Check that copy constructor and operator defined together
 //---------------------------------------------------------------------------
 
 void CheckClass::checkCopyCtorAndEqOperator() 
@@ -2345,9 +2345,12 @@ void CheckClass::checkCopyCtorAndEqOperator()
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {        
+    for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
         
+        if (scope->varlist.empty())
+        	continue;
+
         int hasCopyCtor = 0;
         int hasAssignmentOperator = 0;
 
