@@ -520,10 +520,12 @@ if __name__ == '__main__':
 
             if options.source_encoding:
                 lexer.encoding = options.source_encoding
-
-            output_file.write(
-                highlight(content, lexer, htmlFormatter).decode(
-                    options.source_encoding))
+            
+            # exclude the non ascii characters from the output rather than crashing miserably
+            # refer to: https://sourceforge.net/p/cppcheck/discussion/general/thread/f24a2007/
+            variable = highlight(content, lexer, htmlFormatter).decode(options.source_encoding)
+            variable = ''.join([i if ord(i) < 128 else '' for i in variable])
+            output_file.write(variable)
 
             output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
