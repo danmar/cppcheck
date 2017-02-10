@@ -64,6 +64,7 @@ private:
         TEST_CASE(tokenize31);  // #3503 (Wrong handling of member function taking function pointer as argument)
         TEST_CASE(tokenize32);  // #5884 (fsanitize=undefined: left shift of negative value -10000 in lib/templatesimplifier.cpp:852:46)
         TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
+        TEST_CASE(tokenize34);  // infinite loop while traversing AST
 
         TEST_CASE(syntax_case_default);
 
@@ -783,6 +784,20 @@ private:
                             "    vector<int> VI;\n"
                             "}\n";
         tokenizeAndStringify(code, true);
+    }
+
+    // Infinite loop when traversing AST
+    void tokenize34() {
+        const char code[] = "void f1() {\n"
+                                "if (1)\n"
+                                    "new X * [0]();\n"
+                                "else\n"
+                                    "new Y * [0]();\n"
+                            "}\n"
+                            "void f2() {\n"
+                                "for (int i = 0;; i++) ;\n"
+                            "}\n";
+        tokenizeAndStringify(code);
     }
 
     void syntax_case_default() { // correct syntax
