@@ -2500,16 +2500,13 @@ private:
 
     void simplifyOperator2() {
         // #6576
-        ASSERT_EQUALS("class TClass { "
-                      "public: "
-                      "TClass & operator= ( const TClass & rhs ) ; "
+        ASSERT_EQUALS("template < class T > class SharedPtr { "
+                      "SharedPtr & operator= ( SharedPtr < Y > const & r ) ; "
                       "} ; "
-                      "TClass :: TClass ( const TClass & other ) "
-                      "{ "
-                      "operator= ( other ) ; "
-                      "} class SharedPtr < Y > { "
-                      "SharedPtr < Y > & operator= ( SharedPtr < Y > const & r ) ; "
-                      "} ;",
+                      "class TClass { "
+                      "public: TClass & operator= ( const TClass & rhs ) ; "
+                      "} ; "
+                      "TClass :: TClass ( const TClass & other ) { operator= ( other ) ; }",
                       tok("template<class T>\n"
                           "    class SharedPtr {\n"
                           "    SharedPtr& operator=(SharedPtr<Y> const & r);\n"

@@ -269,7 +269,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // num/type ..
-        if (!tok->isNumber() && tok->tokType() != Token::eChar && !tok->isName())
+        if (!tok->isNumber() && tok->tokType() != Token::eChar && !tok->isName() && !tok->isOp())
             return 0;
         tok = tok->next();
         if (!tok)
@@ -509,6 +509,12 @@ std::list<Token *> TemplateSimplifier::getTemplateInstantiations(Token *tokens)
             tok = tok->next()->findClosingBracket();
             if (!tok)
                 break;
+            // #7914
+            // Ignore template instantiations within template definitions: they will only be
+            // handled if the definition is actually instantiated
+            const Token *tok2 = Token::findmatch(tok, "{|;");
+            if (tok2 && tok2->str() == "{")
+                tok = tok2->link();
         } else if (Token::Match(tok->previous(), "[({};=] %name% <") ||
                    Token::Match(tok->previous(), "%type% %name% <") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% <")) {
