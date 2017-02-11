@@ -258,6 +258,30 @@ private:
                                   "    virtual int i() = 0;\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
+
+        // #7465: Error properly reported in templates
+        checkExplicitConstructors("template <class T> struct Test {\n"
+                                  "  Test(int) : fData(0) {}\n"
+                                  "  T fData;\n"
+                                  "};\n"
+                                  "int main() {\n"
+                                  "  Test <int> test;\n"
+                                  "  return 0;\n"
+                                  "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Struct 'Test < int >' has a constructor with 1 argument that is not explicit.\n", errout.str());
+
+        // #7465: No error for copy or move constructors
+        checkExplicitConstructors("template <class T> struct Test {\n"
+                                  "  Test() : fData(0) {}\n"
+                                  "  Test (const Test<T>& aOther) : fData(aOther.fData) {}\n"
+                                  "  Test (Test<T>&& aOther) : fData(std::move(aOther.fData)) {}\n"
+                                  "  T fData;\n"
+                                  "};\n"
+                                  "int main() {\n"
+                                  "  Test <int> test;\n"
+                                  "  return 0;\n"
+                                  "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkDuplInheritedMembers(const char code[]) {
