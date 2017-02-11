@@ -2360,7 +2360,10 @@ void CheckClass::checkCopyCtorAndEqOperator()
             	hasCopyCtor = func->hasBody() ? 2 : 1;
             }
             if (!hasAssignmentOperator && func->type == Function::eOperatorEqual) {
-            	hasAssignmentOperator = func->hasBody() ? 2 : 1;
+                const Variable * variable = func->getArgumentVar(0);
+                if(variable && variable->type() && variable->type()->classScope == scope) {
+                	hasAssignmentOperator = func->hasBody() ? 2 : 1;
+                }
             }
         }
 

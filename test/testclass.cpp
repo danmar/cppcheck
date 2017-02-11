@@ -244,6 +244,13 @@ private:
 				  	  	  	  	  "    int x;\n"
                                   "};");
         ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'operator=' but lack of 'copy constructor'.\n", errout.str());
+
+		checkCopyCtorAndEqOperator("class A \n"
+								  "{ \n"
+								  "    A& operator=(const int &x) { this->x = x; return *this; }\n"
+				  	  	  	  	  "    int x;\n"
+								  "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkExplicitConstructors(const char code[]) {
