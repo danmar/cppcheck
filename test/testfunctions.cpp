@@ -894,6 +894,13 @@ private:
               "   void * res{malloc(size)};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+        
+        // #7447
+        check("void foo() {\n"
+              "   int x{mystrcmp(a,b)};\n"
+              "}", "test.cpp", &settings2);
+        ASSERT_EQUALS("", errout.str());
+        
     }
 };
 
