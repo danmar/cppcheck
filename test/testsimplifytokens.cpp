@@ -3322,6 +3322,30 @@ private:
                                     "const std :: string & Fred :: foo ( ) { return \"\" ; }";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+        {
+            // Ticket #7916
+            // Tokenization would include "int fact < 2 > ( ) { return 2 > ( ) ; }" and generate
+            // a parse error (and use after free)
+            const char code[] = "extern \"C\" void abort ();\n"
+                                "template <int a> inline int fact2 ();\n"
+                                "template <int a> inline int fact () {\n"
+                                "  return a * fact2<a-1> ();\n"
+                                "}\n"
+                                "template <> inline int fact<1> () {\n"
+                                "  return 1;\n"
+                                "}\n"
+                                "template <int a> inline int fact2 () {\n"
+                                "  return a * fact<a-1>();\n"
+                                "}\n"
+                                "template <> inline int fact2<1> () {\n"
+                                "  return 1;\n"
+                                "}\n"
+                                "int main() {\n"
+                                "  fact2<3> ();\n"
+                                "  fact2<2> ();\n"
+                                "}";
+            tok(code);
+        }
     }
 
     void removeVoidFromFunction() {
