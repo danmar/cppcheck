@@ -5300,6 +5300,10 @@ bool Tokenizer::simplifyFunctionReturn()
             const std::string pattern("(|[|=|return|%op% " + tok->str() + " ( ) ;|]|)|%cop%");
             for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
                 if (Token::Match(tok2, pattern.c_str())) {
+                    if (tok->str() != tok2->strAt(1))
+                        // Ticket #7916: tok is for instance "foo < bar >", a single token for an instantiation,
+                        // and tok2->strAt(1) is "foo"; bail out (TODO: we can probably handle this pattern)
+                        continue;
                     tok2 = tok2->next();
                     tok2->str(any->str());
                     tok2->deleteNext(2);
