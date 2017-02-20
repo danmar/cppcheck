@@ -252,6 +252,7 @@ private:
         TEST_CASE(symboldatabase53); // #7124 (library podtype)
         TEST_CASE(symboldatabase54); // #7257
         TEST_CASE(symboldatabase55); // #7767 (return unknown macro)
+        TEST_CASE(symboldatabase56); // #7909
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -2664,6 +2665,48 @@ private:
         if (db) {
             ASSERT_EQUALS(1U, db->functionScopes.size());
             ASSERT_EQUALS("testfunc", db->functionScopes.front()->className);
+        }
+    }
+
+    void symboldatabase56() { // #7909
+        {
+            GET_SYMBOL_DB("class Class {\n"
+                          "    class NestedClass {\n"
+                          "    public:\n"
+                          "        virtual void f();\n"
+                          "    };\n"
+                          "    friend void NestedClass::f();\n"
+                          "}");
+
+            ASSERT(db != nullptr);
+            if (db) {
+                ASSERT_EQUALS(0U, db->functionScopes.size());
+                ASSERT(db->scopeList.back().type == Scope::eClass && db->scopeList.back().className == "NestedClass");
+                ASSERT(db->scopeList.back().functionList.size() == 1U && !db->scopeList.back().functionList.front().hasBody());
+            }
+        }
+        {
+            GET_SYMBOL_DB("class Class {\n"
+                          "    friend void f1();\n"
+                          "    friend void f2() { }\n"
+                          "}");
+
+            ASSERT(db != nullptr);
+            if (db) {
+                ASSERT_EQUALS(1U, db->functionScopes.size());
+                ASSERT(db->scopeList.back().type == Scope::eFunction && db->scopeList.back().className == "f2");
+                ASSERT(db->scopeList.back().function && db->scopeList.back().function->hasBody());
+            }
+        }
+        {
+            GET_SYMBOL_DB_C("friend f1();\n"
+                            "friend f2() { }\n");
+
+            ASSERT(db != nullptr);
+            if (db) {
+                ASSERT_EQUALS(2U, db->scopeList.size());
+                ASSERT_EQUALS(2U, db->scopeList.begin()->functionList.size());
+            }
         }
     }
 

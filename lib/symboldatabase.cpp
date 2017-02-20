@@ -1510,8 +1510,12 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             }
 
             // skip over modifiers and other stuff
-            while (Token::Match(tok1, "const|static|extern|template|virtual|struct|class|enum|%name%"))
+            while (Token::Match(tok1, "const|static|extern|template|virtual|struct|class|enum|%name%")) {
+                // friend type func(); is not a function
+                if (isCPP() && tok1->str() == "friend" && tok2->str() == ";")
+                    return false;
                 tok1 = tok1->previous();
+            }
 
             // should be at a sequence point if this is a function
             if (!Token::Match(tok1, ">|{|}|;|public:|protected:|private:") && tok1)
