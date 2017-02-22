@@ -149,6 +149,14 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     }
     if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro()))
         return false;
+    if (tok1->isComplex() != tok2->isComplex())
+        return false;
+    if (tok1->isLong() != tok2->isLong())
+        return false;
+    if (tok1->isUnsigned() != tok2->isUnsigned())
+        return false;
+    if (tok1->isSigned() != tok2->isSigned())
+        return false;
     if (tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof") {
         if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && pure && !library.isFunctionConst(tok1->str(), true) && !tok1->isAttributeConst() && !tok1->isAttributePure())
             return false;
