@@ -61,13 +61,10 @@ public:
      * @param tok first token
      * @param var variables that the function read / write.
      * @param library --library files data
-     * @param value 0 => invalid with null pointers as parameter.
-     *              non-zero => invalid with uninitialized data.
      */
     static void parseFunctionCall(const Token &tok,
                                   std::list<const Token *> &var,
-                                  const Library *library,
-                                  unsigned char value);
+                                  const Library *library);
 
     /**
      * Is there a pointer dereference? Everything that should result in

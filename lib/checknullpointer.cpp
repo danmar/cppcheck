@@ -48,7 +48,7 @@ static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsig
  * @param value 0 => invalid with null pointers as parameter.
  *              1-.. => only invalid with uninitialized data.
  */
-void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library *library, unsigned char value)
+void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library *library)
 {
     if (Token::Match(&tok, "%name% ( )") || !tok.tokAt(2))
         return;
@@ -57,21 +57,18 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     const Token* secondParam = firstParam->nextArgument();
 
     // 1st parameter..
-    if (Token::Match(firstParam, "%var% ,|)") ||
-        (value == 0 && Token::Match(firstParam, "0|NULL ,|)"))) {
-        if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
-            var.push_back(firstParam);
-    }
+    if (Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
+        var.push_back(firstParam);
 
-    // Library
-    if (library) {
+    if (library || tok.function() != nullptr) {
         const Token *param = firstParam;
         int argnr = 1;
         while (param) {
-            if (Token::Match(param, "%var% ,|)") || (value==0 && Token::Match(param, "0|NULL ,|)"))) {
-                if (value == 0 && library->isnullargbad(&tok, argnr) && checkNullpointerFunctionCallPlausibility(tok.function(), argnr))
-                    var.push_back(param);
-                else if (value == 1 && library->isuninitargbad(&tok, argnr))
+            if (library && library->isnullargbad(&tok, argnr) && checkNullpointerFunctionCallPlausibility(tok.function(), argnr))
+                var.push_back(param);
+            else if (tok.function()) {
+                const Variable* argVar = tok.function()->getArgumentVar(argnr-1);
+                if (argVar && argVar->isStlStringType() && !argVar->isArrayOrPointer())
                     var.push_back(param);
             }
             param = param->nextArgument();
@@ -124,10 +121,8 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
                     if (_continue)
                         continue;
 
-                    if ((*i == 'n' || *i == 's' || scan) && (!scan || value == 0)) {
-                        if ((value == 0 && argListTok->str() == "0") || Token::Match(argListTok, "%var% [,)]")) {
-                            var.push_back(argListTok);
-                        }
+                    if ((*i == 'n' || *i == 's' || scan)) {
+                        var.push_back(argListTok);
                     }
 
                     if (*i != 'm') // %m is a non-standard glibc extension that requires no parameter
@@ -345,7 +340,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             if (!ftok || !ftok->previous())
                 continue;
             std::list<const Token *> varlist;
-            parseFunctionCall(*ftok->previous(), varlist, &_settings->library, 0);
+            parseFunctionCall(*ftok->previous(), varlist, &_settings->library);
             if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
                 if (value->condition == nullptr)
                     nullPointerError(tok, tok->str(), false, value->defaultArg, !value->isKnown());
@@ -422,7 +417,7 @@ void CheckNullPointer::nullConstantDereference()
                         nullPointerError(tok);
                 } else { // function call
                     std::list<const Token *> var;
-                    parseFunctionCall(*tok, var, &_settings->library, 0);
+                    parseFunctionCall(*tok, var, &_settings->library);
 
                     // is one of the var items a NULL pointer?
                     for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
