@@ -3836,10 +3836,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                             same++;
                         }
                     } else {
-                        if (funcarg->typeStartToken()->str() == "int" &&
-                            !funcarg->typeStartToken()->isUnsigned()) {
-                            same++;
-                        } else if (Token::Match(funcarg->typeStartToken(), "char|short|int")) {
+                        if (Token::Match(funcarg->typeStartToken(), "char|short|int|long")) {
                             same++;
                         }
                     }

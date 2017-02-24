@@ -280,6 +280,7 @@ private:
         TEST_CASE(findFunction9);
         TEST_CASE(findFunction10); // #7673
         TEST_CASE(findFunction11);
+        TEST_CASE(findFunction12);
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -3487,6 +3488,19 @@ private:
 
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( ) {");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4);
+    }
+
+    void findFunction12() {
+        GET_SYMBOL_DB("void foo(std::string a) { }\n"
+                      "void foo(long long a) { }\n"
+                      "void foo() {\n"
+                      "    foo(0);\n"
+                      "}");
+
+        ASSERT_EQUALS("", errout.str());
+
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( 0 ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2);
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
