@@ -3900,10 +3900,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             ++i;
     }
 
-    // no exact match so just return first function found
-    if (!matches.empty()) {
+    // no exact match, but only one candidate left
+    if (matches.size() == 1)
         return matches[0];
-    }
 
     return nullptr;
 }

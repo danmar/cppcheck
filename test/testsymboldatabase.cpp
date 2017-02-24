@@ -3495,12 +3495,16 @@ private:
                       "void foo(long long a) { }\n"
                       "void foo() {\n"
                       "    foo(0);\n"
+                      "    foo(bar());\n"
                       "}");
 
         ASSERT_EQUALS("", errout.str());
 
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( 0 ) ;");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( bar ( ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() == nullptr);
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
