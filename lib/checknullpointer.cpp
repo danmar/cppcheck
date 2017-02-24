@@ -411,7 +411,7 @@ void CheckNullPointer::nullConstantDereference()
                 nullPointerError(tok);
 
             else if (Token::Match(tok->previous(), "!!. %name% (") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
-                if (Token::simpleMatch(tok->tokAt(2), "0 )") && tok->varId()) { // constructor call
+                if (Token::Match(tok->tokAt(2), "0|NULL|nullptr )") && tok->varId()) { // constructor call
                     const Variable *var = tok->variable();
                     if (var && !var->isPointer() && !var->isArray() && var->isStlStringType())
                         nullPointerError(tok);
@@ -421,15 +421,15 @@ void CheckNullPointer::nullConstantDereference()
 
                     // is one of the var items a NULL pointer?
                     for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
-                        if (Token::Match(*it, "0|NULL [,)]")) {
+                        if (Token::Match(*it, "0|NULL|nullptr [,)]")) {
                             nullPointerError(*it);
                         }
                     }
                 }
-            } else if (Token::Match(tok, "std :: string|wstring ( 0 )"))
+            } else if (Token::Match(tok, "std :: string|wstring ( 0|NULL|nullptr )"))
                 nullPointerError(tok);
 
-            else if (Token::simpleMatch(tok->previous(), ">> 0")) { // Only checking input stream operations is safe here, because otherwise 0 can be an integer as well
+            else if (Token::Match(tok->previous(), ">> 0|NULL|nullptr")) { // Only checking input stream operations is safe here, because otherwise 0 can be an integer as well
                 const Token* tok2 = tok->previous(); // Find start of statement
                 for (; tok2; tok2 = tok2->previous()) {
                     if (Token::Match(tok2->previous(), ";|{|}|:|("))
@@ -448,13 +448,13 @@ void CheckNullPointer::nullConstantDereference()
 
             const Variable *ovar = nullptr;
             const Token *tokNull = nullptr;
-            if (Token::Match(tok, "0 ==|!=|>|>=|<|<= %var%")) {
+            if (Token::Match(tok, "0|NULL|nullptr ==|!=|>|>=|<|<= %var%")) {
                 if (!Token::Match(tok->tokAt(3),".|[")) {
                     ovar = tok->tokAt(2)->variable();
                     tokNull = tok;
                 }
-            } else if (Token::Match(tok, "%var% ==|!=|>|>=|<|<= 0") ||
-                       Token::Match(tok, "%var% =|+ 0 )|]|,|;|+")) {
+            } else if (Token::Match(tok, "%var% ==|!=|>|>=|<|<= 0|NULL|nullptr") ||
+                       Token::Match(tok, "%var% =|+ 0|NULL|nullptr )|]|,|;|+")) {
                 ovar = tok->variable();
                 tokNull = tok->tokAt(2);
             }

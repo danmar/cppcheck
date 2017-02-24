@@ -2008,6 +2008,30 @@ private:
                       "[test.cpp:12]: (error) Possible null pointer dereference: p\n"*/
                       , errout.str());
 
+        check("void f(std::string s1) {\n"
+              "    s1 = nullptr;\n"
+              "    std::string s2 = nullptr;\n"
+              "    std::string s3(nullptr);\n"
+              "    foo(std::string(nullptr));\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n"
+                      "[test.cpp:3]: (error) Null pointer dereference\n"
+                      "[test.cpp:4]: (error) Null pointer dereference\n"
+                      "[test.cpp:5]: (error) Null pointer dereference\n"
+                      , errout.str());
+
+        check("void f(std::string s1) {\n"
+              "    s1 = NULL;\n"
+              "    std::string s2 = NULL;\n"
+              "    std::string s3(NULL);\n"
+              "    foo(std::string(NULL));\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n"
+                      "[test.cpp:3]: (error) Null pointer dereference\n"
+                      "[test.cpp:4]: (error) Null pointer dereference\n"
+                      "[test.cpp:5]: (error) Null pointer dereference\n"
+                      , errout.str());
+
         check("void f(std::string s1, const std::string& s2, const std::string* s3) {\n"
               "    void* p = 0;\n"
               "    if (x) { return; }\n"
@@ -2081,10 +2105,14 @@ private:
               "  foo(0, \"\");\n"
               "  foo(0, 0);\n"
               "  foo(var, 0);\n"
+              "  foo(var, NULL);\n"
+              "  foo(var, nullptr);\n"
               "  foo(0, var);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n"
-                      "[test.cpp:5]: (error) Null pointer dereference\n", errout.str());
+                      "[test.cpp:5]: (error) Null pointer dereference\n"
+                      "[test.cpp:6]: (error) Null pointer dereference\n"
+                      "[test.cpp:7]: (error) Null pointer dereference\n", errout.str());
     }
 
     void nullpointerStdStream() {
