@@ -3751,12 +3751,36 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
     // check in base classes
     findFunctionInBase(tok->str(), args, matches);
 
+    const Function* fallback1Func = nullptr;
+    const Function* fallback2Func = nullptr;
+
     // check each function against the arguments in the function call for a match
     for (std::size_t i = 0; i < matches.size();) {
         bool erased = false;
         const Function * func = matches[i];
         size_t same = 0;
+
+        if (requireConst && func->isConst())
+            ;
+        else {
+            // get the function this call is in
+            const Scope * scope = tok->scope();
+
+            // check if this function is a member function
+            if (scope && scope->functionOf && scope->functionOf->isClassOrStruct()) {
+                // check if isConst mismatches
+                if (!(scope->function && scope->function->isConst() == func->isConst())) {
+                    if (!erased)
+                        ++i;
+                    continue;
+                }
+            }
+        }
+
+        size_t fallback1 = 0;
+        size_t fallback2 = 0;
         for (std::size_t j = 0; j < args; ++j) {
+
             // don't check variadic arguments
             if (func->isVariadic() && j > (func->argCount() - 1)) {
                 break;
@@ -3765,11 +3789,26 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             // check for a match with a variable
             if (Token::Match(arguments[j], "%var% ,|)")) {
                 const Variable * callarg = check->getVariableFromVarId(arguments[j]->varId());
-                if (callarg &&
-                    callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
-                    callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
-                    callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong()) {
-                    same++;
+
+                if (callarg && callarg->isArrayOrPointer() == funcarg->isArrayOrPointer()) {
+                    if (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
+                        callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
+                        callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong()) {
+                        same++;
+                    } else if (callarg->isArrayOrPointer()) {
+                        if (funcarg->typeStartToken()->str() == "void")
+                            fallback1++;
+                    } else if ((Token::Match(funcarg->typeStartToken(), "char|short|int|long") &&
+                                Token::Match(callarg->typeStartToken(), "char|short|int|long")) ||
+                               (Token::Match(funcarg->typeStartToken(), "float|double") &&
+                                Token::Match(callarg->typeStartToken(), "float|double"))) {
+                        fallback1++;
+                    } else if ((Token::Match(funcarg->typeStartToken(), "char|short|int|long") &&
+                                Token::Match(callarg->typeStartToken(), "float|double")) ||
+                               (Token::Match(funcarg->typeStartToken(), "float|double") &&
+                                Token::Match(callarg->typeStartToken(), "char|short|int|long"))) {
+                        fallback2++;
+                    }
                 }
             }
 
@@ -3777,12 +3816,14 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             else if (Token::Match(arguments[j], "& %var% ,|)")) {
                 const Variable * callarg = check->getVariableFromVarId(arguments[j]->next()->varId());
                 if (callarg) {
-                    if (funcarg->typeEndToken()->str() == "*" &&
-                        (funcarg->typeStartToken()->str() == "void" ||
-                         (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
-                          callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
-                          callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong()))) {
+                    bool funcargptr = (funcarg->typeEndToken()->str() == "*");
+                    if (funcargptr &&
+                        (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
+                         callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
+                         callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong())) {
                         same++;
+                    } else if (funcargptr && funcarg->typeStartToken()->str() == "void") {
+                        fallback1++;
                     } else {
                         // can't match so remove this function from possible matches
                         matches.erase(matches.begin() + i);
@@ -3794,7 +3835,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
             // check for a match with a numeric literal
             else if (Token::Match(arguments[j], "%num% ,|)")) {
-                if (MathLib::isInt(arguments[j]->str())) {
+                if (MathLib::isInt(arguments[j]->str()) && (!funcarg->isPointer() || MathLib::isNullValue(arguments[j]->str()))) {
+                    bool exactMatch = false;
                     if (arguments[j]->str().find("ll") != std::string::npos ||
                         arguments[j]->str().find("LL") != std::string::npos) {
                         if (arguments[j]->str().find('u') != std::string::npos ||
@@ -3802,13 +3844,13 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                             if (funcarg->typeStartToken()->str() == "long" &&
                                 funcarg->typeStartToken()->isLong() &&
                                 funcarg->typeStartToken()->isUnsigned()) {
-                                same++;
+                                exactMatch = true;
                             }
                         } else {
                             if (funcarg->typeStartToken()->str() == "long" &&
                                 funcarg->typeStartToken()->isLong() &&
                                 !funcarg->typeStartToken()->isUnsigned()) {
-                                same++;
+                                exactMatch = true;
                             }
                         }
                     } else if (arguments[j]->str().find('l') != std::string::npos ||
@@ -3818,45 +3860,66 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                             if (funcarg->typeStartToken()->str() == "long" &&
                                 !funcarg->typeStartToken()->isLong() &&
                                 funcarg->typeStartToken()->isUnsigned()) {
-                                same++;
+                                exactMatch = true;
                             }
                         } else {
                             if (funcarg->typeStartToken()->str() == "long" &&
                                 !funcarg->typeStartToken()->isLong() &&
                                 !funcarg->typeStartToken()->isUnsigned()) {
-                                same++;
+                                exactMatch = true;
                             }
                         }
                     } else if (arguments[j]->str().find('u') != std::string::npos ||
                                arguments[j]->str().find('U') != std::string::npos) {
                         if (funcarg->typeStartToken()->str() == "int" &&
                             funcarg->typeStartToken()->isUnsigned()) {
-                            same++;
+                            exactMatch = true;
                         } else if (Token::Match(funcarg->typeStartToken(), "char|short")) {
-                            same++;
+                            exactMatch = true;
                         }
                     } else {
                         if (Token::Match(funcarg->typeStartToken(), "char|short|int|long")) {
-                            same++;
+                            exactMatch = true;
                         }
                     }
-                } else {
+
+                    if (exactMatch)
+                        if (funcarg->isPointer())
+                            fallback2++;
+                        else
+                            same++;
+                    else {
+                        if (Token::Match(funcarg->typeStartToken(), "char|short|int|long"))
+                            fallback1++;
+                        else if (Token::Match(funcarg->typeStartToken(), "float|double"))
+                            fallback2++;
+                    }
+                } else if (!funcarg->isPointer()) {
+                    bool exactMatch = false;
                     if (arguments[j]->str().find('f') != std::string::npos ||
                         arguments[j]->str().find('F') != std::string::npos) {
                         if (funcarg->typeStartToken()->str() == "float") {
-                            same++;
+                            exactMatch = true;
                         }
                     } else if (arguments[j]->str().find('l') != std::string::npos ||
                                arguments[j]->str().find('L') != std::string::npos) {
                         if (funcarg->typeStartToken()->str() == "double" &&
                             funcarg->typeStartToken()->isLong())  {
-                            same++;
+                            exactMatch = true;
                         }
                     } else {
                         if (funcarg->typeStartToken()->str() == "double" &&
                             !funcarg->typeStartToken()->isLong()) {
-                            same++;
+                            exactMatch = true;
                         }
+                    }
+                    if (exactMatch)
+                        same++;
+                    else {
+                        if (Token::Match(funcarg->typeStartToken(), "float|double"))
+                            fallback1++;
+                        else if (Token::Match(funcarg->typeStartToken(), "char|short|int|long"))
+                            fallback2++;
                     }
                 }
             }
@@ -3880,27 +3943,30 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
         // check if all arguments matched
         if ((func->isVariadic() && same == (func->argCount() - 1)) ||
-            (!func->isVariadic() && same == args)) {
-            if (requireConst && func->isConst())
-                return func;
+            (!func->isVariadic() && same == args))
+            return func;
 
-            // get the function this call is in
-            const Scope * scope = tok->scope();
-
-            // check if this function is a member function
-            if (scope && scope->functionOf && scope->functionOf->isClassOrStruct()) {
-                // check if isConst match
-                if (scope->function && scope->function->isConst() == func->isConst())
-                    return func;
-            } else
-                return func;
+        if (!fallback1Func) {
+            if ((func->isVariadic() && same + fallback1 == (func->argCount() - 1)) ||
+                (!func->isVariadic() && same + fallback1 == args))
+                fallback1Func = func;
+            else if (!fallback2Func && ((func->isVariadic() && same + fallback2 + fallback1 == (func->argCount() - 1)) ||
+                                        (!func->isVariadic() && same + fallback2 + fallback1 == args)))
+                fallback2Func = func;
         }
 
         if (!erased)
             ++i;
     }
 
-    // no exact match, but only one candidate left
+    // Fallback cases
+    if (fallback1Func)
+        return fallback1Func;
+
+    if (fallback2Func)
+        return fallback2Func;
+
+    // Only one candidate left
     if (matches.size() == 1)
         return matches[0];
 
