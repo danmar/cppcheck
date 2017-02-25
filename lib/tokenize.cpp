@@ -3664,9 +3664,11 @@ bool Tokenizer::simplifyTokenList2()
     // clear the _functionList so it can't contain dead pointers
     deleteSymbolDatabase();
 
-    // Clear AST. It will be created again at the end of this function.
-    for (Token *tok = list.front(); tok; tok = tok->next())
+    // Clear AST,ValueFlow. These will be created again at the end of this function.
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
         tok->clearAst();
+        tok->values.clear();
+    }
 
     // f(x=g())   =>   x=g(); f(x)
     simplifyAssignmentInFunctionCall();
