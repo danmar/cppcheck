@@ -1400,7 +1400,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
     if (!Token::Match(tok, "%str%|%name% ,|)")) {
         const Token *top = tok;
-        while (top->astParent() && top->astParent()->str() != "," && !(top->astParent()->str() == "(" && top->astParent()->astOperand2()))
+        while (top->astParent() && top->astParent()->str() != "," && top->astParent() != tok->previous())
             top = top->astParent();
         const ValueType *valuetype = top->argumentType();
         if (valuetype && valuetype->type >= ValueType::Type::BOOL) {
