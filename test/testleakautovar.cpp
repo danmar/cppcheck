@@ -71,6 +71,7 @@ private:
         // exit
         TEST_CASE(exit1);
         TEST_CASE(exit2);
+        TEST_CASE(exit3);
 
         // goto
         TEST_CASE(goto1);
@@ -847,6 +848,28 @@ private:
         ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function fatal_error() should have <noreturn> configuration\n"
                       "[test.c:4]: (information) --check-library: Function fatal_error() should have <use>/<leak-ignore> configuration\n",
                       errout.str());
+    }
+
+    void exit3() {
+        check("void f() {\n"
+              "  char *p = malloc(100);\n"
+              "  if (x) {\n"
+              "    free(p);\n"
+              "    ::exit(0);\n"
+              "  }"
+              "  free(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  char *p = malloc(100);\n"
+              "  if (x) {\n"
+              "    free(p);\n"
+              "    std::exit(0);\n"
+              "  }"
+              "  free(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void goto1() {

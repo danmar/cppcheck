@@ -230,6 +230,12 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         while (Token::Match(varTok, "%name% ::|. %name% !!("))
             varTok = varTok->tokAt(2);
 
+        const Token *ftok = tok;
+        if (ftok->str() == "::")
+            ftok = ftok->next();
+        while (Token::Match(ftok, "%name% :: %name%"))
+            ftok = ftok->tokAt(2);
+
         // assignment..
         if (Token::Match(varTok, "%var% =")) {
             // taking address of another variable..
@@ -444,14 +450,14 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         // Function call..
-        else if (Token::Match(tok, "%type% (")) {
-            const Library::AllocFunc* af = _settings->library.dealloc(tok);
+        else if (Token::Match(ftok, "%type% (")) {
+            const Library::AllocFunc* af = _settings->library.dealloc(ftok);
             VarInfo::AllocInfo allocation(af ? af->groupId : 0, VarInfo::DEALLOC);
             if (allocation.type == 0)
                 allocation.status = VarInfo::NOALLOC;
-            functionCall(tok, varInfo, allocation, af);
+            functionCall(ftok, varInfo, allocation, af);
 
-            tok = tok->next()->link();
+            tok = ftok->next()->link();
 
             // Handle scopes that might be noreturn
             if (allocation.status == VarInfo::NOALLOC && Token::simpleMatch(tok, ") ; }")) {
