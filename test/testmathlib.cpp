@@ -366,6 +366,7 @@ private:
         ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0."));
         ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("-0.0"));
         ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0.0"));
+        ASSERT_EQUALS_DOUBLE('0'   , MathLib::toDoubleNumber("'0'"));
 
         // verify: string --> double --> string conversion
         ASSERT_EQUALS("1.0" , MathLib::toString(MathLib::toDoubleNumber("1.0f")));

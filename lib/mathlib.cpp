@@ -537,13 +537,15 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
+    if (str[0] == '\'' && str.size() >= 3U && str.back() == '\'')
+        return characterLiteralToLongNumber(str.substr(1,str.size()-2));
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
     // nullcheck
-    else if (isNullValue(str))
+    if (isNullValue(str))
         return 0.0;
 #ifdef __clang__
-    else if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
+    if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
         // TODO : handle locale
         return std::strtod(str.c_str(), 0);
 #endif
