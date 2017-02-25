@@ -715,7 +715,9 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             // function calls are interesting..
             const Token *tok2 = tok;
-            while (Token::Match(tok2->next(), "%name% ."))
+            if (Token::Match(tok2, "[{};] :: %name%"))
+                tok2 = tok2->next();
+            while (Token::Match(tok2->next(), "%name% ::|. %name%"))
                 tok2 = tok2->tokAt(2);
             if (Token::Match(tok2->next(), "%name% ("))
                 ;

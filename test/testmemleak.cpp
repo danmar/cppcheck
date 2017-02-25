@@ -560,6 +560,8 @@ private:
         ASSERT_EQUALS(";;exit;", getcode("char *s; abort();", "s"));
         ASSERT_EQUALS(";;callfunc;", getcode("char *s; err(0);", "s")); // not in std.cfg
         ASSERT_EQUALS(";;if{exit;}", getcode("char *s; if (a) { exit(0); }", "s"));
+        ASSERT_EQUALS(";;if{exit;}", getcode("char *s; if (a) { ::exit(0); }", "s"));
+        ASSERT_EQUALS(";;if{exit;}", getcode("char *s; if (a) { std::exit(0); }", "s"));
 
         // list_for_each
         ASSERT_EQUALS(";;exit;{}}", getcode("void f() { char *s; list_for_each(x,y,s) { } }", "s"));
