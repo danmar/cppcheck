@@ -2365,6 +2365,16 @@ private:
               "    return mapInfo.author.c_str();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
+
+        check("struct S {\n" // #7656
+              "    std::string data;\n"
+              "};\n"
+              "const S& getS();\n"
+              "const char* test() {\n"
+              "    const struct S &s = getS();\n"
+              "    return s.data.c_str();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void autoPointer() {

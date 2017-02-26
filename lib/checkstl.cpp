@@ -1100,17 +1100,17 @@ void CheckStl::string_c_str()
                 }
 
                 bool local = false;
-                bool ptr = false;
+                bool ptrOrRef = false;
                 const Variable* lastVar = nullptr;
                 const Function* lastFunc = nullptr;
                 bool funcStr = false;
                 if (Token::Match(tok2, "%var% .")) {
                     local = isLocal(tok2);
-                    ptr = tok2->variable() && tok2->variable()->isPointer();
+                    ptrOrRef = tok2->variable() && (tok2->variable()->isPointer() || tok2->variable()->isReference());
                 }
                 while (tok2) {
                     if (Token::Match(tok2, "%var% .|::")) {
-                        if (ptr)
+                        if (ptrOrRef)
                             local = false;
                         lastVar = tok2->variable();
                         tok2 = tok2->tokAt(2);
