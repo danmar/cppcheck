@@ -4425,6 +4425,14 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
     if (parent->isAssignmentOp()) {
         if (vt1)
             setValueType(parent, *vt1, cpp, defaultSignedness, settings);
+        else if (cpp && Token::Match(parent->tokAt(-5), "[;{}] auto %var% ; %var% =")) {
+            Token *autoTok = parent->tokAt(-4);
+            if (autoTok->strAt(1) == parent->strAt(-1)) {
+                setValueType(autoTok, *vt2, cpp, defaultSignedness, settings);
+                setValueType(autoTok->next(), *vt2, cpp, defaultSignedness, settings);
+                setValueType(parent->previous(), *vt2, cpp, defaultSignedness, settings);
+            }
+        }
         return;
     }
 
@@ -4604,7 +4612,13 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = ValueType::Type::FLOAT;
         else if (type->str() == "double")
             valuetype->type = type->isLong() ? ValueType::Type::LONGDOUBLE : ValueType::Type::DOUBLE;
-        else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum"))
+        else if (type->str() == "auto" && type->valueType()) {
+            const ValueType *vt = type->valueType();
+            valuetype->type = vt->type;
+            valuetype->pointer = vt->pointer;
+            if (vt->sign != ValueType::Sign::UNKNOWN_SIGN)
+                valuetype->sign = vt->sign;
+        } else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum"))
             valuetype->type = ValueType::Type::NONSTD;
         else if (!valuetype->typeScope && type->type() && type->type()->classScope) {
             valuetype->type = ValueType::Type::NONSTD;

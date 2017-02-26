@@ -4238,6 +4238,9 @@ private:
             ASSERT_EQUALS(true, vt.fromLibraryType("s32", &settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
         }
+
+        // auto variables
+        ASSERT_EQUALS("signed int", typeOf("; auto x = 3;", "auto"));
     }
 
     void variadic1() { // #7453
