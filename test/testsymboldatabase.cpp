@@ -4241,6 +4241,7 @@ private:
 
         // auto variables
         ASSERT_EQUALS("signed int", typeOf("; auto x = 3;", "auto"));
+        ASSERT_EQUALS("signed int", typeOf("; auto *p = (int *)0;", "auto"));
     }
 
     void variadic1() { // #7453

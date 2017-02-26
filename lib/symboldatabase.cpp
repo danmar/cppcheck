@@ -4425,11 +4425,19 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
     if (parent->isAssignmentOp()) {
         if (vt1)
             setValueType(parent, *vt1, cpp, defaultSignedness, settings);
-        else if (cpp && Token::Match(parent->tokAt(-5), "[;{}] auto %var% ; %var% =")) {
-            Token *autoTok = parent->tokAt(-4);
-            if (autoTok->strAt(1) == parent->strAt(-1)) {
-                setValueType(autoTok, *vt2, cpp, defaultSignedness, settings);
-                setValueType(autoTok->next(), *vt2, cpp, defaultSignedness, settings);
+        else if (cpp && Token::Match(parent->tokAt(-3), "%var% ; %var% =") && parent->strAt(-3) == parent->strAt(-1)) {
+            Token *var1Tok = parent->tokAt(-3);
+            Token *autoTok = nullptr;
+            if (Token::Match(var1Tok->tokAt(-2), "[;{}] auto"))
+                autoTok = var1Tok->previous();
+            else if (Token::Match(var1Tok->tokAt(-3), "[;{}] auto *"))
+                autoTok = var1Tok->tokAt(-2);
+            if (autoTok) {
+                ValueType vt(*vt2);
+                if (vt.pointer > 0 && autoTok->strAt(1) == "*")
+                    vt.pointer--;
+                setValueType(autoTok, vt, cpp, defaultSignedness, settings);
+                setValueType(var1Tok, *vt2, cpp, defaultSignedness, settings);
                 setValueType(parent->previous(), *vt2, cpp, defaultSignedness, settings);
             }
         }
@@ -4612,7 +4620,9 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = ValueType::Type::FLOAT;
         else if (type->str() == "double")
             valuetype->type = type->isLong() ? ValueType::Type::LONGDOUBLE : ValueType::Type::DOUBLE;
-        else if (type->str() == "auto" && type->valueType()) {
+        else if (type->str() == "auto") {
+            if (!type->valueType())
+                return nullptr;
             const ValueType *vt = type->valueType();
             valuetype->type = vt->type;
             valuetype->pointer = vt->pointer;
