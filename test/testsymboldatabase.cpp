@@ -282,6 +282,7 @@ private:
         TEST_CASE(findFunction11);
         TEST_CASE(findFunction12);
         TEST_CASE(findFunction13);
+        TEST_CASE(findFunction14);
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -3494,11 +3495,13 @@ private:
     void findFunction12() {
         GET_SYMBOL_DB("void foo(std::string a) { }\n"
                       "void foo(long long a) { }\n"
-                      "void foo() {\n"
+                      "void func(char* cp) {\n"
                       "    foo(0);\n"
                       "    foo(0L);\n"
                       "    foo(0.f);\n"
                       "    foo(bar());\n"
+                      "    foo(cp);\n"
+                      "    foo(\"\");\n"
                       "}");
 
         ASSERT_EQUALS("", errout.str());
@@ -3514,6 +3517,12 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( bar ( ) ) ;");
         ASSERT_EQUALS(true, f && f->function() == nullptr);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( cp ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 1);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( \"\" ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 1);
     }
 
     void findFunction13() {
@@ -3522,7 +3531,7 @@ private:
                       "void foo(long long a) { }\n"
                       "void foo(int* a) { }\n"
                       "void foo(void* a) { }\n"
-                      "void func(int i, float f, int* ip, float* fp) {\n"
+                      "void func(int i, const float f, int* ip, float* fp, char* cp) {\n"
                       "    foo(0);\n"
                       "    foo(0L);\n"
                       "    foo(0.f);\n"
@@ -3533,6 +3542,8 @@ private:
                       "    foo(&f);\n"
                       "    foo(ip);\n"
                       "    foo(fp);\n"
+                      "    foo(cp);\n"
+                      "    foo(\"\");\n"
                       "}");
 
         ASSERT_EQUALS("", errout.str());
@@ -3566,6 +3577,43 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( fp ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( cp ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( \"\" ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
+    }
+
+    void findFunction14() {
+        GET_SYMBOL_DB("void foo(int* a) { }\n"
+                      "void foo(const int* a) { }\n"
+                      "void foo(void* a) { }\n"
+                      "void foo(const float a) { }\n"
+                      "void func(int* ip, const int* cip, const char* ccp, char* cp, float f) {\n"
+                      "    foo(ip);\n"
+                      "    foo(cip);\n"
+                      "    foo(cp);\n"
+                      "    foo(ccp);\n"
+                      "    foo(f);\n"
+                      "}");
+
+        ASSERT_EQUALS("", errout.str());
+
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( ip ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 1);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( cip ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 2);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( cp ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( ccp ) ;");
+        ASSERT_EQUALS(true, f && f->function() == nullptr);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( f ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \

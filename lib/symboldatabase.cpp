@@ -3715,10 +3715,6 @@ void Scope::findFunctionInBase(const std::string & name, size_t args, std::vecto
 
 //---------------------------------------------------------------------------
 
-/** @todo This function does not take into account argument types when they don't match.
-  This can be difficult because of promotion and conversion operators and casts
-  and because the argument can also be a function call.
- */
 const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 {
     // make sure this is a function call
@@ -3790,23 +3786,28 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             if (Token::Match(arguments[j], "%var% ,|)")) {
                 const Variable * callarg = check->getVariableFromVarId(arguments[j]->varId());
 
-                if (callarg && callarg->isArrayOrPointer() == funcarg->isArrayOrPointer()) {
-                    if (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
+                if (callarg) {
+                    bool ptrequals = callarg->isArrayOrPointer() == funcarg->isArrayOrPointer();
+                    bool constEquals = !callarg->isArrayOrPointer() || ((callarg->typeStartToken()->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
+                    if (ptrequals && constEquals &&
+                        callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
                         callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
                         callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong()) {
                         same++;
                     } else if (callarg->isArrayOrPointer()) {
-                        if (funcarg->typeStartToken()->str() == "void")
+                        if (ptrequals && constEquals && funcarg->typeStartToken()->str() == "void")
                             fallback1++;
+                        else if (constEquals && Token::Match(callarg->typeStartToken(), "char|wchar_t") && funcarg->isStlStringType())
+                            fallback2++;
                     } else if ((Token::Match(funcarg->typeStartToken(), "char|short|int|long") &&
-                                Token::Match(callarg->typeStartToken(), "char|short|int|long")) ||
+                                Token::Match(callarg->typeStartToken(), "char|short|int|long") && ptrequals) ||
                                (Token::Match(funcarg->typeStartToken(), "float|double") &&
-                                Token::Match(callarg->typeStartToken(), "float|double"))) {
+                                Token::Match(callarg->typeStartToken(), "float|double") && ptrequals)) {
                         fallback1++;
                     } else if ((Token::Match(funcarg->typeStartToken(), "char|short|int|long") &&
-                                Token::Match(callarg->typeStartToken(), "float|double")) ||
+                                Token::Match(callarg->typeStartToken(), "float|double") && ptrequals) ||
                                (Token::Match(funcarg->typeStartToken(), "float|double") &&
-                                Token::Match(callarg->typeStartToken(), "char|short|int|long"))) {
+                                Token::Match(callarg->typeStartToken(), "char|short|int|long") && ptrequals)) {
                         fallback2++;
                     }
                 }
@@ -3925,11 +3926,15 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             }
 
             // check for a match with a string literal
-            else if (Token::Match(arguments[j], "%str% ,|)") &&
-                     funcarg->typeStartToken() != funcarg->typeEndToken() &&
-                     ((!arguments[j]->isLong() && Token::simpleMatch(funcarg->typeStartToken(), "char *")) ||
-                      (arguments[j]->isLong() && Token::simpleMatch(funcarg->typeStartToken(), "wchar_t *")))) {
-                same++;
+            else if (Token::Match(arguments[j], "%str% ,|)")) {
+                if (funcarg->typeStartToken() != funcarg->typeEndToken() &&
+                    ((!arguments[j]->isLong() && Token::simpleMatch(funcarg->typeStartToken(), "char *")) ||
+                     (arguments[j]->isLong() && Token::simpleMatch(funcarg->typeStartToken(), "wchar_t *"))))
+                    same++;
+                else if (Token::simpleMatch(funcarg->typeStartToken(), "void *"))
+                    fallback1++;
+                else if (funcarg->isStlStringType())
+                    fallback2++;
             }
 
             // check that function argument type is not mismatching
