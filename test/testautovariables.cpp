@@ -1048,6 +1048,12 @@ private:
               "return s_var;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7583
+        check("Command& foo() {\n"
+              "  return f([]() -> int { return 1; });\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceInnerScope() {

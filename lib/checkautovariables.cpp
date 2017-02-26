@@ -482,8 +482,13 @@ void CheckAutoVariables::returnReference()
 
                 // Skip over lambdas
                 tok2 = skipLambda(tok2);
+                if (!tok2)
+                    break;
 
-                if (!tok2 || tok2->str() != "return")
+                if (tok2->str() == "(")
+                    tok2 = tok2->link();
+
+                if (tok2->str() != "return")
                     continue;
 
                 // return..
