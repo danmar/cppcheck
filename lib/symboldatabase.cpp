@@ -1149,7 +1149,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers()
     // Set function call pointers
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
         if (Token::Match(tok, "%name% (")) {
-            if (!tok->function() && tok->varId() == 0) {
+            if (!tok->function() && tok->varId() == 0 && !isReservedName(tok->str())) {
                 const Function *function = findFunction(tok);
                 if (function)
                     const_cast<Token *>(tok)->function(function);
