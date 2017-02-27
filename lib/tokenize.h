@@ -794,10 +794,11 @@ public:
     */
     static const Token * startOfExecutableScope(const Token * tok);
 
-    static bool isMaxTime() {
 #ifdef MAXTIME
+    bool isMaxTime() const {
         return (std::time(0) > maxtime);
 #else
+    static bool isMaxTime() {
         return false;
 #endif
     }
