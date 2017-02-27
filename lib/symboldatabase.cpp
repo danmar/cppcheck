@@ -4828,6 +4828,29 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
             setValueType(tok, *tok->variable(), cpp, defsign, settings);
         } else if (tok->enumerator()) {
             setValueType(tok, *tok->enumerator(), cpp, defsign, settings);
+        } else if (cpp && tok->str() == "new") {
+            if (Token::Match(tok, "new %type% ;|[")) {
+                ValueType vt;
+                vt.pointer = 1;
+                const Token * const typeTok = tok->next();
+                // TODO: Reuse code in parsedecl
+                if (typeTok->str() == "char")
+                    vt.type = ValueType::Type::CHAR;
+                else if (typeTok->str() == "short")
+                    vt.type = ValueType::Type::SHORT;
+                else if (typeTok->str() == "int")
+                    vt.type = ValueType::Type::INT;
+                else if (typeTok->str() == "long")
+                    vt.type = ValueType::Type::LONG;
+                if (typeTok->isUnsigned())
+                    vt.sign = ValueType::Sign::UNSIGNED;
+                else if (typeTok->isSigned())
+                    vt.sign = ValueType::Sign::SIGNED;
+                if (vt.sign == ValueType::Sign::UNKNOWN_SIGN && vt.isIntegral())
+                    vt.sign = (vt.type == ValueType::Type::CHAR) ? defsign : ValueType::Sign::SIGNED;
+                if (vt.type != ValueType::Type::UNKNOWN_TYPE)
+                    setValueType(tok, vt, cpp, defsign, settings);
+            }
         }
     }
 }
