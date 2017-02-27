@@ -4433,10 +4433,7 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
             else if (Token::Match(var1Tok->tokAt(-3), "[;{}] auto *"))
                 autoTok = var1Tok->tokAt(-2);
             if (autoTok) {
-                ValueType vt(*vt2);
-                if (vt.pointer > 0 && autoTok->strAt(1) == "*")
-                    vt.pointer--;
-                setValueType(autoTok, vt, cpp, defaultSignedness, settings);
+                setValueType(autoTok, *vt2, cpp, defaultSignedness, settings);
                 setValueType(var1Tok, *vt2, cpp, defaultSignedness, settings);
                 setValueType(parent->previous(), *vt2, cpp, defaultSignedness, settings);
             }
@@ -4487,6 +4484,24 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
         if (var)
             setValueType(parent, *var, cpp, defaultSignedness, settings);
         return;
+    }
+
+    // range for loop, auto
+    if (vt2 &&
+        parent->str() == ":" &&
+        Token::Match(parent->astParent(), "( const| auto *| %var% :") &&
+        !parent->previous()->valueType() &&
+        Token::simpleMatch(parent->astParent()->astOperand1(), "for")) {
+        bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");
+        Token * const autoToken = const_cast<Token *>(parent->astParent()->tokAt(isconst ? 2 : 1));
+        if (vt2->pointer) {
+            ValueType vt(*vt2);
+            vt.pointer--;
+            if (isconst)
+                vt.constness |= 1;
+            setValueType(autoToken, vt, cpp, defaultSignedness, settings);
+            setValueType(parent->previous(), vt, cpp, defaultSignedness, settings);
+        }
     }
 
     if (!vt1)
@@ -4628,6 +4643,10 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->pointer = vt->pointer;
             if (vt->sign != ValueType::Sign::UNKNOWN_SIGN)
                 valuetype->sign = vt->sign;
+            valuetype->constness = vt->constness;
+            while (Token::Match(type, "%name%|*|&|::") && !type->variable())
+                type = type->next();
+            break;
         } else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum"))
             valuetype->type = ValueType::Type::NONSTD;
         else if (!valuetype->typeScope && type->type() && type->type()->classScope) {

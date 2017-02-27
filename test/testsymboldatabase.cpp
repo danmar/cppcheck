@@ -4240,8 +4240,9 @@ private:
         }
 
         // auto variables
-        ASSERT_EQUALS("signed int", typeOf("; auto x = 3;", "auto"));
-        ASSERT_EQUALS("signed int", typeOf("; auto *p = (int *)0;", "auto"));
+        ASSERT_EQUALS("signed int", typeOf("; auto x = 3;", "x"));
+        ASSERT_EQUALS("signed int *", typeOf("; auto *p = (int *)0;", "p"));
+        ASSERT_EQUALS("const signed short", typeOf("short values[10]; void f() { for (const auto *x : values); }", "x"));
     }
 
     void variadic1() { // #7453
