@@ -315,6 +315,8 @@ private:
         TEST_CASE(variadic3); // #7387
 
         TEST_CASE(noReturnType);
+
+        TEST_CASE(auto1);
     }
 
     void array() {
@@ -4346,6 +4348,14 @@ private:
                 ASSERT_EQUALS("func", retDef ? retDef->str() : "");
             }
         }
+    }
+
+    void auto1() {
+        GET_SYMBOL_DB("; auto x = \"abc\";");
+        const Token *autotok = tokenizer.tokens()->next();
+        ASSERT(autotok && autotok->isStandardType());
+        const Variable *var = db ? db->getVariableFromVarId(1) : nullptr;
+        ASSERT(var && var->isPointer() && var->isConst());
     }
 };
 

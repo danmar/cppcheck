@@ -2418,6 +2418,15 @@ bool Variable::arrayDimensions(const Library* lib)
     return arr;
 }
 
+void Variable::setFlags(const ValueType &valuetype)
+{
+    if (valuetype.constness)
+        setFlag(fIsConst,true);
+    if (valuetype.pointer)
+        setFlag(fIsPointer,true);
+}
+
+
 static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
 {
     s << (type == Scope::eGlobal ? "Global" :
@@ -4404,6 +4413,13 @@ static void setValueType(Token *tok, const Enumerator &enumerator, bool cpp, Val
     }
 }
 
+static void setAutoTokenProperties(Token * const autoTok)
+{
+    const ValueType *valuetype = autoTok->valueType();
+    if (valuetype->isIntegral() || valuetype->isFloat())
+        autoTok->isStandardType(true);
+}
+
 static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, ValueType::Sign defaultSignedness, const Settings* settings)
 {
     tok->setValueType(new ValueType(valuetype));
@@ -4434,8 +4450,10 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
                 autoTok = var1Tok->tokAt(-2);
             if (autoTok) {
                 setValueType(autoTok, *vt2, cpp, defaultSignedness, settings);
+                setAutoTokenProperties(autoTok);
                 setValueType(var1Tok, *vt2, cpp, defaultSignedness, settings);
                 setValueType(parent->previous(), *vt2, cpp, defaultSignedness, settings);
+                const_cast<Variable *>(parent->previous()->variable())->setFlags(*vt2);
             }
         }
         return;
@@ -4500,7 +4518,9 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
             if (isconst)
                 vt.constness |= 1;
             setValueType(autoToken, vt, cpp, defaultSignedness, settings);
+            setAutoTokenProperties(autoToken);
             setValueType(parent->previous(), vt, cpp, defaultSignedness, settings);
+            const_cast<Variable *>(parent->previous()->variable())->setFlags(vt);
         }
     }
 

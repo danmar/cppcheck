@@ -580,6 +580,8 @@ public:
         return type() && type()->isEnumType();
     }
 
+    void setFlags(const ValueType &valuetype);
+
 private:
     // only symbol database can change the type
     friend class SymbolDatabase;
