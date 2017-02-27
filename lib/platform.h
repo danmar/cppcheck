@@ -34,13 +34,13 @@ namespace cppcheck {
     */
     class CPPCHECKLIB Platform {
     private:
-        long long min_value(int bit) const {
+        static long long min_value(int bit) {
             if (bit >= 64)
                 return 1LL << 63;
             return -(1LL << (bit-1));
         }
 
-        long long max_value(int bit) const {
+        static long long max_value(int bit) {
             if (bit >= 64)
                 return (~0ULL) >> 1;
             return (1LL << (bit-1)) - 1LL;

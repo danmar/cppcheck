@@ -349,7 +349,6 @@ void CheckIO::ioWithoutPositioningError(const Token *tok)
 
 void CheckIO::readWriteOnlyFileError(const Token *tok)
 {
-
     reportError(tok, Severity::error,
                 "readWriteOnlyFile", "Read operation on a file that was opened only for writing.", CWE664, false);
 }
@@ -2001,7 +2000,7 @@ void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, unsigned int num
     reportError(tok, severity, "invalidPrintfArgType_float", errmsg.str(), CWE686, false);
 }
 
-Severity::SeverityType CheckIO::getSeverity(const CheckIO::ArgumentInfo *argInfo) const
+Severity::SeverityType CheckIO::getSeverity(const CheckIO::ArgumentInfo *argInfo)
 {
     return (argInfo && argInfo->typeToken && !argInfo->typeToken->originalName().empty()) ? Severity::portability : Severity::warning;
 }

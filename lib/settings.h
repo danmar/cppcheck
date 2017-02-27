@@ -100,12 +100,12 @@ public:
     bool verbose;
 
     /** @brief Request termination of checking */
-    void terminate(bool t = true) {
+    static void terminate(bool t = true) {
         Settings::_terminated = t;
     }
 
     /** @brief termination requested? */
-    bool terminated() const {
+    static bool terminated() {
         return Settings::_terminated;
     }
 

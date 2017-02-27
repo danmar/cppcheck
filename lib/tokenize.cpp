@@ -7194,7 +7194,7 @@ void Tokenizer::simplifyNestedStrcat()
 // Check if this statement is a duplicate definition.  A duplicate
 // definition will hide the enumerator within it's scope so just
 // skip the entire scope of the duplicate.
-bool Tokenizer::duplicateDefinition(Token ** tokPtr) const
+bool Tokenizer::duplicateDefinition(Token ** tokPtr)
 {
     // check for an end of definition
     const Token * tok = *tokPtr;
@@ -8068,7 +8068,7 @@ const Token * Tokenizer::findGarbageCode() const
     return nullptr;
 }
 
-bool Tokenizer::isGarbageExpr(const Token *start, const Token *end) const
+bool Tokenizer::isGarbageExpr(const Token *start, const Token *end)
 {
     std::set<std::string> controlFlowKeywords;
     controlFlowKeywords.insert("goto");
