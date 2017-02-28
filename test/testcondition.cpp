@@ -1505,6 +1505,16 @@ private:
               "    }\n"
               "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        check("void foo(unsigned u) {\n"
+              "  if (u != 0) {\n"
+              "    for (int i=0; i<32; i++) {\n"
+              "      if (u == 0) {}\n"  // <- don't warn
+              "      u = x;\n"
+              "    }\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // clarify conditions with = and comparison

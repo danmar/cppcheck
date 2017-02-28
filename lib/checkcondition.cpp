@@ -471,8 +471,12 @@ void CheckCondition::oppositeInnerCondition()
             }
             if (Token::Match(tok, "%type% (") && nonlocal) // function call -> bailout if there are nonlocal variables
                 break;
-            else if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
-                     (!tok->varId() && nonlocal)) {
+            // bailout if loop is seen.
+            // TODO: handle loops.
+            if (Token::Match(tok, "for|while|do"))
+                break;
+            if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
+                (!tok->varId() && nonlocal)) {
                 if (Token::Match(tok, "%name% %assign%|++|--"))
                     break;
                 if (Token::Match(tok, "%name% [")) {
