@@ -3538,6 +3538,7 @@ private:
                       "    foo(0);\n"
                       "    foo(0L);\n"
                       "    foo(0.f);\n"
+                      "    foo(false);\n"
                       "    foo(bar());\n"
                       "    foo(i);\n"
                       "    foo(f);\n"
@@ -3559,6 +3560,9 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( 0.f ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 2);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( false ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( bar ( ) ) ;");
         ASSERT_EQUALS(true, f && f->function() == nullptr);
@@ -3593,12 +3597,19 @@ private:
                       "void foo(const int* a) { }\n"
                       "void foo(void* a) { }\n"
                       "void foo(const float a) { }\n"
-                      "void func(int* ip, const int* cip, const char* ccp, char* cp, float f) {\n"
+                      "void foo(bool a) { }\n"
+                      "void foo2(Foo* a) { }\n"
+                      "void foo2(Foo a) { }\n"
+                      "void func(int* ip, const int* cip, const char* ccp, char* cp, float f, bool b) {\n"
                       "    foo(ip);\n"
                       "    foo(cip);\n"
                       "    foo(cp);\n"
                       "    foo(ccp);\n"
                       "    foo(f);\n"
+                      "    foo(b);\n"
+                      "    foo2(0);\n"
+                      "    foo2(nullptr);\n"
+                      "    foo2(NULL);\n"
                       "}");
 
         ASSERT_EQUALS("", errout.str());
@@ -3617,6 +3628,18 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( f ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( b ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo2 ( 0 ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 6);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo2 ( nullptr ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 6);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo2 ( NULL ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 6);
     }
 
     void findFunction15() {

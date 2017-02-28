@@ -3897,7 +3897,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                         else
                             same++;
                     else {
-                        if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
+                        if (funcarg->isPointer() || Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
                             fallback1++;
                         else if (Token::Match(funcarg->typeStartToken(), "float|double"))
                             fallback2++;
@@ -3945,13 +3945,26 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             }
 
             // check for a match with a char literal
-            else if (Token::Match(arguments[j], "%char% ,|)") && !funcarg->isArrayOrPointer()) {
+            else if (!funcarg->isArrayOrPointer() && Token::Match(arguments[j], "%char% ,|)")) {
                 if (arguments[j]->isLong() && funcarg->typeStartToken()->str() == "wchar_t")
                     same++;
                 else if (!arguments[j]->isLong() && funcarg->typeStartToken()->str() == "char")
                     same++;
                 else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
                     fallback1++;
+            }
+
+            // check for a match with a boolean literal
+            else if (!funcarg->isArrayOrPointer() && Token::Match(arguments[j], "%bool% ,|)")) {
+                if (funcarg->typeStartToken()->str() == "bool")
+                    same++;
+                else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
+                    fallback1++;
+            }
+
+            // check for a match with nullptr
+            else if (funcarg->isPointer() && Token::Match(arguments[j], "nullptr|NULL ,|)")) {
+                same++;
             }
 
             // check that function argument type is not mismatching
@@ -3963,17 +3976,16 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             }
         }
 
+        size_t hasToBe = func->isVariadic() ? (func->argCount() - 1) : args;
+
         // check if all arguments matched
-        if ((func->isVariadic() && same == (func->argCount() - 1)) ||
-            (!func->isVariadic() && same == args))
+        if (same == hasToBe)
             return func;
 
         if (!fallback1Func) {
-            if ((func->isVariadic() && same + fallback1 == (func->argCount() - 1)) ||
-                (!func->isVariadic() && same + fallback1 == args))
+            if (same + fallback1 == hasToBe)
                 fallback1Func = func;
-            else if (!fallback2Func && ((func->isVariadic() && same + fallback2 + fallback1 == (func->argCount() - 1)) ||
-                                        (!func->isVariadic() && same + fallback2 + fallback1 == args)))
+            else if (!fallback2Func && same + fallback2 + fallback1 == hasToBe)
                 fallback2Func = func;
         }
 
