@@ -674,6 +674,18 @@ static const Token * skipBracketsAndMembers(const Token *tok)
     return tok;
 }
 
+static void useFunctionArgs(const Token *tok, Variables& variables)
+{
+    // TODO: Match function args to see if they are const or not. Assume that const data is not written.
+    if (!tok)
+        return;
+    if (Token::Match(tok, "[,+]")) {
+        useFunctionArgs(tok->astOperand1(), variables);
+        useFunctionArgs(tok->astOperand2(), variables);
+    } else if (tok->variable() && tok->variable()->isArray()) {
+        variables.use(tok->varId(), tok);
+    }
+}
 
 //---------------------------------------------------------------------------
 // Usage of function variables
@@ -1108,8 +1120,9 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
 
         // function
-        else if (Token::Match(tok, "%var% (")) {
+        else if (Token::Match(tok, "%name% (")) {
             variables.read(tok->varId(), tok);
+            useFunctionArgs(tok->next()->astOperand2(), variables);
         } else if (Token::Match(tok, "std :: ref ( %var% )")) {
             variables.eraseAll(tok->tokAt(4)->varId());
         }

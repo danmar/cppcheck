@@ -1060,6 +1060,14 @@ private:
                               "    f(a[0]);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(int * i);\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    int a[10];\n"
+                              "    f(a+1);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvar3() {
