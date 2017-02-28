@@ -52,7 +52,7 @@ void CheckExceptionSafety::destructors()
                         tok = tok->next()->link();
                     }
 
-                    // Skip uncaught execptions
+                    // Skip uncaught exceptions
                     else if (Token::simpleMatch(tok, "if ( ! std :: uncaught_exception ( ) ) {")) {
                         tok = tok->next()->link(); // end of if ( ... )
                         tok = tok->next()->link(); // end of { ... }

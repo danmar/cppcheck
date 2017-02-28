@@ -2794,7 +2794,7 @@ void CheckOther::checkFuncArgNamesDifferent()
         if (!function || function->argCount() == 0)
             continue;
 
-        // only check functions with seperate declarations and definitions
+        // only check functions with separate declarations and definitions
         if (function->argDef == function->arg)
             continue;
 
