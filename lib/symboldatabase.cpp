@@ -3765,9 +3765,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         const Function * func = matches[i];
         size_t same = 0;
 
-        if (requireConst && func->isConst())
-            ;
-        else {
+        if (!requireConst || !func->isConst()) {
             // get the function this call is in
             const Scope * scope = tok->scope();
 
@@ -3888,7 +3886,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                             exactMatch = true;
                         }
                     } else {
-                        if (Token::Match(funcarg->typeStartToken(), "char|short|int|long")) {
+                        if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long")) {
                             exactMatch = true;
                         }
                     }
@@ -3899,7 +3897,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                         else
                             same++;
                     else {
-                        if (Token::Match(funcarg->typeStartToken(), "char|short|int|long"))
+                        if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
                             fallback1++;
                         else if (Token::Match(funcarg->typeStartToken(), "float|double"))
                             fallback2++;
@@ -3928,7 +3926,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     else {
                         if (Token::Match(funcarg->typeStartToken(), "float|double"))
                             fallback1++;
-                        else if (Token::Match(funcarg->typeStartToken(), "char|short|int|long"))
+                        else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
                             fallback2++;
                     }
                 }
@@ -3944,6 +3942,16 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     fallback1++;
                 else if (funcarg->isStlStringType())
                     fallback2++;
+            }
+
+            // check for a match with a char literal
+            else if (Token::Match(arguments[j], "%char% ,|)") && !funcarg->isArrayOrPointer()) {
+                if (arguments[j]->isLong() && funcarg->typeStartToken()->str() == "wchar_t")
+                    same++;
+                else if (!arguments[j]->isLong() && funcarg->typeStartToken()->str() == "char")
+                    same++;
+                else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
+                    fallback1++;
             }
 
             // check that function argument type is not mismatching
