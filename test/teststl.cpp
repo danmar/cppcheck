@@ -2375,6 +2375,16 @@ private:
               "    return s.data.c_str();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #7930
+              "    std::string data;\n"
+              "};\n"
+              "const char* test() {\n"
+              "    S s;\n"
+              "    std::string &ref = s.data;\n"
+              "    return ref.c_str();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
     }
 
     void autoPointer() {

@@ -1106,7 +1106,14 @@ void CheckStl::string_c_str()
                 bool funcStr = false;
                 if (Token::Match(tok2, "%var% .")) {
                     local = isLocal(tok2);
-                    ptrOrRef = tok2->variable() && (tok2->variable()->isPointer() || tok2->variable()->isReference());
+                    bool refToNonLocal = false;
+                    if (tok2->variable() && tok2->variable()->isReference()) {
+                        const Token *refTok = tok2->variable()->nameToken();
+                        refToNonLocal = true; // safe assumption is default to avoid FPs
+                        if (Token::Match(refTok, "%var% = %var% .|;|["))
+                            refToNonLocal = !isLocal(refTok->tokAt(2));
+                    }
+                    ptrOrRef = refToNonLocal || (tok2->variable() && tok2->variable()->isPointer());
                 }
                 while (tok2) {
                     if (Token::Match(tok2, "%var% .|::")) {
