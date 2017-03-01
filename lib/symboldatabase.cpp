@@ -3811,7 +3811,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                         bool passesFloat = Token::Match(callarg->typeStartToken(), "float|double");
                         if ((takesInt && passesInt) || (takesFloat && passesFloat))
                             fallback1++;
-                        else if ((takesInt && passesFloat) || (takesInt && passesFloat))
+                        else if ((takesInt && passesFloat) || (takesFloat && passesInt))
                             fallback2++;
                     }
                 }
