@@ -1397,14 +1397,14 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
 
     // Use AST type info
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
-    if (!Token::Match(tok, "%str%|%name% ,|)")) {
+    if (!Token::Match(tok, "%str% ,|)") && !(Token::Match(tok,"%var%") && tok->variable() && tok->variable()->isArray())) {
         const Token *top = tok;
         while (top->astParent() && top->astParent()->str() != "," && top->astParent() != tok->previous())
             top = top->astParent();
         const ValueType *valuetype = top->argumentType();
         if (valuetype && valuetype->type >= ValueType::Type::BOOL) {
             typeToken = tempToken = new Token(0);
-            if (valuetype->constness & 1) {
+            if (valuetype->pointer && valuetype->constness & 1) {
                 tempToken->str("const");
                 tempToken->insertToken("a");
                 tempToken = tempToken->next();

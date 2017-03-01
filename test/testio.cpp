@@ -1451,8 +1451,8 @@ private:
               "    printf(\"%s\", \"s4\");\n"
               "    printf(\"%u\", s);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'int'.\n"
-                      "[test.cpp:4]: (warning) %s in format string (no. 2) requires 'char *' but the argument type is 'int'.\n"
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'signed int'.\n"
+                      "[test.cpp:4]: (warning) %s in format string (no. 2) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:5]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'std::string'.\n"
                       "[test.cpp:7]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'char *'.\n", errout.str());
 
@@ -1464,9 +1464,8 @@ private:
               "    printf(\"%n\", s);\n"
               "    printf(\"%n\", \"s4\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const int *'.\n"
-                      "[test.cpp:3]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const int'.\n"
-                      "[test.cpp:4]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'int'.\n"
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'signed int'.\n"
+                      "[test.cpp:4]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'signed int'.\n"
                       "[test.cpp:6]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'std::string'.\n"
                       "[test.cpp:7]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const char *'.\n", errout.str());
 
@@ -1484,7 +1483,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) %X in format string (no. 1) requires 'unsigned int' but the argument type is 'foo'.\n"
                       "[test.cpp:4]: (warning) %c in format string (no. 1) requires 'unsigned int' but the argument type is 'const char *'.\n"
                       "[test.cpp:5]: (warning) %o in format string (no. 1) requires 'unsigned int' but the argument type is 'double'.\n"
-                      "[test.cpp:6]: (warning) %x in format string (no. 1) requires 'unsigned int' but the argument type is 'const int *'.\n"
+                      "[test.cpp:6]: (warning) %x in format string (no. 1) requires 'unsigned int' but the argument type is 'const signed int *'.\n"
                       "[test.cpp:8]: (warning) %X in format string (no. 1) requires 'unsigned int' but the argument type is 'bar *'.\n", errout.str());
 
         check("class foo {};\n"
@@ -1502,7 +1501,7 @@ private:
                       "[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'const char *'.\n"
                       "[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'double'.\n"
                       "[test.cpp:6]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:7]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'const int *'.\n"
+                      "[test.cpp:7]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'const signed int *'.\n"
                       "[test.cpp:9]: (warning) %i in format string (no. 1) requires 'int' but the argument type is 'bar *'.\n", errout.str());
 
         check("class foo {};\n"
@@ -1519,8 +1518,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'foo'.\n"
                       "[test.cpp:4]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'const char *'.\n"
                       "[test.cpp:5]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'double'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.\n"
-                      "[test.cpp:7]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'const int *'.\n"
+                      "[test.cpp:6]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:7]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'const signed int *'.\n"
                       "[test.cpp:9]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'bar *'.\n", errout.str());
 
         check("class foo {};\n"
@@ -1546,7 +1545,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) %e in format string (no. 1) requires 'double' but the argument type is 'foo'.\n"
                       "[test.cpp:4]: (warning) %E in format string (no. 1) requires 'double' but the argument type is 'const char *'.\n"
-                      "[test.cpp:5]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'const int *'.\n"
+                      "[test.cpp:5]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'const signed int *'.\n"
                       "[test.cpp:6]: (warning) %G in format string (no. 1) requires 'double' but the argument type is 'bar *'.\n", errout.str());
 
         check("class foo;\n"
@@ -1619,56 +1618,56 @@ private:
               "  printf(\"%tu\", p);\n"
               "}", false, true, Settings::Unix32);
         ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long}'.\n", errout.str());
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka signed long}'.\n", errout.str());
 
         check("void foo(std::size_t s, std::ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
               "}", false, true, Settings::Unix32);
         ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long}'.\n", errout.str());
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka signed long}'.\n", errout.str());
 
         check("void foo(size_t s, ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
               "}", false, true, Settings::Unix64);
         ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long}'.\n", errout.str());
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka signed long}'.\n", errout.str());
 
         check("void foo(std::size_t s, std::ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
               "}", false, true, Settings::Unix64);
         ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long}'.\n", errout.str());
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka signed long}'.\n", errout.str());
 
         check("void foo(size_t s, ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
               "}", false, true, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long}'.\n", errout.str());
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka signed long}'.\n", errout.str());
 
         check("void foo(std::size_t s, std::ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
               "}", false, true, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long}'.\n"
-                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long}'.\n", errout.str());
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka signed long}'.\n", errout.str());
 
         check("void foo(size_t s, ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
               "}", false, true, Settings::Win64);
         ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka long long}'.\n", errout.str());
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'ptrdiff_t {aka signed long long}'.\n", errout.str());
 
         check("void foo(std::size_t s, std::ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
               "  printf(\"%tu\", p);\n"
               "}", false, true, Settings::Win64);
         ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka long long}'.\n", errout.str());
+                      "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka signed long long}'.\n", errout.str());
 
         check("void foo(unsigned int i) {\n"
               "  printf(\"%ld\", i);\n"
@@ -1703,10 +1702,10 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:13]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'double'.\n"
                       "[test.cpp:13]: (warning) %f in format string (no. 2) requires 'double' but the argument type is 'signed int'.\n"
-                      "[test.cpp:13]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'int'.\n"
                       "[test.cpp:13]: (warning) %d in format string (no. 4) requires 'int' but the argument type is 'double'.\n"
-                      "[test.cpp:13]: (warning) %f in format string (no. 5) requires 'double' but the argument type is 'signed int'.\n"
-                      "[test.cpp:13]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'signed int'.\n", errout.str());
+                      "[test.cpp:13]: (warning) %f in format string (no. 5) requires 'double' but the argument type is 'int'.\n"
+                      "[test.cpp:13]: (warning) %f in format string (no. 6) requires 'double' but the argument type is 'int'.\n", errout.str());
 
         check("short f() { return 0; }\n"
               "void foo() { printf(\"%d %u %lu %I64u %I64d %f %Lf %p\", f(), f(), f(), f(), f(), f(), f(), f()); }");
@@ -2061,9 +2060,9 @@ private:
               "void foo() {\n"
               "    printf(\"%td %zd %d %d %d %d %d %d %d %d %d %d %d\", pt, pt, b, c, sc, uc, s, us, st, pt, pc, cl, ca);\n"
               "}\n", false, true, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:13]: (portability) %zd in format string (no. 2) requires 'ssize_t' but the argument type is 'ptrdiff_t {aka long}'.\n"
+        ASSERT_EQUALS("[test.cpp:13]: (portability) %zd in format string (no. 2) requires 'ssize_t' but the argument type is 'ptrdiff_t {aka signed long}'.\n"
                       "[test.cpp:13]: (portability) %d in format string (no. 9) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:13]: (portability) %d in format string (no. 10) requires 'int' but the argument type is 'ptrdiff_t {aka long}'.\n"
+                      "[test.cpp:13]: (portability) %d in format string (no. 10) requires 'int' but the argument type is 'ptrdiff_t {aka signed long}'.\n"
                       "[test.cpp:13]: (warning) %d in format string (no. 11) requires 'int' but the argument type is 'char *'.\n"
                       "[test.cpp:13]: (warning) %d in format string (no. 12) requires 'int' but the argument type is 'char *'.\n"
                       "[test.cpp:13]: (warning) %d in format string (no. 13) requires 'int' but the argument type is 'char *'.\n", errout.str());
@@ -2086,10 +2085,10 @@ private:
                       "[test.cpp:13]: (warning) %ld in format string (no. 2) requires 'long' but the argument type is 'char'.\n"
                       "[test.cpp:13]: (warning) %ld in format string (no. 3) requires 'long' but the argument type is 'signed char'.\n"
                       "[test.cpp:13]: (warning) %ld in format string (no. 4) requires 'long' but the argument type is 'unsigned char'.\n"
-                      "[test.cpp:13]: (warning) %ld in format string (no. 5) requires 'long' but the argument type is 'short'.\n"
+                      "[test.cpp:13]: (warning) %ld in format string (no. 5) requires 'long' but the argument type is 'signed short'.\n"
                       "[test.cpp:13]: (warning) %ld in format string (no. 6) requires 'long' but the argument type is 'unsigned short'.\n"
                       "[test.cpp:13]: (portability) %ld in format string (no. 7) requires 'long' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:13]: (portability) %ld in format string (no. 8) requires 'long' but the argument type is 'ptrdiff_t {aka long}'.\n"
+                      "[test.cpp:13]: (portability) %ld in format string (no. 8) requires 'long' but the argument type is 'ptrdiff_t {aka signed long}'.\n"
                       "[test.cpp:13]: (warning) %ld in format string (no. 9) requires 'long' but the argument type is 'char *'.\n"
                       "[test.cpp:13]: (warning) %ld in format string (no. 10) requires 'long' but the argument type is 'char *'.\n"
                       "[test.cpp:13]: (warning) %ld in format string (no. 11) requires 'long' but the argument type is 'char *'.\n", errout.str());
@@ -2288,39 +2287,39 @@ private:
         check("void foo(int i, unsigned int ui, long long ll, unsigned long long ull) {\n"
               "    printf(\"%Ld %Lu %Ld %Lu\", i, ui, ll, ull);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %Ld in format string (no. 1) requires 'long long' but the argument type is 'int'.\n"
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %Ld in format string (no. 1) requires 'long long' but the argument type is 'signed int'.\n"
                       "[test.cpp:2]: (warning) %Lu in format string (no. 2) requires 'unsigned long long' but the argument type is 'unsigned int'.\n", errout.str());
 
         check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
               "    printf(\"%hhd %hhd %hhd %hhd %hhd %hhd %hhd %hhd\", c, uc, s, us, i, ui, l, ul);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %hhd in format string (no. 2) requires 'char' but the argument type is 'unsigned char'.\n"
-                      "[test.cpp:2]: (warning) %hhd in format string (no. 3) requires 'char' but the argument type is 'short'.\n"
+                      "[test.cpp:2]: (warning) %hhd in format string (no. 3) requires 'char' but the argument type is 'signed short'.\n"
                       "[test.cpp:2]: (warning) %hhd in format string (no. 4) requires 'char' but the argument type is 'unsigned short'.\n"
-                      "[test.cpp:2]: (warning) %hhd in format string (no. 5) requires 'char' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hhd in format string (no. 5) requires 'char' but the argument type is 'signed int'.\n"
                       "[test.cpp:2]: (warning) %hhd in format string (no. 6) requires 'char' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:2]: (warning) %hhd in format string (no. 7) requires 'char' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hhd in format string (no. 7) requires 'char' but the argument type is 'signed long'.\n"
                       "[test.cpp:2]: (warning) %hhd in format string (no. 8) requires 'char' but the argument type is 'unsigned long'.\n", errout.str());
 
         check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
               "    printf(\"%hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu\", c, uc, s, us, i, ui, l, ul);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %hhu in format string (no. 1) requires 'unsigned char' but the argument type is 'char'.\n"
-                      "[test.cpp:2]: (warning) %hhu in format string (no. 3) requires 'unsigned char' but the argument type is 'short'.\n"
+                      "[test.cpp:2]: (warning) %hhu in format string (no. 3) requires 'unsigned char' but the argument type is 'signed short'.\n"
                       "[test.cpp:2]: (warning) %hhu in format string (no. 4) requires 'unsigned char' but the argument type is 'unsigned short'.\n"
-                      "[test.cpp:2]: (warning) %hhu in format string (no. 5) requires 'unsigned char' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hhu in format string (no. 5) requires 'unsigned char' but the argument type is 'signed int'.\n"
                       "[test.cpp:2]: (warning) %hhu in format string (no. 6) requires 'unsigned char' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:2]: (warning) %hhu in format string (no. 7) requires 'unsigned char' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hhu in format string (no. 7) requires 'unsigned char' but the argument type is 'signed long'.\n"
                       "[test.cpp:2]: (warning) %hhu in format string (no. 8) requires 'unsigned char' but the argument type is 'unsigned long'.\n", errout.str());
 
         check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
               "    printf(\"%hhx %hhx %hhx %hhx %hhx %hhx %hhx %hhx\", c, uc, s, us, i, ui, l, ul);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %hhx in format string (no. 3) requires 'unsigned char' but the argument type is 'short'.\n"
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hhx in format string (no. 3) requires 'unsigned char' but the argument type is 'signed short'.\n"
                       "[test.cpp:2]: (warning) %hhx in format string (no. 4) requires 'unsigned char' but the argument type is 'unsigned short'.\n"
-                      "[test.cpp:2]: (warning) %hhx in format string (no. 5) requires 'unsigned char' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hhx in format string (no. 5) requires 'unsigned char' but the argument type is 'signed int'.\n"
                       "[test.cpp:2]: (warning) %hhx in format string (no. 6) requires 'unsigned char' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:2]: (warning) %hhx in format string (no. 7) requires 'unsigned char' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hhx in format string (no. 7) requires 'unsigned char' but the argument type is 'signed long'.\n"
                       "[test.cpp:2]: (warning) %hhx in format string (no. 8) requires 'unsigned char' but the argument type is 'unsigned long'.\n", errout.str());
 
         check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
@@ -2329,9 +2328,9 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) %hd in format string (no. 1) requires 'short' but the argument type is 'char'.\n"
                       "[test.cpp:2]: (warning) %hd in format string (no. 2) requires 'short' but the argument type is 'unsigned char'.\n"
                       "[test.cpp:2]: (warning) %hd in format string (no. 4) requires 'short' but the argument type is 'unsigned short'.\n"
-                      "[test.cpp:2]: (warning) %hd in format string (no. 5) requires 'short' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hd in format string (no. 5) requires 'short' but the argument type is 'signed int'.\n"
                       "[test.cpp:2]: (warning) %hd in format string (no. 6) requires 'short' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:2]: (warning) %hd in format string (no. 7) requires 'short' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hd in format string (no. 7) requires 'short' but the argument type is 'signed long'.\n"
                       "[test.cpp:2]: (warning) %hd in format string (no. 8) requires 'short' but the argument type is 'unsigned long'.\n", errout.str());
 
         check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
@@ -2339,10 +2338,10 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %hu in format string (no. 1) requires 'unsigned short' but the argument type is 'char'.\n"
                       "[test.cpp:2]: (warning) %hu in format string (no. 2) requires 'unsigned short' but the argument type is 'unsigned char'.\n"
-                      "[test.cpp:2]: (warning) %hu in format string (no. 3) requires 'unsigned short' but the argument type is 'short'.\n"
-                      "[test.cpp:2]: (warning) %hu in format string (no. 5) requires 'unsigned short' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hu in format string (no. 3) requires 'unsigned short' but the argument type is 'signed short'.\n"
+                      "[test.cpp:2]: (warning) %hu in format string (no. 5) requires 'unsigned short' but the argument type is 'signed int'.\n"
                       "[test.cpp:2]: (warning) %hu in format string (no. 6) requires 'unsigned short' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:2]: (warning) %hu in format string (no. 7) requires 'unsigned short' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hu in format string (no. 7) requires 'unsigned short' but the argument type is 'signed long'.\n"
                       "[test.cpp:2]: (warning) %hu in format string (no. 8) requires 'unsigned short' but the argument type is 'unsigned long'.\n", errout.str());
 
         check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
@@ -2350,9 +2349,9 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %hx in format string (no. 1) requires 'unsigned short' but the argument type is 'char'.\n"
                       "[test.cpp:2]: (warning) %hx in format string (no. 2) requires 'unsigned short' but the argument type is 'unsigned char'.\n"
-                      "[test.cpp:2]: (warning) %hx in format string (no. 5) requires 'unsigned short' but the argument type is 'int'.\n"
+                      "[test.cpp:2]: (warning) %hx in format string (no. 5) requires 'unsigned short' but the argument type is 'signed int'.\n"
                       "[test.cpp:2]: (warning) %hx in format string (no. 6) requires 'unsigned short' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:2]: (warning) %hx in format string (no. 7) requires 'unsigned short' but the argument type is 'long'.\n"
+                      "[test.cpp:2]: (warning) %hx in format string (no. 7) requires 'unsigned short' but the argument type is 'signed long'.\n"
                       "[test.cpp:2]: (warning) %hx in format string (no. 8) requires 'unsigned short' but the argument type is 'unsigned long'.\n", errout.str());
 
         // #7837 - Use ValueType for function call
@@ -2406,10 +2405,10 @@ private:
               "    printf(\"%I64d %I64u %I64x\", u64, u64, u64);\n"
               "}", false, true, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka long}'.\n"
-                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka int}'.\n"
+                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long}'.\n"
+                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka signed int}'.\n"
                       "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
-                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka long long}'.\n"
+                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka signed long long}'.\n"
                       "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64' but the argument type is 'unsigned __int64 {aka unsigned long long}'.\n", errout.str());
 
         check("void foo() {\n"
@@ -2427,10 +2426,10 @@ private:
               "    printf(\"%I64d %I64u %I64x\", u64, u64, u64);\n"
               "}", false, true, Settings::Win64);
         ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka long long}'.\n"
-                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka int}'.\n"
+                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long long}'.\n"
+                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka signed int}'.\n"
                       "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
-                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka long long}'.\n"
+                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka signed long long}'.\n"
                       "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64' but the argument type is 'unsigned __int64 {aka unsigned long long}'.\n", errout.str());
 
         check("void foo() {\n"
@@ -2604,7 +2603,7 @@ private:
               "    _tprintf_s(_T(\"%d %u\"), u, i, 0);\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:4]: (warning) _tprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2613,7 +2612,7 @@ private:
               "    _tprintf_s(_T(\"%d %u\"), u, i, 0);\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:4]: (warning) _tprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2622,7 +2621,7 @@ private:
               "    printf_s(\"%d %u\", u, i, 0);\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:4]: (warning) printf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2631,7 +2630,7 @@ private:
               "    wprintf_s(L\"%d %u\", u, i, 0);\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:4]: (warning) wprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2641,7 +2640,7 @@ private:
               "    _stprintf_s(str, sizeof(str) / sizeof(TCHAR), _T(\"%d %u\"), u, i, 0);\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:5]: (warning) _stprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2651,7 +2650,7 @@ private:
               "    _stprintf_s(str, sizeof(str) / sizeof(TCHAR), _T(\"%d %u\"), u, i, 0);\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:5]: (warning) _stprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2661,7 +2660,7 @@ private:
               "    sprintf_s(str, sizeof(str), \"%d %u\", u, i, 0);\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:5]: (warning) sprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2671,7 +2670,7 @@ private:
               "    swprintf_s(str, sizeof(str) / sizeof(wchar_t), L\"%d %u\", u, i, 0);\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:5]: (warning) swprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2681,7 +2680,7 @@ private:
               "    _sntprintf_s(str, sizeof(str) / sizeof(TCHAR), _TRUNCATE, _T(\"%d %u\"), u, i, 0);\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:5]: (warning) _sntprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2691,7 +2690,7 @@ private:
               "    _sntprintf_s(str, sizeof(str) / sizeof(TCHAR), _TRUNCATE, _T(\"%d %u\"), u, i, 0);\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:5]: (warning) _sntprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2701,7 +2700,7 @@ private:
               "    _snprintf_s(str, sizeof(str), _TRUNCATE, \"%d %u\", u, i, 0);\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:5]: (warning) _snprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2711,7 +2710,7 @@ private:
               "    _snwprintf_s(str, sizeof(str) / sizeof(wchar_t), _TRUNCATE, L\"%d %u\", u, i, 0);\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:5]: (warning) _snwprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -2720,7 +2719,7 @@ private:
               "    _ftprintf_s(fp, _T(\"%d %u\"), u, i, 0);\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:4]: (warning) _ftprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -2729,7 +2728,7 @@ private:
               "    _ftprintf_s(fp, _T(\"%d %u\"), u, i, 0);\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:4]: (warning) _ftprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -2738,7 +2737,7 @@ private:
               "    fprintf_s(fp, \"%d %u\", u, i, 0);\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:4]: (warning) fprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo(FILE * fp) {\n"
@@ -2747,7 +2746,7 @@ private:
               "    fwprintf_s(fp, L\"%d %u\", u, i, 0);\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:4]: (warning) fwprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
@@ -2776,29 +2775,29 @@ private:
               "    sprintf_s(lineBuffer, 100, format2, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "    sprintf_s(lineBuffer, 100, format3, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "}\n", false, false, Settings::Win32A);
-        ASSERT_EQUALS("[test.cpp:6]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+        ASSERT_EQUALS("[test.cpp:6]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:6]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:7]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:7]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:7]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:8]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:8]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:8]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:9]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:9]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:9]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:10]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:10]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:10]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:11]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:11]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:11]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:12]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:12]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:12]: (warning) printf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:13]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:13]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:13]: (warning) printf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:14]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:14]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:14]: (warning) printf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:15]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:15]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:15]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:16]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:16]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:16]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:17]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:17]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:17]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n", errout.str());
 
     }
