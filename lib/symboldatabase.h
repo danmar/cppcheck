@@ -1173,6 +1173,8 @@ public:
 
     static ValueType parseDecl(const Token *type, const Settings *settings);
 
+    static Type typeFromString(const std::string &typestr, bool longType);
+
     bool isIntegral() const {
         return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
     }

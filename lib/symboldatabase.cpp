@@ -4636,17 +4636,10 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 valuetype->sign = ValueType::Sign::UNSIGNED;
             else
                 valuetype->sign = defaultSignedness;
-            if (enum_type->str() == "char")
-                valuetype->type = ValueType::Type::CHAR;
-            else if (enum_type->str() == "short")
-                valuetype->type = ValueType::Type::SHORT;
-            else if (enum_type->str() == "int")
-                valuetype->type = ValueType::Type::INT;
-            else if (enum_type->str() == "long")
-                valuetype->type = enum_type->isLong() ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
-            else if (enum_type->isStandardType()) {
+            if (ValueType::Type t = ValueType::typeFromString(enum_type->str(), enum_type->isLong()))
+                valuetype->type = t;
+            else if (enum_type->isStandardType())
                 valuetype->fromLibraryType(enum_type->str(), settings);
-            }
         } else
             valuetype->type = ValueType::Type::INT;
     } else
@@ -4658,22 +4651,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->sign = ValueType::Sign::UNSIGNED;
         if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
-        else if (type->str() == "void")
-            valuetype->type = ValueType::Type::VOID;
-        else if (type->str() == "bool")
-            valuetype->type = ValueType::Type::BOOL;
-        else if (type->str() == "char")
-            valuetype->type = ValueType::Type::CHAR;
-        else if (type->str() == "short")
-            valuetype->type = ValueType::Type::SHORT;
-        else if (type->str() == "int")
-            valuetype->type = ValueType::Type::INT;
-        else if (type->str() == "long")
-            valuetype->type = type->isLong() ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
-        else if (type->str() == "float")
-            valuetype->type = ValueType::Type::FLOAT;
-        else if (type->str() == "double")
-            valuetype->type = type->isLong() ? ValueType::Type::LONGDOUBLE : ValueType::Type::DOUBLE;
+        else if (ValueType::Type t = ValueType::typeFromString(type->str(), type->isLong()))
+            valuetype->type = t;
         else if (type->str() == "auto") {
             if (!type->valueType())
                 return nullptr;
@@ -4872,15 +4851,9 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
                 ValueType vt;
                 vt.pointer = 1;
                 const Token * const typeTok = tok->next();
-                // TODO: Reuse code in parsedecl
-                if (typeTok->str() == "char")
-                    vt.type = ValueType::Type::CHAR;
-                else if (typeTok->str() == "short")
-                    vt.type = ValueType::Type::SHORT;
-                else if (typeTok->str() == "int")
-                    vt.type = ValueType::Type::INT;
-                else if (typeTok->str() == "long")
-                    vt.type = ValueType::Type::LONG;
+                vt.type = ValueType::typeFromString(typeTok->str(), typeTok->isLong());
+                if (vt.type == ValueType::Type::UNKNOWN_TYPE && typeTok->isStandardType())
+                    vt.fromLibraryType(typeTok->str(), settings);
                 if (typeTok->isUnsigned())
                     vt.sign = ValueType::Sign::UNSIGNED;
                 else if (typeTok->isSigned())
@@ -4899,6 +4872,27 @@ ValueType ValueType::parseDecl(const Token *type, const Settings *settings)
     ValueType vt;
     parsedecl(type, &vt, settings->defaultSign == 'u' ? Sign::UNSIGNED : Sign::SIGNED, settings);
     return vt;
+}
+
+ValueType::Type ValueType::typeFromString(const std::string &typestr, bool longType)
+{
+    if (typestr == "void")
+        return ValueType::Type::VOID;
+    if (typestr == "bool")
+        return ValueType::Type::BOOL;
+    if (typestr== "char")
+        return ValueType::Type::CHAR;
+    if (typestr == "short")
+        return ValueType::Type::SHORT;
+    if (typestr == "int")
+        return ValueType::Type::INT;
+    if (typestr == "long")
+        return longType ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
+    if (typestr == "float")
+        return ValueType::Type::FLOAT;
+    if (typestr == "double")
+        return longType ? ValueType::Type::LONGDOUBLE : ValueType::Type::DOUBLE;
+    return ValueType::Type::UNKNOWN_TYPE;
 }
 
 bool ValueType::fromLibraryType(const std::string &typestr, const Settings *settings)
