@@ -131,7 +131,7 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckCondition c(nullptr, settings, errorLogger);
 
-        c.assignIfError(nullptr, 0, "", false);
+        c.assignIfError(nullptr, 0, emptyString, false);
         c.badBitmaskCheckError(nullptr);
         c.comparisonError(nullptr, "&", 6, "==", 1, false);
         c.multiConditionError(nullptr,1);

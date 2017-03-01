@@ -73,13 +73,13 @@ const char * CppCheck::extraVersion()
 unsigned int CppCheck::check(const std::string &path)
 {
     std::ifstream fin(path.c_str());
-    return processFile(path, "", fin);
+    return processFile(path, emptyString, fin);
 }
 
 unsigned int CppCheck::check(const std::string &path, const std::string &content)
 {
     std::istringstream iss(content);
-    return processFile(path, "", iss);
+    return processFile(path, emptyString, iss);
 }
 
 unsigned int CppCheck::check(const ImportProject::FileSettings &fs)

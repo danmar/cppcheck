@@ -716,7 +716,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 else if (declEnd && declEnd->str() == ";") {
                     bool newFunc = true; // Is this function already in the database?
                     for (std::multimap<std::string, const Function *>::const_iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
-                        if (Function::argsMatch(scope, i->second->argDef->next(), argStart->next(), "", 0)) {
+                        if (Function::argsMatch(scope, i->second->argDef->next(), argStart->next(), emptyString, 0)) {
                             newFunc = false;
                             break;
                         }
@@ -1921,7 +1921,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
 {
     Function* function = nullptr;
     for (std::multimap<std::string, const Function *>::iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
-        if (Function::argsMatch(scope, i->second->argDef->next(), argStart->next(), "", 0)) {
+        if (Function::argsMatch(scope, i->second->argDef->next(), argStart->next(), emptyString, 0)) {
             function = const_cast<Function *>(i->second);
             break;
         }
@@ -2997,7 +2997,7 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
                     }
 
                     // check for matching function parameters
-                    if (returnMatch && argsMatch(baseType->classScope, func->argDef, argDef, "", 0)) {
+                    if (returnMatch && argsMatch(baseType->classScope, func->argDef, argDef, emptyString, 0)) {
                         return true;
                     }
                 }
@@ -4317,7 +4317,7 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
     for (std::multimap<std::string, const Function *>::const_iterator it = ns->functionMap.find(func->str());
          it != ns->functionMap.end() && it->first == func->str(); ++it) {
 
-        if (Function::argsMatch(ns, func->tokAt(2), it->second->argDef->next(), "", 0) &&
+        if (Function::argsMatch(ns, func->tokAt(2), it->second->argDef->next(), emptyString, 0) &&
             it->second->isDestructor() == destructor) {
             function = it->second;
             break;

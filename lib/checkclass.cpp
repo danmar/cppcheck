@@ -1642,7 +1642,7 @@ void CheckClass::virtualDestructor()
     }
 
     for (std::list<const Function *>::const_iterator i = inconclusiveErrors.begin(); i != inconclusiveErrors.end(); ++i)
-        virtualDestructorError((*i)->tokenDef, (*i)->name(), "", true);
+        virtualDestructorError((*i)->tokenDef, (*i)->name(), emptyString, true);
 }
 
 void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive)

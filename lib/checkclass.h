@@ -176,7 +176,7 @@ private:
         c.copyConstructorShallowCopyError(nullptr, "var");
         c.noCopyConstructorError(nullptr, "class", false);
         c.uninitVarError(nullptr, "classname", "varname", false);
-        c.operatorEqVarError(nullptr, "classname", "", false);
+        c.operatorEqVarError(nullptr, "classname", emptyString, false);
         c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
         c.memsetError(nullptr, "memfunc", "classname", "class");
         c.memsetErrorReference(nullptr, "memfunc", "class");

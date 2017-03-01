@@ -394,15 +394,15 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         findAndReplace(result, "{id}", _id);
         findAndReplace(result, "{severity}", Severity::toString(_severity));
         findAndReplace(result, "{message}", verbose ? _verboseMessage : _shortMessage);
-        findAndReplace(result, "{callstack}", _callStack.empty() ? "" : callStackToString(_callStack));
+        findAndReplace(result, "{callstack}", _callStack.empty() ? emptyString : callStackToString(_callStack));
         if (!_callStack.empty()) {
             std::ostringstream oss;
             oss << _callStack.back().line;
             findAndReplace(result, "{line}", oss.str());
             findAndReplace(result, "{file}", _callStack.back().getfile());
         } else {
-            findAndReplace(result, "{file}", "");
-            findAndReplace(result, "{line}", "");
+            findAndReplace(result, "{file}", emptyString);
+            findAndReplace(result, "{line}", emptyString);
         }
 
         return result;

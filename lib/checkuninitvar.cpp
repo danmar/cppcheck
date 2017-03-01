@@ -75,11 +75,11 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             continue;
 
         if (Token::Match(i->nameToken(), "%name% =")) { // Variable is initialized, but Rhs might be not
-            checkRhs(i->nameToken(), *i, NO_ALLOC, 0U, "");
+            checkRhs(i->nameToken(), *i, NO_ALLOC, 0U, emptyString);
             continue;
         }
         if (Token::Match(i->nameToken(), "%name% ) (") && Token::simpleMatch(i->nameToken()->linkAt(2), ") =")) { // Function pointer is initialized, but Rhs might be not
-            checkRhs(i->nameToken()->linkAt(2)->next(), *i, NO_ALLOC, 0U, "");
+            checkRhs(i->nameToken()->linkAt(2)->next(), *i, NO_ALLOC, 0U, emptyString);
             continue;
         }
 
@@ -108,17 +108,17 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             continue;
 
         if (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "for (") &&
-            checkLoopBody(tok->astParent()->link()->next(), *i, i->isArray() ? ARRAY : NO_ALLOC, "", true))
+            checkLoopBody(tok->astParent()->link()->next(), *i, i->isArray() ? ARRAY : NO_ALLOC, emptyString, true))
             continue;
 
         if (i->isArray()) {
             Alloc alloc = ARRAY;
-            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, "");
+            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString);
             continue;
         }
         if (stdtype || i->isPointer()) {
             Alloc alloc = NO_ALLOC;
-            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, "");
+            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString);
         }
         if (i->type())
             checkStruct(tok, *i);
@@ -136,7 +136,7 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
                             checkStruct(tok, *arg);
                         else if (arg->typeStartToken()->isStandardType() || arg->typeStartToken()->isEnumType()) {
                             Alloc alloc = NO_ALLOC;
-                            checkScopeForVariable(tok->next(), *arg, nullptr, nullptr, &alloc, "");
+                            checkScopeForVariable(tok->next(), *arg, nullptr, nullptr, &alloc, emptyString);
                         }
                     }
                 }
@@ -698,7 +698,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
                 else {
                     if (tok->strAt(1) == "=")
-                        checkRhs(tok, var, *alloc, number_of_if, "");
+                        checkRhs(tok, var, *alloc, number_of_if, emptyString);
 
                     // assume that variable is assigned
                     return true;

@@ -159,7 +159,7 @@ void ImportProject::import(const std::string &filename)
         importSln(fin,path);
     } else if (filename.find(".vcxproj") != std::string::npos) {
         std::map<std::string, std::string> variables;
-        importVcxproj(filename, variables, "");
+        importVcxproj(filename, variables, emptyString);
     }
 }
 

@@ -2198,7 +2198,7 @@ void CheckMemoryLeakInFunction::check()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         if (!scope->hasInlineOrLambdaFunction())
-            checkScope(scope->classStart->next(), "", 0, scope->functionOf != nullptr, 1);
+            checkScope(scope->classStart->next(), emptyString, 0, scope->functionOf != nullptr, 1);
     }
 
     // Check variables..

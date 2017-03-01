@@ -138,7 +138,7 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens1)
                 continue;
             if (tok->next && tok->next->str == "endfile")
                 continue;
-            Directive directive(tok->location.file(), tok->location.line, "");
+            Directive directive(tok->location.file(), tok->location.line, emptyString);
             for (const simplecpp::Token *tok2 = tok; tok2 && tok2->location.line == directive.linenr; tok2 = tok2->next) {
                 if (tok2->comment)
                     continue;
@@ -473,7 +473,7 @@ static simplecpp::DUI createDUI(const Settings &_settings, const std::string &cf
 
     splitcfg(_settings.userDefines, dui.defines, "1");
     if (!cfg.empty())
-        splitcfg(cfg, dui.defines, "");
+        splitcfg(cfg, dui.defines, emptyString);
 
     for (std::vector<std::string>::const_iterator it = _settings.library.defines.begin(); it != _settings.library.defines.end(); ++it) {
         if (it->compare(0,8,"#define ")!=0)
@@ -521,7 +521,7 @@ static bool hasErrors(const simplecpp::OutputList &outputList)
 
 void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
 {
-    const simplecpp::DUI dui = createDUI(_settings, "", files[0]);
+    const simplecpp::DUI dui = createDUI(_settings, emptyString, files[0]);
 
     simplecpp::OutputList outputList;
 
@@ -788,10 +788,10 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
     Settings settings2(*settings);
     Preprocessor preprocessor(settings2, errorLogger);
     settings2.checkConfiguration=true;
-    preprocessor.missingInclude("", 1, "", UserHeader);
-    preprocessor.missingInclude("", 1, "", SystemHeader);
-    preprocessor.validateCfgError("", 1, "X", "X");
-    preprocessor.error("", 1, "#error message");   // #error ..
+    preprocessor.missingInclude(emptyString, 1, emptyString, UserHeader);
+    preprocessor.missingInclude(emptyString, 1, emptyString, SystemHeader);
+    preprocessor.validateCfgError(emptyString, 1, "X", "X");
+    preprocessor.error(emptyString, 1, "#error message");   // #error ..
 }
 
 void Preprocessor::dump(std::ostream &out) const
