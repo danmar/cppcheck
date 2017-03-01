@@ -4470,7 +4470,9 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
                 setAutoTokenProperties(autoTok);
                 setValueType(var1Tok, *vt2, cpp, defaultSignedness, settings);
                 setValueType(parent->previous(), *vt2, cpp, defaultSignedness, settings);
-                const_cast<Variable *>(parent->previous()->variable())->setFlags(*vt2);
+                const Variable *var = parent->previous()->variable();
+                if (var)
+                    const_cast<Variable *>(var)->setFlags(*vt2);
             }
         }
         return;
