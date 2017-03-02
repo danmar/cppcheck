@@ -4291,6 +4291,7 @@ private:
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("u32", &settingsWin64));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
+            ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new u32[10];", "new", "test.cpp", &settingsWin64));
         }
         {
             // PlatformType

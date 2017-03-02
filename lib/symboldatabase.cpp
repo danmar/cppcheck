@@ -4852,7 +4852,7 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
                 vt.pointer = 1;
                 const Token * const typeTok = tok->next();
                 vt.type = ValueType::typeFromString(typeTok->str(), typeTok->isLong());
-                if (vt.type == ValueType::Type::UNKNOWN_TYPE && typeTok->isStandardType())
+                if (vt.type == ValueType::Type::UNKNOWN_TYPE)
                     vt.fromLibraryType(typeTok->str(), settings);
                 if (typeTok->isUnsigned())
                     vt.sign = ValueType::Sign::UNSIGNED;
