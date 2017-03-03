@@ -2125,8 +2125,16 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 }
 
                 if (startToken) {
+                    if (values.size() == 1U && Token::Match(tok, "==|!")) {
+                        const Token *parent = tok->astParent();
+                        while (parent && parent->str() == "&&")
+                            parent = parent->astParent();
+                        if (parent && parent->str() == "(")
+                            values.front().setKnown();
+                    }
                     if (!valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, false, tokenlist, errorLogger, settings))
                         continue;
+                    values.front().setPossible();
                     if (isVariableChanged(startToken, startToken->link(), varid, settings)) {
                         // TODO: The endToken should not be startToken->link() in the valueFlowForward call
                         if (settings->debugwarnings)

@@ -2247,6 +2247,25 @@ private:
         ASSERT_EQUALS(1, value.intvalue);
         ASSERT(value.isPossible());
 
+        // in conditional code
+        code = "void f(int x) {\n"
+               "  if (!x) {\n"
+               "    a = x+1;\n" // <- known value
+               "  }\n"
+               "}";
+        value = valueOfTok(code, "+");
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT(value.isKnown());
+
+        code = "void f(int x) {\n"
+               "  if (a && 4==x && y) {\n"
+               "    a = x+12;\n" // <- known value
+               "  }\n"
+               "}";
+        value = valueOfTok(code, "+");
+        ASSERT_EQUALS(16, value.intvalue);
+        ASSERT(value.isKnown());
+
         // after condition
         code = "int f(int x) {\n"
                "  if (x == 4) {}\n"
