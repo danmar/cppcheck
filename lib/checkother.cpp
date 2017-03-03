@@ -1206,9 +1206,7 @@ void CheckOther::checkVariableScope()
                 continue;
         }
         // bailout if initialized with function call that has possible side effects
-        if (tok->str() == "(" && Token::simpleMatch(tok->astOperand2(), "("))
-            continue;
-        if (Token::simpleMatch(tok, "=") && Token::simpleMatch(tok->astOperand2(), "("))
+        if (Token::Match(tok, "[(=]") && Token::simpleMatch(tok->astOperand2(), "("))
             continue;
         bool reduce = true;
         bool used = false; // Don't warn about unused variables
