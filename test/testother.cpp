@@ -732,6 +732,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo(Test &test) {\n"
+              "  int& x = test.getData();\n"
+              "  if (test.process())\n"
+              "    x = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f()\n"
               "{\n"
               "int foo = 0;\n"

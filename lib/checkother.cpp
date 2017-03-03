@@ -1193,7 +1193,7 @@ void CheckOther::checkVariableScope()
             if (tok->str() == "(") {
                 forHead = true;
                 break;
-            } else if (tok->str() == "{" || tok->str() == ";" || tok->str() == "}")
+            } else if (Token::Match(tok, "[;{}]"))
                 break;
         }
         if (forHead)
@@ -1207,6 +1207,8 @@ void CheckOther::checkVariableScope()
         }
         // bailout if initialized with function call that has possible side effects
         if (tok->str() == "(" && Token::simpleMatch(tok->astOperand2(), "("))
+            continue;
+        if (Token::simpleMatch(tok, "=") && Token::simpleMatch(tok->astOperand2(), "("))
             continue;
         bool reduce = true;
         bool used = false; // Don't warn about unused variables
