@@ -304,6 +304,12 @@ private:
               "    return p;\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Returning/dereferencing 'p' after it is deallocated / released\n", errout.str());
+
+        check("void f(char *p) {\n"
+              "  if (!p) free(p);\n"
+              "  return p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void deallocuse5() {  // #4018

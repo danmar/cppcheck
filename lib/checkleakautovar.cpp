@@ -543,13 +543,14 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const Va
         }
 
         if (Token::Match(arg, "%var% [-,)] !!.") || Token::Match(arg, "& %var%")) {
-
             // goto variable
             if (arg->str() == "&")
                 arg = arg->next();
 
+            bool isnull = arg->hasKnownIntValue() && arg->values.front().intvalue == 0;
+
             // Is variable allocated?
-            if (!af || af->arg == argNr)
+            if (!isnull && (!af || af->arg == argNr))
                 changeAllocStatus(varInfo, allocation, tok, arg);
         } else if (Token::Match(arg, "%name% (")) {
             const Library::AllocFunc* allocFunc = _settings->library.dealloc(arg);
