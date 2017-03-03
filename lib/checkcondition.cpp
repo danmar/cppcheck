@@ -998,9 +998,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (tok->link()) // don't write false positives when templates are used
                 continue;
-            if (tok->values.size() != 1U)
-                continue;
-            if (!tok->values.front().isKnown())
+            if (!tok->hasKnownIntValue())
                 continue;
 
             // Don't warn in assertions. Condition is often 'always true' by intention.
@@ -1032,6 +1030,9 @@ void CheckCondition::alwaysTrueFalse()
                     isExpandedMacro = true;
                     break;
                 }
+            }
+            for (const Token *parent = tok; parent; parent = parent->astParent()) {
+                isExpandedMacro |= parent->isExpandedMacro();
             }
             if (isExpandedMacro)
                 continue;

@@ -1783,6 +1783,11 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "  $if $( 1 $&& $x()) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // Don't warn in assertions. Condition is often 'always true' by intention.
         // If platform,defines,etc cause an 'always false' assertion then that is not very dangerous neither
         check("void f() {\n"
