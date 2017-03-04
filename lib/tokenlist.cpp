@@ -129,7 +129,13 @@ void TokenList::addtoken(std::string str, const unsigned int lineno, const unsig
 
     // Replace hexadecimal value with decimal
     if (MathLib::isIntHex(str) || MathLib::isOct(str) || MathLib::isBin(str)) {
-        str = MathLib::value(str).str();
+        // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
+        std::string suffix;
+        if (str.compare(0,2,"0x") == 0 &&
+            str.size() == (2 + _settings->int_bit / 4) &&
+            (str[2] >= '8'))  // includes A-F and a-f
+            suffix = "U";
+        str = MathLib::value(str).str() + suffix;
     } else if (str.compare(0, 5, "_Bool") == 0) {
         str = "bool";
     }

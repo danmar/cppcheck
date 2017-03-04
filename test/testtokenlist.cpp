@@ -36,12 +36,13 @@ private:
     void run() {
         TEST_CASE(line1); // Ticket #4408
         TEST_CASE(line2); // Ticket #5423
-        TEST_CASE(testaddtoken);
+        TEST_CASE(testaddtoken1);
+        TEST_CASE(testaddtoken2);
         TEST_CASE(inc);
     }
 
     // inspired by #5895
-    void testaddtoken() {
+    void testaddtoken1() {
         const std::string code = "0x89504e470d0a1a0a";
         TokenList tokenlist(&settings);
         tokenlist.addtoken(code, 1, 1, false);
@@ -53,6 +54,14 @@ private:
         unsigned long long numberULL(0);
         std::istringstream(tokenlist.front()->str()) >> numberULL;
         ASSERT_EQUALS(9894494448401390090U, numberULL);
+    }
+
+    void testaddtoken2() {
+        const std::string code = "0xF0000000";
+        settings.int_bit = 32;
+        TokenList tokenlist(&settings);
+        tokenlist.addtoken(code, 1, 1, false);
+        ASSERT_EQUALS("4026531840U", tokenlist.front()->str());
     }
 
     void line1() const {
