@@ -3221,3 +3221,25 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
     std::for_each(ints1.begin(), ints2.end(), [](int i) {});
 
 }
+
+
+void getline() {
+    // #837
+    std::ifstream in("test1.txt");
+
+    char cBuf[10];
+    // cppcheck-suppress bufferAccessOutOfBounds
+    in.getline(cBuf, 100);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    in.read(cBuf, 100);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    in.readsome(cBuf, 100);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    in.get(cBuf, 100);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    in.get(cBuf, 100, 'a');
+    // cppcheck-suppress bufferAccessOutOfBounds
+    in.getline(cBuf, 100, 'a');
+
+    in.close();
+}
