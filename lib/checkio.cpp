@@ -1197,7 +1197,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                     if (argInfo.isArrayOrPointer() && !argInfo.element) {
                                         // use %p on pointers and arrays
                                         invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                    } else if (!argInfo.typeToken->isUnsigned() && argInfo.typeToken->str() != "bool") {
+                                    } else if (!argInfo.typeToken->isUnsigned() && !Token::Match(argInfo.typeToken, "bool|_Bool")) {
                                         if (!(!argInfo.isArrayOrPointer() && argInfo.element))
                                             invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                     } else if (!Token::Match(argInfo.typeToken, "bool|char|short|long|int")) {

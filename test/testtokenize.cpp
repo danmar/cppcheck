@@ -55,7 +55,6 @@ private:
         TEST_CASE(tokenize17);  // #2759
         TEST_CASE(tokenize18);  // tokenize "(X&&Y)" into "( X && Y )" instead of "( X & & Y )"
         TEST_CASE(tokenize19);  // #3006 (segmentation fault)
-        TEST_CASE(tokenize20);  // replace C99 _Bool => bool
         TEST_CASE(tokenize21);  // tokenize 0x0E-7
         TEST_CASE(tokenize22);  // special marker $ from preprocessor
         TEST_CASE(tokenize25);  // #4239 (segmentation fault)
@@ -711,10 +710,6 @@ private:
                                            "        v[dim]->f();\n"
                                            "    }\n"
                                            "};"));
-    }
-
-    void tokenize20() { // replace C99 _Bool => bool
-        ASSERT_EQUALS("bool a ; a = true ;", tokenizeAndStringify("_Bool a = true;"));
     }
 
     void tokenize21() { // tokenize 0x0E-7

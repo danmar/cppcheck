@@ -3953,7 +3953,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
             // check for a match with a boolean literal
             else if (!funcarg->isArrayOrPointer() && Token::Match(arguments[j], "%bool% ,|)")) {
-                if (funcarg->typeStartToken()->str() == "bool")
+                if (Token::Match(funcarg->typeStartToken(), "bool|_Bool"))
                     same++;
                 else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
                     fallback1++;
@@ -4341,7 +4341,7 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
 
 namespace {
     const std::set<std::string> c_keywords = make_container< std::set<std::string> >() <<
-            "auto" << "break" << "case" << "char" << "const" << "continue" << "default" << "do" <<
+            "_Bool" << "auto" << "break" << "case" << "char" << "const" << "continue" << "default" << "do" <<
             "double" << "else" << "enum" << "extern" << "float" << "for" << "goto" << "if" << "inline" <<
             "int" << "long" << "register" << "restrict" << "return" << "short" << "signed" << "sizeof" <<
             "static" << "struct" << "switch" << "typedef" << "union" << "unsigned" << "void" << "volatile" <<
@@ -4403,23 +4403,19 @@ static void setValueType(Token *tok, const Enumerator &enumerator, bool cpp, Val
     valuetype.typeScope = enumerator.scope;
     const Token * type = enumerator.scope->enumType;
     if (type) {
-        if (type->isSigned())
-            valuetype.sign = ValueType::Sign::SIGNED;
-        else if (type->isUnsigned())
-            valuetype.sign = ValueType::Sign::UNSIGNED;
-        else
-            valuetype.sign = defaultSignedness;
-
-        if (type->str() == "char")
-            valuetype.type = ValueType::Type::CHAR;
-        else if (type->str() == "short")
-            valuetype.type = ValueType::Type::SHORT;
-        else if (type->str() == "int")
-            valuetype.type = ValueType::Type::INT;
-        else if (type->str() == "long")
-            valuetype.type = type->isLong() ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
-        else if (type->isStandardType()) {
+        valuetype.type = ValueType::typeFromString(type->str(), type->isLong());
+        if (valuetype.type == ValueType::Type::UNKNOWN_TYPE && type->isStandardType())
             valuetype.fromLibraryType(type->str(), settings);
+
+        if (valuetype.isIntegral()) {
+            if (type->isSigned())
+                valuetype.sign = ValueType::Sign::SIGNED;
+            else if (type->isUnsigned())
+                valuetype.sign = ValueType::Sign::UNSIGNED;
+            else if (valuetype.type == ValueType::Type::CHAR)
+                valuetype.sign = defaultSignedness;
+            else
+                valuetype.sign = ValueType::Sign::SIGNED;
         }
 
         setValueType(tok, valuetype, cpp, defaultSignedness, settings);
@@ -4636,7 +4632,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 valuetype->sign = ValueType::Sign::UNSIGNED;
             else
                 valuetype->sign = defaultSignedness;
-            if (ValueType::Type t = ValueType::typeFromString(enum_type->str(), enum_type->isLong()))
+            ValueType::Type t = ValueType::typeFromString(enum_type->str(), enum_type->isLong());
+            if (t != ValueType::Type::UNKNOWN_TYPE)
                 valuetype->type = t;
             else if (enum_type->isStandardType())
                 valuetype->fromLibraryType(enum_type->str(), settings);
@@ -4878,7 +4875,7 @@ ValueType::Type ValueType::typeFromString(const std::string &typestr, bool longT
 {
     if (typestr == "void")
         return ValueType::Type::VOID;
-    if (typestr == "bool")
+    if (typestr == "bool" || typestr == "_Bool")
         return ValueType::Type::BOOL;
     if (typestr== "char")
         return ValueType::Type::CHAR;

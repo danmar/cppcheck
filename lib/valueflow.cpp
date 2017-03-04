@@ -1981,7 +1981,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             std::list<ValueFlow::Value> values = tok->astOperand2()->values;
             const bool constValue = tok->astOperand2()->isNumber();
 
-            if (tokenlist->isCPP() && Token::simpleMatch(var->typeStartToken(), "bool")) {
+            if (tokenlist->isCPP() && Token::Match(var->typeStartToken(), "bool|_Bool")) {
                 std::list<ValueFlow::Value>::iterator it;
                 for (it = values.begin(); it != values.end(); ++it) {
                     if (it->isIntValue())

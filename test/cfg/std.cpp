@@ -3223,7 +3223,8 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
 }
 
 
-void getline() {
+void getline()
+{
     // #837
     std::ifstream in("test1.txt");
 

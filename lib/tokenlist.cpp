@@ -136,8 +136,6 @@ void TokenList::addtoken(std::string str, const unsigned int lineno, const unsig
             (str[2] >= '8'))  // includes A-F and a-f
             suffix = "U";
         str = MathLib::value(str).str() + suffix;
-    } else if (str.compare(0, 5, "_Bool") == 0) {
-        str = "bool";
     }
 
     if (_back) {

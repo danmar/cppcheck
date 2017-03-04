@@ -34,7 +34,15 @@ static const CWE CWE571(571U);  // Expression is Always True
 static const CWE CWE587(587U);  // Assignment of a Fixed Address to a Pointer
 static const CWE CWE704(704U);  // Incorrect Type Conversion or Cast
 
-//---------------------------------------------------------------------------
+static bool isBool(const Variable* var)
+{
+    return (var && Token::Match(var->typeEndToken(), "bool|_Bool"));
+}
+static bool isNonBoolStdType(const Variable* var)
+{
+    return (var && var->typeEndToken()->isStandardType() && !Token::Match(var->typeEndToken(), "bool|_Bool"));
+}
+
 //---------------------------------------------------------------------------
 void CheckBool::checkIncrementBoolean()
 {
@@ -48,7 +56,7 @@ void CheckBool::checkIncrementBoolean()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% ++")) {
                 const Variable *var = tok->variable();
-                if (var && var->typeEndToken()->str() == "bool")
+                if (isBool(var))
                     incrementBooleanError(tok);
             }
         }
@@ -88,13 +96,13 @@ void CheckBool::checkBitwiseOnBoolean()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "(|.|return|&&|%oror%|throw|, %var% [&|]")) {
                 const Variable *var = tok->next()->variable();
-                if (var && var->typeEndToken()->str() == "bool") {
+                if (isBool(var)) {
                     bitwiseOnBooleanError(tok->next(), var->name(), tok->strAt(2) == "&" ? "&&" : "||");
                     tok = tok->tokAt(2);
                 }
             } else if (Token::Match(tok, "[&|] %var% )|.|return|&&|%oror%|throw|,") && (!tok->previous() || !tok->previous()->isExtendedOp() || tok->strAt(-1) == ")" || tok->strAt(-1) == "]")) {
                 const Variable *var = tok->next()->variable();
-                if (var && var->typeEndToken()->str() == "bool") {
+                if (isBool(var)) {
                     bitwiseOnBooleanError(tok->next(), var->name(), tok->str() == "&" ? "&&" : "||");
                     tok = tok->tokAt(2);
                 }
@@ -115,14 +123,6 @@ void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &varna
 //    if (!x==3) <- Probably meant to be "x!=3"
 //---------------------------------------------------------------------------
 
-static bool isBool(const Variable* var)
-{
-    return (var && var->typeEndToken()->str() == "bool");
-}
-static bool isNonBoolStdType(const Variable* var)
-{
-    return (var && var->typeEndToken()->isStandardType() && var->typeEndToken()->str() != "bool");
-}
 void CheckBool::checkComparisonOfBoolWithInt()
 {
     if (!_settings->isEnabled("warning") || !_tokenizer->isCPP())
@@ -167,7 +167,7 @@ static bool tokenIsFunctionReturningBool(const Token* tok)
 {
     const Function* func = tok->function();
     if (func && Token::Match(tok, "%name% (")) {
-        if (func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
+        if (func->tokenDef && Token::Match(func->tokenDef->previous(), "bool|_Bool")) {
             return true;
         }
     }
@@ -288,7 +288,6 @@ void CheckBool::comparisonOfBoolWithBoolError(const Token *tok, const std::strin
                 " operator could cause unexpected results.", CWE398, false);
 }
 
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CheckBool::checkAssignBoolToPointer()
 {

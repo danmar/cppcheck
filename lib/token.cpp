@@ -113,10 +113,20 @@ void Token::update_property_info()
     update_property_isStandardType();
 }
 
-namespace {
-    const std::set<std::string> stdTypes = make_container<std::set<std::string> >() <<
-                                           "bool" << "char" << "char16_t" << "char32_t" << "double" << "float" << "int" << "long" << "short" << "size_t" << "void" << "wchar_t";
-}
+static const std::set<std::string> stdTypes =
+    make_container<std::set<std::string> >() << "bool"
+    << "_Bool"
+    << "char"
+    << "char16_t"
+    << "char32_t"
+    << "double"
+    << "float"
+    << "int"
+    << "long"
+    << "short"
+    << "size_t"
+    << "void"
+    << "wchar_t";
 
 void Token::update_property_isStandardType()
 {

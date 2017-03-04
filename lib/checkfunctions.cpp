@@ -105,7 +105,7 @@ void CheckFunctions::invalidFunctionUsage()
                     while (Token::Match(var, ".|::"))
                         var = var->astOperand2();
                     if (Token::Match(top, "%comp%|%oror%|&&|!|true|false") ||
-                        (var && var->variable() && Token::simpleMatch(var->variable()->typeStartToken(), "bool"))) {
+                        (var && var->variable() && Token::Match(var->variable()->typeStartToken(), "bool|_Bool"))) {
                         if (_settings->library.isboolargbad(functionToken, argnr))
                             invalidFunctionArgBoolError(top, functionToken->str(), argnr);
 

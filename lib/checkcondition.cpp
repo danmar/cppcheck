@@ -241,7 +241,7 @@ static bool inBooleanFunction(const Token *tok)
             const Token *ret = func->retDef;
             while (Token::Match(ret, "static|const"))
                 ret = ret->next();
-            return ret && (ret->str() == "bool");
+            return Token::Match(ret, "bool|_Bool");
         }
     }
     return false;
@@ -257,7 +257,7 @@ void CheckCondition::checkBadBitmaskCheck()
             const Token* parent = tok->astParent();
             const bool isBoolean = Token::Match(parent, "&&|%oror%") ||
                                    (parent->str() == "?" && parent->astOperand1() == tok) ||
-                                   (parent->str() == "=" && parent->astOperand2() == tok && parent->astOperand1() && parent->astOperand1()->variable() && parent->astOperand1()->variable()->typeStartToken()->str() == "bool") ||
+                                   (parent->str() == "=" && parent->astOperand2() == tok && parent->astOperand1() && parent->astOperand1()->variable() && Token::Match(parent->astOperand1()->variable()->typeStartToken(), "bool|_Bool")) ||
                                    (parent->str() == "(" && Token::Match(parent->astOperand1(), "if|while")) ||
                                    (parent->str() == "return" && parent->astOperand1() == tok && inBooleanFunction(tok));
 
