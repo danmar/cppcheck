@@ -4743,14 +4743,15 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
                     type = ValueType::Type::LONGDOUBLE;
                 ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, type, 0U), cpp, defsign, settings);
             } else if (MathLib::isInt(tok->str())) {
-                ValueType::Sign sign = ValueType::Sign::SIGNED;
+                bool unsignedSuffix = (tok->str().find_last_of("uU") != std::string::npos);
+                ValueType::Sign sign = unsignedSuffix ? ValueType::Sign::UNSIGNED : ValueType::Sign::SIGNED;
                 ValueType::Type type;
                 const MathLib::bigint value = MathLib::toLongNumber(tok->str());
                 if (settings->platformType == cppcheck::Platform::Unspecified)
                     type = ValueType::Type::INT;
-                else if (settings->isIntValue(value))
+                else if (settings->isIntValue(unsignedSuffix ? (value >> 1) : value))
                     type = ValueType::Type::INT;
-                else if (settings->isLongValue(value))
+                else if (settings->isLongValue(unsignedSuffix ? (value >> 1) : value))
                     type = ValueType::Type::LONG;
                 else
                     type = ValueType::Type::LONGLONG;
