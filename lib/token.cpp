@@ -117,8 +117,6 @@ static const std::set<std::string> stdTypes =
     make_container<std::set<std::string> >() << "bool"
     << "_Bool"
     << "char"
-    << "char16_t"
-    << "char32_t"
     << "double"
     << "float"
     << "int"

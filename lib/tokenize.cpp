@@ -1779,8 +1779,6 @@ void Tokenizer::fillTypeSizes()
 {
     _typeSize.clear();
     _typeSize["char"] = 1;
-    _typeSize["char16_t"] = 2;
-    _typeSize["char32_t"] = 4;
     _typeSize["_Bool"] = _settings->sizeof_bool;
     _typeSize["bool"] = _settings->sizeof_bool;
     _typeSize["short"] = _settings->sizeof_short;

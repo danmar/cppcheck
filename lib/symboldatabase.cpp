@@ -4349,7 +4349,7 @@ namespace {
     const std::set<std::string> cpp_keywords = make_container< std::set<std::string> >() <<
             c_keywords <<
             "alignas" << "alignof" << "and" << "and_eq" << "asm" << "auto" << "bitand" << "bitor" << "bool" <<
-            "break" << "case" << "catch" << "char" << "char16_t" << "char32_t" << "class" << "compl" <<
+            "break" << "case" << "catch" << "char" << "class" << "compl" <<
             "concept" << "const" << "constexpr" << "const_cast" << "continue" << "decltype" << "default" <<
             "delete" << "do" << "double" << "dynamic_cast" << "else" << "enum" << "explicit" << "export" <<
             "extern" << "false" << "float" << "for" << "friend" << "goto" << "if" << "inline" << "int" << "long" <<
