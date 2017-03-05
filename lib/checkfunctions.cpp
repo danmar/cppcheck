@@ -160,7 +160,10 @@ void CheckFunctions::checkIgnoredReturnValue()
             if (Token::Match(tok, "%var% (| {"))
                 tok = tok->linkAt(1);
 
-            if (tok->varId() || !Token::Match(tok, "%name% (") || tok->strAt(-1) == ".")
+            if (tok->varId() || !Token::Match(tok, "%name% ("))
+                continue;
+
+            if (tok->next()->astParent())
                 continue;
 
             if (!tok->scope()->isExecutable()) {
@@ -171,11 +174,9 @@ void CheckFunctions::checkIgnoredReturnValue()
             const Token* parent = tok;
             while (parent->astParent() && parent->astParent()->str() == "::")
                 parent = parent->astParent();
-            if (tok->next()->astOperand1() != parent)
-                continue;
 
             if (!tok->next()->astParent() && (!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.isUseRetVal(tok))
-                ignoredReturnValueError(tok, tok->str());
+                ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
         }
     }
 }
