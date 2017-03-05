@@ -4534,6 +4534,26 @@ static void setValueType(Token *tok, const ValueType &valuetype, bool cpp, Value
             setAutoTokenProperties(autoToken);
             setValueType(parent->previous(), vt, cpp, defaultSignedness, settings);
             const_cast<Variable *>(parent->previous()->variable())->setFlags(vt);
+        } else if (vt2->container) {
+            // TODO: Determine exact type of RHS
+            const Token *typeStart = parent->astOperand2();
+            while (typeStart) {
+                if (typeStart->variable())
+                    typeStart = typeStart->variable()->typeStartToken();
+                else if (typeStart->str() == "(" && typeStart->previous() && typeStart->previous()->function())
+                    typeStart = typeStart->previous()->function()->retDef;
+                else
+                    break;
+            }
+            // TODO: Get type better
+            if (Token::Match(typeStart, "std :: %type% < %type% *| *| >")) {
+                ValueType vt;
+                if (parsedecl(typeStart->tokAt(4), &vt, defaultSignedness, settings)) {
+                    setValueType(autoToken, vt, cpp, defaultSignedness, settings);
+                    setAutoTokenProperties(autoToken);
+                    setValueType(parent->previous(), vt, cpp, defaultSignedness, settings);
+                }
+            }
         }
     }
 
