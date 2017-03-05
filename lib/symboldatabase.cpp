@@ -4861,10 +4861,13 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
         } else if (tok->enumerator()) {
             setValueType(tok, *tok->enumerator(), cpp, defsign, settings);
         } else if (cpp && tok->str() == "new") {
-            if (Token::Match(tok, "new %type% ;|[")) {
+            if (Token::Match(tok, "new %type% ;|[") ||
+                Token::Match(tok, "new ( std| ::| nothrow ) %type% ;|[")) {
                 ValueType vt;
                 vt.pointer = 1;
-                const Token * const typeTok = tok->next();
+                const Token * typeTok = tok->next();
+                if (typeTok->str() == "(")
+                    typeTok = typeTok->link()->next();
                 vt.type = ValueType::typeFromString(typeTok->str(), typeTok->isLong());
                 if (vt.type == ValueType::Type::UNKNOWN_TYPE)
                     vt.fromLibraryType(typeTok->str(), settings);
