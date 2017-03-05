@@ -4648,7 +4648,16 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->sign = ValueType::Sign::UNSIGNED;
         if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
-        else if (ValueType::Type t = ValueType::typeFromString(type->str(), type->isLong()))
+        else if (Token::Match(type, "%name% :: %name%")) {
+            std::string typestr;
+            const Token *end = type;
+            while (Token::Match(end, "%name% :: %name%")) {
+                typestr += end->str() + "::";
+                end = end->tokAt(2);
+            }
+            if (valuetype->fromLibraryType(typestr + end->str(), settings))
+                type = end;
+        } else if (ValueType::Type t = ValueType::typeFromString(type->str(), type->isLong()))
             valuetype->type = t;
         else if (type->str() == "auto") {
             if (!type->valueType())
