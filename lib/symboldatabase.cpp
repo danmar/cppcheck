@@ -4864,17 +4864,23 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
             const Token *typeTok = tok->next();
             if (Token::Match(typeTok, "( std| ::| nothrow )"))
                 typeTok = typeTok->link()->next();
+            std::string typestr;
+            while (Token::Match(typeTok, "%name% :: %name%")) {
+                typestr += typeTok->str() + "::";
+                typeTok = typeTok->tokAt(2);
+            }
             if (!Token::Match(typeTok, "%type% ;|[|("))
                 return;
+            typestr += typeTok->str();
             ValueType vt;
             vt.pointer = 1;
             if (typeTok->type() && typeTok->type()->classScope) {
                 vt.type = ValueType::Type::NONSTD;
                 vt.typeScope = typeTok->type()->classScope;
             } else {
-                vt.type = ValueType::typeFromString(typeTok->str(), typeTok->isLong());
+                vt.type = ValueType::typeFromString(typestr, typeTok->isLong());
                 if (vt.type == ValueType::Type::UNKNOWN_TYPE)
-                    vt.fromLibraryType(typeTok->str(), settings);
+                    vt.fromLibraryType(typestr, settings);
                 if (vt.type == ValueType::Type::UNKNOWN_TYPE)
                     return;
                 if (typeTok->isUnsigned())

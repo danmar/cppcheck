@@ -4289,13 +4289,14 @@ private:
             settingsWin64.platformType = Settings::Win64;
             const Library::PodType u32 = { 4, 'u' };
             settingsWin64.library.podtypes["u32"] = u32;
-            settingsWin64.library.podtypes["xyz::u32"] = u32;
+            settingsWin64.library.podtypes["xyz::x"] = u32;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("u32", &settingsWin64));
-            ASSERT_EQUALS(true, vt.fromLibraryType("xyz::u32", &settingsWin64));
+            ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", &settingsWin64));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new u32[10];", "new", "test.cpp", &settingsWin64));
-            ASSERT_EQUALS("unsigned int", typeOf("; x = (xyz::u32)12;", "(", "test.cpp", &settingsWin64));
+            ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new xyz::x[10];", "new", "test.cpp", &settingsWin64));
+            ASSERT_EQUALS("unsigned int", typeOf("; x = (xyz::x)12;", "(", "test.cpp", &settingsWin64));
         }
         {
             // PlatformType
