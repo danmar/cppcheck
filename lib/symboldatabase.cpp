@@ -4657,8 +4657,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             }
             if (valuetype->fromLibraryType(typestr + end->str(), settings))
                 type = end;
-        } else if (ValueType::Type t = ValueType::typeFromString(type->str(), type->isLong()))
-            valuetype->type = t;
+        } else if (ValueType::Type::UNKNOWN_TYPE != ValueType::typeFromString(type->str(), type->isLong()))
+            valuetype->type = ValueType::typeFromString(type->str(), type->isLong());
         else if (type->str() == "auto") {
             if (!type->valueType())
                 return nullptr;
