@@ -4638,7 +4638,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         } else
             valuetype->type = ValueType::Type::INT;
     } else
-        valuetype->type = ValueType::Type::NONSTD;
+        valuetype->type = ValueType::Type::RECORD;
     while (Token::Match(type, "%name%|*|&|::") && !type->variable()) {
         if (type->isSigned())
             valuetype->sign = ValueType::Sign::SIGNED;
@@ -4649,7 +4649,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         else if (Token::Match(type, "%name% :: %name%")) {
             const Library::Container *container = settings->library.detectContainer(type);
             if (container) {
-                valuetype->type = ValueType::Type::NONSTD;
+                valuetype->type = ValueType::Type::CONTAINER;
                 valuetype->container = container;
             } else {
                 std::string typestr;
@@ -4677,9 +4677,9 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 type = type->next();
             break;
         } else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum"))
-            valuetype->type = ValueType::Type::NONSTD;
+            valuetype->type = type->str() == "struct" ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
         else if (!valuetype->typeScope && type->type() && type->type()->classScope) {
-            valuetype->type = ValueType::Type::NONSTD;
+            valuetype->type = ValueType::Type::RECORD;
             valuetype->typeScope = type->type()->classScope;
         } else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
             return nullptr;
@@ -4843,8 +4843,27 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
             // library function
             else if (tok->previous()) {
                 const std::string& typestr(settings->library.returnValueType(tok->previous()));
-                if (typestr.empty() || typestr == "iterator")
+                if (typestr.empty() || typestr == "iterator") {
+                    if (Token::simpleMatch(tok->astOperand1(), ".") &&
+                        tok->astOperand1()->astOperand1() &&
+                        tok->astOperand1()->astOperand2() &&
+                        tok->astOperand1()->astOperand1()->valueType() &&
+                        tok->astOperand1()->astOperand1()->valueType()->container) {
+                        const Library::Container *cont = tok->astOperand1()->astOperand1()->valueType()->container;
+                        std::map<std::string, Library::Container::Function>::const_iterator it = cont->functions.find(tok->astOperand1()->astOperand2()->str());
+                        if (it != cont->functions.end()) {
+                            if (it->second.yield == Library::Container::Yield::START_ITERATOR ||
+                                it->second.yield == Library::Container::Yield::END_ITERATOR ||
+                                it->second.yield == Library::Container::Yield::ITERATOR) {
+                                ValueType vt;
+                                vt.type = ValueType::Type::ITERATOR;
+                                vt.container = cont;
+                                setValueType(tok, vt, cpp, defsign, settings);
+                            }
+                        }
+                    }
                     continue;
+                }
                 TokenList tokenList(settings);
                 std::istringstream istr(typestr+";");
                 if (tokenList.createTokens(istr)) {
@@ -4873,7 +4892,7 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
             ValueType vt;
             vt.pointer = 1;
             if (typeTok->type() && typeTok->type()->classScope) {
-                vt.type = ValueType::Type::NONSTD;
+                vt.type = ValueType::Type::RECORD;
                 vt.typeScope = typeTok->type()->classScope;
             } else {
                 vt.type = ValueType::typeFromString(typestr, typeTok->isLong());
@@ -4999,7 +5018,7 @@ std::string ValueType::str() const
         ret += " double";
     else if (type == LONGDOUBLE)
         ret += " long double";
-    else if (type == NONSTD && typeScope) {
+    else if ((type == ValueType::Type::NONSTD || type == ValueType::Type::RECORD) && typeScope) {
         std::string className(typeScope->className);
         const Scope *scope = typeScope->nestedIn;
         while (scope && scope->type != Scope::eGlobal) {
@@ -5008,8 +5027,10 @@ std::string ValueType::str() const
             scope = scope->nestedIn;
         }
         ret += ' ' + className;
-    } else if (type == NONSTD && container) {
+    } else if (type == ValueType::Type::CONTAINER && container) {
         ret += " container(" + container->startPattern + ')';
+    } else if (type == ValueType::Type::ITERATOR && container) {
+        ret += " iterator(" + container->startPattern + ')';
     }
     for (unsigned int p = 0; p < pointer; p++) {
         ret += " *";
