@@ -4309,6 +4309,9 @@ private:
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
         }
 
+        // new
+        ASSERT_EQUALS("C *", typeOf("class C {}; x = new C();", "new"));
+
         // auto variables
         ASSERT_EQUALS("signed int", typeOf("; auto x = 3;", "x"));
         ASSERT_EQUALS("signed int *", typeOf("; auto *p = (int *)0;", "p"));

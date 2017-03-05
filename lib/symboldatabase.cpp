@@ -4861,25 +4861,30 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens, bool cpp, const Sett
         } else if (tok->enumerator()) {
             setValueType(tok, *tok->enumerator(), cpp, defsign, settings);
         } else if (cpp && tok->str() == "new") {
-            if (Token::Match(tok, "new %type% ;|[") ||
-                Token::Match(tok, "new ( std| ::| nothrow ) %type% ;|[")) {
-                ValueType vt;
-                vt.pointer = 1;
-                const Token * typeTok = tok->next();
-                if (typeTok->str() == "(")
-                    typeTok = typeTok->link()->next();
+            const Token *typeTok = tok->next();
+            if (Token::Match(typeTok, "( std| ::| nothrow )"))
+                typeTok = typeTok->link()->next();
+            if (!Token::Match(typeTok, "%type% ;|[|("))
+                return;
+            ValueType vt;
+            vt.pointer = 1;
+            if (typeTok->type() && typeTok->type()->classScope) {
+                vt.type = ValueType::Type::NONSTD;
+                vt.typeScope = typeTok->type()->classScope;
+            } else {
                 vt.type = ValueType::typeFromString(typeTok->str(), typeTok->isLong());
                 if (vt.type == ValueType::Type::UNKNOWN_TYPE)
                     vt.fromLibraryType(typeTok->str(), settings);
+                if (vt.type == ValueType::Type::UNKNOWN_TYPE)
+                    return;
                 if (typeTok->isUnsigned())
                     vt.sign = ValueType::Sign::UNSIGNED;
                 else if (typeTok->isSigned())
                     vt.sign = ValueType::Sign::SIGNED;
                 if (vt.sign == ValueType::Sign::UNKNOWN_SIGN && vt.isIntegral())
                     vt.sign = (vt.type == ValueType::Type::CHAR) ? defsign : ValueType::Sign::SIGNED;
-                if (vt.type != ValueType::Type::UNKNOWN_TYPE)
-                    setValueType(tok, vt, cpp, defsign, settings);
             }
+            setValueType(tok, vt, cpp, defsign, settings);
         }
     }
 }
