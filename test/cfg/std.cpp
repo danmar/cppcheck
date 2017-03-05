@@ -3244,3 +3244,21 @@ void getline()
 
     in.close();
 }
+
+void stdstring() {
+    std::string s;
+
+    // test that return type from s.empty() is bool
+    // cppcheck-suppress assignBoolToPointer
+    char *p = s.empty();
+    (void)p;
+
+    // cppcheck-suppress ignoredReturnValue
+    s.size();
+}
+
+void stdvector() {
+    std::vector<int> v;
+    // cppcheck-suppress ignoredReturnValue
+    v.size();
+}
