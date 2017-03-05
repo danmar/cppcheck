@@ -4649,14 +4649,21 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
         else if (Token::Match(type, "%name% :: %name%")) {
-            std::string typestr;
-            const Token *end = type;
-            while (Token::Match(end, "%name% :: %name%")) {
-                typestr += end->str() + "::";
-                end = end->tokAt(2);
+            const Library::Container *container = settings->library.detectContainer(type);
+            if (container) {
+                valuetype->type = ValueType::Type::NONSTD;
+                valuetype->container = container;
+            } else {
+                std::string typestr;
+                const Token *end = type;
+                while (Token::Match(end, "%name% :: %name%")) {
+                    typestr += end->str() + "::";
+                    end = end->tokAt(2);
+                }
+                typestr += end->str();
+                if (valuetype->fromLibraryType(typestr, settings))
+                    type = end;
             }
-            if (valuetype->fromLibraryType(typestr + end->str(), settings))
-                type = end;
         } else if (ValueType::Type::UNKNOWN_TYPE != ValueType::typeFromString(type->str(), type->isLong()))
             valuetype->type = ValueType::typeFromString(type->str(), type->isLong());
         else if (type->str() == "auto") {
@@ -4989,6 +4996,8 @@ std::string ValueType::str() const
             scope = scope->nestedIn;
         }
         ret += ' ' + className;
+    } else if (type == NONSTD && container) {
+        ret += " container(" + container->startPattern + ')';
     }
     for (unsigned int p = 0; p < pointer; p++) {
         ret += " *";
