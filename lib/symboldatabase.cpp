@@ -5001,6 +5001,18 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
         if (platformType->_const_ptr)
             constness = 1;
         return true;
+    } else if (!podtype && (typestr == "size_t" || typestr == "std::size_t")) {
+        originalTypeName = "size_t";
+        sign = ValueType::UNSIGNED;
+        if (settings->sizeof_size_t == settings->sizeof_long)
+            type = ValueType::Type::LONG;
+        else if (settings->sizeof_size_t == settings->sizeof_long_long)
+            type = ValueType::Type::LONGLONG;
+        else if (settings->sizeof_size_t == settings->sizeof_int)
+            type = ValueType::Type::INT;
+        else
+            type = ValueType::Type::UNKNOWN_INT;
+        return true;
     }
 
     return false;
