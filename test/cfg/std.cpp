@@ -3245,13 +3245,15 @@ void getline()
     in.close();
 }
 
-void stdstring() {
+void stdstring()
+{
     std::string s;
     // cppcheck-suppress ignoredReturnValue
     s.size();
 }
 
-void stdvector() {
+void stdvector()
+{
     std::vector<int> v;
     // cppcheck-suppress ignoredReturnValue
     v.size();
