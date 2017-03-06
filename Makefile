@@ -40,7 +40,7 @@ ifdef COMSPEC
         CPPCHK_GLIBCXX_DEBUG=
     endif # !CPPCHK_GLIBCXX_DEBUG
 
-    ifeq ($(MSYSTEM),MINGW32)
+    ifeq ($(MSYSTEM),MINGW32 MINGW64)
         LDFLAGS=-lshlwapi
     else
         RDYNAMIC=-lshlwapi
