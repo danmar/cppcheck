@@ -238,7 +238,7 @@ int main(int argc, char **argv)
          << "        CPPCHK_GLIBCXX_DEBUG=\n"
          << "    endif # !CPPCHK_GLIBCXX_DEBUG\n"
          << "\n"
-         << "    ifeq ($(MSYSTEM),MINGW32)\n"
+         << "    ifeq ($(MSYSTEM),MINGW32 MINGW64)\n"
          << "        LDFLAGS=-lshlwapi\n"
          << "    else\n"
          << "        RDYNAMIC=-lshlwapi\n"
