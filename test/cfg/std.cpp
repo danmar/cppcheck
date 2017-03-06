@@ -25,6 +25,7 @@
 #include <cinttypes>
 #include <istream>
 #include <fstream>
+#include <vector>
 
 void bufferAccessOutOfBounds(void)
 {
