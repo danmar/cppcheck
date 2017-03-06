@@ -3247,12 +3247,6 @@ void getline()
 
 void stdstring() {
     std::string s;
-
-    // test that return type from s.empty() is bool
-    // cppcheck-suppress assignBoolToPointer
-    char *p = s.empty();
-    (void)p;
-
     // cppcheck-suppress ignoredReturnValue
     s.size();
 }
