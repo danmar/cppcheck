@@ -1455,7 +1455,7 @@ void CheckOther::checkPassByReference()
         const Token* const tok = var->typeStartToken();
         if (var->isStlStringType()) {
             ;
-        } else if (var->isStlType() && Token::Match(tok, "std :: %type% <") && !Token::simpleMatch(tok->linkAt(3), "> ::") && !Token::Match(tok->tokAt(2), "initializer_list|shared_ptr|weak_ptr|unique_ptr|auto_ptr")) {
+        } else if (var->isStlType() && Token::Match(tok, "std :: %type% <") && !Token::simpleMatch(tok->linkAt(3), "> ::") && !Token::Match(tok->tokAt(2), "initializer_list|weak_ptr|auto_ptr")) {
             ;
         } else if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
             // Ensure that it is a large object.
