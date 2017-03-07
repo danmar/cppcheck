@@ -1436,6 +1436,26 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(std::string str) {\n"
+              "    std::string s2 = str;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
+
+        check("void f(std::string str) {\n"
+              "    std::string& s2 = str;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string str) {\n"
+              "    const std::string& s2 = str;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
+
+        check("void f(std::string str) {\n"
+              "    str = \"\";\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string str) {\n"
               "    foo(str);\n" // It could be that foo takes str as non-const-reference
               "}");
         ASSERT_EQUALS("", errout.str());

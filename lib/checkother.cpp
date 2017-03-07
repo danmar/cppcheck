@@ -1509,7 +1509,15 @@ void CheckOther::checkPassByReference()
                         }
                     } else if (parent->isConstOp())
                         ;
-                    else if (Token::Match(tok2, "%var% . %name% (")) {
+                    else if (parent->isAssignmentOp()) {
+                        if (parent->astOperand1() == tok2)
+                            isConst = false;
+                        else if (parent->astOperand1()->str() == "&") {
+                            const Variable* assignedVar = parent->previous()->variable();
+                            if (!assignedVar || !assignedVar->isConst())
+                                isConst = false;
+                        }
+                    } else if (Token::Match(tok2, "%var% . %name% (")) {
                         const Function* func = tok2->tokAt(2)->function();
                         if (func && (func->isConst() || func->isStatic()))
                             ;
