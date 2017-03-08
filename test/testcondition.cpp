@@ -1810,7 +1810,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // #7750 warn about number and char literals in boolean expressions
+        // #7750 warn about char literals in boolean expressions
         check("void f() {\n"
               "  if('a'){}\n"
               "  if(L'b'){}\n"
@@ -1819,7 +1819,6 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition ''a'' is always true\n"
                       "[test.cpp:3]: (style) Condition ''b'' is always true\n"
-                      "[test.cpp:4]: (style) Condition '1' is always true\n"
                       "[test.cpp:4]: (style) Condition ''c'' is always true\n"
                       "[test.cpp:5]: (style) Condition ''d'' is always true\n", errout.str());
     }

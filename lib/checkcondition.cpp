@@ -1000,6 +1000,8 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
+            if (Token::Match(tok, "[01]"))
+                continue;
 
             // Don't warn in assertions. Condition is often 'always true' by intention.
             // If platform,defines,etc cause 'always false' then that is not dangerous neither.
