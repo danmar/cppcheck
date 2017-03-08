@@ -156,8 +156,8 @@ void CheckFunctions::checkIgnoredReturnValue()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            // c++11 initialization
-            if (Token::Match(tok, "%var% (| {"))
+            // skip c++11 initialization, ({...})
+            if (Token::Match(tok, "%var%|( {"))
                 tok = tok->linkAt(1);
 
             if (tok->varId() || !Token::Match(tok, "%name% ("))
