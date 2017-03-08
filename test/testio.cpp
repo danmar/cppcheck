@@ -19,7 +19,7 @@
 #include "checkio.h"
 #include "testsuite.h"
 #include "tokenize.h"
-#include <cstring>
+
 
 class TestIO : public TestFixture {
 public:
@@ -746,7 +746,7 @@ private:
 
 
 #define TEST_SCANF_CODE(format, type)\
-    "void f() { " type " x; scanf(\"" format "\", &x); }"
+    "void f(){" type " x; scanf(\"" format "\", &x);}"
 
 #define TEST_SCANF_ERR(format, formatStr, type)\
     "[test.cpp:1]: (warning) " format " in format string (no. 1) requires '" formatStr " *' but the argument type is '" type " *'.\n"

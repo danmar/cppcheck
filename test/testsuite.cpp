@@ -26,7 +26,6 @@
 
 std::ostringstream errout;
 std::ostringstream output;
-std::ostringstream warnings;
 
 /**
  * TestRegistry
@@ -66,7 +65,7 @@ std::size_t TestFixture::todos_counter = 0;
 std::size_t TestFixture::succeeded_todos_counter = 0;
 std::set<std::string> TestFixture::missingLibs;
 
-TestFixture::TestFixture(const std::string &_name)
+TestFixture::TestFixture(const char* _name)
     :classname(_name)
     ,quiet_tests(false)
 {
@@ -86,7 +85,6 @@ bool TestFixture::prepareTest(const char testname[])
         } else {
             std::cout << classname << "::" << testname << std::endl;
         }
-        currentTest = classname + "::" + testname;
         return true;
     }
     return false;
@@ -121,7 +119,6 @@ void TestFixture::assert_(const char *filename, unsigned int linenr, bool condit
     if (!condition) {
         ++fails_counter;
         errmsg << filename << ':' << linenr << ": Assertion failed." << std::endl << "_____" << std::endl;
-
     }
 }
 
@@ -137,8 +134,6 @@ void TestFixture::assertEquals(const char *filename, unsigned int linenr, const 
         if (!msg.empty())
             errmsg << "Hint:" << std::endl <<  msg << std::endl;
         errmsg << "_____" << std::endl;
-
-
     }
 }
 void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
@@ -156,20 +151,24 @@ void TestFixture::assertEquals(const char *filename, unsigned int linenr, const 
 
 void TestFixture::assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg) const
 {
-    std::ostringstream ostr1;
-    ostr1 << expected;
-    std::ostringstream ostr2;
-    ostr2 << actual;
-    assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
+    if (expected != actual) {
+        std::ostringstream ostr1;
+        ostr1 << expected;
+        std::ostringstream ostr2;
+        ostr2 << actual;
+        assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
+    }
 }
 
 void TestFixture::assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, const std::string &msg) const
 {
-    std::ostringstream ostr1;
-    ostr1 << expected;
-    std::ostringstream ostr2;
-    ostr2 << actual;
-    assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
+    if (expected != actual) {
+        std::ostringstream ostr1;
+        ostr1 << expected;
+        std::ostringstream ostr2;
+        ostr2 << actual;
+        assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
+    }
 }
 
 void TestFixture::todoAssertEquals(const char *filename, unsigned int linenr,
@@ -265,10 +264,6 @@ std::size_t TestFixture::runTests(const options& args)
         }
     }
 
-    const std::string &w(warnings.str());
-    if (!w.empty()) {
-        std::cout << "\n\n" << w;
-    }
     std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << std::endl;
     std::cout << "Number of todos: " << todos_counter;
     if (succeeded_todos_counter > 0)
