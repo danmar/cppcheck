@@ -1085,7 +1085,6 @@ public:
     void printOut(const char * title = nullptr) const;
     void printVariable(const Variable *var, const char *indent) const;
     void printXml(std::ostream &out) const;
-    std::string access_control_to_string(const AccessControl& access) const;
 
     bool isCPP() const;
 

@@ -2450,6 +2450,20 @@ static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
     return s;
 }
 
+static std::ostream & operator << (std::ostream & s, AccessControl control)
+{
+  s << (control == Public ? "Public" :
+        control == Protected ? "Protected" :
+        control == Private ? "Private" :
+        control == Global ? "Global" :
+        control == Namespace ? "Namespace" :
+        control == Argument ? "Argument" :
+        control == Local ? "Local" :
+        control == Throw ? "Throw" :
+        "Unknown");
+  return s;
+}
+
 static std::string tokenToString(const Token* tok, const Tokenizer* tokenizer)
 {
     std::ostringstream oss;
@@ -2777,7 +2791,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
             if (!scope->functionList.empty()) {
                 out << "      <functionList>" << std::endl;
                 for (std::list<Function>::const_iterator function = scope->functionList.begin(); function != scope->functionList.end(); ++function) {
-                    out << "        <function id=\"" << &*function << "\" tokenDef=\"" << function->tokenDef << "\" name=\"" << ErrorLogger::toxml(function->name()) << "\" access=\"" << access_control_to_string(function->access) << '\"';
+                    out << "        <function id=\"" << &*function << "\" tokenDef=\"" << function->tokenDef << "\" name=\"" << ErrorLogger::toxml(function->name()) << "\" access=\"" << function->access << '\"';
                     if (function->argCount() == 0U)
                         out << "/>" << std::endl;
                     else {
@@ -2819,27 +2833,11 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " isPointer=\""      << var->isPointer() << '\"';
         out << " isReference=\""    << var->isReference() << '\"';
         out << " isStatic=\""       << var->isStatic() << '\"';
-        out << " access=\""         << access_control_to_string(var->_access) << '\"';
+        out << " access=\""         << var->_access << '\"';
         out << "/>" << std::endl;
     }
     out << "  </variables>" << std::endl;
     out << std::resetiosflags(std::ios::boolalpha);
-}
-
-std::string SymbolDatabase::access_control_to_string(const AccessControl& access) const {
-    switch (access) {
-    case Public:      return "Public";
-    case Protected:   return "Protected";
-    case Private:     return "Private";
-    case Global:      return "Global";
-    case Namespace:   return "Namespace";
-    case Argument:    return "Argument";
-    case Local:       return "Local";
-    case Throw:       return "Throw";
-    default:
-      break;
-    }
-    return "";
 }
 
 //---------------------------------------------------------------------------
