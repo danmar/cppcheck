@@ -223,6 +223,7 @@ public:
             formatstr(false),
             strz(false),
             optional(false),
+            variadic(false),
             iteratorInfo() {
         }
 
@@ -232,14 +233,15 @@ public:
         bool         formatstr;
         bool         strz;
         bool         optional;
+        bool         variadic;
         std::string  valid;
 
         class IteratorInfo {
         public:
-            IteratorInfo() : it(false), container(0), first(false), last(false) {}
+            IteratorInfo() : container(0), it(false), first(false), last(false) {}
 
-            bool it;
             int  container;
+            bool it;
             bool first;
             bool last;
         };

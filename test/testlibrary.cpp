@@ -41,6 +41,7 @@ private:
         TEST_CASE(function_match_var);
         TEST_CASE(function_arg);
         TEST_CASE(function_arg_any);
+        TEST_CASE(function_arg_variadic);
         TEST_CASE(function_arg_valid);
         TEST_CASE(function_arg_minsize);
         TEST_CASE(function_namespace);
@@ -240,6 +241,30 @@ private:
         Library library;
         readLibrary(library, xmldata);
         ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[-1].notuninit);
+    }
+
+    void function_arg_variadic() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "<function name=\"foo\">\n"
+                               "   <arg nr=\"1\"></arg>\n"
+                               "   <arg nr=\"variadic\"><not-uninit/></arg>\n"
+                               "</function>\n"
+                               "</def>";
+
+        Library library;
+        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[-1].notuninit);
+
+        TokenList tokenList(nullptr);
+        std::istringstream istr("foo(a,b,c,d,e);");
+        tokenList.createTokens(istr);
+        tokenList.front()->next()->astOperand1(tokenList.front());
+
+        ASSERT_EQUALS(false, library.isuninitargbad(tokenList.front(), 1));
+        ASSERT_EQUALS(true, library.isuninitargbad(tokenList.front(), 2));
+        ASSERT_EQUALS(true, library.isuninitargbad(tokenList.front(), 3));
+        ASSERT_EQUALS(true, library.isuninitargbad(tokenList.front(), 4));
     }
 
     void function_arg_valid() const {
