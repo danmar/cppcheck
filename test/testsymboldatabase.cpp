@@ -3682,16 +3682,18 @@ private:
     }
 
     void findFunction16() {
-        GET_SYMBOL_DB("struct C { int i; static int si; float f; };\n"
+        GET_SYMBOL_DB("struct C { int i; static int si; float f; int* ip; float* fp};\n"
                       "void foo(float a) { }\n"
                       "void foo(int a) { }\n"
-                      "void foo(bool a) { }\n"
+                      "void foo(int* a) { }\n"
                       "void func(C c, C* cp) {\n"
                       "    foo(c.i);\n"
                       "    foo(cp->i);\n"
                       "    foo(c.f);\n"
                       "    foo(c.si);\n"
                       "    foo(C::si);\n"
+                      "    foo(c.ip);\n"
+                      "    foo(c.fp);\n"
                       "}");
 
         ASSERT_EQUALS("", errout.str());
@@ -3710,6 +3712,12 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( C :: si ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( c . ip ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( c . fp ) ;");
+        ASSERT_EQUALS(true, f && f->function() == nullptr);
     }
 
 

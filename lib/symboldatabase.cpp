@@ -3977,7 +3977,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             }
 
             // Try to evaluate the apparently more complex expression
-            else if (!funcarg->isArrayOrPointer()) { // TODO: Pointers
+            else {
                 const Token* argtok = arguments[j];
                 while (argtok->astParent() && argtok->astParent() != tok->next() && argtok->astParent()->str() != ",") {
                     argtok = argtok->astParent();
