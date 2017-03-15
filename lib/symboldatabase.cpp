@@ -3985,8 +3985,10 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 while (Token::Match(argtok, ".|::"))
                     argtok = argtok->astOperand2();
 
-                const Variable * callarg = check->getVariableFromVarId(argtok->varId());
-                checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
+                if (argtok) {
+                    const Variable * callarg = check->getVariableFromVarId(argtok->varId());
+                    checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
+                }
             }
         }
 
