@@ -215,18 +215,20 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (noncommutativeEquals)
         return true;
 
+    // in c++, a+b might be different to b+a, depending on the type of a and b
+    if (cpp && tok1->str() == "+") {
+        const ValueType* vt1 = tok1->astOperand1()->valueType();
+        const ValueType* vt2 = tok1->astOperand1()->valueType();
+        if (!(vt1 && (vt1->type >= ValueType::VOID || vt1->pointer) && vt2 && (vt2->type >= ValueType::VOID || vt2->pointer)))
+            return false;
+    }
+
     const bool commutative = tok1->astOperand1() && tok1->astOperand2() && Token::Match(tok1, "%or%|%oror%|+|*|&|&&|^|==|!=");
     bool commutativeEquals = commutative &&
                              isSameExpression(cpp, macro, tok1->astOperand2(), tok2->astOperand1(), library, pure);
     commutativeEquals = commutativeEquals &&
                         isSameExpression(cpp, macro, tok1->astOperand1(), tok2->astOperand2(), library, pure);
 
-    // in c++, "a"+b might be different to b+"a"
-    if (cpp && commutativeEquals && tok1->str() == "+" &&
-        (tok1->astOperand1()->tokType() == Token::eString || tok1->astOperand2()->tokType() == Token::eString)) {
-        const Token * const other = tok1->astOperand1()->tokType() != Token::eString ? tok1->astOperand1() : tok1->astOperand2();
-        return other && astIsIntegral(other,false);
-    }
 
     return commutativeEquals;
 }

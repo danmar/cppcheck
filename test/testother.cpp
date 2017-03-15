@@ -3615,7 +3615,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
 
-        check("void foo() {\n"
+        check("void foo(int a, int b) {\n"
               "    if ((b + a) | (a + b)) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
@@ -3625,12 +3625,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo() {\n"
+        check("void foo(int a, int b) {\n"
               "    if ((b > a) | (a > b)) {}\n" // > is not commutative
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo() {\n"
+        check("void foo(double a, double b) {\n"
               "    if ((b + a) > (a + b)) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '>'.\n", errout.str());
@@ -3885,6 +3885,11 @@ private:
 
         check("void f(unsigned char c) {\n"
               "  x = y ? (signed char)c : (unsigned char)c;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string stringMerge(std::string const& x, std::string const& y) {\n" // #7938
+              "    return ((x > y) ? (y + x) : (x + y));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
