@@ -284,6 +284,7 @@ private:
         TEST_CASE(findFunction13);
         TEST_CASE(findFunction14);
         TEST_CASE(findFunction15);
+        TEST_CASE(findFunction16);
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -3678,6 +3679,37 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo3 ( 6");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
+    }
+
+    void findFunction16() {
+        GET_SYMBOL_DB("struct C { int i; static int si; float f; };\n"
+                      "void foo(float a) { }\n"
+                      "void foo(int a) { }\n"
+                      "void foo(bool a) { }\n"
+                      "void func(C c, C* cp) {\n"
+                      "    foo(c.i);\n"
+                      "    foo(cp->i);\n"
+                      "    foo(c.f);\n"
+                      "    foo(c.si);\n"
+                      "    foo(C::si);\n"
+                      "}");
+
+        ASSERT_EQUALS("", errout.str());
+
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( c . i ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( cp . i ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( c . f ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 2);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( c . si ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( C :: si ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
     }
 
 

@@ -3724,6 +3724,34 @@ void Scope::findFunctionInBase(const std::string & name, size_t args, std::vecto
 
 //---------------------------------------------------------------------------
 
+static void checkVariableCallMatch(const Variable* callarg, const Variable* funcarg, size_t& same, size_t& fallback1, size_t& fallback2)
+{
+    if (callarg) {
+        bool ptrequals = callarg->isArrayOrPointer() == funcarg->isArrayOrPointer();
+        bool constEquals = !callarg->isArrayOrPointer() || ((callarg->typeStartToken()->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
+        if (ptrequals && constEquals &&
+            callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
+            callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
+            callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong()) {
+            same++;
+        } else if (callarg->isArrayOrPointer()) {
+            if (ptrequals && constEquals && funcarg->typeStartToken()->str() == "void")
+                fallback1++;
+            else if (constEquals && funcarg->isStlStringType() && Token::Match(callarg->typeStartToken(), "char|wchar_t"))
+                fallback2++;
+        } else if (ptrequals) {
+            bool takesInt = Token::Match(funcarg->typeStartToken(), "char|short|int|long");
+            bool takesFloat = Token::Match(funcarg->typeStartToken(), "float|double");
+            bool passesInt = Token::Match(callarg->typeStartToken(), "char|short|int|long");
+            bool passesFloat = Token::Match(callarg->typeStartToken(), "float|double");
+            if ((takesInt && passesInt) || (takesFloat && passesFloat))
+                fallback1++;
+            else if ((takesInt && passesFloat) || (takesFloat && passesInt))
+                fallback2++;
+        }
+    }
+}
+
 const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 {
     // make sure this is a function call
@@ -3790,31 +3818,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             // check for a match with a variable
             if (Token::Match(arguments[j], "%var% ,|)")) {
                 const Variable * callarg = check->getVariableFromVarId(arguments[j]->varId());
-
-                if (callarg) {
-                    bool ptrequals = callarg->isArrayOrPointer() == funcarg->isArrayOrPointer();
-                    bool constEquals = !callarg->isArrayOrPointer() || ((callarg->typeStartToken()->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
-                    if (ptrequals && constEquals &&
-                        callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
-                        callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
-                        callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong()) {
-                        same++;
-                    } else if (callarg->isArrayOrPointer()) {
-                        if (ptrequals && constEquals && funcarg->typeStartToken()->str() == "void")
-                            fallback1++;
-                        else if (constEquals && funcarg->isStlStringType() && Token::Match(callarg->typeStartToken(), "char|wchar_t"))
-                            fallback2++;
-                    } else if (ptrequals) {
-                        bool takesInt = Token::Match(funcarg->typeStartToken(), "char|short|int|long");
-                        bool takesFloat = Token::Match(funcarg->typeStartToken(), "float|double");
-                        bool passesInt = Token::Match(callarg->typeStartToken(), "char|short|int|long");
-                        bool passesFloat = Token::Match(callarg->typeStartToken(), "float|double");
-                        if ((takesInt && passesInt) || (takesFloat && passesFloat))
-                            fallback1++;
-                        else if ((takesInt && passesFloat) || (takesFloat && passesInt))
-                            fallback2++;
-                    }
-                }
+                checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
             }
 
             // check for a match with address of a variable
@@ -3970,6 +3974,19 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 matches.erase(matches.begin() + i);
                 erased = true;
                 break;
+            }
+
+            // Try to evaluate the apparently more complex expression
+            else if (!funcarg->isArrayOrPointer()) { // TODO: Pointers
+                const Token* argtok = arguments[j];
+                while (argtok->astParent() && argtok->astParent() != tok->next() && argtok->astParent()->str() != ",") {
+                    argtok = argtok->astParent();
+                }
+                while (Token::Match(argtok, ".|::"))
+                    argtok = argtok->astOperand2();
+
+                const Variable * callarg = check->getVariableFromVarId(argtok->varId());
+                checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
             }
         }
 
