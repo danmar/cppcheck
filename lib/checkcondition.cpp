@@ -385,6 +385,8 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
 
         const MathLib::bigint value1 = MathLib::toLongNumber(num1->str());
         const MathLib::bigint value2 = MathLib::toLongNumber(num2->str());
+        if (cond2->str() == "&")
+            return ((value1 & value2) == value2);
         return ((value1 & value2) > 0);
     }
     return false;

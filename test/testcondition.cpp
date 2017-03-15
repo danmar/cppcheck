@@ -570,6 +570,18 @@ private:
               "  else { if (x == sizeof(long double)) {} }"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x & 0x08) {}\n"
+              "  else if (x & 0xF8) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x & 0xF8) {}\n"
+              "  else if (x & 0x08) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
     }
 
     void checkBadBitmaskCheck() {
