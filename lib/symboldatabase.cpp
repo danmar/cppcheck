@@ -454,7 +454,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                         }
 
                         // Function template
-                        else if (tok2->str() == ">" && tok2->link() && Token::Match(tok2->link()->previous(), "template <"))
+                        else if (tok2->link() && tok2->str() == ">" && Token::simpleMatch(tok2->link()->previous(), "template <"))
                             break;
 
                         tok1 = tok2;

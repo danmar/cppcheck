@@ -152,6 +152,9 @@
     <ClCompile Include="pathmatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="analyzerinfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -302,6 +305,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pathmatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="analyzerinfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
