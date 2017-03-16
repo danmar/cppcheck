@@ -434,24 +434,30 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     // look for end of previous statement
                     while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:")) {
                         // virtual function
-                        if (tok1->previous()->str() == "virtual") {
+                        const Token* tok2 = tok1->previous();
+
+                        if (tok2->str() == "virtual") {
                             function.isVirtual(true);
                             break;
                         }
 
                         // static function
-                        else if (tok1->previous()->str() == "static") {
+                        else if (tok2->str() == "static") {
                             function.isStatic(true);
                             break;
                         }
 
                         // friend function
-                        else if (tok1->previous()->str() == "friend") {
+                        else if (tok2->str() == "friend") {
                             function.isFriend(true);
                             break;
                         }
 
-                        tok1 = tok1->previous();
+                        // Function template
+                        else if (tok2->str() == ">" && tok2->link() && Token::Match(tok2->link()->previous(), "template <"))
+                            break;
+
+                        tok1 = tok2;
                     }
 
                     // find the return type

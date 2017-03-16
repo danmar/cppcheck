@@ -151,6 +151,7 @@ private:
         TEST_CASE(hasRegularFunctionReturningFunctionPointer);
         TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
+        TEST_CASE(hasInlineClassOperatorTemplate);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
         TEST_CASE(methodWithRedundantScope);
         TEST_CASE(complexFunctionArrayPtr);
@@ -991,6 +992,34 @@ private:
             ASSERT(function && function->token->str() == "func");
             ASSERT(function && function->token == functionToken);
             ASSERT(function && !function->hasBody());
+        }
+    }
+
+    void hasInlineClassOperatorTemplate() {
+        GET_SYMBOL_DB("struct Fred { template<typename T> Foo & operator=(const Foo &) { return *this; } };");
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3);
+
+        if (db) {
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "operator=");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
+
+            ASSERT(scope && scope->className == "operator=");
+            if (!scope)
+                return;
+            ASSERT(scope->functionOf && scope->functionOf == db->findScopeByName("Fred"));
+
+            const Function *function = findFunctionByName("operator=", &db->scopeList.back());
+
+            ASSERT(function && function->token->str() == "operator=");
+            ASSERT(function && function->token == functionToken);
+            ASSERT(function && function->hasBody() && function->isInline());
+            ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
+            ASSERT(function && function->retDef == functionToken->tokAt(-2));
+
+            ASSERT(db && db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("operator=") == function);
         }
     }
 
