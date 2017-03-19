@@ -998,6 +998,39 @@ static bool isLambdaCaptureList(const Token * tok)
     return true;
 }
 
+static Token * createAstAtToken(Token *tok, bool cpp);
+
+// Compile inner expressions inside inner ({..}) and lambda bodies
+static void createAstAtTokenInner(Token * const tok1, const Token *endToken, bool cpp)
+{
+    for (Token *tok = tok1; tok && tok != endToken; tok = tok ? tok->next() : nullptr) {
+        if (tok->str() == "{") {
+            if (Token::simpleMatch(tok->previous(), "( {"))
+                ;
+            else if (Token::simpleMatch(tok->astParent(), "(") &&
+                     Token::simpleMatch(tok->astParent()->astParent(), "[") &&
+                     tok->astParent()->astParent()->astOperand1() &&
+                     tok == tok->astParent()->astParent()->astOperand1()->astOperand1())
+                ;
+            else
+                continue;
+
+            if (Token::simpleMatch(tok->previous(), "( { ."))
+                break;
+
+            const Token * const endToken2 = tok->link();
+            for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
+                tok = createAstAtToken(tok, cpp);
+        } else if (tok->str() == "[") {
+            if (isLambdaCaptureList(tok)) {
+                const Token * const endToken2 = tok->link();
+                for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
+                    tok = createAstAtToken(tok, cpp);
+            }
+        }
+    }
+}
+
 static Token * createAstAtToken(Token *tok, bool cpp)
 {
     if (Token::simpleMatch(tok, "for (")) {
@@ -1041,6 +1074,10 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             return nullptr; // invalid code #7235
         tok2 = tok2->next();
         AST_state state3(cpp);
+        if (Token::simpleMatch(tok2, "( {")) {
+            state3.op.push(tok2->next());
+            tok2 = tok2->link()->next();
+        }
         compileExpression(tok2, state3);
 
         if (init != semicolon1)
@@ -1051,14 +1088,21 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         if (tok2 != semicolon2)
             semicolon2->astOperand1(const_cast<Token*>(tok2->astTop()));
         tok2 = endPar;
-        while (tok2 != semicolon2 && !tok2->isName() && !tok2->isNumber())
+        while (tok2 != semicolon2 && !tok2->isName() && !tok2->isNumber()) {
+            if (Token::simpleMatch(tok2, "} )"))
+                tok2 = tok2->link();
             tok2 = tok2->previous();
+        }
         if (tok2 != semicolon2)
             semicolon2->astOperand2(const_cast<Token*>(tok2->astTop()));
+        else if (!state3.op.empty())
+            semicolon2->astOperand2(const_cast<Token*>(state3.op.top()));
 
         semicolon1->astOperand2(semicolon2);
         tok->next()->astOperand1(tok);
         tok->next()->astOperand2(semicolon1);
+
+        createAstAtTokenInner(endPar->link(), endPar, cpp);
 
         return endPar;
     }
@@ -1080,33 +1124,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         if (endToken == tok1 || !endToken)
             return tok1;
 
-        // Compile inner expressions inside inner ({..}) and lambda bodies
-        for (tok = tok1->next(); tok && tok != endToken; tok = tok ? tok->next() : nullptr) {
-            if (tok->str() == "{") {
-                if (Token::simpleMatch(tok->previous(), "( {"))
-                    ;
-                else if (Token::simpleMatch(tok->astParent(), "(") &&
-                         Token::simpleMatch(tok->astParent()->astParent(), "[") &&
-                         tok->astParent()->astParent()->astOperand1() &&
-                         tok == tok->astParent()->astParent()->astOperand1()->astOperand1())
-                    ;
-                else
-                    continue;
-
-                if (Token::simpleMatch(tok->previous(), "( { ."))
-                    break;
-
-                const Token * const endToken2 = tok->link();
-                for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
-                    tok = createAstAtToken(tok, cpp);
-            } else if (tok->str() == "[") {
-                if (isLambdaCaptureList(tok)) {
-                    const Token * const endToken2 = tok->link();
-                    for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
-                        tok = createAstAtToken(tok, cpp);
-                }
-            }
-        }
+        createAstAtTokenInner(tok1->next(), endToken, cpp);
 
         return endToken ? endToken->previous() : nullptr;
     }
