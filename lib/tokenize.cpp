@@ -1737,7 +1737,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         }
     }
 
-    SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings);
+    _symbolDatabase->setValueTypeInTokenList();
     ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
 
     printDebugOutput(1);
@@ -3791,7 +3791,7 @@ bool Tokenizer::simplifyTokenList2()
 
     // Create symbol database and then remove const keywords
     createSymbolDatabase();
-    SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings);
+    _symbolDatabase->setValueTypeInTokenList();
 
     ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
 
