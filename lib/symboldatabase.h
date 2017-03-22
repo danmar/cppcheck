@@ -1052,7 +1052,7 @@ public:
     }
 
     bool isFloat() const {
-        return (type == ValueType::Type::FLOAT || type == ValueType::Type::DOUBLE);
+        return (type >= ValueType::Type::FLOAT && type <= ValueType::Type::LONGDOUBLE);
     }
 
     bool fromLibraryType(const std::string &typestr, const Settings *settings);
