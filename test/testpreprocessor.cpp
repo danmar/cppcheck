@@ -76,6 +76,7 @@ private:
         TEST_CASE(error3);
         TEST_CASE(error4);  // #2919 - wrong filename is reported
         TEST_CASE(error5);
+        TEST_CASE(error6);
 
         TEST_CASE(setPlatformInfo);
 
@@ -362,6 +363,18 @@ private:
         const std::string code("#error hello world!\n");
         preprocessor.getcode(code, "X", "test.c");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void error6() {
+        const char filedata[] = "#ifdef A\n"
+                                "#else\n"
+                                "#error 1\n"
+                                "#endif\n"
+                                "#ifdef B\n"
+                                "#else\n"
+                                "#error 2\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA\nA;B\nB\n", getConfigsStr(filedata));
     }
 
     void setPlatformInfo() {

@@ -302,6 +302,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
 {
     std::vector<std::string> configs_if;
     std::vector<std::string> configs_ifndef;
+    std::string elseError;
 
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (tok->op != '#' || sameline(tok->previous, tok))
@@ -336,6 +337,16 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 tok = tok->previous;
                 continue;
             }
+            if (cmdtok->str == "else" &&
+                cmdtok->next &&
+                !sameline(cmdtok,cmdtok->next) &&
+                sameline(cmdtok->next, cmdtok->next->next) &&
+                cmdtok->next->op == '#' &&
+                cmdtok->next->next->str == "error") {
+                if (!elseError.empty())
+                    elseError += ';';
+                elseError += cfg(configs_if, userDefines);
+            }
             if (!configs_if.empty())
                 configs_if.pop_back();
             if (cmdtok->str == "elif") {
@@ -363,6 +374,8 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             defined.insert(cmdtok->next->str);
         }
     }
+    if (!elseError.empty())
+        ret.insert(elseError);
 }
 
 
