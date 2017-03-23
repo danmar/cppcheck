@@ -4614,6 +4614,64 @@ private:
         ASSERT(db && vartok && vartok->variable() && vartok->variable()->isPointer() && vartok->variable()->type() && vartok->variable()->type()->name() == "E");
     }
 
+    void auto4() {
+        GET_SYMBOL_DB("struct S { int i; };\n"
+                      "int foo() {\n"
+                      "    S array[10];\n"
+                      "    for (auto a : array)\n"
+                      "        a.i = 0;\n"
+                      "    for (auto & b : array)\n"
+                      "        b.i = 1;\n"
+                      "    for (const auto & c : array)\n"
+                      "        auto ci = c.i;\n"
+                      "    for (auto * d : array)\n"
+                      "        d->i = 0;\n"
+                      "    for (const auto * e : array)\n"
+                      "        auto ei = e->i;\n"
+                      "    return array[0].i;\n"
+                      "}");
+        const Token *autotok = Token::findsimplematch(tokenizer.tokens(), "auto a");
+        ASSERT(db && autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(db && autotok && autotok->type() && autotok->type()->name() == "S");
+
+        autotok = Token::findsimplematch(autotok->next(), "auto & b");
+        ASSERT(db && autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(db && autotok && autotok->type() && autotok->type()->name() == "S");
+
+        autotok = Token::findsimplematch(autotok->next(), "auto & c");
+        ASSERT(db && autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(db && autotok && autotok->type() && autotok->type()->name() == "S");
+
+        autotok = Token::findsimplematch(autotok->next(), "auto * d");
+        ASSERT(db && autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(db && autotok && autotok->type() && autotok->type()->name() == "S");
+
+        autotok = Token::findsimplematch(autotok->next(), "auto * e");
+        ASSERT(db && autotok && autotok->valueType() && autotok->valueType()->pointer == 0 && autotok->valueType()->constness == 0 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(db && autotok && autotok->type() && autotok->type()->name() == "S");
+
+        vartok = Token::findsimplematch(tokenizer.tokens(), "a :");
+        ASSERT(db && vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(db && vartok && vartok->variable() && !vartok->variable()->isReference() && !vartok->variable()->isPointer());
+        ASSERT(db && vartok && vartok->variable() && vartok->variable()->type() && vartok->variable()->type()->name() == "S");
+
+        vartok = Token::findsimplematch(vartok->next(), "b :");
+        ASSERT(db && vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(db && vartok && vartok->variable() && vartok->variable()->isReference() && !vartok->variable()->isPointer() && !vartok->variable()->isConst());
+
+        vartok = Token::findsimplematch(vartok->next(), "c :");
+        ASSERT(db && vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(db && vartok && vartok->variable() && vartok->variable()->isReference() && !vartok->variable()->isPointer() && vartok->variable()->isConst());
+
+        vartok = Token::findsimplematch(vartok->next(), "d :");
+        ASSERT(db && vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(db && vartok && vartok->variable() && !vartok->variable()->isReference() && vartok->variable()->isPointer() && !vartok->variable()->isConst());
+
+        vartok = Token::findsimplematch(vartok->next(), "e :");
+        ASSERT(db && vartok && vartok->valueType() && vartok->valueType()->typeScope && vartok->valueType()->typeScope->definedType && vartok->valueType()->typeScope->definedType->name() == "S");
+        ASSERT(db && vartok && vartok->variable() && !vartok->variable()->isReference() && vartok->variable()->isPointer() && vartok->variable()->isConst());
+    }
+
 };
 
 REGISTER_TEST(TestSymbolDatabase)

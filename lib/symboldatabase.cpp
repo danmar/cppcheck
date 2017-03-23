@@ -4566,20 +4566,27 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     // range for loop, auto
     if (vt2 &&
         parent->str() == ":" &&
-        Token::Match(parent->astParent(), "( const| auto *| %var% :") &&
+        Token::Match(parent->astParent(), "( const| auto *|&| %var% :") &&
         !parent->previous()->valueType() &&
         Token::simpleMatch(parent->astParent()->astOperand1(), "for")) {
-        bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");
+        const bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");
         Token * const autoToken = const_cast<Token *>(parent->astParent()->tokAt(isconst ? 2 : 1));
         if (vt2->pointer) {
-            ValueType vt(*vt2);
-            vt.pointer--;
-            if (isconst)
-                vt.constness |= 1;
-            setValueType(autoToken, vt);
+            ValueType autovt(*vt2);
+            autovt.pointer--;
+            autovt.constness = 0;
+            setValueType(autoToken, autovt);
             setAutoTokenProperties(autoToken);
-            setValueType(parent->previous(), vt);
-            const_cast<Variable *>(parent->previous()->variable())->setFlags(vt);
+            ValueType varvt(*vt2);
+            varvt.pointer--;
+            if (isconst)
+                varvt.constness |= 1;
+            setValueType(parent->previous(), varvt);
+            const_cast<Variable *>(parent->previous()->variable())->setFlags(varvt);
+            if (vt2->typeScope && vt2->typeScope->definedType) {
+                const_cast<Variable *>(parent->previous()->variable())->type(vt2->typeScope->definedType);
+                autoToken->type(vt2->typeScope->definedType);
+            }
         } else if (vt2->container) {
             // TODO: Determine exact type of RHS
             const Token *typeStart = parent->astOperand2();
