@@ -82,6 +82,8 @@ private:
         TEST_CASE(valueFlowSizeofForwardDeclaredEnum);
 
         TEST_CASE(valueFlowGlobalVar);
+
+        TEST_CASE(valueFlowInlineAssembly);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -2353,6 +2355,15 @@ private:
                "    unknownFunction();\n"
                "    a = x;\n"
                "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 42));
+    }
+
+    void valueFlowInlineAssembly() {
+        const char* code = "void f() {\n"
+                           "    int x = 42;\n"
+                           "    asm(\"\");\n"
+                           "    a = x;\n"
+                           "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 42));
     }
 };

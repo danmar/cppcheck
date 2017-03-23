@@ -1327,7 +1327,7 @@ static bool valueFlowForward(Token * const               startToken,
             continue;
         }
 
-        else if (var->isGlobal() && Token::Match(tok2, "%name% (") && Token::Match(tok2->linkAt(1), ") !!{")) {
+        else if ((var->isGlobal() || tok2->str() == "asm") && Token::Match(tok2, "%name% (") && Token::Match(tok2->linkAt(1), ") !!{")) {
             return false;
         }
 
