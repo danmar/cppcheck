@@ -62,6 +62,7 @@ private:
         TEST_CASE(incorrectLogicOperator7); // opposite expressions: (expr || !expr)
         TEST_CASE(incorrectLogicOperator8); // !
         TEST_CASE(incorrectLogicOperator9);
+        TEST_CASE(incorrectLogicOperator10); // enum
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -1121,6 +1122,15 @@ private:
               "    assert((!obj) || dynamic_cast<MyType*>(obj));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void incorrectLogicOperator10() { //  #7794 - enum
+        check("typedef enum { A, B } Type_t;\n"
+              "void f(Type_t t) {\n"
+              "    if ((t == A) && (t == B))\n"
+              "    {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Logical conjunction always evaluates to false: t == 0 && t == 1.\n", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {

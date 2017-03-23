@@ -618,22 +618,30 @@ static bool parseComparison(const Token *comp, bool *not1, std::string *op, std:
     if (!comp)
         return false;
 
-    if (!comp->isComparisonOp() || !comp->astOperand1() || !comp->astOperand2()) {
+    const Token* op1 = comp->astOperand1();
+    const Token* op2 = comp->astOperand2();
+    if (!comp->isComparisonOp() || !op1 || !op2) {
         *op = "!=";
         *value = "0";
         *expr = comp;
-    } else if (comp->astOperand1()->isLiteral()) {
-        if (comp->astOperand1()->isExpandedMacro())
+    } else if (op1->isLiteral()) {
+        if (op1->isExpandedMacro())
             return false;
         *op = invertOperatorForOperandSwap(comp->str());
-        *value = comp->astOperand1()->str();
-        *expr = comp->astOperand2();
+        if (op1->enumerator() && op1->enumerator()->value_known)
+            *value = MathLib::toString(op1->enumerator()->value);
+        else
+            *value = op1->str();
+        *expr = op2;
     } else if (comp->astOperand2()->isLiteral()) {
-        if (comp->astOperand2()->isExpandedMacro())
+        if (op2->isExpandedMacro())
             return false;
         *op = comp->str();
-        *value = comp->astOperand2()->str();
-        *expr = comp->astOperand1();
+        if (op2->enumerator() && op2->enumerator()->value_known)
+            *value = MathLib::toString(op2->enumerator()->value);
+        else
+            *value = op2->str();
+        *expr = op1;
     } else {
         *op = "!=";
         *value = "0";
