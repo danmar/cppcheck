@@ -3320,12 +3320,28 @@ private:
     }
 
     void constoperator4() {
+        // #7953
+        checkConst("class A {\n"
+                   "    int c;\n"
+                   "public:\n"
+                   "    operator int*() { return &c; };\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class A {\n"
+                   "    int c;\n"
+                   "public:\n"
+                   "    operator const int*() { return &c; };\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::operatorconstint*' can be const.\n", errout.str());
+
+        // #2375
         checkConst("struct Fred {\n"
                    "    int array[10];\n"
                    "    typedef int* (Fred::*UnspecifiedBoolType);\n"
                    "    operator UnspecifiedBoolType() { };\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::operatorint**' can be const.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::operatorint**' can be const.\n", "", errout.str());
 
         checkConst("struct Fred {\n"
                    "    int array[10];\n"
