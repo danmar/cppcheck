@@ -4567,13 +4567,13 @@ private:
     }
 
     void auto3() {
-        GET_SYMBOL_DB("enum class E : unsigned short { A, B, C };\n"
+        GET_SYMBOL_DB("enum E : unsigned short { A, B, C };\n"
                       "int foo() {\n"
                       "    auto a = new E;\n"
                       "    auto * b = new E;\n"
                       "    auto c = new E[10];\n"
                       "    auto * d = new E[10];\n"
-                      "    return a + b + c + d;\n"
+                      "    return *a + *b + c[0] + d[0];\n"
                       "}");
         const Token *autotok = Token::findsimplematch(tokenizer.tokens(), "auto");
         ASSERT(db && autotok && autotok->valueType() && autotok->valueType()->pointer == 1 && autotok->valueType()->typeScope && autotok->valueType()->typeScope->definedType && autotok->valueType()->typeScope->definedType->name() == "E" && autotok->type() == nullptr);
