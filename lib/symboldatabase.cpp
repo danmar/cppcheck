@@ -1237,8 +1237,10 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                 const Variable *var = tok->variable();
                 if (var && var->typeScope()) {
                     const Variable *membervar = var->typeScope()->getVariable(membertok->str());
-                    if (membervar)
+                    if (membervar) {
                         membertok->variable(membervar);
+                        const_cast<Token *>(membertok)->varId(membervar->nameToken()->varId());
+                    }
                 }
             }
         }
@@ -4493,13 +4495,24 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             else if (Token::Match(var1Tok->tokAt(-3), "[;{}] auto *"))
                 autoTok = var1Tok->tokAt(-2);
             if (autoTok) {
-                setValueType(autoTok, *vt2);
+                ValueType vt(*vt2);
+                if (autoTok->strAt(1) == "*" && vt.pointer)
+                    vt.pointer--;
+                if (autoTok->strAt(-1) == "const")
+                    vt.constness |= 1;
+                setValueType(autoTok, vt);
                 setAutoTokenProperties(autoTok);
                 setValueType(var1Tok, *vt2);
                 setValueType(parent->previous(), *vt2);
                 const Variable *var = parent->previous()->variable();
-                if (var)
+                if (var) {
                     const_cast<Variable *>(var)->setFlags(*vt2);
+                    if (vt2->typeScope && vt2->typeScope->definedType) {
+                        const_cast<Variable *>(var)->type(vt2->typeScope->definedType);
+                        if (autoTok->valueType()->pointer == 0)
+                            autoTok->type(vt2->typeScope->definedType);
+                    }
+                }
             }
         }
         return;
@@ -4957,6 +4970,9 @@ void SymbolDatabase::setValueTypeInTokenList()
             setValueType(tok, vt);
         }
     }
+
+    // Update auto variables with new type information.
+    createSymbolDatabaseSetVariablePointers();
 }
 
 ValueType ValueType::parseDecl(const Token *type, const Settings *settings)
