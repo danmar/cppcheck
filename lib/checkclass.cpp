@@ -2333,3 +2333,51 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
                                 std::string(baseIsStruct ? "struct" : "class") + " '" + basename + "'.";
     reportError(toks, Severity::warning, "duplInheritedMember", message, CWE398, false);
 }
+
+
+//---------------------------------------------------------------------------
+// Check that copy constructor and operator defined together
+//---------------------------------------------------------------------------
+
+void CheckClass::checkCopyCtorAndEqOperator() 
+{
+    if (!_settings->isEnabled("warning"))
+        return;
+
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+        
+        if (scope->varlist.empty())
+        	continue;
+
+        int hasCopyCtor = 0;
+        int hasAssignmentOperator = 0;
+
+        std::list<Function>::const_iterator func;
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            if (!hasCopyCtor && func->type == Function::eCopyConstructor) {
+            	hasCopyCtor = func->hasBody() ? 2 : 1;
+            }
+            if (!hasAssignmentOperator && func->type == Function::eOperatorEqual) {
+                const Variable * variable = func->getArgumentVar(0);
+                if(variable && variable->type() && variable->type()->classScope == scope) {
+                	hasAssignmentOperator = func->hasBody() ? 2 : 1;
+                }
+            }
+        }
+
+        if(std::abs(hasCopyCtor - hasAssignmentOperator) == 2)
+            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, hasCopyCtor);       
+    }
+}
+
+void CheckClass::copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor) 
+{
+    const std::string message = "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
+                                "' has '" + getFunctionTypeName(hasCopyCtor ? Function::eCopyConstructor : Function::eOperatorEqual) + 
+                                "' but lack of '" + getFunctionTypeName(hasCopyCtor ? Function::eOperatorEqual : Function::eCopyConstructor) + 
+                                "'.";    
+
+    reportError(tok, Severity::warning, "copyCtorAndEqOperator", message);
+}
