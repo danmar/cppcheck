@@ -55,7 +55,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseNeedInitialization();
     createSymbolDatabaseVariableSymbolTable();
     createSymbolDatabaseSetScopePointers();
-    createSymbolDatabaseSetFunctionPointers();
+    createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetVariablePointers();
     createSymbolDatabaseSetTypePointers();
     createSymbolDatabaseEnums();
@@ -1148,27 +1148,27 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
     }
 }
 
-void SymbolDatabase::createSymbolDatabaseSetFunctionPointers()
+void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
 {
-    // Set function definition and declaration pointers
-    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        for (std::list<Function>::const_iterator func = it->functionList.begin(); func != it->functionList.end(); ++func) {
-            if (func->tokenDef)
-                const_cast<Token *>(func->tokenDef)->function(&*func);
+    if (firstPass) {
+        // Set function definition and declaration pointers
+        for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+            for (std::list<Function>::const_iterator func = it->functionList.begin(); func != it->functionList.end(); ++func) {
+                if (func->tokenDef)
+                    const_cast<Token *>(func->tokenDef)->function(&*func);
 
-            if (func->token)
-                const_cast<Token *>(func->token)->function(&*func);
+                if (func->token)
+                    const_cast<Token *>(func->token)->function(&*func);
+            }
         }
     }
 
     // Set function call pointers
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
-        if (Token::Match(tok, "%name% (")) {
-            if (!tok->function() && tok->varId() == 0 && !isReservedName(tok->str())) {
-                const Function *function = findFunction(tok);
-                if (function)
-                    const_cast<Token *>(tok)->function(function);
-            }
+        if (!tok->function() && tok->varId() == 0 && Token::Match(tok, "%name% (") && !isReservedName(tok->str())) {
+            const Function *function = findFunction(tok);
+            if (function)
+                const_cast<Token *>(tok)->function(function);
         }
     }
 
@@ -4010,12 +4010,31 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 while (argtok->astParent() && argtok->astParent() != tok->next() && argtok->astParent()->str() != ",") {
                     argtok = argtok->astParent();
                 }
-                while (Token::Match(argtok, ".|::"))
-                    argtok = argtok->astOperand2();
+                if (argtok && argtok->valueType() && !funcarg->isArrayOrPointer()) { // TODO: Pointers
+                    if (argtok->valueType()->type == ValueType::BOOL) {
+                        if (funcarg->typeStartToken()->str() == "bool")
+                            same++;
+                        else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
+                            fallback1++;
+                    } else if (argtok->valueType()->isIntegral()) {
+                        if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
+                            same++;
+                        else if (Token::Match(funcarg->typeStartToken(), "float|double"))
+                            fallback1++;
+                    } else if (argtok->valueType()->isFloat()) {
+                        if (Token::Match(funcarg->typeStartToken(), "float|double"))
+                            same++;
+                        else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
+                            fallback1++;
+                    }
+                } else {
+                    while (Token::Match(argtok, ".|::"))
+                        argtok = argtok->astOperand2();
 
-                if (argtok) {
-                    const Variable * callarg = check->getVariableFromVarId(argtok->varId());
-                    checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
+                    if (argtok) {
+                        const Variable * callarg = check->getVariableFromVarId(argtok->varId());
+                        checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
+                    }
                 }
             }
         }
@@ -4997,6 +5016,9 @@ void SymbolDatabase::setValueTypeInTokenList()
             setValueType(tok, vt);
         }
     }
+
+    // Update functions with new type information.
+    createSymbolDatabaseSetFunctionPointers(false);
 
     // Update auto variables with new type information.
     createSymbolDatabaseSetVariablePointers();

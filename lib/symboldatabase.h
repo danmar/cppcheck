@@ -1159,7 +1159,7 @@ private:
     void createSymbolDatabaseNeedInitialization();
     void createSymbolDatabaseVariableSymbolTable();
     void createSymbolDatabaseSetScopePointers();
-    void createSymbolDatabaseSetFunctionPointers();
+    void createSymbolDatabaseSetFunctionPointers(bool firstPass);
     void createSymbolDatabaseSetVariablePointers();
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseEnums();
