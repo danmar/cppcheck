@@ -77,6 +77,7 @@ public:
 
         checkClass.checkDuplInheritedMembers();
         checkClass.checkExplicitConstructors();
+        checkClass.checkCopyCtorAndEqOperator();
     }
 
 
@@ -136,6 +137,9 @@ public:
     /** @brief Check duplicated inherited members */
     void checkDuplInheritedMembers();
 
+    /** @brief Check that copy constructor and operator defined together */
+    void checkCopyCtorAndEqOperator();
+
 private:
     const SymbolDatabase *symbolDatabase;
 
@@ -167,6 +171,7 @@ private:
     void selfInitializationError(const Token* tok, const std::string& varname);
     void callsPureVirtualFunctionError(const Function & scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
+    void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckClass c(nullptr, settings, errorLogger);
@@ -196,6 +201,7 @@ private:
         c.suggestInitializationList(nullptr, "variable");
         c.selfInitializationError(nullptr, "var");
         c.duplInheritedMembersError(nullptr, 0, "class", "class", "variable", false, false);
+        c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
     }
 
     static std::string myName() {
@@ -221,7 +227,8 @@ private:
                "- Initialization of a member with itself\n"
                "- Suspicious subtraction from 'this'\n"
                "- Call of pure virtual function in constructor/destructor\n"
-               "- Duplicated inherited data members\n";
+               "- Duplicated inherited data members\n"
+               "- If 'copy constructor' defined, 'operator=' also should be defined and vice versa\n";
     }
 
     // operatorEqRetRefThis helper functions
