@@ -1219,7 +1219,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
         // Set Token::variable pointer for array member variable
         // Since it doesn't point at a fixed location it doesn't have varid
         if (tok->variable() != nullptr &&
-            tok->variable()->typeScope() &&
+            (tok->variable()->typeScope() || (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER)) &&
             Token::Match(tok, "%name% [|.")) {
 
             Token *tok2 = tok->next();
@@ -1240,6 +1240,17 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                     if (membervar) {
                         membertok->variable(membervar);
                         const_cast<Token *>(membertok)->varId(membervar->nameToken()->varId());
+                    }
+                } else if (var && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
+                    if (Token::Match(var->typeStartToken(), "std :: %type% < %type% *| *| >")) {
+                        const Type * type = var->typeStartToken()->tokAt(4)->type();
+                        if (type && type->classScope && type->classScope->definedType) {
+                            const Variable *membervar = type->classScope->getVariable(membertok->str());
+                            if (membervar) {
+                                membertok->variable(membervar);
+                                const_cast<Token *>(membertok)->varId(membervar->nameToken()->varId());
+                            }
+                        }
                     }
                 }
             }
@@ -4600,11 +4611,20 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             }
             // TODO: Get type better
             if (Token::Match(typeStart, "std :: %type% < %type% *| *| >")) {
-                ValueType vt;
-                if (parsedecl(typeStart->tokAt(4), &vt, defaultSignedness, _settings)) {
-                    setValueType(autoToken, vt);
+                ValueType autovt;
+                if (parsedecl(typeStart->tokAt(4), &autovt, defaultSignedness, _settings)) {
+                    setValueType(autoToken, autovt);
                     setAutoTokenProperties(autoToken);
-                    setValueType(parent->previous(), vt);
+                    ValueType varvt(autovt);
+                    if (isconst)
+                        varvt.constness |= 1;
+                    setValueType(parent->previous(), varvt);
+                    const_cast<Variable *>(parent->previous()->variable())->setFlags(varvt);
+                    const Type * type = typeStart->tokAt(4)->type();
+                    if (type && type->classScope && type->classScope->definedType) {
+                        autoToken->type(type->classScope->definedType);
+                        const_cast<Variable *>(parent->previous()->variable())->type(type->classScope->definedType);
+                    }
                 }
             }
         }
