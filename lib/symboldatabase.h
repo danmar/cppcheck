@@ -1028,6 +1028,9 @@ private:
 
 /** Value type */
 class CPPCHECKLIB ValueType {
+private:
+    // No assignment
+    ValueType &operator=(const ValueType &other);
 public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
