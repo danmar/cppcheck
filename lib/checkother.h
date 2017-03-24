@@ -262,8 +262,8 @@ private:
     void unknownEvaluationOrder(const Token* tok);
     static bool isMovedParameterAllowedForInconclusiveFunction(const Token * tok);
     void accessMovedError(const Token *tok, const std::string &varname, ValueFlow::Value::MoveKind moveKind, bool inconclusive);
-    void funcArgNamesDifferent(const std::string & name, size_t index, const Token* declaration, const Token* definition);
-    void funcArgOrderDifferent(const std::string & name, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
+    void funcArgNamesDifferent(const std::string & functionName, size_t index, const Token* declaration, const Token* definition);
+    void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(nullptr, settings, errorLogger);
