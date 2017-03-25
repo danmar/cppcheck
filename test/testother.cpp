@@ -144,6 +144,7 @@ private:
 
         TEST_CASE(redundantVarAssignment);
         TEST_CASE(redundantVarAssignment_7133);
+        TEST_CASE(redundantVarAssignment_stackoverflow);
         TEST_CASE(redundantMemWrite);
 
         TEST_CASE(varFuncNullUB);
@@ -5170,6 +5171,20 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style, inconclusive) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used if variable is no semaphore variable.\n",
                       errout.str());
 
+    }
+
+    void redundantVarAssignment_stackoverflow() {
+        check("typedef struct message_node {\n"
+              "  char code;\n"
+              "  size_t size;\n"
+              "  struct message_node *next, *prev;\n"
+              "} *message_list;\n"
+              "static message_list remove_message_from_list(message_list m) {\n"
+              "    m->prev->next = m->next;\n"
+              "    m->next->prev = m->prev;\n"
+              "    return m->next;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantMemWrite() {
