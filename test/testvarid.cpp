@@ -1344,7 +1344,7 @@ private:
                                 "10:\n"
                                 "11: void Bar :: f ( )\n"
                                 "12: {\n"
-                                "13: foo@2 . x@1 = x@3 ;\n"
+                                "13: foo@2 . x@4 = x@3 ;\n"
                                 "14: }\n";
         ASSERT_EQUALS(expected, actual);
     }

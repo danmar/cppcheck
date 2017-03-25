@@ -1239,7 +1239,6 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                     const Variable *membervar = var->typeScope()->getVariable(membertok->str());
                     if (membervar) {
                         membertok->variable(membervar);
-                        const_cast<Token *>(membertok)->varId(membervar->nameToken()->varId());
                     }
                 } else if (var && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
                     if (Token::Match(var->typeStartToken(), "std :: %type% < %type% *| *| >")) {
@@ -1248,7 +1247,6 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                             const Variable *membervar = type->classScope->getVariable(membertok->str());
                             if (membervar) {
                                 membertok->variable(membervar);
-                                const_cast<Token *>(membertok)->varId(membervar->nameToken()->varId());
                             }
                         }
                     }
