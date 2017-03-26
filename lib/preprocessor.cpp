@@ -48,9 +48,9 @@ static std::string trim(const std::string& s)
 
 Directive::Directive(const std::string &_file, const int _linenr, const std::string &_str):
     file(_file),
-    linenr(_linenr)
+    linenr(_linenr),
+    str(trim(_str))
 {
-    str = trim(_str);
 }
 
 bool Preprocessor::missingIncludeFlag;
