@@ -30,6 +30,13 @@
 #include <list>
 #include <set>
 
+/**
+ * Use this macro Cppcheck data can be wrong and you need a to check if that happens to avoid crash/hang
+ * Using this macro we can make sure that released binaries don't crash/hang but the problem is not hidden
+ * in debug builds.
+ */
+#define CHECK_WRONG_DATA(X)   (X)
+
 /// @addtogroup Core
 /// @{
 

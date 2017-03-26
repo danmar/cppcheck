@@ -175,7 +175,7 @@ void CheckFunctions::checkIgnoredReturnValue()
             while (parent->astParent() && parent->astParent()->str() == "::")
                 parent = parent->astParent();
 
-            if (!tok->next()->astParent() && (!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.isUseRetVal(tok))
+            if (CHECK_WRONG_DATA(tok->next()->astOperand1()) && !tok->next()->astParent() && (!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.isUseRetVal(tok))
                 ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
         }
     }
