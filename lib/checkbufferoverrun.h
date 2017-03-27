@@ -184,7 +184,7 @@ public:
     void checkScope_inner(const Token *tok, const ArrayInfo &arrayInfo);
 
     /** Check for buffer overruns */
-    void checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo);
+    void checkScope(const Token *tok, const std::vector<const std::string*> &varname, const ArrayInfo &arrayInfo);
 
     /**
      * Helper function for checkFunctionCall - check a function parameter

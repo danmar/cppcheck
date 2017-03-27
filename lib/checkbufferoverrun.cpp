@@ -540,7 +540,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
     }
 }
 
-void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo)
+void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<const std::string*> &varname, const ArrayInfo &arrayInfo)
 {
     const MathLib::bigint size = arrayInfo.num(0);
     if (size <= 0)  // unknown size
@@ -558,7 +558,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
     std::string varnames;
     for (std::size_t i = 0; i < varname.size(); ++i)
-        varnames += (i == 0 ? "" : " . ") + varname[i];
+        varnames += (i == 0 ? "" : " . ") + *varname[i];
 
     const int varcount = varname.empty() ? 0 : static_cast<int>((varname.size() - 1) * 2U);
 
@@ -594,7 +594,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
         // Array index..
         if ((declarationId > 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && Token::Match(tok->next(), "%varid% [", declarationId))) ||
-            (declarationId == 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && (Token::Match(tok->next(), (varnames + " [").c_str()) || Token::Match(tok->next(), (varname[0] +" [ %num% ] . " + varname[1] + " [ %num% ]").c_str()))))) {
+            (declarationId == 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && (Token::Match(tok->next(), (varnames + " [").c_str()) || Token::Match(tok->next(), (*varname[0] +" [ %num% ] . " + *varname[1] + " [ %num% ]").c_str()))))) {
             std::vector<MathLib::bigint> indexes;
             const Token *tok2 = tok->tokAt(2 + varcount);
             for (; Token::Match(tok2, "[ %num% ]"); tok2 = tok2->tokAt(3)) {
@@ -1202,6 +1202,8 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             checkScope(scope->classStart ? scope->classStart : _tokenizer->tokens(), arrayInfos);
     }
 
+    const std::vector<const std::string*> v;
+
     // find all dynamically allocated arrays next
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -1280,7 +1282,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (totalSize == 0)
                 continue;
 
-            std::vector<std::string> v;
             ArrayInfo temp(var->declarationId(), tok->next()->str(), totalSize / size, size);
             checkScope(nextTok, v, temp);
         }
@@ -1334,9 +1335,8 @@ void CheckBufferOverrun::checkStructVariable()
                     if (scope->nestedIn->isClassOrStruct())
                         continue;
 
-                    std::vector<std::string> varname;
-                    varname.push_back("");
-                    varname.push_back(arrayInfo.varname());
+                    std::vector<const std::string*> varname(2, nullptr);
+                    varname[1] = &arrayInfo.varname();
 
                     // search the function and it's parameters
                     for (const Token *tok3 = func_scope->classDef; tok3 && tok3 != func_scope->classEnd; tok3 = tok3->next()) {
@@ -1349,10 +1349,10 @@ void CheckBufferOverrun::checkStructVariable()
 
                         // Declare variable: Fred fred1;
                         if (Token::Match(tok3->next(), "%var% ;"))
-                            varname[0] = tok3->strAt(1);
+                            varname[0] = &tok3->strAt(1);
 
                         else if (isArrayOfStruct(tok3,posOfSemicolon)) {
-                            varname[0] = tok3->strAt(1);
+                            varname[0] = &tok3->strAt(1);
 
                             int pos = 2;
                             for (int k = 0 ; k < posOfSemicolon; k++) {
@@ -1364,7 +1364,7 @@ void CheckBufferOverrun::checkStructVariable()
 
                         // Declare pointer or reference: Fred *fred1
                         else if (Token::Match(tok3->next(), "*|& %var% [,);=]"))
-                            varname[0] = tok3->strAt(2);
+                            varname[0] = &tok3->strAt(2);
 
                         else
                             continue;
@@ -1450,7 +1450,7 @@ void CheckBufferOverrun::checkStructVariable()
                         temp.declarationId(0); // do variable lookup by variable and member names rather than varid
                         std::string varnames; // use class and member name for messages
                         for (std::size_t k = 0; k < varname.size(); ++k)
-                            varnames += (k == 0 ? "" : ".") + varname[k];
+                            varnames += (k == 0 ? "" : ".") + *varname[k];
 
                         temp.varname(varnames);
                         checkScope(checkTok, varname, temp);
@@ -1647,22 +1647,24 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart->next(); tok && tok != scope->classEnd; tok = tok->next()) {
-            unsigned int dstVarId;
+            unsigned int dstVarId = tok->varId();
             unsigned int srcVarId;
 
+            if (!dstVarId || tok->strAt(1) != "=")
+                continue;
+
+            tok = tok->tokAt(2);
+
             // Look for allocation of a buffer based on the size of a string
-            if (Token::Match(tok, "%var% = malloc|g_malloc|g_try_malloc ( strlen ( %name% ) )")) {
-                dstVarId = tok->varId();
+            if (Token::Match(tok, "malloc|g_malloc|g_try_malloc|alloca ( strlen ( %var% ) )")) {
+                srcVarId = tok->tokAt(4)->varId();
+                tok      = tok->tokAt(6);
+            } else if (_tokenizer->isCPP() && Token::Match(tok, "new char [ strlen ( %var% ) ]")) {
+                srcVarId = tok->tokAt(5)->varId();
+                tok      = tok->tokAt(7);
+            } else if (Token::Match(tok, "realloc|g_realloc|g_try_realloc ( %name% , strlen ( %var% ) )")) {
                 srcVarId = tok->tokAt(6)->varId();
                 tok      = tok->tokAt(8);
-            } else if (_tokenizer->isCPP() && Token::Match(tok, "%var% = new char [ strlen ( %name% ) ]")) {
-                dstVarId = tok->varId();
-                srcVarId = tok->tokAt(7)->varId();
-                tok      = tok->tokAt(9);
-            } else if (Token::Match(tok, "%var% = realloc|g_realloc|g_try_realloc ( %name% , strlen ( %name% ) )")) {
-                dstVarId = tok->varId();
-                srcVarId = tok->tokAt(8)->varId();
-                tok      = tok->tokAt(10);
             } else
                 continue;
 
