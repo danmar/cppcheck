@@ -50,7 +50,8 @@ Token::Token(Token **t) :
     _astOperand2(nullptr),
     _astParent(nullptr),
     _originalName(nullptr),
-    valuetype(nullptr)
+    valuetype(nullptr),
+    _values(nullptr)
 {
 }
 
@@ -58,6 +59,7 @@ Token::~Token()
 {
     delete _originalName;
     delete valuetype;
+    delete _values;
 }
 
 void Token::update_property_info()
@@ -213,7 +215,7 @@ void Token::swapWithNext()
         std::swap(_scope, _next->_scope);
         std::swap(_function, _next->_function);
         std::swap(_originalName, _next->_originalName);
-        std::swap(values, _next->values);
+        std::swap(_values, _next->_values);
         std::swap(valuetype, _next->valuetype);
         std::swap(_progressValue, _next->_progressValue);
     }
@@ -236,7 +238,11 @@ void Token::deleteThis()
             _originalName = _next->_originalName;
             _next->_originalName = nullptr;
         }
-        values = _next->values;
+        if (_next->_values) {
+            delete _values;
+            _values = _next->_values;
+            _next->_values = nullptr;
+        }
         if (_next->valuetype) {
             delete valuetype;
             valuetype = _next->valuetype;
@@ -261,7 +267,11 @@ void Token::deleteThis()
             _originalName = _previous->_originalName;
             _previous->_originalName = nullptr;
         }
-        values = _previous->values;
+        if (_previous->_values) {
+            delete _values;
+            _values = _previous->_values;
+            _previous->_values = nullptr;
+        }
         if (_previous->valuetype) {
             delete valuetype;
             valuetype = _previous->valuetype;
@@ -1233,8 +1243,8 @@ static void astStringXml(const Token *tok, std::size_t indent, std::ostream &out
         out << " variable=\"" << tok->variable() << '\"';
     if (tok->function())
         out << " function=\"" << tok->function() << '\"';
-    if (!tok->values.empty())
-        out << " values=\"" << &tok->values << '\"';
+    if (!tok->values().empty())
+        out << " values=\"" << &tok->values() << '\"';
 
     if (!tok->astOperand1() && !tok->astOperand2()) {
         out << "/>" << std::endl;
@@ -1318,19 +1328,19 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
     else
         out << "\n\n##Value flow" << std::endl;
     for (const Token *tok = this; tok; tok = tok->next()) {
-        if (tok->values.empty())
+        if (!tok->_values)
             continue;
         if (xml)
-            out << "    <values id=\"" << &tok->values << "\">" << std::endl;
+            out << "    <values id=\"" << tok->_values << "\">" << std::endl;
         else if (line != tok->linenr())
             out << "Line " << tok->linenr() << std::endl;
         line = tok->linenr();
         if (!xml) {
-            out << "  " << tok->str() << (tok->values.front().isKnown() ? " always " : " possible ");
-            if (tok->values.size() > 1U)
+            out << "  " << tok->str() << (tok->_values->front().isKnown() ? " always " : " possible ");
+            if (tok->_values->size() > 1U)
                 out << '{';
         }
-        for (std::list<ValueFlow::Value>::const_iterator it=tok->values.begin(); it!=tok->values.end(); ++it) {
+        for (std::list<ValueFlow::Value>::const_iterator it=tok->_values->begin(); it!=tok->_values->end(); ++it) {
             if (xml) {
                 out << "      <value ";
                 switch (it->valueType) {
@@ -1357,7 +1367,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             }
 
             else {
-                if (it != tok->values.begin())
+                if (it != tok->_values->begin())
                     out << ",";
                 switch (it->valueType) {
                 case ValueFlow::Value::INT:
@@ -1377,7 +1387,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
         }
         if (xml)
             out << "    </values>" << std::endl;
-        else if (tok->values.size() > 1U)
+        else if (tok->_values->size() > 1U)
             out << '}' << std::endl;
         else
             out << std::endl;
@@ -1388,9 +1398,11 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
 
 const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Settings *settings) const
 {
+    if (!_values)
+        return nullptr;
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
-    for (it = values.begin(); it != values.end(); ++it) {
+    for (it = _values->begin(); it != _values->end(); ++it) {
         if (it->isIntValue() && it->intvalue <= val) {
             if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
                 ret = &(*it);
@@ -1409,9 +1421,11 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
 
 const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Settings *settings) const
 {
+    if (!_values)
+        return nullptr;
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
-    for (it = values.begin(); it != values.end(); ++it) {
+    for (it = _values->begin(); it != _values->end(); ++it) {
         if (it->isIntValue() && it->intvalue >= val) {
             if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
                 ret = &(*it);
@@ -1430,10 +1444,12 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
 
 const Token *Token::getValueTokenMinStrSize() const
 {
+    if (!_values)
+        return nullptr;
     const Token *ret = nullptr;
     std::size_t minsize = ~0U;
     std::list<ValueFlow::Value>::const_iterator it;
-    for (it = values.begin(); it != values.end(); ++it) {
+    for (it = _values->begin(); it != _values->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             std::size_t size = getStrSize(it->tokvalue);
             if (!ret || size < minsize) {
@@ -1447,10 +1463,12 @@ const Token *Token::getValueTokenMinStrSize() const
 
 const Token *Token::getValueTokenMaxStrLength() const
 {
+    if (!_values)
+        return nullptr;
     const Token *ret = nullptr;
     std::size_t maxlength = 0U;
     std::list<ValueFlow::Value>::const_iterator it;
-    for (it = values.begin(); it != values.end(); ++it) {
+    for (it = _values->begin(); it != _values->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             std::size_t length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
@@ -1474,7 +1492,7 @@ const Token *Token::getValueTokenDeadPointer() const
     const Scope * const functionscope = getfunctionscope(this->scope());
 
     std::list<ValueFlow::Value>::const_iterator it;
-    for (it = values.begin(); it != values.end(); ++it) {
+    for (it = values().begin(); it != values().end(); ++it) {
         // Is this a pointer alias?
         if (!it->isTokValue() || (it->tokvalue && it->tokvalue->str() != "&"))
             continue;
@@ -1500,6 +1518,61 @@ const Token *Token::getValueTokenDeadPointer() const
             return it->tokvalue;
     }
     return nullptr;
+}
+
+bool Token::addValue(const ValueFlow::Value &value)
+{
+    if (value.isKnown() && _values) {
+        // Clear all other values since value is known
+        _values->clear();
+    }
+
+    if (_values) {
+        // Don't handle more than 10 values for performance reasons
+        // TODO: add setting?
+        if (_values->size() >= 10U)
+            return false;
+
+        // if value already exists, don't add it again
+        std::list<ValueFlow::Value>::iterator it;
+        for (it = _values->begin(); it != _values->end(); ++it) {
+            // different intvalue => continue
+            if (it->intvalue != value.intvalue)
+                continue;
+
+            // different types => continue
+            if (it->valueType != value.valueType)
+                continue;
+            if (value.isTokValue() && (it->tokvalue != value.tokvalue) && (it->tokvalue->str() != value.tokvalue->str()))
+                continue;
+
+            // same value, but old value is inconclusive so replace it
+            if (it->inconclusive && !value.inconclusive) {
+                *it = value;
+                if (it->varId == 0)
+                    it->varId = _varId;
+                break;
+            }
+
+            // Same value already exists, don't  add new value
+            return false;
+        }
+
+        // Add value
+        if (it == values().end()) {
+            ValueFlow::Value v(value);
+            if (v.varId == 0)
+                v.varId = _varId;
+            _values->push_back(v);
+        }
+    } else {
+        ValueFlow::Value v(value);
+        if (v.varId == 0)
+            v.varId = _varId;
+        _values = new std::list<ValueFlow::Value>(1, v);
+    }
+
+    return true;
 }
 
 void Token::assignProgressValues(Token *tok)

@@ -261,8 +261,8 @@ void CheckCondition::checkBadBitmaskCheck()
                                    (parent->str() == "(" && Token::Match(parent->astOperand1(), "if|while")) ||
                                    (parent->str() == "return" && parent->astOperand1() == tok && inBooleanFunction(tok));
 
-            const bool isTrue = (tok->astOperand1()->values.size() == 1 && tok->astOperand1()->values.front().intvalue != 0 && tok->astOperand1()->values.front().isKnown()) ||
-                                (tok->astOperand2()->values.size() == 1 && tok->astOperand2()->values.front().intvalue != 0 && tok->astOperand2()->values.front().isKnown());
+            const bool isTrue = (tok->astOperand1()->values().size() == 1 && tok->astOperand1()->values().front().intvalue != 0 && tok->astOperand1()->values().front().isKnown()) ||
+                                (tok->astOperand2()->values().size() == 1 && tok->astOperand2()->values().front().intvalue != 0 && tok->astOperand2()->values().front().isKnown());
 
             if (isBoolean && isTrue)
                 badBitmaskCheckError(tok);
@@ -1049,7 +1049,7 @@ void CheckCondition::alwaysTrueFalse()
             if (isExpandedMacro)
                 continue;
 
-            alwaysTrueFalseError(tok, tok->values.front().intvalue != 0);
+            alwaysTrueFalseError(tok, tok->values().front().intvalue != 0);
         }
     }
 }

@@ -1132,7 +1132,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (!value)
                 continue;
 
-            for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it) {
+            for (std::list<ValueFlow::Value>::const_iterator it = tok->values().begin(); it != tok->values().end(); ++it) {
                 if (!it->isTokValue() || !it->tokvalue)
                     continue;
                 const Variable *var = it->tokvalue->variable();

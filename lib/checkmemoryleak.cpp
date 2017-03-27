@@ -481,18 +481,18 @@ static bool alwaysTrue(const Token *tok)
 {
     if (!tok)
         return false;
-    if (tok->values.size() == 1U &&
-        tok->values.front().intvalue != 0 &&
-        tok->values.front().isKnown())
+    if (tok->values().size() == 1U &&
+        tok->values().front().intvalue != 0 &&
+        tok->values().front().isKnown())
         return true;
     if (tok->str() == "||")
         return alwaysTrue(tok->astOperand1()) || alwaysTrue(tok->astOperand2());
     if (tok->str() == "true")
         return true;
     return (tok->isComparisonOp() &&
-            tok->values.size() == 1U &&
-            tok->values.front().isKnown() &&
-            tok->values.front().intvalue != 0);
+            tok->values().size() == 1U &&
+            tok->values().front().isKnown() &&
+            tok->values().front().intvalue != 0);
 }
 
 bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, const Settings *settings, bool cpp)

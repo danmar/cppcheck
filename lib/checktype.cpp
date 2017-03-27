@@ -337,7 +337,7 @@ void CheckType::checkFloatToIntegerOverflow()
                 continue;
 
             const Token *op1 = tok->astOperand1();
-            for (std::list<ValueFlow::Value>::const_iterator it = op1->values.begin(); it != op1->values.end(); ++it) {
+            for (std::list<ValueFlow::Value>::const_iterator it = op1->values().begin(); it != op1->values().end(); ++it) {
                 if (it->valueType != ValueFlow::Value::FLOAT)
                     continue;
                 if (it->inconclusive && !_settings->inconclusive)

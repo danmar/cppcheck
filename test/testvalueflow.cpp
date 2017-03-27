@@ -95,7 +95,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
                     if (it->isIntValue() && it->intvalue == value)
                         return true;
                 }
@@ -115,7 +115,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
                     if (it->isTokValue() && Token::simpleMatch(it->tokvalue, value))
                         return true;
                 }
@@ -134,7 +134,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
                     if (it->isMovedValue() && it->moveKind == moveKind)
                         return true;
                 }
@@ -153,7 +153,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
                     if (it->isIntValue() && it->intvalue == value && it->condition)
                         return true;
                 }
@@ -181,7 +181,7 @@ private:
         errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
         const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
-        return tok ? tok->values : std::list<ValueFlow::Value>();
+        return tok ? tok->values() : std::list<ValueFlow::Value>();
     }
 
     ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {

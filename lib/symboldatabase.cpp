@@ -1321,8 +1321,8 @@ void SymbolDatabase::createSymbolDatabaseEnums()
                     ValueFlow::valueFlowConstantFoldAST(rhs, _settings);
 
                     // get constant folded value:
-                    if (rhs && rhs->values.size() == 1U && rhs->values.front().isKnown()) {
-                        enumerator.value = rhs->values.front().intvalue;
+                    if (rhs && rhs->values().size() == 1U && rhs->values().front().isKnown()) {
+                        enumerator.value = rhs->values().front().intvalue;
                         enumerator.value_known = true;
                         value = enumerator.value + 1;
                     }
@@ -1425,8 +1425,8 @@ void SymbolDatabase::createSymbolDatabaseUnknownArrayDimensions()
                         ValueFlow::valueFlowConstantFoldAST(rhs, _settings);
 
                         // get constant folded value:
-                        if (rhs && rhs->values.size() == 1U && rhs->values.front().isKnown()) {
-                            dimension.num = rhs->values.front().intvalue;
+                        if (rhs && rhs->values().size() == 1U && rhs->values().front().isKnown()) {
+                            dimension.num = rhs->values().front().intvalue;
                             dimension.known = true;
                         }
                     }

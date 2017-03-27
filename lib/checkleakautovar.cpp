@@ -547,7 +547,7 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const Va
             if (arg->str() == "&")
                 arg = arg->next();
 
-            bool isnull = arg->hasKnownIntValue() && arg->values.front().intvalue == 0;
+            bool isnull = arg->hasKnownIntValue() && arg->values().front().intvalue == 0;
 
             // Is variable allocated?
             if (!isnull && (!af || af->arg == argNr))
