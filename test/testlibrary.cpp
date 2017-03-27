@@ -339,7 +339,7 @@ private:
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         // arg1: type=strlen arg2
-        const std::list<Library::ArgumentChecks::MinSize> *minsizes = library.argminsizes(tokenList.front(),1);
+        const std::vector<Library::ArgumentChecks::MinSize> *minsizes = library.argminsizes(tokenList.front(),1);
         ASSERT_EQUALS(true, minsizes != nullptr);
         ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
         if (minsizes && minsizes->size() == 1U) {

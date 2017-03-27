@@ -29,7 +29,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <list>
 #include <vector>
 
 namespace tinyxml2 {
@@ -255,7 +254,7 @@ public:
             int arg;
             int arg2;
         };
-        std::list<MinSize> minsizes;
+        std::vector<MinSize> minsizes;
     };
 
 
@@ -310,7 +309,7 @@ public:
 
     bool hasminsize(const std::string &functionName) const;
 
-    const std::list<ArgumentChecks::MinSize> *argminsizes(const Token *ftok, int argnr) const {
+    const std::vector<ArgumentChecks::MinSize> *argminsizes(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? &arg->minsizes : nullptr;
     }

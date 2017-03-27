@@ -313,7 +313,7 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
 }
 //---------------------------------------------------------------------------
 
-static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &minsizes, const Token * const ftok, const MathLib::bigint arraySize, const Token **charSizeToken, const Settings * const settings)
+static bool checkMinSizes(const std::vector<Library::ArgumentChecks::MinSize> &minsizes, const Token * const ftok, const MathLib::bigint arraySize, const Token **charSizeToken, const Settings * const settings)
 {
     if (charSizeToken)
         *charSizeToken = nullptr;
@@ -323,7 +323,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
 
     // All conditions must be true
     bool error = true;
-    for (std::list<Library::ArgumentChecks::MinSize>::const_iterator minsize = minsizes.begin(); minsize != minsizes.end(); ++minsize) {
+    for (std::vector<Library::ArgumentChecks::MinSize>::const_iterator minsize = minsizes.begin(); minsize != minsizes.end(); ++minsize) {
         if (!error)
             return false;
         error = false;
@@ -383,7 +383,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
 
 void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int paramIndex, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack)
 {
-    const std::list<Library::ArgumentChecks::MinSize> * const minsizes = _settings->library.argminsizes(&ftok, paramIndex);
+    const std::vector<Library::ArgumentChecks::MinSize> * const minsizes = _settings->library.argminsizes(&ftok, paramIndex);
 
     if (minsizes) {
         MathLib::bigint arraySize = arrayInfo.element_size();
@@ -1704,7 +1704,7 @@ void CheckBufferOverrun::checkStringArgument()
                 const Token *strtoken = argtok->getValueTokenMinStrSize();
                 if (!strtoken)
                     continue;
-                const std::list<Library::ArgumentChecks::MinSize> *minsizes = _settings->library.argminsizes(tok, argnr);
+                const std::vector<Library::ArgumentChecks::MinSize> *minsizes = _settings->library.argminsizes(tok, argnr);
                 if (!minsizes)
                     continue;
                 if (checkMinSizes(*minsizes, tok, Token::getStrSize(strtoken), nullptr, _settings))

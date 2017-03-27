@@ -623,9 +623,10 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
                         return Error(BAD_ATTRIBUTE_VALUE, argattr);
 
+                    ac.minsizes.reserve(type == ArgumentChecks::MinSize::MUL ? 2 : 1);
                     ac.minsizes.push_back(ArgumentChecks::MinSize(type,argattr[0]-'0'));
                     if (type == ArgumentChecks::MinSize::MUL) {
-                        const char *arg2attr  = argnode->Attribute("arg2");
+                        const char *arg2attr = argnode->Attribute("arg2");
                         if (!arg2attr)
                             return Error(MISSING_ATTRIBUTE, "arg2");
                         if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
