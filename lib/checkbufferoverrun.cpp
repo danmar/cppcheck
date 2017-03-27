@@ -456,9 +456,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
                             std::list<const Token *> callstack2(callstack);
                             callstack2.push_back(ftok2);
 
-                            std::vector<MathLib::bigint> indexes;
-                            indexes.push_back(index);
-
+                            std::vector<MathLib::bigint> indexes(1, index);
                             arrayIndexOutOfBoundsError(callstack2, arrayInfo, indexes);
                         }
                     }
@@ -1027,7 +1025,7 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
             MathLib::biguint charactersAppend = 0;
             const Token *tok3 = tok2;
 
-            while (Token::Match(tok3, "strcat ( %varid% , %str% ) ;", arrayInfo.declarationId())) {
+            while (Token::Match(tok3, "strcat ( %varid% , %str% )", arrayInfo.declarationId())) {
                 charactersAppend += Token::getStrLength(tok3->tokAt(4));
                 if (charactersAppend >= total_size) {
                     bufferOverrunError(tok3, arrayInfo.varname());
@@ -1159,9 +1157,9 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                     callstack.push_back(it->tokvalue);
                     callstack.push_back(tok);
 
-                    std::vector<MathLib::bigint> indexes2;
+                    std::vector<MathLib::bigint> indexes2(indexes.size());
                     for (unsigned int i = 0; i < indexes.size(); ++i)
-                        indexes2.push_back(indexes[i].intvalue);
+                        indexes2[i] = indexes[i].intvalue;
 
                     arrayIndexOutOfBoundsError(callstack, arrayInfo, indexes2);
                 }
@@ -1217,8 +1215,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             // size : Max array index
             MathLib::bigint size = 0;
 
-            // varid : The variable id for the array
-            const Variable *var = nullptr;
 
             // nextTok : used to skip to next statement.
             const Token * nextTok = tok;
@@ -1230,31 +1226,34 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (_tokenizer->isMaxTime())
                 return;
 
+            // varid : The variable id for the array
+            const Variable *var = tok->next()->variable();
+
             if (_tokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% [")) {
-                if (tok->tokAt(5)->astOperand2() == nullptr || tok->tokAt(5)->astOperand2()->getMaxValue(false) == nullptr)
+                tok = tok->tokAt(5);
+                if (tok->astOperand2() == nullptr || tok->astOperand2()->getMaxValue(false) == nullptr)
                     continue;
-                size = tok->tokAt(5)->astOperand2()->getMaxValue(false)->intvalue;
-                var = tok->next()->variable();
-                nextTok = tok->linkAt(5)->next();
+                size = tok->astOperand2()->getMaxValue(false)->intvalue;
+                nextTok = tok->link()->next();
                 if (size < 0) {
-                    negativeMemoryAllocationSizeError(tok->next()->next());
+                    negativeMemoryAllocationSizeError(tok);
                 }
             } else if (_tokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% (|;")) {
                 size = 1;
-                var = tok->next()->variable();
-                if (tok->strAt(5) == ";")
-                    nextTok = tok->tokAt(6);
+                tok = tok->tokAt(5);
+                if (tok->str() == ";")
+                    nextTok = tok->next();
                 else
-                    nextTok = tok->linkAt(5)->next();
+                    nextTok = tok->link()->next();
             } else if (Token::Match(tok, "[*;{}] %var% = malloc|alloca (") && Token::simpleMatch(tok->linkAt(4), ") ;")) {
-                if (tok->tokAt(4)->astOperand2() == nullptr || tok->tokAt(4)->astOperand2()->getMaxValue(false) == nullptr)
+                tok = tok->tokAt(4);
+                if (tok->astOperand2() == nullptr || tok->astOperand2()->getMaxValue(false) == nullptr)
                     continue;
-                size = tok->tokAt(4)->astOperand2()->getMaxValue(false)->intvalue;
-                var = tok->next()->variable();
-                nextTok = tok->linkAt(4)->tokAt(2);
+                size = tok->astOperand2()->getMaxValue(false)->intvalue;
+                nextTok = tok->link()->tokAt(2);
 
                 if (size < 0) {
-                    negativeMemoryAllocationSizeError(tok->next()->next());
+                    negativeMemoryAllocationSizeError(tok);
                 }
 
                 /** @todo false negatives: this may be too conservative */
@@ -1269,7 +1268,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                     size /= static_cast<int>(typeSize);
                 }
                 if (size < 0) {
-                    negativeMemoryAllocationSizeError(tok->next()->next());
+                    negativeMemoryAllocationSizeError(tok);
                 }
             } else {
                 continue;
@@ -1282,7 +1281,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (totalSize == 0)
                 continue;
 
-            ArrayInfo temp(var->declarationId(), tok->next()->str(), totalSize / size, size);
+            ArrayInfo temp(var->declarationId(), var->name(), totalSize / size, size);
             checkScope(nextTok, v, temp);
         }
     }
