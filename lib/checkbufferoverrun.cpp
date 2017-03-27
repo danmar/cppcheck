@@ -1864,35 +1864,28 @@ void CheckBufferOverrun::arrayIndexThenCheck()
             }
 
             if (Token::Match(tok, "%name% [ %var% ]")) {
-                tok = tok->tokAt(2);
+                tok = tok->next();
 
-                const unsigned int indexID = tok->varId();
-                const std::string& indexName(tok->str());
+                const unsigned int indexID = tok->next()->varId();
+                const std::string& indexName(tok->strAt(1));
 
-                // skip array index..
-                tok = tok->tokAt(2);
-                while (tok && tok->str() == "[")
-                    tok = tok->link()->next();
+                // Iterate AST upwards
+                const Token* tok2 = tok;
+                const Token* tok3 = tok2;
+                while (tok2->astParent() && tok2->tokType() != Token::eLogicalOp) {
+                    tok3 = tok2;
+                    tok2 = tok2->astParent();
+                }
 
-                // syntax error
-                if (!tok)
-                    return;
-
-                // skip comparison
-                if (tok->tokType() == Token::eComparisonOp)
-                    tok = tok->tokAt(2);
-
-                if (!tok)
-                    break;
-                // skip close parentheses
-                if (tok->str() == ")")
-                    tok = tok->next();
+                // Ensure that we ended at a logical operator and that we came from its left side
+                if (tok2->tokType() != Token::eLogicalOp || tok2->astOperand1() != tok3)
+                    continue;
 
                 // check if array index is ok
                 // statement can be closed in parentheses, so "(| " is using
-                if (Token::Match(tok, "&& (| %varid% <|<=", indexID))
+                if (Token::Match(tok2, "&& (| %varid% <|<=", indexID))
                     arrayIndexThenCheckError(tok, indexName);
-                else if (Token::Match(tok, "&& (| %any% >|>= %varid% !!+", indexID))
+                else if (Token::Match(tok2, "&& (| %any% >|>= %varid% !!+", indexID))
                     arrayIndexThenCheckError(tok, indexName);
             }
         }
