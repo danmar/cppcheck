@@ -44,6 +44,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TestSimplifyTokens;
     friend class TestSimplifyTypedef;
     friend class TestTokenizer;
+    friend class SymbolDatabase;
 public:
     Tokenizer();
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
@@ -811,6 +812,14 @@ private:
     Tokenizer &operator=(const Tokenizer &);
 
     Token *processFunc(Token *tok2, bool inOperator) const;
+
+    /**
+    * Get new variable id.
+    * @return new variable id
+    */
+    unsigned int newVarId() {
+        return ++_varId;
+    }
 
     /** Set pod types */
     void setPodTypes();

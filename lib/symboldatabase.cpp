@@ -1209,8 +1209,36 @@ void SymbolDatabase::createSymbolDatabaseSetTypePointers()
     }
 }
 
+void SymbolDatabase::fixVarId(VarIdMap & varIds, const Token * vartok, Token * membertok, const Variable * membervar)
+{
+    VarIdMap::iterator varId = varIds.find(vartok->varId());
+    if (varId == varIds.end()) {
+        MemberIdMap memberId;
+        if (membertok->varId() == 0) {
+            memberId[membervar->nameToken()->varId()] = const_cast<Tokenizer *>(_tokenizer)->newVarId();
+            _variableList.push_back(membervar);
+        } else
+            _variableList[membertok->varId()] = membervar;
+        varIds.insert(std::make_pair(vartok->varId(), memberId));
+        varId = varIds.find(vartok->varId());
+    }
+    MemberIdMap::iterator memberId = varId->second.find(membervar->nameToken()->varId());
+    if (memberId == varId->second.end()) {
+        if (membertok->varId() == 0) {
+            varId->second.insert(std::make_pair(membervar->nameToken()->varId(), const_cast<Tokenizer *>(_tokenizer)->newVarId()));
+            _variableList.push_back(membervar);
+        } else
+            _variableList[membertok->varId()] = membervar;
+        memberId = varId->second.find(membervar->nameToken()->varId());
+    }
+    if (membertok->varId() == 0)
+        membertok->varId(memberId->second);
+}
+
 void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 {
+    VarIdMap varIds;
+
     // Set variable pointers
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
         if (tok->varId())
@@ -1239,6 +1267,8 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                     const Variable *membervar = var->typeScope()->getVariable(membertok->str());
                     if (membervar) {
                         membertok->variable(membervar);
+                        if (membertok->varId() == 0 || _variableList[membertok->varId()] == nullptr)
+                            fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
                     }
                 } else if (var && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
                     if (Token::Match(var->typeStartToken(), "std :: %type% < %type% *| *| >")) {
@@ -1247,6 +1277,8 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                             const Variable *membervar = type->classScope->getVariable(membertok->str());
                             if (membervar) {
                                 membertok->variable(membervar);
+                                if (membertok->varId() == 0 || _variableList[membertok->varId()] == nullptr)
+                                    fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
                             }
                         }
                     }
