@@ -4579,8 +4579,14 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     }
 
     if (parent->str() == "[" && (!cpp || parent->astOperand1() == tok) && valuetype.pointer > 0U) {
+        const Token *op1 = parent->astOperand1();
+        while (op1 && op1->str() == "[")
+            op1 = op1->astOperand1();
+
         ValueType vt(valuetype);
-        vt.pointer -= 1U;
+        // the "[" is a dereference unless this is a variable declaration
+        if (!(op1 && op1->variable() && op1->variable()->nameToken() == op1))
+            vt.pointer -= 1U;
         setValueType(parent, vt);
         return;
     }
