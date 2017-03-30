@@ -105,7 +105,9 @@ void Check64BitPortability::pointerassignment()
             if (rhstype->pointer >= 1U &&
                 lhstype->pointer == 0U &&
                 lhstype->originalTypeName.empty() &&
-                lhstype->type == ValueType::Type::INT)
+                lhstype->isIntegral() &&
+                lhstype->type >= ValueType::Type::CHAR &&
+                lhstype->type <= ValueType::Type::INT)
                 assignmentAddressToIntegerError(tok);
         }
     }
