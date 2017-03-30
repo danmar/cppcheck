@@ -1847,7 +1847,6 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 9U, 11));
 
-
         // hang
         code = "void f() {\n"
                "  for(int i = 0; i < 20; i++)\n"
@@ -1867,6 +1866,14 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 10));
 
+        // #7886 - valueFlowForLoop must be called after valueFlowAfterAssign
+        code = "void f() {\n"
+               "  int sz = 4;\n"
+               "  int x,y;\n"
+               "  for(x=0,y=0; x < sz && y < 10; x++)\n"
+               "    a = x;\n" // <- max value is 3
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 3));
     }
 
     void valueFlowSubFunction() {
