@@ -757,7 +757,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
         if (firstColon == lastColon)
             continue;
         const std::string xmlfile = buildDir + '/' + filesTxtLine.substr(0,firstColon);
-        const std::string sourcefile = filesTxtLine.substr(lastColon+1);
+        //const std::string sourcefile = filesTxtLine.substr(lastColon+1);
 
         tinyxml2::XMLDocument doc;
         tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
