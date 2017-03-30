@@ -32,6 +32,7 @@
 #include <list>
 #include <cstdlib>
 #include <stack>
+#include <tinyxml2.h>
 
 //---------------------------------------------------------------------------
 
@@ -1965,6 +1966,38 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
 
     return fileInfo;
 }
+
+Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
+{
+    const std::string ArrayUsage("ArrayUsage");
+    const std::string ArraySize("ArraySize");
+
+    MyFileInfo *fileInfo = new MyFileInfo;
+    for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
+        if (e->Name() == ArrayUsage) {
+            const char *array = e->Attribute("array");
+            const char *arrayIndex = e->Attribute("index");
+            const char *fileName = e->Attribute("fileName");
+            const char *linenr = e->Attribute("linenr");
+            if (!array || !arrayIndex || !MathLib::isInt(arrayIndex) || !fileName || !linenr || !MathLib::isInt(linenr))
+                continue;
+            struct MyFileInfo::ArrayUsage arrayUsage;
+            arrayUsage.index = MathLib::toLongNumber(arrayIndex);
+            arrayUsage.fileName = fileName;
+            arrayUsage.linenr = MathLib::toLongNumber(linenr);
+            fileInfo->arrayUsage[array] = arrayUsage;
+        } else if (e->Name() == ArraySize) {
+            const char *array = e->Attribute("array");
+            const char *size = e->Attribute("size");
+            if (!array || !size || !MathLib::isInt(size))
+                continue;
+            fileInfo->arraySize[array] = MathLib::toLongNumber(size);
+        }
+    }
+
+    return fileInfo;
+}
+
 
 void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings&, ErrorLogger &errorLogger)
 {

@@ -37,6 +37,10 @@
  */
 #define CHECK_WRONG_DATA(X)   (X)
 
+namespace tinyxml2 {
+    class XMLElement;
+}
+
 /// @addtogroup Core
 /// @{
 
@@ -105,6 +109,11 @@ public:
     virtual FileInfo * getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const {
         (void)tokenizer;
         (void)settings;
+        return nullptr;
+    }
+
+    virtual FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const {
+        (void)xmlElement;
         return nullptr;
     }
 
