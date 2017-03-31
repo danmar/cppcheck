@@ -46,6 +46,8 @@ static const struct CWE CWE563(563U);   // Assignment to Variable without Use ('
 static const struct CWE CWE570(570U);   // Expression is Always False
 static const struct CWE CWE571(571U);   // Expression is Always True
 static const struct CWE CWE672(672U);   // Operation on a Resource after Expiration or Release
+static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
+static const struct CWE CWE683(683U);   // Function Call With Incorrect Order of Arguments
 static const struct CWE CWE686(686U);   // Function Call With Incorrect Argument Type
 static const struct CWE CWE687(687U);   // Function Call With Incorrectly Specified Argument Value
 static const struct CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
@@ -2875,7 +2877,7 @@ void CheckOther::funcArgNamesDifferent(const std::string & functionName, size_t 
     reportError(tokens, Severity::style, "funcArgNamesDifferent",
                 "Function '" + functionName + "' argument " + MathLib::toString(index + 1) + " names different: declaration '" +
                 (declaration ? declaration->str() : std::string("A")) + "' definition '" +
-                (definition ? definition->str() : std::string("B")) + "'.", CWE(0U), true);
+                (definition ? definition->str() : std::string("B")) + "'.", CWE628, true);
 }
 
 void CheckOther::funcArgOrderDifferent(const std::string & functionName,
@@ -2901,6 +2903,6 @@ void CheckOther::funcArgOrderDifferent(const std::string & functionName,
             msg += definitions[i]->str();
     }
     msg += "'";
-    reportError(tokens, Severity::warning, "funcArgOrderDifferent", msg, CWE(0U), false);
+    reportError(tokens, Severity::warning, "funcArgOrderDifferent", msg, CWE683, false);
 }
 
