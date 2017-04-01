@@ -110,7 +110,7 @@ private:
     void seekOnAppendedFileError(const Token *tok);
     void invalidScanfError(const Token *tok);
     void wrongPrintfScanfArgumentsError(const Token* tok,
-                                        const std::string &function,
+                                        const std::string &functionName,
                                         unsigned int numFormat,
                                         unsigned int numFunction);
     void wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
@@ -127,7 +127,7 @@ private:
     void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidLengthModifierError(const Token* tok, unsigned int numFormat, const std::string& modifier);
     void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var, char c);
-    static void argumentType(std::ostream & s, const ArgumentInfo * argInfo);
+    static void argumentType(std::ostream & os, const ArgumentInfo * argInfo);
     static Severity::SeverityType getSeverity(const ArgumentInfo *argInfo);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {

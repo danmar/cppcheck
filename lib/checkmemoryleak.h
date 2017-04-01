@@ -69,13 +69,13 @@ private:
 
     /**
      * Report error. Similar with the function Check::reportError
-     * @param location the token where the error occurs
+     * @param tok the token where the error occurs
      * @param severity the severity of the bug
      * @param id type of message
      * @param msg text
      * @param cwe cwe number
      */
-    void reportErr(const Token *location, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const;
+    void reportErr(const Token *tok, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const;
 
     /**
      * Report error. Similar with the function Check::reportError
