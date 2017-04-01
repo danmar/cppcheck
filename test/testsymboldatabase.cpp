@@ -4439,6 +4439,7 @@ private:
         ASSERT_EQUALS("signed int", typeOf("; auto x = 3;", "x"));
         ASSERT_EQUALS("signed int *", typeOf("; auto *p = (int *)0;", "p"));
         ASSERT_EQUALS("signed int *", typeOf("; auto data = new int[100];", "data"));
+        ASSERT_EQUALS("signed int", typeOf("; auto data = new std::string; int x=1000; x=x/5;", "/")); // #7970
         ASSERT_EQUALS("signed int *", typeOf("; auto data = new (nothrow) int[100];", "data"));
         ASSERT_EQUALS("signed int *", typeOf("; auto data = new (std::nothrow) int[100];", "data"));
         ASSERT_EQUALS("const signed short", typeOf("short values[10]; void f() { for (const auto *x : values); }", "x"));

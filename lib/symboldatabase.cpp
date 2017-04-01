@@ -5037,7 +5037,7 @@ void SymbolDatabase::setValueTypeInTokenList()
                 typeTok = typeTok->tokAt(2);
             }
             if (!Token::Match(typeTok, "%type% ;|[|("))
-                return;
+                continue;
             typestr += typeTok->str();
             ValueType vt;
             vt.pointer = 1;
@@ -5049,7 +5049,7 @@ void SymbolDatabase::setValueTypeInTokenList()
                 if (vt.type == ValueType::Type::UNKNOWN_TYPE)
                     vt.fromLibraryType(typestr, _settings);
                 if (vt.type == ValueType::Type::UNKNOWN_TYPE)
-                    return;
+                    continue;
                 if (typeTok->isUnsigned())
                     vt.sign = ValueType::Sign::UNSIGNED;
                 else if (typeTok->isSigned())
