@@ -1832,7 +1832,23 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 
 bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
 {
-    if (tok->function() && tok->function()->nestedIn == scope)
+    if (!tok->function()) {
+        for (std::list<Function>::const_iterator i = scope->functionList.cbegin(); i != scope->functionList.cend(); ++i) {
+            if (i->name() == tok->str()) {
+                const Token* tok2 = tok->tokAt(2);
+                size_t argsPassed = tok2->str() == ")" ? 0 : 1;
+                for (;;) {
+                    tok2 = tok2->nextArgument();
+                    if (tok2)
+                        argsPassed++;
+                    else
+                        break;
+                }
+                if (argsPassed == i->argCount() || (argsPassed < i->argCount() && argsPassed >= i->minArgCount()))
+                    return true;
+            }
+        }
+    } else if (tok->function()->nestedIn == scope)
         return !tok->function()->isStatic();
 
     // not found in this class
@@ -1855,7 +1871,9 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
 
 bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
 {
-    if (tok->function() && tok->function()->nestedIn == scope)
+    if (!tok->function())
+        return false;
+    else if (tok->function()->nestedIn == scope)
         return tok->function()->isConst();
 
     // not found in this class

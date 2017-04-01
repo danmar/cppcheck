@@ -287,6 +287,7 @@ private:
         TEST_CASE(findFunction15);
         TEST_CASE(findFunction16);
         TEST_CASE(findFunction17);
+        TEST_CASE(findFunction18);
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -3785,6 +3786,22 @@ private:
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 2);
     }
 
+    void findFunction18() {
+        GET_SYMBOL_DB("class Fred {\n"
+                      "    void f(int i) { }\n"
+                      "    void f(float f) const { }\n"
+                      "    void a() { f(1); }\n"
+                      "    void b() { f(1.f); }\n"
+                      "};");
+
+        ASSERT_EQUALS("", errout.str());
+
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "f ( 1 ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "f ( 1.f ) ;");
+        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
+    }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
                 ASSERT_EQUALS(true, x != nullptr);                                  \

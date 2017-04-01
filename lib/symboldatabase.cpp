@@ -3846,6 +3846,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
     // check each function against the arguments in the function call for a match
     for (std::size_t i = 0; i < matches.size();) {
         bool erased = false;
+        bool constFallback = false;
         const Function * func = matches[i];
         size_t same = 0;
 
@@ -3857,9 +3858,12 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             if (scope && scope->functionOf && scope->functionOf->isClassOrStruct()) {
                 // check if isConst mismatches
                 if (!(scope->function && scope->function->isConst() == func->isConst())) {
-                    if (!erased)
-                        ++i;
-                    continue;
+                    if (scope->function->isConst()) {
+                        if (!erased)
+                            ++i;
+                        continue;
+                    }
+                    constFallback = true;
                 }
             }
         }
@@ -4072,10 +4076,14 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         size_t hasToBe = func->isVariadic() ? (func->argCount() - 1) : args;
 
         // check if all arguments matched
-        if (same == hasToBe)
-            return func;
+        if (same == hasToBe) {
+            if (constFallback)
+                fallback1Func = func;
+            else
+                return func;
+        }
 
-        if (!fallback1Func) {
+        else if (!fallback1Func) {
             if (same + fallback1 == hasToBe)
                 fallback1Func = func;
             else if (!fallback2Func && same + fallback2 + fallback1 == hasToBe)
