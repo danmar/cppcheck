@@ -4031,7 +4031,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             }
 
             // check that function argument type is not mismatching
-            else if (funcarg && funcarg->isReference() && arguments[j]->str() == "&") {
+            else if (funcarg->isReference() && arguments[j]->str() == "&") {
                 // can't match so remove this function from possible matches
                 matches.erase(matches.begin() + i);
                 erased = true;
