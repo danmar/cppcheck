@@ -24,6 +24,7 @@
 #include "preprocessor.h"
 #include "settings.h"
 #include "errorlogger.h"
+#include "utils.h"
 
 #include <cstring>
 #include <sstream>
@@ -301,8 +302,8 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
         } else if (std::strchr("+-", ch) &&
                    CurrentToken.length() > 0 &&
                    std::isdigit((unsigned char)CurrentToken[0]) &&
-                   (CurrentToken.back() == 'e' ||
-                    CurrentToken.back() == 'E') &&
+                   (endsWith(CurrentToken,'e') ||
+                    endsWith(CurrentToken,'E')) &&
                    !MathLib::isIntHex(CurrentToken)) {
             // Don't separate doubles "4.2e+10"
         } else if (CurrentToken.empty() && ch == '.' && std::isdigit((unsigned char)code.peek())) {

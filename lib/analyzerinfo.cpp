@@ -18,6 +18,7 @@
 
 #include "analyzerinfo.h"
 #include "path.h"
+#include "utils.h"
 #include <tinyxml2.h>
 #include <sstream>
 
@@ -110,7 +111,7 @@ std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir
     }
 
     std::string filename = Path::fromNativeSeparators(buildDir);
-    if (filename.back() != '/')
+    if (!endsWith(filename, '/'))
         filename += '/';
     const std::string::size_type pos = sourcefile.rfind('/');
     if (pos == std::string::npos)

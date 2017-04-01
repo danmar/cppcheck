@@ -74,9 +74,9 @@ void Token::update_property_info()
                 _tokType = eName;
         } else if (std::isdigit((unsigned char)_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit((unsigned char)_str[1])))
             _tokType = eNumber;
-        else if (_str.length() > 1 && _str[0] == '"' && _str.back() == '"')
+        else if (_str.length() > 1 && _str[0] == '"' && endsWith(_str,'"'))
             _tokType = eString;
-        else if (_str.length() > 1 && _str[0] == '\'' && _str.back() == '\'')
+        else if (_str.length() > 1 && _str[0] == '\'' && endsWith(_str,'\''))
             _tokType = eChar;
         else if (_str == "=" || _str == "<<=" || _str == ">>=" ||
                  (_str.size() == 2U && _str[1] == '=' && std::strchr("+-*/%&^|", _str[0])))

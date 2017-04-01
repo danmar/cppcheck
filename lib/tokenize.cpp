@@ -1855,7 +1855,7 @@ void Tokenizer::combineOperators()
                 }
                 if (prev->isName() && prev->isUpperCaseName())
                     continue;
-                if (prev->isName() && prev->str().back() == ':')
+                if (prev->isName() && endsWith(prev->str(), ':'))
                     simplify = true;
                 break;
             }
@@ -2648,7 +2648,7 @@ void Tokenizer::setVarIdPass1()
              (tok->str() == "(" && isFunctionHead(tok,"{")) ||
              (tok->str() == "(" && !scopeStack.top().isExecutable && isFunctionHead(tok,";:")) ||
              (tok->str() == "," && !scopeStack.top().isExecutable) ||
-             (tok->isName() && tok->str().back() == ':'))) {
+             (tok->isName() && endsWith(tok->str(), ':')))) {
 
             // No variable declarations in sizeof
             if (Token::simpleMatch(tok->previous(), "sizeof (")) {
@@ -2662,7 +2662,7 @@ void Tokenizer::setVarIdPass1()
             const Token *tok2 = (tok->isName()) ? tok : tok->next();
 
             // private: protected: public: etc
-            while (tok2 && tok2->str().back() == ':') {
+            while (tok2 && endsWith(tok2->str(), ':')) {
                 tok2 = tok2->next();
             }
             if (!tok2)

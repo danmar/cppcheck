@@ -24,6 +24,7 @@
 #include "token.h"
 #include "symboldatabase.h"
 #include "astutils.h"
+#include "utils.h"
 
 #include <string>
 
@@ -87,7 +88,7 @@ Library::Error Library::load(const char exename[], const char path[])
         while (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND && !cfgfolders.empty()) {
             const std::string cfgfolder(cfgfolders.front());
             cfgfolders.pop_front();
-            const char *sep = (!cfgfolder.empty() && cfgfolder.back()=='/' ? "" : "/");
+            const char *sep = (!cfgfolder.empty() && endsWith(cfgfolder,'/') ? "" : "/");
             const std::string filename(cfgfolder + sep + fullfilename);
             error = doc.LoadFile(filename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)

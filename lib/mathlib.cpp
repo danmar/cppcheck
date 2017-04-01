@@ -20,6 +20,7 @@
 
 #include "mathlib.h"
 #include "errorlogger.h"
+#include "utils.h"
 
 #include <algorithm> // VS2013: std::min and std::max
 #include <cmath>
@@ -524,7 +525,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
             return static_cast<bigint>(doubleval);
     }
 
-    if (str[0] == '\'' && str.size() >= 3U && str.back() == '\'') {
+    if (str[0] == '\'' && str.size() >= 3U && endsWith(str,'\'')) {
         return characterLiteralToLongNumber(str.substr(1,str.size()-2));
     }
 
@@ -537,7 +538,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
-    if (str[0] == '\'' && str.size() >= 3U && str.back() == '\'')
+    if (str[0] == '\'' && str.size() >= 3U && endsWith(str,'\''))
         return characterLiteralToLongNumber(str.substr(1,str.size()-2));
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));

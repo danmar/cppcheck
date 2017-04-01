@@ -18,6 +18,7 @@
 
 #include "pathmatch.h"
 #include "path.h"
+#include "utils.h"
 #include <algorithm>
 #include <ctype.h>
 
@@ -43,8 +44,8 @@ bool PathMatch::Match(const std::string &path) const
             std::transform(findpath.begin(), findpath.end(), findpath.begin(), ::tolower);
 
         // Filtering directory name
-        if (excludedPath.back() == '/') {
-            if (findpath.back() != '/')
+        if (endsWith(excludedPath,'/')) {
+            if (!endsWith(findpath,'/'))
                 findpath = RemoveFilename(findpath);
 
             if (excludedPath.length() > findpath.length())

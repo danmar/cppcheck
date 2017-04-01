@@ -55,4 +55,8 @@ private:
     Cont data_;
 };
 
+inline bool endsWith(const std::string &str, char c) {
+    return str.back() == c;
+}
+
 #endif
