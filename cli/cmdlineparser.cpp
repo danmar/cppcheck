@@ -25,6 +25,7 @@
 #include "timer.h"
 #include "check.h"
 #include "threadexecutor.h" // Threading model
+#include "utils.h"
 
 #include <algorithm>
 #include <iostream>
@@ -122,7 +123,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
                 _settings->buildDir = Path::fromNativeSeparators(argv[i] + 21);
-                if (_settings->buildDir.back() == '/')
+                if (endsWith(_settings->buildDir, '/'))
                     _settings->buildDir.erase(_settings->buildDir.size() - 1U);
             }
 
