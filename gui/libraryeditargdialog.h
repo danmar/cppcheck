@@ -12,7 +12,7 @@ class LibraryEditArgDialog : public QDialog {
     Q_OBJECT
 
 public:
-    LibraryEditArgDialog(QWidget *parent, const CppcheckLibraryData::Function::Arg &a);
+    LibraryEditArgDialog(QWidget *parent, const CppcheckLibraryData::Function::Arg &arg);
     ~LibraryEditArgDialog();
 
     CppcheckLibraryData::Function::Arg getArg() const;

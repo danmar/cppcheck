@@ -332,16 +332,16 @@ private:
 
     /**
      * @brief Load XML file to the GUI.
-     * @param file Filename (inc. path) of XML file to load.
+     * @param selectedFile Filename (inc. path) of XML file to load.
      */
-    void LoadResults(const QString file);
+    void LoadResults(const QString selectedFile);
 
     /**
      * @brief Load XML file to the GUI.
-     * @param file Filename (inc. path) of XML file to load.
-     * @param checkedDirectory Path to the directory that the results were generated for.
+     * @param selectedFile Filename (inc. path) of XML file to load.
+     * @param sourceDirectory Path to the directory that the results were generated for.
      */
-    void LoadResults(const QString file, const QString checkedDirectory);
+    void LoadResults(const QString selectedFile, const QString sourceDirectory);
 
     /**
      * @brief Load project file to the GUI.

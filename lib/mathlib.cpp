@@ -569,19 +569,19 @@ template<> std::string MathLib::toString(double value)
     return result.str();
 }
 
-bool MathLib::isFloat(const std::string &s)
+bool MathLib::isFloat(const std::string &str)
 {
-    return isDecimalFloat(s) || isFloatHex(s);
+    return isDecimalFloat(str) || isFloatHex(str);
 }
 
-bool MathLib::isDecimalFloat(const std::string &s)
+bool MathLib::isDecimalFloat(const std::string &str)
 {
-    if (s.empty())
+    if (str.empty())
         return false;
     enum State {
         START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, SUFFIX_F, SUFFIX_L
     } state = START;
-    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
         switch (state) {
         case START:
             if (*it=='+' || *it=='-')
@@ -672,18 +672,18 @@ bool MathLib::isDecimalFloat(const std::string &s)
     return (state==BASE_DIGITS2 || state==MANTISSA_DIGITS || state==TRAILING_DECIMAL || state==SUFFIX_F || state==SUFFIX_L);
 }
 
-bool MathLib::isNegative(const std::string &s)
+bool MathLib::isNegative(const std::string &str)
 {
-    if (s.empty())
+    if (str.empty())
         return false;
-    return (s[0] == '-');
+    return (str[0] == '-');
 }
 
-bool MathLib::isPositive(const std::string &s)
+bool MathLib::isPositive(const std::string &str)
 {
-    if (s.empty())
+    if (str.empty())
         return false;
-    return !MathLib::isNegative(s);
+    return !MathLib::isNegative(str);
 }
 
 /*! \brief Does the string represent an octal number?
@@ -692,15 +692,15 @@ bool MathLib::isPositive(const std::string &s)
  * Additional information can be found here:
  * http://gcc.gnu.org/onlinedocs/gcc/Binary-constants.html
  *
- * \param[in] s The string to check. In case the string is empty, the function returns false.
+ * \param str The string to check. In case the string is empty, the function returns false.
  * \return Return true in case a octal number is provided and false otherwise.
  **/
-bool MathLib::isOct(const std::string& s)
+bool MathLib::isOct(const std::string& str)
 {
     enum Status {
         START, PLUSMINUS, OCTAL_PREFIX, DIGITS
     } state = START;
-    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
         switch (state) {
         case START:
             if (*it == '+' || *it == '-')
@@ -726,19 +726,19 @@ bool MathLib::isOct(const std::string& s)
             if (isOctalDigit(static_cast<unsigned char>(*it)))
                 state = DIGITS;
             else
-                return isValidIntegerSuffix(it,s.end());
+                return isValidIntegerSuffix(it,str.end());
             break;
         }
     }
     return state == DIGITS;
 }
 
-bool MathLib::isIntHex(const std::string& s)
+bool MathLib::isIntHex(const std::string& str)
 {
     enum Status {
         START, PLUSMINUS, HEX_PREFIX, DIGIT, DIGITS
     } state = START;
-    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
         switch (state) {
         case START:
             if (*it == '+' || *it == '-')
@@ -770,19 +770,19 @@ bool MathLib::isIntHex(const std::string& s)
             if (isxdigit(static_cast<unsigned char>(*it)))
                 state = DIGITS;
             else
-                return isValidIntegerSuffix(it,s.end());
+                return isValidIntegerSuffix(it,str.end());
             break;
         }
     }
     return state == DIGITS;
 }
 
-bool MathLib::isFloatHex(const std::string& s)
+bool MathLib::isFloatHex(const std::string& str)
 {
     enum Status {
         START, PLUSMINUS, HEX_PREFIX, WHOLE_NUMBER_DIGIT, WHOLE_NUMBER_DIGITS, FRACTION, EXPONENT_DIGIT, EXPONENT_DIGITS
     } state = START;
-    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
         switch (state) {
         case START:
             if (*it == '+' || *it == '-')
@@ -935,15 +935,15 @@ bool MathLib::isValidIntegerSuffix(std::string::const_iterator it, std::string::
  * Additional information can be found here:
  * http://gcc.gnu.org/onlinedocs/gcc/Binary-constants.html
  *
- * \param[in] s The string to check. In case the string is empty, the function returns false.
+ * \param str The string to check. In case the string is empty, the function returns false.
  * \return Return true in case a binary number is provided and false otherwise.
  **/
-bool MathLib::isBin(const std::string& s)
+bool MathLib::isBin(const std::string& str)
 {
     enum Status {
         START, PLUSMINUS, GNU_BIN_PREFIX, DIGIT, DIGITS
     } state = START;
-    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
         switch (state) {
         case START:
             if (*it == '+' || *it == '-')
@@ -975,19 +975,19 @@ bool MathLib::isBin(const std::string& s)
             if (*it == '0' || *it == '1')
                 state = DIGITS;
             else
-                return isValidIntegerSuffix(it,s.end());
+                return isValidIntegerSuffix(it,str.end());
             break;
         }
     }
     return state == DIGITS;
 }
 
-bool MathLib::isDec(const std::string & s)
+bool MathLib::isDec(const std::string & str)
 {
     enum Status {
         START, PLUSMINUS, DIGIT
     } state = START;
-    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
         switch (state) {
         case START:
             if (*it == '+' || *it == '-')
@@ -1007,16 +1007,16 @@ bool MathLib::isDec(const std::string & s)
             if (isdigit(static_cast<unsigned char>(*it)))
                 state = DIGIT;
             else
-                return isValidIntegerSuffix(it,s.end());
+                return isValidIntegerSuffix(it,str.end());
             break;
         }
     }
     return state == DIGIT;
 }
 
-bool MathLib::isInt(const std::string & s)
+bool MathLib::isInt(const std::string & str)
 {
-    return isDec(s) || isIntHex(s) || isOct(s) || isBin(s);
+    return isDec(str) || isIntHex(str) || isOct(str) || isBin(str);
 }
 
 static std::string getsuffix(const std::string& value)

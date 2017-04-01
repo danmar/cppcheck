@@ -43,7 +43,7 @@ class Settings;
  */
 class ThreadExecutor : public ErrorLogger {
 public:
-    ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &_errorLogger);
+    ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
     virtual ~ThreadExecutor();
     unsigned int check();
 

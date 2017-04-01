@@ -1382,7 +1382,7 @@ void CheckIO::checkFormatString(const Token * const tok,
 // We currently only support string literals, variables, and functions.
 /// @todo add non-string literals, and generic expressions
 
-CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings, bool _isCPP)
+CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings, bool _isCPP)
     : variableInfo(nullptr)
     , typeToken(nullptr)
     , functionInfo(nullptr)
@@ -1392,14 +1392,14 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
     , address(false)
     , isCPP(_isCPP)
 {
-    if (!tok)
+    if (!arg)
         return;
 
     // Use AST type info
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
-    if (!Token::Match(tok, "%str% ,|)") && !(Token::Match(tok,"%var%") && tok->variable() && tok->variable()->isArray())) {
-        const Token *top = tok;
-        while (top->astParent() && top->astParent()->str() != "," && top->astParent() != tok->previous())
+    if (!Token::Match(arg, "%str% ,|)") && !(Token::Match(arg,"%var%") && arg->variable() && arg->variable()->isArray())) {
+        const Token *top = arg;
+        while (top->astParent() && top->astParent()->str() != "," && top->astParent() != arg->previous())
             top = top->astParent();
         const ValueType *valuetype = top->argumentType();
         if (valuetype && valuetype->type >= ValueType::Type::BOOL) {
@@ -1446,30 +1446,30 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
     }
 
 
-    if (tok->tokType() == Token::eString) {
-        typeToken = tok;
+    if (arg->tokType() == Token::eString) {
+        typeToken = arg;
         return;
-    } else if (tok->str() == "&" || tok->tokType() == Token::eVariable ||
-               tok->tokType() == Token::eFunction || Token::Match(tok, "%type% ::") ||
-               (Token::Match(tok, "static_cast|reinterpret_cast|const_cast <") &&
-                Token::simpleMatch(tok->linkAt(1), "> (") &&
-                Token::Match(tok->linkAt(1)->linkAt(1), ") ,|)"))) {
-        if (Token::Match(tok, "static_cast|reinterpret_cast|const_cast")) {
-            typeToken = tok->tokAt(2);
+    } else if (arg->str() == "&" || arg->tokType() == Token::eVariable ||
+               arg->tokType() == Token::eFunction || Token::Match(arg, "%type% ::") ||
+               (Token::Match(arg, "static_cast|reinterpret_cast|const_cast <") &&
+                Token::simpleMatch(arg->linkAt(1), "> (") &&
+                Token::Match(arg->linkAt(1)->linkAt(1), ") ,|)"))) {
+        if (Token::Match(arg, "static_cast|reinterpret_cast|const_cast")) {
+            typeToken = arg->tokAt(2);
             while (typeToken->str() == "const" || typeToken->str() == "extern")
                 typeToken = typeToken->next();
             return;
         }
-        if (tok->str() == "&") {
+        if (arg->str() == "&") {
             address = true;
-            tok = tok->next();
+            arg = arg->next();
         }
-        while (Token::Match(tok, "%type% ::"))
-            tok = tok->tokAt(2);
-        if (!tok || !(tok->tokType() == Token::eVariable || tok->tokType() == Token::eFunction))
+        while (Token::Match(arg, "%type% ::"))
+            arg = arg->tokAt(2);
+        if (!arg || !(arg->tokType() == Token::eVariable || arg->tokType() == Token::eFunction))
             return;
         const Token *varTok = nullptr;
-        const Token *tok1 = tok->next();
+        const Token *tok1 = arg->next();
         for (; tok1; tok1 = tok1->next()) {
             if (tok1->str() == "," || tok1->str() == ")") {
                 if (tok1->previous()->str() == "]") {

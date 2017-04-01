@@ -90,9 +90,9 @@ public:
     static void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal);
 
     /**
-     * @param fp Output file
+     * @param exception_output Output file
      */
-    static void setExceptionOutput(FILE* fp);
+    static void setExceptionOutput(FILE* exception_output);
     /**
     * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
     */
