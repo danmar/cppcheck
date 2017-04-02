@@ -1,8 +1,8 @@
 language: cpp
 
 compiler:
-  - clang
   - gcc
+  - clang
 
 env:
   global:
