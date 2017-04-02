@@ -13,9 +13,9 @@ env:
   matrix:
 #    special CXXFLAGS for maximum speed, overrides global CXXFLAGS, CHECK_CLANG is the var that controls if we download and check clang in that travis job
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
+    - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL" MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
     - SRCDIR=build CHECK_CLANG=yes VERIFY=1
     - SRCDIR=build CHECK_LLVM=yes VERIFY=1
-    - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL" MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
 
 matrix:
 # do notify immediately about it when a job of a build fails.
