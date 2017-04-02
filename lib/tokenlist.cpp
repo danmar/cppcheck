@@ -1008,10 +1008,14 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
         if (tok->str() == "{") {
             if (Token::simpleMatch(tok->previous(), "( {"))
                 ;
+            // Lambda function
             else if (Token::simpleMatch(tok->astParent(), "(") &&
                      Token::simpleMatch(tok->astParent()->astParent(), "[") &&
                      tok->astParent()->astParent()->astOperand1() &&
                      tok == tok->astParent()->astParent()->astOperand1()->astOperand1())
+                ;
+            // function argument is initializer list
+            else if (tok->astParent() && (tok->astParent()->str() == "," || Token::Match(tok->astParent()->previous(), "%name% (")))
                 ;
             else
                 continue;

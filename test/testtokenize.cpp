@@ -8028,7 +8028,7 @@ private:
         ASSERT_EQUALS("xa{((= bc( yd{((= ef(",
                       testAst("x=(int)(a({b(c);}));" // don't hang
                               "y=(int)(d({e(f);}));"));
-        ASSERT_EQUALS("QT_WA{{,( QT_WA{{,( x1=",
+        ASSERT_EQUALS("QT_WA{{,( x0= QT_WA{{,( x1= x2=",
                       testAst("QT_WA({},{x=0;});" // don't hang
                               "QT_WA({x=1;},{x=2;});"));
         ASSERT_EQUALS("xMACROtypeT=value1=,{({=",
