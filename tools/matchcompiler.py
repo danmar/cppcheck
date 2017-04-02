@@ -188,7 +188,14 @@ class MatchCompiler:
                 gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
 
             else:
-                ret += '    if (!tok || !' + self._compileCmd(tok) + ')\n'
+                negatedTok ="!" + self._compileCmd(tok)
+                # fold !true => false ; !false => true
+                # this avoids cppcheck warnings about condition always being true/false
+                if (negatedTok == "!false"):
+                    negatedTok = "true"
+                elif (negatedTok == "!true"):
+                    negatedTok = "false"
+                ret += '    if (!tok || ' + negatedTok + ')\n'
                 ret += '        ' + returnStatement
 
         if isFindMatch:
