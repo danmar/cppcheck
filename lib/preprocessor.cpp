@@ -119,14 +119,14 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
     }
 }
 
-void Preprocessor::setDirectives(const simplecpp::TokenList &tokens1)
+void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
 {
     // directive list..
     directives.clear();
 
     std::vector<const simplecpp::TokenList *> list;
     list.reserve(1U + tokenlists.size());
-    list.push_back(&tokens1);
+    list.push_back(&tokens);
     for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
         list.push_back(it->second);
     }

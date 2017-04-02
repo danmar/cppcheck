@@ -857,7 +857,7 @@ public:
     const Token *noexceptArg;
     const Token *throwArg;
 
-    static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
+    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
     /**
      * @return token to ":" if the function is a constructor
@@ -1087,7 +1087,7 @@ public:
      * @param type token containing variable type
      * @return pointer to type if found or NULL if not found
      */
-    const Type *findVariableType(const Scope *start, const Token *type) const;
+    const Type *findVariableType(const Scope *start, const Token *typeTok) const;
 
     /**
      * @brief find a function
@@ -1098,7 +1098,7 @@ public:
 
     const Scope *findScopeByName(const std::string& name) const;
 
-    const Type* findType(const Token *tok, const Scope *startScope) const;
+    const Type* findType(const Token *startTok, const Scope *startScope) const;
     Type* findType(const Token *tok, Scope *startScope) const {
         return const_cast<Type*>(this->findType(tok, const_cast<const Scope *>(startScope)));
     }
@@ -1168,12 +1168,12 @@ private:
     void createSymbolDatabaseEnums();
     void createSymbolDatabaseUnknownArrayDimensions();
 
-    void addClassFunction(Scope **info, const Token **tok, const Token *argStart);
+    void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
-    void addNewFunction(Scope **info, const Token **tok);
+    void addNewFunction(Scope **scope, const Token **tok);
     bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
-    const Type *findTypeInNested(const Token *tok, const Scope *startScope) const;
+    const Type *findTypeInNested(const Token *startTok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
     Function *findFunctionInScope(const Token *func, const Scope *ns);
     const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
@@ -1190,7 +1190,7 @@ private:
 
     void setValueType(Token *tok, const ValueType &valuetype);
     void setValueType(Token *tok, const Variable &var);
-    void setValueType(Token *tok, const Enumerator &enumerators);
+    void setValueType(Token *tok, const Enumerator &enumerator);
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;

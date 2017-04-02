@@ -48,10 +48,10 @@ ErrorLogger::ErrorMessage::ErrorMessage()
 {
 }
 
-ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file0_, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive) :
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive) :
     _callStack(callStack), // locations for this error message
     _id(id),               // set the message id
-    file0(file0_),
+    file0(file1),
     _severity(severity),   // severity for this error message
     _cwe(0U),
     _inconclusive(inconclusive)
@@ -62,10 +62,10 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
 
 
 
-ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file0_, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive) :
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive) :
     _callStack(callStack), // locations for this error message
     _id(id),               // set the message id
-    file0(file0_),
+    file0(file1),
     _severity(severity),   // severity for this error message
     _cwe(cwe.id),
     _inconclusive(inconclusive)

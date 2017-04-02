@@ -324,7 +324,7 @@ public:
 
     bool reportErrors(const std::string &path) const;
 
-    bool ignorefunction(const std::string &function) const;
+    bool ignorefunction(const std::string &functionName) const;
 
     bool isexecutableblock(const std::string &file, const std::string &token) const;
 

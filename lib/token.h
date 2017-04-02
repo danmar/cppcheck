@@ -69,7 +69,7 @@ public:
         eNone
     };
 
-    explicit Token(Token **tokensBack);
+    explicit Token(Token **tokens);
     ~Token();
 
     template<typename T>
@@ -442,7 +442,7 @@ public:
      *         0 if needle was empty string
      *        -1 if needle was not found
      */
-    static int multiCompare(const Token *needle, const char *haystack, unsigned int varid);
+    static int multiCompare(const Token *tok, const char *haystack, unsigned int varid);
 
     unsigned int linenr() const {
         return _linenr;

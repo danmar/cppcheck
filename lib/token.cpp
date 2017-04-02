@@ -33,8 +33,8 @@
 #include <algorithm>
 
 
-Token::Token(Token **t) :
-    tokensBack(t),
+Token::Token(Token **tokens) :
+    tokensBack(tokens),
     _next(0),
     _previous(0),
     _link(0),
