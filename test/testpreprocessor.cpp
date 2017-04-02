@@ -558,7 +558,7 @@ private:
                                 "#elif !defined(B)\n"
                                 "!b\n"
                                 "#endif\n";
-        TODO_ASSERT_EQUALS("\nA\nA;B", "\n", getConfigsStr(filedata));
+        ASSERT_EQUALS("\nA\nB\n", getConfigsStr(filedata));
     }
 
     void if_cond3() {
@@ -612,7 +612,7 @@ private:
             const char filedata[] = "#if! A\n"
                                     "foo();\n"
                                     "#endif\n";
-            ASSERT_EQUALS("\n", getConfigsStr(filedata));
+            ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
         }
     }
 
@@ -645,7 +645,7 @@ private:
         const char filedata[] = "#if !defined _A\n"
                                 "abc\n"
                                 "#endif\n";
-        ASSERT_EQUALS("\n", getConfigsStr(filedata));
+        ASSERT_EQUALS("\n_A\n", getConfigsStr(filedata));
     }
 
     void if_cond10() {
