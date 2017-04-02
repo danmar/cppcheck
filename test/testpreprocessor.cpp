@@ -73,6 +73,7 @@ private:
         TEST_CASE(Bug2190219);
 
         TEST_CASE(error1); // #error => don't extract any code
+        TEST_CASE(error2); // #error if symbol is not defined
         TEST_CASE(error3);
         TEST_CASE(error4);  // #2919 - wrong filename is reported
         TEST_CASE(error5);
@@ -317,6 +318,18 @@ private:
                                 "#error abcd\n"
                                 "#endif\n";
         ASSERT_EQUALS("\nA\n", getConfigsStr(filedata));
+    }
+
+    void error2() {
+        const char filedata1[] = "#ifndef A\n"
+                                 "#error\n"
+                                 "#endif\n";
+        TODO_ASSERT_EQUALS("A\n", "\nA\n", getConfigsStr(filedata1));
+
+        const char filedata2[] = "#if !A\n"
+                                 "#error\n"
+                                 "#endif\n";
+        TODO_ASSERT_EQUALS("A\n", "\nA\nA=0\n", getConfigsStr(filedata2));
     }
 
     void error3() {

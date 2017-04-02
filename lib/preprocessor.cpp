@@ -375,6 +375,14 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 configs.push_back(configs_ifndef.back());
                 ret.insert(cfg(configs, userDefines));
             }
+            if (!configs_if.empty() && !configs_if.back().empty()) {
+                const std::string &last = configs_if.back();
+                if (last.size() > 2U && last.compare(last.size()-2U,2,"=0") == 0) {
+                    std::vector<std::string> configs(configs_if);
+                    configs[configs.size() - 1U] = last.substr(0,last.size()-2U);
+                    ret.insert(cfg(configs, userDefines));
+                }
+            }
         } else if (cmdtok->str == "define" && sameline(tok, cmdtok->next) && cmdtok->next->name) {
             defined.insert(cmdtok->next->str);
         }
