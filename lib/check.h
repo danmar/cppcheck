@@ -35,7 +35,11 @@
  * Using this macro we can make sure that released binaries don't crash/hang but the problem is not hidden
  * in debug builds.
  */
+#ifdef NDEBUG
 #define CHECK_WRONG_DATA(X)   (X)
+#else
+#define CHECK_WRONG_DATA(X)   (1)
+#endif
 
 namespace tinyxml2 {
     class XMLElement;
