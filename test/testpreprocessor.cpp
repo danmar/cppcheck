@@ -324,12 +324,12 @@ private:
         const char filedata1[] = "#ifndef A\n"
                                  "#error\n"
                                  "#endif\n";
-        TODO_ASSERT_EQUALS("A\n", "\nA\n", getConfigsStr(filedata1));
+        ASSERT_EQUALS("A\n", getConfigsStr(filedata1));
 
         const char filedata2[] = "#if !A\n"
                                  "#error\n"
                                  "#endif\n";
-        TODO_ASSERT_EQUALS("A\n", "\nA\nA=0\n", getConfigsStr(filedata2));
+        ASSERT_EQUALS("A\n", getConfigsStr(filedata2));
     }
 
     void error3() {
@@ -2098,7 +2098,7 @@ private:
         const char filedata1[] = "#ifndef X\n"
                                  "#error \"!X\"\n"
                                  "#endif\n";
-        ASSERT_EQUALS("\nX\n", getConfigsStr(filedata1));
+        ASSERT_EQUALS("X\n", getConfigsStr(filedata1));
 
         const char filedata2[] = "#ifdef X\n"
                                  "#ifndef Y\n"
