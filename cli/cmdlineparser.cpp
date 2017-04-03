@@ -913,7 +913,7 @@ void CmdLineParser::PrintHelp()
               "                         language. Valid values are: c, c++\n"
               "    --library=<cfg>      Load file <cfg> that contains information about types\n"
               "                         and functions. With such information Cppcheck\n"
-              "                         understands your your code better and therefore you\n"
+              "                         understands your code better and therefore you\n"
               "                         get better results. The std.cfg file that is\n"
               "                         distributed with Cppcheck is loaded automatically.\n"
               "                         For more information about library files, read the\n"
