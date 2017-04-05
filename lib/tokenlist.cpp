@@ -1014,11 +1014,15 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                      tok->astParent()->astParent()->astOperand1() &&
                      tok == tok->astParent()->astParent()->astOperand1()->astOperand1())
                 ;
-            // function argument is initializer list
-            else if (tok->astParent() && (tok->astParent()->str() == "," || Token::Match(tok->astParent()->previous(), "%name% (")))
-                ;
-            else
-                continue;
+            else {
+                // function argument is initializer list?
+                const Token *parent = tok->astParent();
+                while (Token::simpleMatch(parent, ","))
+                    parent = parent->astParent();
+                if (!parent || !Token::Match(parent->previous(), "%name% ("))
+                    // not function argument..
+                    continue;
+            }
 
             if (Token::simpleMatch(tok->previous(), "( { ."))
                 break;
