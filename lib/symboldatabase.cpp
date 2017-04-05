@@ -5031,6 +5031,14 @@ void SymbolDatabase::setValueTypeInTokenList()
             const Token *typeTok = tok->next();
             if (Token::Match(typeTok, "( std| ::| nothrow )"))
                 typeTok = typeTok->link()->next();
+            if (const Library::Container *c = _settings->library.detectContainer(typeTok)) {
+                ValueType vt;
+                vt.pointer = 1;
+                vt.container = c;
+                vt.type = ValueType::Type::CONTAINER;
+                setValueType(tok, vt);
+                continue;
+            }
             std::string typestr;
             while (Token::Match(typeTok, "%name% :: %name%")) {
                 typestr += typeTok->str() + "::";

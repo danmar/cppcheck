@@ -4431,6 +4431,14 @@ private:
             ASSERT_EQUALS(true, vt.fromLibraryType("s32", &settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
         }
+        {
+            // Container
+            Settings sC;
+            Library::Container c;
+            c.startPattern = "C";
+            sC.library.containers["C"] = c;
+            ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new","test.cpp",&sC));
+        }
 
         // new
         ASSERT_EQUALS("C *", typeOf("class C {}; x = new C();", "new"));
