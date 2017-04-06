@@ -4802,22 +4802,25 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->sign = ValueType::Sign::UNSIGNED;
         if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
-        else if (Token::Match(type, "%name% :: %name%")) {
-            const Library::Container *container = settings->library.detectContainer(type);
-            if (container) {
-                valuetype->type = ValueType::Type::CONTAINER;
-                valuetype->container = container;
-            } else {
-                std::string typestr;
-                const Token *end = type;
-                while (Token::Match(end, "%name% :: %name%")) {
-                    typestr += end->str() + "::";
-                    end = end->tokAt(2);
-                }
-                typestr += end->str();
-                if (valuetype->fromLibraryType(typestr, settings))
-                    type = end;
+        else if (const Library::Container *container = settings->library.detectContainer(type)) {
+            valuetype->type = ValueType::Type::CONTAINER;
+            valuetype->container = container;
+            while (Token::Match(type, "%name%|::|<")) {
+                if (type->str() == "<" && type->link())
+                    type = type->link();
+                type = type->next();
             }
+            continue;
+        } else if (Token::Match(type, "%name% :: %name%")) {
+            std::string typestr;
+            const Token *end = type;
+            while (Token::Match(end, "%name% :: %name%")) {
+                typestr += end->str() + "::";
+                end = end->tokAt(2);
+            }
+            typestr += end->str();
+            if (valuetype->fromLibraryType(typestr, settings))
+                type = end;
         } else if (ValueType::Type::UNKNOWN_TYPE != ValueType::typeFromString(type->str(), type->isLong()))
             valuetype->type = ValueType::typeFromString(type->str(), type->isLong());
         else if (type->str() == "auto") {
