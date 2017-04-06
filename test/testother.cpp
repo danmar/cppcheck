@@ -144,6 +144,7 @@ private:
 
         TEST_CASE(redundantVarAssignment);
         TEST_CASE(redundantVarAssignment_7133);
+        TEST_CASE(redundantVarAssignment_stackoverflow);
         TEST_CASE(redundantMemWrite);
 
         TEST_CASE(varFuncNullUB);
@@ -1103,15 +1104,8 @@ private:
         std::istringstream istr(code);
         tokenizerCpp.tokenize(istr, "test.cpp");
 
-        Tokenizer tokenizerC(&settings, this);
-        std::istringstream istr2(code);
-        tokenizerC.tokenize(istr2, "test.c");
-
         CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
         checkOtherCpp.warningOldStylePointerCast();
-
-        CheckOther checkOtherC(&tokenizerC, &settings, this);
-        checkOtherC.warningOldStylePointerCast();
     }
 
     void oldStylePointerCast() {
@@ -3615,7 +3609,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
 
-        check("void foo() {\n"
+        check("void foo(int a, int b) {\n"
               "    if ((b + a) | (a + b)) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
@@ -3625,12 +3619,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo() {\n"
+        check("void foo(int a, int b) {\n"
               "    if ((b > a) | (a > b)) {}\n" // > is not commutative
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo() {\n"
+        check("void foo(double a, double b) {\n"
               "    if ((b + a) > (a + b)) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '>'.\n", errout.str());
@@ -3885,6 +3879,11 @@ private:
 
         check("void f(unsigned char c) {\n"
               "  x = y ? (signed char)c : (unsigned char)c;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string stringMerge(std::string const& x, std::string const& y) {\n" // #7938
+              "    return ((x > y) ? (y + x) : (x + y));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -5165,6 +5164,20 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style, inconclusive) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used if variable is no semaphore variable.\n",
                       errout.str());
 
+    }
+
+    void redundantVarAssignment_stackoverflow() {
+        check("typedef struct message_node {\n"
+              "  char code;\n"
+              "  size_t size;\n"
+              "  struct message_node *next, *prev;\n"
+              "} *message_list;\n"
+              "static message_list remove_message_from_list(message_list m) {\n"
+              "    m->prev->next = m->next;\n"
+              "    m->next->prev = m->prev;\n"
+              "    return m->next;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantMemWrite() {

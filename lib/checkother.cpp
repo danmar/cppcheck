@@ -46,6 +46,8 @@ static const struct CWE CWE563(563U);   // Assignment to Variable without Use ('
 static const struct CWE CWE570(570U);   // Expression is Always False
 static const struct CWE CWE571(571U);   // Expression is Always True
 static const struct CWE CWE672(672U);   // Operation on a Resource after Expiration or Release
+static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
+static const struct CWE CWE683(683U);   // Function Call With Incorrect Order of Arguments
 static const struct CWE CWE686(686U);   // Function Call With Incorrect Argument Type
 static const struct CWE CWE687(687U);   // Function Call With Incorrectly Specified Argument Value
 static const struct CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
@@ -284,7 +286,7 @@ void CheckOther::warningOldStylePointerCast()
                 tok = tok->next();
 
             const Token *p = tok->tokAt(4);
-            if (p->hasKnownIntValue() && p->values.front().intvalue==0) // Casting nullpointers is safe
+            if (p->hasKnownIntValue() && p->values().front().intvalue==0) // Casting nullpointers is safe
                 continue;
 
             // Is "type" a class?
@@ -2819,22 +2821,22 @@ void CheckOther::checkFuncArgNamesDifferent()
                 definitions[j] = variable->nameToken();
             }
             // get the declaration (search for first token with varId)
-            bool skip = false;
             while (decl && !Token::Match(decl, ",|)|;")) {
                 // skip everything after the assignment because
                 // it could also have a varId or be the first
                 // token with a varId if there is no name token
-                if (decl->str() == "=")
-                    skip = true;
-                // skip over template
-                else if (decl->link())
-                    decl = decl->link();
-                else if (!skip && decl->varId()) {
-                    declarations[j] = decl;
+                if (decl->str() == "=") {
+                    decl = decl->nextArgument();
+                    break;
                 }
+                // skip over template
+                if (decl->link())
+                    decl = decl->link();
+                else if (decl->varId())
+                    declarations[j] = decl;
                 decl = decl->next();
             }
-            if (decl)
+            if (Token::simpleMatch(decl, ","))
                 decl = decl->next();
         }
         // check for different argument order
@@ -2866,19 +2868,19 @@ void CheckOther::checkFuncArgNamesDifferent()
     }
 }
 
-void CheckOther::funcArgNamesDifferent(const std::string & name, size_t index,
+void CheckOther::funcArgNamesDifferent(const std::string & functionName, size_t index,
                                        const Token* declaration, const Token* definition)
 {
     std::list<const Token *> tokens;
     tokens.push_back(declaration);
     tokens.push_back(definition);
     reportError(tokens, Severity::style, "funcArgNamesDifferent",
-                "Function '" + name + "' argument " + MathLib::toString(index + 1) + " names different: declaration '" +
+                "Function '" + functionName + "' argument " + MathLib::toString(index + 1) + " names different: declaration '" +
                 (declaration ? declaration->str() : std::string("A")) + "' definition '" +
-                (definition ? definition->str() : std::string("B")) + "'.", CWE(0U), true);
+                (definition ? definition->str() : std::string("B")) + "'.", CWE628, true);
 }
 
-void CheckOther::funcArgOrderDifferent(const std::string & name,
+void CheckOther::funcArgOrderDifferent(const std::string & functionName,
                                        const Token* declaration, const Token* definition,
                                        const std::vector<const Token *> & declarations,
                                        const std::vector<const Token *> & definitions)
@@ -2886,7 +2888,7 @@ void CheckOther::funcArgOrderDifferent(const std::string & name,
     std::list<const Token *> tokens;
     tokens.push_back(declarations.size() ? declarations[0] ? declarations[0] : declaration : nullptr);
     tokens.push_back(definitions.size() ? definitions[0] ? definitions[0] : definition : nullptr);
-    std::string msg = "Function '" + name + "' argument order different: declaration '";
+    std::string msg = "Function '" + functionName + "' argument order different: declaration '";
     for (std::size_t i = 0; i < declarations.size(); ++i) {
         if (i != 0)
             msg += ", ";
@@ -2901,6 +2903,6 @@ void CheckOther::funcArgOrderDifferent(const std::string & name,
             msg += definitions[i]->str();
     }
     msg += "'";
-    reportError(tokens, Severity::warning, "funcArgOrderDifferent", msg, CWE(0U), false);
+    reportError(tokens, Severity::warning, "funcArgOrderDifferent", msg, CWE683, false);
 }
 

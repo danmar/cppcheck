@@ -1372,8 +1372,14 @@ private:
         TODO_ASSERT_EQUALS(7, -1, templateNamePositionHelper("class A { class B { template<class T> const unsigned foo(); }; } ; "
                            "template<class T> const unsigned A::B::foo() { return 0; }", 25));
         // Template class member
-        TODO_ASSERT_EQUALS(7, -1, templateNamePositionHelper("template<class T> class A { unsigned foo(); }; "
-                           "template<class T> unsigned A<T>::foo() { return 0; }", 19));
+        ASSERT_EQUALS(6, templateNamePositionHelper("template<class T> class A { A(); }; "
+                      "template<class T> A<T>::A() {}", 18));
+        ASSERT_EQUALS(8, templateNamePositionHelper("template<class T, class U> class A { A(); }; "
+                      "template<class T, class U> A<T, U>::A() {}", 24));
+        ASSERT_EQUALS(7, templateNamePositionHelper("template<class T> class A { unsigned foo(); }; "
+                      "template<class T> unsigned A<T>::foo() { return 0; }", 19));
+        ASSERT_EQUALS(9, templateNamePositionHelper("template<class T, class U> class A { unsigned foo(); }; "
+                      "template<class T, class U> unsigned A<T, U>::foo() { return 0; }", 25));
     }
 
     void expandSpecialized() {

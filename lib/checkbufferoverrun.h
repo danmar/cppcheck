@@ -180,20 +180,20 @@ public:
 
     /** Check for buffer overruns (based on ArrayInfo) */
     void checkScope(const Token *tok, const ArrayInfo &arrayInfo);
-    void checkScope(const Token *tok, std::map<unsigned int, ArrayInfo> arrayInfo);
+    void checkScope(const Token *tok, std::map<unsigned int, ArrayInfo> arrayInfos);
     void checkScope_inner(const Token *tok, const ArrayInfo &arrayInfo);
 
     /** Check for buffer overruns */
-    void checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo);
+    void checkScope(const Token *tok, const std::vector<const std::string*> &varname, const ArrayInfo &arrayInfo);
 
     /**
      * Helper function for checkFunctionCall - check a function parameter
-     * \param tok token for the function name
+     * \param ftok token for the function name
      * \param paramIndex on what parameter is the array used
      * \param arrayInfo the array information
      * \param callstack call stack. This is used to prevent recursion and to provide better error messages. Pass a empty list from checkScope etc.
      */
-    void checkFunctionParameter(const Token &tok, const unsigned int paramIndex, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack);
+    void checkFunctionParameter(const Token &ftok, const unsigned int paramIndex, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack);
 
     /**
      * Helper function that checks if the array is used and if so calls the checkFunctionCall
@@ -226,6 +226,8 @@ public:
 
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
+
+    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const;
 
     /** @brief Analyse all file infos for all TU */
     void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);

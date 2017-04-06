@@ -69,7 +69,7 @@ public:
         eNone
     };
 
-    explicit Token(Token **tokensBack);
+    explicit Token(Token **tokens);
     ~Token();
 
     template<typename T>
@@ -442,7 +442,7 @@ public:
      *         0 if needle was empty string
      *        -1 if needle was not found
      */
-    static int multiCompare(const Token *needle, const char *haystack, unsigned int varid);
+    static int multiCompare(const Token *tok, const char *haystack, unsigned int varid);
 
     unsigned int linenr() const {
         return _linenr;
@@ -736,6 +736,11 @@ public:
         return _originalName ? *_originalName : emptyString;
     }
 
+    const std::list<ValueFlow::Value>& values() const {
+        static const std::list<ValueFlow::Value> emptyList;
+        return _values ? *_values : emptyList;
+    }
+
     /**
      * Sets the original name.
      */
@@ -747,16 +752,14 @@ public:
             *_originalName = name;
     }
 
-    /** Values of token */
-    std::list<ValueFlow::Value> values;
-
     bool hasKnownIntValue() const {
-        return values.size() == 1U && values.front().isKnown() && values.front().isIntValue();
+        return _values && _values->size() == 1U && _values->front().isKnown() && _values->front().isIntValue();
     }
 
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
-        std::list<ValueFlow::Value>::const_iterator it;
-        for (it = values.begin(); it != values.end(); ++it) {
+        if (!_values)
+            return nullptr;
+        for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
             if (it->isIntValue() && it->intvalue == val)
                 return &(*it);
         }
@@ -764,9 +767,10 @@ public:
     }
 
     const ValueFlow::Value * getMaxValue(bool condition) const {
+        if (!_values)
+            return nullptr;
         const ValueFlow::Value *ret = nullptr;
-        std::list<ValueFlow::Value>::const_iterator it;
-        for (it = values.begin(); it != values.end(); ++it) {
+        for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
             if (!it->isIntValue())
                 continue;
             if ((!ret || it->intvalue > ret->intvalue) &&
@@ -777,8 +781,9 @@ public:
     }
 
     const ValueFlow::Value * getMovedValue() const {
-        std::list<ValueFlow::Value>::const_iterator it;
-        for (it = values.begin(); it != values.end(); ++it) {
+        if (!_values)
+            return nullptr;
+        for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
             if (it->isMovedValue() && it->moveKind != ValueFlow::Value::NonMovedVariable)
                 return &(*it);
         }
@@ -792,6 +797,9 @@ public:
     const Token *getValueTokenMinStrSize() const;
 
     const Token *getValueTokenDeadPointer() const;
+
+    /** Add token value. Return true if value is added. */
+    bool addValue(const ValueFlow::Value &value);
 
 private:
 
@@ -903,6 +911,9 @@ private:
     // ValueType
     ValueType *valuetype;
 
+    // ValueFlow
+    std::list<ValueFlow::Value>* _values;
+
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
@@ -934,6 +945,11 @@ public:
 
     void clearAst() {
         _astOperand1 = _astOperand2 = _astParent = nullptr;
+    }
+
+    void clearValueFlow() {
+        delete _values;
+        _values = nullptr;
     }
 
     std::string astString(const char *sep = "") const {

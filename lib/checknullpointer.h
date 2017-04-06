@@ -85,7 +85,7 @@ public:
 
     void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
     void nullPointerError(const Token *tok, const std::string &varname, bool inconclusive, bool defaultArg, bool possible);
-    void nullPointerError(const Token *tok, const std::string &varname, const Token* nullcheck, bool inconclusive);
+    void nullPointerError(const Token *tok, const std::string &varname, const Token* nullCheck, bool inconclusive);
 private:
 
     /** Get error messages. Used by --errorlist */

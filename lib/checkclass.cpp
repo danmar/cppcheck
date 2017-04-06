@@ -1734,7 +1734,7 @@ void CheckClass::checkConst()
                     continue;
             } else if (func->isOperator() && Token::Match(previous, ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
                 const std::string& opName = func->tokenDef->str();
-                if (opName.compare(8, 5, "const") != 0 && opName.back() == '&')
+                if (opName.compare(8, 5, "const") != 0 && (endsWith(opName,'&') || endsWith(opName,'*')))
                     continue;
             } else {
                 // don't warn for unknown types..
@@ -1832,7 +1832,23 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 
 bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
 {
-    if (tok->function() && tok->function()->nestedIn == scope)
+    if (!tok->function()) {
+        for (std::list<Function>::const_iterator i = scope->functionList.cbegin(); i != scope->functionList.cend(); ++i) {
+            if (i->name() == tok->str()) {
+                const Token* tok2 = tok->tokAt(2);
+                size_t argsPassed = tok2->str() == ")" ? 0 : 1;
+                for (;;) {
+                    tok2 = tok2->nextArgument();
+                    if (tok2)
+                        argsPassed++;
+                    else
+                        break;
+                }
+                if (argsPassed == i->argCount() || (argsPassed < i->argCount() && argsPassed >= i->minArgCount()))
+                    return true;
+            }
+        }
+    } else if (tok->function()->nestedIn == scope)
         return !tok->function()->isStatic();
 
     // not found in this class
@@ -1855,7 +1871,9 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
 
 bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
 {
-    if (tok->function() && tok->function()->nestedIn == scope)
+    if (!tok->function())
+        return false;
+    else if (tok->function()->nestedIn == scope)
         return tok->function()->isConst();
 
     // not found in this class
@@ -2332,4 +2350,52 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
                                 "' defines member variable with name '" + variablename + "' also defined in its parent " +
                                 std::string(baseIsStruct ? "struct" : "class") + " '" + basename + "'.";
     reportError(toks, Severity::warning, "duplInheritedMember", message, CWE398, false);
+}
+
+
+//---------------------------------------------------------------------------
+// Check that copy constructor and operator defined together
+//---------------------------------------------------------------------------
+
+void CheckClass::checkCopyCtorAndEqOperator()
+{
+    if (!_settings->isEnabled("warning"))
+        return;
+
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+
+        if (scope->varlist.empty())
+            continue;
+
+        int hasCopyCtor = 0;
+        int hasAssignmentOperator = 0;
+
+        std::list<Function>::const_iterator func;
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            if (!hasCopyCtor && func->type == Function::eCopyConstructor) {
+                hasCopyCtor = func->hasBody() ? 2 : 1;
+            }
+            if (!hasAssignmentOperator && func->type == Function::eOperatorEqual) {
+                const Variable * variable = func->getArgumentVar(0);
+                if (variable && variable->type() && variable->type()->classScope == scope) {
+                    hasAssignmentOperator = func->hasBody() ? 2 : 1;
+                }
+            }
+        }
+
+        if (std::abs(hasCopyCtor - hasAssignmentOperator) == 2)
+            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, hasCopyCtor);
+    }
+}
+
+void CheckClass::copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor)
+{
+    const std::string message = "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
+                                "' has '" + getFunctionTypeName(hasCopyCtor ? Function::eCopyConstructor : Function::eOperatorEqual) +
+                                "' but lack of '" + getFunctionTypeName(hasCopyCtor ? Function::eOperatorEqual : Function::eCopyConstructor) +
+                                "'.";
+
+    reportError(tok, Severity::warning, "copyCtorAndEqOperator", message);
 }

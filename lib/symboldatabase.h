@@ -857,7 +857,7 @@ public:
     const Token *noexceptArg;
     const Token *throwArg;
 
-    static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
+    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
     /**
      * @return token to ":" if the function is a constructor
@@ -1025,6 +1025,45 @@ private:
     void findFunctionInBase(const std::string & name, size_t args, std::vector<const Function *> & matches) const;
 };
 
+
+/** Value type */
+class CPPCHECKLIB ValueType {
+private:
+    // No assignment
+    ValueType &operator=(const ValueType &other);
+public:
+    enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
+    enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
+    unsigned int pointer; // 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
+    unsigned int constness;  // bit 0=data, bit 1=*, bit 2=**
+    const Scope *typeScope;
+    const Library::Container *container;
+    std::string originalTypeName;
+
+    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), pointer(0U), constness(0U), typeScope(nullptr), container(nullptr) {}
+    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), container(vt.container), originalTypeName(vt.originalTypeName) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), pointer(p), constness(0U), typeScope(nullptr), container(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), container(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), container(nullptr), originalTypeName(otn) {}
+
+    static ValueType parseDecl(const Token *type, const Settings *settings);
+
+    static Type typeFromString(const std::string &typestr, bool longType);
+
+    bool isIntegral() const {
+        return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
+    }
+
+    bool isFloat() const {
+        return (type >= ValueType::Type::FLOAT && type <= ValueType::Type::LONGDOUBLE);
+    }
+
+    bool fromLibraryType(const std::string &typestr, const Settings *settings);
+
+    std::string str() const;
+};
+
+
 class CPPCHECKLIB SymbolDatabase {
 public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
@@ -1048,7 +1087,7 @@ public:
      * @param type token containing variable type
      * @return pointer to type if found or NULL if not found
      */
-    const Type *findVariableType(const Scope *start, const Token *type) const;
+    const Type *findVariableType(const Scope *start, const Token *typeTok) const;
 
     /**
      * @brief find a function
@@ -1059,7 +1098,7 @@ public:
 
     const Scope *findScopeByName(const std::string& name) const;
 
-    const Type* findType(const Token *tok, const Scope *startScope) const;
+    const Type* findType(const Token *startTok, const Scope *startScope) const;
     Type* findType(const Token *tok, Scope *startScope) const {
         return const_cast<Type*>(this->findType(tok, const_cast<const Scope *>(startScope)));
     }
@@ -1100,7 +1139,7 @@ public:
     void validateVariables() const;
 
     /** Set valuetype in provided tokenlist */
-    static void setValueTypeInTokenList(Token *tokens, bool cpp, const Settings *settings);
+    void setValueTypeInTokenList();
 
     /**
      * Calculates sizeof value for given type.
@@ -1123,26 +1162,35 @@ private:
     void createSymbolDatabaseNeedInitialization();
     void createSymbolDatabaseVariableSymbolTable();
     void createSymbolDatabaseSetScopePointers();
-    void createSymbolDatabaseSetFunctionPointers();
+    void createSymbolDatabaseSetFunctionPointers(bool firstPass);
     void createSymbolDatabaseSetVariablePointers();
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseEnums();
     void createSymbolDatabaseUnknownArrayDimensions();
 
-    void addClassFunction(Scope **info, const Token **tok, const Token *argStart);
+    void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
-    void addNewFunction(Scope **info, const Token **tok);
+    void addNewFunction(Scope **scope, const Token **tok);
     bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
-    const Type *findTypeInNested(const Token *tok, const Scope *startScope) const;
+    const Type *findTypeInNested(const Token *startTok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
     Function *findFunctionInScope(const Token *func, const Scope *ns);
     const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
+
+    typedef std::map<unsigned int, unsigned int> MemberIdMap;
+    typedef std::map<unsigned int, MemberIdMap> VarIdMap;
+
+    void fixVarId(VarIdMap & varIds, const Token * vartok, Token * membertok, const Variable * membervar);
 
     /** Whether iName is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
     bool isReservedName(const std::string& iName) const;
 
     const Enumerator * findEnumerator(const Token * tok) const;
+
+    void setValueType(Token *tok, const ValueType &valuetype);
+    void setValueType(Token *tok, const Variable &var);
+    void setValueType(Token *tok, const Enumerator &enumerator);
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;
@@ -1153,40 +1201,9 @@ private:
 
     /** list for missing types */
     std::list<Type> _blankTypes;
-};
 
-/** Value type */
-class CPPCHECKLIB ValueType {
-public:
-    enum Sign {UNKNOWN_SIGN, SIGNED, UNSIGNED} sign;
-    enum Type {UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE} type;
-    unsigned int pointer; // 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
-    unsigned int constness;  // bit 0=data, bit 1=*, bit 2=**
-    const Scope *typeScope;
-    const Library::Container *container;
-    std::string originalTypeName;
-
-    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), pointer(0U), constness(0U), typeScope(nullptr), container(nullptr) {}
-    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), container(vt.container), originalTypeName(vt.originalTypeName) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), pointer(p), constness(0U), typeScope(nullptr), container(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), container(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), container(nullptr), originalTypeName(otn) {}
-
-    static ValueType parseDecl(const Token *type, const Settings *settings);
-
-    static Type typeFromString(const std::string &typestr, bool longType);
-
-    bool isIntegral() const {
-        return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
-    }
-
-    bool isFloat() const {
-        return (type == ValueType::Type::FLOAT || type == ValueType::Type::DOUBLE);
-    }
-
-    bool fromLibraryType(const std::string &typestr, const Settings *settings);
-
-    std::string str() const;
+    bool cpp;
+    ValueType::Sign defaultSignedness;
 };
 
 

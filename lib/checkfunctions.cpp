@@ -157,7 +157,7 @@ void CheckFunctions::checkIgnoredReturnValue()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // skip c++11 initialization, ({...})
-            if (Token::Match(tok, "%var%|( {"))
+            if (Token::Match(tok, "%var%|(|, {"))
                 tok = tok->linkAt(1);
 
             if (tok->varId() || !Token::Match(tok, "%name% ("))
@@ -175,7 +175,7 @@ void CheckFunctions::checkIgnoredReturnValue()
             while (parent->astParent() && parent->astParent()->str() == "::")
                 parent = parent->astParent();
 
-            if (!tok->next()->astParent() && (!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.isUseRetVal(tok))
+            if (CHECK_WRONG_DATA(tok->next()->astOperand1()) && !tok->next()->astParent() && (!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.isUseRetVal(tok))
                 ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
         }
     }

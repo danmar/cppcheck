@@ -24,6 +24,7 @@
 #include "token.h"
 #include "symboldatabase.h"
 #include "astutils.h"
+#include "utils.h"
 
 #include <string>
 
@@ -87,7 +88,7 @@ Library::Error Library::load(const char exename[], const char path[])
         while (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND && !cfgfolders.empty()) {
             const std::string cfgfolder(cfgfolders.front());
             cfgfolders.pop_front();
-            const char *sep = (!cfgfolder.empty() && cfgfolder.back()=='/' ? "" : "/");
+            const char *sep = (!cfgfolder.empty() && endsWith(cfgfolder,'/') ? "" : "/");
             const std::string filename(cfgfolder + sep + fullfilename);
             error = doc.LoadFile(filename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
@@ -556,10 +557,12 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             const char* argNrString = functionnode->Attribute("nr");
             if (!argNrString)
                 return Error(MISSING_ATTRIBUTE, "nr");
-            const bool bAnyArg = strcmp(argNrString, "any")==0;
-            const int nr = bAnyArg ? -1 : std::atoi(argNrString);
+            const bool bAnyArg = strcmp(argNrString, "any") == 0;
+            const bool bVariadicArg = strcmp(argNrString, "variadic") == 0;
+            const int nr = (bAnyArg || bVariadicArg) ? -1 : std::atoi(argNrString);
             ArgumentChecks &ac = func.argumentChecks[nr];
             ac.optional  = functionnode->Attribute("default") != nullptr;
+            ac.variadic = bVariadicArg;
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                 const std::string argnodename = argnode->Name();
                 if (argnodename == "not-bool")
@@ -621,9 +624,10 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
                         return Error(BAD_ATTRIBUTE_VALUE, argattr);
 
+                    ac.minsizes.reserve(type == ArgumentChecks::MinSize::MUL ? 2 : 1);
                     ac.minsizes.push_back(ArgumentChecks::MinSize(type,argattr[0]-'0'));
                     if (type == ArgumentChecks::MinSize::MUL) {
-                        const char *arg2attr  = argnode->Attribute("arg2");
+                        const char *arg2attr = argnode->Attribute("arg2");
                         if (!arg2attr)
                             return Error(MISSING_ATTRIBUTE, "arg2");
                         if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
@@ -942,7 +946,7 @@ bool Library::matchArguments(const Token *ftok, const std::string &functionName)
         if (it2->second.optional && (firstOptionalArg == -1 || firstOptionalArg > it2->first))
             firstOptionalArg = it2->first;
 
-        if (it2->second.formatstr)
+        if (it2->second.formatstr || it2->second.variadic)
             return args <= callargs;
     }
     return (firstOptionalArg < 0) ? args == callargs : (callargs >= firstOptionalArg-1 && callargs <= args);

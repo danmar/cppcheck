@@ -720,7 +720,14 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
         namepos = 2;
     else if (Token::Match(tok, "> %type% %type% *|&| %type% ("))
         namepos = 3;
-    else if (Token::Match(tok, "> %type% *|&| %type% :: %type% (")) {
+    else if ((Token::Match(tok, "> %type% <") && Token::Match(tok->linkAt(2), "> :: %type% (")) ||
+             (Token::Match(tok, "> %type% %type% <") && Token::Match(tok->linkAt(3), "> :: %type% ("))) {
+        namepos = 2 + (Token::Match(tok, "> %type% %type%"));
+        const Token *end = tok->linkAt(namepos);
+        for (const Token *tok2 = tok->tokAt(namepos) ; tok2 != end ; tok2 = tok2->next())
+            ++namepos;
+        namepos += 2;
+    } else if (Token::Match(tok, "> %type% *|&| %type% :: %type% (")) {
         namepos = 4;
         starAmpPossiblePosition = 2;
     } else if (Token::Match(tok, "> %type% %type% *|&| %type% :: %type% (")) {

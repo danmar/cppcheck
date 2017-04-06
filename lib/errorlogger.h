@@ -211,8 +211,8 @@ public:
             std::string _file;
         };
 
-        ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file0, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
-        ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file0, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive);
+        ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
+        ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive);
         ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive);
         ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive);
         ErrorMessage();
@@ -221,9 +221,9 @@ public:
         /**
          * Format the error message in XML format
          * @param verbose use verbose message
-         * @param ver XML version
+         * @param version XML version
          */
-        std::string toXML(bool verbose, int ver) const;
+        std::string toXML(bool verbose, int version) const;
 
         static std::string getXMLHeader(int xml_version);
         static std::string getXMLFooter(int xml_version);

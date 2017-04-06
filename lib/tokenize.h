@@ -44,6 +44,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TestSimplifyTokens;
     friend class TestSimplifyTypedef;
     friend class TestTokenizer;
+    friend class SymbolDatabase;
 public:
     Tokenizer();
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
@@ -567,10 +568,18 @@ public:
     /** Syntax error. Example: invalid number of ')' */
     void syntaxError(const Token *tok, char c) const;
 
+    /** Syntax error. C++ code in C file. */
+    void syntaxErrorC(const Token *tok, const std::string &what) const;
+
 private:
 
     /** Report that there is an unhandled "class x y {" code */
     void unhandled_macro_class_x_y(const Token *tok) const;
+
+    /**
+     * Is there C++ code in C file?
+     */
+    void validateC() const;
 
     /**
      * assert that tokens are ok - used during debugging for example
@@ -811,6 +820,14 @@ private:
     Tokenizer &operator=(const Tokenizer &);
 
     Token *processFunc(Token *tok2, bool inOperator) const;
+
+    /**
+    * Get new variable id.
+    * @return new variable id
+    */
+    unsigned int newVarId() {
+        return ++_varId;
+    }
 
     /** Set pod types */
     void setPodTypes();

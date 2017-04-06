@@ -29,7 +29,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <list>
 #include <vector>
 
 namespace tinyxml2 {
@@ -223,6 +222,7 @@ public:
             formatstr(false),
             strz(false),
             optional(false),
+            variadic(false),
             iteratorInfo() {
         }
 
@@ -232,14 +232,15 @@ public:
         bool         formatstr;
         bool         strz;
         bool         optional;
+        bool         variadic;
         std::string  valid;
 
         class IteratorInfo {
         public:
-            IteratorInfo() : it(false), container(0), first(false), last(false) {}
+            IteratorInfo() : container(0), it(false), first(false), last(false) {}
 
-            bool it;
             int  container;
+            bool it;
             bool first;
             bool last;
         };
@@ -253,7 +254,7 @@ public:
             int arg;
             int arg2;
         };
-        std::list<MinSize> minsizes;
+        std::vector<MinSize> minsizes;
     };
 
 
@@ -308,7 +309,7 @@ public:
 
     bool hasminsize(const std::string &functionName) const;
 
-    const std::list<ArgumentChecks::MinSize> *argminsizes(const Token *ftok, int argnr) const {
+    const std::vector<ArgumentChecks::MinSize> *argminsizes(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? &arg->minsizes : nullptr;
     }
@@ -323,7 +324,7 @@ public:
 
     bool reportErrors(const std::string &path) const;
 
-    bool ignorefunction(const std::string &function) const;
+    bool ignorefunction(const std::string &functionName) const;
 
     bool isexecutableblock(const std::string &file, const std::string &token) const;
 

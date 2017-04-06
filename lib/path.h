@@ -142,7 +142,7 @@ public:
      * @param extra    extra file extensions
      * @return true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &filename, const std::set<std::string> &extra);
+    static bool acceptFile(const std::string &path, const std::set<std::string> &extra);
 
     /**
      * @brief Identify language based on file extension.
@@ -156,7 +156,7 @@ public:
      * @param extensionInLowerCase filename to check. path info is optional
      * @return true if extension is meant for C++ files
      */
-    static bool isCPP(const std::string &extensionInLowerCase);
+    static bool isCPP(const std::string &path);
 
     /**
      * @brief Is filename a header based on file extension

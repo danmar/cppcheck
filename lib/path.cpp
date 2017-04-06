@@ -20,6 +20,7 @@
 #undef __STRICT_ANSI__
 #endif
 #include "path.h"
+#include "utils.h"
 #include <algorithm>
 #include <vector>
 #include <sstream>
@@ -227,7 +228,7 @@ std::string Path::getRelativePath(const std::string& absolutePath, const std::ve
         if (absolutePath == *i || i->empty()) // Seems to be a file, or path is empty
             continue;
 
-        bool endsWithSep = i->back() == '/';
+        bool endsWithSep = endsWith(*i,'/');
         if (absolutePath.compare(0, i->length(), *i) == 0 && absolutePath[i->length() - (endsWithSep?1:0)] == '/') {
             std::string rest = absolutePath.substr(i->length() + (endsWithSep?0:1));
             return rest;

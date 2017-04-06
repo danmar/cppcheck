@@ -183,7 +183,7 @@ private:
     void uselessCallsEmptyError(const Token *tok);
     void uselessCallsRemoveError(const Token *tok, const std::string& function);
 
-    void dereferenceInvalidIteratorError(const Token* deref, const std::string &itername);
+    void dereferenceInvalidIteratorError(const Token* deref, const std::string &iterName);
 
     void readingEmptyStlContainerError(const Token *tok);
 

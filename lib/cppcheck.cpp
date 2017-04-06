@@ -25,13 +25,14 @@
 #include "path.h"
 
 #include "checkunusedfunctions.h"
+#include "timer.h"
+#include "version.h"
 
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
-#include "timer.h"
-#include "version.h"
+#include <tinyxml2.h>
 
 #ifdef HAVE_RULES
 #define PCRE_STATIC
@@ -234,7 +235,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             cfg = *it;
 
             // If only errors are printed, print filename after the check
-            if (_settings.quiet == false && it != configurations.begin()) {
+            if (_settings.quiet == false && (!cfg.empty() || it != configurations.begin())) {
                 std::string fixedpath = Path::simplifyPath(filename);
                 fixedpath = Path::toNativeSeparators(fixedpath);
                 _errorLogger.reportOut("Checking " + fixedpath + ": " + cfg + "...");
@@ -742,6 +743,50 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
         return;
     if (_settings.isEnabled("unusedFunction"))
         CheckUnusedFunctions::analyseWholeProgram(this, buildDir);
+    std::list<Check::FileInfo*> fileInfoList;
+
+    // Load all analyzer info data..
+    const std::string filesTxt(buildDir + "/files.txt");
+    std::ifstream fin(filesTxt.c_str());
+    std::string filesTxtLine;
+    while (std::getline(fin, filesTxtLine)) {
+        const std::string::size_type firstColon = filesTxtLine.find(':');
+        if (firstColon == std::string::npos)
+            continue;
+        const std::string::size_type lastColon = filesTxtLine.rfind(':');
+        if (firstColon == lastColon)
+            continue;
+        const std::string xmlfile = buildDir + '/' + filesTxtLine.substr(0,firstColon);
+        //const std::string sourcefile = filesTxtLine.substr(lastColon+1);
+
+        tinyxml2::XMLDocument doc;
+        tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
+        if (error != tinyxml2::XML_SUCCESS)
+            continue;
+
+        const tinyxml2::XMLElement * const rootNode = doc.FirstChildElement();
+        if (rootNode == nullptr)
+            continue;
+
+        for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
+            if (std::strcmp(e->Name(), "FileInfo") != 0)
+                continue;
+            const char *checkClassAttr = e->Attribute("check");
+            if (!checkClassAttr)
+                continue;
+            for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+                if (checkClassAttr == (*it)->name())
+                    fileInfoList.push_back((*it)->loadFileInfoFromXml(e));
+            }
+        }
+    }
+
+    // Analyse the tokens
+    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+        (*it)->analyseWholeProgram(fileInfoList, _settings, *this);
+
+    for (std::list<Check::FileInfo*>::iterator fi = fileInfoList.begin(); fi != fileInfoList.end(); ++fi)
+        delete(*fi);
 }
 
 bool CppCheck::isUnusedFunctionCheckEnabled() const

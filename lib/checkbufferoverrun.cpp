@@ -32,6 +32,7 @@
 #include <list>
 #include <cstdlib>
 #include <stack>
+#include <tinyxml2.h>
 
 //---------------------------------------------------------------------------
 
@@ -313,7 +314,7 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
 }
 //---------------------------------------------------------------------------
 
-static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &minsizes, const Token * const ftok, const MathLib::bigint arraySize, const Token **charSizeToken, const Settings * const settings)
+static bool checkMinSizes(const std::vector<Library::ArgumentChecks::MinSize> &minsizes, const Token * const ftok, const MathLib::bigint arraySize, const Token **charSizeToken, const Settings * const settings)
 {
     if (charSizeToken)
         *charSizeToken = nullptr;
@@ -323,7 +324,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
 
     // All conditions must be true
     bool error = true;
-    for (std::list<Library::ArgumentChecks::MinSize>::const_iterator minsize = minsizes.begin(); minsize != minsizes.end(); ++minsize) {
+    for (std::vector<Library::ArgumentChecks::MinSize>::const_iterator minsize = minsizes.begin(); minsize != minsizes.end(); ++minsize) {
         if (!error)
             return false;
         error = false;
@@ -383,7 +384,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
 
 void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int paramIndex, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack)
 {
-    const std::list<Library::ArgumentChecks::MinSize> * const minsizes = _settings->library.argminsizes(&ftok, paramIndex);
+    const std::vector<Library::ArgumentChecks::MinSize> * const minsizes = _settings->library.argminsizes(&ftok, paramIndex);
 
     if (minsizes) {
         MathLib::bigint arraySize = arrayInfo.element_size();
@@ -456,9 +457,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
                             std::list<const Token *> callstack2(callstack);
                             callstack2.push_back(ftok2);
 
-                            std::vector<MathLib::bigint> indexes;
-                            indexes.push_back(index);
-
+                            std::vector<MathLib::bigint> indexes(1, index);
                             arrayIndexOutOfBoundsError(callstack2, arrayInfo, indexes);
                         }
                     }
@@ -540,7 +539,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
     }
 }
 
-void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo)
+void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<const std::string*> &varname, const ArrayInfo &arrayInfo)
 {
     const MathLib::bigint size = arrayInfo.num(0);
     if (size <= 0)  // unknown size
@@ -558,7 +557,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
     std::string varnames;
     for (std::size_t i = 0; i < varname.size(); ++i)
-        varnames += (i == 0 ? "" : " . ") + varname[i];
+        varnames += (i == 0 ? "" : " . ") + *varname[i];
 
     const int varcount = varname.empty() ? 0 : static_cast<int>((varname.size() - 1) * 2U);
 
@@ -594,7 +593,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
         // Array index..
         if ((declarationId > 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && Token::Match(tok->next(), "%varid% [", declarationId))) ||
-            (declarationId == 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && (Token::Match(tok->next(), (varnames + " [").c_str()) || Token::Match(tok->next(), (varname[0] +" [ %num% ] . " + varname[1] + " [ %num% ]").c_str()))))) {
+            (declarationId == 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && (Token::Match(tok->next(), (varnames + " [").c_str()) || Token::Match(tok->next(), (*varname[0] +" [ %num% ] . " + *varname[1] + " [ %num% ]").c_str()))))) {
             std::vector<MathLib::bigint> indexes;
             const Token *tok2 = tok->tokAt(2 + varcount);
             for (; Token::Match(tok2, "[ %num% ]"); tok2 = tok2->tokAt(3)) {
@@ -1027,7 +1026,7 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
             MathLib::biguint charactersAppend = 0;
             const Token *tok3 = tok2;
 
-            while (Token::Match(tok3, "strcat ( %varid% , %str% ) ;", arrayInfo.declarationId())) {
+            while (Token::Match(tok3, "strcat ( %varid% , %str% )", arrayInfo.declarationId())) {
                 charactersAppend += Token::getStrLength(tok3->tokAt(4));
                 if (charactersAppend >= total_size) {
                     bufferOverrunError(tok3, arrayInfo.varname());
@@ -1134,7 +1133,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (!value)
                 continue;
 
-            for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it) {
+            for (std::list<ValueFlow::Value>::const_iterator it = tok->values().begin(); it != tok->values().end(); ++it) {
                 if (!it->isTokValue() || !it->tokvalue)
                     continue;
                 const Variable *var = it->tokvalue->variable();
@@ -1159,9 +1158,9 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                     callstack.push_back(it->tokvalue);
                     callstack.push_back(tok);
 
-                    std::vector<MathLib::bigint> indexes2;
+                    std::vector<MathLib::bigint> indexes2(indexes.size());
                     for (unsigned int i = 0; i < indexes.size(); ++i)
-                        indexes2.push_back(indexes[i].intvalue);
+                        indexes2[i] = indexes[i].intvalue;
 
                     arrayIndexOutOfBoundsError(callstack, arrayInfo, indexes2);
                 }
@@ -1202,6 +1201,8 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             checkScope(scope->classStart ? scope->classStart : _tokenizer->tokens(), arrayInfos);
     }
 
+    const std::vector<const std::string*> v;
+
     // find all dynamically allocated arrays next
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -1215,8 +1216,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             // size : Max array index
             MathLib::bigint size = 0;
 
-            // varid : The variable id for the array
-            const Variable *var = nullptr;
 
             // nextTok : used to skip to next statement.
             const Token * nextTok = tok;
@@ -1228,31 +1227,34 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (_tokenizer->isMaxTime())
                 return;
 
+            // varid : The variable id for the array
+            const Variable *var = tok->next()->variable();
+
             if (_tokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% [")) {
-                if (tok->tokAt(5)->astOperand2() == nullptr || tok->tokAt(5)->astOperand2()->getMaxValue(false) == nullptr)
+                tok = tok->tokAt(5);
+                if (tok->astOperand2() == nullptr || tok->astOperand2()->getMaxValue(false) == nullptr)
                     continue;
-                size = tok->tokAt(5)->astOperand2()->getMaxValue(false)->intvalue;
-                var = tok->next()->variable();
-                nextTok = tok->linkAt(5)->next();
+                size = tok->astOperand2()->getMaxValue(false)->intvalue;
+                nextTok = tok->link()->next();
                 if (size < 0) {
-                    negativeMemoryAllocationSizeError(tok->next()->next());
+                    negativeMemoryAllocationSizeError(tok);
                 }
             } else if (_tokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% (|;")) {
                 size = 1;
-                var = tok->next()->variable();
-                if (tok->strAt(5) == ";")
-                    nextTok = tok->tokAt(6);
+                tok = tok->tokAt(5);
+                if (tok->str() == ";")
+                    nextTok = tok->next();
                 else
-                    nextTok = tok->linkAt(5)->next();
+                    nextTok = tok->link()->next();
             } else if (Token::Match(tok, "[*;{}] %var% = malloc|alloca (") && Token::simpleMatch(tok->linkAt(4), ") ;")) {
-                if (tok->tokAt(4)->astOperand2() == nullptr || tok->tokAt(4)->astOperand2()->getMaxValue(false) == nullptr)
+                tok = tok->tokAt(4);
+                if (tok->astOperand2() == nullptr || tok->astOperand2()->getMaxValue(false) == nullptr)
                     continue;
-                size = tok->tokAt(4)->astOperand2()->getMaxValue(false)->intvalue;
-                var = tok->next()->variable();
-                nextTok = tok->linkAt(4)->tokAt(2);
+                size = tok->astOperand2()->getMaxValue(false)->intvalue;
+                nextTok = tok->link()->tokAt(2);
 
                 if (size < 0) {
-                    negativeMemoryAllocationSizeError(tok->next()->next());
+                    negativeMemoryAllocationSizeError(tok);
                 }
 
                 /** @todo false negatives: this may be too conservative */
@@ -1267,7 +1269,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                     size /= static_cast<int>(typeSize);
                 }
                 if (size < 0) {
-                    negativeMemoryAllocationSizeError(tok->next()->next());
+                    negativeMemoryAllocationSizeError(tok);
                 }
             } else {
                 continue;
@@ -1280,8 +1282,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (totalSize == 0)
                 continue;
 
-            std::vector<std::string> v;
-            ArrayInfo temp(var->declarationId(), tok->next()->str(), totalSize / size, size);
+            ArrayInfo temp(var->declarationId(), var->name(), totalSize / size, size);
             checkScope(nextTok, v, temp);
         }
     }
@@ -1334,9 +1335,8 @@ void CheckBufferOverrun::checkStructVariable()
                     if (scope->nestedIn->isClassOrStruct())
                         continue;
 
-                    std::vector<std::string> varname;
-                    varname.push_back("");
-                    varname.push_back(arrayInfo.varname());
+                    std::vector<const std::string*> varname(2, nullptr);
+                    varname[1] = &arrayInfo.varname();
 
                     // search the function and it's parameters
                     for (const Token *tok3 = func_scope->classDef; tok3 && tok3 != func_scope->classEnd; tok3 = tok3->next()) {
@@ -1349,10 +1349,10 @@ void CheckBufferOverrun::checkStructVariable()
 
                         // Declare variable: Fred fred1;
                         if (Token::Match(tok3->next(), "%var% ;"))
-                            varname[0] = tok3->strAt(1);
+                            varname[0] = &tok3->strAt(1);
 
                         else if (isArrayOfStruct(tok3,posOfSemicolon)) {
-                            varname[0] = tok3->strAt(1);
+                            varname[0] = &tok3->strAt(1);
 
                             int pos = 2;
                             for (int k = 0 ; k < posOfSemicolon; k++) {
@@ -1364,7 +1364,7 @@ void CheckBufferOverrun::checkStructVariable()
 
                         // Declare pointer or reference: Fred *fred1
                         else if (Token::Match(tok3->next(), "*|& %var% [,);=]"))
-                            varname[0] = tok3->strAt(2);
+                            varname[0] = &tok3->strAt(2);
 
                         else
                             continue;
@@ -1450,7 +1450,7 @@ void CheckBufferOverrun::checkStructVariable()
                         temp.declarationId(0); // do variable lookup by variable and member names rather than varid
                         std::string varnames; // use class and member name for messages
                         for (std::size_t k = 0; k < varname.size(); ++k)
-                            varnames += (k == 0 ? "" : ".") + varname[k];
+                            varnames += (k == 0 ? "" : ".") + *varname[k];
 
                         temp.varname(varnames);
                         checkScope(checkTok, varname, temp);
@@ -1647,22 +1647,24 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart->next(); tok && tok != scope->classEnd; tok = tok->next()) {
-            unsigned int dstVarId;
+            unsigned int dstVarId = tok->varId();
             unsigned int srcVarId;
 
+            if (!dstVarId || tok->strAt(1) != "=")
+                continue;
+
+            tok = tok->tokAt(2);
+
             // Look for allocation of a buffer based on the size of a string
-            if (Token::Match(tok, "%var% = malloc|g_malloc|g_try_malloc ( strlen ( %name% ) )")) {
-                dstVarId = tok->varId();
+            if (Token::Match(tok, "malloc|g_malloc|g_try_malloc|alloca ( strlen ( %var% ) )")) {
+                srcVarId = tok->tokAt(4)->varId();
+                tok      = tok->tokAt(6);
+            } else if (_tokenizer->isCPP() && Token::Match(tok, "new char [ strlen ( %var% ) ]")) {
+                srcVarId = tok->tokAt(5)->varId();
+                tok      = tok->tokAt(7);
+            } else if (Token::Match(tok, "realloc|g_realloc|g_try_realloc ( %name% , strlen ( %var% ) )")) {
                 srcVarId = tok->tokAt(6)->varId();
                 tok      = tok->tokAt(8);
-            } else if (_tokenizer->isCPP() && Token::Match(tok, "%var% = new char [ strlen ( %name% ) ]")) {
-                dstVarId = tok->varId();
-                srcVarId = tok->tokAt(7)->varId();
-                tok      = tok->tokAt(9);
-            } else if (Token::Match(tok, "%var% = realloc|g_realloc|g_try_realloc ( %name% , strlen ( %name% ) )")) {
-                dstVarId = tok->varId();
-                srcVarId = tok->tokAt(8)->varId();
-                tok      = tok->tokAt(10);
             } else
                 continue;
 
@@ -1703,7 +1705,7 @@ void CheckBufferOverrun::checkStringArgument()
                 const Token *strtoken = argtok->getValueTokenMinStrSize();
                 if (!strtoken)
                     continue;
-                const std::list<Library::ArgumentChecks::MinSize> *minsizes = _settings->library.argminsizes(tok, argnr);
+                const std::vector<Library::ArgumentChecks::MinSize> *minsizes = _settings->library.argminsizes(tok, argnr);
                 if (!minsizes)
                     continue;
                 if (checkMinSizes(*minsizes, tok, Token::getStrSize(strtoken), nullptr, _settings))
@@ -1753,10 +1755,10 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
 
                 // Match common patterns that can result in a buffer overrun
                 // e.g. strcpy(buffer, argv[0])
-                if (Token::Match(tok, "strcpy|strcat ( %name% , * %varid%", varid) ||
-                    Token::Match(tok, "strcpy|strcat ( %name% , %varid% [", varid)) {
-                    cmdLineArgsError(tok);
-                    tok = tok->linkAt(1);
+                if (Token::Match(tok, "strcpy|strcat (")) {
+                    tok = tok->tokAt(2)->nextArgument();
+                    if (Token::Match(tok, "* %varid%", varid) || Token::Match(tok, "%varid% [", varid))
+                        cmdLineArgsError(tok);
                 }
             }
         }
@@ -1786,17 +1788,17 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo()
 {
 }
 
-CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const SymbolDatabase * symDb, const unsigned int forcedeclid)
+CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const SymbolDatabase * symbolDatabase, const unsigned int forcedeclid)
     : _varname(var->name()), _declarationId((forcedeclid == 0U) ? var->declarationId() : forcedeclid)
 {
     for (std::size_t i = 0; i < var->dimensions().size(); i++)
         _num.push_back(var->dimension(i));
     if (var->typeEndToken()->str() == "*")
-        _element_size = symDb->sizeOfType(var->typeEndToken());
+        _element_size = symbolDatabase->sizeOfType(var->typeEndToken());
     else if (var->typeStartToken()->strAt(-1) == "struct")
         _element_size = 100;
     else {
-        _element_size = symDb->sizeOfType(var->typeEndToken());
+        _element_size = symbolDatabase->sizeOfType(var->typeEndToken());
     }
 }
 
@@ -1864,35 +1866,28 @@ void CheckBufferOverrun::arrayIndexThenCheck()
             }
 
             if (Token::Match(tok, "%name% [ %var% ]")) {
-                tok = tok->tokAt(2);
+                tok = tok->next();
 
-                const unsigned int indexID = tok->varId();
-                const std::string& indexName(tok->str());
+                const unsigned int indexID = tok->next()->varId();
+                const std::string& indexName(tok->strAt(1));
 
-                // skip array index..
-                tok = tok->tokAt(2);
-                while (tok && tok->str() == "[")
-                    tok = tok->link()->next();
+                // Iterate AST upwards
+                const Token* tok2 = tok;
+                const Token* tok3 = tok2;
+                while (tok2->astParent() && tok2->tokType() != Token::eLogicalOp) {
+                    tok3 = tok2;
+                    tok2 = tok2->astParent();
+                }
 
-                // syntax error
-                if (!tok)
-                    return;
-
-                // skip comparison
-                if (tok->tokType() == Token::eComparisonOp)
-                    tok = tok->tokAt(2);
-
-                if (!tok)
-                    break;
-                // skip close parentheses
-                if (tok->str() == ")")
-                    tok = tok->next();
+                // Ensure that we ended at a logical operator and that we came from its left side
+                if (tok2->tokType() != Token::eLogicalOp || tok2->astOperand1() != tok3)
+                    continue;
 
                 // check if array index is ok
                 // statement can be closed in parentheses, so "(| " is using
-                if (Token::Match(tok, "&& (| %varid% <|<=", indexID))
+                if (Token::Match(tok2, "&& (| %varid% <|<=", indexID))
                     arrayIndexThenCheckError(tok, indexName);
-                else if (Token::Match(tok, "&& (| %any% >|>= %varid% !!+", indexID))
+                else if (Token::Match(tok2, "&& (| %any% >|>= %varid% !!+", indexID))
                     arrayIndexThenCheckError(tok, indexName);
             }
         }
@@ -1971,6 +1966,38 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
 
     return fileInfo;
 }
+
+Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
+{
+    const std::string ArrayUsage("ArrayUsage");
+    const std::string ArraySize("ArraySize");
+
+    MyFileInfo *fileInfo = new MyFileInfo;
+    for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
+        if (e->Name() == ArrayUsage) {
+            const char *array = e->Attribute("array");
+            const char *arrayIndex = e->Attribute("index");
+            const char *fileName = e->Attribute("fileName");
+            const char *linenr = e->Attribute("linenr");
+            if (!array || !arrayIndex || !MathLib::isInt(arrayIndex) || !fileName || !linenr || !MathLib::isInt(linenr))
+                continue;
+            struct MyFileInfo::ArrayUsage arrayUsage;
+            arrayUsage.index = MathLib::toLongNumber(arrayIndex);
+            arrayUsage.fileName = fileName;
+            arrayUsage.linenr = MathLib::toLongNumber(linenr);
+            fileInfo->arrayUsage[array] = arrayUsage;
+        } else if (e->Name() == ArraySize) {
+            const char *array = e->Attribute("array");
+            const char *size = e->Attribute("size");
+            if (!array || !size || !MathLib::isInt(size))
+                continue;
+            fileInfo->arraySize[array] = MathLib::toLongNumber(size);
+        }
+    }
+
+    return fileInfo;
+}
+
 
 void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings&, ErrorLogger &errorLogger)
 {

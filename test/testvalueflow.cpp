@@ -82,6 +82,8 @@ private:
         TEST_CASE(valueFlowSizeofForwardDeclaredEnum);
 
         TEST_CASE(valueFlowGlobalVar);
+
+        TEST_CASE(valueFlowInlineAssembly);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -93,7 +95,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
                     if (it->isIntValue() && it->intvalue == value)
                         return true;
                 }
@@ -113,7 +115,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
                     if (it->isTokValue() && Token::simpleMatch(it->tokvalue, value))
                         return true;
                 }
@@ -132,7 +134,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
                     if (it->isMovedValue() && it->moveKind == moveKind)
                         return true;
                 }
@@ -151,7 +153,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
                     if (it->isIntValue() && it->intvalue == value && it->condition)
                         return true;
                 }
@@ -179,7 +181,7 @@ private:
         errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
         const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
-        return tok ? tok->values : std::list<ValueFlow::Value>();
+        return tok ? tok->values() : std::list<ValueFlow::Value>();
     }
 
     ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
@@ -1845,7 +1847,6 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 9U, 11));
 
-
         // hang
         code = "void f() {\n"
                "  for(int i = 0; i < 20; i++)\n"
@@ -1865,6 +1866,14 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 10));
 
+        // #7886 - valueFlowForLoop must be called after valueFlowAfterAssign
+        code = "void f() {\n"
+               "  int sz = 4;\n"
+               "  int x,y;\n"
+               "  for(x=0,y=0; x < sz && y < 10; x++)\n"
+               "    a = x;\n" // <- max value is 3
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 3));
     }
 
     void valueFlowSubFunction() {
@@ -2353,6 +2362,15 @@ private:
                "    unknownFunction();\n"
                "    a = x;\n"
                "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 42));
+    }
+
+    void valueFlowInlineAssembly() {
+        const char* code = "void f() {\n"
+                           "    int x = 42;\n"
+                           "    asm(\"\");\n"
+                           "    a = x;\n"
+                           "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 42));
     }
 };

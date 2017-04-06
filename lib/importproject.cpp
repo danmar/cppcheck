@@ -22,6 +22,7 @@
 #include "tokenize.h"
 #include "token.h"
 #include "tinyxml2.h"
+#include "utils.h"
 #include <fstream>
 
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
@@ -70,7 +71,7 @@ void ImportProject::FileSettings::setDefines(std::string defs)
     }
     while (defs.find(";;") != std::string::npos)
         defs.erase(defs.find(";;"),1);
-    if (!defs.empty() && defs.back() == ';')
+    if (!defs.empty() && endsWith(defs,';'))
         defs.erase(defs.size() - 1U); // TODO: Use std::string::pop_back() as soon as travis supports it
     bool eq = false;
     for (std::size_t pos = 0; pos < defs.size(); ++pos) {
@@ -123,13 +124,13 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
             continue;
         std::string s(Path::fromNativeSeparators(*it));
         if (s[0] == '/' || (s.size() > 1U && s.compare(1,2,":/") == 0)) {
-            if (s.back() != '/')
+            if (!endsWith(s,'/'))
                 s += '/';
             I.push_back(s);
             continue;
         }
 
-        if (s.back() == '/') // this is a temporary hack, simplifyPath can crash if path ends with '/'
+        if (endsWith(s,'/')) // this is a temporary hack, simplifyPath can crash if path ends with '/'
             s.erase(s.size() - 1U); // TODO: Use std::string::pop_back() as soon as travis supports it
 
         if (s.find("$(")==std::string::npos) {
@@ -154,7 +155,7 @@ void ImportProject::import(const std::string &filename)
         importCompileCommands(fin);
     } else if (filename.find(".sln") != std::string::npos) {
         std::string path(Path::getPathFromFilename(Path::fromNativeSeparators(filename)));
-        if (!path.empty() && path.back() != '/')
+        if (!path.empty() && !endsWith(path,'/'))
             path += '/';
         importSln(fin,path);
     } else if (filename.find(".vcxproj") != std::string::npos) {

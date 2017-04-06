@@ -3,9 +3,9 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.78 dev</title>
+    <title>Cppcheck 1.79 dev</title>
 
-    <date>2016-08-13</date>
+    <date>2017-03-14</date>
   </bookinfo>
 
   <chapter>
@@ -918,11 +918,9 @@ Checking pen1.c...
         <para>The arguments a function takes can be specified by
         <literal>&lt;arg&gt;</literal> tags. Each of them takes the number of
         the argument (starting from 1) in the <literal>nr</literal> attribute,
-        or <literal>nr="any"</literal> for variadic arguments. Optional
-        arguments can be specified by providing a default value:
-        <literal>default="value"</literal>. Specifying <literal>-1</literal>
-        as the argument number is going to apply a check to all arguments of
-        that function. The specifications for individual arguments override
+        <literal>nr="any"</literal> for arbitrary arguments, or <literal>nr="variadic"</literal> for variadic arguments.
+        Optional arguments can be specified by providing a default value:
+        <literal>default="value"</literal>. The specifications for individual arguments override
         this setting.</para>
 
         <section>

@@ -291,6 +291,7 @@ private:
         TEST_CASE(dealloc_use);
         TEST_CASE(dealloc_use_2);
         TEST_CASE(dealloc_use_3);
+        TEST_CASE(dealloc_use_4); // #7960
 
         // free a free'd pointer
         TEST_CASE(freefree1);
@@ -3197,6 +3198,21 @@ private:
               "    str[10] = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
+    }
+
+    void dealloc_use_4() { // #7960
+        check("class SR {\n"
+              "public:\n"
+              "    void dostuff();\n"
+              "    int* m_data;\n"
+              "};\n"
+              "void SR::dostuff() {\n"
+              "    SR sr;\n"
+              "    delete m_data;\n"
+              "    sr.m_data = new SVec;\n"
+              "    *m_data = 123;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void freefree1() {

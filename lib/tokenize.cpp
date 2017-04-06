@@ -1737,7 +1737,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         }
     }
 
-    SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings);
+    _symbolDatabase->setValueTypeInTokenList();
     ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
 
     printDebugOutput(1);
@@ -1855,7 +1855,7 @@ void Tokenizer::combineOperators()
                 }
                 if (prev->isName() && prev->isUpperCaseName())
                     continue;
-                if (prev->isName() && prev->str().back() == ':')
+                if (prev->isName() && endsWith(prev->str(), ':'))
                     simplify = true;
                 break;
             }
@@ -2648,7 +2648,7 @@ void Tokenizer::setVarIdPass1()
              (tok->str() == "(" && isFunctionHead(tok,"{")) ||
              (tok->str() == "(" && !scopeStack.top().isExecutable && isFunctionHead(tok,";:")) ||
              (tok->str() == "," && !scopeStack.top().isExecutable) ||
-             (tok->isName() && tok->str().back() == ':'))) {
+             (tok->isName() && endsWith(tok->str(), ':')))) {
 
             // No variable declarations in sizeof
             if (Token::simpleMatch(tok->previous(), "sizeof (")) {
@@ -2662,7 +2662,7 @@ void Tokenizer::setVarIdPass1()
             const Token *tok2 = (tok->isName()) ? tok : tok->next();
 
             // private: protected: public: etc
-            while (tok2 && tok2->str().back() == ':') {
+            while (tok2 && endsWith(tok2->str(), ':')) {
                 tok2 = tok2->next();
             }
             if (!tok2)
@@ -3034,7 +3034,7 @@ void Tokenizer::createLinks2()
 
     std::stack<Token*> type;
     for (Token *token = list.front(); token; token = token->next()) {
-        if (Token::Match(token, "struct|class %name% [:<]"))
+        if (Token::Match(token, "%name%|> %name% [:<]"))
             isStruct = true;
         else if (Token::Match(token, "[;{}]"))
             isStruct = false;
@@ -3317,6 +3317,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
             }
         }
     }
+
+    // Is there C++ code in C file?
+    validateC();
 
     // remove MACRO in variable declaration: MACRO int x;
     removeMacroInVarDecl();
@@ -3666,7 +3669,7 @@ bool Tokenizer::simplifyTokenList2()
     // Clear AST,ValueFlow. These will be created again at the end of this function.
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         tok->clearAst();
-        tok->values.clear();
+        tok->clearValueFlow();
     }
 
     // f(x=g())   =>   x=g(); f(x)
@@ -3791,7 +3794,7 @@ bool Tokenizer::simplifyTokenList2()
 
     // Create symbol database and then remove const keywords
     createSymbolDatabase();
-    SymbolDatabase::setValueTypeInTokenList(list.front(), isCPP(), _settings);
+    _symbolDatabase->setValueTypeInTokenList();
 
     ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
 
@@ -3904,8 +3907,8 @@ void Tokenizer::dump(std::ostream &out) const
             out << " variable=\"" << tok->variable() << '\"';
         if (tok->function())
             out << " function=\"" << tok->function() << '\"';
-        if (!tok->values.empty())
-            out << " values=\"" << &tok->values << '\"';
+        if (!tok->values().empty())
+            out << " values=\"" << &tok->values() << '\"';
         if (tok->type())
             out << " type-scope=\"" << tok->type()->classScope << '\"';
         if (tok->astParent())
@@ -7617,6 +7620,12 @@ void Tokenizer::syntaxError(const Token *tok, char c) const
                             InternalError::SYNTAX);
 }
 
+void Tokenizer::syntaxErrorC(const Token *tok, const std::string &what) const
+{
+    printDebugOutput(0);
+    throw InternalError(tok, "Code '"+what+"' is invalid C code. Use --std or --language to configure the language.", InternalError::SYNTAX);
+}
+
 void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
 {
     reportError(tok,
@@ -7995,6 +8004,24 @@ void Tokenizer::simplifyComma()
     }
 }
 
+
+void Tokenizer::validateC() const
+{
+    if (!isC())
+        return;
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (tok->previous() && !Token::Match(tok->previous(), "[;{}]"))
+            continue;
+        if (Token::simpleMatch(tok, "using namespace std ;"))
+            syntaxErrorC(tok, "using namespace std");
+        if (Token::Match(tok, "template < class %name% [,>]"))
+            syntaxErrorC(tok, "template<...");
+        if (Token::Match(tok, "%name% :: %name%"))
+            syntaxErrorC(tok, tok->str() + tok->strAt(1) + tok->strAt(2));
+        if (Token::Match(tok, "class|namespace %name% [:{]"))
+            syntaxErrorC(tok, tok->str() + tok->strAt(1) + tok->strAt(2));
+    }
+}
 
 void Tokenizer::validate() const
 {

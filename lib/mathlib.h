@@ -109,7 +109,7 @@ public:
     static bool isGreaterEqual(const std::string & first, const std::string & second);
     static bool isLess(const std::string & first, const std::string & second);
     static bool isLessEqual(const std::string & first, const std::string & second);
-    static bool isNullValue(const std::string &tok);
+    static bool isNullValue(const std::string & str);
     /**
      * Return true if given character is 0,1,2,3,4,5,6 or 7.
      * @param[in] c The character to check

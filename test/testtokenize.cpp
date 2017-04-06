@@ -64,6 +64,8 @@ private:
         TEST_CASE(tokenize32);  // #5884 (fsanitize=undefined: left shift of negative value -10000 in lib/templatesimplifier.cpp:852:46)
         TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
 
+        TEST_CASE(validate);
+
         TEST_CASE(syntax_case_default);
 
         TEST_CASE(foreach);     // #3690
@@ -778,6 +780,13 @@ private:
                             "    vector<int> VI;\n"
                             "}\n";
         tokenizeAndStringify(code, true);
+    }
+
+    void validate() {
+        // C++ code in C file
+        ASSERT_THROW(tokenizeAndStringify(";using namespace std;",false,false,Settings::Native,"test.c"), InternalError);
+        ASSERT_THROW(tokenizeAndStringify(";std::map<int,int> m;",false,false,Settings::Native,"test.c"), InternalError);
+        ASSERT_THROW(tokenizeAndStringify(";template<class T> class X { };",false,false,Settings::Native,"test.c"), InternalError);
     }
 
     void syntax_case_default() { // correct syntax
@@ -4569,6 +4578,19 @@ private:
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
+
+        {
+            // #7975
+            const char code[] = "template <class C> X<Y&&Z, C*> copy() {};\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "< Y");
+            const Token *tok2 = Token::findsimplematch(tok1, "> copy");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
     }
 
     void simplifyString() {
@@ -8028,12 +8050,12 @@ private:
         ASSERT_EQUALS("xa{((= bc( yd{((= ef(",
                       testAst("x=(int)(a({b(c);}));" // don't hang
                               "y=(int)(d({e(f);}));"));
-        ASSERT_EQUALS("QT_WA{{,( QT_WA{{,( x1=",
+        ASSERT_EQUALS("QT_WA{{,( x0= QT_WA{{,( x1= x2=",
                       testAst("QT_WA({},{x=0;});" // don't hang
                               "QT_WA({x=1;},{x=2;});"));
         ASSERT_EQUALS("xMACROtypeT=value1=,{({=",
                       testAst("x = { MACRO( { .type=T, .value=1 } ) }")); // don't hang: MACRO({..})
-
+        ASSERT_EQUALS("fori10=i{;;( i--", testAst("for (i=10;i;({i--;}) ) {}"));
 
         // function pointer
         TODO_ASSERT_EQUALS("todo", "va_argapvoid((,(*0=", testAst("*va_arg(ap, void(**) ()) = 0;"));
@@ -8041,8 +8063,10 @@ private:
         // struct initialization
         ASSERT_EQUALS("name_bytes[bits~unusedBits>>unusedBits<<{=", testAst("const uint8_t name_bytes[] = { (~bits >> unusedBits) << unusedBits };"));
         ASSERT_EQUALS("abuf0{={=", testAst("a = { .buf = { 0 } };"));
+        ASSERT_EQUALS("ab2[a0=b0=,{a0=b0=,{,{=", testAst("struct AB ab[2] = { { .a=0, .b=0 }, { .a=0, .b=0 } };"));
         ASSERT_EQUALS("tset{=", testAst("struct cgroup_taskset tset = {};"));
         ASSERT_EQUALS("s1a&,{2b&,{,{=", testAst("s = { {1, &a}, {2, &b} };"));
+        TODO_ASSERT_EQUALS("xatoistr({(=", "x{(= atoistr(", testAst("x = (struct X){atoi(str)};"));
 
         // template parentheses: <>
         ASSERT_EQUALS("stdfabs::m_similarity(numeric_limitsepsilon::(<=return", testAst("return std::fabs(m_similarity) <= numeric_limits<double>::epsilon();")); // #6195
