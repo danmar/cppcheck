@@ -1008,6 +1008,9 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
         if (tok->str() == "{") {
             if (Token::simpleMatch(tok->previous(), "( {"))
                 ;
+            // struct assignment
+            else if (Token::simpleMatch(tok->previous(), ") {") && Token::simpleMatch(tok->linkAt(-1), "( struct"))
+                ;
             // Lambda function
             else if (Token::simpleMatch(tok->astParent(), "(") &&
                      Token::simpleMatch(tok->astParent()->astParent(), "[") &&

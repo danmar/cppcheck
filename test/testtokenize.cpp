@@ -8066,6 +8066,7 @@ private:
         ASSERT_EQUALS("ab2[a0=b0=,{a0=b0=,{,{=", testAst("struct AB ab[2] = { { .a=0, .b=0 }, { .a=0, .b=0 } };"));
         ASSERT_EQUALS("tset{=", testAst("struct cgroup_taskset tset = {};"));
         ASSERT_EQUALS("s1a&,{2b&,{,{=", testAst("s = { {1, &a}, {2, &b} };"));
+        TODO_ASSERT_EQUALS("xatoistr({(=", "x{(= atoistr(", testAst("x = (struct X){atoi(str)};"));
 
         // template parentheses: <>
         ASSERT_EQUALS("stdfabs::m_similarity(numeric_limitsepsilon::(<=return", testAst("return std::fabs(m_similarity) <= numeric_limits<double>::epsilon();")); // #6195
