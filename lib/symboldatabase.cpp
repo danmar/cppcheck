@@ -2508,18 +2508,19 @@ static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
     return s;
 }
 
-static std::ostream & operator << (std::ostream & s, AccessControl control)
+static std::string accessControlToString(const AccessControl& access)
 {
-  s << (control == Public ? "Public" :
-        control == Protected ? "Protected" :
-        control == Private ? "Private" :
-        control == Global ? "Global" :
-        control == Namespace ? "Namespace" :
-        control == Argument ? "Argument" :
-        control == Local ? "Local" :
-        control == Throw ? "Throw" :
-        "Unknown");
-  return s;
+    switch (access) {
+    case Public:      return "Public";
+    case Protected:   return "Protected";
+    case Private:     return "Private";
+    case Global:      return "Global";
+    case Namespace:   return "Namespace";
+    case Argument:    return "Argument";
+    case Local:       return "Local";
+    case Throw:       return "Throw";
+    }
+    return "Unknown";
 }
 
 static std::string tokenToString(const Token* tok, const Tokenizer* tokenizer)
@@ -2849,7 +2850,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
             if (!scope->functionList.empty()) {
                 out << "      <functionList>" << std::endl;
                 for (std::list<Function>::const_iterator function = scope->functionList.begin(); function != scope->functionList.end(); ++function) {
-                    out << "        <function id=\"" << &*function << "\" tokenDef=\"" << function->tokenDef << "\" name=\"" << ErrorLogger::toxml(function->name()) << "\" access=\"" << function->access << '\"';
+                    out << "        <function id=\"" << &*function << "\" tokenDef=\"" << function->tokenDef << "\" name=\"" << ErrorLogger::toxml(function->name()) << "\" access=\"" << accessControlToString(function->access) << '\"';
                     if (function->argCount() == 0U)
                         out << "/>" << std::endl;
                     else {
@@ -2891,7 +2892,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " isPointer=\""      << var->isPointer() << '\"';
         out << " isReference=\""    << var->isReference() << '\"';
         out << " isStatic=\""       << var->isStatic() << '\"';
-        out << " access=\""         << var->_access << '\"';
+        out << " access=\""         << accessControlToString(var->_access) << '\"';
         out << "/>" << std::endl;
     }
     out << "  </variables>" << std::endl;
