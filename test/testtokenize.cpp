@@ -64,6 +64,8 @@ private:
         TEST_CASE(tokenize32);  // #5884 (fsanitize=undefined: left shift of negative value -10000 in lib/templatesimplifier.cpp:852:46)
         TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
 
+        TEST_CASE(validate);
+
         TEST_CASE(syntax_case_default);
 
         TEST_CASE(foreach);     // #3690
@@ -778,6 +780,13 @@ private:
                             "    vector<int> VI;\n"
                             "}\n";
         tokenizeAndStringify(code, true);
+    }
+
+    void validate() {
+        // C++ code in C file
+        ASSERT_THROW(tokenizeAndStringify(";using namespace std;",false,false,Settings::Native,"test.c"), InternalError);
+        ASSERT_THROW(tokenizeAndStringify(";std::map<int,int> m;",false,false,Settings::Native,"test.c"), InternalError);
+        ASSERT_THROW(tokenizeAndStringify(";template<class T> class X { };",false,false,Settings::Native,"test.c"), InternalError);
     }
 
     void syntax_case_default() { // correct syntax

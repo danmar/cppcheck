@@ -568,10 +568,18 @@ public:
     /** Syntax error. Example: invalid number of ')' */
     void syntaxError(const Token *tok, char c) const;
 
+    /** Syntax error. C++ code in C file. */
+    void syntaxErrorC(const Token *tok, const std::string &what) const;
+
 private:
 
     /** Report that there is an unhandled "class x y {" code */
     void unhandled_macro_class_x_y(const Token *tok) const;
+
+    /**
+     * Is there C++ code in C file?
+     */
+    void validateC() const;
 
     /**
      * assert that tokens are ok - used during debugging for example

@@ -130,7 +130,6 @@ private:
         TEST_CASE(garbageCode90);
         TEST_CASE(garbageCode91);
         TEST_CASE(garbageCode92);
-        TEST_CASE(garbageCode93);
         TEST_CASE(garbageCode94);
         TEST_CASE(garbageCode95);
         TEST_CASE(garbageCode96);
@@ -763,10 +762,6 @@ private:
         ASSERT_THROW(checkCode("template < typename _Tp ( ( ) ; _Tp ) , decltype > { } { ( ) ( ) }"), InternalError); // do not crash
     }
 
-    void garbageCode93() { // #6800
-        checkCode(" namespace A { } class A{ { }} class A : T ;", false); // do not crash
-    }
-
     void garbageCode94() { // #6803
         //checkCode("typedef long __m256i __attribute__ ( ( ( ) ) )[ ; ( ) { } typedef __m256i __attribute__ ( ( ( ) ) ) < ] ( ) { ; }");
         ASSERT_THROW(checkCode("typedef long __m256i __attribute__ ( ( ( ) ) )[ ; ( ) { } typedef __m256i __attribute__ ( ( ( ) ) ) < ] ( ) { ; }"), InternalError);
@@ -1326,7 +1321,7 @@ private:
 
     void garbageCode164() {
         //7234
-        checkCode("class d{k p;}(){d::d():B<()}", false);
+        checkCode("class d{k p;}(){d::d():B<()}");
     }
 
     void garbageCode165() {
@@ -1336,7 +1331,7 @@ private:
 
     void garbageCode167() {
         //7237
-        checkCode("class D00i000{:D00i000::}i", false);
+        ASSERT_THROW(checkCode("class D00i000{:D00i000::}i"),InternalError);
     }
 
     void garbageCode168() {

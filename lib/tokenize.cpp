@@ -3318,6 +3318,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         }
     }
 
+    // Is there C++ code in C file?
+    validateC();
+
     // remove MACRO in variable declaration: MACRO int x;
     removeMacroInVarDecl();
 
@@ -7617,6 +7620,12 @@ void Tokenizer::syntaxError(const Token *tok, char c) const
                             InternalError::SYNTAX);
 }
 
+void Tokenizer::syntaxErrorC(const Token *tok, const std::string &what) const
+{
+    printDebugOutput(0);
+    throw InternalError(tok, "Code '"+what+"' is invalid C code. Use --std or --language to configure the language.", InternalError::SYNTAX);
+}
+
 void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
 {
     reportError(tok,
@@ -7995,6 +8004,24 @@ void Tokenizer::simplifyComma()
     }
 }
 
+
+void Tokenizer::validateC() const
+{
+    if (!isC())
+        return;
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (tok->previous() && !Token::Match(tok->previous(), "[;{}]"))
+            continue;
+        if (Token::simpleMatch(tok, "using namespace std ;"))
+            syntaxErrorC(tok, "using namespace std");
+        if (Token::Match(tok, "template < class %name% [,>]"))
+            syntaxErrorC(tok, "template<...");
+        if (Token::Match(tok, "%name% :: %name%"))
+            syntaxErrorC(tok, tok->str() + tok->strAt(1) + tok->strAt(2));
+        if (Token::Match(tok, "class|namespace %name% [:{]"))
+            syntaxErrorC(tok, tok->str() + tok->strAt(1) + tok->strAt(2));
+    }
+}
 
 void Tokenizer::validate() const
 {

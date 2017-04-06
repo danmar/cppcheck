@@ -864,7 +864,7 @@ private:
               "    ::exit(0);\n"
               "  }"
               "  free(p);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
@@ -874,7 +874,7 @@ private:
               "    std::exit(0);\n"
               "  }"
               "  free(p);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 

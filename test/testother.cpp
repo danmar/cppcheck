@@ -1104,15 +1104,8 @@ private:
         std::istringstream istr(code);
         tokenizerCpp.tokenize(istr, "test.cpp");
 
-        Tokenizer tokenizerC(&settings, this);
-        std::istringstream istr2(code);
-        tokenizerC.tokenize(istr2, "test.c");
-
         CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
         checkOtherCpp.warningOldStylePointerCast();
-
-        CheckOther checkOtherC(&tokenizerC, &settings, this);
-        checkOtherC.warningOldStylePointerCast();
     }
 
     void oldStylePointerCast() {
