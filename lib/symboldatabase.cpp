@@ -2531,6 +2531,23 @@ static std::string scopeToString(const Scope* scope, const Tokenizer* tokenizer)
     return oss.str();
 }
 
+static std::string tokenType(const Token * tok)
+{
+    std::ostringstream oss;
+    if (tok) {
+        if (tok->isUnsigned())
+            oss << "unsigned ";
+        else if (tok->isSigned())
+            oss << "signed ";
+        if (tok->isComplex())
+            oss << "_Complex ";
+        if (tok->isLong())
+            oss << "long ";
+        oss << tok->str();
+    }
+    return oss.str();
+}
+
 void SymbolDatabase::printVariable(const Variable *var, const char *indent) const
 {
     std::cout << indent << "_name: " << tokenToString(var->nameToken(), _tokenizer) << std::endl;
@@ -2539,6 +2556,22 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     }
     std::cout << indent << "_start: " << tokenToString(var->typeStartToken(), _tokenizer) << std::endl;
     std::cout << indent << "_end: " << tokenToString(var->typeEndToken(), _tokenizer) << std::endl;
+
+    const Token * autoTok = nullptr;
+    std::cout << indent << "   ";
+    for (const Token * tok = var->typeStartToken(); tok != var->typeEndToken()->next(); tok = tok->next()) {
+        std::cout << " " << tokenType(tok);
+        if (tok->str() == "auto")
+            autoTok = tok;
+    }
+    std::cout << std::endl;
+    if (autoTok) {
+        const ValueType * valueType = autoTok->valueType();
+        std::cout << indent << "    auto valueType: " << valueType << std::endl;
+        if (var->typeStartToken()->valueType()) {
+            std::cout << indent << "        " << valueType->str() << std::endl;
+        }
+    }
     std::cout << indent << "_index: " << var->index() << std::endl;
     std::cout << indent << "_access: " <<
               (var->isPublic() ? "Public" :
@@ -2570,6 +2603,14 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
         std::cout << " " << var->type() << std::endl;
     } else
         std::cout << "none" << std::endl;
+
+    if (var->nameToken()) {
+        const ValueType * valueType = var->nameToken()->valueType();
+        std::cout << indent << "valueType: " << valueType << std::endl;
+        if (valueType) {
+            std::cout << indent << "    " << valueType->str() << std::endl;
+        }
+    }
 
     std::cout << indent << "_scope: " << scopeToString(var->scope(), _tokenizer) << std::endl;
 
@@ -2650,7 +2691,22 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        argDef: " << tokenToString(func->argDef, _tokenizer) << std::endl;
             if (!func->isConstructor() && !func->isDestructor())
                 std::cout << "        retDef: " << tokenToString(func->retDef, _tokenizer) << std::endl;
+            if (func->retDef) {
+                std::cout << "           ";
+                for (const Token * tok = func->retDef; tok != func->tokenDef; tok = tok->next())
+                    std::cout << " " << tokenType(tok);
+                std::cout << std::endl;
+            }
             std::cout << "        retType: " << func->retType << std::endl;
+
+            if (func->tokenDef->next()->valueType()) {
+                const ValueType * valueType = func->tokenDef->next()->valueType();
+                std::cout << "        valueType: " << valueType << std::endl;
+                if (valueType) {
+                    std::cout << "            " << valueType->str() << std::endl;
+                }
+            }
+
             if (func->hasBody()) {
                 std::cout << "        token: " << tokenToString(func->token, _tokenizer) << std::endl;
                 std::cout << "        arg: " << tokenToString(func->arg, _tokenizer) << std::endl;
