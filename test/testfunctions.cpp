@@ -912,6 +912,12 @@ private:
               "   int x({mystrcmp(a,b)});\n"
               "}", "test.cpp", &settings2);
         ASSERT_EQUALS("", errout.str());
+
+        // #7979 - code is not well configured
+        check("void foo() {\n"
+              "  DEBUG(x(); mystrcmp(a,b););\n"
+              "}", "test.cpp", &settings2);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
