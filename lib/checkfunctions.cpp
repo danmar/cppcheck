@@ -161,16 +161,16 @@ void CheckFunctions::checkIgnoredReturnValue()
                 tok = tok->linkAt(1);
 
             if (Token::Match(tok->previous(), "%name% (")) {
-				bool semicolon = false;
-				for (const Token *tok2 = tok->tokAt(2); tok2 && tok2->str() != ")"; tok2 = tok2->next()) {
-					if (tok2->str() == ";")
-						semicolon = true;
-					else if (Token::Match(tok2, "[({]"))
-						tok2 = tok2->link();
-				}
-				if (semicolon)
-					tok = tok->link();
-			}
+                bool semicolon = false;
+                for (const Token *tok2 = tok->tokAt(2); tok2 && tok2->str() != ")"; tok2 = tok2->next()) {
+                    if (tok2->str() == ";")
+                        semicolon = true;
+                    else if (Token::Match(tok2, "[({]"))
+                        tok2 = tok2->link();
+                }
+                if (semicolon)
+                    tok = tok->link();
+            }
 
             if (tok->varId() || !Token::Match(tok, "%name% ("))
                 continue;
