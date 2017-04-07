@@ -576,6 +576,10 @@ private:
     /** Report that there is an unhandled "class x y {" code */
     void unhandled_macro_class_x_y(const Token *tok) const;
 
+    /** Check configuration (unknown macros etc) */
+    void checkConfiguration() const;
+    void macroWithSemicolonError(const Token *tok, const std::string &macroName) const;
+
     /**
      * Is there C++ code in C file?
      */

@@ -457,6 +457,9 @@ private:
         // Make sure the Tokenizer::findGarbageCode() does not have false positives
         // The TestGarbage ensures that there are true positives
         TEST_CASE(findGarbageCode);
+
+        // --check-config
+        TEST_CASE(checkConfiguration);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -8249,6 +8252,24 @@ private:
 
         // after (expr)
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { switch (a) int b; }"));
+    }
+
+
+    void checkConfig(const char code[]) {
+        errout.str("");
+
+        Settings s;
+        s.checkConfiguration = true;
+
+        // tokenize..
+        Tokenizer tokenizer(&s, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+    }
+
+    void checkConfiguration() {
+        checkConfig("void f() { DEBUG(x();y()); }");
+        ASSERT_EQUALS("[test.cpp:1]: (information) Ensure that 'DEBUG' is defined either using -I, --include or -D.\n", errout.str());
     }
 };
 
