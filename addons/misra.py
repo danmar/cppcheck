@@ -409,7 +409,14 @@ def misra57(data):
 # 58 The break statement shall not be used, except to terminate the cases of a switch statement
 # STATUS: TODO
 def misra58(data):
-    return
+    for token in data.tokenlist:
+        if token.str != "break":
+            continue
+        s = token.scope
+        while s and s.type == 'If':
+            s = s.nestedIn
+        if s and s.type in ['While', 'For']:
+            reportError(token, 'style', '58 The break statement shall not be used, except to terminate the cases of a switch statement')
 
 # 59 The statements forming the body of an if, else, else if, .. shall always be enclosed in braces
 # STATUS: TODO

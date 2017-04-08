@@ -41,3 +41,10 @@ void misra56() {
 void misra57() {
   continue; // 57
 }
+
+void misra58() {
+  while (1) {
+    if(x)
+      break; // 58
+  }
+}

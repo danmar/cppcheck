@@ -236,6 +236,8 @@ class Scope:
     classEndId = None
     classEnd = None
     className = None
+    nestedInId = None
+    nestedIn = None
     type = None
 
     def __init__(self, element):
