@@ -19,14 +19,13 @@ def reportError(token, severity, msg):
 def hasSideEffects(expr):
     if not expr:
         return False
-    if expr in ['++', '--', '=']:
+    if expr.str in ['++', '--', '=']:
         return True
     # Todo: Check function calls
     return hasSideEffects(expr.astOperand1) or hasSideEffects(expr.astOperand2)
 
 def isPrimaryExpression(expr):
-    return expr and (token.isName or token.isNumber or (token.str in [expr.str, '!', '==', '!=', '<', '<=', '>', '>=']))
-
+    return expr and (expr.isName or expr.isNumber or (expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||']))
 
 # Environment
 # -----------
@@ -270,7 +269,9 @@ def misra33(data):
 # STATUS: Done
 def misra34(data):
     for token in data.tokenlist:
-        if token.isLogicalOp and not isPrimaryExpression(token):
+        if not token.isLogicalOp:
+            continue
+        if not isPrimaryExpression(token.astOperand1) or not isPrimaryExpression(token.astOperand2):
             reportError(
                 token, 'style', '34 The operands of a && or || shall be primary expressions')
 
@@ -395,15 +396,15 @@ def misra55(data):
 # STATUS: Done.
 def misra56(data):
     for token in data.tokenlist:
-        if (token.str == "goto":
+        if token.str == "goto":
             reportError(token, 'style', '56 The goto statement shall not be used')
 
 # 57 The continue statement shall not be used
 # STATUS: Done.
 def misra57(data):
     for token in data.tokenlist:
-        if (token.str == "continue":
-            reportError(token, 'style', '56 The continue statement shall not be used')
+        if token.str == "continue":
+            reportError(token, 'style', '57 The continue statement shall not be used')
 
 # 58 The break statement shall not be used, except to terminate the cases of a switch statement
 # STATUS: TODO
