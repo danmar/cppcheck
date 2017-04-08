@@ -763,7 +763,7 @@ static std::vector<ValueFlow::Value> valueFlowGetArrayIndexes(const Token * cons
     unsigned int indexvarid = 0;
     const std::vector<ValueFlow::Value> empty;
     std::vector<ValueFlow::Value> indexes;
-    for (const Token *tok2 = tok; indexes.size() < dimensions && Token::Match(tok2, "["); tok2 = tok2->link()->next()) {
+    for (const Token *tok2 = tok; indexes.size() < dimensions && Token::simpleMatch(tok2, "["); tok2 = tok2->link()->next()) {
         if (!tok2->astOperand2())
             return empty;
 
