@@ -30,6 +30,10 @@ void misra28() {
   register int x = 3; // 28
 }
 
+enum misra32 { A=1, B, C=10 }; // 32
+enum misra32_ok1 { A, B, C };
+enum misra32_ok2 { A=1, B, C };
+
 void misra33() {
   if (x && (y++ < 123)){} // 33
 }

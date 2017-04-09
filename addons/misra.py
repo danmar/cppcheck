@@ -253,9 +253,47 @@ def misra31(data):
     return
 
 # 32 In an enumerator list the = construct shall not be used to explicitly initialise members other than the first unless it is used to initialise all items
-# STATUS: TODO
+# STATUS: Done
 def misra32(data):
-    return
+    for token in data.tokenlist:
+        if token.str != 'enum':
+            continue
+
+        # Goto start '{'
+        tok = token.next
+        if tok and tok.isName:
+            tok = tok.next
+        if not tok or tok.str != '{':
+            continue
+
+        # Parse enum body and remember which members are assigned
+        eqList = []
+        eq = False
+        tok = tok.next
+        while tok and tok.str != '}':
+            if tok.str == '=':
+                eq = True
+            elif tok.str == ',':
+                eqList.append(eq)
+                eq = False
+            elif tok.link and (tok.str in ['(','[','{','<']):
+                tok = tok.link
+            tok = tok.next
+        eqList.append(eq)
+        #print(str(token.linenr) + ':' + str(eqList))
+
+        # is there error?
+        if len(eqList) <= 1:
+            continue
+        err = False
+        if eqList[0] and eqList[1]:
+            err = (False in eqList[1:])
+        else:
+            err = (True in eqList[1:])
+        if err:
+            reportError(token, 'style', '32 In an enumerator list the = construct shall not be used to explicitly initialise members other than the first unless it is used to initialise all items')
+
+
 
 # Operators
 # ---------
