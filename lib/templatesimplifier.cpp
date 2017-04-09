@@ -818,8 +818,12 @@ void TemplateSimplifier::expandTemplate(
 
             // replace name..
             if (Token::Match(tok3, (name + " !!<").c_str())) {
-                tokenlist.addtoken(newName, tok3->linenr(), tok3->fileIndex());
-                continue;
+                if (Token::Match(tok3->tokAt(-2), "> :: %name% ( )")) {
+                    ; // Ticket #7942: Replacing for out-of-line constructors generates invalid syntax
+                } else {
+                    tokenlist.addtoken(newName, tok3->linenr(), tok3->fileIndex());
+                    continue;
+                }
             }
 
             // copy

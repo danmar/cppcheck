@@ -184,7 +184,7 @@ private:
         const char expected[] = "template < class T > Fred < T > :: Fred ( ) { } " // <- TODO: this should be removed
                                 "Fred < float > fred ; "
                                 "class Fred < float > { } ; "
-                                "Fred < float > :: Fred < float > ( ) { }";
+                                "Fred < float > :: Fred ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
     }

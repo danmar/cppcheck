@@ -183,6 +183,7 @@ private:
         TEST_CASE(uninitConstVar);
         TEST_CASE(constructors_crash1);    // ticket #5641
         TEST_CASE(classWithOperatorInName);// ticket #2827
+        TEST_CASE(templateConstructor);    // ticket #7942
     }
 
 
@@ -3346,6 +3347,16 @@ private:
               "public:\n"
               "  operatorX() : mValue(0) {}\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void templateConstructor() { // ticket #7942
+        check("template <class T> struct Containter {\n"
+              "  Containter();\n"
+              "  T* mElements;\n"
+              "};\n"
+              "template <class T> Containter<T>::Containter() : mElements(nullptr) {}\n"
+              "Containter<int> intContainer;");
         ASSERT_EQUALS("", errout.str());
     }
 };
