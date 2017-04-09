@@ -58,7 +58,7 @@ private:
         found = false;
     }
 
-    const SymbolDatabase* getSymbolDB_inner(Tokenizer& tokenizer, const char* code, const char* filename) {
+    const static SymbolDatabase* getSymbolDB_inner(Tokenizer& tokenizer, const char* code, const char* filename) {
         errout.str("");
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
