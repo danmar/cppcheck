@@ -181,7 +181,7 @@ def misra18(data):
 # STATUS: Done
 def misra19(rawTokens):
     for tok in rawTokens:
-        if re.match(r'0[0-6]+', tok.str):
+        if re.match(r'0[0-7]+', tok.str):
             reportError(tok, 'style', '19 Octal constants shall not be used')
 
 # Declarations and Definitions
