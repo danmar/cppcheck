@@ -8167,6 +8167,8 @@ private:
         ASSERT_EQUALS("{([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));
 
         ASSERT_EQUALS("x{([= 0return", testAst("x = [](){return 0; };"));
+
+        ASSERT_EQUALS("ab{[(= cd=", testAst("a = b([&]{c=d;});"));
     }
 
     void compileLimits() {

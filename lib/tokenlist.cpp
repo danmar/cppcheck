@@ -677,34 +677,40 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             } else
                 compileBinOp(tok, state, compileScope);
         } else if (tok->str() == "[") {
-            bool lambda = false;
-            if (state.cpp && isPrefixUnary(tok, state.cpp) && tok->link()->strAt(1) == "(") { // Lambda
+            if (state.cpp && isPrefixUnary(tok, state.cpp) && Token::Match(tok->link(), " ] (|{")) { // Lambda
                 // What we do here:
                 // - Nest the round bracket under the square bracket.
                 // - Nest what follows the lambda (if anything) with the lambda opening [
                 // - Compile the content of the lambda function as separate tree (this is done later)
                 // this must be consistent with isLambdaCaptureList
-                Token* squareBracket = tok;
-                Token* roundBracket = squareBracket->link()->next();
-                Token* curlyBracket = roundBracket->link()->next();
-                while (Token::Match(curlyBracket, "%name%|.|::"))
-                    curlyBracket = curlyBracket->next();
-                if (Token::simpleMatch(curlyBracket, "{")) {
-                    lambda = true;
-                    squareBracket->astOperand1(roundBracket);
-                    roundBracket->astOperand1(curlyBracket);
+                Token* const squareBracket = tok;
+                if (Token::simpleMatch(squareBracket->link(), "] (")) {
+                    Token* const roundBracket = squareBracket->link()->next();
+                    Token* curlyBracket = roundBracket->link()->next();
+                    while (Token::Match(curlyBracket, "%name%|.|::"))
+                        curlyBracket = curlyBracket->next();
+                    if (curlyBracket && curlyBracket->str() == "{") {
+                        squareBracket->astOperand1(roundBracket);
+                        roundBracket->astOperand1(curlyBracket);
+                        state.op.push(squareBracket);
+                        tok = curlyBracket->link()->next();
+                        continue;
+                    }
+                } else {
+                    Token* const curlyBracket = squareBracket->link()->next();
+                    squareBracket->astOperand1(curlyBracket);
                     state.op.push(squareBracket);
                     tok = curlyBracket->link()->next();
+                    continue;
                 }
             }
-            if (!lambda) {
-                Token* tok2 = tok;
-                if (tok->strAt(1) != "]")
-                    compileBinOp(tok, state, compileExpression);
-                else
-                    compileUnaryOp(tok, state, compileExpression);
-                tok = tok2->link()->next();
-            }
+
+            Token* tok2 = tok;
+            if (tok->strAt(1) != "]")
+                compileBinOp(tok, state, compileExpression);
+            else
+                compileUnaryOp(tok, state, compileExpression);
+            tok = tok2->link()->next();
         } else if (tok->str() == "(" && (!iscast(tok) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
             Token* tok2 = tok;
             tok = tok->next();
@@ -986,11 +992,13 @@ static bool isLambdaCaptureList(const Token * tok)
 {
     // a lambda expression '[x](y){}' is compiled as:
     // [
-    // `-(
+    // `-(  <<-- optional
     //   `-{
     // see compilePrecedence2
     if (tok->str() != "[")
         return false;
+    if (Token::simpleMatch(tok->astOperand1(), "{"))
+        return true;
     if (!tok->astOperand1() || tok->astOperand1()->str() != "(")
         return false;
     const Token * params = tok->astOperand1();
@@ -1035,6 +1043,9 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 tok = createAstAtToken(tok, cpp);
         } else if (tok->str() == "[") {
             if (isLambdaCaptureList(tok)) {
+                tok = const_cast<Token *>(tok->astOperand1());
+                if (tok->str() == "(")
+                    tok = const_cast<Token *>(tok->astOperand1());
                 const Token * const endToken2 = tok->link();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                     tok = createAstAtToken(tok, cpp);
