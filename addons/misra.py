@@ -77,7 +77,7 @@ def misra3(data):
             reportError(token, 'style', '3 break out inline assembler into separate function')
 
 # 4 Provision should be made for appropriate run-time checking
-# STATUS: Checked by Cppcheck
+# STATUS: Done. Checked by Cppcheck
 def misra4(data):
     return
 
@@ -128,7 +128,7 @@ def misra11(data):
             reportError(token, 'style', '11 Identifier is longer than 31 characters')
 
 # 12 Identifiers in different namespace shall not have the same spelling
-# STATUS: Use compiler (-Wshadow etc)
+# STATUS: Done. Use compiler (-Wshadow etc)
 def misra12(data):
     return
 
@@ -178,9 +178,11 @@ def misra18(data):
     return
 
 # 19 Octal constants shall not be used
-# STATUS: TODO
-def misra19(data):
-    return
+# STATUS: Done
+def misra19(rawTokens):
+    for tok in rawTokens:
+        if re.match(r'0[0-6]+', tok.str):
+            reportError(tok, 'style', '19 Octal constants shall not be used')
 
 # Declarations and Definitions
 # ----------------------------
@@ -227,8 +229,8 @@ def misra27(data):
 
 # 28 The register storage class specifier should not be used
 # STATUS: Done
-def misra28(data):
-    for token in data.tokenlist:
+def misra28(rawTokens):
+    for token in rawTokens:
         if token.str == 'register':
             reportError(token, 'style', '28 The register storage class specifier should not be used')
 
@@ -789,7 +791,11 @@ def misra127(data):
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
+
+    cfgNumber = 0
+
     for cfg in data.configurations:
+        cfgNumber = cfgNumber + 1
         if len(data.configurations) > 1:
             print('Checking ' + arg + ', config "' + cfg.name + '"...')
         misra1(cfg)
@@ -810,7 +816,8 @@ for arg in sys.argv[1:]:
         misra16(cfg)
         misra17(cfg)
         misra18(cfg)
-        misra19(cfg)
+        if cfgNumber == 1:
+            misra19(data.rawTokens)
         misra20(cfg)
         misra21(cfg)
         misra22(cfg)
@@ -819,7 +826,8 @@ for arg in sys.argv[1:]:
         misra25(cfg)
         misra26(cfg)
         misra27(cfg)
-        misra28(cfg)
+        if cfgNumber == 1:
+            misra28(data.rawTokens)
         misra29(cfg)
         misra30(cfg)
         misra31(cfg)

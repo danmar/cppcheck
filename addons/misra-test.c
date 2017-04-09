@@ -22,6 +22,10 @@ void misra14() {
   char c; // 14
 }
 
+void misra19() {
+  int x = 066; // 19
+}
+
 void misra28() {
   register int x = 3; // 28
 }

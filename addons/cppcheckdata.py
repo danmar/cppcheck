@@ -515,15 +515,31 @@ class CppcheckData:
     @endcode
     """
 
+    rawTokens = []
     configurations = []
 
     def __init__(self, filename):
         self.configurations = []
 
         data = ET.parse(filename)
+
+        for rawTokensNode in data.getroot():
+            if rawTokensNode.tag != 'rawtokens':
+                continue
+            files = []
+            for node in rawTokensNode:
+                if node.tag == 'file':
+                    files.append(node.get('name'))
+                elif node.tag == 'tok':
+                    tok = Token(node)
+                    tok.file = files[int(node.get('fileIndex'))]
+                    self.rawTokens.append(tok)
+
+
         # root is 'dumps' node, each config has its own 'dump' subnode.
         for cfgnode in data.getroot():
-            self.configurations.append(Configuration(cfgnode))
+            if cfgnode.tag=='dump':
+                self.configurations.append(Configuration(cfgnode))
 
 
 
