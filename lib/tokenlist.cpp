@@ -628,6 +628,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                 }
             } else {
                 state.op.push(tok);
+                tok = tok->tokAt(2);
             }
         }
     }
