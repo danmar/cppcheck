@@ -488,7 +488,7 @@ static bool iscast(const Token *tok)
         if (!Token::Match(tok2, "%name%|*|&|::"))
             return false;
 
-        if (tok2->isStandardType() && tok2->next()->str() != "(")
+        if (tok2->isStandardType() && (tok2->next()->str() != "(" || Token::Match(tok2->next(), "( * |* )")))
             type = true;
     }
 
@@ -617,7 +617,9 @@ static void compileTerm(Token *&tok, AST_state& state)
             }
         }
     } else if (tok->str() == "{") {
-        if (tok->previous() && tok->previous()->isName()) {
+        if (Token::simpleMatch(tok->link(),"} [")) {
+            tok = tok->next();
+        } else if (tok->previous() && tok->previous()->isName()) {
             compileBinOp(tok, state, compileExpression);
         } else if (!state.inArrayAssignment && tok->strAt(-1) != "=") {
             state.op.push(tok);
