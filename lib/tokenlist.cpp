@@ -508,6 +508,9 @@ static bool iscpp11init(const Token * const tok)
     if (!nameToken)
         return false;
 
+    if (Token::Match(nameToken, "%name% { ["))
+        return false;
+
     const Token *endtok = nullptr;
     if (Token::Match(nameToken,"%name% {"))
         endtok = nameToken->linkAt(1);
