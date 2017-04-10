@@ -1007,7 +1007,9 @@ static bool isLambdaCaptureList(const Token * tok)
     // see compilePrecedence2
     if (tok->str() != "[")
         return false;
-    if (Token::simpleMatch(tok->astOperand1(), "{"))
+    if (!Token::Match(tok->link(), "] (|{"))
+        return false;
+    if (Token::simpleMatch(tok->astOperand1(), "{") && tok->astOperand1() == tok->link()->next())
         return true;
     if (!tok->astOperand1() || tok->astOperand1()->str() != "(")
         return false;
@@ -1023,7 +1025,7 @@ static Token * createAstAtToken(Token *tok, bool cpp);
 static void createAstAtTokenInner(Token * const tok1, const Token *endToken, bool cpp)
 {
     for (Token *tok = tok1; tok && tok != endToken; tok = tok ? tok->next() : nullptr) {
-        if (tok->str() == "{") {
+        if (tok->str() == "{" && !iscpp11init(tok)) {
             if (Token::simpleMatch(tok->previous(), "( {"))
                 ;
             // struct assignment
