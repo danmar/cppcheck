@@ -488,7 +488,7 @@ static bool iscast(const Token *tok)
         if (!Token::Match(tok2, "%name%|*|&|::"))
             return false;
 
-        if (tok2->isStandardType() && (tok2->next()->str() != "(" || Token::Match(tok2->next(), "( * |* )")))
+        if (tok2->isStandardType() && (tok2->next()->str() != "(" || Token::Match(tok2->next(), "( * *| )")))
             type = true;
     }
 
