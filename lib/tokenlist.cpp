@@ -581,7 +581,11 @@ static void compileTerm(Token *&tok, AST_state& state)
         tok = tok->next();
     if (state.inArrayAssignment && tok->str() == "." && Token::Match(tok->previous(), ",|{")) // Jump over . in C style struct initialization
         tok = tok->next();
-
+    if (state.inArrayAssignment && Token::Match(tok->previous(), "[,{] [ %num% ]")) {
+        state.op.push(tok);
+        tok->astOperand1(tok->next());
+        tok = tok->tokAt(3);
+    }
     if (tok->isLiteral()) {
         state.op.push(tok);
         do {

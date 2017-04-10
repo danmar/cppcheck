@@ -8070,6 +8070,7 @@ private:
         ASSERT_EQUALS("tset{=", testAst("struct cgroup_taskset tset = {};"));
         ASSERT_EQUALS("s1a&,{2b&,{,{=", testAst("s = { {1, &a}, {2, &b} };"));
         TODO_ASSERT_EQUALS("xatoistr({(=", "x{(= atoistr(", testAst("x = (struct X){atoi(str)};"));
+        ASSERT_EQUALS("s0[L.2[x={=", testAst("s = { [0].L[2] = x};"));
 
         // struct initialization hang
         ASSERT_EQUALS("sbar1{,{(={= fcmd( forfieldfield++;;(",
