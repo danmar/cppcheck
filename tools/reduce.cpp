@@ -755,7 +755,7 @@ int main(int argc, char *argv[])
                 return EXIT_FAILURE;
             }
             // when "style" is enabled, also enable "warning", "performance" and "portability"
-            if (settings.isEnabled("style")) {
+            if (settings.isEnabled(Settings::STYLE)) {
                 settings.addEnabled("warning");
                 settings.addEnabled("performance");
                 settings.addEnabled("portability");
