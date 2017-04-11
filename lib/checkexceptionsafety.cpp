@@ -32,7 +32,7 @@ namespace {
 
 void CheckExceptionSafety::destructors()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -74,7 +74,7 @@ void CheckExceptionSafety::destructors()
 
 void CheckExceptionSafety::deallocThrow()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const bool printInconclusive = _settings->inconclusive;
@@ -143,7 +143,7 @@ void CheckExceptionSafety::deallocThrow()
 //---------------------------------------------------------------------------
 void CheckExceptionSafety::checkRethrowCopy()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -171,7 +171,7 @@ void CheckExceptionSafety::checkRethrowCopy()
 //---------------------------------------------------------------------------
 void CheckExceptionSafety::checkCatchExceptionByValue()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -275,7 +275,7 @@ void CheckExceptionSafety::nothrowThrows()
 //--------------------------------------------------------------------------
 void CheckExceptionSafety::unhandledExceptionSpecification()
 {
-    if (!_settings->isEnabled("style") || !_settings->inconclusive)
+    if (!_settings->isEnabled(Settings::STYLE) || !_settings->inconclusive)
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();

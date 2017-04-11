@@ -39,7 +39,7 @@ static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 
 void CheckPostfixOperator::postfixOperator()
 {
-    if (!_settings->isEnabled("performance"))
+    if (!_settings->isEnabled(Settings::PERFORMANCE))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();

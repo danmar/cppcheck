@@ -794,7 +794,7 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
                 }
             }
             if (!directiveLocation) {
-                if (_settings.isEnabled("information"))
+                if (_settings.isEnabled(Settings::INFORMATION))
                     validateCfgError(mu.useLocation.file(), mu.useLocation.line, cfg, macroName);
                 ret = false;
             }

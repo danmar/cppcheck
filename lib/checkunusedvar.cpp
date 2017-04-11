@@ -1176,7 +1176,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
 void CheckUnusedVar::checkFunctionVariableUsage()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     // Parse all executing scopes..
@@ -1269,7 +1269,7 @@ void CheckUnusedVar::unassignedVariableError(const Token *tok, const std::string
 //---------------------------------------------------------------------------
 void CheckUnusedVar::checkStructMemberUsage()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();

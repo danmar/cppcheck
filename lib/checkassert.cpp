@@ -35,7 +35,7 @@ namespace {
 
 void CheckAssert::assertWithSideEffects()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     for (const Token* tok = _tokenizer->list.front(); tok; tok = tok->next()) {

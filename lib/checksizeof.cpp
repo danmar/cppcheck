@@ -39,7 +39,7 @@ static const struct CWE CWE682(682U);   // Incorrect Calculation
 //---------------------------------------------------------------------------
 void CheckSizeof::checkSizeofForNumericParameter()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -69,7 +69,7 @@ void CheckSizeof::sizeofForNumericParameterError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckSizeof::checkSizeofForArrayParameter()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -109,7 +109,7 @@ void CheckSizeof::sizeofForArrayParameterError(const Token *tok)
 
 void CheckSizeof::checkSizeofForPointerSize()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -258,7 +258,7 @@ void CheckSizeof::divideBySizeofError(const Token *tok, const std::string &memfu
 //-----------------------------------------------------------------------------
 void CheckSizeof::sizeofsizeof()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -282,7 +282,7 @@ void CheckSizeof::sizeofsizeofError(const Token *tok)
 
 void CheckSizeof::sizeofCalculation()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const bool printInconclusive = _settings->inconclusive;
@@ -318,7 +318,7 @@ void CheckSizeof::sizeofCalculationError(const Token *tok, bool inconclusive)
 //-----------------------------------------------------------------------------
 void CheckSizeof::suspiciousSizeofCalculation()
 {
-    if (!_settings->isEnabled("warning") || !_settings->inconclusive)
+    if (!_settings->isEnabled(Settings::WARNING) || !_settings->inconclusive)
         return;
 
     // TODO: Use AST here. This should be possible as soon as sizeof without brackets is correctly parsed
@@ -351,7 +351,7 @@ void CheckSizeof::divideSizeofError(const Token *tok)
 
 void CheckSizeof::sizeofVoid()
 {
-    if (!_settings->isEnabled("portability"))
+    if (!_settings->isEnabled(Settings::PORTABILITY))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {

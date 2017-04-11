@@ -84,7 +84,7 @@ void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValu
 //---------------------------------------------------------------------------
 void CheckString::checkAlwaysTrueOrFalseStringCompare()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -151,7 +151,7 @@ void CheckString::alwaysTrueStringVariableCompareError(const Token *tok, const s
 //-----------------------------------------------------------------------------
 void CheckString::checkSuspiciousStringCompare()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -261,7 +261,7 @@ void CheckString::strPlusCharError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckString::checkIncorrectStringCompare()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();

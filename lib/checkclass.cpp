@@ -80,8 +80,8 @@ CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, Err
 
 void CheckClass::constructors()
 {
-    const bool printStyle = _settings->isEnabled("style");
-    const bool printWarnings = _settings->isEnabled("warning");
+    const bool printStyle = _settings->isEnabled(Settings::STYLE);
+    const bool printWarnings = _settings->isEnabled(Settings::WARNING);
     if (!printStyle && !printWarnings)
         return;
 
@@ -238,7 +238,7 @@ void CheckClass::constructors()
 
 void CheckClass::checkExplicitConstructors()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
@@ -286,7 +286,7 @@ void CheckClass::checkExplicitConstructors()
 
 void CheckClass::copyconstructors()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
@@ -833,7 +833,7 @@ void CheckClass::operatorEqVarError(const Token *tok, const std::string &classna
 
 void CheckClass::initializationListUsage()
 {
-    if (!_settings->isEnabled("performance"))
+    if (!_settings->isEnabled(Settings::PERFORMANCE))
         return;
 
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -948,7 +948,7 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
 
 void CheckClass::privateFunctions()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
@@ -1018,7 +1018,7 @@ static const Scope* findFunctionOf(const Scope* scope)
 
 void CheckClass::checkMemset()
 {
-    const bool printWarnings = _settings->isEnabled("warning");
+    const bool printWarnings = _settings->isEnabled(Settings::WARNING);
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -1105,7 +1105,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
         return;
     parsedTypes.insert(type);
 
-    const bool printPortability = _settings->isEnabled("portability");
+    const bool printPortability = _settings->isEnabled(Settings::PORTABILITY);
 
     // recursively check all parent classes
     for (std::size_t i = 0; i < type->definedType->derivedFrom.size(); i++) {
@@ -1209,7 +1209,7 @@ void CheckClass::memsetErrorFloat(const Token *tok, const std::string &type)
 
 void CheckClass::operatorEq()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
@@ -1263,7 +1263,7 @@ void CheckClass::operatorEqReturnError(const Token *tok, const std::string &clas
 
 void CheckClass::operatorEqRetRefThis()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
@@ -1399,7 +1399,7 @@ void CheckClass::operatorEqMissingReturnStatementError(const Token *tok, bool er
 
 void CheckClass::operatorEqToSelf()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
@@ -1648,7 +1648,7 @@ void CheckClass::virtualDestructor()
 void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive)
 {
     if (inconclusive) {
-        if (_settings->isEnabled("warning"))
+        if (_settings->isEnabled(Settings::WARNING))
             reportError(tok, Severity::warning, "virtualDestructor", "Class '" + Base + "' which has virtual members does not have a virtual destructor.", CWE404, true);
     } else {
         reportError(tok, Severity::error, "virtualDestructor", "Class '" + Base + "' which is inherited by class '" + Derived + "' does not have a virtual destructor.\n"
@@ -1665,7 +1665,7 @@ void CheckClass::virtualDestructorError(const Token *tok, const std::string &Bas
 
 void CheckClass::thisSubtraction()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const Token *tok = _tokenizer->tokens();
@@ -1696,7 +1696,7 @@ void CheckClass::checkConst()
     if (!_settings->inconclusive)
         return;
 
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
@@ -2075,7 +2075,7 @@ namespace { // avoid one-definition-rule violation
 
 void CheckClass::initializerListOrder()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     // This check is not inconclusive.  However it only determines if the initialization
@@ -2183,7 +2183,7 @@ void CheckClass::selfInitializationError(const Token* tok, const std::string& va
 
 void CheckClass::checkPureVirtualFunctionCall()
 {
-    if (! _settings->isEnabled("warning"))
+    if (! _settings->isEnabled(Settings::WARNING))
         return;
     const std::size_t functions = symbolDatabase->functionScopes.size();
     std::map<const Function *, std::list<const Token *> > callsPureVirtualFunctionMap;
@@ -2305,7 +2305,7 @@ void CheckClass::callsPureVirtualFunctionError(
 
 void CheckClass::checkDuplInheritedMembers()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     // Iterate over all classes
@@ -2359,7 +2359,7 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
 
 void CheckClass::checkCopyCtorAndEqOperator()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();

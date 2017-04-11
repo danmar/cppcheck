@@ -44,7 +44,7 @@ static const struct CWE CWE190(190U);   // Integer Overflow or Wraparound
 
 void CheckType::checkTooBigBitwiseShift()
 {
-    const bool printWarnings = _settings->isEnabled("warning");
+    const bool printWarnings = _settings->isEnabled(Settings::WARNING);
     const bool printInconclusive = _settings->inconclusive;
 
     // unknown sizeof(int) => can't run this checker
@@ -173,7 +173,7 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
 
 void CheckType::checkSignConversion()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -225,7 +225,7 @@ void CheckType::signConversionError(const Token *tok, const bool constvalue)
 
 void CheckType::checkLongCast()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     // Assignments..

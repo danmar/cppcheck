@@ -43,7 +43,7 @@ namespace {
 
 void CheckCondition::assignIf()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -249,7 +249,7 @@ static bool inBooleanFunction(const Token *tok)
 
 void CheckCondition::checkBadBitmaskCheck()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -277,7 +277,7 @@ void CheckCondition::badBitmaskCheckError(const Token *tok)
 
 void CheckCondition::comparison()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -395,7 +395,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
 
 void CheckCondition::multiCondition()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -437,7 +437,7 @@ void CheckCondition::multiConditionError(const Token *tok, unsigned int line1)
 
 void CheckCondition::oppositeInnerCondition()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -674,8 +674,8 @@ static std::string conditionString(bool not1, const Token *expr1, const std::str
 
 void CheckCondition::checkIncorrectLogicOperator()
 {
-    const bool printStyle = _settings->isEnabled("style");
-    const bool printWarning = _settings->isEnabled("warning");
+    const bool printStyle = _settings->isEnabled(Settings::STYLE);
+    const bool printWarning = _settings->isEnabled(Settings::WARNING);
     if (!printWarning && !printStyle)
         return;
     const bool printInconclusive = _settings->inconclusive;
@@ -869,7 +869,7 @@ void CheckCondition::redundantConditionError(const Token *tok, const std::string
 //-----------------------------------------------------------------------------
 void CheckCondition::checkModuloAlwaysTrueFalse()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -923,7 +923,7 @@ static int countPar(const Token *tok1, const Token *tok2)
 //---------------------------------------------------------------------------
 void CheckCondition::clarifyCondition()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const bool isC = _tokenizer->isC();
@@ -990,7 +990,7 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
 
 void CheckCondition::alwaysTrueFalse()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -1067,7 +1067,7 @@ void CheckCondition::alwaysTrueFalseError(const Token *tok, bool knownResult)
 
 void CheckCondition::checkInvalidTestForOverflow()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();

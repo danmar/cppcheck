@@ -455,11 +455,11 @@ private:
         const char *argv[] = {"cppcheck", "--enable=all", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT(settings.isEnabled("style"));
-        ASSERT(settings.isEnabled("warning"));
-        ASSERT(settings.isEnabled("unusedFunction"));
-        ASSERT(settings.isEnabled("missingInclude"));
-        ASSERT(!settings.isEnabled("internal"));
+        ASSERT(settings.isEnabled(Settings::STYLE));
+        ASSERT(settings.isEnabled(Settings::WARNING));
+        ASSERT(settings.isEnabled(Settings::UNUSED_FUNCTION));
+        ASSERT(settings.isEnabled(Settings::MISSING_INCLUDE));
+        ASSERT(!settings.isEnabled(Settings::INTERNAL));
     }
 
     void enabledStyle() {
@@ -467,12 +467,12 @@ private:
         const char *argv[] = {"cppcheck", "--enable=style", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT(settings.isEnabled("style"));
-        ASSERT(settings.isEnabled("warning"));
-        ASSERT(settings.isEnabled("performance"));
-        ASSERT(settings.isEnabled("portability"));
-        ASSERT(!settings.isEnabled("unusedFunction"));
-        ASSERT(!settings.isEnabled("missingInclude"));
+        ASSERT(settings.isEnabled(Settings::STYLE));
+        ASSERT(settings.isEnabled(Settings::WARNING));
+        ASSERT(settings.isEnabled(Settings::PERFORMANCE));
+        ASSERT(settings.isEnabled(Settings::PORTABILITY));
+        ASSERT(!settings.isEnabled(Settings::UNUSED_FUNCTION));
+        ASSERT(!settings.isEnabled(Settings::MISSING_INCLUDE));
     }
 
     void enabledPerformance() {
@@ -480,12 +480,12 @@ private:
         const char *argv[] = {"cppcheck", "--enable=performance", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT(!settings.isEnabled("style"));
-        ASSERT(!settings.isEnabled("warning"));
-        ASSERT(settings.isEnabled("performance"));
-        ASSERT(!settings.isEnabled("portability"));
-        ASSERT(!settings.isEnabled("unusedFunction"));
-        ASSERT(!settings.isEnabled("missingInclude"));
+        ASSERT(!settings.isEnabled(Settings::STYLE));
+        ASSERT(!settings.isEnabled(Settings::WARNING));
+        ASSERT(settings.isEnabled(Settings::PERFORMANCE));
+        ASSERT(!settings.isEnabled(Settings::PORTABILITY));
+        ASSERT(!settings.isEnabled(Settings::UNUSED_FUNCTION));
+        ASSERT(!settings.isEnabled(Settings::MISSING_INCLUDE));
     }
 
     void enabledPortability() {
@@ -493,12 +493,12 @@ private:
         const char *argv[] = {"cppcheck", "--enable=portability", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT(!settings.isEnabled("style"));
-        ASSERT(!settings.isEnabled("warning"));
-        ASSERT(!settings.isEnabled("performance"));
-        ASSERT(settings.isEnabled("portability"));
-        ASSERT(!settings.isEnabled("unusedFunction"));
-        ASSERT(!settings.isEnabled("missingInclude"));
+        ASSERT(!settings.isEnabled(Settings::STYLE));
+        ASSERT(!settings.isEnabled(Settings::WARNING));
+        ASSERT(!settings.isEnabled(Settings::PERFORMANCE));
+        ASSERT(settings.isEnabled(Settings::PORTABILITY));
+        ASSERT(!settings.isEnabled(Settings::UNUSED_FUNCTION));
+        ASSERT(!settings.isEnabled(Settings::MISSING_INCLUDE));
     }
 
     void enabledUnusedFunction() {
@@ -506,7 +506,7 @@ private:
         const char *argv[] = {"cppcheck", "--enable=unusedFunction", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT(settings.isEnabled("unusedFunction"));
+        ASSERT(settings.isEnabled(Settings::UNUSED_FUNCTION));
     }
 
     void enabledMissingInclude() {
@@ -514,7 +514,7 @@ private:
         const char *argv[] = {"cppcheck", "--enable=missingInclude", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT(settings.isEnabled("missingInclude"));
+        ASSERT(settings.isEnabled(Settings::MISSING_INCLUDE));
     }
 
 #ifdef CHECK_INTERNAL
@@ -523,7 +523,7 @@ private:
         const char *argv[] = {"cppcheck", "--enable=internal", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT(settings.isEnabled("internal"));
+        ASSERT(settings.isEnabled(Settings::INTERNAL));
     }
 #endif
 
@@ -532,12 +532,12 @@ private:
         const char *argv[] = {"cppcheck", "--enable=missingInclude,portability,warning", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT(!settings.isEnabled("style"));
-        ASSERT(settings.isEnabled("warning"));
-        ASSERT(!settings.isEnabled("performance"));
-        ASSERT(settings.isEnabled("portability"));
-        ASSERT(!settings.isEnabled("unusedFunction"));
-        ASSERT(settings.isEnabled("missingInclude"));
+        ASSERT(!settings.isEnabled(Settings::STYLE));
+        ASSERT(settings.isEnabled(Settings::WARNING));
+        ASSERT(!settings.isEnabled(Settings::PERFORMANCE));
+        ASSERT(settings.isEnabled(Settings::PORTABILITY));
+        ASSERT(!settings.isEnabled(Settings::UNUSED_FUNCTION));
+        ASSERT(settings.isEnabled(Settings::MISSING_INCLUDE));
     }
 
     void inconclusive() {

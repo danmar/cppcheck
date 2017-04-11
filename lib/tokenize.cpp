@@ -3516,7 +3516,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     }
 
     // class x y {
-    if (isCPP() && _settings->isEnabled("information")) {
+    if (isCPP() && _settings->isEnabled(Settings::INFORMATION)) {
         for (const Token *tok = list.front(); tok; tok = tok->next()) {
             if (Token::Match(tok, "class %type% %type% [:{]")) {
                 unhandled_macro_class_x_y(tok);
@@ -7317,7 +7317,7 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
     const bool ret = _settings->library.isScopeNoReturn(endScopeToken,&unknownFunc);
     if (unknown)
         *unknown = !unknownFunc.empty();
-    if (!unknownFunc.empty() && _settings->checkLibrary && _settings->isEnabled("information")) {
+    if (!unknownFunc.empty() && _settings->checkLibrary && _settings->isEnabled(Settings::INFORMATION)) {
         // Is function global?
         bool globalFunction = true;
         if (Token::simpleMatch(endScopeToken->tokAt(-2), ") ; }")) {

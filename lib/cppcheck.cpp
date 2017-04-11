@@ -144,11 +144,11 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             // Get toolinfo
             std::string toolinfo;
             toolinfo += CPPCHECK_VERSION_STRING;
-            toolinfo += _settings.isEnabled("warning") ? 'w' : ' ';
-            toolinfo += _settings.isEnabled("style") ? 's' : ' ';
-            toolinfo += _settings.isEnabled("performance") ? 'p' : ' ';
-            toolinfo += _settings.isEnabled("portability") ? 'p' : ' ';
-            toolinfo += _settings.isEnabled("information") ? 'i' : ' ';
+            toolinfo += _settings.isEnabled(Settings::WARNING) ? 'w' : ' ';
+            toolinfo += _settings.isEnabled(Settings::STYLE) ? 's' : ' ';
+            toolinfo += _settings.isEnabled(Settings::PERFORMANCE) ? 'p' : ' ';
+            toolinfo += _settings.isEnabled(Settings::PORTABILITY) ? 'p' : ' ';
+            toolinfo += _settings.isEnabled(Settings::INFORMATION) ? 'i' : ' ';
             toolinfo += _settings.userDefines;
 
             // Calculate checksum so it can be compared with old checksum / future checksums
@@ -202,7 +202,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         }
 
         if (!_settings.force && configurations.size() > _settings.maxConfigs) {
-            if (_settings.isEnabled("information")) {
+            if (_settings.isEnabled(Settings::INFORMATION)) {
                 tooManyConfigsError(Path::toNativeSeparators(filename),configurations.size());
             } else {
                 tooManyConfigs = true;
@@ -320,7 +320,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 if (_settings.force || _settings.maxConfigs > 1) {
                     const unsigned long long checksum = _tokenizer.list.calculateChecksum();
                     if (checksums.find(checksum) != checksums.end()) {
-                        if (_settings.isEnabled("information") && (_settings.debug || _settings.verbose))
+                        if (_settings.isEnabled(Settings::INFORMATION) && (_settings.debug || _settings.verbose))
                             purgedConfigurationMessage(filename, cfg);
                         continue;
                     }
@@ -391,7 +391,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
-    if (!_settings.jointSuppressionReport && (_settings.isEnabled("information") || _settings.checkConfiguration)) {
+    if (!_settings.jointSuppressionReport && (_settings.isEnabled(Settings::INFORMATION) || _settings.checkConfiguration)) {
         reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(filename, isUnusedFunctionCheckEnabled()));
     }
 
@@ -407,7 +407,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
     const std::string fixedpath = Path::toNativeSeparators(filename);
     const std::string fullmsg("Bailing out from checking " + fixedpath + " since there was an internal error: " + msg);
 
-    if (_settings.isEnabled("information")) {
+    if (_settings.isEnabled(Settings::INFORMATION)) {
         const ErrorLogger::ErrorMessage::FileLocation loc1(filename, 0);
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
         callstack.push_back(loc1);
@@ -584,12 +584,12 @@ Settings &CppCheck::settings()
 
 void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations)
 {
-    if (!_settings.isEnabled("information") && !tooManyConfigs)
+    if (!_settings.isEnabled(Settings::INFORMATION) && !tooManyConfigs)
         return;
 
     tooManyConfigs = false;
 
-    if (_settings.isEnabled("information") && file.empty())
+    if (_settings.isEnabled(Settings::INFORMATION) && file.empty())
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
@@ -627,7 +627,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 {
     tooManyConfigs = false;
 
-    if (_settings.isEnabled("information") && file.empty())
+    if (_settings.isEnabled(Settings::INFORMATION) && file.empty())
         return;
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
@@ -752,7 +752,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
     (void)files;
     if (buildDir.empty())
         return;
-    if (_settings.isEnabled("unusedFunction"))
+    if (_settings.isEnabled(Settings::UNUSED_FUNCTION))
         CheckUnusedFunctions::analyseWholeProgram(this, buildDir);
     std::list<Check::FileInfo*> fileInfoList;
 
@@ -802,5 +802,5 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
 
 bool CppCheck::isUnusedFunctionCheckEnabled() const
 {
-    return (_settings.jobs == 1 && _settings.isEnabled("unusedFunction"));
+    return (_settings.jobs == 1 && _settings.isEnabled(Settings::UNUSED_FUNCTION));
 }

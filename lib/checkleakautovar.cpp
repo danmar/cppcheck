@@ -113,7 +113,7 @@ void CheckLeakAutoVar::deallocReturnError(const Token *tok, const std::string &v
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
 {
-    if (_settings->checkLibrary && _settings->isEnabled("information")) {
+    if (_settings->checkLibrary && _settings->isEnabled(Settings::INFORMATION)) {
         reportError(tok,
                     Severity::information,
                     "checkLibraryUseIgnore",

@@ -325,7 +325,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                     return false;
                 }
                 // when "style" is enabled, also enable "warning", "performance" and "portability"
-                if (_settings->isEnabled("style")) {
+                if (_settings->isEnabled(Settings::STYLE)) {
                     _settings->addEnabled("warning");
                     _settings->addEnabled("performance");
                     _settings->addEnabled("portability");
@@ -759,7 +759,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
     else if ((def || _settings->preprocessOnly) && !maxconfigs)
         _settings->maxConfigs = 1U;
 
-    if (_settings->isEnabled("unusedFunction") && _settings->jobs > 1) {
+    if (_settings->isEnabled(Settings::UNUSED_FUNCTION) && _settings->jobs > 1) {
         PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 

@@ -243,7 +243,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 void CheckNullPointer::nullPointerLinkedList()
 {
 
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -308,7 +308,7 @@ void CheckNullPointer::nullPointerLinkedList()
 
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
-    const bool printWarnings = _settings->isEnabled("warning");
+    const bool printWarnings = _settings->isEnabled(Settings::WARNING);
     const bool printInconclusive = (_settings->inconclusive);
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -472,10 +472,10 @@ void CheckNullPointer::nullPointerError(const Token *tok)
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, bool inconclusive, bool defaultArg, bool possible)
 {
     if (defaultArg) {
-        if (_settings->isEnabled("warning"))
+        if (_settings->isEnabled(Settings::WARNING))
             reportError(tok, Severity::warning, "nullPointerDefaultArg", "Possible null pointer dereference if the default parameter value is used: " + varname, CWE476, inconclusive);
     } else if (possible) {
-        if (_settings->isEnabled("warning"))
+        if (_settings->isEnabled(Settings::WARNING))
             reportError(tok, Severity::warning, "nullPointer", "Possible null pointer dereference: " + varname, CWE476, inconclusive);
     } else
         reportError(tok, Severity::error, "nullPointer", "Null pointer dereference: " + varname, CWE476, inconclusive);
@@ -483,7 +483,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
 
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const Token* nullCheck, bool inconclusive)
 {
-    if (! _settings->isEnabled("warning"))
+    if (! _settings->isEnabled(Settings::WARNING))
         return;
     std::list<const Token*> callstack;
     callstack.push_back(tok);
@@ -510,7 +510,7 @@ void CheckNullPointer::arithmetic()
                 continue;
             if (!_settings->inconclusive && value->inconclusive)
                 continue;
-            if (value->condition && !_settings->isEnabled("warning"))
+            if (value->condition && !_settings->isEnabled(Settings::WARNING))
                 continue;
             arithmeticError(tok,value);
         }

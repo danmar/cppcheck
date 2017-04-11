@@ -1413,7 +1413,7 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
     if (settings && ret) {
         if (ret->inconclusive && !settings->inconclusive)
             return nullptr;
-        if (ret->condition && !settings->isEnabled("warning"))
+        if (ret->condition && !settings->isEnabled(Settings::WARNING))
             return nullptr;
     }
     return ret;
@@ -1436,7 +1436,7 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     if (settings && ret) {
         if (ret->inconclusive && !settings->inconclusive)
             return nullptr;
-        if (ret->condition && !settings->isEnabled("warning"))
+        if (ret->condition && !settings->isEnabled(Settings::WARNING))
             return nullptr;
     }
     return ret;

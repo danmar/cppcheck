@@ -26,7 +26,8 @@
 bool Settings::_terminated;
 
 Settings::Settings()
-    : debug(false),
+    : _enabled(0),
+      debug(false),
       debugnormal(false),
       debugwarnings(false),
       dump(false),
@@ -53,20 +54,6 @@ Settings::Settings()
 {
 }
 
-namespace {
-    const std::set<std::string> id = make_container< std::set<std::string> > ()
-                                     << "warning"
-                                     << "style"
-                                     << "performance"
-                                     << "portability"
-                                     << "information"
-                                     << "missingInclude"
-                                     << "unusedFunction"
-#ifdef CHECK_INTERNAL
-                                     << "internal"
-#endif
-                                     ;
-}
 std::string Settings::addEnabled(const std::string &str)
 {
     // Enable parameters may be comma separated...
@@ -88,18 +75,28 @@ std::string Settings::addEnabled(const std::string &str)
     }
 
     if (str == "all") {
-        for (std::set<std::string>::const_iterator it = id.cbegin(); it != id.cend(); ++it) {
-            if (*it == "internal")
-                continue;
-
-            _enabled.insert(*it);
-        }
-    } else if (id.find(str) != id.end()) {
-        _enabled.insert(str);
-        if (str == "information") {
-            _enabled.insert("missingInclude");
-        }
-    } else {
+        _enabled |= WARNING | STYLE | PERFORMANCE | PORTABILITY | INFORMATION | UNUSED_FUNCTION | MISSING_INCLUDE;
+    } else if (str == "warning") {
+        _enabled |= WARNING;
+    } else if (str == "style") {
+        _enabled |= STYLE;
+    } else if (str == "performance") {
+        _enabled |= PERFORMANCE;
+    } else if (str == "portability") {
+        _enabled |= PORTABILITY;
+    } else if (str == "information") {
+        _enabled |= INFORMATION | MISSING_INCLUDE;
+    } else if (str == "unusedFunction") {
+        _enabled |= UNUSED_FUNCTION;
+    } else if (str == "missingInclude") {
+        _enabled |= MISSING_INCLUDE;
+    }
+#ifdef CHECK_INTERNAL
+    else if (str == "internal") {
+        _enabled |= INTERNAL;
+    }
+#endif
+    else {
         if (str.empty())
             return std::string("cppcheck: --enable parameter is empty");
         else
@@ -109,6 +106,29 @@ std::string Settings::addEnabled(const std::string &str)
     return std::string();
 }
 
+bool Settings::isEnabled(Severity::SeverityType severity) const
+{
+    switch (severity) {
+    case Severity::none:
+        return true;
+    case Severity::error:
+        return true;
+    case Severity::warning:
+        return isEnabled(WARNING);
+    case Severity::style:
+        return isEnabled(STYLE);
+    case Severity::performance:
+        return isEnabled(PERFORMANCE);
+    case Severity::portability:
+        return isEnabled(PORTABILITY);
+    case Severity::information:
+        return isEnabled(INFORMATION);
+    case Severity::debug:
+        return false;
+    default:
+        return false;
+    }
+}
 
 bool Settings::append(const std::string &filename)
 {

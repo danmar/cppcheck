@@ -43,12 +43,24 @@
  * future when we might have even more detailed settings.
  */
 class CPPCHECKLIB Settings : public cppcheck::Platform {
+public:
+    enum EnabledGroup {
+        WARNING = 0x1,
+        STYLE = 0x2,
+        PERFORMANCE = 0x4,
+        PORTABILITY = 0x8,
+        INFORMATION = 0x10,
+        UNUSED_FUNCTION = 0x20,
+        MISSING_INCLUDE = 0x40,
+        INTERNAL = 0x80
+    };
+
 private:
     /** @brief Code to append in the checks */
     std::string _append;
 
     /** @brief enable extra checks by id */
-    std::set<std::string> _enabled;
+    int _enabled;
 
     /** @brief terminate checking */
     static bool _terminated;
@@ -162,13 +174,18 @@ public:
     /**
      * @brief Returns true if given id is in the list of
      * enabled extra checks (--enable)
-     * @param str id for the extra check, e.g. "style"
+     * @param check group to be enabled
      * @return true if the check is enabled.
      */
-    template<typename T>
-    bool isEnabled(T&& str) const {
-        return bool(_enabled.find(str) != _enabled.end());
+    bool isEnabled(EnabledGroup group) const {
+        return (_enabled & group) == group;
     }
+
+    /**
+    * @brief Returns true if given severity is enabled
+    * @return true if the check is enabled.
+    */
+    bool isEnabled(Severity::SeverityType severity) const;
 
     /**
      * @brief Enable extra checks by id. See isEnabled()
@@ -182,7 +199,7 @@ public:
      * @brief Disables all severities, except from error.
      */
     void clearEnabled() {
-        _enabled.clear();
+        _enabled = 0;
     }
 
     enum Language {

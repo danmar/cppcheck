@@ -2376,7 +2376,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
 
 void CheckMemoryLeakInClass::unsafeClassError(const Token *tok, const std::string &classname, const std::string &varname)
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     reportError(tok, Severity::style, "unsafeClassCanLeak",
@@ -2390,7 +2390,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
     // Check that public functions deallocate the pointers that they allocate.
     // There is no checking how these functions are used and therefore it
     // isn't established if there is real leaks or not.
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const unsigned int varid = classtok->varId();
@@ -2712,7 +2712,7 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
 {
     // This test only applies to C++ source
-    if (!_tokenizer->isCPP() || !_settings->inconclusive || !_settings->isEnabled("warning"))
+    if (!_tokenizer->isCPP() || !_settings->inconclusive || !_settings->isEnabled(Settings::WARNING))
         return;
 
     for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {

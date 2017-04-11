@@ -43,7 +43,7 @@ public:
 
     /** Simplified checks. The token list is simplified. */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
-        if (!settings->isEnabled("internal"))
+        if (!settings->isEnabled(Settings::INTERNAL))
             return;
 
         CheckInternal checkInternal(tokenizer, settings, errorLogger);

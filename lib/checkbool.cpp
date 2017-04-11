@@ -46,7 +46,7 @@ static bool isNonBoolStdType(const Variable* var)
 //---------------------------------------------------------------------------
 void CheckBool::checkIncrementBoolean()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -81,7 +81,7 @@ void CheckBool::incrementBooleanError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckBool::checkBitwiseOnBoolean()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     // danmar: this is inconclusive because I don't like that there are
@@ -125,7 +125,7 @@ void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &varna
 
 void CheckBool::checkComparisonOfBoolWithInt()
 {
-    if (!_settings->isEnabled("warning") || !_tokenizer->isCPP())
+    if (!_settings->isEnabled(Settings::WARNING) || !_tokenizer->isCPP())
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -176,7 +176,7 @@ static bool tokenIsFunctionReturningBool(const Token* tok)
 
 void CheckBool::checkComparisonOfFuncReturningBool()
 {
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     if (!_tokenizer->isCPP())
@@ -240,7 +240,7 @@ void CheckBool::checkComparisonOfBoolWithBool()
     if (!_settings->experimental)
         return;
 
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     if (!_tokenizer->isCPP())
@@ -319,7 +319,7 @@ void CheckBool::assignBoolToPointerError(const Token *tok)
 //-----------------------------------------------------------------------------
 void CheckBool::checkComparisonOfBoolExpressionWithInt()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -437,7 +437,7 @@ void CheckBool::checkAssignBoolToFloat()
 {
     if (!_tokenizer->isCPP())
         return;
-    if (!_settings->isEnabled("style"))
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();

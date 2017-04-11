@@ -36,7 +36,7 @@ namespace {
 
 void Check64BitPortability::pointerassignment()
 {
-    if (!_settings->isEnabled("portability"))
+    if (!_settings->isEnabled(Settings::PORTABILITY))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();

@@ -39,7 +39,7 @@ static const CWE CWE628(628U);  // Function Call with Incorrectly Specified Argu
 
 void CheckFunctions::checkProhibitedFunctions()
 {
-    const bool checkAlloca = _settings->isEnabled("warning") && ((_settings->standards.c >= Standards::C99 && _tokenizer->isC()) || _settings->standards.cpp >= Standards::CPP11);
+    const bool checkAlloca = _settings->isEnabled(Settings::WARNING) && ((_settings->standards.c >= Standards::C99 && _tokenizer->isC()) || _settings->standards.cpp >= Standards::CPP11);
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (unsigned int i = 0; i < symbolDatabase->functionScopes.size(); i++) {
@@ -67,7 +67,7 @@ void CheckFunctions::checkProhibitedFunctions()
 
                     const Library::WarnInfo* wi = _settings->library.getWarnInfo(tok);
                     if (wi) {
-                        if (_settings->isEnabled(Severity::toString(wi->severity)) && _settings->standards.c >= wi->standards.c && _settings->standards.cpp >= wi->standards.cpp) {
+                        if (_settings->isEnabled(wi->severity) && _settings->standards.c >= wi->standards.c && _settings->standards.cpp >= wi->standards.cpp) {
                             reportError(tok, wi->severity, tok->str() + "Called", wi->message, CWE477, false);
                         }
                     }
@@ -148,7 +148,7 @@ void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::st
 //---------------------------------------------------------------------------
 void CheckFunctions::checkIgnoredReturnValue()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled(Settings::WARNING))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -205,8 +205,8 @@ void CheckFunctions::ignoredReturnValueError(const Token* tok, const std::string
 //---------------------------------------------------------------------------
 void CheckFunctions::checkMathFunctions()
 {
-    const bool styleC99 = _settings->isEnabled("style") && _settings->standards.c != Standards::C89 && _settings->standards.cpp != Standards::CPP03;
-    const bool printWarnings = _settings->isEnabled("warning");
+    const bool styleC99 = _settings->isEnabled(Settings::STYLE) && _settings->standards.c != Standards::C89 && _settings->standards.cpp != Standards::CPP03;
+    const bool printWarnings = _settings->isEnabled(Settings::WARNING);
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -294,7 +294,7 @@ void CheckFunctions::mathfunctionCallWarning(const Token *tok, const std::string
 
 void CheckFunctions::checkLibraryMatchFunctions()
 {
-    if (!_settings->checkLibrary || !_settings->isEnabled("information"))
+    if (!_settings->checkLibrary || !_settings->isEnabled(Settings::INFORMATION))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
