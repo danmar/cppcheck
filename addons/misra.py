@@ -15,9 +15,9 @@ import cppcheckdata
 import sys
 import re
 
-def reportError(token, num):
+def reportError(token, num1, num2):
     sys.stderr.write(
-        '[' + token.file + ':' + str(token.linenr) + '] misra ' + str(num) + ' violation\n')
+        '[' + token.file + ':' + str(token.linenr) + '] misra ' + str(num1) + '.' + str(num2) + ' violation\n')
 
 def hasSideEffects(expr):
     if not expr:
@@ -30,26 +30,80 @@ def hasSideEffects(expr):
 def isBoolExpression(expr):
     return expr and expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||']
 
+def getPrecedence(expr):
+    if not expr:
+        return 16
+    if not expr.astOperand1 or not expr.astOperand2:
+        return 16
+    if expr.str in ['*', '/', '%']:
+        return 12
+    if expr.str in ['+', '-']:
+        return 11
+    if expr.str in ['<<', '>>']:
+        return 10
+    if expr.str in ['<', '>', '<=', '>=']:
+        return 9
+    if expr.str in ['==', '!=']:
+        return 8
+    if expr.str == '&':
+        return 7
+    if expr.str == '^':
+        return 6
+    if expr.str == '|':
+        return 5
+    if expr.str == '&&':
+        return 4
+    if expr.str == '||':
+        return 3
+    if expr.str in ['?',':']:
+        return 2
+    if expr.isAssignmentOp:
+        return 1
+    if expr.str == ',':
+        return 0
+    return -1
+
+def noParentheses(tok1, tok2):
+    while tok1 and tok1 != tok2:
+        if tok1.str == '(' or tok1.str == ')':
+            return False
+        tok1 = tok1.next
+    return tok1 == tok2
 
 def misra_5_1(data):
     for token in data.tokenlist:
         if token.isName and len(token.str) > 31:
-            reportError(token, 51)
+            reportError(token, 5, 1)
 
 def misra_7_1(rawTokens):
     for tok in rawTokens:
         if re.match(r'^0[0-7]+$', tok.str):
-            reportError(tok, 71)
+            reportError(tok, 7, 1)
 
 def misra_7_3(rawTokens):
     for tok in rawTokens:
         if re.match(r'^[0-9]+l+$', tok.str):
-            reportError(tok, 73)
+            reportError(tok, 7, 3)
+
+
+def misra_12_1(data):
+    for token in data.tokenlist:
+        p = getPrecedence(token)
+        if p < 2 or p > 12:
+            continue
+        p1 = getPrecedence(token.astOperand1)
+        if p1 <= 12 and p1 > p and noParentheses(token.astOperand1,token):
+            reportError(token, 12, 1)
+            continue
+        p2 = getPrecedence(token.astOperand2)
+        if p2 <= 12 and p2 > p and noParentheses(token, token.astOperand2):
+            reportError(token, 12, 1)
+            continue
 
 def misra_13_5(data):
     for token in data.tokenlist:
         if token.isLogicalOp and hasSideEffects(token.astOperand2):
-            reportError(token, 135)
+            reportError(token, 13, 5)
 
 def misra_14_4(data):
     for token in data.tokenlist:
@@ -58,12 +112,12 @@ def misra_14_4(data):
         if not token.astOperand1 or not (token.astOperand1.str in ['if', 'while']):
             continue
         if not isBoolExpression(token.astOperand2):
-            reportError(token, 144)
+            reportError(token, 14, 4)
 
 def misra_15_1(data):
     for token in data.tokenlist:
         if token.str == "goto":
-            reportError(token, 151)
+            reportError(token, 15, 1)
 
 
 
@@ -82,6 +136,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+        misra_12_1(cfg)
         misra_13_5(cfg)
         misra_14_4(cfg)
         misra_15_1(cfg)
