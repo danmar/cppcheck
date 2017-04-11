@@ -172,6 +172,18 @@ void CheckFunctions::checkIgnoredReturnValue()
                     tok = tok->link();
             }
 
+            if (Token::simpleMatch(tok, ") (") && Token::Match(tok->link()->previous(), "%name% (")) {
+                while (tok && tok->str() != ";") {
+                    if (Token::Match(tok, "(|["))
+                        tok = tok->link();
+                    else
+                        tok = tok->next();
+                }
+                if (!tok)
+                    break;
+                continue;
+            }
+
             if (tok->varId() || !Token::Match(tok, "%name% ("))
                 continue;
 

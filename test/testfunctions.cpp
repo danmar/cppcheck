@@ -918,6 +918,11 @@ private:
               "  DEBUG(x(); mystrcmp(a,b););\n"
               "}", "test.cpp", &settings2);
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n" // don't crash
+              "  DEBUG(123)(mystrcmp(a,b))(fd);\n"
+              "}", "test.c", &settings2);
+
     }
 };
 
