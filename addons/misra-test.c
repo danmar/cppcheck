@@ -12,6 +12,10 @@ void misra_7_1() {
   int x = 066; // 71
 }
 
+void misra_7_3() {
+  int x = 12l; // 73
+}
+
 void misra_13_5() {
   if (x && (y++ < 123)){} // 135
 }
