@@ -159,30 +159,8 @@ void CheckFunctions::checkIgnoredReturnValue()
             // skip c++11 initialization, ({...})
             if (Token::Match(tok, "%var%|(|, {"))
                 tok = tok->linkAt(1);
-
-            if (Token::Match(tok->previous(), "%name% (")) {
-                bool semicolon = false;
-                for (const Token *tok2 = tok->tokAt(2); tok2 && tok2->str() != ")"; tok2 = tok2->next()) {
-                    if (tok2->str() == ";")
-                        semicolon = true;
-                    else if (Token::Match(tok2, "[({]"))
-                        tok2 = tok2->link();
-                }
-                if (semicolon)
-                    tok = tok->link();
-            }
-
-            if (Token::simpleMatch(tok, ") (") && Token::Match(tok->link()->previous(), "%name% (")) {
-                while (tok && tok->str() != ";") {
-                    if (Token::Match(tok, "(|["))
-                        tok = tok->link();
-                    else
-                        tok = tok->next();
-                }
-                if (!tok)
-                    break;
-                continue;
-            }
+            else if (tok->str() == "(")
+                tok = tok->link();
 
             if (tok->varId() || !Token::Match(tok, "%name% ("))
                 continue;
