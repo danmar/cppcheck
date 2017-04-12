@@ -123,17 +123,7 @@ def misra_12_3(data):
        if token.str != ',':
            continue
        if token.astParent and (token.astParent.str in ['(', ',', '{']):
-           if token.astParent.str == ',':
-               if token == token.astParent.astOperand1:
-                   if noParentheses(token, token.astParent):
-                       continue
-               elif token == token.astParent.astOperand2:
-                   if noParentheses(token.astParent, token):
-                       continue
-               else:
-                   continue
-           else:
-               continue
+          continue
        reportError(token, 12, 3)
 
 def misra_13_5(data):
