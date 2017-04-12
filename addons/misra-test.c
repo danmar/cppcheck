@@ -14,6 +14,7 @@ void misra_7_1() {
 
 void misra_7_3() {
   int x = 12l; // 7.3
+  int x = 12lu; // 7.3
 }
 
 void misra_12_1() {

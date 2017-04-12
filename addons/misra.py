@@ -82,7 +82,7 @@ def misra_7_1(rawTokens):
 
 def misra_7_3(rawTokens):
     for tok in rawTokens:
-        if re.match(r'^[0-9]+l+$', tok.str):
+        if re.match(r'^[0-9]+l', tok.str):
             reportError(tok, 7, 3)
 
 
