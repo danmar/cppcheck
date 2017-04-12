@@ -86,6 +86,24 @@ def misra_7_3(rawTokens):
             reportError(tok, 7, 3)
 
 
+def misra_12_1_sizeof(rawTokens):
+   state = 0
+   for tok in rawTokens:
+       if tok.str.startswith('//') or tok.str.startswith('/*'):
+           continue
+       if tok.str == 'sizeof':
+           state = 1
+       elif state == 1:
+           if re.match(r'^[a-zA-Z_]',tok.str):
+               state = 2
+           else:
+               state = 0
+       elif state == 2:
+           if tok.str in ['+','-','*','/','%']:
+               reportError(tok, 12, 1)
+           else:
+               state = 0
+
 def misra_12_1(data):
     for token in data.tokenlist:
         p = getPrecedence(token)
@@ -136,6 +154,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+            misra_12_1_sizeof(data.rawTokens)
         misra_12_1(cfg)
         misra_13_5(cfg)
         misra_14_4(cfg)

@@ -17,7 +17,7 @@ void misra_7_3() {
 }
 
 void misra_12_1() {
-// TODO sz = sizeof x + y; // 12.1
+  sz = sizeof x + y; // 12.1
   a = (b * c) + d;
   a = b << c + d; // 12.1
 }
