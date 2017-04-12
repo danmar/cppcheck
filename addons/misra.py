@@ -118,6 +118,24 @@ def misra_12_1(data):
             reportError(token, 12, 1)
             continue
 
+def misra_12_3(data):
+   for token in data.tokenlist:
+       if token.str != ',':
+           continue
+       if token.astParent and (token.astParent.str in ['(', ',', '{']):
+           if token.astParent.str == ',':
+               if token == token.astParent.astOperand1:
+                   if noParentheses(token, token.astParent):
+                       continue
+               elif token == token.astParent.astOperand2:
+                   if noParentheses(token.astParent, token):
+                       continue
+               else:
+                   continue
+           else:
+               continue
+       reportError(token, 12, 3)
+
 def misra_13_5(data):
     for token in data.tokenlist:
         if token.isLogicalOp and hasSideEffects(token.astOperand2):
@@ -156,6 +174,7 @@ for arg in sys.argv[1:]:
             misra_7_3(data.rawTokens)
             misra_12_1_sizeof(data.rawTokens)
         misra_12_1(cfg)
+        misra_12_3(cfg)
         misra_13_5(cfg)
         misra_14_4(cfg)
         misra_15_1(cfg)
