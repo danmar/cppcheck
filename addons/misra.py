@@ -49,13 +49,13 @@ def bitsOfEssentialType(expr):
         return INT_BITS
     return 0
 
-def hasSideEffects(expr):
+def hasSideEffectsRecursive(expr):
     if not expr:
         return False
     if expr.str in ['++', '--', '=']:
         return True
     # Todo: Check function calls
-    return hasSideEffects(expr.astOperand1) or hasSideEffects(expr.astOperand2)
+    return hasSideEffectsRecursive(expr.astOperand1) or hasSideEffectsRecursive(expr.astOperand2)
 
 def isBoolExpression(expr):
     return expr and expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||']
@@ -214,9 +214,17 @@ def misra_12_4(data):
                 reportError(token, 12, 4)
                 break
 
+def misra_13_1(data):
+    for token in data.tokenlist:
+        if token.str != '=':
+            continue
+        init = token.next
+        if init and init.str == '{' and hasSideEffectsRecursive(init):
+            reportError(init,13,1)
+
 def misra_13_5(data):
     for token in data.tokenlist:
-        if token.isLogicalOp and hasSideEffects(token.astOperand2):
+        if token.isLogicalOp and hasSideEffectsRecursive(token.astOperand2):
             reportError(token, 13, 5)
 
 def misra_14_4(data):
@@ -255,6 +263,7 @@ for arg in sys.argv[1:]:
         misra_12_2(cfg)
         misra_12_3(cfg)
         misra_12_4(cfg)
+        misra_13_1(cfg)
         misra_13_5(cfg)
         misra_14_4(cfg)
         misra_15_1(cfg)

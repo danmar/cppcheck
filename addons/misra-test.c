@@ -38,6 +38,12 @@ void misra_12_4() {
   x = 123456u * 123456u; // 12.4
 }
 
+void misra_13_1(int *p) {
+  volatile int v;
+  int a[3] = {0, (*p)++, 2}; // 13.1
+  int b[2] = {v,1}; // TODO
+}
+
 void misra_13_5() {
   if (x && (y++ < 123)){} // 13.5
 }
