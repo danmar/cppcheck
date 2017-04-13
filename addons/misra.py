@@ -19,6 +19,12 @@ def reportError(token, num1, num2):
     sys.stderr.write(
         '[' + token.file + ':' + str(token.linenr) + '] misra ' + str(num1) + '.' + str(num2) + ' violation\n')
 
+# Platform
+# TODO get this from dump
+CHAR_BITS = 8
+SHORT_BITS = 16
+INT_BITS = 32
+
 def getEssentialType(expr):
     if not expr:
         return None
@@ -34,9 +40,13 @@ def bitsOfEssentialType(expr):
     type = getEssentialType(expr)
     if type is None:
         return 0
-    if type == 'char':
-        return 8
     # TODO get --platform type sizes
+    if type == 'char':
+        return CHAR_BITS
+    if type == 'short':
+        return SHORT_BITS
+    if type == 'int':
+        return INT_BITS
     return 0
 
 def hasSideEffects(expr):
@@ -49,6 +59,27 @@ def hasSideEffects(expr):
 
 def isBoolExpression(expr):
     return expr and expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||']
+
+def isConstantExpression(expr):
+    if expr.isNumber:
+        return True
+    if expr.isName:
+        return False
+    if expr.astOperand1 and not isConstantExpression(expr.astOperand1):
+        return False
+    if expr.astOperand2 and not isConstantExpression(expr.astOperand2):
+        return False
+    return True
+
+def isUnsignedInt(expr):
+    # TODO this function is very incomplete. use ValueType?
+    if not expr:
+        return False
+    if expr.isNumber:
+        return expr.str.find('u')>0 or expr.str.find('U')>0
+    if expr.str in ['+','-','*','/','%']:
+        return isUnsignedInt(expr.astOperand1) or isUnsignedInt(expr.astOperand2)
+    return False
 
 def getPrecedence(expr):
     if not expr:
@@ -164,6 +195,25 @@ def misra_12_3(data):
           continue
        reportError(token, 12, 3)
 
+def misra_12_4(data):
+    max_uint = 0
+    if INT_BITS == 16:
+        max_uint = 0xffff
+    elif INT_BITS == 32:
+        max_uint = 0xffffffff
+    else:
+        return
+
+    for token in data.tokenlist:
+        if (not isConstantExpression(token)) or (not isUnsignedInt(token)):
+            continue
+        if not token.values:
+            continue
+        for value in token.values:
+            if value.intvalue < 0 or value.intvalue > max_uint:
+                reportError(token, 12, 4)
+                break
+
 def misra_13_5(data):
     for token in data.tokenlist:
         if token.isLogicalOp and hasSideEffects(token.astOperand2):
@@ -204,6 +254,7 @@ for arg in sys.argv[1:]:
         misra_12_1(cfg)
         misra_12_2(cfg)
         misra_12_3(cfg)
+        misra_12_4(cfg)
         misra_13_5(cfg)
         misra_14_4(cfg)
         misra_15_1(cfg)
