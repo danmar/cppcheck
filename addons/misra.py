@@ -254,6 +254,15 @@ def misra_13_3(data):
          if countSideEffects(token) >= 2:
              reportError(token, 13, 3)
 
+def misra_13_4(data):
+    for token in data.tokenlist:
+        if token.str != '=':
+            continue
+        if not token.astParent:
+            continue
+        if not (token.astParent.str in [',', ';']):
+             reportError(token, 13, 4)
+
 def misra_13_5(data):
     for token in data.tokenlist:
         if token.isLogicalOp and hasSideEffectsRecursive(token.astOperand2):
@@ -297,6 +306,7 @@ for arg in sys.argv[1:]:
         misra_12_4(cfg)
         misra_13_1(cfg)
         misra_13_3(cfg)
+        misra_13_4(cfg)
         misra_13_5(cfg)
         misra_14_4(cfg)
         misra_15_1(cfg)
