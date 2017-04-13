@@ -60,6 +60,10 @@ void misra_13_6() {
   return sizeof(x++); // 13.6
 }
 
+void misra_14_1() {
+  for (float f=0.1f; f<1.0f; f += 0.1f){} // 14.1
+}
+
 void misra_14_4() {
   if (x+4){} // 14.4
 }

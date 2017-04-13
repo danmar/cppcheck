@@ -70,6 +70,16 @@ def countSideEffects(expr):
         ret = 1
     return ret + countSideEffects(expr.astOperand1) + countSideEffects(expr.astOperand2)
 
+def hasFloatComparison(expr):
+    if not expr:
+        return False
+    if expr.isLogicalOp:
+        return hasFloatComparison(expr.astOperand1) or hasFloatComparison(expr.astOperand2)
+    if expr.isComparisonOp:
+        # TODO: Use ValueType
+        return cppcheckdata.astIsFloat(expr.astOperand1) or cppcheckdata.astIsFloat(expr.astOperand2)
+    return False
+
 def hasSideEffectsRecursive(expr):
     if not expr:
         return False
@@ -273,6 +283,24 @@ def misra_13_6(data):
         if token.str == 'sizeof' and hasSideEffectsRecursive(token.next):
             reportError(token, 13, 6)
 
+def misra_14_1(data):
+    for token in data.tokenlist:
+        if token.str != 'for':
+            continue
+        lpar = token.next
+        if not lpar or lpar.str != '(':
+            continue
+        if not lpar.astOperand2 or lpar.astOperand2.str != ';':
+            continue
+        if not lpar.astOperand2.astOperand2 or lpar.astOperand2.astOperand2.str != ';':
+            continue
+        expr1 = lpar.astOperand2.astOperand1
+        expr2 = lpar.astOperand2.astOperand2.astOperand1
+        expr3 = lpar.astOperand2.astOperand2.astOperand2
+        if hasFloatComparison(expr2):
+            reportError(token, 14, 1)
+
+
 def misra_14_4(data):
     for token in data.tokenlist:
         if token.str != '(':
@@ -314,5 +342,6 @@ for arg in sys.argv[1:]:
         misra_13_4(cfg)
         misra_13_5(cfg)
         misra_13_6(cfg)
+        misra_14_1(cfg)
         misra_14_4(cfg)
         misra_15_1(cfg)
