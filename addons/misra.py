@@ -268,6 +268,11 @@ def misra_13_5(data):
         if token.isLogicalOp and hasSideEffectsRecursive(token.astOperand2):
             reportError(token, 13, 5)
 
+def misra_13_6(data):
+    for token in data.tokenlist:
+        if token.str == 'sizeof' and hasSideEffectsRecursive(token.next):
+            reportError(token, 13, 6)
+
 def misra_14_4(data):
     for token in data.tokenlist:
         if token.str != '(':
@@ -308,5 +313,6 @@ for arg in sys.argv[1:]:
         misra_13_3(cfg)
         misra_13_4(cfg)
         misra_13_5(cfg)
+        misra_13_6(cfg)
         misra_14_4(cfg)
         misra_15_1(cfg)

@@ -56,6 +56,10 @@ void misra_13_5() {
   if (x && (y++ < 123)){} // 13.5
 }
 
+void misra_13_6() {
+  return sizeof(x++); // 13.6
+}
+
 void misra_14_4() {
   if (x+4){} // 14.4
 }
