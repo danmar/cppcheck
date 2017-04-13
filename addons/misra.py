@@ -19,6 +19,26 @@ def reportError(token, num1, num2):
     sys.stderr.write(
         '[' + token.file + ':' + str(token.linenr) + '] misra ' + str(num1) + '.' + str(num2) + ' violation\n')
 
+def getEssentialType(expr):
+    if not expr:
+        return None
+    if expr.variable:
+        typeToken = expr.variable.typeStartToken
+        while typeToken and typeToken.isName:
+            if typeToken.str in ['char', 'short', 'int', 'long', 'float', 'double']:
+                return typeToken.str
+            typeToken = typeToken.next
+    return None
+
+def bitsOfEssentialType(expr):
+    type = getEssentialType(expr)
+    if type is None:
+        return 0
+    if type == 'char':
+        return 8
+    # TODO get --platform type sizes
+    return 0
+
 def hasSideEffects(expr):
     if not expr:
         return False
@@ -118,6 +138,24 @@ def misra_12_1(data):
             reportError(token, 12, 1)
             continue
 
+def misra_12_2(data):
+   for token in data.tokenlist:
+       if not (token.str in ['<<','>>']):
+           continue
+       if (not token.astOperand2) or (not token.astOperand2.values):
+           continue
+       maxval = 0
+       for val in token.astOperand2.values:
+           if val.intvalue > maxval:
+               maxval = val.intvalue
+       if maxval == 0:
+           continue
+       sz = bitsOfEssentialType(token.astOperand1)
+       if sz <= 0:
+           continue
+       if maxval >= sz:
+           reportError(token, 12, 2)
+
 def misra_12_3(data):
    for token in data.tokenlist:
        if token.str != ',':
@@ -164,6 +202,7 @@ for arg in sys.argv[1:]:
             misra_7_3(data.rawTokens)
             misra_12_1_sizeof(data.rawTokens)
         misra_12_1(cfg)
+        misra_12_2(cfg)
         misra_12_3(cfg)
         misra_13_5(cfg)
         misra_14_4(cfg)

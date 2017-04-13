@@ -3,6 +3,8 @@
 python misra.py misra-test.c.dump
 */
 
+typedef unsigned char u8;
+
 void misra_5_1() {
   int a123456789012345678901234567890; // no-warning
   int a1234567890123456789012345678901; // 5.1
@@ -21,6 +23,10 @@ void misra_12_1() {
   sz = sizeof x + y; // 12.1
   a = (b * c) + d;
   a = b << c + d; // 12.1
+}
+
+void misra_12_2(u8 x) {
+  a = x << 8;  // 12.2
 }
 
 void misra_12_3() {
