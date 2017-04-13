@@ -84,3 +84,12 @@ void misra_15_2() {
 label:
   goto label; // 15.2 15.1
 }
+
+void misra_15_3() {
+  if (x!=0) {
+    goto L1; // 15.3 15.1
+    if (y!=0) {
+      L1:
+    }
+  }
+}

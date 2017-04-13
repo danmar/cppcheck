@@ -165,6 +165,17 @@ def noParentheses(tok1, tok2):
         tok1 = tok1.next
     return tok1 == tok2
 
+def findGotoLabel(gotoToken):
+    label = gotoToken.next.str
+    tok = gotoToken.next.next
+    while tok:
+        if tok.str == '}' and tok.scope.type == 'Function':
+            break
+        if tok.str == label and tok.next.str == ':':
+            return tok
+        tok = tok.next
+    return None
+
 def misra_5_1(data):
     for token in data.tokenlist:
         if token.isName and len(token.str) > 31:
@@ -335,15 +346,23 @@ def misra_15_2(data):
             continue
         if (not token.next) or (not token.next.isName):
             continue
-        label = token.next.str
-        tok = token.next.next
-        while tok:
-            if tok.str == '}' and tok.scope.type == 'Function':
-                reportError(token, 15, 2)
-                break
-            if tok.str == label:
-                break
-            tok = tok.next
+        if not findGotoLabel(token):
+            reportError(token, 15, 2)
+
+def misra_15_3(data):
+    for token in data.tokenlist:
+        if token.str != 'goto':
+            continue
+        if (not token.next) or (not token.next.isName):
+            continue
+        tok = findGotoLabel(token)
+        if not tok:
+            continue
+        scope = token.scope
+        while scope and scope != tok.scope:
+            scope = scope.nestedIn
+        if not scope:
+            reportError(token, 15, 3)
 
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
@@ -375,5 +394,6 @@ for arg in sys.argv[1:]:
         misra_14_4(cfg)
         misra_15_1(cfg)
         misra_15_2(cfg)
+        misra_15_3(cfg)
 
 
