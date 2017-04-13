@@ -49,6 +49,27 @@ def bitsOfEssentialType(expr):
         return INT_BITS
     return 0
 
+def isFunctionCall(expr):
+    if not expr:
+        return False
+    if expr.str != '(' or not expr.astOperand1:
+        return False
+    if expr.astOperand1 != expr.previous:
+        return False
+    if expr.astOperand1.str in ['sizeof', 'if', 'switch', 'while']:
+        return False
+    return True
+
+def countSideEffects(expr):
+    if not expr or expr.str in [',', ';']:
+        return 0
+    ret = 0
+    if expr.str in ['++', '--', '=']:
+        ret = 1
+    elif isFunctionCall(expr):
+        ret = 1
+    return ret + countSideEffects(expr.astOperand1) + countSideEffects(expr.astOperand2)
+
 def hasSideEffectsRecursive(expr):
     if not expr:
         return False
@@ -222,6 +243,17 @@ def misra_13_1(data):
         if init and init.str == '{' and hasSideEffectsRecursive(init):
             reportError(init,13,1)
 
+def misra_13_3(data):
+    for token in data.tokenlist:
+         if not token.astOperand1:
+             continue
+         if token.astParent and token.astParent.str != ',':
+             continue
+         if token.str == ',':
+             continue
+         if countSideEffects(token) >= 2:
+             reportError(token, 13, 3)
+
 def misra_13_5(data):
     for token in data.tokenlist:
         if token.isLogicalOp and hasSideEffectsRecursive(token.astOperand2):
@@ -264,6 +296,7 @@ for arg in sys.argv[1:]:
         misra_12_3(cfg)
         misra_12_4(cfg)
         misra_13_1(cfg)
+        misra_13_3(cfg)
         misra_13_5(cfg)
         misra_14_4(cfg)
         misra_15_1(cfg)

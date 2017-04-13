@@ -44,6 +44,10 @@ void misra_13_1(int *p) {
   int b[2] = {v,1}; // TODO
 }
 
+void misra_13_3() {
+  x = y++; // 13.3
+}
+
 void misra_13_5() {
   if (x && (y++ < 123)){} // 13.5
 }
