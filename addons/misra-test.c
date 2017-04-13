@@ -101,3 +101,7 @@ int misra_15_5() {
   return 2;
 }
 
+
+void misra_15_6() {
+  if (x!=0); // 15.6
+}

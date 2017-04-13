@@ -369,6 +369,29 @@ def misra_15_5(data):
         if token.str == 'return' and token.scope.type != 'Function':
             reportError(token, 15, 5)
 
+def misra_15_6(rawTokens):
+    state = 0
+    indent = 0
+    for token in rawTokens:
+        if token.str in ['if', 'for', 'while']:
+            state = 1
+            indent = 0
+        elif state == 1:
+            if token.str == '(':
+                indent = indent + 1
+            elif token.str == ')':
+                if indent == 0:
+                    state = 0
+                elif indent == 1:
+                    state = 2
+                indent = indent - 1
+        elif state == 2:
+            if token.str.startswith('//') or token.str.startswith('/*'):
+                continue
+            state = 0
+            if token.str != '{':
+                reportError(token, 15, 6)
+
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
@@ -401,5 +424,7 @@ for arg in sys.argv[1:]:
         misra_15_2(cfg)
         misra_15_3(cfg)
         misra_15_5(cfg)
+        if cfgNumber == 1:
+            misra_15_6(data.rawTokens)
 
 
