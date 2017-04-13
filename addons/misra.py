@@ -70,6 +70,19 @@ def countSideEffects(expr):
         ret = 1
     return ret + countSideEffects(expr.astOperand1) + countSideEffects(expr.astOperand2)
 
+def getForLoopExpressions(forToken):
+    if not forToken or forToken.str != 'for':
+        return None
+    lpar = forToken.next
+    if not lpar or lpar.str != '(':
+        return None
+    if not lpar.astOperand2 or lpar.astOperand2.str != ';':
+        return None
+    if not lpar.astOperand2.astOperand2 or lpar.astOperand2.astOperand2.str != ';':
+        return None
+    return [lpar.astOperand2.astOperand1, lpar.astOperand2.astOperand2.astOperand1, lpar.astOperand2.astOperand2.astOperand2]
+
+
 def hasFloatComparison(expr):
     if not expr:
         return False
@@ -287,18 +300,19 @@ def misra_14_1(data):
     for token in data.tokenlist:
         if token.str != 'for':
             continue
-        lpar = token.next
-        if not lpar or lpar.str != '(':
-            continue
-        if not lpar.astOperand2 or lpar.astOperand2.str != ';':
-            continue
-        if not lpar.astOperand2.astOperand2 or lpar.astOperand2.astOperand2.str != ';':
-            continue
-        expr1 = lpar.astOperand2.astOperand1
-        expr2 = lpar.astOperand2.astOperand2.astOperand1
-        expr3 = lpar.astOperand2.astOperand2.astOperand2
-        if hasFloatComparison(expr2):
+        exprs = getForLoopExpressions(token)
+        if exprs and hasFloatComparison(exprs[1]):
             reportError(token, 14, 1)
+
+def misra_14_2(data):
+    for token in data.tokenlist:
+        expressions = getForLoopExpressions(token)
+        if not expressions:
+            continue
+        if expressions[0] and not expressions[0].isAssignmentOp:
+            reportError(token, 14, 2)
+        elif hasSideEffectsRecursive(expressions[1]):
+            reportError(token, 14, 2)
 
 
 def misra_14_4(data):
@@ -343,5 +357,6 @@ for arg in sys.argv[1:]:
         misra_13_5(cfg)
         misra_13_6(cfg)
         misra_14_1(cfg)
+        misra_14_2(cfg)
         misra_14_4(cfg)
         misra_15_1(cfg)

@@ -64,6 +64,13 @@ void misra_14_1() {
   for (float f=0.1f; f<1.0f; f += 0.1f){} // 14.1
 }
 
+void misra_14_2() {
+  for (dostuff();a<10;a++) {} // 14.2
+  for (;i++<10;) {} // 14.2
+  for (;i<10;dostuff()) {} // TODO
+  // TODO check more variants
+}
+
 void misra_14_4() {
   if (x+4){} // 14.4
 }
