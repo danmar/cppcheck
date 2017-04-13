@@ -364,6 +364,11 @@ def misra_15_3(data):
         if not scope:
             reportError(token, 15, 3)
 
+def misra_15_5(data):
+    for token in data.tokenlist:
+        if token.str == 'return' and token.scope.type != 'Function':
+            reportError(token, 15, 5)
+
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
@@ -395,5 +400,6 @@ for arg in sys.argv[1:]:
         misra_15_1(cfg)
         misra_15_2(cfg)
         misra_15_3(cfg)
+        misra_15_5(cfg)
 
 

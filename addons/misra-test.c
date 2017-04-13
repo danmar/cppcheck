@@ -93,3 +93,11 @@ void misra_15_3() {
     }
   }
 }
+
+int misra_15_5() {
+  if (x!=0) {
+    return 1; // 15.5
+  }
+  return 2;
+}
+
