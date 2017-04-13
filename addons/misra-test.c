@@ -77,5 +77,10 @@ void misra_14_4() {
 
 void misra_15_1() {
   goto a1; // 15.1
+a1:
 }
 
+void misra_15_2() {
+label:
+  goto label; // 15.2 15.1
+}

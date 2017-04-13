@@ -329,7 +329,21 @@ def misra_15_1(data):
         if token.str == "goto":
             reportError(token, 15, 1)
 
-
+def misra_15_2(data):
+    for token in data.tokenlist:
+        if token.str != 'goto':
+            continue
+        if (not token.next) or (not token.next.isName):
+            continue
+        label = token.next.str
+        tok = token.next.next
+        while tok:
+            if tok.str == '}' and tok.scope.type == 'Function':
+                reportError(token, 15, 2)
+                break
+            if tok.str == label:
+                break
+            tok = tok.next
 
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
@@ -360,3 +374,6 @@ for arg in sys.argv[1:]:
         misra_14_2(cfg)
         misra_14_4(cfg)
         misra_15_1(cfg)
+        misra_15_2(cfg)
+
+
