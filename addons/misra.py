@@ -507,6 +507,16 @@ def misra_17_6(rawTokens):
         if simpleMatch(token, '[ static'):
             reportError(token, 17, 6)
 
+def misra_17_8(data):
+    for token in data.tokenlist:
+        if not (token.isAssignmentOp or (token.str in ['++','--'])):
+            continue
+        if not token.astOperand1:
+            continue
+        var = token.astOperand1.variable
+        if var and var.isArgument:
+            reportError(token, 17, 8)
+
 if '-verify' in sys.argv[1:]:
     VERIFY = True
 
@@ -568,6 +578,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_17_1(data.rawTokens)
             misra_17_6(data.rawTokens)
+        misra_17_8(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
