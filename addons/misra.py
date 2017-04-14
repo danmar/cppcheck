@@ -550,6 +550,19 @@ def misra_19_2(data):
         if token.str == 'union':
             reportError(token, 19, 2)
 
+def misra_20_1(rawTokens):
+    linenr = -1
+    state = 1
+    for token in rawTokens:
+        if token.str.startswith('/'):
+            continue
+        if token.linenr == linenr:
+            continue
+        linenr = token.linenr
+        if token.str != '#':
+            state = 2
+        elif state == 2 and simpleMatch(token, '# include'):
+            reportError(token, 20, 1)
 
 if '-verify' in sys.argv[1:]:
     VERIFY = True
@@ -616,6 +629,8 @@ for arg in sys.argv[1:]:
         misra_18_5(cfg)
         misra_18_8(cfg)
         misra_19_2(cfg)
+        if cfgNumber == 1:
+            misra_20_1(data.rawTokens)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
