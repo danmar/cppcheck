@@ -190,3 +190,6 @@ void misra_18_8(int x) {
   int buf2[sizeof(int)];
   int vla[x]; // 18.8
 }
+
+union misra_19_2 { }; // 19.2
+

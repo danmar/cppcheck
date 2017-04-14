@@ -545,6 +545,12 @@ def misra_18_8(data):
         if not isConstantExpression(typetok.astOperand2):
             reportError(var.nameToken, 18, 8)
 
+def misra_19_2(data):
+    for token in data.tokenlist:
+        if token.str == 'union':
+            reportError(token, 19, 2)
+
+
 if '-verify' in sys.argv[1:]:
     VERIFY = True
 
@@ -609,6 +615,7 @@ for arg in sys.argv[1:]:
         misra_17_8(cfg)
         misra_18_5(cfg)
         misra_18_8(cfg)
+        misra_19_2(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
