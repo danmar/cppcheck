@@ -199,3 +199,10 @@ union misra_19_2 { }; // 19.2
 
 #define int short // 20.4
 #undef X  // 20.5
+
+void misra_21_3() {
+  p1=malloc(10); // 21.3
+  p2=calloc(10); // 21.3
+  realloc(10); // 21.3
+  free(p1); // 21.3
+}

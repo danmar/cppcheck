@@ -112,8 +112,6 @@ def countSideEffects(expr):
     ret = 0
     if expr.str in ['++', '--', '=']:
         ret = 1
-    elif isFunctionCall(expr):
-        ret = 1
     return ret + countSideEffects(expr.astOperand1) + countSideEffects(expr.astOperand2)
 
 def getForLoopExpressions(forToken):
@@ -642,6 +640,11 @@ def misra_20_5(rawTokens):
         if simpleMatch(token, '# undef'):
             reportError(token, 20, 5)
 
+def misra_21_3(data):
+    for token in data.tokenlist:
+        if (token.str in ['malloc', 'calloc', 'realloc', 'free']) and token.next and token.next.str == '(':
+            reportError(token, 21, 3)
+
 if '-verify' in sys.argv[1:]:
     VERIFY = True
 
@@ -713,6 +716,7 @@ for arg in sys.argv[1:]:
             misra_20_3(data.rawTokens)
             misra_20_4(data.rawTokens)
             misra_20_5(data.rawTokens)
+        misra_21_3(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
