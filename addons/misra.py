@@ -459,6 +459,22 @@ def misra_16_4(data):
         if tok and tok.str != 'default':
             reportError(token, 16, 4)
 
+def misra_16_5(data):
+    for token in data.tokenlist:
+        if token.str != 'default':
+            continue
+        if token.previous and token.previous.str == '{':
+            continue
+        tok2 = token
+        while tok2:
+            if tok2.str in ['}', 'case']:
+                break
+            if tok2.str == '{':
+                tok2 = tok2.link
+            tok2 = tok2.next
+        if tok2 and tok2.str == 'case':
+            reportError(token, 16, 5)
+
 if '-verify' in sys.argv[1:]:
     VERIFY = True
 
@@ -514,6 +530,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_16_3(data.rawTokens)
         misra_16_4(cfg)
+        misra_16_5(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:

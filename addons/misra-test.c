@@ -145,3 +145,16 @@ void misra_16_4() {
       break;
   }
 }
+
+void misra_16_5() {
+  switch (x) {
+    case 1:
+      break;
+    default: // 16.5
+      break;
+    case 2:
+      break;
+  }
+}
+
+
