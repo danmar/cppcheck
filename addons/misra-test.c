@@ -50,10 +50,12 @@ void misra_13_3() {
 
 void misra_13_4() {
   if (x != (y = z)) {} // 13.4
+  else {}
 }
 
 void misra_13_5() {
   if (x && (y++ < 123)){} // 13.5
+  else {}
 }
 
 void misra_13_6() {
@@ -73,6 +75,7 @@ void misra_14_2() {
 
 void misra_14_4() {
   if (x+4){} // 14.4
+  else {}
 }
 
 void misra_15_1() {
@@ -90,18 +93,23 @@ void misra_15_3() {
     goto L1; // 15.3 15.1
     if (y!=0) {
       L1:
-    }
-  }
+    } else {}
+  } else {}
 }
 
 int misra_15_5() {
   if (x!=0) {
     return 1; // 15.5
-  }
+  } else {}
   return 2;
 }
 
-
 void misra_15_6() {
   if (x!=0); // 15.6
+  else{}
 }
+
+void misra_15_7() {
+  if (x!=0){} // 15.7
+}
+

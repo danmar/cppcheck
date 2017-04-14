@@ -392,6 +392,27 @@ def misra_15_6(rawTokens):
             if token.str != '{':
                 reportError(token, 15, 6)
 
+def misra_15_7(data):
+    for token in data.tokenlist:
+        if token.str != 'if':
+            continue
+        lpar = token.next
+        if not lpar or lpar.str != '(':
+            continue
+        rpar = lpar.link
+        if not rpar or rpar.str != ')':
+            continue
+        brace1 = rpar.next
+        if not brace1 or brace1.str != '{':
+            continue
+        brace2 = brace1.link
+        if not brace2 or brace2.str != '}':
+            continue
+        else_ = brace2.next
+        if not else_ or else_.str != 'else':
+            reportError(token, 15, 7)
+
+
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
@@ -426,5 +447,5 @@ for arg in sys.argv[1:]:
         misra_15_5(cfg)
         if cfgNumber == 1:
             misra_15_6(data.rawTokens)
-
+        misra_15_7(cfg)
 
