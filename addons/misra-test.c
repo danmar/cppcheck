@@ -113,3 +113,12 @@ void misra_15_7() {
   if (x!=0){} // 15.7
 }
 
+void misra_16_2() {
+  switch (x) {
+    case 1:
+      while (y>4) {
+        case 2: break; // 16.2
+      }
+      break;
+  }
+}

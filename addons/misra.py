@@ -412,6 +412,12 @@ def misra_15_7(data):
         if not else_ or else_.str != 'else':
             reportError(token, 15, 7)
 
+# TODO add 16.1 rule
+
+def misra_16_2(data):
+    for token in data.tokenlist:
+        if token.str == 'case' and token.scope.type != 'Switch':
+            reportError(token, 16, 2)
 
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
@@ -448,4 +454,5 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_15_6(data.rawTokens)
         misra_15_7(cfg)
+        misra_16_2(cfg)
 
