@@ -92,6 +92,9 @@ script:
 # check --dump
   - ./cppcheck test/testpreprocessor.cpp --dump
   - xmllint --noout test/testpreprocessor.cpp.dump
+# check addons/misra.py
+  - ./cppcheck --dump addons/misra-test.c
+  - python addons/misra.py -verify addons/misra-test.c.dump
 # check if Makefile needs to be regenerated
   - git clean -dfx
   - make dmake
