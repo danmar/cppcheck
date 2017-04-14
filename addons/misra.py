@@ -25,6 +25,13 @@ def reportError(token, num1, num2):
     else:
         sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] misra ' + str(num1) + '.' + str(num2) + ' violation\n')
 
+def simpleMatch(token, pattern):
+    for p in pattern.split(' '):
+        if not token or token.str != p:
+            return False
+        token = token.next
+    return True
+
 # Platform
 # TODO get this from dump
 CHAR_BITS = 8
@@ -425,7 +432,6 @@ def misra_16_2(data):
         if token.str == 'case' and token.scope.type != 'Switch':
             reportError(token, 16, 2)
 
-# The goal is handle comments/annotations by other tools
 def misra_16_3(rawTokens):
     # state: 0=no, 1=break is seen but not its ';', 2=after 'break;', 'comment', '{'
     state = 0
@@ -444,6 +450,25 @@ def misra_16_3(rawTokens):
             state = 2
         elif token.str == 'case' and state != 2:
             reportError(token, 16, 3)
+
+def misra_16_4(data):
+    for token in data.tokenlist:
+        if token.str != 'switch':
+            continue
+        if not simpleMatch(token, 'switch ('):
+            continue
+        if not simpleMatch(token.next.link, ') {'):
+            continue
+        startTok = token.next.link.next
+        tok = startTok.next
+        while tok and tok.str != '}':
+            if tok.str == '{':
+                tok = tok.link
+            elif tok.str == 'default':
+                break
+            tok = tok.next
+        if tok and tok.str != 'default':
+            reportError(token, 16, 4)
 
 if '-verify' in sys.argv[1:]:
     VERIFY = True
@@ -499,6 +524,7 @@ for arg in sys.argv[1:]:
         misra_16_2(cfg)
         if cfgNumber == 1:
             misra_16_3(data.rawTokens)
+        misra_16_4(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:

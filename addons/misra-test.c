@@ -113,6 +113,8 @@ void misra_15_7() {
 
 void misra_16_2() {
   switch (x) {
+    default:
+      break;
     case 1:
       while (y>4) {
         case 2: break; // 16.2
@@ -132,5 +134,14 @@ void misra_16_3() {
     case 5:
       break;
     default: break;
+  }
+}
+
+void misra_16_4() {
+  switch (x) { // 16.4
+    case 1:
+      break;
+    case 2:
+      break;
   }
 }
