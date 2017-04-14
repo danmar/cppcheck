@@ -180,3 +180,7 @@ void misra_17_6(int x[static 20]) {} // 17.6
 void misra_17_8(int x) {
   x = 3; // 17.8
 }
+
+void misra_18_5() {
+  int *** p;  // 18.5
+}

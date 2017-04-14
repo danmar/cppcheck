@@ -517,6 +517,22 @@ def misra_17_8(data):
         if var and var.isArgument:
             reportError(token, 17, 8)
 
+def misra_18_5(data):
+    for var in data.variables:
+        if not var.isPointer:
+            continue
+        typetok = var.nameToken
+        count = 0
+        while typetok:
+            if typetok.str == '*':
+                count = count + 1
+            elif not typetok.isName:
+                break
+            typetok = typetok.previous
+        if count > 2:
+            reportError(var.nameToken, 18, 5)
+
+
 if '-verify' in sys.argv[1:]:
     VERIFY = True
 
@@ -579,6 +595,7 @@ for arg in sys.argv[1:]:
             misra_17_1(data.rawTokens)
             misra_17_6(data.rawTokens)
         misra_17_8(cfg)
+        misra_18_5(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
