@@ -38,6 +38,39 @@ CHAR_BITS = 8
 SHORT_BITS = 16
 INT_BITS = 32
 
+KEYWORDS = ['auto',
+            'break',
+            'case',
+            'char',
+            'const',
+            'continue',
+            'default',
+            'do',
+            'double',
+            'else',
+            'enum',
+            'extern',
+            'float',
+            'for',
+            'goto',
+            'if',
+            'int',
+            'long',
+            'register',
+            'return',
+            'short',
+            'signed',
+            'sizeof',
+            'static',
+            'struct',
+            'switch',
+            'typedef',
+            'union',
+            'unsigned',
+            'void',
+            'volatile',
+            'while']
+
 def getEssentialType(expr):
     if not expr:
         return None
@@ -554,9 +587,7 @@ def misra_20_1(rawTokens):
     linenr = -1
     state = 1
     for token in rawTokens:
-        if token.str.startswith('/'):
-            continue
-        if token.linenr == linenr:
+        if token.str.startswith('/') or token.linenr == linenr:
             continue
         linenr = token.linenr
         if token.str != '#':
@@ -565,7 +596,11 @@ def misra_20_1(rawTokens):
             reportError(token, 20, 1)
 
 def misra_20_2(rawTokens):
+    linenr = -1
     for token in rawTokens:
+        if token.str.startswith('/') or token.linenr == linenr:
+            continue
+        linenr = token.linenr
         if not simpleMatch(token, '# include'):
             continue
         header = token.next.next.str
@@ -575,12 +610,29 @@ def misra_20_2(rawTokens):
                 break
 
 def misra_20_3(rawTokens):
+    linenr = -1
     for token in rawTokens:
+        if token.str.startswith('/') or token.linenr == linenr:
+            continue
+        linenr = token.linenr
         if not simpleMatch(token, '# include'):
             continue
         headerToken = token.next.next
         if not headerToken or not (headerToken.str.startswith('<') or headerToken.str.startswith('"')):
             reportError(token, 20, 3)
+
+def misra_20_4(rawTokens):
+    linenr = -1
+    for token in rawTokens:
+        if token.str.startswith('/') or token.linenr == linenr:
+            continue
+        linenr = token.linenr
+        if not simpleMatch(token, '# define'):
+            continue
+        macroName = token.next.next.str
+        if macroName in KEYWORDS:
+            reportError(token, 20, 4)
+
 
 if '-verify' in sys.argv[1:]:
     VERIFY = True
