@@ -1,6 +1,8 @@
 // To test:
 // ~/cppcheck/cppcheck --dump misra-test.c && python misra.py -verify misra-test.c.dump
 
+#include <stdarg.h> // 17.1
+
 typedef unsigned char u8;
 
 void misra_5_1() {
@@ -172,3 +174,5 @@ void misra_16_7() {
       break;
   }
 }
+
+

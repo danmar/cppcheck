@@ -534,6 +534,11 @@ class CppcheckData:
                     tok = Token(node)
                     tok.file = files[int(node.get('fileIndex'))]
                     self.rawTokens.append(tok)
+            for i in range(len(self.rawTokens)):
+                if i > 0:
+                    self.rawTokens[i].previous = self.rawTokens[i-1]
+                if i + 1 < len(self.rawTokens):
+                    self.rawTokens[i].next = self.rawTokens[i+1]
 
 
         # root is 'dumps' node, each config has its own 'dump' subnode.
