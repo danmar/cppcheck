@@ -564,6 +564,16 @@ def misra_20_1(rawTokens):
         elif state == 2 and simpleMatch(token, '# include'):
             reportError(token, 20, 1)
 
+def misra_20_2(rawTokens):
+    for token in rawTokens:
+        if not simpleMatch(token, '# include'):
+            continue
+        header = token.next.next.str
+        for pattern in ['\\', '//', '/*', '\'']:
+            if header.find(pattern)>0:
+                reportError(token, 20, 2)
+                break
+
 if '-verify' in sys.argv[1:]:
     VERIFY = True
 
@@ -631,6 +641,7 @@ for arg in sys.argv[1:]:
         misra_19_2(cfg)
         if cfgNumber == 1:
             misra_20_1(data.rawTokens)
+            misra_20_2(data.rawTokens)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
