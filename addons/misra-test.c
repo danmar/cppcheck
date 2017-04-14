@@ -4,6 +4,8 @@
 #include <stdarg.h> // 17.1
 #include "path\file.h" // 20.2
 #include /*abc*/ "file.h" // 20.3
+#include <setjmp.h> // 21.4
+#include <signal.h> // 21.5
 
 typedef unsigned char u8;
 

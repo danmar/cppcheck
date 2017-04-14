@@ -645,6 +645,31 @@ def misra_21_3(data):
         if (token.str in ['malloc', 'calloc', 'realloc', 'free']) and token.next and token.next.str == '(':
             reportError(token, 21, 3)
 
+def misra_21_4(rawTokens):
+    linenr = -1
+    for token in rawTokens:
+        if token.str.startswith('/') or token.linenr == linenr:
+            continue
+        linenr = token.linenr
+        if not simpleMatch(token, '# include'):
+            continue
+        headerToken = token.next.next
+        if headerToken and headerToken.str == '<setjmp.h>':
+            reportError(token, 21, 4)
+
+def misra_21_5(rawTokens):
+    linenr = -1
+    for token in rawTokens:
+        if token.str.startswith('/') or token.linenr == linenr:
+            continue
+        linenr = token.linenr
+        if not simpleMatch(token, '# include'):
+            continue
+        headerToken = token.next.next
+        if headerToken and headerToken.str == '<signal.h>':
+            reportError(token, 21, 5)
+
+
 if '-verify' in sys.argv[1:]:
     VERIFY = True
 
@@ -717,6 +742,9 @@ for arg in sys.argv[1:]:
             misra_20_4(data.rawTokens)
             misra_20_5(data.rawTokens)
         misra_21_3(cfg)
+        if cfgNumber == 1:
+            misra_21_4(data.rawTokens)
+            misra_21_5(data.rawTokens)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
