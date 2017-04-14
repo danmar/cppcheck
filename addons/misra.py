@@ -407,22 +407,11 @@ def misra_15_6(rawTokens):
 
 def misra_15_7(data):
     for token in data.tokenlist:
-        if token.str != 'if':
+        if not simpleMatch(token, 'if ('):
             continue
-        lpar = token.next
-        if not lpar or lpar.str != '(':
+        if not simpleMatch(token.next.link, ') {'):
             continue
-        rpar = lpar.link
-        if not rpar or rpar.str != ')':
-            continue
-        brace1 = rpar.next
-        if not brace1 or brace1.str != '{':
-            continue
-        brace2 = brace1.link
-        if not brace2 or brace2.str != '}':
-            continue
-        else_ = brace2.next
-        if not else_ or else_.str != 'else':
+        if not simpleMatch(token.next.link.next.link, '} else'):
             reportError(token, 15, 7)
 
 # TODO add 16.1 rule
