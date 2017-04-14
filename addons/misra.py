@@ -492,6 +492,11 @@ def misra_16_6(data):
         if count < 2:
             reportError(token, 16, 6)
 
+def misra_16_7(data):
+    for token in data.tokenlist:
+        if simpleMatch(token, 'switch (') and isBoolExpression(token.next.astOperand2):
+            reportError(token, 16, 7)
+
 
 if '-verify' in sys.argv[1:]:
     VERIFY = True
@@ -550,6 +555,7 @@ for arg in sys.argv[1:]:
         misra_16_4(cfg)
         misra_16_5(cfg)
         misra_16_6(cfg)
+        misra_16_7(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
