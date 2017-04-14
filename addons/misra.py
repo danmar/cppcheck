@@ -475,6 +475,24 @@ def misra_16_5(data):
         if tok2 and tok2.str == 'case':
             reportError(token, 16, 5)
 
+def misra_16_6(data):
+    for token in data.tokenlist:
+        if not (simpleMatch(token, 'switch (') and simpleMatch(token.next.link, ') {')):
+            continue
+        tok = token.next.link.next.next
+        count = 0
+        while tok:
+            if tok.str == 'break':
+                count = count + 1
+            elif tok.str == '{':
+                tok = tok.link
+            elif tok.str == '}':
+                break
+            tok = tok.next
+        if count < 2:
+            reportError(token, 16, 6)
+
+
 if '-verify' in sys.argv[1:]:
     VERIFY = True
 
@@ -531,6 +549,7 @@ for arg in sys.argv[1:]:
             misra_16_3(data.rawTokens)
         misra_16_4(cfg)
         misra_16_5(cfg)
+        misra_16_6(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:

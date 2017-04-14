@@ -157,4 +157,11 @@ void misra_16_5() {
   }
 }
 
+void misra_16_6() {
+  switch (x) { // 16.6
+    default:
+      break;
+  }
+}
+
 
