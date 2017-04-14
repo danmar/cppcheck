@@ -633,6 +633,14 @@ def misra_20_4(rawTokens):
         if macroName in KEYWORDS:
             reportError(token, 20, 4)
 
+def misra_20_5(rawTokens):
+    linenr = -1
+    for token in rawTokens:
+        if token.str.startswith('/') or token.linenr == linenr:
+            continue
+        linenr = token.linenr
+        if simpleMatch(token, '# undef'):
+            reportError(token, 20, 5)
 
 if '-verify' in sys.argv[1:]:
     VERIFY = True
@@ -703,6 +711,8 @@ for arg in sys.argv[1:]:
             misra_20_1(data.rawTokens)
             misra_20_2(data.rawTokens)
             misra_20_3(data.rawTokens)
+            misra_20_4(data.rawTokens)
+            misra_20_5(data.rawTokens)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
