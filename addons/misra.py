@@ -9,7 +9,7 @@
 # Limitations: This addon is released as open source. Rule texts can't be freely
 # distributed. https://www.misra.org.uk/forum/viewtopic.php?f=56&t=1189
 #
-#
+# Total number of rules: 153
 
 import cppcheckdata
 import sys
@@ -502,6 +502,10 @@ def misra_17_1(rawTokens):
         if simpleMatch(token, '# include <stdarg.h>'):
             reportError(token, 17, 1)
 
+def misra_17_6(rawTokens):
+    for token in rawTokens:
+        if simpleMatch(token, '[ static'):
+            reportError(token, 17, 6)
 
 if '-verify' in sys.argv[1:]:
     VERIFY = True
@@ -563,6 +567,7 @@ for arg in sys.argv[1:]:
         misra_16_7(cfg)
         if cfgNumber == 1:
             misra_17_1(data.rawTokens)
+            misra_17_6(data.rawTokens)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:

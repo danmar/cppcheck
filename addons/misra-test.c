@@ -175,4 +175,4 @@ void misra_16_7() {
   }
 }
 
-
+void misra_17_6(int x[static 20]) {} // 17.6
