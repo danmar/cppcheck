@@ -1,7 +1,5 @@
-/*
-~/cppcheck/cppcheck --dump misra-test.c
-python misra.py misra-test.c.dump
-*/
+// To test:
+// ~/cppcheck/cppcheck --dump misra-test.c && python misra.py -verify misra-test.c.dump
 
 typedef unsigned char u8;
 

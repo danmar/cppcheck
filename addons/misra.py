@@ -15,9 +15,15 @@ import cppcheckdata
 import sys
 import re
 
+VERIFY = False
+VERIFY_EXPECTED = []
+VERIFY_ACTUAL = []
+
 def reportError(token, num1, num2):
-    sys.stderr.write(
-        '[' + token.file + ':' + str(token.linenr) + '] misra ' + str(num1) + '.' + str(num2) + ' violation\n')
+    if VERIFY:
+        VERIFY_ACTUAL.append(str(token.linenr) + ':' + str(num1) + '.' + str(num2))
+    else:
+        sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] misra ' + str(num1) + '.' + str(num2) + ' violation\n')
 
 # Platform
 # TODO get this from dump
@@ -439,9 +445,25 @@ def misra_16_3(rawTokens):
         elif token.str == 'case' and state != 2:
             reportError(token, 16, 3)
 
+if '-verify' in sys.argv[1:]:
+    VERIFY = True
+
 for arg in sys.argv[1:]:
-    print('Checking ' + arg + '...')
+    if not arg.endswith('.dump'):
+        continue
+
     data = cppcheckdata.parsedump(arg)
+
+    if VERIFY:
+        VERIFY_ACTUAL = []
+        VERIFY_EXPECTED = []
+        for tok in data.rawTokens:
+            if tok.str.startswith('//') and tok.str.find('TODO')<0:
+                for word in tok.str[2:].split(' '):
+                    if re.match(r'[0-9]+\.[0-9]+', word):
+                        VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
+    else:
+        print('Checking ' + arg + '...')
 
     cfgNumber = 0
 
@@ -478,3 +500,12 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_16_3(data.rawTokens)
 
+    if VERIFY:
+        for expected in VERIFY_EXPECTED:
+            if not expected in VERIFY_ACTUAL:
+                print('Expected but not seen: ' + expected)
+                sys.exit(1)
+        for actual in VERIFY_ACTUAL:
+            if not actual in VERIFY_EXPECTED:
+                print('Not expected: ' + actual)
+                sys.exit(1)
