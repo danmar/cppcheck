@@ -122,6 +122,8 @@ def isConstantExpression(expr):
         return True
     if expr.isName:
         return False
+    if simpleMatch(expr.previous, 'sizeof ('):
+        return True
     if expr.astOperand1 and not isConstantExpression(expr.astOperand1):
         return False
     if expr.astOperand2 and not isConstantExpression(expr.astOperand2):
@@ -532,6 +534,16 @@ def misra_18_5(data):
         if count > 2:
             reportError(var.nameToken, 18, 5)
 
+def misra_18_8(data):
+    for var in data.variables:
+        if not var.isArray:
+            continue
+        # TODO Array dimensions are not available in dump
+        typetok = var.nameToken.next
+        if not typetok or typetok.str != '[':
+            continue
+        if not isConstantExpression(typetok.astOperand2):
+            reportError(var.nameToken, 18, 8)
 
 if '-verify' in sys.argv[1:]:
     VERIFY = True
@@ -596,6 +608,7 @@ for arg in sys.argv[1:]:
             misra_17_6(data.rawTokens)
         misra_17_8(cfg)
         misra_18_5(cfg)
+        misra_18_8(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:

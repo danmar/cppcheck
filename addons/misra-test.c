@@ -184,3 +184,9 @@ void misra_17_8(int x) {
 void misra_18_5() {
   int *** p;  // 18.5
 }
+
+void misra_18_8(int x) {
+  int buf1[10];
+  int buf2[sizeof(int)];
+  int vla[x]; // 18.8
+}
