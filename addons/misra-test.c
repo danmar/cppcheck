@@ -3,6 +3,7 @@
 
 #include <stdarg.h> // 17.1
 #include "path\file.h" // 20.2
+#include /*abc*/ "file.h" // 20.3
 
 typedef unsigned char u8;
 

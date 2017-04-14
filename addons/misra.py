@@ -574,6 +574,14 @@ def misra_20_2(rawTokens):
                 reportError(token, 20, 2)
                 break
 
+def misra_20_3(rawTokens):
+    for token in rawTokens:
+        if not simpleMatch(token, '# include'):
+            continue
+        headerToken = token.next.next
+        if not headerToken or not (headerToken.str.startswith('<') or headerToken.str.startswith('"')):
+            reportError(token, 20, 3)
+
 if '-verify' in sys.argv[1:]:
     VERIFY = True
 
@@ -642,6 +650,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_20_1(data.rawTokens)
             misra_20_2(data.rawTokens)
+            misra_20_3(data.rawTokens)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
