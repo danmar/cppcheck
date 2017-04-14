@@ -122,3 +122,17 @@ void misra_16_2() {
       break;
   }
 }
+
+void misra_16_3() {
+  switch (x) {
+    case 1:
+    case 2:
+      a=1;
+    case 3: // 16.3
+      a=2;
+      // fallthrough
+    case 5:
+      break;
+    default: break;
+  }
+}

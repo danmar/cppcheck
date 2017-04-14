@@ -419,6 +419,26 @@ def misra_16_2(data):
         if token.str == 'case' and token.scope.type != 'Switch':
             reportError(token, 16, 2)
 
+# The goal is handle comments/annotations by other tools
+def misra_16_3(rawTokens):
+    # state: 0=no, 1=break is seen but not its ';', 2=after 'break;', 'comment', '{'
+    state = 0
+    for token in rawTokens:
+        if token.str == 'break':
+            state = 1
+        elif token.str == ';':
+            if state == 1:
+                state = 2
+            else:
+                state = 0
+        elif token.str.startswith('/*') or token.str.startswith('//'):
+            if token.str.lower().find('fallthrough')>0:
+                state = 2
+        elif token.str == '{':
+            state = 2
+        elif token.str == 'case' and state != 2:
+            reportError(token, 16, 3)
+
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
@@ -455,4 +475,6 @@ for arg in sys.argv[1:]:
             misra_15_6(data.rawTokens)
         misra_15_7(cfg)
         misra_16_2(cfg)
+        if cfgNumber == 1:
+            misra_16_3(data.rawTokens)
 

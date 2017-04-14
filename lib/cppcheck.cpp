@@ -135,6 +135,28 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         simplecpp::TokenList tokens1(fileStream, files, filename, &outputList);
         preprocessor.loadFiles(tokens1, files);
 
+        // write dump file xml prolog
+        std::ofstream fdump;
+        if (_settings.dump) {
+            const std::string dumpfile(filename + ".dump");
+            fdump.open(dumpfile.c_str());
+            if (fdump.is_open()) {
+                fdump << "<?xml version=\"1.0\"?>" << std::endl;
+                fdump << "<dumps>" << std::endl;
+                fdump << "  <rawtokens>" << std::endl;
+                for (unsigned int i = 0; i < files.size(); ++i)
+                    fdump << "    <file index=\"" << i << "\" name=\"" << ErrorLogger::toxml(files[i]) << "\"/>" << std::endl;
+                for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
+                    fdump << "    <tok "
+                          << "fileIndex=\"" << tok->location.fileIndex << "\" "
+                          << "linenr=\"" << tok->location.line << "\" "
+                          << "str=\"" << ErrorLogger::toxml(tok->str) << "\""
+                          << "/>" << std::endl;
+                }
+                fdump << "  </rawtokens>" << std::endl;
+            }
+        }
+
         // Parse comments and then remove them
         preprocessor.inlineSuppressions(tokens1);
         tokens1.removeComments();
@@ -206,28 +228,6 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 tooManyConfigsError(Path::toNativeSeparators(filename),configurations.size());
             } else {
                 tooManyConfigs = true;
-            }
-        }
-
-        // write dump file xml prolog
-        std::ofstream fdump;
-        if (_settings.dump) {
-            const std::string dumpfile(filename + ".dump");
-            fdump.open(dumpfile.c_str());
-            if (fdump.is_open()) {
-                fdump << "<?xml version=\"1.0\"?>" << std::endl;
-                fdump << "<dumps>" << std::endl;
-                fdump << "  <rawtokens>" << std::endl;
-                for (unsigned int i = 0; i < files.size(); ++i)
-                    fdump << "    <file index=\"" << i << "\" name=\"" << ErrorLogger::toxml(files[i]) << "\"/>" << std::endl;
-                for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
-                    fdump << "    <tok "
-                          << "fileIndex=\"" << tok->location.fileIndex << "\" "
-                          << "linenr=\"" << tok->location.line << "\" "
-                          << "str=\"" << ErrorLogger::toxml(tok->str) << "\""
-                          << "/>" << std::endl;
-                }
-                fdump << "  </rawtokens>" << std::endl;
             }
         }
 
