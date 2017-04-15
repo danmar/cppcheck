@@ -1,7 +1,6 @@
 // To test:
 // ~/cppcheck/cppcheck --dump misra-test.c && python misra.py -verify misra-test.c.dump
 
-#include <stdarg.h> // 17.1
 #include "path\file.h" // 20.2
 #include /*abc*/ "file.h" // 20.3
 #include <setjmp.h> // 21.4
@@ -178,6 +177,14 @@ void misra_16_7() {
     default:
       break;
   }
+}
+
+void misra_17_1() {
+  va_list(); // 17.1
+  va_arg(); // 17.1
+  va_start(); // 17.1
+  va_end(); // 17.1
+  va_copy(); // 17.1
 }
 
 void misra_17_6(int x[static 20]) {} // 17.6

@@ -536,10 +536,9 @@ def misra_16_7(data):
         if simpleMatch(token, 'switch (') and isBoolExpression(token.next.astOperand2):
             reportError(token, 16, 7)
 
-def misra_17_1(rawTokens):
-    for token in rawTokens:
-        # TODO warn about va_list, etc
-        if simpleMatch(token, '# include <stdarg.h>'):
+def misra_17_1(data):
+    for token in data.tokenlist:
+        if isFunctionCall(token) and token.astOperand1.str in ['va_list', 'va_arg', 'va_start', 'va_end' , 'va_copy']:
             reportError(token, 17, 1)
 
 def misra_17_6(rawTokens):
@@ -633,7 +632,7 @@ def misra_20_5(data):
 
 def misra_21_3(data):
     for token in data.tokenlist:
-        if (token.str in ['malloc', 'calloc', 'realloc', 'free']) and token.next and token.next.str == '(':
+        if isFunctionCall(token) and (token.astOperand1.str in ['malloc', 'calloc', 'realloc', 'free']):
             reportError(token, 21, 3)
 
 def misra_21_4(data):
@@ -648,12 +647,12 @@ def misra_21_5(data):
 
 def misra_21_7(data):
     for token in data.tokenlist:
-        if (token.str in ['atof', 'atoi', 'atol', 'atoll']) and token.next and token.next.str == '(':
+        if isFunctionCall(token) and (token.astOperand1.str in ['atof', 'atoi', 'atol', 'atoll']):
             reportError(token, 21, 7)
 
 def misra_21_8(data):
     for token in data.tokenlist:
-        if (token.str in ['abort', 'getenv', 'system']) and token.next and token.next.str == '(':
+        if isFunctionCall(token) and (token.astOperand1.str in ['abort', 'getenv', 'system']):
             reportError(token, 21, 8)
 
 def misra_21_9(data):
@@ -724,8 +723,8 @@ for arg in sys.argv[1:]:
         misra_16_5(cfg)
         misra_16_6(cfg)
         misra_16_7(cfg)
+        misra_17_1(cfg)
         if cfgNumber == 1:
-            misra_17_1(data.rawTokens)
             misra_17_6(data.rawTokens)
         misra_17_8(cfg)
         misra_18_5(cfg)
