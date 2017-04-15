@@ -143,6 +143,15 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             if (fdump.is_open()) {
                 fdump << "<?xml version=\"1.0\"?>" << std::endl;
                 fdump << "<dumps>" << std::endl;
+                fdump << "  <platform"
+                      << " name=\"" << _settings.platformString() << '\"'
+                      << " char bit=\"" << _settings.char_bit << '\"'
+                      << " short_bit=\"" << _settings.short_bit << '\"'
+                      << " int_bit=\"" << _settings.int_bit << '\"'
+                      << " long_bit=\"" << _settings.long_bit << '\"'
+                      << " long_long_bit=\"" << _settings.long_long_bit << '\"'
+                      << " pointer_bit=\"" << (_settings.sizeof_pointer * _settings.char_bit) << '\"'
+                      << "/>\n";
                 fdump << "  <rawtokens>" << std::endl;
                 for (unsigned int i = 0; i < files.size(); ++i)
                     fdump << "    <file index=\"" << i << "\" name=\"" << ErrorLogger::toxml(files[i]) << "\"/>" << std::endl;

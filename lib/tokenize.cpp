@@ -3919,6 +3919,13 @@ void Tokenizer::dump(std::ostream &out) const
             out << " astOperand1=\"" << tok->astOperand1() << '\"';
         if (tok->astOperand2())
             out << " astOperand2=\"" << tok->astOperand2() << '\"';
+        if (tok->valueType()) {
+            std::string s = tok->valueType()->str();
+            std::string::size_type pos = s.find("container(");
+            if (pos != std::string::npos)
+                s.erase(pos+9, s.find(")",pos)-pos-8);
+            out << " valueType=\"" << s << '\"';
+        }
         out << "/>" << std::endl;
     }
     out << "  </tokenlist>" << std::endl;
