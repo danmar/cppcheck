@@ -266,6 +266,20 @@ def misra_12_1_sizeof(rawTokens):
            else:
                state = 0
 
+def misra_11_7(data):
+    for token in data.tokenlist:
+        if not isCast(token):
+            continue
+        if not token.valueType or not token.astOperand1.valueType:
+            continue
+        res1 = re.match(r'^(const )?([A-Za-z_0-9]+) \*', token.valueType)
+        res2 = re.match(r'^(const )?([A-Za-z_0-9]+) \*', token.astOperand1.valueType)
+        if not res1 or not res2:
+            continue
+        if res1.group(2) == res2.group(2):
+            continue
+        reportError(token, 11, 7)
+
 def misra_11_8(data):
     for token in data.tokenlist:
         if not isCast(token):
@@ -731,6 +745,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+        misra_11_7(cfg)
         misra_11_8(cfg)
         misra_11_9(cfg)
         if cfgNumber == 1:

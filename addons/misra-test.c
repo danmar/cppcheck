@@ -23,6 +23,11 @@ void misra_7_3() {
   int x = 12lu; // 7.3
 }
 
+struct Fred {}; struct Wilma {};
+void misra_11_7(struct Fred *fred) {
+  struct Wilma *wilma = (struct Wilma *)fred; // 11.7
+}
+
 char * misra_11_8(const char *str) {
   return (char *)str; // 11.8
 }
