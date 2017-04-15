@@ -10,11 +10,6 @@
 
 typedef unsigned char u8;
 
-void misra_4_3() {
-  dostuff();
-  asm("abc"); // 4.3
-}
-
 void misra_5_1() {
   int a123456789012345678901234567890; // no-warning
   int a1234567890123456789012345678901; // 5.1

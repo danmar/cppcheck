@@ -235,13 +235,6 @@ def findInclude(rawTokens, header):
             return headerToken
     return None
 
-def misra_4_3(data):
-    for token in data.tokenlist:
-        if not simpleMatch(token, 'asm ('):
-            continue
-        if token.scope.type != 'Function' or (not token.previous) or token.previous.str != '{' or (not simpleMatch(token.next.link, ') ; }')):
-            reportError(token, 4, 3)
-
 def misra_5_1(data):
     for token in data.tokenlist:
         if token.isName and len(token.str) > 31:
@@ -723,7 +716,6 @@ for arg in sys.argv[1:]:
         if len(data.configurations) > 1:
             print('Checking ' + arg + ', config "' + cfg.name + '"...')
 
-        misra_4_3(cfg)
         misra_5_1(cfg)
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
