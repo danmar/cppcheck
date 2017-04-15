@@ -221,3 +221,8 @@ void misra_21_8() {
   getenv("foo"); // 21.8
   system(""); // 21.8
 }
+
+void misra_21_9() {
+  bsearch(key,base,num,size,cmp); // 21.9
+  qsort(base,num,size,cmp); // 21.9
+}
