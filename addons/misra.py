@@ -669,6 +669,10 @@ def misra_21_5(rawTokens):
         if headerToken and headerToken.str == '<signal.h>':
             reportError(token, 21, 5)
 
+def misra_21_7(data):
+    for token in data.tokenlist:
+        if (token.str in ['atof', 'atoi', 'atol', 'atoll']) and token.next and token.next.str == '(':
+            reportError(token, 21, 7)
 
 if '-verify' in sys.argv[1:]:
     VERIFY = True
@@ -745,6 +749,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_21_4(data.rawTokens)
             misra_21_5(data.rawTokens)
+        misra_21_7(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:

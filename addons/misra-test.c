@@ -208,3 +208,7 @@ void misra_21_3() {
   realloc(10); // 21.3
   free(p1); // 21.3
 }
+
+void misra_21_7() {
+  atoi(str); // 21.7
+}
