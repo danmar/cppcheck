@@ -19,22 +19,11 @@ VERIFY = False
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
 
-def reportError(token, num1, num2):
+def reportError(location, num1, num2):
     if VERIFY:
-        VERIFY_ACTUAL.append(str(token.linenr) + ':' + str(num1) + '.' + str(num2))
+        VERIFY_ACTUAL.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
     else:
-        sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] misra ' + str(num1) + '.' + str(num2) + ' violation\n')
-
-def reportErrorFileLine(file, linenr, num1, num2):
-    class Tok:
-        file = ''
-        linenr = ''
-        def __init__(self):
-            return
-    token = Tok
-    token.file = file
-    token.linenr = linenr
-    reportError(token, num1, num2)
+        sys.stderr.write('[' + location.file + ':' + str(location.linenr) + '] misra ' + str(num1) + '.' + str(num2) + ' violation\n')
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
@@ -599,30 +588,24 @@ def misra_19_2(data):
         if token.str == 'union':
             reportError(token, 19, 2)
 
-def misra_20_1(rawTokens):
-    linenr = -1
-    state = 1
-    for token in rawTokens:
-        if token.str.startswith('/') or token.linenr == linenr:
+def misra_20_1(data):
+    for directive in data.directives:
+        if not directive.str.startswith('#include'):
             continue
-        linenr = token.linenr
-        if token.str != '#':
-            state = 2
-        elif state == 2 and simpleMatch(token, '# include'):
-            reportError(token, 20, 1)
+        for token in data.tokenlist:
+            if token.file != directive.file:
+                continue
+            if int(token.linenr) < int(directive.linenr):
+                reportError(directive, 20, 1)
+                break
 
-def misra_20_2(rawTokens):
-    linenr = -1
-    for token in rawTokens:
-        if token.str.startswith('/') or token.linenr == linenr:
+def misra_20_2(data):
+    for directive in data.directives:
+        if not directive.str.startswith('#include '):
             continue
-        linenr = token.linenr
-        if not simpleMatch(token, '# include'):
-            continue
-        header = token.next.next.str
         for pattern in ['\\', '//', '/*', '\'']:
-            if header.find(pattern)>0:
-                reportError(token, 20, 2)
+            if directive.str.find(pattern)>0:
+                reportError(directive, 20, 2)
                 break
 
 def misra_20_3(rawTokens):
@@ -637,26 +620,16 @@ def misra_20_3(rawTokens):
         if not headerToken or not (headerToken.str.startswith('<') or headerToken.str.startswith('"')):
             reportError(token, 20, 3)
 
-def misra_20_4(rawTokens):
-    linenr = -1
-    for token in rawTokens:
-        if token.str.startswith('/') or token.linenr == linenr:
-            continue
-        linenr = token.linenr
-        if not simpleMatch(token, '# define'):
-            continue
-        macroName = token.next.next.str
-        if macroName in KEYWORDS:
-            reportError(token, 20, 4)
+def misra_20_4(data):
+    for directive in data.directives:
+        res = re.search(r'#define ([a-z][a-z0-9_]+)', directive.str)
+        if res and (res.group(1) in KEYWORDS):
+            reportError(directive, 20, 4)
 
-def misra_20_5(rawTokens):
-    linenr = -1
-    for token in rawTokens:
-        if token.str.startswith('/') or token.linenr == linenr:
-            continue
-        linenr = token.linenr
-        if simpleMatch(token, '# undef'):
-            reportError(token, 20, 5)
+def misra_20_5(data):
+    for directive in data.directives:
+        if directive.str.startswith('#undef '):
+            reportError(directive, 20, 5)
 
 def misra_21_3(data):
     for token in data.tokenlist:
@@ -666,12 +639,12 @@ def misra_21_3(data):
 def misra_21_4(data):
     directive = findInclude(data.directives, '<setjmp.h>')
     if directive:
-        reportErrorFileLine(directive.file, directive.linenr, 21, 4)
+        reportError(directive, 21, 4)
 
 def misra_21_5(data):
     directive = findInclude(data.directives, '<signal.h>')
     if directive:
-        reportErrorFileLine(directive.file, directive.linenr, 21, 5)
+        reportError(directive, 21, 5)
 
 def misra_21_7(data):
     for token in data.tokenlist:
@@ -691,7 +664,7 @@ def misra_21_9(data):
 def misra_21_11(data):
     directive = findInclude(data.directives, '<tgmath.h>')
     if directive:
-        reportErrorFileLine(directive.file, directive.linenr, 21, 11)
+        reportError(directive, 21, 11)
 
 if '-verify' in sys.argv[1:]:
     VERIFY = True
@@ -758,12 +731,12 @@ for arg in sys.argv[1:]:
         misra_18_5(cfg)
         misra_18_8(cfg)
         misra_19_2(cfg)
+        misra_20_1(cfg)
+        misra_20_2(cfg)
         if cfgNumber == 1:
-            misra_20_1(data.rawTokens)
-            misra_20_2(data.rawTokens)
             misra_20_3(data.rawTokens)
-            misra_20_4(data.rawTokens)
-            misra_20_5(data.rawTokens)
+        misra_20_4(cfg)
+        misra_20_5(cfg)
         misra_21_3(cfg)
         misra_21_4(cfg)
         misra_21_5(cfg)
