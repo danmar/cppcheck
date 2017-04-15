@@ -262,6 +262,18 @@ def misra_12_1_sizeof(rawTokens):
            else:
                state = 0
 
+def misra_11_9(data):
+    for directive in data.directives:
+        res1 = re.match(r'#define ([A-Za-z_][A-Za-z_0-9]*) (.*)', directive.str)
+        if not res1:
+            continue
+        name = res1.group(1)
+        if name == 'NULL':
+            continue
+        value = res1.group(2).replace(' ','')
+        if value == '((void*)0)':
+            reportError(directive, 11, 9)
+
 def misra_12_1(data):
     for token in data.tokenlist:
         p = getPrecedence(token)
@@ -696,6 +708,8 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+        misra_11_9(cfg);
+        if cfgNumber == 1:
             misra_12_1_sizeof(data.rawTokens)
         misra_12_1(cfg)
         misra_12_2(cfg)

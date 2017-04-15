@@ -23,6 +23,8 @@ void misra_7_3() {
   int x = 12lu; // 7.3
 }
 
+#define MISRA_11_9  ((void*)0)  // 11.9
+
 void misra_12_1() {
   sz = sizeof x + y; // 12.1
   a = (b * c) + d;
