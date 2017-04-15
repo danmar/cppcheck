@@ -23,6 +23,10 @@ void misra_7_3() {
   int x = 12lu; // 7.3
 }
 
+char * misra_11_8(const char *str) {
+  return (char *)str; // 11.8
+}
+
 #define MISRA_11_9  ((void*)0)  // 11.9
 
 void misra_12_1() {

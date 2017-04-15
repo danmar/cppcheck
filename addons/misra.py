@@ -96,6 +96,9 @@ def bitsOfEssentialType(expr):
         return INT_BIT
     return 0
 
+def isCast(expr):
+    return expr and expr.str == '(' and expr.astOperand1 == expr.link.next
+
 def isFunctionCall(expr):
     if not expr:
         return False
@@ -262,6 +265,18 @@ def misra_12_1_sizeof(rawTokens):
                reportError(tok, 12, 1)
            else:
                state = 0
+
+def misra_11_8(data):
+    for token in data.tokenlist:
+        if not isCast(token):
+            continue
+        if not token.valueType or not token.astOperand1.valueType:
+            continue
+        if token.valueType.startswith('const') or not token.astOperand1.valueType.startswith('const'):
+            continue
+        if token.valueType.find('*')<0 or token.astOperand1.valueType.find('*')<0:
+            continue
+        reportError(token, 11, 8)
 
 def misra_11_9(data):
     for directive in data.directives:
@@ -716,7 +731,8 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
-        misra_11_9(cfg);
+        misra_11_8(cfg)
+        misra_11_9(cfg)
         if cfgNumber == 1:
             misra_12_1_sizeof(data.rawTokens)
         misra_12_1(cfg)

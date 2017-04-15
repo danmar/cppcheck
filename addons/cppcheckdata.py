@@ -73,6 +73,7 @@ class Token:
         function           If this token points at a function call, this attribute has the Function
                            information. See the Function class.
         values             Possible values of token
+        valueType          type information
         typeScope          type scope (token->type()->classScope)
         astParent          ast parent
         astOperand1        ast operand1
@@ -121,6 +122,7 @@ class Token:
     function = None
     valuesId = None
     values = None
+    valueType = None
 
     typeScopeId = None
     typeScope = None
@@ -179,6 +181,7 @@ class Token:
         self.function = None
         self.valuesId = element.get('values')
         self.values = None
+        self.valueType = element.get('valueType')
         self.typeScopeId = element.get('type-scope')
         self.typeScope = None
         self.astParentId = element.get('astParent')
