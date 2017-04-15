@@ -145,7 +145,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 fdump << "<dumps>" << std::endl;
                 fdump << "  <platform"
                       << " name=\"" << _settings.platformString() << '\"'
-                      << " char bit=\"" << _settings.char_bit << '\"'
+                      << " char_bit=\"" << _settings.char_bit << '\"'
                       << " short_bit=\"" << _settings.short_bit << '\"'
                       << " int_bit=\"" << _settings.int_bit << '\"'
                       << " long_bit=\"" << _settings.long_bit << '\"'
