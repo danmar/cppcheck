@@ -25,6 +25,17 @@ def reportError(token, num1, num2):
     else:
         sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] misra ' + str(num1) + '.' + str(num2) + ' violation\n')
 
+def reportErrorFileLine(file, linenr, num1, num2):
+    class Tok:
+        file = ''
+        linenr = ''
+        def __init__(self):
+            return
+    token = Tok
+    token.file = file
+    token.linenr = linenr
+    reportError(token, num1, num2)
+
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
         if not token or token.str != p:
@@ -222,17 +233,10 @@ def findGotoLabel(gotoToken):
         tok = tok.next
     return None
 
-def findInclude(rawTokens, header):
-    linenr = -1
-    for token in rawTokens:
-        if token.str.startswith('//') or token.str.startswith('/*') or token.linenr == linenr:
-            continue
-        linenr = token.linenr
-        if not simpleMatch(token, '# include'):
-            continue
-        headerToken = token.next.next
-        if headerToken and headerToken.str == header:
-            return headerToken
+def findInclude(directives, header):
+    for directive in directives:
+        if directive.str == '#include ' + header:
+            return directive
     return None
 
 def misra_5_1(data):
@@ -659,15 +663,15 @@ def misra_21_3(data):
         if (token.str in ['malloc', 'calloc', 'realloc', 'free']) and token.next and token.next.str == '(':
             reportError(token, 21, 3)
 
-def misra_21_4(rawTokens):
-    token = findInclude(rawTokens, '<setjmp.h>')
-    if token:
-        reportError(token, 21, 4)
+def misra_21_4(data):
+    directive = findInclude(data.directives, '<setjmp.h>')
+    if directive:
+        reportErrorFileLine(directive.file, directive.linenr, 21, 4)
 
-def misra_21_5(rawTokens):
-    token = findInclude(rawTokens, '<signal.h>')
-    if token:
-        reportError(token, 21, 5)
+def misra_21_5(data):
+    directive = findInclude(data.directives, '<signal.h>')
+    if directive:
+        reportErrorFileLine(directive.file, directive.linenr, 21, 5)
 
 def misra_21_7(data):
     for token in data.tokenlist:
@@ -684,10 +688,10 @@ def misra_21_9(data):
         if (token.str in ['bsearch', 'qsort']) and token.next and token.next.str == '(':
             reportError(token, 21, 9)
 
-def misra_21_11(rawTokens):
-    token = findInclude(rawTokens, '<tgmath.h>')
-    if token:
-        reportError(token, 21, 11)
+def misra_21_11(data):
+    directive = findInclude(data.directives, '<tgmath.h>')
+    if directive:
+        reportErrorFileLine(directive.file, directive.linenr, 21, 11)
 
 if '-verify' in sys.argv[1:]:
     VERIFY = True
@@ -761,14 +765,12 @@ for arg in sys.argv[1:]:
             misra_20_4(data.rawTokens)
             misra_20_5(data.rawTokens)
         misra_21_3(cfg)
-        if cfgNumber == 1:
-            misra_21_4(data.rawTokens)
-            misra_21_5(data.rawTokens)
+        misra_21_4(cfg)
+        misra_21_5(cfg)
         misra_21_7(cfg)
         misra_21_8(cfg)
         misra_21_9(cfg)
-        if cfgNumber == 1:
-            misra_21_11(data.rawTokens)
+        misra_21_11(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
