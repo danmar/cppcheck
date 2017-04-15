@@ -102,7 +102,7 @@ def isFunctionCall(expr):
         return False
     if expr.astOperand1 != expr.previous:
         return False
-    if expr.astOperand1.str in ['sizeof', 'if', 'switch', 'while']:
+    if expr.astOperand1.str in KEYWORDS:
         return False
     return True
 
