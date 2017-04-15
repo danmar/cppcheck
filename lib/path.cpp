@@ -265,7 +265,7 @@ bool Path::isCPP(const std::string &path)
 
 bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra)
 {
-    return !Path::isHeader(path) && (Path::isCPP(path) || Path::isC(path) || extra.find(getFilenameExtension(path)) != extra.end());
+    return Path::isHeader(path) || (Path::isCPP(path) || Path::isC(path) || extra.find(getFilenameExtension(path)) != extra.end());
 }
 
 bool Path::isHeader(const std::string &path)
