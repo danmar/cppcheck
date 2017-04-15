@@ -222,6 +222,19 @@ def findGotoLabel(gotoToken):
         tok = tok.next
     return None
 
+def findInclude(rawTokens, header):
+    linenr = -1
+    for token in rawTokens:
+        if token.str.startswith('//') or token.str.startswith('/*') or token.linenr == linenr:
+            continue
+        linenr = token.linenr
+        if not simpleMatch(token, '# include'):
+            continue
+        headerToken = token.next.next
+        if headerToken and headerToken.str == header:
+            return headerToken
+    return None
+
 def misra_5_1(data):
     for token in data.tokenlist:
         if token.isName and len(token.str) > 31:
@@ -532,6 +545,7 @@ def misra_16_7(data):
 
 def misra_17_1(rawTokens):
     for token in rawTokens:
+        # TODO warn about va_list, etc
         if simpleMatch(token, '# include <stdarg.h>'):
             reportError(token, 17, 1)
 
@@ -646,28 +660,14 @@ def misra_21_3(data):
             reportError(token, 21, 3)
 
 def misra_21_4(rawTokens):
-    linenr = -1
-    for token in rawTokens:
-        if token.str.startswith('/') or token.linenr == linenr:
-            continue
-        linenr = token.linenr
-        if not simpleMatch(token, '# include'):
-            continue
-        headerToken = token.next.next
-        if headerToken and headerToken.str == '<setjmp.h>':
-            reportError(token, 21, 4)
+    token = findInclude(rawTokens, '<setjmp.h>')
+    if token:
+        reportError(token, 21, 4)
 
 def misra_21_5(rawTokens):
-    linenr = -1
-    for token in rawTokens:
-        if token.str.startswith('/') or token.linenr == linenr:
-            continue
-        linenr = token.linenr
-        if not simpleMatch(token, '# include'):
-            continue
-        headerToken = token.next.next
-        if headerToken and headerToken.str == '<signal.h>':
-            reportError(token, 21, 5)
+    token = findInclude(rawTokens, '<signal.h>')
+    if token:
+        reportError(token, 21, 5)
 
 def misra_21_7(data):
     for token in data.tokenlist:
@@ -683,6 +683,11 @@ def misra_21_9(data):
     for token in data.tokenlist:
         if (token.str in ['bsearch', 'qsort']) and token.next and token.next.str == '(':
             reportError(token, 21, 9)
+
+def misra_21_11(rawTokens):
+    token = findInclude(rawTokens, '<tgmath.h>')
+    if token:
+        reportError(token, 21, 11)
 
 if '-verify' in sys.argv[1:]:
     VERIFY = True
@@ -762,6 +767,8 @@ for arg in sys.argv[1:]:
         misra_21_7(cfg)
         misra_21_8(cfg)
         misra_21_9(cfg)
+        if cfgNumber == 1:
+            misra_21_11(data.rawTokens)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
