@@ -210,5 +210,14 @@ void misra_21_3() {
 }
 
 void misra_21_7() {
+  atof(str); // 21.7
   atoi(str); // 21.7
+  atol(str); // 21.7
+  atoll(str); // 21.7
+}
+
+void misra_21_8() {
+  abort(); // 21.8
+  getenv("foo"); // 21.8
+  system(""); // 21.8
 }
