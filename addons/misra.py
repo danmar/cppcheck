@@ -33,10 +33,12 @@ def simpleMatch(token, pattern):
     return True
 
 # Platform
-# TODO get this from dump
-CHAR_BITS = 8
-SHORT_BITS = 16
-INT_BITS = 32
+CHAR_BIT = 0
+SHORT_BIT = 0
+INT_BIT = 0
+LONG_BIT = 0
+LONG_LONG_BIT = 0
+POINTER_BIT = 0
 
 KEYWORDS = ['auto',
             'break',
@@ -86,13 +88,12 @@ def bitsOfEssentialType(expr):
     type = getEssentialType(expr)
     if type is None:
         return 0
-    # TODO get --platform type sizes
     if type == 'char':
-        return CHAR_BITS
+        return CHAR_BIT
     if type == 'short':
-        return SHORT_BITS
+        return SHORT_BIT
     if type == 'int':
-        return INT_BITS
+        return INT_BIT
     return 0
 
 def isFunctionCall(expr):
@@ -316,9 +317,9 @@ def misra_12_3(data):
 
 def misra_12_4(data):
     max_uint = 0
-    if INT_BITS == 16:
+    if INT_BIT == 16:
         max_uint = 0xffff
-    elif INT_BITS == 32:
+    elif INT_BIT == 32:
         max_uint = 0xffffffff
     else:
         return
@@ -685,6 +686,13 @@ for arg in sys.argv[1:]:
         continue
 
     data = cppcheckdata.parsedump(arg)
+
+    CHAR_BIT      = data.platform.char_bit
+    SHORT_BIT     = data.platform.short_bit
+    INT_BIT       = data.platform.int_bit
+    LONG_BIT      = data.platform.long_bit
+    LONG_LONG_BIT = data.platform.long_long_bit
+    POINTER_BIT   = data.platform.pointer_bit
 
     if VERIFY:
         VERIFY_ACTUAL = []

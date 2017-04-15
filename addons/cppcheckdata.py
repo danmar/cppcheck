@@ -478,6 +478,38 @@ class Configuration:
             variable.setId(IdMap)
 
 
+class Platform:
+    """
+    Platform class
+    This class contains type sizes
+
+    Attributes:
+        name          Name of the platform
+        char_bit      CHAR_BIT value
+        short_bit     SHORT_BIT value
+        int_bit       INT_BIT value
+        long_bit      LONG_BIT value
+        long_long_bit LONG_LONG_BIT value
+        pointer_bit   POINTER_BIT value
+    """
+
+    name = ''
+    char_bit = 0
+    short_bit = 0
+    int_bit = 0
+    long_bit = 0
+    long_long_bit = 0
+    pointer_bit = 0
+
+    def __init__(self, platformnode):
+        self.name = platformnode.get('name')
+        self.char_bit = int(platformnode.get('char_bit'))
+        self.short_bit = int(platformnode.get('short_bit'))
+        self.int_bit = int(platformnode.get('int_bit'))
+        self.long_bit = int(platformnode.get('long_bit'))
+        self.long_long_bit = int(platformnode.get('long_long_bit'))
+        self.pointer_bit = int(platformnode.get('pointer_bit'))
+
 
 class CppcheckData:
     """
@@ -516,12 +548,17 @@ class CppcheckData:
     """
 
     rawTokens = []
+    platform = None
     configurations = []
 
     def __init__(self, filename):
         self.configurations = []
 
         data = ET.parse(filename)
+
+        for platformNode in data.getroot():
+            if platformNode.tag == 'platform':
+                self.platform = Platform(platformNode)
 
         for rawTokensNode in data.getroot():
             if rawTokensNode.tag != 'rawtokens':
