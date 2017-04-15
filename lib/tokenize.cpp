@@ -3924,6 +3924,8 @@ void Tokenizer::dump(std::ostream &out) const
             std::string::size_type pos = s.find("container(");
             if (pos != std::string::npos)
                 s.erase(pos+9, s.find(")",pos)-pos-8);
+            if ((pos = s.find("iterator(")) != std::string::npos)
+                s.erase(pos+8, s.find(")",pos)-pos-7);
             out << " valueType=\"" << s << '\"';
         }
         out << "/>" << std::endl;
