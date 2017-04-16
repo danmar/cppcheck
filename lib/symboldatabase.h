@@ -1061,6 +1061,7 @@ public:
     bool fromLibraryType(const std::string &typestr, const Settings *settings);
 
     std::string str() const;
+    std::string dump() const;
 };
 
 

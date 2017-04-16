@@ -37,6 +37,38 @@ class Directive:
         self.file = element.get('file')
         self.linenr = element.get('linenr')
 
+class ValueType:
+    """
+    ValueType class. Contains (promoted) type information for each node in the AST.
+    """
+
+    type = None
+    sign = None
+    constness = 0
+    pointer = 0
+    typeScopeId = None
+    typeScope = None
+    originalTypeName = None
+
+    def __init__(self, element):
+        self.type = element.get('valueType-type')
+        self.sign = element.get('valueType-sign')
+        self.typeScopeId = element.get('valueType-typeScope')
+        self.originalTypeName = element.get('valueType-originalTypeName')
+        constness = element.get('valueType-constness')
+        if constness:
+            self.constness = int(constness)
+        else:
+            self.constness = 0
+        pointer = element.get('valueType-pointer')
+        if pointer:
+            self.pointer = int(pointer)
+        else:
+            self.pointer = 0
+
+    def setId(self, IdMap):
+        self.typeScope = IdMap[self.typeScopeId]
+
 
 class Token:
     """
@@ -181,7 +213,10 @@ class Token:
         self.function = None
         self.valuesId = element.get('values')
         self.values = None
-        self.valueType = element.get('valueType')
+        if element.get('valueType-type'):
+            self.valueType = ValueType(element)
+        else:
+            self.valueType = None
         self.typeScopeId = element.get('type-scope')
         self.typeScope = None
         self.astParentId = element.get('astParent')
@@ -203,6 +238,8 @@ class Token:
         self.astParent = IdMap[self.astParentId]
         self.astOperand1 = IdMap[self.astOperand1Id]
         self.astOperand2 = IdMap[self.astOperand2Id]
+        if self.valueType:
+            self.valueType.setId(IdMap)
 
     def getValue(self, v):
         """

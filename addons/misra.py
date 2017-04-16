@@ -272,13 +272,10 @@ def misra_11_7(data):
             continue
         if not token.valueType or not token.astOperand1.valueType:
             continue
-        res1 = re.match(r'^(const )?([A-Za-z_0-9]+) \*', token.valueType)
-        res2 = re.match(r'^(const )?([A-Za-z_0-9]+) \*', token.astOperand1.valueType)
-        if not res1 or not res2:
+        if token.valueType.pointer==0 or token.valueType.pointer==0:
             continue
-        if res1.group(2) == res2.group(2):
-            continue
-        reportError(token, 11, 7)
+        if token.valueType.type == 'record' and token.valueType.type == 'record':
+            reportError(token, 11, 7)
 
 def misra_11_8(data):
     for token in data.tokenlist:
@@ -286,11 +283,10 @@ def misra_11_8(data):
             continue
         if not token.valueType or not token.astOperand1.valueType:
             continue
-        if token.valueType.startswith('const') or not token.astOperand1.valueType.startswith('const'):
+        if token.valueType.pointer==0 or token.valueType.pointer==0:
             continue
-        if token.valueType.find('*')<0 or token.astOperand1.valueType.find('*')<0:
-            continue
-        reportError(token, 11, 8)
+        if token.valueType.constness==0 and token.astOperand1.valueType.constness>0:
+            reportError(token, 11, 8)
 
 def misra_11_9(data):
     for directive in data.directives:

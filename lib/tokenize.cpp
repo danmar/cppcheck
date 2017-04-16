@@ -3919,14 +3919,12 @@ void Tokenizer::dump(std::ostream &out) const
             out << " astOperand1=\"" << tok->astOperand1() << '\"';
         if (tok->astOperand2())
             out << " astOperand2=\"" << tok->astOperand2() << '\"';
+        if (!tok->originalName().empty())
+            out << " originalName=\"" << tok->originalName() << '\"';
         if (tok->valueType()) {
-            std::string s = tok->valueType()->str();
-            std::string::size_type pos = s.find("container(");
-            if (pos != std::string::npos)
-                s.erase(pos+9, s.find(")",pos)-pos-8);
-            if ((pos = s.find("iterator(")) != std::string::npos)
-                s.erase(pos+8, s.find(")",pos)-pos-7);
-            out << " valueType=\"" << s << '\"';
+            const std::string vt = tok->valueType()->dump();
+            if (!vt.empty())
+                out << ' ' << vt;
         }
         out << "/>" << std::endl;
     }

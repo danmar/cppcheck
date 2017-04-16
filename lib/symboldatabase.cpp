@@ -5221,6 +5221,85 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
     return false;
 }
 
+std::string ValueType::dump() const
+{
+    std::ostringstream ret;
+    switch (type) {
+    case UNKNOWN_TYPE:
+        return "";
+    case NONSTD:
+        ret << "valueType-type=\"nonstd\"";
+        break;
+    case RECORD:
+        ret << "valueType-type=\"record\"";
+        break;
+    case CONTAINER:
+        ret << "valueType-type=\"container\"";
+        break;
+    case ITERATOR:
+        ret << "valueType-type=\"iterator\"";
+        break;
+    case VOID:
+        ret << "valueType-type=\"void\"";
+        break;
+    case BOOL:
+        ret << "valueType-type=\"bool\"";
+        break;
+    case CHAR:
+        ret << "valueType-type=\"char\"";
+        break;
+    case SHORT:
+        ret << "valueType-type=\"short\"";
+        break;
+    case INT:
+        ret << "valueType-type=\"int\"";
+        break;
+    case LONG:
+        ret << "valueType-type=\"long\"";
+        break;
+    case LONGLONG:
+        ret << "valueType-type=\"long long\"";
+        break;
+    case UNKNOWN_INT:
+        ret << "valueType-type=\"unknown int\"";
+        break;
+    case FLOAT:
+        ret << "valueType-type=\"float\"";
+        break;
+    case DOUBLE:
+        ret << "valueType-type=\"double\"";
+        break;
+    case LONGDOUBLE:
+        ret << "valueType-type=\"long double\"";
+        break;
+    };
+
+    switch (sign) {
+    case Sign::UNKNOWN_SIGN:
+        break;
+    case Sign::SIGNED:
+        ret << " valueType-sign=\"signed\"";
+        break;
+    case Sign::UNSIGNED:
+        ret << " valueType-sign=\"unsigned\"";
+        break;
+    };
+
+    if (pointer > 0)
+        ret << " valueType-pointer=\"" << pointer << '\"';
+
+    if (constness > 0)
+        ret << " valueType-constness=\"" << constness << '\"';
+
+    if (typeScope)
+        ret << " valueType-typeScope=\"" << typeScope << '\"';
+
+    if (!originalTypeName.empty())
+        ret << " valueType-originalTypeName=\"" << originalTypeName << '\"';
+
+    return ret.str();
+}
+
 std::string ValueType::str() const
 {
     std::string ret;
