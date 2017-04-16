@@ -168,6 +168,10 @@ def hasFloatComparison(expr):
 def hasSideEffectsRecursive(expr):
     if not expr:
         return False
+    if expr.str == '=' and expr.astOperand1 and expr.astOperand1.str == '[':
+        prev = expr.astOperand1.previous
+        if prev and (prev.str == '{' or prev.str == '{'):
+            return hasSideEffectsRecursive(expr.astOperand2)
     if expr.str in ['++', '--', '=']:
         return True
     # Todo: Check function calls
@@ -275,6 +279,11 @@ def misra_8_14(rawTokens):
     for token in rawTokens:
         if token.str == 'restrict':
             reportError(token, 8, 14)
+
+def misra_9_5(rawTokens):
+    for token in rawTokens:
+        if simpleMatch(token, '[ ] = { ['):
+            reportError(token, 9, 5)
 
 def misra_10_4(data):
     for token in data.tokenlist:
@@ -500,20 +509,21 @@ def misra_13_1(data):
 
 def misra_13_3(data):
     for token in data.tokenlist:
-         if not token.astOperand1:
+         if not token.str in ['++', '--']:
              continue
-         if token.astParent and token.astParent.str != ',':
-             continue
-         if token.str == ',':
-             continue
-         if countSideEffects(token) >= 2:
-             reportError(token, 13, 3)
+         astTop = token
+         while astTop.astParent and not astTop.astParent.str in [',', ';']:
+             astTop = astTop.astParent
+         if countSideEffects(astTop) >= 2:
+             reportError(astTop, 13, 3)
 
 def misra_13_4(data):
     for token in data.tokenlist:
         if token.str != '=':
             continue
         if not token.astParent:
+            continue
+        if token.astOperand1.str == '[' and (token.astOperand1.previous.str=='{' or token.astOperand1.previous.str==','):
             continue
         if not (token.astParent.str in [',', ';']):
              reportError(token, 13, 4)
@@ -873,6 +883,7 @@ for arg in sys.argv[1:]:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
             misra_8_14(data.rawTokens)
+            misra_9_5(data.rawTokens)
         misra_10_4(cfg)
         misra_10_6(cfg)
         misra_10_8(cfg)
