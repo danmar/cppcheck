@@ -24,6 +24,10 @@ void misra_7_3() {
   int x = 12lu; // 7.3
 }
 
+void misra_11_4(u8*p) {
+  u64 y = (u64)p; // 11.4
+}
+
 void misra_11_5(void *p) {
   x = (u8 *)p; // 11.5
 }
