@@ -24,6 +24,10 @@ void misra_7_3() {
   int x = 12lu; // 7.3
 }
 
+void misra_11_5(void *p) {
+  x = (u8 *)p; // 11.5
+}
+
 void misra_11_6() {
   void *p;
   p = (void*)123; // 11.6

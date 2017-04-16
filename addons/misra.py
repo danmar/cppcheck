@@ -266,6 +266,17 @@ def misra_12_1_sizeof(rawTokens):
            else:
                state = 0
 
+def misra_11_5(data):
+    for token in data.tokenlist:
+        if not isCast(token):
+            continue
+        vt1 = token.valueType
+        vt2 = token.astOperand1.valueType
+        if not vt1 or not vt2:
+            continue
+        if vt1.pointer>0 and vt1.type != 'void' and vt2.pointer==vt1.pointer and vt2.type == 'void':
+            reportError(token, 11, 5)
+
 def misra_11_6(data):
     for token in data.tokenlist:
         if not isCast(token):
@@ -754,6 +765,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+        misra_11_5(cfg)
         misra_11_6(cfg)
         misra_11_7(cfg)
         misra_11_8(cfg)
