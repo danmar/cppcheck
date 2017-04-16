@@ -9622,75 +9622,76 @@ void Tokenizer::simplifyMathExpressions()
         // @todo: sinh(x) * sinh(x) - cosh(x) * cosh(x) = -1
         //        cosh(x) * cosh(x) - sinh(x) * sinh(x) = -1
         if (Token::Match(tok, "pow|powf|powl (")) {
-            if (Token::Match(tok->tokAt(2), "sin|sinf|sinl (")) {
-                Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) + pow|powf|powl ( cos|cosf|cosl ("))
+            Token* tok2 = tok->tokAt(2);
+            if (Token::Match(tok2, "sin|sinf|sinl (")) {
+                Token * const linkTok = tok2->linkAt(1);
+                if (!Token::Match(linkTok, ") , %num% ) + pow|powf|powl ( cos|cosf|cosl ("))
                     continue;
-                const std::string& leftExponent = tok2->strAt(2);
+                const std::string& leftExponent = linkTok->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
-                Token * const tok3 = tok2->tokAt(8);
+                Token * const tok3 = linkTok->tokAt(8);
                 Token * const tok4 = tok3->link();
                 if (!Token::Match(tok4, ") , %num% )"))
                     continue;
                 const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
+                if (tok2->next()->stringifyList(linkTok->next()) == tok3->stringifyList(tok4->next())) {
                     Token::eraseTokens(tok, tok4->tokAt(4));
                     tok->str("1");
                 }
-            } else if (Token::Match(tok->tokAt(2), "cos|cosf|cosl (")) {
-                Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) + pow|powf|powl ( sin|sinf|sinl ("))
+            } else if (Token::Match(tok2, "cos|cosf|cosl (")) {
+                Token * const linkTok = tok2->linkAt(1);
+                if (!Token::Match(linkTok, ") , %num% ) + pow|powf|powl ( sin|sinf|sinl ("))
                     continue;
-                const std::string& leftExponent = tok2->strAt(2);
+                const std::string& leftExponent = linkTok->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
-                Token * const tok3 = tok2->tokAt(8);
+                Token * const tok3 = linkTok->tokAt(8);
                 Token * const tok4 = tok3->link();
                 if (!Token::Match(tok4, ") , %num% )"))
                     continue;
                 const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
+                if (tok2->next()->stringifyList(linkTok->next()) == tok3->stringifyList(tok4->next())) {
                     Token::eraseTokens(tok, tok4->tokAt(4));
                     tok->str("1");
                 }
-            } else if (Token::Match(tok->tokAt(2), "sinh|sinhf|sinhl (")) {
-                Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) - pow|powf|powl ( cosh|coshf|coshl ("))
+            } else if (Token::Match(tok2, "sinh|sinhf|sinhl (")) {
+                Token * const linkTok = tok2->linkAt(1);
+                if (!Token::Match(linkTok, ") , %num% ) - pow|powf|powl ( cosh|coshf|coshl ("))
                     continue;
-                const std::string& leftExponent = tok2->strAt(2);
+                const std::string& leftExponent = linkTok->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
-                Token * const tok3 = tok2->tokAt(8);
+                Token * const tok3 = linkTok->tokAt(8);
                 Token * const tok4 = tok3->link();
                 if (!Token::Match(tok4, ") , %num% )"))
                     continue;
                 const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
+                if (tok2->next()->stringifyList(linkTok->next()) == tok3->stringifyList(tok4->next())) {
                     Token::eraseTokens(tok, tok4->tokAt(4));
                     tok->str("-1");
                 }
-            } else if (Token::Match(tok->tokAt(2), "cosh|coshf|coshl (")) {
-                Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) - pow|powf|powl ( sinh|sinhf|sinhl ("))
+            } else if (Token::Match(tok2, "cosh|coshf|coshl (")) {
+                Token * const linkTok = tok2->linkAt(1);
+                if (!Token::Match(linkTok, ") , %num% ) - pow|powf|powl ( sinh|sinhf|sinhl ("))
                     continue;
-                const std::string& leftExponent = tok2->strAt(2);
+                const std::string& leftExponent = linkTok->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
-                Token * const tok3 = tok2->tokAt(8);
+                Token * const tok3 = linkTok->tokAt(8);
                 Token * const tok4 = tok3->link();
                 if (!Token::Match(tok4, ") , %num% )"))
                     continue;
                 const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
+                if (tok2->next()->stringifyList(linkTok->next()) == tok3->stringifyList(tok4->next())) {
                     Token::eraseTokens(tok, tok4->tokAt(4));
                     tok->str("-1");
                 }
