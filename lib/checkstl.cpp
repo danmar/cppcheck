@@ -841,6 +841,12 @@ void CheckStl::size()
 
 void CheckStl::sizeError(const Token *tok)
 {
+    // std::list::size() has constant time complexity in C++11.
+    if (_settings->standards.cpp >= Standards::CPP11)
+    {
+        return;
+    }
+
     const std::string varname = tok ? tok->str() : std::string("list");
     reportError(tok, Severity::performance, "stlSize",
                 "Possible inefficient checking for '" + varname + "' emptiness.\n"
