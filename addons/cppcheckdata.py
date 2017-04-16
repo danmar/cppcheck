@@ -69,6 +69,11 @@ class ValueType:
     def setId(self, IdMap):
         self.typeScope = IdMap[self.typeScopeId]
 
+    def isIntegral(self):
+        return self.type == 'bool' or self.type == 'char' or self.type == 'short' or self.type == 'int' or self.type == 'long' or self.type == 'long long'
+
+    def isFloat(self):
+        return self.type == 'float' or self.type == 'double' or self.type == 'long double'
 
 class Token:
     """

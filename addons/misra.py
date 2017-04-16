@@ -247,24 +247,16 @@ def misra_7_3(rawTokens):
         if re.match(r'^[0-9]+l', tok.str):
             reportError(tok, 7, 3)
 
-
-def misra_12_1_sizeof(rawTokens):
-   state = 0
-   for tok in rawTokens:
-       if tok.str.startswith('//') or tok.str.startswith('/*'):
-           continue
-       if tok.str == 'sizeof':
-           state = 1
-       elif state == 1:
-           if re.match(r'^[a-zA-Z_]',tok.str):
-               state = 2
-           else:
-               state = 0
-       elif state == 2:
-           if tok.str in ['+','-','*','/','%']:
-               reportError(tok, 12, 1)
-           else:
-               state = 0
+def misra_11_3(data):
+    for token in data.tokenlist:
+        if not isCast(token):
+            continue
+        vt1 = token.valueType
+        vt2 = token.astOperand1.valueType
+        if not vt1 or not vt2:
+            continue
+        if vt1.pointer==vt2.pointer and vt1.pointer>0 and vt1.type != vt2.type and vt1.isIntegral() and vt2.isIntegral():
+            reportError(token, 11, 3)
 
 def misra_11_4(data):
     for token in data.tokenlist:
@@ -334,6 +326,24 @@ def misra_11_9(data):
         value = res1.group(2).replace(' ','')
         if value == '((void*)0)':
             reportError(directive, 11, 9)
+
+def misra_12_1_sizeof(rawTokens):
+   state = 0
+   for tok in rawTokens:
+       if tok.str.startswith('//') or tok.str.startswith('/*'):
+           continue
+       if tok.str == 'sizeof':
+           state = 1
+       elif state == 1:
+           if re.match(r'^[a-zA-Z_]',tok.str):
+               state = 2
+           else:
+               state = 0
+       elif state == 2:
+           if tok.str in ['+','-','*','/','%']:
+               reportError(tok, 12, 1)
+           else:
+               state = 0
 
 def misra_12_1(data):
     for token in data.tokenlist:
@@ -776,6 +786,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+        misra_11_3(cfg)
         misra_11_4(cfg)
         misra_11_5(cfg)
         misra_11_6(cfg)
