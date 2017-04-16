@@ -275,6 +275,26 @@ def misra_7_3(rawTokens):
         if re.match(r'^[0-9]+l', tok.str):
             reportError(tok, 7, 3)
 
+def misra_8_12(data):
+    for token in data.tokenlist:
+        if token.str != '{':
+            continue
+        if not token.scope or token.scope.type != 'Enum':
+            continue
+        etok = token
+        values = []
+        while etok:
+            if etok.str == '}':
+                break
+            if etok.str == '=':
+                rhsValues = etok.astOperand2.values
+                if rhsValues and len(rhsValues)==1:
+                    if rhsValues[0].intvalue in values:
+                        reportError(etok, 8, 12)
+                        break
+                    values.append(rhsValues[0].intvalue)
+            etok = etok.next
+
 def misra_8_14(rawTokens):
     for token in rawTokens:
         if token.str == 'restrict':
@@ -474,7 +494,7 @@ def misra_12_2(data):
 
 def misra_12_3(data):
    for token in data.tokenlist:
-       if token.str != ',':
+       if token.str != ',' or token.scope.type == 'Enum':
            continue
        if token.astParent and (token.astParent.str in ['(', ',', '{']):
           continue
@@ -882,6 +902,8 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+        misra_8_12(cfg)
+        if cfgNumber == 1:
             misra_8_14(data.rawTokens)
             misra_9_5(data.rawTokens)
         misra_10_4(cfg)

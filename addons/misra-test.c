@@ -26,6 +26,11 @@ void misra_7_3() {
   int x = 12lu; // 7.3
 }
 
+enum e812 {
+  A=3,
+  B=3 // 8.12
+};
+
 void misra_8_14(char * restrict str) {} // 8.14
 
 void misra_9_5() {
