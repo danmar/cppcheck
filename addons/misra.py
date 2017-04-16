@@ -15,6 +15,8 @@ import cppcheckdata
 import sys
 import re
 
+ruleTexts={}
+
 VERIFY = False
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
@@ -23,7 +25,13 @@ def reportError(location, num1, num2):
     if VERIFY:
         VERIFY_ACTUAL.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
     else:
-        sys.stderr.write('[' + location.file + ':' + str(location.linenr) + '] misra ' + str(num1) + '.' + str(num2) + ' violation\n')
+        errmsg = None
+        num = num1 * 100 + num2
+        if num in ruleTexts:
+            errmsg = ruleTexts[num] + ' [misra-c2012-'+str(num1)+'.'+str(num2)+']'
+        else:
+            errmsg = 'misra rule ' + str(num1) + '.' + str(num2) + ' violation (use --rule-texts=<file> to get proper output)'
+        sys.stderr.write('[' + location.file + ':' + str(location.linenr) + '] ' + errmsg + '\n')
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
@@ -864,8 +872,32 @@ def misra_21_11(data):
     if directive:
         reportError(directive, 21, 11)
 
-if '-verify' in sys.argv[1:]:
-    VERIFY = True
+def loadRuleTexts(filename):
+    num1 = 0
+    num2 = 0
+    for line in open(filename,'rt'):
+        line = line.replace('\r','').replace('\n','')
+        res = re.match(r'^Rule ([0-9]+).([0-9]+)', line)
+        if res:
+            num1 = int(res.group(1))
+            num2 = int(res.group(2))
+            continue
+        res = re.match(r'^[ ]*(Advisory|Required|Mandatory)$', line)
+        if res:
+            continue
+        res = re.match(r'^[ ]*([A-Z].*)', line)
+        if res:
+            global ruleTexts
+            ruleTexts[num1*100+num2] = res.group(1)
+            num2 = num2 + 1
+            continue
+
+
+for arg in sys.argv[1:]:
+    if arg == '-verify':
+        VERIFY = True
+    elif arg.startswith('--rule-texts='):
+        loadRuleTexts(arg[13:])
 
 for arg in sys.argv[1:]:
     if not arg.endswith('.dump'):
