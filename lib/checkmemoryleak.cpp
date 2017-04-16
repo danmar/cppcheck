@@ -1643,7 +1643,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok) const
             // Reduce "while1 continue| ;" => "use ;"
             if (Token::Match(tok2, "while1 if| continue| ;")) {
                 tok2->str("use");
-                while (tok2->strAt(1) != ";")
+                while (tok2->next() && tok2->next()->str() != ";")
                     tok2->deleteNext();
                 done = false;
             }
