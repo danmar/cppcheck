@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+   <xs:key name="platform_name">
+      <xs:selector xpath="platformtype"/>
+      <xs:field xpath="@name"/>
+   </xs:key>
+   <xs:key name="definition_name">
+      <xs:selector xpath="define"/>
+      <xs:field xpath="@name"/>
+   </xs:key>
+   <xs:key name="function_name">
+      <xs:selector xpath="function"/>
+      <xs:field xpath="@name"/>
+   </xs:key>
+   <xs:key name="podtype_name">
+      <xs:selector xpath="podtype"/>
+      <xs:field xpath="@name"/>
+   </xs:key>
+   <xs:simpleType name="range">
+      <xs:restriction base="xs:string">
+         <xs:pattern value="[0-9]*(?:[0-9]*)?"/>
+      </xs:restriction>
+   </xs:simpleType>
+
+   <xs:element name="def">
+      <xs:complexType>
+         <xs:sequence>
+
+	    <xs:element name="platformtype" minOccurs="0" maxOccurs="unbounded">
+               <xs:complexType>
+                  <xs:sequence>
+                     <xs:element name="platform" minOccurs="1" maxOccurs="unbounded">
+                        <xs:complexType>
+                           <xs:attribute name="type" type="xs:string"/>
+                        </xs:complexType>
+                     </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="name" type="xs:string" use="required"/>
+                  <xs:attribute name="value" type="xs:string"/>
+               </xs:complexType>
+               <xs:key name="platform_type">
+                  <xs:selector xpath="platform"/>
+                  <xs:field xpath="@type"/>
+               </xs:key>
+            </xs:element>
+
+            <xs:element name="define" minOccurs="0" maxOccurs="unbounded">
+               <xs:complexType>
+                  <xs:attribute name="name" type="xs:string" use="required"/>
+                  <xs:attribute name="value" type="xs:string"/>
+               </xs:complexType>
+            </xs:element>
+
+            <xs:element name="function" minOccurs="0" maxOccurs="unbounded">
+               <xs:complexType>
+                  <xs:sequence>
+                     <xs:element name="leak-ignore" minOccurs="0" maxOccurs="1"/>
+                     <xs:choice minOccurs="0" maxOccurs="1">
+                        <xs:element name="noreturn"/>
+                        <xs:element name="use-retval"/>
+                     </xs:choice>
+                     <xs:element name="arg" minOccurs="0" maxOccurs="unbounded">
+                        <xs:complexType>
+                           <xs:sequence>
+                              <xs:element name="not-bool"
+                                          minOccurs="0" maxOccurs="1"/>
+                              <xs:element name="not-uninit"
+                                          minOccurs="0" maxOccurs="1"/>
+                              <xs:element name="not-null"
+                                          minOccurs="0" maxOccurs="1"/>
+                              <xs:element name="formatstr"
+                                          minOccurs="0" maxOccurs="1"/>
+                              <xs:element name="valid" type="range"
+                                          minOccurs="0" maxOccurs="1"/>
+                           </xs:sequence>
+                           <xs:attribute name="nr" type="xs:int"/>
+                        </xs:complexType>
+                     </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="name" type="xs:NMTOKEN" use="required"/>
+               </xs:complexType>
+            </xs:element>
+
+	    <xs:element name="memory" minOccurs="0" maxOccurs="unbounded">
+               <xs:complexType>
+                  <xs:sequence>
+                     <xs:element name="alloc" type="xs:string"
+                                 minOccurs="1" maxOccurs="unbounded">
+                        <xs:complexType>
+                           <xs:attribute name="init" type="xs:string"/>
+                        </xs:complexType>
+                     </xs:element>
+                     <xs:element name="dealloc" type="xs:string"
+                                 minOccurs="0" maxOccurs="unbounded"/>
+                  </xs:sequence>
+               </xs:complexType>
+            </xs:element>
+
+	    <xs:element name="resource" minOccurs="0" maxOccurs="unbounded">
+               <xs:complexType>
+                  <xs:sequence>
+                     <xs:element name="alloc" maxOccurs="unbounded" type="xs:string">
+                        <xs:complexType>
+                           <xs:attribute name="init" type="xs:string"/>
+                        </xs:complexType>
+                     </xs:element>
+                     <xs:element name="dealloc" type="xs:string"
+                                 minOccurs="0" maxOccurs="unbounded"/>
+                  </xs:sequence>
+               </xs:complexType>
+            </xs:element>
+
+	    <xs:element name="podtype" minOccurs="0" maxOccurs="unbounded">
+               <xs:complexType>
+                  <xs:attribute name="name" type="xs:string" use="required"/>
+                  <xs:attribute name="sign" type="xs:string"/>
+                  <xs:attribute name="size" type="xs:positiveInteger" use="required"/>
+               </xs:complexType>
+            </xs:element>
+
+         </xs:sequence>
+         <xs:attribute name="format" type="xs:positiveInteger"/>
+      </xs:complexType>
+   </xs:element>
+</xs:schema>
