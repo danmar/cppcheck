@@ -255,7 +255,7 @@ def misra_11_3(data):
         vt2 = token.astOperand1.valueType
         if not vt1 or not vt2:
             continue
-        if vt1.pointer==vt2.pointer and vt1.pointer>0 and vt1.type != vt2.type and vt1.isIntegral() and vt2.isIntegral():
+        if vt1.pointer==vt2.pointer and vt1.pointer>0 and vt1.type != vt2.type and vt1.isIntegral() and vt2.isIntegral() and vt1.type != 'char':
             reportError(token, 11, 3)
 
 def misra_11_4(data):
