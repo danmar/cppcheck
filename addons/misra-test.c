@@ -8,6 +8,7 @@
 #include <tgmath.h> // 21.11
 
 typedef unsigned char u8;
+typedef unsigned long long u64;
 
 void misra_5_1() {
   int a123456789012345678901234567890; // no-warning
@@ -21,6 +22,12 @@ void misra_7_1() {
 void misra_7_3() {
   int x = 12l; // 7.3
   int x = 12lu; // 7.3
+}
+
+void misra_11_6() {
+  void *p;
+  p = (void*)123; // 11.6
+  x = (u64)p; // 11.6
 }
 
 struct Fred {}; struct Wilma {};
