@@ -1303,7 +1303,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 typeForPatternMatch += tok3->str();
             }
             // add additional type information
-            if (!constconst && tok3->str() != "class") {
+            if (!constconst && !Token::Match(tok3, "class|struct|enum")) {
                 if (tok3->isUnsigned())
                     typeForNewName += "unsigned";
                 else if (tok3->isSigned())

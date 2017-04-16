@@ -766,12 +766,30 @@ private:
     }
 
     void template37() { // #4544 - A<class B> a;
-        const char code[] = "class A { };\n"
-                            "template<class T> class B {};\n"
-                            "B<class A> b1;\n"
-                            "B<A> b2;";
-        ASSERT_EQUALS("class A { } ; B < A > b1 ; B < A > b2 ; class B < A > { } ;",
-                      tok(code));
+        {
+            const char code[] = "class A { };\n"
+                                "template<class T> class B {};\n"
+                                "B<class A> b1;\n"
+                                "B<A> b2;";
+            ASSERT_EQUALS("class A { } ; B < A > b1 ; B < A > b2 ; class B < A > { } ;",
+                          tok(code));
+        }
+        {
+            const char code[] = "struct A { };\n"
+                                "template<class T> class B {};\n"
+                                "B<struct A> b1;\n"
+                                "B<A> b2;";
+            ASSERT_EQUALS("struct A { } ; B < A > b1 ; B < A > b2 ; class B < A > { } ;",
+                          tok(code));
+        }
+        {
+            const char code[] = "enum A { };\n"
+                                "template<class T> class B {};\n"
+                                "B<enum A> b1;\n"
+                                "B<A> b2;";
+            ASSERT_EQUALS("enum A { } ; B < A > b1 ; B < A > b2 ; class B < A > { } ;",
+                          tok(code));
+        }
     }
 
     void template_unhandled() {
