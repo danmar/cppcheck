@@ -271,6 +271,11 @@ def misra_7_3(rawTokens):
         if re.match(r'^[0-9]+l', tok.str):
             reportError(tok, 7, 3)
 
+def misra_8_14(rawTokens):
+    for token in rawTokens:
+        if token.str == 'restrict':
+            reportError(token, 8, 14)
+
 def misra_10_4(data):
     for token in data.tokenlist:
         if not token.str in ['+','-','*','/','%','&','|','^'] and not token.isComparisonOp:
@@ -867,6 +872,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+            misra_8_14(data.rawTokens)
         misra_10_4(cfg)
         misra_10_6(cfg)
         misra_10_8(cfg)

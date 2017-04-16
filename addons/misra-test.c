@@ -26,6 +26,8 @@ void misra_7_3() {
   int x = 12lu; // 7.3
 }
 
+void misra_8_14(char * restrict str) {} // 8.14
+
 void misra_10_4(u8 x, u16 y) {
   z = x + y; // 10.4
 }
