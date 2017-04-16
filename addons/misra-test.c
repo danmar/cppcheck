@@ -7,7 +7,9 @@
 #include <signal.h> // 21.5
 #include <tgmath.h> // 21.11
 
-typedef unsigned char u8;
+typedef unsigned char      u8;
+typedef unsigned short     u16;
+typedef unsigned int       u32;
 typedef unsigned long long u64;
 
 void misra_5_1() {
@@ -22,6 +24,10 @@ void misra_7_1() {
 void misra_7_3() {
   int x = 12l; // 7.3
   int x = 12lu; // 7.3
+}
+
+void misra_10_8(u8 x) {
+  y = (u16)(x+x); // 10.8
 }
 
 void misra_11_3(u8* p) {

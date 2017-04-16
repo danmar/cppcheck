@@ -82,6 +82,22 @@ def getEssentialType(expr):
             if typeToken.str in ['char', 'short', 'int', 'long', 'float', 'double']:
                 return typeToken.str
             typeToken = typeToken.next
+
+    elif expr.astOperand1 and expr.astOperand2 and expr.str in ['+', '-', '*', '/', '%', '&', '|', '^']:
+        e1 = getEssentialType(expr.astOperand1)
+        e2 = getEssentialType(expr.astOperand2)
+        if not e1 or not e2:
+            return None
+        types = ['bool', 'char', 'short', 'int', 'long', 'long long']
+        try:
+            i1 = types.index(e1)
+            i2 = types.index(e2)
+            if i2 >= i1:
+                return types[i2]
+            return types[i1]
+        except ValueError:
+            return None
+
     return None
 
 def bitsOfEssentialType(expr):
@@ -94,10 +110,18 @@ def bitsOfEssentialType(expr):
         return SHORT_BIT
     if type == 'int':
         return INT_BIT
+    if type == 'long':
+        return LONG_BIT
+    if type == 'long long':
+        return LONG_LONG_BIT
     return 0
 
 def isCast(expr):
-    return expr and expr.str == '(' and expr.astOperand1 == expr.link.next
+    if not expr or expr.str != '(' or not expr.astOperand1 or expr.astOperand2:
+        return False
+    if simpleMatch(expr,'( )'):
+        return False
+    return True
 
 def isFunctionCall(expr):
     if not expr:
@@ -246,6 +270,26 @@ def misra_7_3(rawTokens):
     for tok in rawTokens:
         if re.match(r'^[0-9]+l', tok.str):
             reportError(tok, 7, 3)
+
+def misra_10_8(data):
+    for token in data.tokenlist:
+        if not isCast(token):
+            continue
+        if not token.valueType or token.valueType.pointer>0:
+            continue
+        if not token.astOperand1.valueType or token.astOperand1.valueType.pointer>0:
+            continue
+        try:
+            intTypes = ['char', 'short', 'int', 'long', 'long long']
+            index1 = intTypes.index(token.valueType.type)
+            e = getEssentialType(token.astOperand1)
+            if not e:
+                continue
+            index2 = intTypes.index(e)
+            if index1 > index2:
+                reportError(token, 10, 8)
+        except ValueError:
+            pass
 
 def misra_11_3(data):
     for token in data.tokenlist:
@@ -786,6 +830,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+        misra_10_8(cfg)
         misra_11_3(cfg)
         misra_11_4(cfg)
         misra_11_5(cfg)
