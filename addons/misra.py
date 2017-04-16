@@ -271,6 +271,28 @@ def misra_7_3(rawTokens):
         if re.match(r'^[0-9]+l', tok.str):
             reportError(tok, 7, 3)
 
+def misra_10_6(data):
+    for token in data.tokenlist:
+        if token.str != '=':
+            continue
+        vt1 = token.astOperand1.valueType
+        vt2 = token.astOperand2.valueType
+        if not vt1 or vt1.pointer>0:
+            continue
+        if not vt2 or vt2.pointer>0:
+            continue
+        try:
+            intTypes = ['char', 'short', 'int', 'long', 'long long']
+            index1 = intTypes.index(vt1.type)
+            e = getEssentialType(token.astOperand2)
+            if not e:
+                continue
+            index2 = intTypes.index(e)
+            if index1 > index2:
+                reportError(token, 10, 6)
+        except ValueError:
+            pass
+
 def misra_10_8(data):
     for token in data.tokenlist:
         if not isCast(token):
@@ -830,6 +852,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+        misra_10_6(cfg)
         misra_10_8(cfg)
         misra_11_3(cfg)
         misra_11_4(cfg)

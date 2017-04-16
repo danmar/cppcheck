@@ -26,6 +26,10 @@ void misra_7_3() {
   int x = 12lu; // 7.3
 }
 
+void misra_10_6(u8 x) {
+  u16 y = x+x; // 10.6
+}
+
 void misra_10_8(u8 x) {
   y = (u16)(x+x); // 10.8
 }
