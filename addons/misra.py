@@ -271,6 +271,21 @@ def misra_7_3(rawTokens):
         if re.match(r'^[0-9]+l', tok.str):
             reportError(tok, 7, 3)
 
+def misra_10_4(data):
+    for token in data.tokenlist:
+        if not token.str in ['+','-','*','/','%','&','|','^'] and not token.isComparisonOp:
+            continue
+        if not token.astOperand1 or not token.astOperand2:
+            continue
+        if not token.astOperand1.valueType or not token.astOperand2.valueType:
+            continue
+        if not token.astOperand1.valueType.isIntegral() or not token.astOperand2.valueType.isIntegral():
+            continue
+        e1 = getEssentialType(token.astOperand1)
+        e2 = getEssentialType(token.astOperand2)
+        if e1 and e2 and e1 != e2:
+            reportError(token, 10, 4)
+
 def misra_10_6(data):
     for token in data.tokenlist:
         if token.str != '=':
@@ -852,6 +867,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+        misra_10_4(cfg)
         misra_10_6(cfg)
         misra_10_8(cfg)
         misra_11_3(cfg)
