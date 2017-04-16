@@ -270,11 +270,11 @@ def misra_11_7(data):
     for token in data.tokenlist:
         if not isCast(token):
             continue
-        if not token.valueType or not token.astOperand1.valueType:
+        vt1 = token.valueType
+        vt2 = token.astOperand1.valueType
+        if not vt1 or not vt2:
             continue
-        if token.valueType.pointer==0 or token.valueType.pointer==0:
-            continue
-        if token.valueType.type == 'record' and token.valueType.type == 'record':
+        if vt1.pointer>0 and vt1.type=='record' and vt2.pointer>0 and vt2.type=='record' and vt1.typeScopeId != vt2.typeScopeId:
             reportError(token, 11, 7)
 
 def misra_11_8(data):
