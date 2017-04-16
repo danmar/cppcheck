@@ -25,7 +25,7 @@
 #include <QActionGroup>
 #include <QTimer>
 #include <QStringList>
-
+#include <QCompleter>
 #include "settings.h"
 #include "platforms.h"
 #include "ui_mainwindow.h"
