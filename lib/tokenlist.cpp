@@ -1134,7 +1134,6 @@ static Token * createAstAtToken(Token *tok, bool cpp)
 
         if (init != semicolon1)
             semicolon1->astOperand1(const_cast<Token*>(init->astTop()));
-        tok2 = semicolon1->next();
         tok2 = findAstTop(semicolon1->next(), semicolon2);
         if (tok2)
             semicolon2->astOperand1(tok2);
