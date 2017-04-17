@@ -273,6 +273,16 @@ def misra_5_1(data):
         if token.isName and len(token.str) > 31:
             reportError(token, 5, 1)
 
+def misra_5_5(data):
+    macroNames = []
+    for dir in data.directives:
+        res = re.match(r'#define ([A-Za-z0-9_]+)', dir.str)
+        if res:
+            macroNames.append(res.group(1))
+    for var in data.variables:
+        if var.nameToken.str in macroNames:
+            reportError(var.nameToken, 5, 5)
+
 def misra_7_1(rawTokens):
     for tok in rawTokens:
         if re.match(r'^0[0-7]+$', tok.str):
@@ -949,6 +959,7 @@ for arg in sys.argv[1:]:
             print('Checking ' + arg + ', config "' + cfg.name + '"...')
 
         misra_5_1(cfg)
+        misra_5_5(cfg)
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
