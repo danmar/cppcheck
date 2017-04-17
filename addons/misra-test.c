@@ -169,9 +169,12 @@ int misra_15_5() {
 void misra_15_6() {
   if (x!=0); // 15.6
   else{}
-#if A
+
+#if A>1  // no-warning
   (void)0;
 #endif
+
+  do {} while (x<0); // no-warning
 }
 
 void misra_15_7() {

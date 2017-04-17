@@ -641,7 +641,9 @@ def misra_15_6(rawTokens):
     tok1 = None
     for token in rawTokens:
         if token.str in ['if', 'for', 'while']:
-            if token.previous and token.previous.str == '#':
+            if simpleMatch(token.previous, '# if'):
+                continue
+            if simpleMatch(token.previous, "} while"):
                 continue
             state = 1
             indent = 0
