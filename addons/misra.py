@@ -890,7 +890,7 @@ def loadRuleTexts(filename):
         res = re.match(r'^[ ]*(Advisory|Required|Mandatory)$', line)
         if res:
             continue
-        res = re.match(r'^[ ]*([A-Z].*)', line)
+        res = re.match(r'^[ ]*([#A-Z].*)', line)
         if res:
             global ruleTexts
             ruleTexts[num1*100+num2] = res.group(1)
