@@ -1066,6 +1066,22 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
     }
 }
 
+static Token * findAstTop(Token *tok1, Token *tok2) {
+    for (Token *tok = tok1; tok && (tok != tok2); tok = tok->next()) {
+        if (tok->astParent() || tok->astOperand1() || tok->astOperand2())
+            return const_cast<Token *>(tok->astTop());
+        if (Token::simpleMatch(tok, "( {"))
+            tok = tok->link();
+    }
+    for (Token *tok = tok1; tok && (tok != tok2); tok = tok->next()) {
+        if (tok->isName() || tok->isNumber())
+            return tok;
+        if (Token::simpleMatch(tok, "( {"))
+            tok = tok->link();
+    }
+    return nullptr;
+}
+
 static Token * createAstAtToken(Token *tok, bool cpp)
 {
     if (Token::simpleMatch(tok, "for (")) {
@@ -1083,7 +1099,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                 compileExpression(tok2, state1);
                 if (Token::Match(tok2, ";|)"))
                     break;
-                init1 = 0;
+                init1 = nullptr;
             }
             if (!tok2) // #7109 invalid code
                 return nullptr;
@@ -1118,18 +1134,12 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         if (init != semicolon1)
             semicolon1->astOperand1(const_cast<Token*>(init->astTop()));
         tok2 = semicolon1->next();
-        while (tok2 != semicolon2 && !tok2->isName() && !tok2->isNumber())
-            tok2 = tok2->next();
-        if (tok2 != semicolon2)
-            semicolon2->astOperand1(const_cast<Token*>(tok2->astTop()));
-        tok2 = endPar;
-        while (tok2 != semicolon2 && !tok2->isName() && !tok2->isNumber()) {
-            if (Token::simpleMatch(tok2, "} )"))
-                tok2 = tok2->link();
-            tok2 = tok2->previous();
-        }
-        if (tok2 != semicolon2)
-            semicolon2->astOperand2(const_cast<Token*>(tok2->astTop()));
+        tok2 = findAstTop(semicolon1->next(), semicolon2);
+        if (tok2)
+            semicolon2->astOperand1(tok2);
+        tok2 = findAstTop(semicolon2->next(), endPar);
+        if (tok2)
+            semicolon2->astOperand2(tok2);
         else if (!state3.op.empty())
             semicolon2->astOperand2(const_cast<Token*>(state3.op.top()));
 
