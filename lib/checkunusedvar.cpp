@@ -715,6 +715,9 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::pointerPointer;
             else if (i->isPointer())
                 type = Variables::pointer;
+            else if (_tokenizer->isCPP() && _settings->standards.cpp >= Standards::CPP11 &&
+                     i->typeEndToken()->str() == "auto") // Ticket #6777 (workaround until #4345 is fixed)
+                type = Variables::standard;
             else if (_tokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
                      isRecordTypeWithoutSideEffects(i->type()) ||

@@ -932,6 +932,11 @@ private:
                               "    int i = 0;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void foo() {\n" // #6777 - handle variables using C++ 11's auto keyword
+                              "    auto i = 0;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar2() {
