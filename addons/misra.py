@@ -275,7 +275,7 @@ def misra_5_1(data):
 
 def misra_5_4(data):
     for dir in data.directives:
-        if re.match(r'#define [a-zA-Z0-9_]{32,}', dir.str):
+        if re.match(r'#define [a-zA-Z0-9_]{64,}', dir.str):
             reportError(dir, 5, 4)
 
 def misra_5_5(data):
