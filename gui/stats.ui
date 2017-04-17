@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>502</width>
-    <height>272</height>
+    <height>274</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -342,7 +342,16 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -362,6 +371,13 @@
       <widget class="QPushButton" name="mCopyToClipboard">
        <property name="text">
         <string>Copy to Clipboard</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="mPDFexport">
+       <property name="text">
+        <string>Pdf Export</string>
        </property>
       </widget>
      </item>
