@@ -277,8 +277,9 @@ def misra_5_3(data):
     scopeVars = {}
     for var in data.variables:
         if var.isArgument:
+            # TODO
             continue
-        if not var.nameToken.scopeId in scopeVars:
+        if not var.nameToken.scope in scopeVars:
             scopeVars[var.nameToken.scope] = []
         scopeVars[var.nameToken.scope].append(var)
 
