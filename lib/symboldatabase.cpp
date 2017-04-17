@@ -2929,6 +2929,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " isArgument=\""     << var->isArgument() << '\"';
         out << " isArray=\""        << var->isArray() << '\"';
         out << " isClass=\""        << var->isClass() << '\"';
+        out << " isExtern=\""       << var->isExtern() << '\"';
         out << " isLocal=\""        << var->isLocal() << '\"';
         out << " isPointer=\""      << var->isPointer() << '\"';
         out << " isReference=\""    << var->isReference() << '\"';

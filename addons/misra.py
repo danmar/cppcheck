@@ -283,6 +283,11 @@ def misra_7_3(rawTokens):
         if re.match(r'^[0-9]+l', tok.str):
             reportError(tok, 7, 3)
 
+def misra_8_11(data):
+    for var in data.variables:
+        if var.isExtern and simpleMatch(var.nameToken.next, '[ ]') and var.nameToken.scope.type == 'Global':
+            reportError(var.nameToken, 8, 11)
+
 def misra_8_12(data):
     for token in data.tokenlist:
         if token.str != '{':
@@ -780,9 +785,9 @@ def misra_18_5(data):
 
 def misra_18_8(data):
     for var in data.variables:
-        if not var.isArray:
+        if not var.isArray or not var.isLocal:
             continue
-        # TODO Array dimensions are not available in dump
+        # TODO Array dimensions are not available in dump, must look in tokens
         typetok = var.nameToken.next
         if not typetok or typetok.str != '[':
             continue
@@ -934,6 +939,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
+        misra_8_11(cfg)
         misra_8_12(cfg)
         if cfgNumber == 1:
             misra_8_14(data.rawTokens)

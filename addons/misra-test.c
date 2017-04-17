@@ -26,6 +26,8 @@ void misra_7_3() {
   int x = 12lu; // 7.3
 }
 
+extern int a811[]; // 8.11
+
 enum e812 {
   A=3,
   B=3 // 8.12
