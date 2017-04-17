@@ -8285,7 +8285,7 @@ void Tokenizer::simplifyFuncInWhile()
             continue;
 
         Token *func = tok->tokAt(2);
-        Token *var = tok->tokAt(4);
+        Token *var = func->tokAt(2);
         Token *end = tok->next()->link()->next()->link();
 
         const unsigned int varid = ++_varId; // Create new variable
