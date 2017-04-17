@@ -8046,6 +8046,14 @@ void Tokenizer::validateC() const
     if (!isC())
         return;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        // Template function..
+        if (Token::Match(tok, "%name% < %name% > (")) {
+            const Token *tok2 = tok->tokAt(5);
+            while (tok2 && !Token::Match(tok2, "[()]"))
+                tok2 = tok2->next();
+            if (Token::simpleMatch(tok2, ") {"))
+                syntaxErrorC(tok, tok->str() + '<' + tok->strAt(2) + ">() {}");
+        }
         if (tok->previous() && !Token::Match(tok->previous(), "[;{}]"))
             continue;
         if (Token::simpleMatch(tok, "using namespace std ;"))
