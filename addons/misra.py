@@ -273,6 +273,35 @@ def misra_5_1(data):
         if token.isName and len(token.str) > 31:
             reportError(token, 5, 1)
 
+def misra_5_3(data):
+    scopeVars = {}
+    for var in data.variables:
+        if var.isArgument:
+            continue
+        if not var.nameToken.scopeId in scopeVars:
+            scopeVars[var.nameToken.scope] = []
+        scopeVars[var.nameToken.scope].append(var)
+
+    for innerScope in data.scopes:
+        if innerScope.type == 'Global':
+            continue
+        if not innerScope in scopeVars:
+            continue
+        for innerVar in scopeVars[innerScope]:
+            outerScope = innerScope.nestedIn
+            while outerScope:
+                if not outerScope in scopeVars:
+                    continue
+                found = False
+                for outerVar in scopeVars[outerScope]:
+                    if innerVar.nameToken.str == outerVar.nameToken.str:
+                        found = True
+                        break
+                if found:
+                    reportError(innerVar.nameToken, 5, 3)
+                    break
+                outerScope = outerScope.nestedIn
+
 def misra_5_4(data):
     for dir in data.directives:
         if re.match(r'#define [a-zA-Z0-9_]{64,}', dir.str):
@@ -964,6 +993,7 @@ for arg in sys.argv[1:]:
             print('Checking ' + arg + ', config "' + cfg.name + '"...')
 
         misra_5_1(cfg)
+        misra_5_3(cfg)
         misra_5_4(cfg)
         misra_5_5(cfg)
         if cfgNumber == 1:
