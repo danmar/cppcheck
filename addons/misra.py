@@ -739,6 +739,8 @@ def misra_16_6(data):
                 count = count + 1
             elif tok.str == '{':
                 tok = tok.link
+                if simpleMatch(tok.previous.previous,'break ;'):
+                    count = count + 1
             elif tok.str == '}':
                 break
             tok = tok.next

@@ -226,6 +226,12 @@ void misra_16_6() {
     default:
       break;
   }
+
+  switch (x) {
+  case 1: {break;}
+  case 2: {break;}
+  default: {break;}
+  }
 }
 
 void misra_16_7() {
