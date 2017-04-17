@@ -638,11 +638,18 @@ def misra_15_5(data):
 def misra_15_6(rawTokens):
     state = 0
     indent = 0
+    tok1 = None
     for token in rawTokens:
         if token.str in ['if', 'for', 'while']:
+            if token.previous and token.previous.str == '#':
+                continue
             state = 1
             indent = 0
+            tok1 = token
         elif state == 1:
+            if indent == 0 and token.str != '(':
+                state = 0
+                continue
             if token.str == '(':
                 indent = indent + 1
             elif token.str == ')':
@@ -656,7 +663,7 @@ def misra_15_6(rawTokens):
                 continue
             state = 0
             if token.str != '{':
-                reportError(token, 15, 6)
+                reportError(tok1, 15, 6)
 
 def misra_15_7(data):
     for token in data.tokenlist:

@@ -169,6 +169,9 @@ int misra_15_5() {
 void misra_15_6() {
   if (x!=0); // 15.6
   else{}
+#if A
+  (void)0;
+#endif
 }
 
 void misra_15_7() {
