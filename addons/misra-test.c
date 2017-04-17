@@ -48,6 +48,7 @@ void misra_10_6(u8 x) {
 }
 
 void misra_10_8(u8 x) {
+  y = (u16)x;
   y = (u16)(x+x); // 10.8
 }
 

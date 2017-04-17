@@ -363,6 +363,8 @@ def misra_10_8(data):
             continue
         if not token.astOperand1.valueType or token.astOperand1.valueType.pointer>0:
             continue
+        if not token.astOperand1.astOperand1:
+            continue
         try:
             intTypes = ['char', 'short', 'int', 'long', 'long long']
             index1 = intTypes.index(token.valueType.type)
