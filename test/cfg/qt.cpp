@@ -22,6 +22,7 @@ void QString1(QString s) {
 
 int QString2() {
   QString s;
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress reademptycontainer
   s.at(10);
 }
