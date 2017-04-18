@@ -8178,6 +8178,7 @@ private:
         ASSERT_EQUALS("{([(return 0return", testAst("return []() -> int { return 0; }();"));
         ASSERT_EQUALS("{([(return 0return", testAst("return [something]() -> int { return 0; }();"));
         ASSERT_EQUALS("{([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));
+        TODO_ASSERT_EQUALS("x{([=", "stdconst::x{([=&", testAst("x = [&]()->std::string const & { 1; }"));
 
         ASSERT_EQUALS("x{([= 0return", testAst("x = [](){return 0; };"));
 
