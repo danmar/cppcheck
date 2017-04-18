@@ -12,6 +12,8 @@ typedef unsigned short     u16;
 typedef unsigned int       u32;
 typedef unsigned long long u64;
 
+//// 3.1
+
 void misra_5_1() {
   int a123456789012345678901234567890; // no-warning
   int a1234567890123456789012345678901; // 5.1

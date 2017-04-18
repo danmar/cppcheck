@@ -268,6 +268,12 @@ def findInclude(directives, header):
             return directive
     return None
 
+def misra_3_1(rawTokens):
+    for token in rawTokens:
+        if token.str.startswith('/*') or token.str.startswith('//'):
+            if token.str[2:].find('//')>=0 or token.str[2:].find('/*')>=0:
+                reportError(token, 3, 1)
+
 def misra_5_1(data):
     for token in data.tokenlist:
         if token.isName and len(token.str) > 31:
@@ -994,6 +1000,8 @@ for arg in sys.argv[1:]:
         if len(data.configurations) > 1:
             print('Checking ' + arg + ', config "' + cfg.name + '"...')
 
+        if cfgNumber == 1:
+            misra_3_1(data.rawTokens)
         misra_5_1(cfg)
         misra_5_3(cfg)
         misra_5_4(cfg)
