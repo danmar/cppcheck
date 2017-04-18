@@ -2,7 +2,7 @@
 // Test library configuration for qt.cfg
 //
 // Usage:
-// $ cppcheck --check-library --enable=information --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr --library=qt test/cfg/qt.cpp
+// $ cppcheck --check-library --enable=information --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr --library=qt test/cfg/qt.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -18,4 +18,10 @@ void QString1(QString s) {
     // cppcheck-suppress stlOutOfBounds
     s[i] = 'x';
   }
+}
+
+int QString2() {
+  QString s;
+  // cppcheck-suppress reademptycontainer
+  s.at(10);
 }

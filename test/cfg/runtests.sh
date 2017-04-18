@@ -29,7 +29,7 @@ ${CPPCHECK} ${CPPCHECK_OPT} --library=gnu ${DIR}gnu.c
 
 # qt.cpp
 ${CXX} ${CXX_OPT} ${DIR}qt.cpp
-${CPPCHECK} --enable=style --enable=information --inline-suppr --error-exitcode=1 --library=qt ${DIR}qt.cpp
+${CPPCHECK} --enable=style --enable=information --inconclusive --inline-suppr --error-exitcode=1 --library=qt ${DIR}qt.cpp
 
 # std.c
 ${CC} ${CC_OPT} ${DIR}std.c
