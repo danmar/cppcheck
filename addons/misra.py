@@ -381,7 +381,7 @@ def misra_10_4(data):
 
 def misra_10_6(data):
     for token in data.tokenlist:
-        if token.str != '=':
+        if token.str != '=' or not token.astOperand1 or not token.astOperand2:
             continue
         vt1 = token.astOperand1.valueType
         vt2 = token.astOperand2.valueType
