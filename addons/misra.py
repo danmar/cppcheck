@@ -292,6 +292,7 @@ def misra_5_3(data):
             outerScope = innerScope.nestedIn
             while outerScope:
                 if not outerScope in scopeVars:
+                    outerScope = outerScope.nestedIn
                     continue
                 found = False
                 for outerVar in scopeVars[outerScope]:
