@@ -24,5 +24,5 @@ int QString2() {
   QString s;
   // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress reademptycontainer
-  s.at(10);
+  return s.size();
 }
