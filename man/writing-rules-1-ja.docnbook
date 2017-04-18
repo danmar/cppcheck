@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section id="writing-rules-1">
+  <title>Part 1 - Getting started</title>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>This is a short and simple guide that describes how rules are
+    written for Cppcheck.</para>
+
+    <para>The patterns are defined with regular expressions. It is required
+    that you know how regular expressions work.</para>
+  </section>
+
+  <section>
+    <title>Data representation of the source code</title>
+
+    <para>The data used by the rules are not the raw source code.
+    Cppcheck will read the source code and process it
+    before the rules are used.</para>
+
+    <para>Cppcheck is designed to find bugs and dangerous code. Stylistic
+    information (such as indentation, comments, etc) are filtered out at an
+    early state. You don't need to worry about such stylistic information when
+    you write rules.</para>
+
+    <para>Between each token in the code there is always a space. For instance
+    the raw code "<code>1+f()</code>" is processed into "<code>1 + f ( )</code>"
+    .</para>
+
+    <para>The code is simplified in many ways.</para>
+  </section>
+
+  <section>
+    <title>Creating a simple rule</title>
+
+    <para>When creating a rule there are two steps:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Create the regular expression</para>
+      </listitem>
+
+      <listitem>
+        <para>Create a XML based rule file</para>
+      </listitem>
+    </orderedlist>
+
+    <section>
+      <title>Step 1 - Creating the regular expression</title>
+
+      <para>Cppcheck uses the PCRE library to handle regular expressions.
+      <acronym>PCRE</acronym> stands for "Perl Compatible Regular Expressions".
+      The homepage for PCRE is <ulink url="http://www.pcre.org/">
+      http://www.pcre.org/</ulink>.</para>
+
+      <para>Let's create a regular expression that checks for code such
+      as:</para>
+
+      <programlisting>if (p)
+    free(p);</programlisting>
+
+      <para>For such code the condition is often redundant (on most
+      implementations it is valid to free a <constant>NULL</constant> pointer).
+      </para>
+
+      <para>The regular expression must be written for the simplified code. To
+      see what the simplified code looks like you can create a source file
+      with the code:</para>
+
+      <programlisting>void f() {
+    if (p)
+        free(p);
+}</programlisting>
+
+      <para>Save that code as <filename>dealloc.cpp</filename> and then use
+      <command>cppcheck --rule=".+" dealloc.cpp</command>:</para>
+
+      <programlisting>$ ./cppcheck --rule=".+" dealloc.cpp
+Checking dealloc.cpp...
+[dealloc.cpp:1]: (style) found ' void f ( ) { if ( p ) { free ( p ) ; } }'</programlisting>
+
+      <para>The regular expression <literal>.+</literal> matches everything
+      and the matching text is shown on the screen.</para>
+
+      <para>From that output we can see that the simplified code is:</para>
+
+      <programlisting> void f ( ) { if ( p ) { free ( p ) ; } }</programlisting>
+
+      <para>Now that we know how the simplified code looks. We can create a
+      regular expression that matches it properly:</para>
+
+      <programlisting>$ cppcheck --rule="if \( p \) { free \( p \) ; }" dealloc.cpp
+Checking dealloc.cpp...
+[dealloc.cpp:2]: (style) found 'if ( p ) { free ( p ) ; }'</programlisting>
+    </section>
+
+    <section>
+      <title>Step 2 - Create rule file</title>
+
+      <para>A rule file is a simple XML file that contains:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>a pattern to search for</para>
+        </listitem>
+
+        <listitem>
+          <para>an error message that is reported when pattern is found</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Here is a simple example:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;rule version="1"&gt;
+  &lt;pattern&gt;if \( p \) { free \( p \) ; }&lt;/pattern&gt;
+  &lt;message&gt;
+    &lt;id&gt;redundantCondition&lt;/id&gt;
+    &lt;severity&gt;style&lt;/severity&gt;
+    &lt;summary&gt;Redundant condition. It is valid to free a NULL pointer.&lt;/summary&gt;
+  &lt;/message&gt;
+&lt;/rule&gt;</programlisting>
+
+      <para>If you save that xml data in <filename>dealloc.rule</filename> you
+      can test this rule:</para>
+
+      <programlisting>$ cppcheck --rule-file=dealloc.rule dealloc.cpp
+Checking dealloc.cpp...
+[dealloc.cpp:2]: (style) Redundant condition. It is valid to free a NULL pointer.</programlisting>
+    </section>
+  </section>
+</section>

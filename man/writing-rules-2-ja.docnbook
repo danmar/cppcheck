@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section id="writing-rules-2">
+  <title>Part 2 - The Cppcheck data representation</title>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>In this article I will discuss the data representation that Cppcheck
+    uses.</para>
+
+    <para>The data representation that Cppcheck uses is specifically designed
+    for static analysis. It is not intended to be generic and useful for other
+    tasks.</para>
+  </section>
+
+  <section>
+    <title>See the data</title>
+
+    <para>There are two ways to look at the data representation at
+    runtime.</para>
+
+    <para>Using <parameter class="command">--rule=.+</parameter> is one way.
+    All tokens are written on a line:</para>
+
+    <programlisting> int a ; int b ;</programlisting>
+
+    <para>Using <parameter class="command">--debug</parameter> is another way.
+    The tokens are line separated in the same way as the original code:</para>
+
+    <programlisting>1: int a@1 ;
+2: int b@2 ;</programlisting>
+
+    <para>In the <parameter class="command">--debug</parameter> output there are
+    "@1" and "@2" shown. These are the
+    variable ids (Cppcheck gives each variable a unique id). You can ignore
+    these if you only plan to write rules with regular expressions, you can't
+    use variable ids with regular expressions.</para>
+
+    <para>In general, I will use the <parameter class="command">--rule=.+</parameter>
+    output in this article because it is more compact.</para>
+  </section>
+
+  <section>
+    <title>Some of the simplifications</title>
+
+    <para>The data is simplified in many ways.</para>
+
+    <section>
+      <title>Preprocessing</title>
+
+      <para>The Cppcheck data is preprocessed. There are no comments, #define,
+      #include, etc.</para>
+
+      <para>Original source code:</para>
+
+      <programlisting>#define SIZE 123
+char a[SIZE];</programlisting>
+
+      <para>The Cppcheck data for that is:</para>
+
+      <programlisting> char a [ 123 ] ;</programlisting>
+    </section>
+
+    <section>
+      <title>typedef</title>
+
+      <para>The typedefs are simplified.</para>
+
+      <programlisting>typedef char s8;
+s8 x;</programlisting>
+
+      <para>The Cppcheck data for that is:</para>
+
+      <programlisting> ; char x ;</programlisting>
+    </section>
+
+    <section>
+      <title>Calculations</title>
+
+      <para>Calculations are simplified.</para>
+
+      <programlisting>int a[10 + 4];</programlisting>
+
+      <para>The Cppcheck data for that is:</para>
+
+      <programlisting> int a [ 14 ] ;</programlisting>
+    </section>
+
+    <section>
+      <title>Variables</title>
+
+      <section>
+        <title>Variable declarations</title>
+
+        <para>Variable declarations are simplified. Only one variable can be
+        declared at a time. The initialization is also broken out into a
+        separate statement.</para>
+
+        <programlisting>int *a=0, b=2;</programlisting>
+
+        <para>The Cppcheck data for that is:</para>
+
+        <programlisting>int * a ; a = 0 ; int b ; b = 2 ;</programlisting>
+
+        <para>This is even done in the global scope. Even though that is
+        invalid in C/C++.</para>
+      </section>
+
+      <section>
+        <title>Known variable values</title>
+
+        <para>Known variable values are simplified.</para>
+
+        <programlisting>void f()
+{
+    int x = 0;
+    x++;
+    array[x + 2] = 0;
+}</programlisting>
+
+        <para>The <parameter class="command">--debug</parameter> output for that
+        is:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3: ; ;
+4: ;
+5: array [ 3 ] = 0 ;
+6: }</programlisting>
+
+        <para>The variable x is removed because it is not used after the
+        simplification. It is therefore redundant.</para>
+
+        <para>The "known values" doesn't have to be numeric. Variable aliases,
+        pointer aliases, strings, etc should be handled too.</para>
+
+        <para>Example code:</para>
+
+        <programlisting>void f()
+{
+    char *a = strdup("hello");
+    char *b = a;
+    free(b);
+}</programlisting>
+
+        <para>The <parameter class="command">--debug</parameter> output for that
+        is:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3: char * a@1 ; a@1 = strdup ( "hello" ) ;
+4: ; ;
+5: free ( a@1 ) ;
+6: }</programlisting>
+      </section>
+    </section>
+
+    <section>
+      <title>if/for/while</title>
+
+      <section>
+        <title>Braces in if/for/while-body</title>
+
+        <para>Cppcheck makes sure that there are always braces in if/for/while
+        bodies.</para>
+
+        <programlisting>    if (x)
+        f1();</programlisting>
+
+        <para>The Cppcheck data for that is:</para>
+
+        <programlisting> if ( x ) { f1 ( ) ; }</programlisting>
+      </section>
+
+      <section>
+        <title>No else if</title>
+
+        <para>The simplified data representation doesn't have "else
+        if".</para>
+
+        <programlisting>void f(int x)
+{
+    if (x == 1)
+        f1();
+    else if (x == 2)
+        f2();
+}</programlisting>
+
+        <para>The <parameter class="command">--debug</parameter> output:</para>
+
+        <programlisting>1: void f ( int x@1 )
+2: {
+3: if ( x@1 == 1 ) {
+4: f1 ( ) ; }
+5: else { if ( x@1 == 2 ) {
+6: f2 ( ) ; } }
+7: }
+</programlisting>
+      </section>
+
+      <section>
+        <title>Condition is always true / false</title>
+
+        <para>Conditions that are always true / false are simplified.</para>
+
+        <programlisting>void f()
+{
+    if (true) {
+        f1();
+    }
+}</programlisting>
+
+        <para>The Cppcheck data is:</para>
+
+        <programlisting> void f ( ) { { f1 ( ) ; } }</programlisting>
+
+        <para>Another example:</para>
+
+        <programlisting>void f()
+{
+    if (false) {
+        f1();
+    }
+}</programlisting>
+
+        <para>The debug output:</para>
+
+        <programlisting> void f ( ) { }</programlisting>
+      </section>
+
+      <section>
+        <title>Assignments</title>
+
+        <para>Assignments within conditions are broken out from the
+        condition.</para>
+
+        <programlisting>void f()
+{
+    int x;
+    if ((x = f1()) == 12) {
+        f2();
+    }
+}</programlisting>
+
+        <para>The <code>x=f1()</code> is broken out. The
+        <parameter class="command">--debug</parameter> output:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3: int x@1 ;
+4: x@1 = f1 ( ) ; if ( x@1 == 12 ) {
+5: f2 ( ) ;
+6: }
+7: }</programlisting>
+
+        <para>Replacing the "if" with "while" in the above example:</para>
+
+        <programlisting>void f()
+{
+    int x;
+    while ((x = f1()) == 12) {
+        f2();
+    }
+}</programlisting>
+
+        <para>The <literal>x=f1()</literal> is broken out twice. The
+        <parameter class="command">--debug</parameter> output:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3: int x@1 ;
+4: x@1 = f1 ( ) ; while ( x@1 == 12 ) {
+5: f2 ( ) ; x@1 = f1 ( ) ;
+5:
+6: }
+7: }</programlisting>
+      </section>
+
+      <section>
+        <title>Comparison with &gt;</title>
+
+        <para>Comparisons are simplified. The two conditions in this example
+        are logically the same:</para>
+
+        <programlisting>void f()
+{
+    if (x &lt; 2);
+    if (2 &gt; x);
+}</programlisting>
+
+        <para>Cppcheck data doesn't use <literal>&gt;</literal> for
+        comparisons. It is converted into <literal>&lt;</literal> instead. In
+        the Cppcheck data there is no difference for <literal>2&gt;x</literal>
+        and <literal>x&lt;2</literal>.</para>
+
+        <programlisting>1:
+2: void f ( )
+3: {
+4: if ( x &lt; 2 ) { ; }
+5: if ( x &lt; 2 ) { ; }
+6: }</programlisting>
+
+        <para>A similar conversion happens when <literal>&gt;=</literal> is
+        used.</para>
+      </section>
+
+      <section>
+        <title>if (x) and if (!x)</title>
+
+        <para>If possible a condition will be reduced to x or !x. Here is an
+        example code:</para>
+
+        <programlisting>void f()
+{
+    if (!x);
+    if (NULL == x);
+    if (x == 0);
+
+    if (x);
+    if (NULL != x);
+    if (x != 0);
+}</programlisting>
+
+        <para>The <parameter class="command">--debug</parameter> output is:</para>
+
+        <programlisting>1: void f ( )
+2: {
+3: if ( ! x ) { ; }
+4: if ( ! x ) { ; }
+5: if ( ! x ) { ; }
+6:
+7: if ( x ) { ; }
+8: if ( x ) { ; }
+9: if ( x ) { ; }
+10: }</programlisting>
+      </section>
+    </section>
+  </section>
+</section>
