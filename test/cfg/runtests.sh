@@ -27,6 +27,10 @@ ${CPPCHECK} ${CPPCHECK_OPT} --library=posix  ${DIR}posix.c
 ${CC} ${CC_OPT} -D_GNU_SOURCE ${DIR}gnu.c
 ${CPPCHECK} ${CPPCHECK_OPT} --library=gnu ${DIR}gnu.c
 
+# qt.cpp
+${CXX} ${CXX_OPT} ${DIR}qt.cpp
+${CPPCHECK} --enable=style --enable=information --inline-suppr --error-exitcode=1 --library=qt ${DIR}qt.cpp
+
 # std.c
 ${CC} ${CC_OPT} ${DIR}std.c
 ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.c
