@@ -239,6 +239,7 @@ for dumpfile in dumpfiles:
         safe_ranges = []
         safe = -1
         time_bits_defined = False
+        srclinenr = '0'
         for directive in cfg.directives:
             # track source line number
             if directive.file == srcfile:
