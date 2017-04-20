@@ -4739,11 +4739,14 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                     if (isconst)
                         varvt.constness |= 1;
                     setValueType(parent->previous(), varvt);
-                    const_cast<Variable *>(parent->previous()->variable())->setFlags(varvt);
-                    const Type * type = typeStart->tokAt(4)->type();
-                    if (type && type->classScope && type->classScope->definedType) {
-                        autoToken->type(type->classScope->definedType);
-                        const_cast<Variable *>(parent->previous()->variable())->type(type->classScope->definedType);
+                    Variable * var = const_cast<Variable *>(parent->previous()->variable());
+                    if (var) {
+                        var->setFlags(varvt);
+                        const Type * type = typeStart->tokAt(4)->type();
+                        if (type && type->classScope && type->classScope->definedType) {
+                            autoToken->type(type->classScope->definedType);
+                            var->type(type->classScope->definedType);
+                        }
                     }
                 }
             }
