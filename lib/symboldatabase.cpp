@@ -1303,8 +1303,13 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                 if (!membervar) {
                     if (type->classScope) {
                         membervar = type->classScope->getVariable(membertok->str());
-                        if (membervar)
+                        if (membervar) {
                             membertok->variable(membervar);
+                            if (membertok->varId() == 0 || _variableList[membertok->varId()] == nullptr) {
+                                if (tok->function()->retDef)
+                                    fixVarId(varIds, tok->function()->retDef, const_cast<Token *>(membertok), membervar);
+                            }
+                        }
                     }
                 }
             }
@@ -4612,12 +4617,13 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     if (parent->isAssignmentOp()) {
         if (vt1)
             setValueType(parent, *vt1);
-        else if (cpp && Token::Match(parent->tokAt(-3), "%var% ; %var% =") && parent->strAt(-3) == parent->strAt(-1)) {
-            Token *var1Tok = parent->tokAt(-3);
+        else if (cpp && ((Token::Match(parent->tokAt(-3), "%var% ; %var% =") && parent->strAt(-3) == parent->strAt(-1)) ||
+                         Token::Match(parent->tokAt(-1), "%var% ="))) {
+            Token *var1Tok = parent->strAt(-2) == ";" ? parent->tokAt(-3) : parent->tokAt(-1);
             Token *autoTok = nullptr;
-            if (Token::Match(var1Tok->tokAt(-2), "[;{}] auto"))
+            if (Token::Match(var1Tok->tokAt(-2), ";|{|}|const auto"))
                 autoTok = var1Tok->previous();
-            else if (Token::Match(var1Tok->tokAt(-3), "[;{}] auto *"))
+            else if (Token::Match(var1Tok->tokAt(-3), ";|{|}|const auto *"))
                 autoTok = var1Tok->tokAt(-2);
             if (autoTok) {
                 ValueType vt(*vt2);
