@@ -101,6 +101,9 @@ script:
   - make run-dmake
 #   now, if dmake modified the makefile, return false!
   - git diff --exit-code
+# check if all errors have a proper CWE and send email
+  - ./cppcheck --errorlist --xml-version=2 &> error-list.xml
+  - tools/listErrorsWithoutCWE.py -F error-list.xml | mail rmartelloni+cppcheck-cwe@gmail.com
 
 notifications:
   irc:
