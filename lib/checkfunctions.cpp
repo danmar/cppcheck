@@ -45,31 +45,31 @@ void CheckFunctions::checkProhibitedFunctions()
     for (unsigned int i = 0; i < symbolDatabase->functionScopes.size(); i++) {
         const Scope* scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (tok->isName() && tok->varId() == 0 && tok->strAt(1) == "(") {
-                // alloca() is special as it depends on the code being C or C++, so it is not in Library
-                if (checkAlloca && Token::simpleMatch(tok, "alloca (") && (!tok->function() || tok->function()->nestedIn->type == Scope::eGlobal)) {
-                    if (_tokenizer->isC()) {
-                        if (_settings->standards.c > Standards::C89)
-                            reportError(tok, Severity::warning, "allocaCalled",
-                                        "Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n"
-                                        "The obsolete function 'alloca' is called. In C99 and later it is recommended to use a variable length array or "
-                                        "a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons "
-                                        "(http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).");
-                    } else
+            if (!Token::Match(tok, "%name% (") && tok->varId() == 0)
+                continue;
+            // alloca() is special as it depends on the code being C or C++, so it is not in Library
+            if (checkAlloca && Token::simpleMatch(tok, "alloca (") && (!tok->function() || tok->function()->nestedIn->type == Scope::eGlobal)) {
+                if (_tokenizer->isC()) {
+                    if (_settings->standards.c > Standards::C89)
                         reportError(tok, Severity::warning, "allocaCalled",
-                                    "Obsolete function 'alloca' called.\n"
-                                    "The obsolete function 'alloca' is called. In C++11 and later it is recommended to use std::array<> or "
+                                    "Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n"
+                                    "The obsolete function 'alloca' is called. In C99 and later it is recommended to use a variable length array or "
                                     "a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons "
                                     "(http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).");
-                } else {
-                    if (tok->function() && tok->function()->hasBody())
-                        continue;
+                } else
+                    reportError(tok, Severity::warning, "allocaCalled",
+                                "Obsolete function 'alloca' called.\n"
+                                "The obsolete function 'alloca' is called. In C++11 and later it is recommended to use std::array<> or "
+                                "a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons "
+                                "(http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).");
+            } else {
+                if (tok->function() && tok->function()->hasBody())
+                    continue;
 
-                    const Library::WarnInfo* wi = _settings->library.getWarnInfo(tok);
-                    if (wi) {
-                        if (_settings->isEnabled(wi->severity) && _settings->standards.c >= wi->standards.c && _settings->standards.cpp >= wi->standards.cpp) {
-                            reportError(tok, wi->severity, tok->str() + "Called", wi->message, CWE477, false);
-                        }
+                const Library::WarnInfo* wi = _settings->library.getWarnInfo(tok);
+                if (wi) {
+                    if (_settings->isEnabled(wi->severity) && _settings->standards.c >= wi->standards.c && _settings->standards.cpp >= wi->standards.cpp) {
+                        reportError(tok, wi->severity, tok->str() + "Called", wi->message, CWE477, false);
                     }
                 }
             }
