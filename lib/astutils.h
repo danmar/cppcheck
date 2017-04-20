@@ -23,6 +23,7 @@
 //---------------------------------------------------------------------------
 
 #include <string>
+#include <vector>
 
 class Settings;
 class Library;
@@ -90,5 +91,10 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
  * \return Number of arguments
  */
 int numberOfArguments(const Token *start);
+
+/**
+ * Get arguments (AST)
+ */
+std::vector<const Token *> getArguments(const Token *ftok);
 
 #endif // astutilsH

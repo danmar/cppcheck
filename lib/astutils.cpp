@@ -452,3 +452,22 @@ int numberOfArguments(const Token *start)
     }
     return arguments;
 }
+
+static void getArgumentsRecursive(const Token *tok, std::vector<const Token *> *arguments)
+{
+    if (!tok)
+        return;
+    if (tok->str() == ",") {
+        getArgumentsRecursive(tok->astOperand1(), arguments);
+        getArgumentsRecursive(tok->astOperand2(), arguments);
+    } else {
+        arguments->push_back(tok);
+    }
+}
+
+std::vector<const Token *> getArguments(const Token *ftok)
+{
+    std::vector<const Token *> arguments;
+    getArgumentsRecursive(ftok->next()->astOperand2(), &arguments);
+    return arguments;
+}

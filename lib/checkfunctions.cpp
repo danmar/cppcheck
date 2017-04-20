@@ -21,6 +21,7 @@
 //---------------------------------------------------------------------------
 
 #include "checkfunctions.h"
+#include "astutils.h"
 #include "symboldatabase.h"
 #include <cmath>
 
@@ -87,38 +88,31 @@ void CheckFunctions::invalidFunctionUsage()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!tok->isName() || !Token::Match(tok, "%name% ( !!)"))
+            if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const functionToken = tok;
-            int argnr = 1;
-            const Token *argtok = tok->tokAt(2);
-            do {
-                if (Token::Match(argtok, "%num% [,)]")) {
-                    if (MathLib::isInt(argtok->str()) &&
-                        !_settings->library.isargvalid(functionToken, argnr, MathLib::toLongNumber(argtok->str())))
-                        invalidFunctionArgError(argtok, functionToken->str(), argnr, _settings->library.validarg(functionToken, argnr));
-                } else {
-                    const Token *top = argtok;
-                    while (top->astParent() && top->astParent()->str() != "," && top->astParent() != tok->next())
-                        top = top->astParent();
-                    const Token *var = top;
-                    while (Token::Match(var, ".|::"))
-                        var = var->astOperand2();
-                    if (Token::Match(top, "%comp%|%oror%|&&|!|true|false") ||
-                        (var && var->variable() && Token::Match(var->variable()->typeStartToken(), "bool|_Bool"))) {
-                        if (_settings->library.isboolargbad(functionToken, argnr))
-                            invalidFunctionArgBoolError(top, functionToken->str(), argnr);
+            const std::vector<const Token *> arguments = getArguments(tok);
+            for (unsigned int argnr = 1; argnr <= arguments.size(); ++argnr) {
+                const Token * const argtok = arguments[argnr-1];
 
-                        // Are the values 0 and 1 valid?
-                        else if (!_settings->library.isargvalid(functionToken, argnr, 0))
-                            invalidFunctionArgError(top, functionToken->str(), argnr, _settings->library.validarg(functionToken, argnr));
-                        else if (!_settings->library.isargvalid(functionToken, argnr, 1))
-                            invalidFunctionArgError(top, functionToken->str(), argnr, _settings->library.validarg(functionToken, argnr));
-                    }
+                // check <valid>...</valid>
+                if (argtok->hasKnownIntValue() &&
+                    !_settings->library.isargvalid(functionToken,argnr,argtok->values().front().intvalue)) {
+                    // TODO: Warn about possible values
+                    invalidFunctionArgError(argtok, functionToken->str(), argnr, _settings->library.validarg(functionToken, argnr));
                 }
-                argnr++;
-                argtok = argtok->nextArgument();
-            } while (argtok && argtok->str() != ")");
+
+                if (astIsBool(argtok)) {
+                    // check <not-bool>
+                    if (_settings->library.isboolargbad(functionToken, argnr))
+                        invalidFunctionArgBoolError(argtok, functionToken->str(), argnr);
+                    // Are the values 0 and 1 valid?
+                    else if (!_settings->library.isargvalid(functionToken, argnr, 0))
+                        invalidFunctionArgError(argtok, functionToken->str(), argnr, _settings->library.validarg(functionToken, argnr));
+                    else if (!_settings->library.isargvalid(functionToken, argnr, 1))
+                        invalidFunctionArgError(argtok, functionToken->str(), argnr, _settings->library.validarg(functionToken, argnr));
+                }
+            }
         }
     }
 }
