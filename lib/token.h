@@ -793,6 +793,8 @@ public:
     const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
     const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
 
+    const ValueFlow::Value * getInvalidValue(const Token *ftok, unsigned int argnr, const Settings *settings) const;
+
     const Token *getValueTokenMaxStrLength() const;
     const Token *getValueTokenMinStrSize() const;
 

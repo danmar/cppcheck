@@ -96,38 +96,46 @@ void CheckFunctions::invalidFunctionUsage()
                 const Token * const argtok = arguments[argnr-1];
 
                 // check <valid>...</valid>
-                if (argtok->hasKnownIntValue() &&
-                    !_settings->library.isargvalid(functionToken,argnr,argtok->values().front().intvalue)) {
-                    // TODO: Warn about possible values
-                    invalidFunctionArgError(argtok, functionToken->str(), argnr, _settings->library.validarg(functionToken, argnr));
+                const ValueFlow::Value *invalidValue = argtok->getInvalidValue(functionToken,argnr,_settings);
+                if (invalidValue) {
+                    invalidFunctionArgError(argtok, functionToken->next()->astOperand1()->expressionString(), argnr, invalidValue, _settings->library.validarg(functionToken, argnr));
                 }
 
                 if (astIsBool(argtok)) {
                     // check <not-bool>
                     if (_settings->library.isboolargbad(functionToken, argnr))
                         invalidFunctionArgBoolError(argtok, functionToken->str(), argnr);
+
                     // Are the values 0 and 1 valid?
                     else if (!_settings->library.isargvalid(functionToken, argnr, 0))
-                        invalidFunctionArgError(argtok, functionToken->str(), argnr, _settings->library.validarg(functionToken, argnr));
+                        invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, _settings->library.validarg(functionToken, argnr));
                     else if (!_settings->library.isargvalid(functionToken, argnr, 1))
-                        invalidFunctionArgError(argtok, functionToken->str(), argnr, _settings->library.validarg(functionToken, argnr));
+                        invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, _settings->library.validarg(functionToken, argnr));
                 }
             }
         }
     }
 }
 
-void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const std::string &validstr)
+void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const ValueFlow::Value *invalidValue, const std::string &validstr)
 {
     std::ostringstream errmsg;
-    errmsg << "Invalid " << functionName << "() argument nr " << argnr;
-    if (!tok)
-        ;
-    else if (tok->isNumber())
-        errmsg << ". The value is " << tok->str() << " but the valid values are '" << validstr << "'.";
-    else if (tok->isComparisonOp())
-        errmsg << ". The value is 0 or 1 (comparison result) but the valid values are '" << validstr << "'.";
-    reportError(tok, Severity::error, "invalidFunctionArg", errmsg.str(), CWE628, false);
+    if (invalidValue && invalidValue->condition)
+        errmsg << ValueFlow::eitherTheConditionIsRedundant(invalidValue->condition)
+               << " or " << functionName << "() argument nr " << argnr
+               << " can have invalid value.";
+    else
+        errmsg << "Invalid " << functionName << "() argument nr " << argnr << '.';
+    if (invalidValue)
+        errmsg << " The value is " << invalidValue->intvalue << " but the valid values are '" << validstr << "'.";
+    else
+        errmsg << " The value is 0 or 1 (boolean) but the valid values are '" << validstr << "'.";
+    reportError(tok,
+                (!invalidValue || !invalidValue->condition) ? Severity::error : Severity::warning,
+                "invalidFunctionArg",
+                errmsg.str(),
+                CWE628,
+                invalidValue && invalidValue->inconclusive);
 }
 
 void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr)

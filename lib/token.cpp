@@ -1442,6 +1442,29 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     return ret;
 }
 
+const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, unsigned int argnr, const Settings *settings) const
+{
+    if (!_values)
+        return nullptr;
+    const ValueFlow::Value *ret = nullptr;
+    std::list<ValueFlow::Value>::const_iterator it;
+    for (it = _values->begin(); it != _values->end(); ++it) {
+        if (it->isIntValue() && !settings->library.isargvalid(ftok, argnr, it->intvalue)) {
+            if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
+                ret = &(*it);
+            if (!ret->inconclusive && !ret->condition)
+                break;
+        }
+    }
+    if (settings && ret) {
+        if (ret->inconclusive && !settings->inconclusive)
+            return nullptr;
+        if (ret->condition && !settings->isEnabled(Settings::WARNING))
+            return nullptr;
+    }
+    return ret;
+}
+
 const Token *Token::getValueTokenMinStrSize() const
 {
     if (!_values)

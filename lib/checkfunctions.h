@@ -88,7 +88,7 @@ public:
     void checkLibraryMatchFunctions();
 
 private:
-    void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const std::string &validstr);
+    void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const ValueFlow::Value *invalidValue, const std::string &validstr);
     void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
     void ignoredReturnValueError(const Token* tok, const std::string& function);
     void mathfunctionCallWarning(const Token *tok, const unsigned int numParam = 1);
@@ -101,7 +101,7 @@ private:
             c.reportError(nullptr, Severity::style, i->first+"Called", i->second.message);
         }
 
-        c.invalidFunctionArgError(nullptr, "func_name", 1, "1-4");
+        c.invalidFunctionArgError(nullptr, "func_name", 1, nullptr,"1:4");
         c.invalidFunctionArgBoolError(nullptr, "func_name", 1);
         c.ignoredReturnValueError(nullptr, "malloc");
         c.mathfunctionCallWarning(nullptr);
