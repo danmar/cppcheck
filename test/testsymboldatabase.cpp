@@ -326,6 +326,7 @@ private:
         TEST_CASE(auto3);
         TEST_CASE(auto4);
         TEST_CASE(auto5);
+        TEST_CASE(auto6); // #7963 (segmentation fault)
     }
 
     void array() {
@@ -4860,6 +4861,28 @@ private:
 
         vartok = Token::findsimplematch(vartok->next(), "i");
         ASSERT(db && vartok && vartok->variable() && vartok->variable()->typeStartToken()->str() == "int");
+    }
+
+    void auto6() {  // #7963 (segmentation fault)
+        GET_SYMBOL_DB("class WebGLTransformFeedback final\n"
+                      ": public nsWrapperCache\n"
+                      ", public WebGLRefCountedObject < WebGLTransformFeedback >\n"
+                      ", public LinkedListElement < WebGLTransformFeedback >\n"
+                      "{\n"
+                      "private :\n"
+                      "std :: vector < IndexedBufferBinding > mIndexedBindings ;\n"
+                      "} ;\n"
+                      "struct IndexedBufferBinding\n"
+                      "{\n"
+                      "IndexedBufferBinding ( ) ;\n"
+                      "} ;\n"
+                      "const decltype ( WebGLTransformFeedback :: mBuffersForTF ) &\n"
+                      "WebGLTransformFeedback :: BuffersForTF ( ) const\n"
+                      "{\n"
+                      "mBuffersForTF . clear ( ) ;\n"
+                      "for ( const auto & cur : mIndexedBindings ) {}\n"
+                      "return mBuffersForTF ;\n"
+                      "}");
     }
 
 };
