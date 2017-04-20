@@ -9,20 +9,22 @@
 
 class QString {
 public:
-  int size();
-  char &operator[](int pos);
+    int size();
+    char &operator[](int pos);
 };
 
-void QString1(QString s) {
-  for (int i = 0; i <= s.size(); ++i) {
-    // cppcheck-suppress stlOutOfBounds
-    s[i] = 'x';
-  }
+void QString1(QString s)
+{
+    for (int i = 0; i <= s.size(); ++i) {
+        // cppcheck-suppress stlOutOfBounds
+        s[i] = 'x';
+    }
 }
 
-int QString2() {
-  QString s;
-  // cppcheck-suppress ignoredReturnValue
-  // cppcheck-suppress reademptycontainer
-  return s.size();
+int QString2()
+{
+    QString s;
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress reademptycontainer
+    return s.size();
 }
