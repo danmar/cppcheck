@@ -72,6 +72,7 @@
               <File Id='posix.cfg' Name='posix.cfg' Source='$(var.CfgsDir)\posix.cfg' />
               <File Id='qt.cfg' Name='qt.cfg' Source='$(var.CfgsDir)\qt.cfg' />
               <File Id='sdl.cfg' Name='sdl.cfg' Source='$(var.CfgsDir)\sdl.cfg' />
+              <File Id='sfml.cfg' Name='sfml.cfg' Source='$(var.CfgsDir)\sfml.cfg' />
               <File Id='windows.cfg' Name='windows.cfg' Source='$(var.CfgsDir)\windows.cfg' />
               <File Id='wxwidgets.cfg' Name='wxwidgets.cfg' Source='$(var.CfgsDir)\wxwidgets.cfg' />
             </Component>
