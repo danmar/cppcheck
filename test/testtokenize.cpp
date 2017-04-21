@@ -8076,7 +8076,6 @@ private:
         ASSERT_EQUALS("ab2[a0=b0=,{a0=b0=,{,{=", testAst("struct AB ab[2] = { { .a=0, .b=0 }, { .a=0, .b=0 } };"));
         ASSERT_EQUALS("tset{=", testAst("struct cgroup_taskset tset = {};"));
         ASSERT_EQUALS("s1a&,{2b&,{,{=", testAst("s = { {1, &a}, {2, &b} };"));
-        TODO_ASSERT_EQUALS("xatoistr({(=", "x{(= atoistr(", testAst("x = (struct X){atoi(str)};"));
         ASSERT_EQUALS("s0[L.2[x={=", testAst("s = { [0].L[2] = x};"));
 
         // struct initialization hang
@@ -8162,6 +8161,8 @@ private:
         ASSERT_EQUALS("ab-(=", testAst("a = ((int)-b)")); // Multiple subsequent unary operators (cast and -)
         ASSERT_EQUALS("xdouble123(i*(=", testAst("x = (int)(double(123)*i);"));
         ASSERT_EQUALS("ac(=", testAst("a = (::b)c;"));
+        ASSERT_EQUALS("abcd,({(=", testAst("a = (s){b(c, d)};"));
+        ASSERT_EQUALS("xatoistr({(=", testAst("x = (struct X){atoi(str)};"));
 
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));

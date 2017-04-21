@@ -475,6 +475,9 @@ static bool iscast(const Token *tok)
     if (Token::Match(tok, "( (| typeof (") && Token::Match(tok->link(), ") %num%"))
         return true;
 
+    if (Token::Match(tok->previous(), "= ( %name% ) {") && tok->next()->varId() == 0)
+        return true;
+
     bool type = false;
     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
         while (tok2->link() && Token::Match(tok2, "(|[|<"))
@@ -620,11 +623,14 @@ static void compileTerm(Token *&tok, AST_state& state)
             }
         }
     } else if (tok->str() == "{") {
+        const Token *prev = tok->previous();
+        if (prev && prev->str() == ")")
+            prev = prev->link()->previous();
         if (Token::simpleMatch(tok->link(),"} [")) {
             tok = tok->next();
         } else if (tok->previous() && tok->previous()->isName()) {
             compileBinOp(tok, state, compileExpression);
-        } else if (!state.inArrayAssignment && tok->strAt(-1) != "=") {
+        } else if (!state.inArrayAssignment && (!prev || prev->str() != "=")) {
             state.op.push(tok);
             tok = tok->link()->next();
         } else {
