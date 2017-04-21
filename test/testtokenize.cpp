@@ -8063,7 +8063,7 @@ private:
         ASSERT_EQUALS("QT_WA{{,( x0= QT_WA{{,( x1= x2=",
                       testAst("QT_WA({},{x=0;});" // don't hang
                               "QT_WA({x=1;},{x=2;});"));
-        ASSERT_EQUALS("xMACROtypeT=value1=,{({=",
+        ASSERT_EQUALS("xMACROtype.T=value.1=,{({=",
                       testAst("x = { MACRO( { .type=T, .value=1 } ) }")); // don't hang: MACRO({..})
         ASSERT_EQUALS("fori10=i{;;( i--", testAst("for (i=10;i;({i--;}) ) {}"));
 
@@ -8072,14 +8072,14 @@ private:
 
         // struct initialization
         ASSERT_EQUALS("name_bytes[bits~unusedBits>>unusedBits<<{=", testAst("const uint8_t name_bytes[] = { (~bits >> unusedBits) << unusedBits };"));
-        ASSERT_EQUALS("abuf0{={=", testAst("a = { .buf = { 0 } };"));
-        ASSERT_EQUALS("ab2[a0=b0=,{a0=b0=,{,{=", testAst("struct AB ab[2] = { { .a=0, .b=0 }, { .a=0, .b=0 } };"));
+        ASSERT_EQUALS("abuf.0{={=", testAst("a = { .buf = { 0 } };"));
+        ASSERT_EQUALS("ab2[a.0=b.0=,{a.0=b.0=,{,{=", testAst("struct AB ab[2] = { { .a=0, .b=0 }, { .a=0, .b=0 } };"));
         ASSERT_EQUALS("tset{=", testAst("struct cgroup_taskset tset = {};"));
         ASSERT_EQUALS("s1a&,{2b&,{,{=", testAst("s = { {1, &a}, {2, &b} };"));
         ASSERT_EQUALS("s0[L.2[x={=", testAst("s = { [0].L[2] = x};"));
 
         // struct initialization hang
-        ASSERT_EQUALS("sbar1{,{(={= fcmd( forfieldfield++;;(",
+        ASSERT_EQUALS("sbar.1{,{(={= fcmd( forfieldfield++;;(",
                       testAst("struct S s = {.bar = (struct foo) { 1, { } } };\n"
                               "void f(struct cmd *) { for (; field; field++) {} }"));
 
@@ -8163,6 +8163,7 @@ private:
         ASSERT_EQUALS("ac(=", testAst("a = (::b)c;"));
         ASSERT_EQUALS("abcd,({(=", testAst("a = (s){b(c, d)};"));
         ASSERT_EQUALS("xatoistr({(=", testAst("x = (struct X){atoi(str)};"));
+        ASSERT_EQUALS("xa.0=b.0=,c.0=,{(=", testAst("x = (struct abc) { .a=0, .b=0, .c=0 };"));
 
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));

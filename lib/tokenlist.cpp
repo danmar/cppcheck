@@ -585,9 +585,12 @@ static void compileTerm(Token *&tok, AST_state& state)
         return;
     if (Token::Match(tok, "L %str%|%char%"))
         tok = tok->next();
-    if (state.inArrayAssignment && tok->str() == "." && Token::Match(tok->previous(), ",|{")) // Jump over . in C style struct initialization
-        tok = tok->next();
-    if (state.inArrayAssignment && Token::Match(tok->previous(), "[,{] [ %num% ]")) {
+    if (state.inArrayAssignment && Token::Match(tok->previous(), "[{,] . %name%")) { // Jump over . in C style struct initialization
+        state.op.push(tok);
+        tok->astOperand1(tok->next());
+        tok = tok->tokAt(2);
+    }
+    if (state.inArrayAssignment && Token::Match(tok->previous(), "[{,] [ %num% ]")) {
         state.op.push(tok);
         tok->astOperand1(tok->next());
         tok = tok->tokAt(3);
@@ -624,20 +627,20 @@ static void compileTerm(Token *&tok, AST_state& state)
         }
     } else if (tok->str() == "{") {
         const Token *prev = tok->previous();
-        if (prev && prev->str() == ")")
+        if (Token::simpleMatch(prev, ") {") && iscast(prev->link()))
             prev = prev->link()->previous();
         if (Token::simpleMatch(tok->link(),"} [")) {
             tok = tok->next();
         } else if (tok->previous() && tok->previous()->isName()) {
             compileBinOp(tok, state, compileExpression);
-        } else if (!state.inArrayAssignment && (!prev || prev->str() != "=")) {
+        } else if (!state.inArrayAssignment && !Token::simpleMatch(prev, "=")) {
             state.op.push(tok);
             tok = tok->link()->next();
         } else {
             if (tok->link() != tok->next()) {
                 state.inArrayAssignment++;
                 compileUnaryOp(tok, state, compileExpression);
-                while (Token::Match(tok, "} [,}]") && state.inArrayAssignment > 0U) {
+                while (Token::Match(tok, "} [,};]") && state.inArrayAssignment > 0U) {
                     tok = tok->next();
                     state.inArrayAssignment--;
                 }
@@ -1032,6 +1035,8 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
 {
     for (Token *tok = tok1; tok && tok != endToken; tok = tok ? tok->next() : nullptr) {
         if (tok->str() == "{" && !iscpp11init(tok)) {
+            if (Token::simpleMatch(tok->astOperand1(), ","))
+                continue;
             if (Token::simpleMatch(tok->previous(), "( {"))
                 ;
             // struct assignment
