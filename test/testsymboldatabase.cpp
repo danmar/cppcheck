@@ -328,6 +328,7 @@ private:
         TEST_CASE(auto5);
         TEST_CASE(auto6); // #7963 (segmentation fault)
         TEST_CASE(auto7);
+        TEST_CASE(auto8);
     }
 
     void array() {
@@ -5108,6 +5109,31 @@ private:
             ASSERT_EQUALS(0, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
+        }
+    }
+
+    void auto8() {
+        GET_SYMBOL_DB("std::vector<int> vec;\n"
+                      "void foo() {\n"
+                      "    for (auto it = vec.begin(); it != vec.end(); ++it) { }\n"
+                      "}");
+        const Token *autotok = Token::findsimplematch(tokenizer.tokens(), "auto it");
+
+        ASSERT(db && autotok && autotok->valueType());
+        if (db && autotok && autotok->valueType()) {
+            ASSERT_EQUALS(0, autotok->valueType()->constness);
+            ASSERT_EQUALS(0, autotok->valueType()->pointer);
+            ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, autotok->valueType()->sign);
+            ASSERT_EQUALS(ValueType::ITERATOR, autotok->valueType()->type);
+        }
+
+        vartok = Token::findsimplematch(autotok, "it =");
+        ASSERT(db && vartok && vartok->valueType());
+        if (db && vartok && vartok->valueType()) {
+            ASSERT_EQUALS(0, vartok->valueType()->constness);
+            ASSERT_EQUALS(0, vartok->valueType()->pointer);
+            ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, vartok->valueType()->sign);
+            ASSERT_EQUALS(ValueType::ITERATOR, vartok->valueType()->type);
         }
     }
 

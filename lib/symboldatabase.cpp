@@ -4621,9 +4621,9 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                          Token::Match(parent->tokAt(-1), "%var% ="))) {
             Token *var1Tok = parent->strAt(-2) == ";" ? parent->tokAt(-3) : parent->tokAt(-1);
             Token *autoTok = nullptr;
-            if (Token::Match(var1Tok->tokAt(-2), ";|{|}|const auto"))
+            if (Token::Match(var1Tok->tokAt(-2), ";|{|}|(|const auto"))
                 autoTok = var1Tok->previous();
-            else if (Token::Match(var1Tok->tokAt(-3), ";|{|}|const auto *"))
+            else if (Token::Match(var1Tok->tokAt(-3), ";|{|}|(|const auto *"))
                 autoTok = var1Tok->tokAt(-2);
             if (autoTok) {
                 ValueType vt(*vt2);
@@ -4635,11 +4635,11 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                 setAutoTokenProperties(autoTok);
                 setValueType(var1Tok, *vt2);
                 setValueType(parent->previous(), *vt2);
-                const Variable *var = parent->previous()->variable();
+                Variable *var = const_cast<Variable *>(parent->previous()->variable());
                 if (var) {
-                    const_cast<Variable *>(var)->setFlags(*vt2);
+                    var->setFlags(*vt2);
                     if (vt2->typeScope && vt2->typeScope->definedType) {
-                        const_cast<Variable *>(var)->type(vt2->typeScope->definedType);
+                        var->type(vt2->typeScope->definedType);
                         if (autoTok->valueType()->pointer == 0)
                             autoTok->type(vt2->typeScope->definedType);
                     }
