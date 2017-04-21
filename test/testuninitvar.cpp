@@ -2202,6 +2202,14 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int f() {\n"
+                       "    int ret;\n"
+                       "    if (a) { ret = 1; }\n"
+                       "    else { s=foo(1,{2,3},4); ret = 2; }\n"
+                       "    return ret;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // conditional initialization
         checkUninitVar("void f() {\n"
                        "    int x;\n"

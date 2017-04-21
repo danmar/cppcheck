@@ -341,7 +341,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         }
 
         // Unconditional inner scope or try..
-        if (tok->str() == "{" && Token::Match(tok->previous(), ";|{|}|try")) {
+        if (tok->str() == "{" && Token::Match(tok->previous(), ",|;|{|}|try")) {
             if (checkScopeForVariable(tok->next(), var, possibleInit, noreturn, alloc, membervar))
                 return true;
             tok = tok->link();
