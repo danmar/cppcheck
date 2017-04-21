@@ -1756,7 +1756,11 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                 // Match common patterns that can result in a buffer overrun
                 // e.g. strcpy(buffer, argv[0])
                 if (Token::Match(tok, "strcpy|strcat (")) {
-                    tok = tok->tokAt(2)->nextArgument();
+                    const Token *nextArgument = tok->tokAt(2)->nextArgument();
+                    if (nextArgument)
+                        tok = nextArgument;
+                    else
+                        continue; // Ticket #7964
                     if (Token::Match(tok, "* %varid%", varid) || Token::Match(tok, "%varid% [", varid))
                         cmdLineArgsError(tok);
                 }
