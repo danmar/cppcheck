@@ -297,6 +297,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
             !tok->type() &&
             !tok->isStandardType() &&
             tok->linkAt(1)->strAt(1) != "(" &&
+            !Token::Match(tok->astParent(), "new") &&
             tok->astParent() == tok->next() &&
             _settings->library.isNotLibraryFunction(tok)) {
             reportError(tok,
