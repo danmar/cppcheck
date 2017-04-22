@@ -184,6 +184,11 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
             return cond->str;
     }
 
+    if (len == 2 && cond->op == '!' && next1->name) {
+        if (defined.find(next1->str) == defined.end())
+            return next1->str + "=0";
+    }
+
     if (len == 3 && cond->op == '(' && next1->name && next2->op == ')') {
         if (defined.find(next1->str) == defined.end() && undefined.find(next1->str) == undefined.end())
             return next1->str;
@@ -375,7 +380,10 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                     ret.erase("");
                 std::vector<std::string> configs(configs_if);
                 configs.push_back(configs_ifndef.back());
-                ret.insert(cfg(configs, userDefines));
+                ret.erase(cfg(configs, userDefines));
+                if (!elseError.empty())
+                    elseError += ';';
+                elseError += cfg(configs_ifndef, userDefines);
             }
             if (!configs_if.empty() && !configs_if.back().empty()) {
                 const std::string &last = configs_if.back();
@@ -383,9 +391,11 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                     std::vector<std::string> configs(configs_if);
                     ret.erase(cfg(configs, userDefines));
                     configs[configs.size() - 1U] = last.substr(0,last.size()-2U);
-                    ret.insert(cfg(configs, userDefines));
                     if (configs.size() == 1U)
                         ret.erase("");
+                    if (!elseError.empty())
+                        elseError += ';';
+                    elseError += cfg(configs, userDefines);
                 }
             }
         } else if (cmdtok->str == "define" && sameline(tok, cmdtok->next) && cmdtok->next->name) {

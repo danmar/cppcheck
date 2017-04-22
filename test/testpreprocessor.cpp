@@ -379,15 +379,32 @@ private:
     }
 
     void error6() {
-        const char filedata[] = "#ifdef A\n"
-                                "#else\n"
-                                "#error 1\n"
-                                "#endif\n"
-                                "#ifdef B\n"
-                                "#else\n"
-                                "#error 2\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nA\nA;B\nB\n", getConfigsStr(filedata));
+        const char filedata1[] = "#ifdef A\n"
+                                 "#else\n"
+                                 "#error 1\n"
+                                 "#endif\n"
+                                 "#ifdef B\n"
+                                 "#else\n"
+                                 "#error 2\n"
+                                 "#endif\n";
+        ASSERT_EQUALS("\nA\nA;B\nB\n", getConfigsStr(filedata1));
+
+        const char filedata2[] = "#ifndef A\n"
+                                 "#error 1\n"
+                                 "#endif\n"
+                                 "#ifndef B\n"
+                                 "#error 2\n"
+                                 "#endif\n";
+        ASSERT_EQUALS("A;B\n", getConfigsStr(filedata2));
+
+        const char filedata3[] = "#if !A\n"
+                                 "#error 1\n"
+                                 "#endif\n"
+                                 "#if !B\n"
+                                 "#error 2\n"
+                                 "#endif\n";
+        ASSERT_EQUALS("A;B\n", getConfigsStr(filedata3));
+
     }
 
     void setPlatformInfo() {
@@ -2105,7 +2122,7 @@ private:
                                  "#error \"!Y\"\n"
                                  "#endif\n"
                                  "#endif\n";
-        ASSERT_EQUALS("\nX\nX;Y\n", getConfigsStr(filedata2));
+        ASSERT_EQUALS("\nX\nY\n", getConfigsStr(filedata2));
     }
 
     void getConfigsD1() {
