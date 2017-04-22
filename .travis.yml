@@ -43,8 +43,6 @@ script:
   - touch lib/mathlib.cpp test/testmathlib.cpp
 # compile cppcheck, default build
   - make test -j4
-# analyse gui code
-  - ./cppcheck --library=qt --enable=style gui/*.cpp
 # compile gui
   - cd gui
   - qmake
@@ -53,7 +51,9 @@ script:
   - cd ../
 # use same hack as for clang to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
   - touch /tmp/cppcheck.cppcheck
-  - ./cppcheck --error-exitcode=1 -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions -itest/synthetic -iaddons . -j 2 |& tee /tmp/cppcheck.cppcheck
+  - ./cppcheck --error-exitcode=1 -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions -itest/synthetic -iaddons  -igui . -j 2 |& tee /tmp/cppcheck.cppcheck
+# check gui with qt settings
+  - ./cppcheck --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui -igui/test |& tee --append /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
 # run extra tests
   - tools/generate_and_run_more_tests.sh
