@@ -994,7 +994,10 @@ static void compileComma(Token *&tok, AST_state& state)
     compileAssignTernary(tok, state);
     while (tok) {
         if (tok->str() == ",") {
-            compileBinOp(tok, state, compileAssignTernary);
+            if (Token::simpleMatch(tok, ", }"))
+                tok = tok->next();
+            else
+                compileBinOp(tok, state, compileAssignTernary);
         } else break;
     }
 }

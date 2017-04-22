@@ -8077,6 +8077,7 @@ private:
         ASSERT_EQUALS("tset{=", testAst("struct cgroup_taskset tset = {};"));
         ASSERT_EQUALS("s1a&,{2b&,{,{=", testAst("s = { {1, &a}, {2, &b} };"));
         ASSERT_EQUALS("s0[L.2[x={=", testAst("s = { [0].L[2] = x};"));
+        ASSERT_EQUALS("ac.0={(=", testAst("a = (b){.c=0,};")); // <- useless comma
 
         // struct initialization hang
         ASSERT_EQUALS("sbar.1{,{(={= fcmd( forfieldfield++;;(",
