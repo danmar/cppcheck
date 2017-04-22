@@ -43,12 +43,12 @@ script:
   - touch lib/mathlib.cpp test/testmathlib.cpp
 # compile cppcheck, default build
   - make test -j4
+# analyse gui code
+  - ./cppcheck --library=qt --enable=style gui/*.cpp
 # compile gui
   - cd gui
   - qmake
   - make -j4
-# analyse gui code
-  - ./cppcheck --library=qt --enable=style gui/*.cpp
 # building gui generates some more files that cppcheck can check, so check the repo *after* building gui
   - cd ../
 # use same hack as for clang to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
