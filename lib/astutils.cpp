@@ -423,11 +423,17 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
             if (Token::Match(tok->previous(), "++|-- %name%"))
                 return true;
 
-            bool inconclusive = false;
-            bool isChanged = isVariableChangedByFunctionCall(tok, settings, &inconclusive);
-            isChanged |= inconclusive;
-            if (isChanged)
-                return true;
+            const Token *ftok = tok;
+            while (ftok && !Token::Match(ftok, "[({[]"))
+                ftok = ftok->astParent();
+
+            if (ftok && Token::Match(ftok->link(), ") !!{")) {
+                bool inconclusive = false;
+                bool isChanged = isVariableChangedByFunctionCall(tok, settings, &inconclusive);
+                isChanged |= inconclusive;
+                if (isChanged)
+                    return true;
+            }
 
             const Token *parent = tok->astParent();
             while (Token::Match(parent, ".|::"))

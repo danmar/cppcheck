@@ -84,6 +84,8 @@ private:
         TEST_CASE(valueFlowGlobalVar);
 
         TEST_CASE(valueFlowInlineAssembly);
+
+        TEST_CASE(valueFlowUninit);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -2372,6 +2374,19 @@ private:
                            "    a = x;\n"
                            "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 42));
+    }
+
+    void valueFlowUninit() {
+        std::list<ValueFlow::Value> values;
+
+        const char* code = "void f() {\n"
+                           "    int x;\n"
+                           "    switch (x) {}\n"
+                           "}";
+
+        values = tokenValues(code, "x )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(ValueFlow::Value::UNINIT, values.empty() ? 0 : values.front().valueType);
     }
 };
 

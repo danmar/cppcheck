@@ -50,6 +50,7 @@ public:
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
         checkUninitVar.check();
         checkUninitVar.deadPointer();
+        checkUninitVar.valueFlowUninit();
     }
 
     /** Check for uninitialized variables */
@@ -69,6 +70,9 @@ public:
     /** ValueFlow-based checking for dead pointer usage */
     void deadPointer();
     void deadPointerError(const Token *pointer, const Token *alias);
+
+    /** ValueFlow-based checking for uninitialized variables */
+    void valueFlowUninit();
 
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {

@@ -2836,6 +2836,45 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
     }
 }
 
+static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatabase*/, ErrorLogger *errorLogger, const Settings *settings)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (!Token::Match(tok,"[;{}] %type%"))
+            continue;
+        if (!tok->scope()->isExecutable())
+            continue;
+        const Token *vardecl = tok->next();
+        bool stdtype = false;
+        while (Token::Match(vardecl, "%name%|::|*") && vardecl->varId() == 0) {
+            stdtype |= vardecl->isStandardType();
+            vardecl = vardecl->next();
+        }
+        if (!Token::Match(vardecl, "%var% ;"))
+            continue;
+        if (Token::Match(vardecl, "%varid% ; %varid% =", vardecl->varId()))
+            continue;
+        if (!tokenlist->isC() && !stdtype)
+            continue;
+        const Variable *var = vardecl->variable();
+        if (!var || var->nameToken() != vardecl)
+            continue;
+        if ((!var->isPointer() && var->type() && var->type()->needInitialization != Type::True) ||
+            var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
+            continue;
+
+        ValueFlow::Value uninitValue;
+        uninitValue.setKnown();
+        uninitValue.valueType = ValueFlow::Value::UNINIT;
+        std::list<ValueFlow::Value> values;
+        values.push_back(uninitValue);
+
+        const bool constValue = true;
+        const bool subFunction = false;
+
+        valueFlowForward(vardecl->next(), vardecl->scope()->classEnd, var, vardecl->varId(), values, constValue, subFunction, tokenlist, errorLogger, settings);
+    }
+}
+
 const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(const Token *expr, const Settings *settings)
 {
     if (expr && expr->values().empty()) {
@@ -2867,6 +2906,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowSubFunction(tokenlist, errorLogger, settings);
     valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
+    valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
 }
 
 

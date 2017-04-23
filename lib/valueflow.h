@@ -57,6 +57,8 @@ namespace ValueFlow {
                 if (moveKind != rhs.moveKind)
                     return false;
                 break;
+            case UNINIT:
+                break;
             };
 
             return varvalue == rhs.varvalue &&
@@ -68,7 +70,7 @@ namespace ValueFlow {
                    valueKind == rhs.valueKind;
         }
 
-        enum ValueType { INT, TOK, FLOAT, MOVED } valueType;
+        enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT } valueType;
         bool isIntValue() const {
             return valueType == INT;
         }
@@ -80,6 +82,9 @@ namespace ValueFlow {
         }
         bool isMovedValue() const {
             return valueType == MOVED;
+        }
+        bool isUninitValue() const {
+            return valueType == UNINIT;
         }
 
         /** int value */

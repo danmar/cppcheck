@@ -72,6 +72,7 @@ private:
         TEST_CASE(trac_4871);
         TEST_CASE(syntax_error); // Ticket #5073
         TEST_CASE(trac_5970);
+        TEST_CASE(valueFlowUninit);
 
         TEST_CASE(isVariableUsageDeref); // *p
 
@@ -2325,7 +2326,6 @@ private:
                        "    ({ if (0); });\n"
                        "    for_each(i) { }\n"
                        "}", "test.c", false);
-        ASSERT_EQUALS("", errout.str());
 
         // if, if
         checkUninitVar("void f(int a) {\n"
@@ -3808,6 +3808,14 @@ private:
         // Check code..
         CheckUninitVar check(&tokenizer, &settings, this);
         check.deadPointer();
+    }
+
+    void valueFlowUninit() {
+        checkUninitVar("void f() {\n"
+                       "  int x;\n"
+                       "  switch (x) {}\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
     }
 
     void isVariableUsageDeref() {
