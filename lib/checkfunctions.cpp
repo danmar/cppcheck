@@ -292,6 +292,13 @@ void CheckFunctions::mathfunctionCallWarning(const Token *tok, const std::string
 //---------------------------------------------------------------------------
 void CheckFunctions::memsetZeroBytes()
 {
+// FIXME:
+//  Replace this with library configuration.
+//  For instance:
+//     <arg nr="3">
+//       <warn knownIntValue="0" severity="warning" msg="..."/>
+//     </arg>
+
     if (!_settings->isEnabled(Settings::WARNING))
         return;
 
@@ -320,6 +327,14 @@ void CheckFunctions::memsetZeroBytesError(const Token *tok)
 
 void CheckFunctions::memsetInvalid2ndParam()
 {
+// FIXME:
+//  Replace this with library configuration.
+//  For instance:
+//     <arg nr="2">
+//       <not-float/>
+//       <warn possibleIntValue=":-129,256:" severity="warning" msg="..."/>
+//     </arg>
+
     const bool printPortability = _settings->isEnabled(Settings::PORTABILITY);
     const bool printWarning = _settings->isEnabled(Settings::WARNING);
     if (!printWarning && !printPortability)
