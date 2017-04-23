@@ -79,7 +79,7 @@ void CheckFunctions::checkProhibitedFunctions()
 }
 
 //---------------------------------------------------------------------------
-// strtol(str, 0, radix)  <- radix must be 0 or 2-36
+// Check <valid> and <not-bool>
 //---------------------------------------------------------------------------
 void CheckFunctions::invalidFunctionUsage()
 {
