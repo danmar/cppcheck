@@ -256,6 +256,10 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     if (!tok->addValue(value))
         return;
 
+    // Don't set parent for uninitialized values
+    if (value.isUninit())
+        return;
+
     Token *parent = const_cast<Token*>(tok->astParent());
     if (!parent)
         return;
