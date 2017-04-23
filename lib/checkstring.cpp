@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checkstring.h"
 #include "symboldatabase.h"
+#include "utils.h"
 
 //---------------------------------------------------------------------------
 
@@ -270,7 +271,7 @@ void CheckString::checkIncorrectStringCompare()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // skip "assert(str && ..)" and "assert(.. && str)"
-            if (tok->str().size() >= 6U && (tok->str().find("assert") == tok->str().size() - 6U || tok->str().find("ASSERT") == tok->str().size() - 6U) &&
+            if ((endsWith(tok->str(), "assert", 6) || endsWith(tok->str(), "ASSERT", 6)) &&
                 Token::Match(tok, "%name% (") &&
                 (Token::Match(tok->tokAt(2), "%str% &&") || Token::Match(tok->next()->link()->tokAt(-2), "&& %str% )")))
                 tok = tok->next()->link();

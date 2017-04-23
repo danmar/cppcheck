@@ -60,4 +60,9 @@ inline bool endsWith(const std::string &str, char c)
     return str.back() == c;
 }
 
+inline bool endsWith(const std::string &str, const char end[], std::size_t endlen)
+{
+    return (str.size() >= endlen) && (str.compare(str.size()-endlen, endlen, end)==0);
+}
+
 #endif
