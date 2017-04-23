@@ -59,7 +59,7 @@ static const struct CWE CWE783(783U);   // Operator Precedence Logic Error
 //----------------------------------------------------------------------------------
 // The return value of fgetc(), getc(), ungetc(), getchar() etc. is an integer value.
 // If this return value is stored in a character variable and then compared
-// to compared to EOF, which is an integer, the comparison maybe be false.
+// to EOF, which is an integer, the comparison maybe be false.
 //
 // Reference:
 // - Ticket #160
@@ -80,7 +80,7 @@ void CheckOther::checkCastIntToCharAndBack()
         std::map<unsigned int, std::string> vars;
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // Quick check to see if any of the matches below have any chances
-            if (!tok->isName() || !Token::Match(tok, "%var%|EOF %comp%|="))
+            if (!Token::Match(tok, "%var%|EOF %comp%|="))
                 continue;
             if (Token::Match(tok, "%var% = fclose|fflush|fputc|fputs|fscanf|getchar|getc|fgetc|putchar|putc|puts|scanf|sscanf|ungetc (")) {
                 const Variable *var = tok->variable();
@@ -1127,30 +1127,27 @@ void CheckOther::checkMemsetInvalid2ndParam()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok && (tok != scope->classEnd); tok = tok->next()) {
-            if (Token::simpleMatch(tok, "memset (")) {
-                const Token* firstParamTok = tok->tokAt(2);
-                if (!firstParamTok)
-                    continue;
-                const Token* secondParamTok = firstParamTok->nextArgument();
-                if (!secondParamTok)
-                    continue;
+            if (!Token::simpleMatch(tok, "memset ("))
+                continue;
 
-                // Second parameter is zero literal, i.e. 0.0f
-                if (Token::Match(secondParamTok, "%num% ,") && MathLib::isNullValue(secondParamTok->str()))
-                    continue;
+            const std::vector<const Token *> args = getArguments(tok);
+            if (args.size() != 3)
+                continue;
 
-                const Token *top = secondParamTok;
-                while (top->astParent() && top->astParent()->str() != ",")
-                    top = top->astParent();
+            // Second parameter is zero literal, i.e. 0.0f
+            const Token * const secondParamTok = args[1];
+            if (Token::Match(secondParamTok, "%num% ,") && MathLib::isNullValue(secondParamTok->str()))
+                continue;
 
-                // Check if second parameter is a float variable or a float literal != 0.0f
-                if (printPortability && astIsFloat(top,false)) {
-                    memsetFloatError(secondParamTok, top->expressionString());
-                } else if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
-                    const long long int value = MathLib::toLongNumber(secondParamTok->str());
-                    if (value < -128 || value > 255)
-                        memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
-                }
+            // Check if second parameter is a float variable or a float literal != 0.0f
+            if (printPortability && astIsFloat(secondParamTok,false)) {
+                memsetFloatError(secondParamTok, secondParamTok->expressionString());
+            }
+
+            if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
+                const long long int value = MathLib::toLongNumber(secondParamTok->str());
+                if (value < -128 || value > 255) // FIXME: Use platform char_bits
+                    memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
             }
         }
     }
