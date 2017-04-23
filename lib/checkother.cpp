@@ -49,8 +49,6 @@ static const struct CWE CWE672(672U);   // Operation on a Resource after Expirat
 static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
 static const struct CWE CWE683(683U);   // Function Call With Incorrect Order of Arguments
 static const struct CWE CWE686(686U);   // Function Call With Incorrect Argument Type
-static const struct CWE CWE687(687U);   // Function Call With Incorrectly Specified Argument Value
-static const struct CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
 static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
 static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const struct CWE CWE768(768U);   // Incorrect Short Circuit Evaluation
@@ -1082,91 +1080,6 @@ void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 {
     reportError(tok, Severity::style, "unreachableCode",
                 "Statements following return, break, continue, goto or throw will never be executed.", CWE561, inconclusive);
-}
-
-//---------------------------------------------------------------------------
-// memset(p, y, 0 /* bytes to fill */) <- 2nd and 3rd arguments inverted
-//---------------------------------------------------------------------------
-void CheckOther::checkMemsetZeroBytes()
-{
-    if (!_settings->isEnabled(Settings::WARNING))
-        return;
-
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "memset|wmemset (") && (numberOfArguments(tok)==3)) {
-                const Token* lastParamTok = tok->next()->link()->previous();
-                if (lastParamTok->str() == "0")
-                    memsetZeroBytesError(tok);
-            }
-        }
-    }
-}
-
-void CheckOther::memsetZeroBytesError(const Token *tok)
-{
-    const std::string summary("memset() called to fill 0 bytes.");
-    const std::string verbose(summary + " The second and third arguments might be inverted."
-                              " The function memset ( void * ptr, int value, size_t num ) sets the"
-                              " first num bytes of the block of memory pointed by ptr to the specified value.");
-    reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose, CWE687, false);
-}
-
-void CheckOther::checkMemsetInvalid2ndParam()
-{
-    const bool printPortability = _settings->isEnabled(Settings::PORTABILITY);
-    const bool printWarning = _settings->isEnabled(Settings::WARNING);
-    if (!printWarning && !printPortability)
-        return;
-
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok && (tok != scope->classEnd); tok = tok->next()) {
-            if (!Token::simpleMatch(tok, "memset ("))
-                continue;
-
-            const std::vector<const Token *> args = getArguments(tok);
-            if (args.size() != 3)
-                continue;
-
-            // Second parameter is zero literal, i.e. 0.0f
-            const Token * const secondParamTok = args[1];
-            if (Token::Match(secondParamTok, "%num% ,") && MathLib::isNullValue(secondParamTok->str()))
-                continue;
-
-            // Check if second parameter is a float variable or a float literal != 0.0f
-            if (printPortability && astIsFloat(secondParamTok,false)) {
-                memsetFloatError(secondParamTok, secondParamTok->expressionString());
-            }
-
-            if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
-                const long long int value = MathLib::toLongNumber(secondParamTok->str());
-                if (value < -128 || value > 255) // FIXME: Use platform char_bits
-                    memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
-            }
-        }
-    }
-}
-
-void CheckOther::memsetFloatError(const Token *tok, const std::string &var_value)
-{
-    const std::string message("The 2nd memset() argument '" + var_value +
-                              "' is a float, its representation is implementation defined.");
-    const std::string verbose(message + " memset() is used to set each byte of a block of memory to a specific value and"
-                              " the actual representation of a floating-point value is implementation defined.");
-    reportError(tok, Severity::portability, "memsetFloat", message + "\n" + verbose, CWE688, false);
-}
-
-void CheckOther::memsetValueOutOfRangeError(const Token *tok, const std::string &value)
-{
-    const std::string message("The 2nd memset() argument '" + value + "' doesn't fit into an 'unsigned char'.");
-    const std::string verbose(message + " The 2nd parameter is passed as an 'int', but the function fills the block of memory using the 'unsigned char' conversion of this value.");
-    reportError(tok, Severity::warning, "memsetValueOutOfRange", message + "\n" + verbose, CWE686, false);
 }
 
 //---------------------------------------------------------------------------

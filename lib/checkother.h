@@ -87,8 +87,6 @@ public:
         checkOther.checkCastIntToCharAndBack();
 
         checkOther.checkMisusedScopedObject();
-        checkOther.checkMemsetZeroBytes();
-        checkOther.checkMemsetInvalid2ndParam();
         checkOther.checkPipeParameterSize();
 
         checkOther.checkInvalidFree();
@@ -146,12 +144,6 @@ public:
 
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
-
-    /** @brief %Check for filling zero bytes with memset() */
-    void checkMemsetZeroBytes();
-
-    /** @brief %Check for invalid 2nd parameter of memset() */
-    void checkMemsetInvalid2ndParam();
 
     /** @brief %Check for suspicious code where if and else branch are the same (e.g "if (a) b = true; else b = true;") */
     void checkDuplicateBranch();
@@ -238,9 +230,6 @@ private:
     void suspiciousEqualityComparisonError(const Token* tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
-    void memsetZeroBytesError(const Token *tok);
-    void memsetFloatError(const Token *tok, const std::string &var_value);
-    void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void duplicateExpressionTernaryError(const Token *tok);
@@ -298,9 +287,6 @@ private:
         c.suspiciousCaseInSwitchError(nullptr,  "||");
         c.suspiciousEqualityComparisonError(nullptr);
         c.selfAssignmentError(nullptr,  "varname");
-        c.memsetZeroBytesError(nullptr);
-        c.memsetFloatError(nullptr,  "varname");
-        c.memsetValueOutOfRangeError(nullptr,  "varname");
         c.clarifyCalculationError(nullptr,  "+");
         c.clarifyStatementError(nullptr);
         c.duplicateBranchError(nullptr,  0);
@@ -349,7 +335,6 @@ private:
 
                // warning
                "- either division by zero or useless condition\n"
-               "- memset() with a value out of range as the 2nd parameter\n"
                "- access of moved or forwarded variable.\n"
 
                // performance
@@ -358,7 +343,6 @@ private:
                "- passing parameter by value\n"
 
                // portability
-               "- memset() with a float as the 2nd parameter\n"
                "- Passing NULL pointer to function with variable number of arguments leads to UB.\n"
 
                // style
