@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checkstring.h"
 #include "symboldatabase.h"
+#include "astutils.h"
 #include "utils.h"
 
 //---------------------------------------------------------------------------
@@ -321,6 +322,7 @@ void CheckString::incorrectStringBooleanError(const Token *tok, const std::strin
 
 //---------------------------------------------------------------------------
 // Overlapping source and destination passed to sprintf().
+// TODO: Library configuration for overlapping arguments
 //---------------------------------------------------------------------------
 void CheckString::sprintfOverlappingData()
 {
@@ -329,34 +331,23 @@ void CheckString::sprintfOverlappingData()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            // Get variable id of target buffer..
-            unsigned int varid = 0;
-
-            if (Token::Match(tok, "sprintf|snprintf|swprintf ( %var% ,"))
-                varid = tok->tokAt(2)->varId();
-
-            else if (Token::Match(tok, "sprintf|snprintf|swprintf ( %name% . %var% ,"))
-                varid = tok->tokAt(4)->varId();
-
-            else
+            if (!Token::Match(tok, "sprintf|snprintf|swprintf ("))
                 continue;
 
-            // goto next argument
-            const Token *tok2 = tok->tokAt(2)->nextArgument();
+            const std::vector<const Token *> args = getArguments(tok);
 
-            if (tok->str() == "snprintf" || tok->str() == "swprintf") { // Jump over second parameter for snprintf and swprintf
-                tok2 = tok2->nextArgument();
-                if (!tok2)
-                    continue;
-            }
-
-            // is any source buffer overlapping the target buffer?
-            do {
-                if (Token::Match(tok2, "%varid% [,)]", varid)) {
-                    sprintfOverlappingDataError(tok2, tok2->str());
-                    break;
+            const int formatString = Token::Match(tok, "sprintf") ? 1 : 2;
+            for (unsigned int argnr = formatString + 1; argnr < args.size(); ++argnr) {
+                bool same = isSameExpression(_tokenizer->isCPP(),
+                                             false,
+                                             args[0],
+                                             args[argnr],
+                                             _settings->library,
+                                             true);
+                if (same) {
+                    sprintfOverlappingDataError(args[argnr], args[argnr]->expressionString());
                 }
-            } while (nullptr != (tok2 = tok2->nextArgument()));
+            }
         }
     }
 }
