@@ -336,7 +336,7 @@ void CheckString::sprintfOverlappingData()
 
             const std::vector<const Token *> args = getArguments(tok);
 
-            const int formatString = Token::Match(tok, "sprintf") ? 1 : 2;
+            const int formatString = Token::simpleMatch(tok, "sprintf") ? 1 : 2;
             for (unsigned int argnr = formatString + 1; argnr < args.size(); ++argnr) {
                 bool same = isSameExpression(_tokenizer->isCPP(),
                                              false,
