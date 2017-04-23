@@ -1034,7 +1034,7 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
         start = start->previous();
     }
 
-    if (Token::Match(start->link(), ") {"))
+    if (Token::simpleMatch(start->link(), ") {"))
         return (!pointer || alloc == NO_ALLOC);
 
     // is this a function call?
