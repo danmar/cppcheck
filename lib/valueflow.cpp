@@ -2849,15 +2849,17 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
             continue;
         const Token *vardecl = tok->next();
         bool stdtype = false;
+        bool pointer = false;
         while (Token::Match(vardecl, "%name%|::|*") && vardecl->varId() == 0) {
             stdtype |= vardecl->isStandardType();
+            pointer |= vardecl->str() == "*";
             vardecl = vardecl->next();
         }
+        if (!tokenlist->isC() && !stdtype && !pointer)
+            continue;
         if (!Token::Match(vardecl, "%var% ;"))
             continue;
         if (Token::Match(vardecl, "%varid% ; %varid% =", vardecl->varId()))
-            continue;
-        if (!tokenlist->isC() && !stdtype)
             continue;
         const Variable *var = vardecl->variable();
         if (!var || var->nameToken() != vardecl)

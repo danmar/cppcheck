@@ -2377,16 +2377,22 @@ private:
     }
 
     void valueFlowUninit() {
+        const char* code;
         std::list<ValueFlow::Value> values;
 
-        const char* code = "void f() {\n"
-                           "    int x;\n"
-                           "    switch (x) {}\n"
-                           "}";
-
+        code = "void f() {\n"
+               "    int x;\n"
+               "    switch (x) {}\n"
+               "}";
         values = tokenValues(code, "x )");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(ValueFlow::Value::UNINIT, values.empty() ? 0 : values.front().valueType);
+        ASSERT_EQUALS(true, values.size()==1U && values.front().isUninitValue());
+
+        code = "void f() {\n"
+               "    C *c;\n"
+               "    if (c->x() == 4) {}\n"
+               "}";
+        values = tokenValues(code, "c .");
+        ASSERT_EQUALS(true, values.size()==1U && values.front().isUninitValue());
     }
 };
 

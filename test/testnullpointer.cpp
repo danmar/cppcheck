@@ -441,7 +441,7 @@ private:
 
         // #2641 - local pointer, function call
         check("void f() {\n"
-              "    ABC *abc;\n"
+              "    ABC *abc = abc1;\n"
               "    abc->a = 0;\n"
               "    do_stuff();\n"
               "    if (abc) { }\n"
