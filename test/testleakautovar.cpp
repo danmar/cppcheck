@@ -310,6 +310,18 @@ private:
               "  return p;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(char *p) {\n"
+              "  if (!p) delete p;\n"
+              "  return p;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char *p) {\n"
+              "  if (!p) delete [] p;\n"
+              "  return p;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void deallocuse5() {  // #4018
