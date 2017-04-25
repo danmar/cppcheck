@@ -628,6 +628,35 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 3));
 
+        // compound assignment += , -= , ...
+        code = "void f(int x) {\n"
+               "   a = x;\n"
+               "   x += 2;\n"
+               "   if (x == 4);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 2));
+
+        code = "void f(int x) {\n"
+               "   a = x;\n"
+               "   x -= 2;\n"
+               "   if (x == 4);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 6));
+
+        code = "void f(int x) {\n"
+               "   a = x;\n"
+               "   x *= 2;\n"
+               "   if (x == 42);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 21));
+
+        code = "void f(int x) {\n"
+               "   a = x;\n"
+               "   x /= 5;\n"
+               "   if (x == 42);\n"
+               "}";
+        ASSERT(tokenValues(code, "x ;").empty());
+
         // bailout: assignment
         bailout("void f(int x) {\n"
                 "    x = y;\n"

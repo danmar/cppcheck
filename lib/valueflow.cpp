@@ -940,6 +940,29 @@ static void valueFlowReverse(TokenList *tokenlist,
                 break;
             }
 
+            // compound assignment
+            if (Token::Match(tok2->previous(), "[;{}] %var% %assign%") && tok2->next()->str() != "=") {
+                const Token * const assignToken = tok2->next();
+                const Token * const rhsToken = assignToken->astOperand2();
+                if (!rhsToken || !rhsToken->hasKnownIntValue()) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "compound assignment, rhs value is not known");
+                    break;
+                }
+                const MathLib::bigint rhsValue =  rhsToken->values().front().intvalue;
+                if (assignToken->str() == "+=")
+                    val.intvalue -= rhsValue;
+                else if (assignToken->str() == "-=")
+                    val.intvalue += rhsValue;
+                else if (assignToken->str() == "*=")
+                    val.intvalue /= rhsValue;
+                else {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "compound assignment " + tok2->str());
+                    break;
+                }
+            }
+
             // bailout: variable is used in rhs in assignment to itself
             if (bailoutSelfAssignment(tok2)) {
                 if (settings->debugwarnings)
