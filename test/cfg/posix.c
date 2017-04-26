@@ -44,7 +44,7 @@ void bufferAccessOutOfBounds(int fd)
     0;
 }
 
-void nullPointer(char *p)
+void nullPointer(char *p, int fd)
 {
     // cppcheck-suppress ignoredReturnValue
     isatty(0);
@@ -56,6 +56,10 @@ void nullPointer(char *p)
     // cppcheck-suppress nullPointer
     // cppcheck-suppress utimeCalled
     utime(NULL, NULL);
+    // cppcheck-suppress nullPointer   
+    read(fd,NULL,42);
+    // cppcheck-suppress nullPointer   
+    write(fd,NULL,42);
 }
 
 void memleak_getaddrinfo()
