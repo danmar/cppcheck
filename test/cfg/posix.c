@@ -56,9 +56,9 @@ void nullPointer(char *p, int fd)
     // cppcheck-suppress nullPointer
     // cppcheck-suppress utimeCalled
     utime(NULL, NULL);
-    // cppcheck-suppress nullPointer   
+    // cppcheck-suppress nullPointer
     read(fd,NULL,42);
-    // cppcheck-suppress nullPointer   
+    // cppcheck-suppress nullPointer
     write(fd,NULL,42);
 }
 
