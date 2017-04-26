@@ -1966,6 +1966,12 @@ private:
                                      "}";
             ASSERT_EQUALS(expected, tok(code));
         }
+
+        {
+            const char code[]     = "tr = (struct reg){ .a = (1), .c = (2) };";
+            const char expected[] = "tr = ( struct reg ) { . a = 1 , . c = 2 } ;";
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
     void simplifyConditionOperator() {

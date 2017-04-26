@@ -7912,9 +7912,14 @@ void Tokenizer::simplifyComma()
 
         if (!tok)
             syntaxError(nullptr); // invalid code like in #4195
-        if (Token::Match(tok, "(|[") ||
-            (tok->str() == "{" && tok->previous() && tok->previous()->str() == "=")) {
+
+        if (Token::Match(tok, "(|[") || Token::Match(tok->previous(), "%name%|= {")) {
             tok = tok->link();
+            continue;
+        }
+
+        if (Token::simpleMatch(tok, "= (") && Token::simpleMatch(tok->linkAt(1), ") {")) {
+            tok = tok->linkAt(1)->linkAt(1);
             continue;
         }
 
