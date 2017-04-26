@@ -590,7 +590,7 @@ static void compileTerm(Token *&tok, AST_state& state)
         tok->astOperand1(tok->next());
         tok = tok->tokAt(2);
     }
-    if (state.inArrayAssignment && Token::Match(tok->previous(), "[{,] [ %num% ]")) {
+    if (state.inArrayAssignment && Token::Match(tok->previous(), "[{,] [ %num%|%name% ]")) {
         state.op.push(tok);
         tok->astOperand1(tok->next());
         tok = tok->tokAt(3);
