@@ -3816,6 +3816,13 @@ private:
                        "  switch (x) {}\n"
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar("int f() {\n"
+                       "  int x;\n"
+                       "  init(x);\n"
+                       "  return x;\n" // TODO: inconclusive ?
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isVariableUsageDeref() {

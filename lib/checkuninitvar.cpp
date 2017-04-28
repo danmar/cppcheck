@@ -1208,13 +1208,14 @@ void CheckUninitVar::valueFlowUninit()
         if (!scope->isExecutable())
             continue;
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (!tok->variable())
+            if (!tok->variable() || tok->values().size() != 1U)
                 continue;
-            if (tok->values().size() != 1U || tok->values().front().valueType != ValueFlow::Value::UNINIT)
+            const ValueFlow::Value &v = tok->values().front();
+            if (v.valueType != ValueFlow::Value::UNINIT || v.inconclusive)
                 continue;
             if (!isVariableUsage(tok, tok->variable()->isPointer(), NO_ALLOC))
                 continue;
-            uninitvarError(tok,tok->str());
+            uninitvarError(tok, tok->str());
         }
     }
 }
