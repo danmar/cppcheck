@@ -2878,7 +2878,7 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
             pointer |= vardecl->str() == "*";
             vardecl = vardecl->next();
         }
-        if (!tokenlist->isC() && !stdtype && !pointer)
+        if (!stdtype && !pointer)
             continue;
         if (!Token::Match(vardecl, "%var% ;"))
             continue;
@@ -2888,7 +2888,7 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
         if (!var || var->nameToken() != vardecl)
             continue;
         if ((!var->isPointer() && var->type() && var->type()->needInitialization != Type::True) ||
-            var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
+            !var->isLocal() || var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
             continue;
 
         ValueFlow::Value uninitValue;
