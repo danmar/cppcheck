@@ -2422,6 +2422,13 @@ private:
                "}";
         values = tokenValues(code, "c .");
         ASSERT_EQUALS(true, values.size()==1U && values.front().isUninitValue());
+
+        code = "void f() {\n"
+               "    int **x;\n"
+               "    y += 10;\n"
+               "    x = dostuff(sizeof(*x)*y);\n"
+               "}";
+        ASSERT_EQUALS(0U, tokenValues(code, "x )").size());
     }
 };
 

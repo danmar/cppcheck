@@ -1005,8 +1005,8 @@ static void valueFlowReverse(TokenList *tokenlist,
                 break;
         }
 
-        // skip sizeof..
-        if (tok2->str() == ")" && Token::Match(tok2->link()->previous(), "typeof|sizeof ("))
+        // skip sizeof etc..
+        if (tok2->str() == ")" && Token::Match(tok2->link()->previous(), "sizeof|typeof|typeid ("))
             tok2 = tok2->link();
 
         // goto label
@@ -1307,7 +1307,8 @@ static bool valueFlowForward(Token * const               startToken,
             return false;
         }
 
-        if (Token::Match(tok2, "sizeof|typeof|typeid ("))
+        // Skip sizeof etc
+        else if (Token::Match(tok2, "sizeof|typeof|typeid ("))
             tok2 = tok2->linkAt(1);
 
         else if (Token::simpleMatch(tok2, "else {")) {
@@ -1635,7 +1636,7 @@ static bool valueFlowForward(Token * const               startToken,
 
         else if (tok2->varId() == varid) {
             // bailout: assignment
-            if (Token::Match(tok2->previous(), "!!* %name% %op%") && tok2->next()->isAssignmentOp()) {
+            if (Token::Match(tok2->previous(), "!!* %name% %assign%")) {
                 // simplify rhs
                 for (Token *tok3 = tok2->tokAt(2); tok3; tok3 = tok3->next()) {
                     if (tok3->varId() == varid) {
@@ -1644,6 +1645,9 @@ static bool valueFlowForward(Token * const               startToken,
                             setTokenValue(tok3, *it, settings);
                     } else if (Token::Match(tok3, "++|--|?|:|;"))
                         break;
+                    // Skip sizeof etc
+                    else if (Token::Match(tok3, "sizeof|typeof|typeid ("))
+                        tok3 = tok3->linkAt(1);
                 }
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
