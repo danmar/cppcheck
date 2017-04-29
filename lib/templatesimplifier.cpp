@@ -710,6 +710,33 @@ bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::stri
     return true;
 }
 
+// Utility function for TemplateSimplifier::getTemplateNamePosition, that works on template member functions,
+// hence this pattern: "> %type% [%type%] < ... > :: %type% ("
+bool getTemplateNamePositionTemplateMember(const Token *tok, int &namepos)
+{
+    if (!Token::Match(tok, "> %type% <") && !Token::Match(tok, "> %type% %type% <"))
+        return false;
+
+    int currPos = 0;
+    currPos = 2 + (Token::Match(tok, "> %type% %type%"));
+
+    // Find the end of the template argument list
+    const Token *templateParmEnd = tok->linkAt(currPos);
+    if (!templateParmEnd)
+        templateParmEnd = tok->tokAt(currPos)->findClosingBracket();
+    if (!templateParmEnd)
+        return false;
+
+    if (Token::Match(templateParmEnd->next(), ":: %type% (")) {
+        // We have a match, and currPos points at the template list opening '<'. Move it to the closing '>'
+        for (const Token *tok2 = tok->tokAt(currPos) ; tok2 != templateParmEnd ; tok2 = tok2->next())
+            ++currPos;
+        namepos = currPos + 2;
+        return true;
+    }
+    return false;
+}
+
 int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
     // get the position of the template name
@@ -720,14 +747,9 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
         namepos = 2;
     else if (Token::Match(tok, "> %type% %type% *|&| %type% ("))
         namepos = 3;
-    else if ((Token::Match(tok, "> %type% <") && Token::Match(tok->linkAt(2), "> :: %type% (")) ||
-             (Token::Match(tok, "> %type% %type% <") && Token::Match(tok->linkAt(3), "> :: %type% ("))) {
-        namepos = 2 + (Token::Match(tok, "> %type% %type%"));
-        const Token *end = tok->linkAt(namepos);
-        for (const Token *tok2 = tok->tokAt(namepos) ; tok2 != end ; tok2 = tok2->next())
-            ++namepos;
-        namepos += 2;
-    } else if (Token::Match(tok, "> %type% *|&| %type% :: %type% (")) {
+    else if (getTemplateNamePositionTemplateMember(tok, namepos))
+        ;
+    else if (Token::Match(tok, "> %type% *|&| %type% :: %type% (")) {
         namepos = 4;
         starAmpPossiblePosition = 2;
     } else if (Token::Match(tok, "> %type% %type% *|&| %type% :: %type% (")) {
