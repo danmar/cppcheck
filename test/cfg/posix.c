@@ -56,10 +56,12 @@ void nullPointer(char *p, int fd)
     // cppcheck-suppress nullPointer
     // cppcheck-suppress utimeCalled
     utime(NULL, NULL);
-    // cppcheck-suppress nullPointer
+    // not implemented yet: cppcheck-suppress nullPointer
     read(fd,NULL,42);
-    // cppcheck-suppress nullPointer
+    read(fd,NULL,0);
+    // not implemented yet: cppcheck-suppress nullPointer
     write(fd,NULL,42);
+    write(fd,NULL,0);
 }
 
 void memleak_getaddrinfo()
