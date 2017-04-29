@@ -2513,6 +2513,29 @@ static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
     return s;
 }
 
+static std::string accessControlToString(const AccessControl& access)
+{
+    switch (access) {
+    case Public:
+        return "Public";
+    case Protected:
+        return "Protected";
+    case Private:
+        return "Private";
+    case Global:
+        return "Global";
+    case Namespace:
+        return "Namespace";
+    case Argument:
+        return "Argument";
+    case Local:
+        return "Local";
+    case Throw:
+        return "Throw";
+    }
+    return "Unknown";
+}
+
 static std::string tokenToString(const Token* tok, const Tokenizer* tokenizer)
 {
     std::ostringstream oss;
@@ -2939,6 +2962,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " isPointer=\""      << var->isPointer() << '\"';
         out << " isReference=\""    << var->isReference() << '\"';
         out << " isStatic=\""       << var->isStatic() << '\"';
+        out << " access=\""         << accessControlToString(var->_access) << '\"';
         out << "/>" << std::endl;
     }
     out << "  </variables>" << std::endl;
