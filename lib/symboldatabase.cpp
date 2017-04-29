@@ -2698,7 +2698,7 @@ void SymbolDatabase::printOut(const char *title) const
                 std::cout << "        retDef: " << tokenToString(func->retDef, _tokenizer) << std::endl;
             if (func->retDef) {
                 std::cout << "           ";
-                for (const Token * tok = func->retDef; tok != func->tokenDef; tok = tok->next())
+                for (const Token * tok = func->retDef; tok && tok != func->tokenDef && !Token::Match(tok, "{|;"); tok = tok->next())
                     std::cout << " " << tokenType(tok);
                 std::cout << std::endl;
             }
