@@ -63,6 +63,7 @@ private:
         TEST_CASE(tokenize31);  // #3503 (Wrong handling of member function taking function pointer as argument)
         TEST_CASE(tokenize32);  // #5884 (fsanitize=undefined: left shift of negative value -10000 in lib/templatesimplifier.cpp:852:46)
         TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
+        TEST_CASE(tokenize34);  // #8031
 
         TEST_CASE(validate);
 
@@ -783,6 +784,39 @@ private:
                             "    vector<int> VI;\n"
                             "}\n";
         tokenizeAndStringify(code, true);
+    }
+
+    void tokenize34() { // #8031
+        {
+            const char code[] = "struct Containter {\n"
+                                "  Containter();\n"
+                                "  int* mElements;\n"
+                                "};\n"
+                                "Containter::Containter() : mElements(nullptr) {}\n"
+                                "Containter intContainer;";
+            const char exp [] = "1: struct Containter {\n"
+                                "2: Containter ( ) ;\n"
+                                "3: int * mElements@1 ;\n"
+                                "4: } ;\n"
+                                "5: Containter :: Containter ( ) : mElements@1 ( nullptr ) { }\n"
+                                "6: Containter intContainer@2 ;\n";
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
+        }
+        {
+            const char code[] = "template<class T> struct Containter {\n"
+                                "  Containter();\n"
+                                "  int* mElements;\n"
+                                "};\n"
+                                "template <class T> Containter<T>::Containter() : mElements(nullptr) {}\n"
+                                "Containter<int> intContainer;";
+            const char exp [] = "5: template < class T > Containter < T > :: Containter ( ) : mElements ( nullptr ) { }\n"
+                                "6: Containter < int > intContainer@1 ; struct Containter < int > {\n"
+                                "2: Containter < int > ( ) ;\n"
+                                "3: int * mElements@2 ;\n"
+                                "4: } ;\n"
+                                "5: Containter < int > :: Containter ( ) : mElements@2 ( nullptr ) { }\n";
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
+        }
     }
 
     void validate() {

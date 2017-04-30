@@ -2910,8 +2910,10 @@ void Tokenizer::setVarIdPass2()
         for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
             Token *tok2 = *func;
 
-            if (!Token::Match(tok2, classname.c_str()))
-                continue;
+            if (!Token::Match(tok2, classname.c_str())) {
+                if (tok2->str() != classname) // #8031: Both could be "A < B >" and if so, one must not bail out
+                    continue;
+            }
 
             if (Token::Match(tok2, "%name% <"))
                 tok2 = tok2->next()->findClosingBracket();
