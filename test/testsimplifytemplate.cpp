@@ -1404,8 +1404,8 @@ private:
         ASSERT_EQUALS(9, templateNamePositionHelper("template<class T, class U> class A { unsigned foo(); }; "
                       "template<class T, class U> unsigned A<T, U>::foo() { return 0; }", 25, /*onlyCreateTokens=*/true));
         ASSERT_EQUALS(12, templateNamePositionHelper("template<class T> class v {}; "
-                                                     "template<class T, class U> class A { unsigned foo(); }; "
-                                                     "template<> unsigned A<int, v<char> >::foo() { return 0; }", 30, /*onlyCreateTokens=*/true));
+                      "template<class T, class U> class A { unsigned foo(); }; "
+                      "template<> unsigned A<int, v<char> >::foo() { return 0; }", 30, /*onlyCreateTokens=*/true));
     }
 
     void expandSpecialized() {
