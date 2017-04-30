@@ -1200,13 +1200,17 @@ static const Token* goToRightParenthesis(const Token* start, const Token* end)
 
 static std::string stringFromTokenRange(const Token* start, const Token* end)
 {
-    std::string ret;
+    std::ostringstream ret;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-        ret += tok->str();
+        if (tok->originalName() == "->")
+            ret << "->";
+        else
+            ret << tok->str();
         if (Token::Match(tok, "%name%|%num% %name%|%num%"))
-            ret += " ";
+            ret << ' ';
     }
-    return ret + end->str();
+    ret << end->str();
+    return ret.str();
 }
 
 std::string Token::expressionString() const

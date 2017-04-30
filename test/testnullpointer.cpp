@@ -323,7 +323,7 @@ private:
               "    if (abc && abc->b == 0)\n"
               "        ;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'if(abc&&abc.b==0)' is redundant or there is possible null pointer dereference: abc.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'if(abc&&abc->b==0)' is redundant or there is possible null pointer dereference: abc.\n", errout.str());
 
         // ok dereferencing in a condition
         check("void foo(struct ABC *abc)\n"

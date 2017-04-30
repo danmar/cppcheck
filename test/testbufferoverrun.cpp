@@ -460,7 +460,8 @@ private:
               "    struct ABC* x = malloc(sizeof(struct ABC) + 10);\n"
               "    x->str[1] = 0;"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'x->str[1]' accessed at index 1, which is out of bounds.\n"
+                      "[test.cpp:10]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds.\n", errout.str());
 
         // This is not out of bounds because it is a variable length array
         // and the index is within the memory allocated.
@@ -582,7 +583,8 @@ private:
               "{\n"
               "    abc->str[10] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'abc->str[10]' accessed at index 10, which is out of bounds.\n"
+                      "[test.cpp:8]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     void array_index_9() {
@@ -669,7 +671,8 @@ private:
               "        abc->str[10] = 0;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:13]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (error) Array 'abc->str[10]' accessed at index 10, which is out of bounds.\n"
+                      "[test.cpp:13]: (error) Array 'abc.str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     void array_index_12() {
@@ -1131,6 +1134,9 @@ private:
         ASSERT_EQUALS("[test.cpp:9]: (error) Array 'test.a[10]' accessed at index 10, which is out of bounds.\n"
                       "[test.cpp:10]: (error) Array 'test.b[10][5]' index test.b[10][2] out of bounds.\n"
                       "[test.cpp:11]: (error) Array 'test.b[10][5]' index test.b[0][19] out of bounds.\n"
+                      "[test.cpp:14]: (error) Array 'ptest->a[10]' accessed at index 10, which is out of bounds.\n"
+                      "[test.cpp:15]: (error) Array 'ptest->b[10][5]' index ptest->b[10][2] out of bounds.\n"
+                      "[test.cpp:16]: (error) Array 'ptest->b[10][5]' index ptest->b[0][19] out of bounds.\n"
                       "[test.cpp:14]: (error) Array 'ptest.a[10]' accessed at index 10, which is out of bounds.\n"
                       "[test.cpp:15]: (error) Array 'ptest.b[10][5]' index ptest.b[10][2] out of bounds.\n"
                       "[test.cpp:16]: (error) Array 'ptest.b[10][5]' index ptest.b[0][19] out of bounds.\n", errout.str());
@@ -1151,6 +1157,8 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:8]: (error) Array 'test.a[10][5]' index test.a[9][5] out of bounds.\n"
                       "[test.cpp:9]: (error) Array 'test.a[10][5]' index test.a[0][50] out of bounds.\n"
+                      "[test.cpp:12]: (error) Array 'ptest->a[10][5]' index ptest->a[9][5] out of bounds.\n"
+                      "[test.cpp:13]: (error) Array 'ptest->a[10][5]' index ptest->a[0][50] out of bounds.\n"
                       "[test.cpp:12]: (error) Array 'ptest.a[10][5]' index ptest.a[9][5] out of bounds.\n"
                       "[test.cpp:13]: (error) Array 'ptest.a[10][5]' index ptest.a[0][50] out of bounds.\n", errout.str());
     }
@@ -2056,7 +2064,8 @@ private:
               "    struct tt *tt=x;\n"
               "    tt->name[22] = 123;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'tt.name[21]' accessed at index 22, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'tt->name[21]' accessed at index 22, which is out of bounds.\n"
+                      "[test.cpp:7]: (error) Array 'tt.name[21]' accessed at index 22, which is out of bounds.\n", errout.str());
     }
 
     void array_index_valueflow() {
@@ -2908,7 +2917,8 @@ private:
               "    Fred *f; f = new Fred;\n"
               "    return f->c[10];\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'f.c[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'f->c[10]' accessed at index 10, which is out of bounds.\n"
+                      "[test.cpp:5]: (error) Array 'f.c[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("static const size_t MAX_SIZE = UNAVAILABLE_TO_CPPCHECK;\n"
               "struct Thing { char data[MAX_SIZE]; };\n"

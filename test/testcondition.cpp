@@ -1583,7 +1583,7 @@ private:
               "    if (!tok->next()->function() || \n"
               "        (tok->next()->function() && tok->next()->function()->isConstructor()));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: tok.next().function(). '!A || (A && B)' is equivalent to '!A || B'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: tok->next()->function(). '!A || (A && B)' is equivalent to '!A || B'\n", errout.str());
 
         check("void f() {\n"
               "    if (!tok->next()->function() || \n"
@@ -1601,7 +1601,7 @@ private:
               "    if (!tok->next(1)->function(1) || \n"
               "        (tok->next(1)->function(1) && tok->next(1)->function(1)->isConstructor()));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: tok.next(1).function(1). '!A || (A && B)' is equivalent to '!A || B'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: tok->next(1)->function(1). '!A || (A && B)' is equivalent to '!A || B'\n", errout.str());
 
         check("void f() {\n"
               "    if (!tok->next()->function(1) || \n"
