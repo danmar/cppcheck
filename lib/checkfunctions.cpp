@@ -308,7 +308,10 @@ void CheckFunctions::memsetZeroBytes()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|wmemset (") && (numberOfArguments(tok)==3)) {
-                const Token* lastParamTok = getArguments(tok)[2];
+                const std::vector<const Token *> &arguments = getArguments(tok);
+                if (!CHECK_WRONG_DATA(arguments.size() == 3U))
+                    continue;
+                const Token* lastParamTok = arguments[2];
                 if (lastParamTok->str() == "0")
                     memsetZeroBytesError(tok);
             }
