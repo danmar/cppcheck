@@ -254,6 +254,7 @@ private:
         TEST_CASE(symboldatabase54); // #7257
         TEST_CASE(symboldatabase55); // #7767 (return unknown macro)
         TEST_CASE(symboldatabase56); // #7909
+        TEST_CASE(symboldatabase57);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -2751,6 +2752,27 @@ private:
             if (db) {
                 ASSERT_EQUALS(2U, db->scopeList.size());
                 ASSERT_EQUALS(2U, db->scopeList.begin()->functionList.size());
+            }
+        }
+    }
+
+    void symboldatabase57() {
+        GET_SYMBOL_DB("int bar(bool b)\n"
+                      "{\n"
+                      "    if(b)\n"
+                      "         return 1;\n"
+                      "    else\n"
+                      "         return 1;\n"
+                      "}");
+        ASSERT(db != nullptr);
+        if (db) {
+            ASSERT(db->scopeList.size() == 4U);
+            if (db->scopeList.size() == 4U) {
+                std::list<Scope>::const_iterator it = db->scopeList.begin();
+                ASSERT(it->type == Scope::eGlobal);
+                ASSERT((++it)->type == Scope::eFunction);
+                ASSERT((++it)->type == Scope::eIf);
+                ASSERT((++it)->type == Scope::eElse);
             }
         }
     }

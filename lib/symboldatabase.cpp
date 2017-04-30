@@ -786,7 +786,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 const Token* tok1 = tok->next();
                 if (tok->str() == "else")
                     scopeList.push_back(Scope(this, tok, scope, Scope::eElse, tok1));
-                if (tok->str() == "do")
+                else if (tok->str() == "do")
                     scopeList.push_back(Scope(this, tok, scope, Scope::eDo, tok1));
                 else //if (tok->str() == "try")
                     scopeList.push_back(Scope(this, tok, scope, Scope::eTry, tok1));
