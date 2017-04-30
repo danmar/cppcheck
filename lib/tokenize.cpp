@@ -3361,6 +3361,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove __attribute__((?))
     simplifyAttribute();
 
+    // Combine tokens..
+    combineOperators();
+
     // Simplify the C alternative tokens (and, or, etc.)
     simplifyCAlternativeTokens();
 
@@ -3369,9 +3372,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // combine "- %num%"
     concatenateNegativeNumberAndAnyPositive();
-
-    // Combine tokens..
-    combineOperators();
 
     // remove extern "C" and extern "C" {}
     if (isCPP())
