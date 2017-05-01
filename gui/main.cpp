@@ -107,7 +107,9 @@ static void ShowUsage()
                               "    -l <file>               Open given results xml file\n"
                               "    -d <directory>          Specify the directory that was checked to generate the results xml specified with -l\n"
                               "    -v, --version           Show program version\n"
-                              "    --data-dir=<directory>  Specify directory where GUI datafiles are located (translations, cfg)");
+                              "    --data-dir=<directory>  This option is for installation scripts so they can configure the directory where\n"
+                              "                            datafiles are located (translations, cfg). The GUI is not started when this option\n"
+                              "                            is used.");
 #if defined(_WIN32)
     QMessageBox msgBox(QMessageBox::Information,
                        MainWindow::tr("Cppcheck GUI - Command line parameters"),
