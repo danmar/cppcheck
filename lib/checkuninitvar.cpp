@@ -1201,6 +1201,7 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
 void CheckUninitVar::valueFlowUninit()
 {
     // FIXME: #8036, #8041
+    // When this is fixed, #7293 can be closed
     if (!_settings->experimental)
         return;
 
