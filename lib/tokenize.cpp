@@ -8133,6 +8133,27 @@ const Token * Tokenizer::findGarbageCode() const
         }
     }
 
+    for (const Token *tok = tokens(); tok ; tok = tok->next()) {
+        if (!Token::simpleMatch(tok, "for (")) // find for loops
+            continue;
+        // count number of semicolons
+        unsigned int semicolons = 0;
+        const Token* const startTok = tok;
+        tok = tok->next()->link()->previous(); // find ")" of the for-loop
+        // walk backwards until we find the beginning (startTok) of the for() again
+        for (; tok != startTok; tok = tok->previous()) {
+            if (tok->str() == ";") { // do the counting
+                semicolons++;
+            } else if (tok->str() == ")") { // skip pairs of ( )
+                tok = tok->link();
+            }
+        }
+        // if we have an invalid number of semicolons inside for( ), assume syntax error
+        if ((semicolons == 1) || (semicolons > 2)) {
+            return tok;
+        }
+    }
+
     // Code must not start with an arithmetical operand
     if (Token::Match(list.front(), "%cop%"))
         return list.front();

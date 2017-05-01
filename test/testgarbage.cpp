@@ -1035,7 +1035,8 @@ private:
     }
 
     void garbageCode136() { // #7033
-        checkCode("{ } () { void f() { node_t * n; for (; -n) {} } } { }");
+        ASSERT_THROW(checkCode("{ } () { void f() { node_t * n; for (; -n) {} } } { }"),
+                     InternalError);
     }
 
     void garbageCode137() { // #7034
@@ -1326,7 +1327,7 @@ private:
 
     void garbageCode165() {
         //7235
-        checkCode("for(;..)", false);
+        ASSERT_THROW(checkCode("for(;..)", false),InternalError);
     }
 
     void garbageCode167() {
