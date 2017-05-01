@@ -643,7 +643,8 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                        type->str() == "long" ? settings->sizeof_long : 0;
             }
             ValueFlow::Value value(size);
-            value.setKnown();
+            if (settings->platformType != cppcheck::Platform::Unspecified)
+                value.setKnown();
             setTokenValue(const_cast<Token *>(tok), value, settings);
             setTokenValue(const_cast<Token *>(tok->next()), value, settings);
         } else if (tok2->type() && tok2->type()->isEnumType()) {
@@ -659,7 +660,8 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                 }
             }
             ValueFlow::Value value(size);
-            value.setKnown();
+            if (settings->platformType != cppcheck::Platform::Unspecified)
+                value.setKnown();
             setTokenValue(const_cast<Token *>(tok), value, settings);
             setTokenValue(const_cast<Token *>(tok->next()), value, settings);
         } else if (Token::Match(tok, "sizeof ( %var% ) / sizeof (") && tok->next()->astParent() == tok->tokAt(4)) {
@@ -674,42 +676,51 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                 sz1->variable()->dimensionKnown(0) &&
                 (Token::Match(sz2, "* %varid% )", varid1) || Token::Match(sz2, "%varid% [ 0 ] )", varid1))) {
                 ValueFlow::Value value(sz1->variable()->dimension(0));
-                value.setKnown();
+                if (settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->tokAt(4)), value, settings);
             }
         } else if (!tok2->type()) {
             const ValueType &vt = ValueType::parseDecl(tok2,settings);
             if (vt.pointer) {
                 ValueFlow::Value value(settings->sizeof_pointer);
-                value.setKnown();
+                if (settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::CHAR) {
                 ValueFlow::Value value(1);
-                value.setKnown();
+                if (settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::SHORT) {
                 ValueFlow::Value value(settings->sizeof_short);
-                value.setKnown();
+                if (settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::INT) {
                 ValueFlow::Value value(settings->sizeof_int);
-                value.setKnown();
+                if (settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::LONG) {
                 ValueFlow::Value value(settings->sizeof_long);
-                value.setKnown();
+                if (settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::LONGLONG) {
                 ValueFlow::Value value(settings->sizeof_long_long);
-                value.setKnown();
+                if (settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::FLOAT) {
                 ValueFlow::Value value(settings->sizeof_float);
-                value.setKnown();
+                if (settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::DOUBLE) {
                 ValueFlow::Value value(settings->sizeof_double);
-                value.setKnown();
+                if (settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             }
         }

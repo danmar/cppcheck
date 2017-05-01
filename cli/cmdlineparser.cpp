@@ -699,6 +699,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 else if (platform == "unix64")
                     _settings->platform(Settings::Unix64);
                 else if (platform == "native")
+                    _settings->platform(Settings::Native);
+                else if (platform == "unspecified")
                     _settings->platform(Settings::Unspecified);
                 else if (!_settings->platformFile(platform)) {
                     std::string message("cppcheck: error: unrecognized platform: \"");
@@ -943,8 +945,10 @@ void CmdLineParser::PrintHelp()
               "                          * win64\n"
               "                                 64 bit Windows\n"
               "                          * native\n"
-              "                                 Unspecified platform. Type sizes of host system\n"
-              "                                 are assumed, but no further assumptions.\n"
+              "                                 Type sizes of host system are assumed, but no\n"
+              "                                 further assumptions.\n"
+              "                          * unspecified\n"
+              "                                 Unknown type sizes\n"
               "    -q, --quiet          Do not show progress reports.\n"
               "    -rp, --relative-paths\n"
               "    -rp=<paths>, --relative-paths=<paths>\n"
