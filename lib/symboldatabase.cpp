@@ -4743,10 +4743,13 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             if (isconst)
                 varvt.constness |= 1;
             setValueType(parent->previous(), varvt);
-            const_cast<Variable *>(parent->previous()->variable())->setFlags(varvt);
-            if (vt2->typeScope && vt2->typeScope->definedType) {
-                const_cast<Variable *>(parent->previous()->variable())->type(vt2->typeScope->definedType);
-                autoToken->type(vt2->typeScope->definedType);
+            Variable *var = const_cast<Variable *>(parent->previous()->variable());
+            if (var) {
+                var->setFlags(varvt);
+                if (vt2->typeScope && vt2->typeScope->definedType) {
+                    var->type(vt2->typeScope->definedType);
+                    autoToken->type(vt2->typeScope->definedType);
+                }
             }
         } else if (vt2->container) {
             // TODO: Determine exact type of RHS
