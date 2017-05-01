@@ -330,6 +330,7 @@ private:
         TEST_CASE(auto6); // #7963 (segmentation fault)
         TEST_CASE(auto7);
         TEST_CASE(auto8);
+        TEST_CASE(auto9); // #8044 (segmentation fault)
     }
 
     void array() {
@@ -5157,6 +5158,31 @@ private:
             ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::ITERATOR, vartok->valueType()->type);
         }
+    }
+
+    void auto9() { // #8044 (segmentation fault)
+        GET_SYMBOL_DB("class DHTTokenTracker {\n"
+                      "  static const size_t SECRET_SIZE = 4;\n"
+                      "  unsigned char secret_[2][SECRET_SIZE];\n"
+                      "  void validateToken();\n"
+                      "};\n"
+                      "template <typename T> struct DerefEqual<T> derefEqual(const T& t) {\n"
+                      "  return DerefEqual<T>(t);\n"
+                      "}\n"
+                      "template <typename T>\n"
+                      "struct RefLess {\n"
+                      "  bool operator()(const std::shared_ptr<T>& lhs,\n"
+                      "                  const std::shared_ptr<T>& rhs)\n"
+                      "  {\n"
+                      "    return lhs.get() < rhs.get();\n"
+                      "  }\n"
+                      "};\n"
+                      "void DHTTokenTracker::validateToken()\n"
+                      "{\n"
+                      "  for (auto& elem : secret_) {\n"
+                      "  }\n"
+                      "}");
+        ASSERT_EQUALS(true,  db != nullptr); // not null
     }
 
 };
