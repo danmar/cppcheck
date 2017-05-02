@@ -8063,9 +8063,9 @@ void Tokenizer::validateC() const
         }
         if (tok->previous() && !Token::Match(tok->previous(), "[;{}]"))
             continue;
-        if (Token::simpleMatch(tok, "using namespace std ;"))
-            syntaxErrorC(tok, "using namespace std");
-        if (Token::Match(tok, "template < class %name% [,>]"))
+        if (Token::Match(tok, "using namespace %name% ;"))
+            syntaxErrorC(tok, "using namespace " + tok->strAt(2));
+        if (Token::Match(tok, "template < class|typename %name% [,>]"))
             syntaxErrorC(tok, "template<...");
         if (Token::Match(tok, "%name% :: %name%"))
             syntaxErrorC(tok, tok->str() + tok->strAt(1) + tok->strAt(2));
