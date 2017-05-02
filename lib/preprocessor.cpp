@@ -611,6 +611,8 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
     if (hasErrors(outputList))
         return "";
 
+    tokens2.removeComments();
+
     // ensure that guessed define macros without value are not used in the code
     if (!validateCfg(cfg, macroUsage))
         return "";
