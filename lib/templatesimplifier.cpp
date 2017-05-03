@@ -712,7 +712,7 @@ bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::stri
 
 // Utility function for TemplateSimplifier::getTemplateNamePosition, that works on template member functions,
 // hence this pattern: "> %type% [%type%] < ... > :: %type% ("
-bool getTemplateNamePositionTemplateMember(const Token *tok, int &namepos)
+static bool getTemplateNamePositionTemplateMember(const Token *tok, int &namepos)
 {
     if (!Token::Match(tok, "> %type% <") && !Token::Match(tok, "> %type% %type% <"))
         return false;
