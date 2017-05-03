@@ -72,18 +72,22 @@ void nullpointer(int value)
     int res = 0;
     FILE *fp;
 
+#ifndef __CYGWIN__
     // cppcheck-suppress nullPointer
     clearerr(0);
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
     feof(0);
+#endif
     // cppcheck-suppress nullPointer
     (void)fgetc(0);
     // cppcheck-suppress nullPointer
     fclose(0);
+#ifndef __CYGWIN__
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
     ferror(0);
+#endif
     // cppcheck-suppress nullPointer
     (void)ftell(0);
     // cppcheck-suppress nullPointer

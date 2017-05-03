@@ -26,6 +26,7 @@
 #include <istream>
 #include <fstream>
 #include <vector>
+#include <cstdarg>
 
 void bufferAccessOutOfBounds(void)
 {
