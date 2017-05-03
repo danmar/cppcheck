@@ -7289,16 +7289,14 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr)
     return false;
 }
 
-namespace {
-    const std::set<std::string> stdFunctionsPresentInC = make_container< std::set<std::string> > () <<
-            "strcat" <<
-            "strcpy" <<
-            "strncat" <<
-            "strncpy" <<
-            "free" <<
-            "malloc" <<
-            "strdup";
-}
+static const std::set<std::string> stdFunctionsPresentInC = make_container< std::set<std::string> > () <<
+        "strcat" <<
+        "strcpy" <<
+        "strncat" <<
+        "strncpy" <<
+        "free" <<
+        "malloc" <<
+        "strdup";
 
 void Tokenizer::simplifyStd()
 {
@@ -8053,11 +8051,11 @@ void Tokenizer::checkConfiguration() const
 
 void Tokenizer::validateC() const
 {
-    if (!isC())
+    if (isCPP())
         return;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         // That might trigger false positives, but it's much faster to have this truncated pattern
-        if (Token::simpleMatch(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
+        if (Token::Match(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
             syntaxErrorC(tok, "C++ cast <...");
         // Template function..
         if (Token::Match(tok, "%name% < %name% > (")) {
@@ -8175,19 +8173,20 @@ const Token * Tokenizer::findGarbageCode() const
     return nullptr;
 }
 
+static const std::set<std::string> controlFlowKeywords = make_container< std::set<std::string> > () <<
+        "goto" <<
+        "do" <<
+        "if" <<
+        "else" <<
+        "for" <<
+        "while" <<
+        "switch" <<
+        "break" <<
+        "continue" <<
+        "return";
+
 bool Tokenizer::isGarbageExpr(const Token *start, const Token *end)
 {
-    std::set<std::string> controlFlowKeywords;
-    controlFlowKeywords.insert("goto");
-    controlFlowKeywords.insert("do");
-    controlFlowKeywords.insert("if");
-    controlFlowKeywords.insert("else");
-    controlFlowKeywords.insert("for");
-    controlFlowKeywords.insert("while");
-    controlFlowKeywords.insert("switch");
-    controlFlowKeywords.insert("break");
-    controlFlowKeywords.insert("continue");
-    controlFlowKeywords.insert("return");
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (controlFlowKeywords.find(tok->str()) != controlFlowKeywords.end())
             return true;
@@ -8647,17 +8646,15 @@ void Tokenizer::simplifyAttribute()
     }
 }
 
-namespace {
-    const std::set<std::string> keywords = make_container< std::set<std::string> >()
-                                           << "volatile"
-                                           << "inline"
-                                           << "_inline"
-                                           << "__inline"
-                                           << "__forceinline"
-                                           << "register"
-                                           << "__restrict"
-                                           << "__restrict__" ;
-}
+static const std::set<std::string> keywords = make_container< std::set<std::string> >()
+        << "volatile"
+        << "inline"
+        << "_inline"
+        << "__inline"
+        << "__forceinline"
+        << "register"
+        << "__restrict"
+        << "__restrict__" ;
 // Remove "volatile", "inline", "register", "restrict", "override", "final", "static" and "constexpr"
 // "restrict" keyword
 //   - New to 1999 ANSI/ISO C standard
@@ -9009,52 +9006,50 @@ void Tokenizer::simplifyBitfields()
 }
 
 
-namespace {
-    // Types and objects in std namespace that are neither functions nor templates
-    const std::set<std::string> stdTypes = make_container<std::set<std::string> >() <<
-                                           "string"<< "wstring"<< "u16string"<< "u32string" <<
-                                           "iostream"<< "ostream"<< "ofstream"<< "ostringstream" <<
-                                           "istream"<< "ifstream"<< "istringstream"<< "fstream"<< "stringstream" <<
-                                           "wstringstream"<< "wistringstream"<< "wostringstream"<< "wstringbuf" <<
-                                           "stringbuf"<< "streambuf"<< "ios"<< "filebuf"<< "ios_base" <<
-                                           "exception"<< "bad_exception"<< "bad_alloc" <<
-                                           "logic_error"<< "domain_error"<< "invalid_argument_"<< "length_error" <<
-                                           "out_of_range"<< "runtime_error"<< "range_error"<< "overflow_error"<< "underflow_error" <<
-                                           "locale" <<
-                                           "cout"<< "cerr"<< "clog"<< "cin" <<
-                                           "wcerr"<< "wcin"<< "wclog"<< "wcout" <<
-                                           "endl"<< "ends"<< "flush" <<
-                                           "boolalpha"<< "noboolalpha"<< "showbase"<< "noshowbase" <<
-                                           "showpoint"<< "noshowpoint"<< "showpos"<< "noshowpos" <<
-                                           "skipws"<< "noskipws"<< "unitbuf"<< "nounitbuf"<< "uppercase"<< "nouppercase" <<
-                                           "dec"<< "hex"<< "oct" <<
-                                           "fixed"<< "scientific" <<
-                                           "internal"<< "left"<< "right" <<
-                                           "fpos"<< "streamoff"<< "streampos"<< "streamsize";
+// Types and objects in std namespace that are neither functions nor templates
+static const std::set<std::string> stdTypes = make_container<std::set<std::string> >() <<
+        "string"<< "wstring"<< "u16string"<< "u32string" <<
+        "iostream"<< "ostream"<< "ofstream"<< "ostringstream" <<
+        "istream"<< "ifstream"<< "istringstream"<< "fstream"<< "stringstream" <<
+        "wstringstream"<< "wistringstream"<< "wostringstream"<< "wstringbuf" <<
+        "stringbuf"<< "streambuf"<< "ios"<< "filebuf"<< "ios_base" <<
+        "exception"<< "bad_exception"<< "bad_alloc" <<
+        "logic_error"<< "domain_error"<< "invalid_argument_"<< "length_error" <<
+        "out_of_range"<< "runtime_error"<< "range_error"<< "overflow_error"<< "underflow_error" <<
+        "locale" <<
+        "cout"<< "cerr"<< "clog"<< "cin" <<
+        "wcerr"<< "wcin"<< "wclog"<< "wcout" <<
+        "endl"<< "ends"<< "flush" <<
+        "boolalpha"<< "noboolalpha"<< "showbase"<< "noshowbase" <<
+        "showpoint"<< "noshowpoint"<< "showpos"<< "noshowpos" <<
+        "skipws"<< "noskipws"<< "unitbuf"<< "nounitbuf"<< "uppercase"<< "nouppercase" <<
+        "dec"<< "hex"<< "oct" <<
+        "fixed"<< "scientific" <<
+        "internal"<< "left"<< "right" <<
+        "fpos"<< "streamoff"<< "streampos"<< "streamsize";
 
-    const std::set<std::string> stdTemplates = make_container<std::set<std::string> >() <<
-            "array"<< "basic_string"<< "bitset"<< "deque"<< "list"<< "map"<< "multimap" <<
-            "priority_queue"<< "queue"<< "set"<< "multiset"<< "stack"<< "vector"<< "pair" <<
-            "iterator"<< "iterator_traits" <<
-            "unordered_map"<< "unordered_multimap"<< "unordered_set"<< "unordered_multiset" <<
-            "tuple"<< "function";
-    const std::set<std::string> stdFunctions = make_container<std::set<std::string> >() <<
-            "getline" <<
-            "for_each"<< "find"<< "find_if"<< "find_end"<< "find_first_of" <<
-            "adjacent_find"<< "count"<< "count_if"<< "mismatch"<< "equal"<< "search"<< "search_n" <<
-            "copy"<< "copy_backward"<< "swap"<< "swap_ranges"<< "iter_swap"<< "transform"<< "replace" <<
-            "replace_if"<< "replace_copy"<< "replace_copy_if"<< "fill"<< "fill_n"<< "generate"<< "generate_n"<< "remove" <<
-            "remove_if"<< "remove_copy"<< "remove_copy_if" <<
-            "unique"<< "unique_copy"<< "reverse"<< "reverse_copy" <<
-            "rotate"<< "rotate_copy"<< "random_shuffle"<< "partition"<< "stable_partition" <<
-            "sort"<< "stable_sort"<< "partial_sort"<< "partial_sort_copy"<< "nth_element" <<
-            "lower_bound"<< "upper_bound"<< "equal_range"<< "binary_search"<< "merge"<< "inplace_merge"<< "includes" <<
-            "set_union"<< "set_intersection"<< "set_difference" <<
-            "set_symmetric_difference"<< "push_heap"<< "pop_heap"<< "make_heap"<< "sort_heap" <<
-            "min"<< "max"<< "min_element"<< "max_element"<< "lexicographical_compare"<< "next_permutation"<< "prev_permutation" <<
-            "advance"<< "back_inserter"<< "distance"<< "front_inserter"<< "inserter" <<
-            "make_pair"<< "make_shared"<< "make_tuple";
-}
+static const std::set<std::string> stdTemplates = make_container<std::set<std::string> >() <<
+        "array"<< "basic_string"<< "bitset"<< "deque"<< "list"<< "map"<< "multimap" <<
+        "priority_queue"<< "queue"<< "set"<< "multiset"<< "stack"<< "vector"<< "pair" <<
+        "iterator"<< "iterator_traits" <<
+        "unordered_map"<< "unordered_multimap"<< "unordered_set"<< "unordered_multiset" <<
+        "tuple"<< "function";
+static const std::set<std::string> stdFunctions = make_container<std::set<std::string> >() <<
+        "getline" <<
+        "for_each"<< "find"<< "find_if"<< "find_end"<< "find_first_of" <<
+        "adjacent_find"<< "count"<< "count_if"<< "mismatch"<< "equal"<< "search"<< "search_n" <<
+        "copy"<< "copy_backward"<< "swap"<< "swap_ranges"<< "iter_swap"<< "transform"<< "replace" <<
+        "replace_if"<< "replace_copy"<< "replace_copy_if"<< "fill"<< "fill_n"<< "generate"<< "generate_n"<< "remove" <<
+        "remove_if"<< "remove_copy"<< "remove_copy_if" <<
+        "unique"<< "unique_copy"<< "reverse"<< "reverse_copy" <<
+        "rotate"<< "rotate_copy"<< "random_shuffle"<< "partition"<< "stable_partition" <<
+        "sort"<< "stable_sort"<< "partial_sort"<< "partial_sort_copy"<< "nth_element" <<
+        "lower_bound"<< "upper_bound"<< "equal_range"<< "binary_search"<< "merge"<< "inplace_merge"<< "includes" <<
+        "set_union"<< "set_intersection"<< "set_difference" <<
+        "set_symmetric_difference"<< "push_heap"<< "pop_heap"<< "make_heap"<< "sort_heap" <<
+        "min"<< "max"<< "min_element"<< "max_element"<< "lexicographical_compare"<< "next_permutation"<< "prev_permutation" <<
+        "advance"<< "back_inserter"<< "distance"<< "front_inserter"<< "inserter" <<
+        "make_pair"<< "make_shared"<< "make_tuple";
 
 
 // Add std:: in front of std classes, when using namespace std; was given
