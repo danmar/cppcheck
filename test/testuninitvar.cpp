@@ -1096,6 +1096,15 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int foo() {\n"
+                       "    int a;\n"
+                       "    for (a = 0; a < 0; a++) {\n"
+                       "    }\n"
+                       "    return a;\n"
+                       "}");
+
+        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
+
         // Ticket #2226: C++0x loop
         checkUninitVar("void f() {\n"
                        "    container c;\n"
