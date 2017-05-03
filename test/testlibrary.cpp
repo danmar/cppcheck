@@ -57,7 +57,7 @@ private:
         TEST_CASE(version);
     }
 
-    Library::Error readLibrary(Library& library, const char* xmldata) const {
+    static Library::Error readLibrary(Library& library, const char* xmldata) {
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata);
         return library.load(doc);

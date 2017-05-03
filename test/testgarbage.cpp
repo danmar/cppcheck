@@ -1090,7 +1090,7 @@ private:
     }
 
     void garbageCode144() { // #6865
-        //ASSERT_THROW(checkCode("template < typename > struct A { } ; template < typename > struct A < INVALID > : A < int[ > { }] ;"), InternalError);
+        checkCode("template < typename > struct A { } ; template < typename > struct A < INVALID > : A < int[ > { }] ;");
     }
 
     void garbageCode146() { // #7081

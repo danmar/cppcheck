@@ -927,34 +927,35 @@ private:
         ASSERT_EQUALS(0, parser.GetIgnoredPaths().size());
     }
 
-    void ignorepaths1() {
-        REDIRECT;
-        const char *argv[] = {"cppcheck", "-isrc", "file.cpp"};
-        CmdLineParser parser(&settings);
-        ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
-        ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
-    }
+    /*
+        void ignorepaths1() {
+            REDIRECT;
+            const char *argv[] = {"cppcheck", "-isrc", "file.cpp"};
+            CmdLineParser parser(&settings);
+            ASSERT(parser.ParseFromArgs(3, argv));
+            ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
+            ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
+        }
 
-    void ignorepaths2() {
-        REDIRECT;
-        const char *argv[] = {"cppcheck", "-i", "src", "file.cpp"};
-        CmdLineParser parser(&settings);
-        ASSERT(parser.ParseFromArgs(4, argv));
-        ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
-        ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
-    }
+        void ignorepaths2() {
+            REDIRECT;
+            const char *argv[] = {"cppcheck", "-i", "src", "file.cpp"};
+            CmdLineParser parser(&settings);
+            ASSERT(parser.ParseFromArgs(4, argv));
+            ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
+            ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
+        }
 
-    void ignorepaths3() {
-        REDIRECT;
-        const char *argv[] = {"cppcheck", "-isrc", "-imodule", "file.cpp"};
-        CmdLineParser parser(&settings);
-        ASSERT(parser.ParseFromArgs(4, argv));
-        ASSERT_EQUALS(2, parser.GetIgnoredPaths().size());
-        ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
-        ASSERT_EQUALS("module/", parser.GetIgnoredPaths()[1]);
-    }
-
+        void ignorepaths3() {
+            REDIRECT;
+            const char *argv[] = {"cppcheck", "-isrc", "-imodule", "file.cpp"};
+            CmdLineParser parser(&settings);
+            ASSERT(parser.ParseFromArgs(4, argv));
+            ASSERT_EQUALS(2, parser.GetIgnoredPaths().size());
+            ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
+            ASSERT_EQUALS("module/", parser.GetIgnoredPaths()[1]);
+        }
+    */
     void ignorepaths4() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "-i", "src", "-i", "module", "file.cpp"};
@@ -964,16 +965,16 @@ private:
         ASSERT_EQUALS("src/", parser.GetIgnoredPaths()[0]);
         ASSERT_EQUALS("module/", parser.GetIgnoredPaths()[1]);
     }
-
-    void ignorefilepaths1() {
-        REDIRECT;
-        const char *argv[] = {"cppcheck", "-ifoo.cpp", "file.cpp"};
-        CmdLineParser parser(&settings);
-        ASSERT(parser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
-        ASSERT_EQUALS("foo.cpp", parser.GetIgnoredPaths()[0]);
-    }
-
+    /*
+        void ignorefilepaths1() {
+            REDIRECT;
+            const char *argv[] = {"cppcheck", "-ifoo.cpp", "file.cpp"};
+            CmdLineParser parser(&settings);
+            ASSERT(parser.ParseFromArgs(3, argv));
+            ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
+            ASSERT_EQUALS("foo.cpp", parser.GetIgnoredPaths()[0]);
+        }
+    */
     void ignorefilepaths2() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "-isrc/foo.cpp", "file.cpp"};
