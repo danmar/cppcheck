@@ -8053,6 +8053,9 @@ void Tokenizer::validateC() const
     if (!isC())
         return;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        // That might trigger false positives, but it's much faster to have this truncated pattern
+        if (Token::simpleMatch(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
+            syntaxErrorC(tok, "C++ cast <...");
         // Template function..
         if (Token::Match(tok, "%name% < %name% > (")) {
             const Token *tok2 = tok->tokAt(5);
