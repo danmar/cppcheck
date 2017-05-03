@@ -3091,11 +3091,14 @@ void Tokenizer::createLinks2()
 void Tokenizer::sizeofAddParentheses()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        Token* next = tok->next();
-        if (Token::Match(tok, "sizeof !!(") && next && (next->isLiteral() || next->isName() || Token::Match(next, "[*~!]"))) {
-            Token *endToken = next;
+        if (!Token::Match(tok, "sizeof !!("))
+            continue;
+        if (tok->next()->isLiteral() || Token::Match(tok->next(), "%name%|*|~|!")) {
+            Token *endToken = tok->next();
+            while (Token::simpleMatch(endToken, "* *"))
+                endToken = endToken->next();
             while (Token::Match(endToken->next(), "%name%|%num%|%str%|[|(|.|::|++|--|!|~") || (Token::Match(endToken, "%type% * %op%|?|:|const|;|,"))) {
-                if (endToken->strAt(1) == "[" || endToken->strAt(1) == "(")
+                if (Token::Match(endToken->next(), "(|["))
                     endToken = endToken->linkAt(1);
                 else
                     endToken = endToken->next();
