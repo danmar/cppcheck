@@ -290,7 +290,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     alloctype[varTok->varId()].type = f->groupId;
                     alloctype[varTok->varId()].status = VarInfo::ALLOC;
                 }
-            } else if (_tokenizer->isCPP() && varTok->strAt(2) == "new") {
+            } else if (_tokenizer->isCPP() && Token::Match(varTok->tokAt(2), "new !!(")) {
                 const Token* tok2 = varTok->tokAt(2)->astOperand1();
                 bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
                 alloctype[varTok->varId()].type = arrayNew ? -2 : -1;

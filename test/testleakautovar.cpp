@@ -1066,6 +1066,11 @@ private:
               "    free(cPtr);\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: cPtr\n", errout.str());
+
+        check("void f() {\n"
+              "    char *cPtr = new (buf) char[100];\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void return1() {
