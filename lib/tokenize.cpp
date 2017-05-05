@@ -3337,6 +3337,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     createLinks();
 
+    // Remove __asm..
+    simplifyAsm();
+
     // Bail out if code is garbage
     if (const Token *garbage = findGarbageCode())
         syntaxError(garbage);
@@ -3487,9 +3490,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // syntax error: enum with typedef in it
     checkForEnumsWithTypedef();
-
-    // Remove __asm..
-    simplifyAsm();
 
     // Add parentheses to ternary operator where necessary
     prepareTernaryOpForAST();
@@ -8835,14 +8835,31 @@ void Tokenizer::simplifyAsm()
         }
 
         else if (Token::Match(tok, "_asm|__asm")) {
-            const Token *tok2 = tok;
-            while (tok2 && (tok2->isNumber() || tok2->isName() || tok2->str() == "," || tok2->str() == ":"))
-                tok2 = tok2->next();
-            if (!tok2 || tok2->str() == ";" || tok2->linenr() != tok->linenr()) {
-                instruction = tok->next()->stringifyList(tok2);
-                Token::eraseTokens(tok, tok2);
-                if (!tok2 || tok2->str() != ";")
+            Token *endasm = tok->next();
+            const Token *firstSemiColon = nullptr;
+            unsigned int comment = 0;
+            while (Token::Match(endasm, "%num%|%name%|,|:|;") || (endasm && endasm->linenr() == comment)) {
+                if (Token::Match(endasm, "_asm|__asm|__endasm"))
+                    break;
+                if (endasm->str() == ";") {
+                    comment = endasm->linenr();
+                    if (!firstSemiColon)
+                        firstSemiColon = endasm;
+                }
+                endasm = endasm->next();
+            }
+            if (Token::simpleMatch(endasm, "__endasm")) {
+                instruction = tok->next()->stringifyList(endasm);
+                Token::eraseTokens(tok, endasm->next());
+                if (!Token::simpleMatch(tok->next(), ";"))
                     tok->insertToken(";");
+            } else if (firstSemiColon) {
+                instruction = tok->next()->stringifyList(firstSemiColon);
+                Token::eraseTokens(tok, firstSemiColon);
+            } else if (!endasm) {
+                instruction = tok->next()->stringifyList(endasm);
+                Token::eraseTokens(tok, endasm);
+                tok->insertToken(";");
             } else
                 continue;
         }
