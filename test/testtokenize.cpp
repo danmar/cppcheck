@@ -51,6 +51,7 @@ private:
         TEST_CASE(tokenize11);
         TEST_CASE(tokenize13);  // bailout if the code contains "@" - that is not handled well.
         TEST_CASE(tokenize14);  // tokenize "0X10" => 16
+		TEST_CASE(tokenizeHexWithSuffix);  // tokenize 0xFFFFFFul
         TEST_CASE(tokenize15);  // tokenize ".123"
         TEST_CASE(tokenize17);  // #2759
         TEST_CASE(tokenize18);  // tokenize "(X&&Y)" into "( X && Y )" instead of "( X & & Y )"
@@ -678,6 +679,18 @@ private:
         ASSERT_EQUALS("; 16 ;", tokenizeAndStringify(";0X10;"));
         ASSERT_EQUALS("; 292 ;", tokenizeAndStringify(";0444;"));
     }
+
+	// Ticket #8050
+	void tokenizeHexWithSuffix() {
+		ASSERT_EQUALS("; 16777215 ;", tokenizeAndStringify(";0xFFFFFF;"));
+		ASSERT_EQUALS("; 16777215U ;", tokenizeAndStringify(";0xFFFFFFu;"));
+		ASSERT_EQUALS("; 16777215UL ;", tokenizeAndStringify(";0xFFFFFFul;"));
+
+		// Number of digits decides about internal representation...
+		ASSERT_EQUALS("; 4294967295U ;", tokenizeAndStringify(";0xFFFFFFFF;"));
+		ASSERT_EQUALS("; 4294967295U ;", tokenizeAndStringify(";0xFFFFFFFFu;"));
+		ASSERT_EQUALS("; 4294967295UL ;", tokenizeAndStringify(";0xFFFFFFFFul;"));
+	}
 
     // Ticket #2429: 0.125
     void tokenize15() {

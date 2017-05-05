@@ -846,6 +846,11 @@ bool MathLib::isFloatHex(const std::string& str)
     return state==EXPONENT_DIGITS;
 }
 
+bool MathLib::isValidIntegerSuffix(const std::string& str)
+{
+	return isValidIntegerSuffix(str.begin(), str.end());
+}
+
 bool MathLib::isValidIntegerSuffix(std::string::const_iterator it, std::string::const_iterator end)
 {
     enum {START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64, SUFFIX_UI, SUFFIX_UI6, SUFFIX_UI64} state = START;
@@ -1020,7 +1025,7 @@ bool MathLib::isInt(const std::string & str)
     return isDec(str) || isIntHex(str) || isOct(str) || isBin(str);
 }
 
-static std::string getsuffix(const std::string& value)
+std::string MathLib::getSuffix(const std::string& value)
 {
     if (value.size() > 3 && value[value.size() - 3] == 'i' && value[value.size() - 2] == '6' && value[value.size() - 1] == '4') {
         if (value[value.size() - 4] == 'u')
@@ -1048,8 +1053,8 @@ static std::string getsuffix(const std::string& value)
 
 static std::string intsuffix(const std::string & first, const std::string & second)
 {
-    std::string suffix1 = getsuffix(first);
-    std::string suffix2 = getsuffix(second);
+    const std::string suffix1 = MathLib::getSuffix(first);
+    const std::string suffix2 = MathLib::getSuffix(second);
     if (suffix1 == "ULL" || suffix2 == "ULL")
         return "ULL";
     if (suffix1 == "LL" || suffix2 == "LL")
