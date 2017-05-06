@@ -1085,7 +1085,7 @@ public:
     /**
      * @brief find a variable type if it's a user defined type
      * @param start scope to start looking in
-     * @param type token containing variable type
+     * @param typeTok token containing variable type
      * @return pointer to type if found or NULL if not found
      */
     const Type *findVariableType(const Scope *start, const Token *typeTok) const;

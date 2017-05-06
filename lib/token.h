@@ -435,7 +435,7 @@ public:
      * string, return value is 0. If needle was not found, return
      * value is -1.
      *
-     * @param needle Current token
+     * @param tok Current token (needle)
      * @param haystack e.g. "one|two" or "|one|two"
      * @param varid optional varid of token
      * @return 1 if needle is found from the haystack

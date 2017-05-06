@@ -848,7 +848,7 @@ bool MathLib::isFloatHex(const std::string& str)
 
 bool MathLib::isValidIntegerSuffix(const std::string& str)
 {
-	return isValidIntegerSuffix(str.begin(), str.end());
+    return isValidIntegerSuffix(str.begin(), str.end());
 }
 
 bool MathLib::isValidIntegerSuffix(std::string::const_iterator it, std::string::const_iterator end)

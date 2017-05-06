@@ -95,7 +95,6 @@ public:
      *
      * @param FileName The filename
      * @param configuration E.g. "A" for code where "#ifdef A" is true
-     * @param noSymbolDB_AST Disable creation of SymbolDatabase and AST
      * @return false if source code contains syntax errors
      */
     bool tokenize(std::istream &code,

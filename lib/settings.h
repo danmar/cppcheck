@@ -174,7 +174,7 @@ public:
     /**
      * @brief Returns true if given id is in the list of
      * enabled extra checks (--enable)
-     * @param check group to be enabled
+     * @param group group to be enabled
      * @return true if the check is enabled.
      */
     bool isEnabled(EnabledGroup group) const {

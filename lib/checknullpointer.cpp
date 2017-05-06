@@ -45,8 +45,6 @@ static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsig
  * @param tok first token
  * @param var variables that the function read / write.
  * @param library --library files data
- * @param value 0 => invalid with null pointers as parameter.
- *              1-.. => only invalid with uninitialized data.
  */
 void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library *library)
 {
