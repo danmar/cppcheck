@@ -1725,7 +1725,10 @@ void Variable::evaluate(const Library* lib)
     const Token* tok = _start;
     while (tok && tok->previous() && tok->previous()->isName())
         tok = tok->previous();
-    for (const Token* const end = _name?_name:_end; tok != end;) {
+    const Token* end = _end;
+    if (end)
+        end = end->next();
+    while (tok != end) {
         if (tok->str() == "static")
             setFlag(fIsStatic, true);
         else if (tok->str() == "extern")

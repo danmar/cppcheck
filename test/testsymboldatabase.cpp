@@ -1616,6 +1616,12 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
         {
+            GET_SYMBOL_DB("void g(int*) { }"); // unnamed pointer argument (#8052)
+            const Scope* g = db->findScopeByName("g");
+            ASSERT(g && g->type == Scope::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().nameToken() == nullptr && g->function->argumentList.front().isPointer());
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
             GET_SYMBOL_DB("void g(int* const) { }"); // 'const' is not the name of the variable - #5882
             const Scope* g = db->findScopeByName("g");
             ASSERT(g && g->type == Scope::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().nameToken() == nullptr);
