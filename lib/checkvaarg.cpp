@@ -132,7 +132,7 @@ void CheckVaarg::va_list_usage()
                 tok = scope->classEnd;
                 if (!tok)
                     return;
-            } else if (_tokenizer->isCPP() && tok->str() == "try") {
+            } else if (tok->str() == "goto" || (_tokenizer->isCPP() && tok->str() == "try")) {
                 open = false;
                 break;
             } else if (!open && tok->varId() == var->declarationId())

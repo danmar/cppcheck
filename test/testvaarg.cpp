@@ -263,6 +263,21 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:13]: (error) va_list 'args' was opened but not closed by va_end().\n", errout.str());
+
+        // #8043
+        check("void redisvFormatCommand(char *format, va_list ap, bool flag) {\n"
+              "    va_list _cpy;\n"
+              "    va_copy(_cpy, ap);\n"
+              "    if (flag)\n"
+              "        goto fmt_valid;\n"
+              "    va_end(_cpy);\n"
+              "    goto format_err;\n"
+              "fmt_valid:\n"
+              "    sdscatvprintf(curarg, _format, _cpy);\n"
+              "    va_end(_cpy);\n"
+              "format_err:\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void va_start_subsequentCalls() {
