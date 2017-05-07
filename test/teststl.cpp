@@ -3019,6 +3019,18 @@ private:
               "    it = test.end();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #8055
+        check("int main() {\n"
+              "    std::string str;\n"
+              "    auto l = [&]() {\n"
+              "        if (str[0] == 'A')\n"
+              "            std::cout << \"!\";\n"
+              "    }\n"
+              "    str = \"A\";\n"
+              "    l();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

@@ -1551,7 +1551,8 @@ void CheckStl::readingEmptyStlContainer()
                 }
             } else if (Token::Match(tok, "do|}|break|case")) {
                 emptyContainer.clear();
-            }
+            } else if (tok->str() == "{" && tok->next()->scope()->type == Scope::eLambda)
+                tok = tok->link();
 
             if (!tok->varId())
                 continue;
