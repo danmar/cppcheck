@@ -96,7 +96,7 @@ void LibraryDialog::openCfg()
             ui->buttonSaveAs->setEnabled(true);
             ui->filter->clear();
             ui->functions->clear();
-            for (struct CppcheckLibraryData::Function &function : data.functions) {
+            for (CppcheckLibraryData::Function &function : data.functions) {
                 ui->functions->addItem(new FunctionListItem(ui->functions,
                                        &function,
                                        false));
@@ -246,7 +246,7 @@ void LibraryDialog::sortFunctions(bool sort)
         ignoreChanges = true;
         CppcheckLibraryData::Function *selfunction = currentFunction();
         ui->functions->clear();
-        for (struct CppcheckLibraryData::Function &function : data.functions) {
+        for (CppcheckLibraryData::Function &function : data.functions) {
             ui->functions->addItem(new FunctionListItem(ui->functions,
                                    &function,
                                    selfunction == &function));
