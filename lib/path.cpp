@@ -46,11 +46,11 @@ static bool caseInsensitiveFilesystem()
 std::string Path::toNativeSeparators(std::string path)
 {
 #if defined(_WIN32)
-    char separ = '/';
-    char native = '\\';
+    const char separ = '/';
+    const char native = '\\';
 #else
-    char separ = '\\';
-    char native = '/';
+    const char separ = '\\';
+    const char native = '/';
 #endif
     std::replace(path.begin(), path.end(), separ, native);
     return path;
@@ -58,8 +58,8 @@ std::string Path::toNativeSeparators(std::string path)
 
 std::string Path::fromNativeSeparators(std::string path)
 {
-    char nonnative = '\\';
-    char newsepar = '/';
+    const char nonnative = '\\';
+    const char newsepar = '/';
     std::replace(path.begin(), path.end(), nonnative, newsepar);
     return path;
 }
@@ -130,7 +130,7 @@ std::string Path::simplifyPath(std::string originalPath)
 
 std::string Path::getPathFromFilename(const std::string &filename)
 {
-    std::size_t pos = filename.find_last_of("\\/");
+    const std::size_t pos = filename.find_last_of("\\/");
 
     if (pos != std::string::npos)
         return filename.substr(0, 1 + pos);
