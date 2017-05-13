@@ -1033,12 +1033,14 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
             ++argumentNumber;
         start = start->previous();
     }
+    if (!start)
+        return -1;
 
     if (Token::simpleMatch(start->link(), ") {"))
         return (!pointer || alloc == NO_ALLOC);
 
     // is this a function call?
-    if (start && Token::Match(start->previous(), "%name% (")) {
+    if (Token::Match(start->previous(), "%name% (")) {
         const bool address(vartok->previous()->str() == "&");
         const bool array(vartok->variable() && vartok->variable()->isArray());
         // check how function handle uninitialized data arguments..
