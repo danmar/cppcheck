@@ -977,10 +977,6 @@ Möchten Sie die Prüfung wirklich durchführen, ohne eine Projektdatei zu verwe
         <translation>Laden der ausgewählten Bibliothek &apos;%1&apos; schlug fehl. %2</translation>
     </message>
     <message>
-        <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located.</source>
-        <translation type="obsolete">Laden von %1 fehlgeschlagen. Ihre Cppcheck-Installation ist defekt. Sie können --data-dir=&lt;Verzeichnis&gt; als Kommandozeilenparameter verwenden, um anzugeben, wo die Datei sich befindet.</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1141"/>
         <source>License</source>
         <translation>Lizenz</translation>
@@ -1025,10 +1021,6 @@ Dies wurde vermutlich durch einen Wechsel der Cppcheck-Version hervorgerufen. Bi
         <translation>Dateien zum Überprüfen auswählen</translation>
     </message>
     <message>
-        <source>C/C++ Source (%1)</source>
-        <translation type="obsolete">C/C++-Code (%1)</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="692"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
@@ -1058,7 +1050,7 @@ Dies wurde vermutlich durch einen Wechsel der Cppcheck-Version hervorgerufen. Bi
     <message>
         <location filename="mainwindow.cpp" line="819"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.</source>
-        <translation type="unfinished"></translation>
+        <translation>Laden von %1 fehlgeschlagen. Ihre Cppcheck-Installation ist defekt. Sie können --data-dir=&lt;Verzeichnis&gt; als Kommandozeilenparameter verwenden, um anzugeben, wo die Datei sich befindet. Bitte beachten Sie, dass --data-dir in Installationsroutinen genutzt werden soll, und die GUI bei dessen Nutzung nicht startet, sondern die Einstellungen konfiguriert.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="988"/>
@@ -1178,19 +1170,7 @@ Options:
     --data-dir=&lt;directory&gt;  This option is for installation scripts so they can configure the directory where
                             datafiles are located (translations, cfg). The GUI is not started when this option
                             is used.</source>
-        <oldsource>Cppcheck GUI.
-
-Syntax:
-    cppcheck-gui [OPTIONS] [files or paths]
-
-Options:
-    -h, --help              Print this help
-    -p &lt;file&gt;               Open given project file and start checking it
-    -l &lt;file&gt;               Open given results xml file
-    -d &lt;directory&gt;          Specify the directory that was checked to generate the results xml specified with -l
-    -v, --version           Show program version
-    --data-dir=&lt;directory&gt;  Specify directory where GUI datafiles are located (translations, cfg)</oldsource>
-        <translation type="unfinished">
+        <translation>
           Cppcheck GUI.
 
           Syntax:
@@ -1202,7 +1182,7 @@ Options:
           -l &lt;file&gt;               Öffnet die angegebene XML-Ergebnisdatei
           -d &lt;directory&gt;          Gibt das Verzeichnis an, das geprüft wurde, um das unter -l angegebene XML-Ergebnis zu erzeugen
           -v, --version           Zeigt Programmversion an
-          --data-dir=&lt;directory&gt;  Gibt das Verzeichnis an, unter dem sich die Konfigurationsdateien für die GUI (Übersetzungen, Cfg) befinden
+          --data-dir=&lt;directory&gt;  Gibt das Verzeichnis an, unter dem sich die Konfigurationsdateien für die GUI (Übersetzungen, Cfg) befinden. Die GUI startet bei Nutzung dieser Option nicht.
         </translation>
     </message>
     <message>
@@ -1388,14 +1368,6 @@ Bibliothekseinstellungen werden ebenfalls nicht bereitgestellt, geben Sie also a
         <location filename="projectfiledialog.ui" line="310"/>
         <source>Include Paths:</source>
         <translation>Includepfade:</translation>
-    </message>
-    <message>
-        <source>Includes</source>
-        <translation type="obsolete">Includes</translation>
-    </message>
-    <message>
-        <source>Include directories:</source>
-        <translation type="obsolete">Include-Verzeichnisse:</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="375"/>
