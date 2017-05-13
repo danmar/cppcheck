@@ -1049,6 +1049,29 @@ void CheckCondition::alwaysTrueFalse()
             if (isExpandedMacro)
                 continue;
 
+            // don't warn when condition checks sizeof result
+            bool hasSizeof = false;
+            tokens.push(tok);
+            while (!tokens.empty()) {
+                const Token *tok2 = tokens.top();
+                tokens.pop();
+                if (!tok2)
+                    continue;
+                if (tok2->isNumber())
+                    continue;
+                if (Token::simpleMatch(tok2->previous(), "sizeof (")) {
+                    hasSizeof = true;
+                    continue;
+                }
+                if (tok2->isComparisonOp() || tok2->isArithmeticalOp()) {
+                    tokens.push(tok2->astOperand1());
+                    tokens.push(tok2->astOperand2());
+                } else
+                    break;
+            }
+            if (tokens.empty() && hasSizeof)
+                continue;
+
             alwaysTrueFalseError(tok, tok->values().front().intvalue != 0);
         }
     }
