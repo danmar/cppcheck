@@ -56,9 +56,6 @@ public:
     };
 
 private:
-    /** @brief Code to append in the checks */
-    std::string _append;
-
     /** @brief enable extra checks by id */
     int _enabled;
 
@@ -160,12 +157,6 @@ public:
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;
-
-    /** @brief assign append code (--append) */
-    bool append(const std::string &filename);
-
-    /** @brief get append code (--append) */
-    const std::string &append() const;
 
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */

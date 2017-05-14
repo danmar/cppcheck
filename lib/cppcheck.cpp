@@ -272,7 +272,6 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 Timer t("Preprocessor::getcode", _settings.showtime, &S_timerResults);
                 codeWithoutCfg = preprocessor.getcode(tokens1, cfg, files, true);
             }
-            codeWithoutCfg += _settings.append();
 
             if (_settings.preprocessOnly) {
                 if (codeWithoutCfg.compare(0,5,"#file") == 0)

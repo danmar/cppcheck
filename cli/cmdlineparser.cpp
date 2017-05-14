@@ -296,18 +296,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
                 _settings->quiet = true;
 
-            // Append user-defined code to checked source code
-            else if (std::strncmp(argv[i], "--append=", 9) == 0) {
-                // This is deprecated and will be removed in 1.80
-                PrintMessage("cppcheck: '--append' is deprecated and will be removed in version 1.80. To supply additional information to cppcheck, use --library or --include.");
-
-                const std::string filename = 9 + argv[i];
-                if (!_settings->append(filename)) {
-                    PrintMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
-                    return false;
-                }
-            }
-
             // Check configuration
             else if (std::strcmp(argv[i], "--check-config") == 0) {
                 _settings->checkConfiguration = true;

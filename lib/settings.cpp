@@ -129,22 +129,3 @@ bool Settings::isEnabled(Severity::SeverityType severity) const
         return false;
     }
 }
-
-bool Settings::append(const std::string &filename)
-{
-    std::ifstream fin(filename.c_str());
-    if (!fin.is_open()) {
-        return false;
-    }
-    std::string line;
-    while (std::getline(fin, line)) {
-        _append += line + "\n";
-    }
-    Preprocessor::preprocessWhitespaces(_append);
-    return true;
-}
-
-const std::string &Settings::append() const
-{
-    return _append;
-}
