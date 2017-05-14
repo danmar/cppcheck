@@ -706,90 +706,14 @@ CLASS="programlisting"
 ><P
 ></P
 ></DIV
-><DIV
-CLASS="chapter"
-><HR><H1
-><A
-NAME="AEN172"
-></A
->Chapter 7. Leaks</H1
-><P
->Looking for memory leaks and resource leaks is a key feature of
-    Cppcheck. Cppcheck can detect many common mistakes by default. But through
-    some tweaking you can improve the checking.</P
-><DIV
-CLASS="section"
-><HR><H2
-CLASS="section"
-><A
-NAME="AEN175"
->7.1. Userdefined allocation/deallocation functions</A
-></H2
-><P
-><TT
-CLASS="literal"
->Cppcheck</TT
-> understands many common allocation and
-      deallocation functions. But not all.</P
-><P
->Here is example code that might leak memory or resources:</P
-><P
-><PRE
-CLASS="programlisting"
->void foo(int x)
-{
-    void *f = CreateFred();
-    if (x == 1)
-        return;
-    DestroyFred(f);
-}</PRE
-></P
-><P
->If you analyse that with Cppcheck it won't find any leaks:</P
-><PRE
-CLASS="programlisting"
->cppcheck --enable=possibleError fred1.cpp</PRE
-><P
->You can add some custom leaks checking by providing simple
-      implementations for the allocation and deallocation functions. Write
-      this in a separate file:</P
-><PRE
-CLASS="programlisting"
->void *CreateFred()
-{
-    return malloc(100);
-}
-
-void DestroyFred(void *p)
-{
-    free(p);
-}</PRE
-><P
->When Cppcheck see this it understands that CreateFred will return
-      allocated memory and that DestroyFred will deallocate memory.</P
-><P
->Now, execute <TT
-CLASS="literal"
->Cppcheck</TT
-> this way:</P
-><PRE
-CLASS="programlisting"
->cppcheck --append=fred.cpp fred1.cpp</PRE
-><P
->The output from cppcheck is:</P
-><PRE
-CLASS="programlisting"
->Checking fred1.cpp...
-[fred1.cpp:5]: (error) Memory leak: f</PRE
-></DIV
-></DIV
-><DIV
+>
+<DIV
 CLASS="chapter"
 ><HR><H1
 ><A
 NAME="AEN192"
 ></A
->Chapter 8. Exception safety</H1
+>Chapter 7. Exception safety</H1
 ><P
 >Cppcheck has a few checks that ensure that you don't break the basic
     guarantee of exception safety. It doesn't have any checks for the strong
@@ -857,7 +781,7 @@ CLASS="chapter"
 ><A
 NAME="AEN212"
 ></A
->Chapter 9. Html report</H1
+>Chapter 8. Html report</H1
 ><P
 >You can convert the xml output from cppcheck into a html report.
     You'll need python and the pygments module
@@ -903,14 +827,14 @@ CLASS="chapter"
 ><A
 NAME="AEN224"
 ></A
->Chapter 10. Graphical user interface</H1
+>Chapter 9. Graphical user interface</H1
 ><DIV
 CLASS="section"
 ><H2
 CLASS="section"
 ><A
 NAME="AEN226"
->10.1. Introduction</A
+>9.1. Introduction</A
 ></H2
 ><P
 >A Cppcheck GUI is available.</P
@@ -924,7 +848,7 @@ CLASS="section"
 CLASS="section"
 ><A
 NAME="AEN230"
->10.2. Check source code</A
+>9.2. Check source code</A
 ></H2
 ><P
 >Use the <TT
@@ -938,7 +862,7 @@ CLASS="section"
 CLASS="section"
 ><A
 NAME="AEN234"
->10.3. Inspecting results</A
+>9.3. Inspecting results</A
 ></H2
 ><P
 >The results are shown in a list.</P
@@ -965,7 +889,7 @@ CLASS="section"
 CLASS="section"
 ><A
 NAME="AEN242"
->10.4. Settings</A
+>9.4. Settings</A
 ></H2
 ><P
 >The language can be changed at any time by using the
@@ -989,7 +913,7 @@ CLASS="section"
 CLASS="section"
 ><A
 NAME="AEN249"
->10.5. Project files</A
+>9.5. Project files</A
 ></H2
 ><P
 >The project files are used to store project specific settings.

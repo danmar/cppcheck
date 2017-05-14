@@ -102,7 +102,6 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-      <arg choice="opt"><option>--append=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>--check-config</option></arg>
       <arg choice="opt"><option>--check-library</option></arg>
       <arg choice="opt"><option>-D&lt;id&gt;</option></arg>
@@ -162,12 +161,6 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <!-- Use the variablelist.term.separator and the
            variablelist.term.break.after parameters to
            control the term elements. -->
-      <varlistentry>
-        <term><option>--append=&lt;file&gt;</option></term>
-        <listitem>
-          <para>This allows you to provide information about functions by providing an implementation for these.</para>
-        </listitem>
-      </varlistentry>
       <varlistentry>
         <term><option>--check-config</option></term>
         <listitem>
