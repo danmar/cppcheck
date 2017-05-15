@@ -465,6 +465,11 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
         return;
     }
 
+    if (!value) {
+        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE476, inconclusive);
+        return;
+    }
+
     if (!_settings->isEnabled(value, inconclusive))
         return;
 
