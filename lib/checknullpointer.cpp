@@ -275,6 +275,7 @@ void CheckNullPointer::nullPointerLinkedList()
                     continue;
 
                 // Check usage of dereferenced variable in the loop..
+                // TODO: Move this to ValueFlow
                 for (std::list<Scope*>::const_iterator j = i->nestedList.begin(); j != i->nestedList.end(); ++j) {
                     const Scope* const scope = *j;
                     if (scope->type != Scope::eWhile)
@@ -287,7 +288,8 @@ void CheckNullPointer::nullPointerLinkedList()
                         // for statement.
                         for (const Token *tok4 = scope->classStart; tok4; tok4 = tok4->next()) {
                             if (tok4 == i->classEnd) {
-                                nullPointerError(tok1, var->name(), scope->classDef, false);
+                                const ValueFlow::Value v(scope->classDef, 0LL);
+                                nullPointerError(tok1, var->name(), &v, false);
                                 break;
                             }
 
@@ -306,7 +308,6 @@ void CheckNullPointer::nullPointerLinkedList()
 
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
-    const bool printWarnings = _settings->isEnabled(Settings::WARNING);
     const bool printInconclusive = (_settings->inconclusive);
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -340,10 +341,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             std::list<const Token *> varlist;
             parseFunctionCall(*ftok->previous(), varlist, &_settings->library);
             if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
-                if (value->condition == nullptr)
-                    nullPointerError(tok, tok->str(), false, value->defaultArg, !value->isKnown());
-                else if (printWarnings)
-                    nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
+                nullPointerError(tok, tok->str(), value, value->inconclusive);
             }
             continue;
         }
@@ -351,19 +349,12 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         // Pointer dereference.
         bool unknown = false;
         if (!isPointerDeRef(tok,unknown)) {
-            if (printInconclusive && unknown) {
-                if (value->condition == nullptr)
-                    nullPointerError(tok, tok->str(), true, value->defaultArg, !value->isKnown());
-                else
-                    nullPointerError(tok, tok->str(), value->condition, true);
-            }
+            if (unknown)
+                nullPointerError(tok, tok->str(), value, true);
             continue;
         }
 
-        if (value->condition == nullptr)
-            nullPointerError(tok, tok->str(), value->inconclusive, value->defaultArg, !value->isKnown());
-        else if (printWarnings)
-            nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
+        nullPointerError(tok, tok->str(), value, value->inconclusive);
     }
 }
 
@@ -462,32 +453,39 @@ void CheckNullPointer::nullConstantDereference()
     }
 }
 
-void CheckNullPointer::nullPointerError(const Token *tok)
+void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive)
 {
-    reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE476, false);
-}
+    const std::string errmsgcond(ValueFlow::eitherTheConditionIsRedundant(value ? value->condition : nullptr) + " or there is possible null pointer dereference: " + varname + ".");
+    const std::string errmsgdefarg("Possible null pointer dereference if the default parameter value is used: " + varname);
 
-void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, bool inconclusive, bool defaultArg, bool possible)
-{
-    if (defaultArg) {
-        if (_settings->isEnabled(Settings::WARNING))
-            reportError(tok, Severity::warning, "nullPointerDefaultArg", "Possible null pointer dereference if the default parameter value is used: " + varname, CWE476, inconclusive);
-    } else if (possible) {
-        if (_settings->isEnabled(Settings::WARNING))
-            reportError(tok, Severity::warning, "nullPointer", "Possible null pointer dereference: " + varname, CWE476, inconclusive);
-    } else
-        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference: " + varname, CWE476, inconclusive);
-}
-
-void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const Token* nullCheck, bool inconclusive)
-{
-    if (! _settings->isEnabled(Settings::WARNING))
+    if (!tok) {
+        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE476, false);
+        reportError(tok, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE476, false);
+        reportError(tok, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE476, false);
         return;
-    std::list<const Token*> callstack;
-    callstack.push_back(tok);
-    callstack.push_back(nullCheck);
-    const std::string errmsg(ValueFlow::eitherTheConditionIsRedundant(nullCheck) + " or there is possible null pointer dereference: " + varname + ".");
-    reportError(callstack, Severity::warning, "nullPointerRedundantCheck", errmsg, CWE476, inconclusive);
+    }
+
+    if (!_settings->isEnabled(value, inconclusive))
+        return;
+
+    const std::list<const Token*> errorPath = getErrorPath(tok,value);
+
+    if (value->condition) {
+        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE476, inconclusive || value->inconclusive);
+    } else if (value->defaultArg) {
+        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE476, inconclusive || value->inconclusive);
+    } else {
+        std::string errmsg;
+        errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
+        if (!varname.empty())
+            errmsg += ": " + varname;
+
+        reportError(errorPath,
+                    value->isKnown() ? Severity::error : Severity::warning,
+                    "nullPointer",
+                    errmsg,
+                    CWE476, inconclusive || value->inconclusive);
+    }
 }
 
 void CheckNullPointer::arithmetic()

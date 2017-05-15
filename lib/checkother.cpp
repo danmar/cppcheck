@@ -1625,9 +1625,6 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type)
 //---------------------------------------------------------------------------
 void CheckOther::checkZeroDivision()
 {
-    const bool printWarnings = _settings->isEnabled(Settings::WARNING);
-    const bool printInconclusive = _settings->inconclusive;
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->astOperand2() || !tok->astOperand1())
             continue;
@@ -1646,31 +1643,27 @@ void CheckOther::checkZeroDivision()
 
         // Value flow..
         const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
-        if (!value)
-            continue;
-        if (!printInconclusive && value->inconclusive)
-            continue;
-        if (value->condition == nullptr)
-            zerodivError(tok, value->inconclusive);
-        else if (printWarnings)
-            zerodivcondError(value->condition,tok,value->inconclusive);
+        if (value && _settings->isEnabled(value, false))
+            zerodivError(tok, value);
     }
 }
 
-void CheckOther::zerodivError(const Token *tok, bool inconclusive)
+void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
 {
-    reportError(tok, Severity::error, "zerodiv", "Division by zero.", CWE369, inconclusive);
-}
-
-void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv, bool inconclusive)
-{
-    std::list<const Token *> callstack;
-    if (tokcond && tokdiv) {
-        callstack.push_back(tokcond);
-        callstack.push_back(tokdiv);
+    if (!tok && !value) {
+        reportError(tok, Severity::error, "zerodiv", "Division by zero.", CWE369, false);
+        reportError(tok, Severity::error, "zerodivcond", ValueFlow::eitherTheConditionIsRedundant(nullptr) + " or there is division by zero.", CWE369, false);
+        return;
     }
-    const std::string linenr(MathLib::toString(tokdiv ? tokdiv->linenr() : 0));
-    reportError(callstack, Severity::warning, "zerodivcond", ValueFlow::eitherTheConditionIsRedundant(tokcond) + " or there is division by zero at line " + linenr + ".", CWE369, inconclusive);
+
+    const std::list<const Token *> errorPath = getErrorPath(tok, value);
+
+    if (!value->condition)
+        reportError(errorPath, Severity::error, "zerodiv", "Division by zero.", CWE369, value->inconclusive);
+    else {
+        const std::string linenr(MathLib::toString(tok->linenr()));
+        reportError(errorPath, Severity::warning, "zerodivcond", ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is division by zero at line " + linenr + ".", CWE369, value->inconclusive);
+    }
 }
 
 //---------------------------------------------------------------------------

@@ -1970,6 +1970,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 continue;
 
             std::list<ValueFlow::Value> values = tok->astOperand2()->values();
+            for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it)
+                it->callstack.push_back(tok->astOperand2());
             const bool constValue = tok->astOperand2()->isNumber();
 
             if (tokenlist->isCPP() && Token::Match(var->typeStartToken(), "bool|_Bool")) {
@@ -2767,6 +2769,10 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
                     continue;
                 }
             }
+
+            // callstack..
+            for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it)
+                it->callstack.push_back(argtok);
 
             // passed values are not "known"..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {

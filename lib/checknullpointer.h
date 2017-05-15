@@ -83,16 +83,17 @@ public:
     /** @brief dereferencing null constant (after Tokenizer::simplifyKnownVariables) */
     void nullConstantDereference();
 
-    void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
-    void nullPointerError(const Token *tok, const std::string &varname, bool inconclusive, bool defaultArg, bool possible);
-    void nullPointerError(const Token *tok, const std::string &varname, const Token* nullCheck, bool inconclusive);
+    void nullPointerError(const Token *tok) {
+        ValueFlow::Value v(0);
+        v.setKnown();
+        nullPointerError(tok, "", &v, false);
+    }
+    void nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value* value, bool inconclusive);
 private:
 
     /** Get error messages. Used by --errorlist */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckNullPointer c(nullptr, settings, errorLogger);
-        c.nullPointerError(nullptr);
-        c.nullPointerError(nullptr, "pointer", false, true, true);
         c.nullPointerError(nullptr, "pointer", nullptr, false);
         c.arithmeticError(nullptr, nullptr);
     }

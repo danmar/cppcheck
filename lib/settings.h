@@ -34,6 +34,10 @@
 #include "errorlogger.h"
 #include "timer.h"
 
+namespace ValueFlow {
+    class Value;
+}
+
 /// @addtogroup Core
 /// @{
 
@@ -177,6 +181,12 @@ public:
     * @return true if the check is enabled.
     */
     bool isEnabled(Severity::SeverityType severity) const;
+
+    /**
+    * @brief Returns true if given value can be shown
+    * @return true if the value can be shown
+    */
+    bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
 
     /**
      * @brief Enable extra checks by id. See isEnabled()

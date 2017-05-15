@@ -21,6 +21,7 @@
 #define valueflowH
 //---------------------------------------------------------------------------
 
+#include <list>
 #include <string>
 #include "config.h"
 
@@ -34,7 +35,9 @@ namespace ValueFlow {
     class CPPCHECKLIB Value {
     public:
         explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
-        Value(const Token *c, long long val) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        Value(const Token *c, long long val) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {
+            callstack.push_back(c);
+        }
 
         bool operator==(const Value &rhs) const {
             if (valueType != rhs.valueType)
@@ -104,6 +107,8 @@ namespace ValueFlow {
 
         /** Condition that this value depends on (TODO: replace with a 'callstack') */
         const Token *condition;
+
+        std::list<const Token *> callstack;
 
         /** For calculated values - varId that calculated value depends on */
         unsigned int varId;

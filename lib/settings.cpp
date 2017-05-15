@@ -19,6 +19,7 @@
 #include "settings.h"
 #include "preprocessor.h"       // Preprocessor
 #include "utils.h"
+#include "valueflow.h"
 
 #include <fstream>
 #include <set>
@@ -128,4 +129,13 @@ bool Settings::isEnabled(Severity::SeverityType severity) const
     default:
         return false;
     }
+}
+
+bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) const
+{
+    if (!isEnabled(Settings::WARNING) && (!value->isKnown() || value->condition || value->defaultArg))
+        return false;
+    if (!inconclusive && (inconclusiveCheck || value->inconclusive))
+        return false;
+    return true;
 }

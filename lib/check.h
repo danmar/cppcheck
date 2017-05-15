@@ -158,6 +158,23 @@ protected:
             reportError(errmsg);
     }
 
+    std::list<const Token *> getErrorPath(const Token *errtok, const ValueFlow::Value *value) const {
+        std::list<const Token*> errorPath;
+        if (!value) {
+            errorPath.push_back(errtok);
+        } else if (_settings->verbose) {
+            errorPath = value->callstack;
+            errorPath.push_back(errtok);
+        } else {
+            if (value->condition)
+                errorPath.push_back(value->condition);
+            //else if (!value->isKnown() || value->defaultArg)
+            //    errorPath = value->callstack;
+            errorPath.push_back(errtok);
+        }
+        return errorPath;
+    }
+
 private:
     const std::string _name;
 
