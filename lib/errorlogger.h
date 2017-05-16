@@ -24,8 +24,10 @@
 #include "config.h"
 #include "suppressions.h"
 
+#include <fstream>
 #include <list>
 #include <string>
+#include <vector>
 
 /**
  * CWE id (Common Weakness Enumeration)
@@ -163,6 +165,8 @@ public:
  * should implement.
  */
 class CPPCHECKLIB ErrorLogger {
+protected:
+    std::ofstream plistFile;
 public:
 
     /**
@@ -178,11 +182,11 @@ public:
         class CPPCHECKLIB FileLocation {
         public:
             FileLocation()
-                : line(0) {
+                : line(0), fileNumber(0) {
             }
 
             FileLocation(const std::string &file, unsigned int aline)
-                : line(aline), _file(file) {
+                : line(aline), fileNumber(0), _file(file) {
             }
 
             FileLocation(const Token* tok, const TokenList* list);
@@ -206,6 +210,7 @@ public:
             std::string stringify() const;
 
             unsigned int line;
+            unsigned int fileNumber;
 
         private:
             std::string _file;
@@ -283,7 +288,12 @@ public:
     };
 
     ErrorLogger() { }
-    virtual ~ErrorLogger() { }
+    virtual ~ErrorLogger() {
+        if (plistFile.is_open()) {
+            plistFile << ErrorLogger::plistFooter();
+            plistFile.close();
+        }
+    }
 
     /**
      * Information about progress is directed here.
@@ -335,6 +345,14 @@ public:
      * @return The output string containing XML entities
      */
     static std::string toxml(const std::string &str);
+
+    static std::string plistHeader(const std::string &version, const std::vector<std::string> &files);
+    static std::string plistData(const ErrorLogger::ErrorMessage &msg);
+    static const char *plistFooter() {
+        return " </array>\r\n"
+               "</dict>\r\n"
+               "</plist>";
+    }
 };
 
 /// @}

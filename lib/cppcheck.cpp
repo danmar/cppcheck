@@ -123,6 +123,11 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         }
     }
 
+    if (plistFile.is_open()) {
+        plistFile << ErrorLogger::plistFooter();
+        plistFile.close();
+    }
+
     CheckUnusedFunctions checkUnusedFunctions(0,0,0);
 
     bool internalErrorFound(false);
@@ -134,6 +139,17 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         std::vector<std::string> files;
         simplecpp::TokenList tokens1(fileStream, files, filename, &outputList);
         preprocessor.loadFiles(tokens1, files);
+
+        if (!_settings.plistOutput.empty()) {
+            std::string filename2;
+            if (filename.find("/") != std::string::npos)
+                filename2 = filename.substr(filename.rfind("/") + 1);
+            else
+                filename2 = filename;
+            filename2 = _settings.plistOutput + filename2.substr(0, filename2.find(".")) + ".plist";
+            plistFile.open(filename2);
+            plistFile << ErrorLogger::plistHeader(version(), files);
+        }
 
         // write dump file xml prolog
         std::ofstream fdump;
@@ -428,7 +444,6 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
                                          false);
 
         _errorLogger.reportErr(errmsg);
-
     } else {
         // Report on stdout
         _errorLogger.reportOut(fullmsg);
@@ -692,6 +707,9 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 
     _errorLogger.reportErr(msg);
     analyzerInformation.reportErr(msg, _settings.verbose);
+    if (!_settings.plistOutput.empty() && plistFile.is_open()) {
+        plistFile << ErrorLogger::plistData(msg);
+    }
 }
 
 void CppCheck::reportOut(const std::string &outmsg)

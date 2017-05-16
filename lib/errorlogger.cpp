@@ -449,7 +449,7 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 
 
 ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* list)
-    : line(tok->linenr()), _file(list->file(tok))
+    : line(tok->linenr()), fileNumber(tok->fileIndex()), _file(list->file(tok))
 {
 }
 
@@ -509,3 +509,106 @@ std::string ErrorLogger::toxml(const std::string &str)
     }
     return xml.str();
 }
+
+std::string ErrorLogger::plistHeader(const std::string &version, const std::vector<std::string> &files)
+{
+    std::ostringstream ostr;
+    ostr << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
+         << "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\r\n"
+         << "<plist version=\"1.0\">\r\n"
+         << "<dict>\r\n"
+         << " <key>clang_version</key>\r\n"
+         << "<string>cppcheck version " << version << "</string>\r\n"
+         << " <key>files</key>\r\n"
+         << " <array>\r\n";
+    for (unsigned int i = 0; i < files.size(); ++i)
+        ostr << "  <string>" << ErrorLogger::toxml(files[i]) << "</string>\r\n";
+    ostr       << " </array>\r\n"
+               << " <key>diagnostics</key>\r\n"
+               << " <array>\r\n";
+    return ostr.str();
+}
+
+static std::string plistLoc(const char indent[], const ErrorLogger::ErrorMessage::FileLocation &loc)
+{
+    std::ostringstream ostr;
+    ostr << indent << "<dict>\r\n"
+         << indent << ' ' << "<key>line</key><integer>" << loc.line << "</integer>\r\n"
+         << indent << ' ' << "<key>col</key><integer>1</integer>\r\n"
+         << indent << ' ' << "<key>file</key><integer>" << loc.fileNumber << "</integer>\r\n"
+         << indent << "</dict>\r\n";
+    return ostr.str();
+}
+
+std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
+{
+    std::ostringstream plist;
+    plist << "  <dict>\r\n"
+          << "   <key>path</key>\r\n"
+          << "   <array>\r\n";
+
+    std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator prev = msg._callStack.begin();
+
+    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator it = msg._callStack.begin(); it != msg._callStack.end(); ++it) {
+        if (prev != it) {
+            plist << "    <dict>\r\n"
+                  << "     <key>kind</key><string>control</string>\r\n"
+                  << "     <key>edges</key>\r\n"
+                  << "      <array>\r\n"
+                  << "       <dict>\r\n"
+                  << "        <key>start</key>\r\n"
+                  << "         <array>\r\n"
+                  << plistLoc("          ", *prev)
+                  << plistLoc("          ", *prev)
+                  << "         </array>\r\n"
+                  << "        <key>end</key>\r\n"
+                  << "         <array>\r\n"
+                  << plistLoc("          ", *it)
+                  << plistLoc("          ", *it)
+                  << "         </array>\r\n"
+                  << "       </dict>\r\n"
+                  << "      </array>\r\n"
+                  << "    </dict>\r\n";
+            prev = it;
+        }
+
+        std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator next = it;
+        ++next;
+        const std::string shortMessage = (next == msg._callStack.end() ? msg.shortMessage() : std::string());
+        const std::string verboseMessage = (next == msg._callStack.end() ? msg.verboseMessage() : std::string());
+
+        plist << "    <dict>\r\n"
+              << "     <key>kind</key><string>event</string>\r\n"
+              << "     <key>location</key>\r\n"
+              << plistLoc("     ", *it)
+              << "     <key>ranges</key>\r\n"
+              << "     <array>\r\n"
+              << "       <array>\r\n"
+              << plistLoc("        ", *it)
+              << plistLoc("        ", *it)
+              << "       </array>\r\n"
+              << "     </array>\r\n"
+              << "     <key>depth</key><integer>0</integer>\r\n"
+              << "     <key>extended_message</key>\r\n"
+              << "     <string>" << ErrorLogger::toxml(verboseMessage) << "</string>\r\n"
+              << "     <key>message</key>\r"
+              << "     <string>" << ErrorLogger::toxml(shortMessage) << "</string>\r\n"
+              << "    </dict>\r\n";
+    }
+
+    plist << "   </array>\r\n"
+          << "   <key>description</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
+          << "   <key>category</key><string>" << Severity::toString(msg._severity) << "</string>\r\n"
+          << "   <key>type</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
+          << "   <key>check_name</key><string>" << msg._id << "</string>\r\n"
+          << "   <!-- This hash is experimental and going to change! -->\r\n"
+          << "   <key>issue_hash_content_of_line_in_context</key><string>" << 0 << "</string>\r\n"
+          << "  <key>issue_context_kind</key><string></string>\r\n"
+          << "  <key>issue_context</key><string></string>\r\n"
+          << "  <key>issue_hash_function_offset</key><string></string>\r\n"
+          << "  <key>location</key>\r\n"
+          << plistLoc("  ", msg._callStack.back())
+          << "  </dict>\r\n";
+    return plist.str();
+}
+

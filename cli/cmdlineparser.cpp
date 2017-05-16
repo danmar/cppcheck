@@ -268,6 +268,15 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+            // Write results in results.plist
+            else if (std::strncmp(argv[i], "--plist-output=", 15) == 0) {
+                _settings->plistOutput = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 15));
+                if (_settings->plistOutput.empty())
+                    _settings->plistOutput = "./";
+                else if (!endsWith(_settings->plistOutput,'/'))
+                    _settings->plistOutput += '/';
+            }
+
             // Write results in results.xml
             else if (std::strcmp(argv[i], "--xml") == 0)
                 _settings->xml = true;
@@ -937,6 +946,8 @@ void CmdLineParser::PrintHelp()
               "                                 further assumptions.\n"
               "                          * unspecified\n"
               "                                 Unknown type sizes\n"
+              "    --plist-output=<path>\n"
+              "                         Generate Clang-plist output files in folder.\n"
               "    -q, --quiet          Do not show progress reports.\n"
               "    -rp, --relative-paths\n"
               "    -rp=<paths>, --relative-paths=<paths>\n"

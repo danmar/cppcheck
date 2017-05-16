@@ -131,10 +131,13 @@ public:
     /** @brief Paths used as base for conversion to relative paths. */
     std::vector<std::string> basePaths;
 
+    /** @brief write XML results (--plist-output=<dir>) */
+    std::string plistOutput;
+
     /** @brief write XML results (--xml) */
     bool xml;
 
-    /** @brief XML version (--xmlver=..) */
+    /** @brief XML version (--xml-version=..) */
     int xml_version;
 
     /** @brief How many processes/threads should do checking at the same
