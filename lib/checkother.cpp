@@ -1658,12 +1658,17 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
 
     const std::list<const Token *> errorPath = getErrorPath(tok, value);
 
-    if (!value->condition)
-        reportError(errorPath, Severity::error, "zerodiv", "Division by zero.", CWE369, value->inconclusive);
-    else {
-        const std::string linenr(MathLib::toString(tok->linenr()));
-        reportError(errorPath, Severity::warning, "zerodivcond", ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is division by zero at line " + linenr + ".", CWE369, value->inconclusive);
-    }
+    std::ostringstream errmsg;
+    if (value->condition)
+        errmsg << ValueFlow::eitherTheConditionIsRedundant(value->condition)
+               << " or there is division by zero at line " << tok->linenr() << ".";
+    else
+        errmsg << "Division by zero.";
+
+    reportError(errorPath,
+                value->condition ? Severity::warning : Severity::error,
+                value->condition ? "zerodivcond" : "zerodiv",
+                errmsg.str(), CWE369, value->inconclusive);
 }
 
 //---------------------------------------------------------------------------

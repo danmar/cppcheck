@@ -1780,11 +1780,14 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, MathLib::bigint in
 
 void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::Value &index)
 {
-    std::ostringstream ostr;
-    ostr << "Array index " << index.intvalue << " is out of bounds.";
+    const std::list<const Token *> errorPath = getErrorPath(tok, &index);
+    std::ostringstream errmsg;
     if (index.condition)
-        ostr << " Otherwise there is useless condition at line " << index.condition->linenr() << ".";
-    reportError(tok, index.condition ? Severity::warning : Severity::error, "negativeIndex", ostr.str(), CWE786, index.inconclusive);
+        errmsg << ValueFlow::eitherTheConditionIsRedundant(index.condition)
+               << ", otherwise there is negative array index " << index.intvalue << ".";
+    else
+        errmsg << "Array index " << index.intvalue << " is out of bounds.";
+    reportError(errorPath, index.condition ? Severity::warning : Severity::error, "negativeIndex", errmsg.str(), CWE786, index.inconclusive);
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo()
