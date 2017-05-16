@@ -193,6 +193,10 @@ public:
                 : line(aline), fileNumber(0), _file(file) {
             }
 
+            FileLocation(const std::string &file, const std::string &info, unsigned int aline)
+                : line(aline), fileNumber(0), _file(file), _info(info) {
+            }
+
             FileLocation(const Token* tok, const TokenList* list);
             FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList);
 
@@ -216,6 +220,9 @@ public:
 
             unsigned int line;
             unsigned int fileNumber;
+
+            std::string getinfo() const { return _info; }
+            void setinfo(const std::string &i) { _info = i; }
 
         private:
             std::string _file;

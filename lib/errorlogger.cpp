@@ -193,9 +193,9 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     oss << saneVerboseMessage.length() << " " << saneVerboseMessage;
     oss << _callStack.size() << " ";
 
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = _callStack.begin(); tok != _callStack.end(); ++tok) {
+    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator loc = _callStack.begin(); loc != _callStack.end(); ++loc) {
         std::ostringstream smallStream;
-        smallStream << (*tok).line << ":" << (*tok).getfile();
+        smallStream << (*loc).line << ':' << (*loc).getfile() << '\t' << loc->getinfo();
         oss << smallStream.str().length() << " " << smallStream.str();
     }
 
@@ -260,11 +260,19 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         const std::string::size_type colonPos = temp.find(':');
         if (colonPos == std::string::npos)
             throw InternalError(0, "Internal Error: No colon found in <filename:line> pattern");
+        const std::string::size_type tabPos = temp.find('\t');
+        if (tabPos == std::string::npos)
+            throw InternalError(0, "Internal Error: No tab found in <filename:line> pattern");
 
+        const std::string tempinfo = temp.substr(tabPos + 1);
+        temp.erase(tabPos);
+        const std::string tempfile = temp.substr(colonPos + 1);
+        temp.erase(colonPos);
+        const std::string templine = temp;
         ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.setfile(temp.substr(colonPos + 1));
-        temp = temp.substr(0, colonPos);
-        std::istringstream fiss(temp);
+        loc.setfile(tempfile);
+        loc.setinfo(tempinfo);
+        std::istringstream fiss(templine);
         fiss >> loc.line;
 
         _callStack.push_back(loc);
@@ -366,6 +374,8 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
                 printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
             printer.PushAttribute("file", (*it).getfile().c_str());
             printer.PushAttribute("line", (*it).line);
+            if (!it->getinfo().empty())
+                printer.PushAttribute("info", it->getinfo().c_str());
             printer.CloseElement(false);
         }
         printer.CloseElement(false);
