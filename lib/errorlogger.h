@@ -160,6 +160,10 @@ public:
     }
 };
 
+
+typedef std::pair<const Token *, std::string> ErrorPathItem;
+typedef std::list<ErrorPathItem> ErrorPath;
+
 /**
  * @brief This is an interface, which the class responsible of error logging
  * should implement.
@@ -190,6 +194,7 @@ public:
             }
 
             FileLocation(const Token* tok, const TokenList* list);
+            FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList);
 
             /**
              * Return the filename.
@@ -214,12 +219,14 @@ public:
 
         private:
             std::string _file;
+            std::string _info;
         };
 
         ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
         ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive);
         ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive);
         ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive);
+        ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive);
         ErrorMessage();
         explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
 

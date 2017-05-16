@@ -473,7 +473,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     if (!_settings->isEnabled(value, inconclusive))
         return;
 
-    const std::list<const Token*> errorPath = getErrorPath(tok,value);
+    const ErrorPath errorPath = getErrorPath(tok,value);
 
     if (value->condition) {
         reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE476, inconclusive || value->inconclusive);

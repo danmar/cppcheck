@@ -365,7 +365,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     result.inconclusive = value1->inconclusive | value2->inconclusive;
                     result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
                     result.varvalue = (result.varId == value1->varId) ? value1->varvalue : value2->varvalue;
-                    result.callstack = (value1->callstack.empty() ? value2 : value1)->callstack;
+                    result.errorPath = (value1->errorPath.empty() ? value2 : value1)->errorPath;
                     if (value1->valueKind == value2->valueKind)
                         result.valueKind = value1->valueKind;
                     const float floatValue1 = value1->isIntValue() ? value1->intvalue : value1->floatValue;
@@ -1972,7 +1972,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
 
             std::list<ValueFlow::Value> values = tok->astOperand2()->values();
             for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it)
-                it->callstack.push_back(tok->astOperand2());
+                it->errorPath.push_back(ErrorPathItem(tok->astOperand2(),"assignment"));
             const bool constValue = tok->astOperand2()->isNumber();
 
             if (tokenlist->isCPP() && Token::Match(var->typeStartToken(), "bool|_Bool")) {
@@ -2771,9 +2771,9 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
                 }
             }
 
-            // callstack..
+            // Error path..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it)
-                it->callstack.push_back(argtok);
+                it->errorPath.push_back(ErrorPathItem(argtok, "function call argument"));
 
             // passed values are not "known"..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {

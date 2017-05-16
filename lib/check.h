@@ -45,7 +45,6 @@ namespace tinyxml2 {
 /// @addtogroup Core
 /// @{
 
-
 /**
  * @brief Interface class that cppcheck uses to communicate with the checks.
  * All checking classes must inherit from this class
@@ -158,19 +157,27 @@ protected:
             reportError(errmsg);
     }
 
-    std::list<const Token *> getErrorPath(const Token *errtok, const ValueFlow::Value *value) const {
-        std::list<const Token*> errorPath;
+    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive) {
+        const ErrorLogger::ErrorMessage errmsg(errorPath, _tokenizer ? &_tokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
+        if (_errorLogger)
+            _errorLogger->reportErr(errmsg);
+        else
+            reportError(errmsg);
+    }
+
+    ErrorPath getErrorPath(const Token *errtok, const ValueFlow::Value *value) const {
+        ErrorPath errorPath;
         if (!value) {
-            errorPath.push_back(errtok);
+            errorPath.push_back(ErrorPathItem(errtok,""));
         } else if (_settings->verbose) {
-            errorPath = value->callstack;
-            errorPath.push_back(errtok);
+            errorPath = value->errorPath;
+            errorPath.push_back(ErrorPathItem(errtok,""));
         } else {
             if (value->condition)
-                errorPath.push_back(value->condition);
+                errorPath.push_back(ErrorPathItem(value->condition, "condition '" + value->condition->expressionString() + "'"));
             //else if (!value->isKnown() || value->defaultArg)
             //    errorPath = value->callstack;
-            errorPath.push_back(errtok);
+            errorPath.push_back(ErrorPathItem(errtok,""));
         }
         return errorPath;
     }

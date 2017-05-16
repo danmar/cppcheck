@@ -1656,7 +1656,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
         return;
     }
 
-    const std::list<const Token *> errorPath = getErrorPath(tok, value);
+    const ErrorPath errorPath = getErrorPath(tok, value);
 
     std::ostringstream errmsg;
     if (value->condition)

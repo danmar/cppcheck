@@ -34,9 +34,12 @@ class Settings;
 namespace ValueFlow {
     class CPPCHECKLIB Value {
     public:
+        typedef std::pair<const Token *, std::string> ErrorPathItem;
+        typedef std::list<ErrorPathItem> ErrorPath;
+
         explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
         Value(const Token *c, long long val) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {
-            callstack.push_back(c);
+            errorPath.push_back(ErrorPathItem(c, "condition"));
         }
 
         bool operator==(const Value &rhs) const {
@@ -105,10 +108,10 @@ namespace ValueFlow {
         /** For calculated values - variable value that calculated value depends on */
         long long varvalue;
 
-        /** Condition that this value depends on (TODO: replace with a 'callstack') */
+        /** Condition that this value depends on */
         const Token *condition;
 
-        std::list<const Token *> callstack;
+        ErrorPath errorPath;
 
         /** For calculated values - varId that calculated value depends on */
         unsigned int varId;

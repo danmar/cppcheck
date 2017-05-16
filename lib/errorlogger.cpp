@@ -111,6 +111,25 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
     setmsg(msg);
 }
 
+ErrorLogger::ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive)
+    : _id(id), _severity(severity), _cwe(cwe.id), _inconclusive(inconclusive)
+{
+    // Format callstack
+    for (ErrorPath::const_iterator it = errorPath.begin(); it != errorPath.end(); ++it) {
+        const Token *tok = it->first;
+        const std::string &info = it->second;
+
+        // --errorlist can provide null values here
+        if (tok)
+            _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(tok, info, tokenList));
+    }
+
+    if (tokenList && !tokenList->getFiles().empty())
+        file0 = tokenList->getFiles()[0];
+
+    setmsg(msg);
+}
+
 ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     : _id(errmsg->Attribute("id")),
       _severity(Severity::fromString(errmsg->Attribute("severity"))),
@@ -125,7 +144,10 @@ ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errms
     _inconclusive = attr && (std::strcmp(attr, "true") == 0);
     for (const tinyxml2::XMLElement *e = errmsg->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(),"location")==0) {
-            _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(e->Attribute("file"), std::atoi(e->Attribute("line"))));
+            const char *strfile = e->Attribute("file");
+            const char *strinfo = e->Attribute("info");
+            const char *strline = e->Attribute("line");
+            _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(strfile, strinfo ? strinfo : "", std::atoi(strline)));
         }
     }
 }
@@ -450,6 +472,11 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 
 ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* list)
     : line(tok->linenr()), fileNumber(tok->fileIndex()), _file(list->file(tok))
+{
+}
+
+ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* list)
+    : line(tok->linenr()), fileNumber(tok->fileIndex()), _file(list->file(tok)), _info(info)
 {
 }
 
