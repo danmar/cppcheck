@@ -1971,8 +1971,12 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 continue;
 
             std::list<ValueFlow::Value> values = tok->astOperand2()->values();
-            for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it)
-                it->errorPath.push_back(ErrorPathItem(tok->astOperand2(),"assignment"));
+            for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
+                std::string info = "Assignment";
+                if (it->isIntValue())
+                    info += ", integer value " + MathLib::toString(it->intvalue);
+                it->errorPath.push_back(ErrorPathItem(tok->astOperand2(), info));
+            }
             const bool constValue = tok->astOperand2()->isNumber();
 
             if (tokenlist->isCPP() && Token::Match(var->typeStartToken(), "bool|_Bool")) {
@@ -2924,6 +2928,23 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
 
         valueFlowForward(vardecl->next(), vardecl->scope()->classEnd, var, vardecl->varId(), values, constValue, subFunction, tokenlist, errorLogger, settings);
     }
+}
+
+ValueFlow::Value::Value(const Token *c, long long val)
+    : valueType(INT),
+      intvalue(val),
+      tokvalue(nullptr),
+      floatValue(0.0),
+      moveKind(NonMovedVariable),
+      varvalue(val),
+      condition(c),
+      varId(0U),
+      conditional(false),
+      inconclusive(false),
+      defaultArg(false),
+      valueKind(ValueKind::Possible)
+{
+    errorPath.push_back(ErrorPathItem(c, "Condition '" + c->expressionString() + "'"));
 }
 
 const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(const Token *expr, const Settings *settings)

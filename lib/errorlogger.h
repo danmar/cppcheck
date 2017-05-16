@@ -221,8 +221,12 @@ public:
             unsigned int line;
             unsigned int fileNumber;
 
-            std::string getinfo() const { return _info; }
-            void setinfo(const std::string &i) { _info = i; }
+            std::string getinfo() const {
+                return _info;
+            }
+            void setinfo(const std::string &i) {
+                _info = i;
+            }
 
         private:
             std::string _file;

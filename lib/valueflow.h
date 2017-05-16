@@ -38,9 +38,7 @@ namespace ValueFlow {
         typedef std::list<ErrorPathItem> ErrorPath;
 
         explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
-        Value(const Token *c, long long val) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {
-            errorPath.push_back(ErrorPathItem(c, "condition"));
-        }
+        Value(const Token *c, long long val);
 
         bool operator==(const Value &rhs) const {
             if (valueType != rhs.valueType)
