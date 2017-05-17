@@ -316,6 +316,8 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, cfg, files);
                 _tokenizer.createTokens(&tokensP);
                 timer.Stop();
+                if (tokensP.empty())
+                    continue;
 
                 // skip rest of iteration if just checking configuration
                 if (_settings.checkConfiguration)
