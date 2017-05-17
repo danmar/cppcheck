@@ -135,6 +135,8 @@ public:
      */
     void preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths);
 
+    simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files);
+
     std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations);
 
     /**
@@ -168,6 +170,8 @@ public:
      * @return CRC32 checksum
      */
     unsigned int calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
+
+    static void simplifyPragmaAsm(simplecpp::TokenList *tokenList);
 
 private:
 

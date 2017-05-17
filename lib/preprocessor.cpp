@@ -436,7 +436,6 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
     std::vector<std::string> files;
     const simplecpp::TokenList tokens1(istr, files, filename, &outputList);
 
-
     const std::set<std::string> configs = getConfigs(tokens1);
 
     for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it) {
@@ -567,6 +566,10 @@ void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
     simplecpp::OutputList outputList;
 
     tokenlists = simplecpp::load(rawtokens, files, dui, &outputList);
+
+    for (std::map<std::string, simplecpp::TokenList *>::iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+        Preprocessor::simplifyPragmaAsm(it->second);
+    }
 }
 
 void Preprocessor::removeComments()
@@ -597,7 +600,7 @@ void Preprocessor::setPlatformInfo(simplecpp::TokenList *tokens) const
     tokens->sizeOfType["long double *"] = _settings.sizeof_pointer;
 }
 
-std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations)
+simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files)
 {
     const simplecpp::DUI dui = createDUI(_settings, cfg, files[0]);
 
@@ -609,45 +612,20 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
     bool showerror = (!_settings.userDefines.empty() && !_settings.force);
     reportOutput(outputList, showerror);
     if (hasErrors(outputList))
-        return "";
+        return simplecpp::TokenList(files);
 
     tokens2.removeComments();
 
     // ensure that guessed define macros without value are not used in the code
     if (!validateCfg(cfg, macroUsage))
-        return "";
+        return simplecpp::TokenList(files);
 
-    // assembler code locations..
-    std::set<simplecpp::Location> assemblerLocations;
-    for (std::list<Directive>::const_iterator dirIt = directives.begin(); dirIt != directives.end(); ++dirIt) {
-        const Directive &d1 = *dirIt;
-        if (d1.str.compare(0, 11, "#pragma asm") != 0)
-            continue;
-        std::list<Directive>::const_iterator dirIt2 = dirIt;
-        ++dirIt2;
-        if (dirIt2 == directives.end())
-            continue;
+    return tokens2;
+}
 
-        const Directive &d2 = *dirIt2;
-        if (d2.str.compare(0,14,"#pragma endasm") != 0 || d1.file != d2.file)
-            continue;
-
-        simplecpp::Location loc(files);
-        loc.fileIndex = ~0U;
-        loc.col = 0U;
-        for (unsigned int i = 0; i < files.size(); ++i) {
-            if (files[i] == d1.file) {
-                loc.fileIndex = i;
-                break;
-            }
-        }
-
-        for (unsigned int linenr = d1.linenr + 1U; linenr < d2.linenr; linenr++) {
-            loc.line = linenr;
-            assemblerLocations.insert(loc);
-        }
-    }
-
+std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations)
+{
+    simplecpp::TokenList tokens2 = preprocess(tokens1, cfg, files);
     unsigned int prevfile = 0;
     unsigned int line = 1;
     std::ostringstream ret;
@@ -660,29 +638,9 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
 
         if (tok->previous && line >= tok->location.line) // #7912
             ret << ' ';
-        bool newline = false;
         while (tok->location.line > line) {
             ret << '\n';
             line++;
-            newline = true;
-        }
-        if (newline) {
-            simplecpp::Location loc = tok->location;
-            loc.col = 0U;
-            if (assemblerLocations.find(loc) != assemblerLocations.end()) {
-                ret << "asm();";
-                while (assemblerLocations.find(loc) != assemblerLocations.end()) {
-                    loc.line++;
-                }
-                while (tok && tok->location.line < loc.line)
-                    tok = tok->next;
-                if (!tok)
-                    break;
-                while (line < tok->location.line) {
-                    ret << '\n';
-                    ++line;
-                }
-            }
         }
         if (!tok->macro.empty())
             ret << Preprocessor::macroChar;
@@ -925,4 +883,46 @@ unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1
         }
     }
     return crc32(ostr.str());
+}
+
+void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList)
+{
+    // assembler code..
+    for (simplecpp::Token *tok = tokenList->front(); tok; tok = tok->next) {
+        if (tok->op != '#')
+            continue;
+        if (sameline(tok, tok->previousSkipComments()))
+            continue;
+
+        const simplecpp::Token * const tok2 = tok->nextSkipComments();
+        if (!tok2 || !sameline(tok, tok2) || tok2->str != "pragma")
+            continue;
+
+        const simplecpp::Token * const tok3 = tok2->nextSkipComments();
+        if (!tok3 || !sameline(tok, tok3) || tok3->str != "asm")
+            continue;
+
+        const simplecpp::Token *endasm = tok3;
+        while ((endasm = endasm->next) != 0) {
+            if (endasm->op != '#' || sameline(endasm,endasm->previousSkipComments()))
+                continue;
+            const simplecpp::Token * const endasm2 = endasm->nextSkipComments();
+            if (!endasm2 || !sameline(endasm, endasm2) || endasm2->str != "pragma")
+                continue;
+            const simplecpp::Token * const endasm3 = endasm2->nextSkipComments();
+            if (!endasm3 || !sameline(endasm2, endasm3) || endasm3->str != "endasm")
+                continue;
+            while (sameline(endasm,endasm3))
+                endasm = endasm->next;
+            break;
+        }
+
+        const simplecpp::Token * const tok4 = tok3->next;
+        tok->setstr("asm");
+        const_cast<simplecpp::Token *>(tok2)->setstr("(");
+        const_cast<simplecpp::Token *>(tok3)->setstr(")");
+        const_cast<simplecpp::Token *>(tok4)->setstr(";");
+        while (tok4->next != endasm)
+            tokenList->deleteToken(tok4->next);
+    }
 }

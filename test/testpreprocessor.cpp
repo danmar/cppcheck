@@ -253,6 +253,7 @@ private:
         std::vector<std::string> files;
         simplecpp::TokenList tokens(istr, files, filename, &outputList);
         tokens.removeComments();
+        Preprocessor::simplifyPragmaAsm(&tokens);
         const std::set<std::string> configs(preprocessor0.getConfigs(tokens));
         preprocessor0.setDirectives(tokens);
         for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it) {
@@ -1376,7 +1377,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\nasm();\n\naaa\n\nasm();\n\nbbb", actual[""]);
+        ASSERT_EQUALS("asm ( )\n;\n\naaa\nasm ( ) ;\n\n\nbbb", actual[""]);
     }
 
     void pragma_asm_2() {
@@ -1391,7 +1392,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\nasm();\n\nbbb", actual[""]);
+        ASSERT_EQUALS("asm ( )\n;\n\nbbb", actual[""]);
     }
 
     void endifsemicolon() {
