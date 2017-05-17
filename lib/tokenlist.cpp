@@ -25,6 +25,7 @@
 #include "settings.h"
 #include "errorlogger.h"
 #include "utils.h"
+#include "simplecpp.h"
 
 #include <cstring>
 #include <sstream>
@@ -409,10 +410,10 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
 //---------------------------------------------------------------------------
 
-void TokenList::createTokens(const simplecpp::TokenList &tokenList)
+void TokenList::createTokens(const simplecpp::TokenList *tokenList)
 {
-    if (tokenList.cfront())
-        _files = tokenList.cfront()->location.files;
+    if (tokenList->cfront())
+        _files = tokenList->cfront()->location.files;
     else
         _files.clear();
 
@@ -426,7 +427,7 @@ void TokenList::createTokens(const simplecpp::TokenList &tokenList)
         _isCPP = (_settings->enforcedLang == Settings::CPP);
     }
 
-    for (const simplecpp::Token *tok = tokenList.cfront(); tok; tok = tok->next) {
+    for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
         if (_back) {
             _back->insertToken(tok->str);
         } else {

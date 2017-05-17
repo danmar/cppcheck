@@ -312,7 +312,8 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
                 // Create tokens, skip rest of iteration if failed
                 Timer timer("Tokenizer::createTokens", _settings.showtime, &S_timerResults);
-                _tokenizer.createTokens(preprocessor.preprocess(tokens1, cfg, files));
+                const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, cfg, files);
+                _tokenizer.createTokens(&tokensP);
                 timer.Stop();
 
                 // skip rest of iteration if just checking configuration

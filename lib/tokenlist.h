@@ -24,10 +24,13 @@
 #include <string>
 #include <vector>
 #include "config.h"
-#include "simplecpp.h"
 
 class Token;
 class Settings;
+
+namespace simplecpp {
+    class TokenList;
+}
 
 /// @addtogroup Core
 /// @{
@@ -80,7 +83,7 @@ public:
      */
     bool createTokens(std::istream &code, const std::string& file0 = emptyString);
 
-    void createTokens(const simplecpp::TokenList &tokenList);
+    void createTokens(const simplecpp::TokenList *tokenList);
 
     /** Deallocate list */
     void deallocateTokens();

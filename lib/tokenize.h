@@ -24,7 +24,6 @@
 #include "errorlogger.h"
 #include "tokenlist.h"
 #include "config.h"
-#include "simplecpp.h"
 
 #include <string>
 #include <map>
@@ -35,6 +34,10 @@
 class Settings;
 class SymbolDatabase;
 class TimerResults;
+
+namespace simplecpp {
+    class TokenList;
+}
 
 /// @addtogroup Core
 /// @{
@@ -74,7 +77,7 @@ public:
     bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
 
     bool createTokens(std::istream &code, const std::string& FileName);
-    void createTokens(const simplecpp::TokenList &tokenList);
+    void createTokens(const simplecpp::TokenList *tokenList);
 
     bool simplifyTokens1(const std::string &configuration);
     /**
