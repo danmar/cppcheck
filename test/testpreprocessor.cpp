@@ -253,7 +253,7 @@ private:
         std::vector<std::string> files;
         simplecpp::TokenList tokens(istr, files, filename, &outputList);
         tokens.removeComments();
-        Preprocessor::simplifyPragmaAsm(&tokens);
+        preprocessor0.simplifyPragmaAsm(&tokens);
         const std::set<std::string> configs(preprocessor0.getConfigs(tokens));
         preprocessor0.setDirectives(tokens);
         for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it) {

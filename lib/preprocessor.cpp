@@ -566,10 +566,6 @@ void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
     simplecpp::OutputList outputList;
 
     tokenlists = simplecpp::load(rawtokens, files, dui, &outputList);
-
-    for (std::map<std::string, simplecpp::TokenList *>::iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
-        Preprocessor::simplifyPragmaAsm(it->second);
-    }
 }
 
 void Preprocessor::removeComments()
@@ -886,6 +882,14 @@ unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1
 }
 
 void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList)
+{
+    Preprocessor::simplifyPragmaAsmPrivate(tokenList);
+    for (std::map<std::string, simplecpp::TokenList *>::iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+        Preprocessor::simplifyPragmaAsmPrivate(it->second);
+    }
+}
+
+void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList)
 {
     // assembler code..
     for (simplecpp::Token *tok = tokenList->front(); tok; tok = tok->next) {

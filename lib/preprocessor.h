@@ -171,9 +171,11 @@ public:
      */
     unsigned int calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
 
-    static void simplifyPragmaAsm(simplecpp::TokenList *tokenList);
+    void simplifyPragmaAsm(simplecpp::TokenList *tokenList);
 
 private:
+
+    static void simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList);
 
     /**
      * Remove space that has new line character on left or right side of it.

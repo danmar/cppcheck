@@ -212,6 +212,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
         // Get directives
         preprocessor.setDirectives(tokens1);
+        preprocessor.simplifyPragmaAsm(&tokens1);
 
         preprocessor.setPlatformInfo(&tokens1);
 
