@@ -283,13 +283,11 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 cfg = _settings.userDefines + cfg;
             }
 
-            std::string codeWithoutCfg;
-            {
-                Timer t("Preprocessor::getcode", _settings.showtime, &S_timerResults);
-                codeWithoutCfg = preprocessor.getcode(tokens1, cfg, files, true);
-            }
-
             if (_settings.preprocessOnly) {
+                Timer t("Preprocessor::getcode", _settings.showtime, &S_timerResults);
+                std::string codeWithoutCfg = preprocessor.getcode(tokens1, cfg, files, true);
+                t.Stop();
+
                 if (codeWithoutCfg.compare(0,5,"#file") == 0)
                     codeWithoutCfg.insert(0U, "//");
                 std::string::size_type pos = 0;
@@ -310,13 +308,12 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 _tokenizer.setTimerResults(&S_timerResults);
 
             try {
+                bool result;
+
                 // Create tokens, skip rest of iteration if failed
-                std::istringstream istr(codeWithoutCfg);
                 Timer timer("Tokenizer::createTokens", _settings.showtime, &S_timerResults);
-                bool result = _tokenizer.createTokens(istr, filename);
+                _tokenizer.createTokens(preprocessor.preprocess(tokens1, cfg, files));
                 timer.Stop();
-                if (!result)
-                    continue;
 
                 // skip rest of iteration if just checking configuration
                 if (_settings.checkConfiguration)

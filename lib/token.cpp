@@ -43,6 +43,7 @@ Token::Token(Token **tokens) :
     _varId(0),
     _fileIndex(0),
     _linenr(0),
+    _col(0),
     _progressValue(0),
     _tokType(eNone),
     _flags(0),

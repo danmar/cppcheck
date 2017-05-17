@@ -45,7 +45,7 @@ class Enumerator;
  *
  * Tokens are stored as strings. The "if", "while", etc are stored in plain text.
  * The reason the Token class is needed (instead of using the string class) is that some extra functionality is also needed for tokens:
- *  - location of the token is stored (linenr, fileIndex)
+ *  - location of the token is stored (fileIndex, linenr, column)
  *  - functions for classifying the token (isName, isNumber, isBoolean, isStandardType)
  *
  * The Token class also has other functions for management of token list, matching tokens, etc.
@@ -444,6 +444,13 @@ public:
      */
     static int multiCompare(const Token *tok, const char *haystack, unsigned int varid);
 
+    unsigned int fileIndex() const {
+        return _fileIndex;
+    }
+    void fileIndex(unsigned int indexOfFile) {
+        _fileIndex = indexOfFile;
+    }
+
     unsigned int linenr() const {
         return _linenr;
     }
@@ -451,11 +458,11 @@ public:
         _linenr = lineNumber;
     }
 
-    unsigned int fileIndex() const {
-        return _fileIndex;
+    unsigned int col() const {
+        return _col;
     }
-    void fileIndex(unsigned int indexOfFile) {
-        _fileIndex = indexOfFile;
+    void col(unsigned int c) {
+        _col = c;
     }
 
     Token *next() const {
@@ -844,6 +851,7 @@ private:
     unsigned int _varId;
     unsigned int _fileIndex;
     unsigned int _linenr;
+    unsigned int _col;
 
     /**
      * A value from 0-100 that provides a rough idea about where in the token

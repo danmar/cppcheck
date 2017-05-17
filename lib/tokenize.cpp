@@ -1709,6 +1709,13 @@ bool Tokenizer::createTokens(std::istream &code,
     return list.createTokens(code, Path::getRelativePath(Path::simplifyPath(FileName), _settings->basePaths));
 }
 
+void Tokenizer::createTokens(const simplecpp::TokenList &tokenList)
+{
+    // make sure settings specified
+    assert(_settings);
+    list.createTokens(tokenList);
+}
+
 bool Tokenizer::simplifyTokens1(const std::string &configuration)
 {
     // Fill the map _typeSize..

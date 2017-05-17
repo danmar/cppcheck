@@ -409,6 +409,50 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
 //---------------------------------------------------------------------------
 
+void TokenList::createTokens(const simplecpp::TokenList &tokenList)
+{
+    if (tokenList.cfront())
+        _files = tokenList.cfront()->location.files;
+    else
+        _files.clear();
+
+    _isC = _isCPP = false;
+    if (!_files.empty()) {
+        _isC = Path::isC(getSourceFilePath());
+        _isCPP = Path::isCPP(getSourceFilePath());
+    }
+    if (_settings && _settings->enforcedLang != Settings::None) {
+        _isC = (_settings->enforcedLang == Settings::C);
+        _isCPP = (_settings->enforcedLang == Settings::CPP);
+    }
+
+    for (const simplecpp::Token *tok = tokenList.cfront(); tok; tok = tok->next) {
+        if (_back) {
+            _back->insertToken(tok->str);
+        } else {
+            _front = new Token(&_back);
+            _back = _front;
+            _back->str(tok->str);
+        }
+
+        if (isCPP() && _back->str() == "delete")
+            _back->isKeyword(true);
+        _back->fileIndex(tok->location.fileIndex);
+        _back->linenr(tok->location.line);
+        _back->col(tok->location.col);
+        _back->isExpandedMacro(!tok->macro.empty());
+    }
+
+    if (_settings && _settings->relativePaths) {
+        for (std::size_t i = 0; i < _files.size(); i++)
+            _files[i] = Path::getRelativePath(_files[i], _settings->basePaths);
+    }
+
+    Token::assignProgressValues(_front);
+}
+
+//---------------------------------------------------------------------------
+
 unsigned long long TokenList::calculateChecksum() const
 {
     unsigned long long checksum = 0;
