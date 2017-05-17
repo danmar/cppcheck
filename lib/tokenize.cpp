@@ -1803,9 +1803,7 @@ void Tokenizer::combineOperators()
     const bool cpp = isCPP();
 
     // Combine tokens..
-    for (Token *tok = list.front();
-         tok && tok->next();
-         tok = tok->next()) {
+    for (Token *tok = list.front(); tok && tok->next(); tok = tok->next()) {
         const char c1 = tok->str()[0];
 
         if (tok->str().length() == 1 && tok->next()->str().length() == 1) {
@@ -1870,6 +1868,9 @@ void Tokenizer::combineOperators()
                 tok->str(tok->str() + ":");
                 tok->deleteNext();
             }
+        } else if (tok->str() == "->") {
+            tok->str(".");
+            tok->originalName("->");
         }
     }
 }
