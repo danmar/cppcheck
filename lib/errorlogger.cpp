@@ -480,13 +480,13 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 }
 
 
-ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* list)
-    : line(tok->linenr()), fileNumber(tok->fileIndex()), _file(list->file(tok))
+ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList)
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), _file(tokenList->file(tok))
 {
 }
 
-ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* list)
-    : line(tok->linenr()), fileNumber(tok->fileIndex()), _file(list->file(tok)), _info(info)
+ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList)
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), _file(tokenList->file(tok)), _info(info)
 {
 }
 
@@ -571,8 +571,8 @@ static std::string plistLoc(const char indent[], const ErrorLogger::ErrorMessage
     std::ostringstream ostr;
     ostr << indent << "<dict>\r\n"
          << indent << ' ' << "<key>line</key><integer>" << loc.line << "</integer>\r\n"
-         << indent << ' ' << "<key>col</key><integer>1</integer>\r\n"
-         << indent << ' ' << "<key>file</key><integer>" << loc.fileNumber << "</integer>\r\n"
+         << indent << ' ' << "<key>col</key><integer>" << loc.col << "</integer>\r\n"
+         << indent << ' ' << "<key>file</key><integer>" << loc.fileIndex << "</integer>\r\n"
          << indent << "</dict>\r\n";
     return ostr.str();
 }
@@ -611,8 +611,7 @@ std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
 
         std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator next = it;
         ++next;
-        const std::string shortMessage = (next == msg._callStack.end() ? msg.shortMessage() : std::string());
-        const std::string verboseMessage = (next == msg._callStack.end() ? msg.verboseMessage() : std::string());
+        const std::string message = (it->getinfo().empty() && next == msg._callStack.end() ? msg.shortMessage() : it->getinfo());
 
         plist << "    <dict>\r\n"
               << "     <key>kind</key><string>event</string>\r\n"
@@ -627,9 +626,9 @@ std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
               << "     </array>\r\n"
               << "     <key>depth</key><integer>0</integer>\r\n"
               << "     <key>extended_message</key>\r\n"
-              << "     <string>" << ErrorLogger::toxml(verboseMessage) << "</string>\r\n"
+              << "     <string>" << ErrorLogger::toxml(message) << "</string>\r\n"
               << "     <key>message</key>\r"
-              << "     <string>" << ErrorLogger::toxml(shortMessage) << "</string>\r\n"
+              << "     <string>" << ErrorLogger::toxml(message) << "</string>\r\n"
               << "    </dict>\r\n";
     }
 

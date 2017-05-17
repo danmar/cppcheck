@@ -186,18 +186,18 @@ public:
         class CPPCHECKLIB FileLocation {
         public:
             FileLocation()
-                : line(0), fileNumber(0) {
+                : fileIndex(0), line(0), col(0) {
             }
 
             FileLocation(const std::string &file, unsigned int aline)
-                : line(aline), fileNumber(0), _file(file) {
+                : fileIndex(0), line(aline), col(0), _file(file) {
             }
 
             FileLocation(const std::string &file, const std::string &info, unsigned int aline)
-                : line(aline), fileNumber(0), _file(file), _info(info) {
+                : fileIndex(0), line(aline), col(0), _file(file), _info(info) {
             }
 
-            FileLocation(const Token* tok, const TokenList* list);
+            FileLocation(const Token* tok, const TokenList* tokenList);
             FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList);
 
             /**
@@ -218,8 +218,9 @@ public:
              */
             std::string stringify() const;
 
+            unsigned int fileIndex;
             unsigned int line;
-            unsigned int fileNumber;
+            unsigned int col;
 
             std::string getinfo() const {
                 return _info;
