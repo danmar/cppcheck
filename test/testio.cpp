@@ -1322,15 +1322,15 @@ private:
 
         check("void g() {\n" // #5104
               "    myvector<int> v1(1);\n"
-              "    scanf(\"%d\n\",&v1[0]);\n"
+              "    scanf(\"%d\",&v1[0]);\n"
               "    myvector<unsigned int> v2(1);\n"
-              "    scanf(\"%u\n\",&v2[0]);\n"
+              "    scanf(\"%u\",&v2[0]);\n"
               "    myvector<unsigned int> v3(1);\n"
-              "    scanf(\"%x\n\",&v3[0]);\n"
+              "    scanf(\"%x\",&v3[0]);\n"
               "    myvector<double> v4(1);\n"
-              "    scanf(\"%lf\n\",&v4[0]);\n"
+              "    scanf(\"%lf\",&v4[0]);\n"
               "    myvector<char *> v5(1);\n"
-              "    scanf(\"%10s\n\",v5[0]);\n"
+              "    scanf(\"%10s\",v5[0]);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -1358,12 +1358,11 @@ private:
         {
             check("void g() {\n"
                   "    const char c[]=\"42\";\n"
-                  "    scanf(\"%s\n\", c);\n"
+                  "    scanf(\"%s\", c);\n"
                   "}\n");
             ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires a 'char *' but the argument type is 'const char *'.\n"
                           "[test.cpp:3]: (warning) scanf() without field width limits can crash with huge input data.\n", errout.str());
         }
-
     }
 
     void testPrintfArgument() {
@@ -1412,12 +1411,12 @@ private:
               "    printf(\"%i%s%d\", 0, bar(), 43123);\n"
               "    printf(\"%i%%%s%d\", 0, bar(), 43123);\n"
               "    printf(\"%idfd%%dfa%s%d\", 0, bar(), 43123);\n"
-              "    printf(\"%\"PRId64\"\n\", 123);\n"
-              "    fprintf(stderr,\"%\"PRId64\"\n\", 123);\n"
-              "    snprintf(str,10,\"%\"PRId64\"\n\", 123);\n"
-              "    fprintf(stderr, \"error: %m\n\");\n" // #3339
-              "    printf(\"string: %.*s\n\", len, string);\n" // #3311
-              "    fprintf(stderr, \"%*cText.\n\", indent, ' ');\n" // #3313
+              "    printf(\"%\"PRId64\"\", 123);\n"
+              "    fprintf(stderr,\"%\"PRId64\"\", 123);\n"
+              "    snprintf(str,10,\"%\"PRId64\"\", 123);\n"
+              "    fprintf(stderr, \"error: %m\");\n" // #3339
+              "    printf(\"string: %.*s\", len, string);\n" // #3311
+              "    fprintf(stderr, \"%*cText.\", indent, ' ');\n" // #3313
               "    sprintf(string1, \"%*\", 32);\n" // #3364
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -2197,19 +2196,19 @@ private:
 
         check("void f() {\n" // #5104
               "    myvector<unsigned short> v1(1,0);\n"
-              "    printf(\"%d\n\",v1[0]);\n"
+              "    printf(\"%d\",v1[0]);\n"
               "    myvector<int> v2(1,0);\n"
-              "    printf(\"%d\n\",v2[0]);\n"
+              "    printf(\"%d\",v2[0]);\n"
               "    myvector<unsigned int> v3(1,0);\n"
-              "    printf(\"%u\n\",v3[0]);\n"
+              "    printf(\"%u\",v3[0]);\n"
               "    myvector<unsigned int> v4(1,0);\n"
-              "    printf(\"%x\n\",v4[0]);\n"
+              "    printf(\"%x\",v4[0]);\n"
               "    myvector<double> v5(1,0);\n"
-              "    printf(\"%f\n\",v5[0]);\n"
+              "    printf(\"%f\",v5[0]);\n"
               "    myvector<bool> v6(1,0);\n"
-              "    printf(\"%u\n\",v6[0]);\n"
+              "    printf(\"%u\",v6[0]);\n"
               "    myvector<char *> v7(1,0);\n"
-              "    printf(\"%s\n\",v7[0]);\n"
+              "    printf(\"%s\",v7[0]);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -2456,13 +2455,13 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(UINT32 a, ::UINT32 b, Fred::UINT32 c) {\n"
-              "    printf(\"%d %d %d\n\", a, b, c);\n"
+              "    printf(\"%d %d %d\", a, b, c);\n"
               "};\n", false, true, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:2]: (portability) %d in format string (no. 1) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n"
                       "[test.cpp:2]: (portability) %d in format string (no. 2) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n", errout.str());
 
         check("void foo(LPCVOID a, ::LPCVOID b, Fred::LPCVOID c) {\n"
-              "    printf(\"%d %d %d\n\", a, b, c);\n"
+              "    printf(\"%d %d %d\", a, b, c);\n"
               "};\n", false, true, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'const void *'.\n"
                       "[test.cpp:2]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const void *'.\n", errout.str());
@@ -2730,15 +2729,15 @@ private:
 
         check("void foo() {\n"
               "    char lineBuffer [600];\n"
-              "    const char * const format = \"%15s%17s%17s%17s%17s\n\";\n"
+              "    const char * const format = \"%15s%17s%17s%17s%17s\";\n"
               "    sprintf_s(lineBuffer, 600, format, \"type\", \"sum\", \"avg\", \"min\", \"max\");\n"
               "    sprintf_s(lineBuffer, format, \"type\", \"sum\", \"avg\", \"min\", \"max\");\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
-              "    const char * const format1 = \"%15s%17s%17s%17s%17s\n\";\n"
-              "    const char format2[] = \"%15s%17s%17s%17s%17s\n\";\n"
+              "    const char * const format1 = \"%15s%17s%17s%17s%17s\";\n"
+              "    const char format2[] = \"%15s%17s%17s%17s%17s\";\n"
               "    const char * const format3 = format1;\n"
               "    int i = 0;\n"
               "    sprintf_s(lineBuffer, format1, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
@@ -2929,7 +2928,7 @@ private:
 
     void testTernary() {  // ticket #6182
         check("void test(const std::string &val) {\n"
-              "    printf(\"%s\n\", val.empty() ? \"I like to eat bananas\" : val.c_str());\n"
+              "    printf(\"%s\", val.empty() ? \"I like to eat bananas\" : val.c_str());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
