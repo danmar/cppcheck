@@ -21,7 +21,6 @@
 #include "path.h"
 #include "errorlogger.h"
 #include "settings.h"
-#include "simplecpp.h"
 
 #include <algorithm>
 #include <functional>

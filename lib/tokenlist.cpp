@@ -25,7 +25,8 @@
 #include "settings.h"
 #include "errorlogger.h"
 #include "utils.h"
-#include "simplecpp.h"
+
+#include <simplecpp.h>
 
 #include <cstring>
 #include <sstream>

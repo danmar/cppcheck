@@ -26,7 +26,8 @@
 #include "tokenize.h"
 #include "token.h"
 #include "settings.h"
-#include "simplecpp.h"
+
+#include <simplecpp.h>
 
 #include <cstring>
 #include <map>

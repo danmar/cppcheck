@@ -22,8 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "simplecpp.h"
-
+#include <simplecpp.h>
 #include <map>
 #include <istream>
 #include <string>

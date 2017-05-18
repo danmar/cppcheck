@@ -18,7 +18,6 @@
 #include "cppcheck.h"
 
 #include "preprocessor.h" // Preprocessor
-#include "simplecpp.h"
 #include "tokenize.h" // Tokenizer
 
 #include "check.h"
@@ -27,6 +26,8 @@
 #include "checkunusedfunctions.h"
 #include "timer.h"
 #include "version.h"
+
+#include <simplecpp.h>
 
 #include <algorithm>
 #include <fstream>
