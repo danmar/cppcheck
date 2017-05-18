@@ -21,6 +21,7 @@
 #include "checkinternal.h"
 #include "symboldatabase.h"
 #include "utils.h"
+#include "astutils.h"
 #include <string>
 #include <set>
 #include <cstring>
@@ -81,6 +82,29 @@ void CheckInternal::checkTokenMatchPatterns()
                 simplePatternError(tok, pattern, funcname);
         }
     }
+}
+
+void CheckInternal::checkRedundantTokCheck()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "&& Token :: simpleMatch|Match|findsimplematch|findmatch ("))
+            continue;
+        // in code like
+        // if (tok->previous() && Token::match(tok->previous(), "bla")) {}
+        // the first tok->previous() check is redundant
+        const Token *astOp1 = tok->astOperand1();
+        const Token *astOp2 = getArguments(tok->tokAt(3))[0];
+
+        if (astOp1->expressionString() == astOp2->expressionString()) {
+            checkRedundantTokCheckError(astOp2);
+        }
+    }
+}
+
+void CheckInternal::checkRedundantTokCheckError(const Token* tok)
+{
+    reportError(tok, Severity::style, "redundantTokCheck",
+                "Unneccessary check of \"" + (tok? tok->expressionString(): emptyString) + "\", match-function already checks if it is null.");
 }
 
 void CheckInternal::checkTokenSimpleMatchPatterns()

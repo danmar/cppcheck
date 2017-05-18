@@ -44,6 +44,7 @@ private:
         TEST_CASE(internalError);
         TEST_CASE(orInComplexPattern);
         TEST_CASE(extraWhitespace);
+        TEST_CASE(checkRedundantTokCheck);
     }
 
     void check(const char code[]) {
@@ -407,6 +408,65 @@ private:
               "    Token::findsimplematch(tok, \"foobar \");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::findsimplematch() call: \"foobar \"\n", errout.str());
+    }
+
+    void checkRedundantTokCheck() {
+        // findsimplematch
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(tok && Token::findsimplematch(tok, \"foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unneccessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+
+        // findmatch
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(tok && Token::findmatch(tok, \"%str% foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unneccessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+
+        // Match
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(tok && Token::Match(tok, \"5str% foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unneccessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+
+        // simpleMatch
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(tok && Token::simpleMatch(tok, \"foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unneccessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+
+        // Match
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(tok->previous() && Token::Match(tok->previous(), \"5str% foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unneccessary check of \"tok->previous()\", match-function already checks if it is null.\n", errout.str());
+
+        // don't report:
+        // tok->previous() vs tok
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(tok->previous() && Token::Match(tok, \"5str% foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // tok vs tok->previous())
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(tok && Token::Match(tok->previous(), \"5str% foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // tok->previous() vs tok->previous()->previous())
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(tok->previous() && Token::Match(tok->previous()->previous(), \"5str% foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

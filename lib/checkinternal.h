@@ -54,6 +54,7 @@ public:
         checkInternal.checkUnknownPattern();
         checkInternal.checkRedundantNextPrevious();
         checkInternal.checkExtraWhitespace();
+        checkInternal.checkRedundantTokCheck();
     }
 
     /** @brief %Check if a simple pattern is used inside Token::Match or Token::findmatch */
@@ -74,6 +75,8 @@ public:
     /** @brief %Check if there is whitespace at the beginning or at the end of a pattern */
     void checkExtraWhitespace();
 
+    /** @brief %Check if there is a redundant check for none-nullness of parameter before Match functions, such as (tok && Token::Match(tok, "foo")) */
+    void checkRedundantTokCheck();
 private:
     void multiComparePatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void simplePatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
@@ -83,6 +86,7 @@ private:
     void redundantNextPreviousError(const Token* tok, const std::string& func1, const std::string& func2);
     void orInComplexPattern(const Token *tok, const std::string &pattern, const std::string &funcname);
     void extraWhitespaceError(const Token *tok, const std::string &pattern, const std::string &funcname);
+    void checkRedundantTokCheckError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckInternal c(nullptr, settings, errorLogger);
@@ -94,6 +98,7 @@ private:
         c.redundantNextPreviousError(nullptr, "previous", "next");
         c.orInComplexPattern(nullptr, "||", "Match");
         c.extraWhitespaceError(nullptr, "%str% ", "Match");
+        c.checkRedundantTokCheckError(nullptr);
     }
 
     static std::string myName() {
