@@ -558,8 +558,8 @@ private:
         checkCode("{ } < class template < > , { = } ; class... >\n"
                   "struct Y { }\n"
                   "class Types { }\n"
-                  "( X < int > \"uses template\" ) ( < ( ) \"uses ; \n"
-                  "( int int ::primary \"uses template\" ) int double \"uses )\n"
+                  "( X < int > \"uses template\" ) ( < ( ) \"uses ;"
+                  "( int int ::primary \"uses template\" ) int double \"uses )"
                   "::primary , \"uses template\" ;\n");
     }
 
@@ -606,7 +606,7 @@ private:
     }
 
     void garbageCode48() { // #6712
-        checkCode(" { d\n\" ) d ...\n\" } int main ( ) { ( ) catch ( A a ) { { } catch ( ) \"\" } }");
+        checkCode(" { d\" ) d ...\" } int main ( ) { ( ) catch ( A a ) { { } catch ( ) \"\" } }");
     }
 
     void garbageCode49() { // #6715
