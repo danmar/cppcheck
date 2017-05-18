@@ -167,7 +167,7 @@ private:
               "{\n"
               "  if (strcmp(\"00FF00\", \"00FF00\") == 0)"
               "  {"
-              "    std::cout << \"Equal\n\""
+              "    std::cout << \"Equal\";"
               "  }"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n", errout.str());
@@ -186,7 +186,7 @@ private:
               "{\n"
               "  if (stricmp(\"hotdog\",\"HOTdog\") == 0)"
               "  {"
-              "    std::cout << \"Equal\n\""
+              "    std::cout << \"Equal\";"
               "  }"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n", errout.str());
@@ -195,7 +195,7 @@ private:
               "{\n"
               "  if (QString::compare(\"Hamburger\", \"Hotdog\") == 0)"
               "  {"
-              "    std::cout << \"Equal\n\""
+              "    std::cout << \"Equal\";"
               "  }"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n", errout.str());
@@ -204,7 +204,7 @@ private:
               "{\n"
               "  if (QString::compare(argv[2], \"hotdog\") == 0)"
               "  {"
-              "    std::cout << \"Equal\n\""
+              "    std::cout << \"Equal\";"
               "  }"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -213,7 +213,7 @@ private:
               "{\n"
               "  if (strncmp(\"hotdog\",\"hotdog\", 6) == 0)"
               "  {"
-              "    std::cout << \"Equal\n\""
+              "    std::cout << \"Equal\";"
               "  }"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n", errout.str());
@@ -222,7 +222,7 @@ private:
               "{\n"
               "  if (strcmp(buf, buf) == 0)"
               "  {"
-              "    std::cout << \"Equal\n\""
+              "    std::cout << \"Equal\";"
               "  }"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of identical string variables.\n", errout.str());
@@ -231,28 +231,28 @@ private:
               "{\n"
               "  if (stricmp(buf.c_str(), buf.c_str()) == 0)"
               "  {"
-              "    std::cout << \"Equal\n\""
+              "    std::cout << \"Equal\";"
               "  }"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of identical string variables.\n", errout.str());
 
         check("int main() {\n"
               "  if (\"str\" == \"str\") {\n"
-              "    std::cout << \"Equal\n\"\n"
+              "    std::cout << \"Equal\";\n"
               "  }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
         check("int main() {\n"
               "  if (\"str\" != \"str\") {\n"
-              "    std::cout << \"Equal\n\"\n"
+              "    std::cout << \"Equal\";\n"
               "  }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
         check("int main() {\n"
               "  if (a+\"str\" != \"str\"+b) {\n"
-              "    std::cout << \"Equal\n\"\n"
+              "    std::cout << \"Equal\";\n"
               "  }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
