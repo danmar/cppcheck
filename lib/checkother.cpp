@@ -1939,7 +1939,7 @@ void CheckOther::checkDuplicateExpression()
                         const bool assignment = tok->str() == "=";
                         if (assignment && warningEnabled)
                             selfAssignmentError(tok, tok->astOperand1()->expressionString());
-                        else {
+                        else if (styleEnabled) {
                             if (_tokenizer->isCPP() && _settings->standards.cpp==Standards::CPP11 && tok->str() == "==") {
                                 const Token* parent = tok->astParent();
                                 while (parent && parent->astParent()) {
@@ -1949,8 +1949,7 @@ void CheckOther::checkDuplicateExpression()
                                     continue;
                                 }
                             }
-                            if (styleEnabled)
-                                duplicateExpressionError(tok, tok, tok->str());
+                            duplicateExpressionError(tok, tok, tok->str());
                         }
                     }
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
