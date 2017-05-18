@@ -74,13 +74,13 @@ const char * CppCheck::extraVersion()
 unsigned int CppCheck::check(const std::string &path)
 {
     std::ifstream fin(path.c_str());
-    return processFile(path, emptyString, fin);
+    return processFile(Path::simplifyPath(path), emptyString, fin);
 }
 
 unsigned int CppCheck::check(const std::string &path, const std::string &content)
 {
     std::istringstream iss(content);
-    return processFile(path, emptyString, iss);
+    return processFile(Path::simplifyPath(path), emptyString, iss);
 }
 
 unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
@@ -94,7 +94,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp._settings.platform(fs.platformType);
     }
     std::ifstream fin(fs.filename.c_str());
-    return temp.processFile(fs.filename, fs.cfg, fin);
+    return temp.processFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
 }
 
 unsigned int CppCheck::processFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
