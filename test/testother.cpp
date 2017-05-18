@@ -23,7 +23,7 @@
 #include "testsuite.h"
 #include "testutils.h"
 #include <tinyxml2.h>
-
+#include <simplecpp.h>
 
 class TestOther : public TestFixture {
 public:
@@ -225,6 +225,43 @@ private:
             tokenizer.simplifyTokenList2();
             checkOther.runSimplifiedChecks(&tokenizer, settings, this);
         }
+    }
+
+    void checkP(const char code[], const char *filename = "test.cpp", Settings* settings = 0) {
+        // Clear the error buffer..
+        errout.str("");
+
+        settings = &_settings;
+        settings->addEnabled("style");
+        settings->addEnabled("warning");
+        settings->addEnabled("portability");
+        settings->addEnabled("performance");
+        settings->standards.c = Standards::CLatest;
+        settings->standards.cpp = Standards::CPPLatest;
+        settings->inconclusive = true;
+        settings->experimental = false;
+
+        // Raw tokens..
+        std::vector<std::string> files;
+        files.push_back(filename);
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        // Tokenizer..
+        Tokenizer tokenizer(settings, this);
+        tokenizer.createTokens(&tokens2);
+        tokenizer.simplifyTokens1("");
+
+        // Check..
+        CheckOther checkOther(&tokenizer, settings, this);
+        checkOther.runChecks(&tokenizer, settings, this);
+        tokenizer.simplifyTokenList2();
+        checkOther.runSimplifiedChecks(&tokenizer, settings, this);
     }
 
     void checkposix(const char code[]) {
@@ -579,7 +616,7 @@ private:
         check("void f()\n"
               "{\n"
               "   double x = 3.0 / 0.0 + 1.0\n"
-              "   printf(\"%f\n\", x);\n"
+              "   printf(\"%f\", x);\n"
               "}");
         ASSERT_EQUALS(
             "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
@@ -587,7 +624,7 @@ private:
         check("void f()\n"
               "{\n"
               "   double x = 3.0 / 0.0 - 1.0\n"
-              "   printf(\"%f\n\", x);\n"
+              "   printf(\"%f\", x);\n"
               "}");
         ASSERT_EQUALS(
             "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
@@ -595,7 +632,7 @@ private:
         check("void f()\n"
               "{\n"
               "   double x = 1.0 + 3.0 / 0.0\n"
-              "   printf(\"%f\n\", x);\n"
+              "   printf(\"%f\", x);\n"
               "}");
         ASSERT_EQUALS(
             "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
@@ -603,7 +640,7 @@ private:
         check("void f()\n"
               "{\n"
               "   double x = 1.0 - 3.0 / 0.0\n"
-              "   printf(\"%f\n\", x);\n"
+              "   printf(\"%f\", x);\n"
               "}");
         ASSERT_EQUALS(
             "[test.cpp:3]: (style) Using NaN/Inf in a computation.\n", errout.str());
@@ -611,7 +648,7 @@ private:
         check("void f()\n"
               "{\n"
               "   double x = 3.0 / 0.0\n"
-              "   printf(\"%f\n\", x);\n"
+              "   printf(\"%f\", x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -2709,17 +2746,17 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int c) {\n"
-              "    printf(\"%i\n\", ({x==0;}));\n"
+              "    printf(\"%i\", ({x==0;}));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int x) {\n"
-              "    printf(\"%i\n\", ({int x = do_something(); x == 0;}));\n"
+              "    printf(\"%i\", ({int x = do_something(); x == 0;}));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int x) {\n"
-              "    printf(\"%i\n\", ({x == 0; x > 0 ? 10 : 20}));\n"
+              "    printf(\"%i\", ({x == 0; x > 0 ? 10 : 20}));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
 
@@ -3332,12 +3369,14 @@ private:
     }
 
     void duplicateBranch2() {
-        check("void f(int x) {\n" // #4329
-              "  if (x)\n"
-              "    $;\n"
-              "  else\n"
-              "    $;\n"
-              "}");
+        checkP("#define DOSTUFF1 ;\n"
+               "#define DOSTUFF2 ;\n"
+               "void f(int x) {\n" // #4329
+               "  if (x)\n"
+               "    DOSTUFF1\n"
+               "  else\n"
+               "    DOSTUFF2\n"
+               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -6014,10 +6053,11 @@ private:
 
     void testEvaluationOrderMacro() {
         // macro, don't bailout (#7233)
-        check((std::string("void f(int x) {\n"
-                           "  return x + ") + Preprocessor::macroChar + "x++;\n"
-               "}").c_str(), "test.c");
-        ASSERT_EQUALS("[test.c:2]: (error) Expression 'x+x++' depends on order of evaluation of side effects\n", errout.str());
+        checkP("#define X x\n"
+               "void f(int x) {\n"
+               "  return x + X++;\n"
+               "}", "test.c");
+        ASSERT_EQUALS("[test.c:3]: (error) Expression 'x+x++' depends on order of evaluation of side effects\n", errout.str());
     }
 
     void testEvaluationOrderSequencePointsFunctionCall() {

@@ -34,8 +34,6 @@ private:
     Settings settings;
 
     void run() {
-        TEST_CASE(line1); // Ticket #4408
-        TEST_CASE(line2); // Ticket #5423
         TEST_CASE(testaddtoken1);
         TEST_CASE(testaddtoken2);
         TEST_CASE(inc);
@@ -62,54 +60,6 @@ private:
         TokenList tokenlist(&settings);
         tokenlist.addtoken(code, 1, 1, false);
         ASSERT_EQUALS("4026531840U", tokenlist.front()->str());
-    }
-
-    void line1() const {
-        // Test for Ticket #4408
-        const char code[] = "#file \"c:\\a.h\"\n"
-                            "first\n"
-                            "#line 5\n"
-                            "second\n"
-                            "#line not-a-number\n"
-                            "third\n"
-                            "#line 100 \"i.h\"\n"
-                            "fourth\n"
-                            "fifth\n"
-                            "#endfile\n";
-
-        errout.str("");
-
-        TokenList tokenList(&settings);
-        std::istringstream istr(code);
-        bool res = tokenList.createTokens(istr, "a.cpp");
-        ASSERT_EQUALS(res, true);
-
-        for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
-            if (tok->str() == "first")
-                ASSERT_EQUALS(1, tok->linenr());
-            if (tok->str() == "second")
-                ASSERT_EQUALS(5, tok->linenr());
-            if (tok->str() == "third")
-                ASSERT_EQUALS(7, tok->linenr());
-            if (tok->str() == "fourth")
-                ASSERT_EQUALS(100, tok->linenr());
-            if (tok->str() == "fifth")
-                ASSERT_EQUALS(101, tok->linenr());
-        }
-    }
-
-    void line2() const {
-        const char code[] = "#line 8 \"c:\\a.h\"\n"
-                            "123\n";
-
-        errout.str("");
-
-        // tokenize..
-        TokenList tokenlist(&settings);
-        std::istringstream istr(code);
-        tokenlist.createTokens(istr, "a.cpp");
-
-        ASSERT_EQUALS(Path::toNativeSeparators("[c:\\a.h:8]"), tokenlist.fileLine(tokenlist.front()));
     }
 
     void inc() const {

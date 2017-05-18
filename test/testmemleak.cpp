@@ -5963,17 +5963,19 @@ private:
         // Clear the error buffer..
         errout.str("");
 
+        std::istringstream istr(code);
+        std::vector<std::string> files;
+        files.push_back("test.cpp");
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
         // Preprocess...
         Preprocessor preprocessor(settings, this);
-        std::istringstream istrpreproc(code);
-        std::map<std::string, std::string> actual;
-        preprocessor.preprocess(istrpreproc, actual, "test.cpp");
+        const simplecpp::TokenList &tokens2 = preprocessor.preprocess(tokens1, "", files);
 
-        // Tokenize..
+        // Tokenizer..
         Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(actual[""]);
-        tokenizer.tokenize(istr, "test.cpp");
-
+        tokenizer.createTokens(&tokens2);
+        tokenizer.simplifyTokenList1(files[0].c_str());
         tokenizer.simplifyTokenList2();
 
         // Check for memory leaks..

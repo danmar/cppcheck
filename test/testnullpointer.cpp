@@ -20,7 +20,7 @@
 #include "checknullpointer.h"
 #include "testsuite.h"
 #include <tinyxml2.h>
-
+#include <simplecpp.h>
 
 class TestNullPointer : public TestFixture {
 public:
@@ -119,6 +119,38 @@ private:
 
         checkNullPointer.runSimplifiedChecks(&tokenizer, &settings, this);
     }
+
+    void checkP(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        settings.inconclusive = false;
+
+        // Raw tokens..
+        std::vector<std::string> files;
+        files.push_back("test.cpp");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        // Tokenizer..
+        Tokenizer tokenizer(&settings, this);
+        tokenizer.createTokens(&tokens2);
+        tokenizer.simplifyTokens1("");
+
+        // Check for null pointer dereferences..
+        CheckNullPointer checkNullPointer;
+        checkNullPointer.runChecks(&tokenizer, &settings, this);
+
+        tokenizer.simplifyTokenList2();
+
+        checkNullPointer.runSimplifiedChecks(&tokenizer, &settings, this);
+    }
+
 
 
     void nullpointerAfterLoop() {
@@ -507,10 +539,11 @@ private:
         }
 
         // #3425 - false positives when there are macros
-        check("void f(struct FRED *fred) {\n"
-              "    fred->x = 0;\n"
-              "    $if(!fred){}\n"
-              "}");
+        checkP("#define IF if\n"
+               "void f(struct FRED *fred) {\n"
+               "    fred->x = 0;\n"
+               "    IF(!fred){}\n"
+               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -831,10 +864,11 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #3425 - false positives when there are macros
-        check("void f(int *p) {\n"
-              "    *p = 0;\n"
-              "    $if(!p){}\n"
-              "}");
+        checkP("#define IF if\n"
+               "void f(int *p) {\n"
+               "    *p = 0;\n"
+               "    IF(!p){}\n"
+               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n" // #3914 - false positive

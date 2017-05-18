@@ -214,198 +214,12 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 {
     appendFileIfNew(file0);
 
-    // line number in parsed code
-    unsigned int lineno = 1;
+    simplecpp::OutputList outputList;
+    simplecpp::TokenList tokens(code, _files, file0, &outputList);
 
-    // The current token being parsed
-    std::string CurrentToken;
+    createTokens(&tokens);
 
-    // lineNumbers holds line numbers for files in fileIndexes
-    // every time an include file is completely parsed, last item in the vector
-    // is removed and lineno is set to point to that value.
-    std::stack<unsigned int> lineNumbers;
-
-    // fileIndexes holds index for _files vector about currently parsed files
-    // every time an include file is completely parsed, last item in the vector
-    // is removed and FileIndex is set to point to that value.
-    std::stack<unsigned int> fileIndexes;
-
-    // FileIndex. What file in the _files vector is read now?
-    unsigned int FileIndex = 0;
-
-    bool expandedMacro = false;
-
-    // Read one byte at a time from code and create tokens
-    for (char ch = (char)code.get(); code.good() && ch; ch = (char)code.get()) {
-        if (ch == Preprocessor::macroChar) {
-            while (code.peek() == Preprocessor::macroChar)
-                code.get();
-            if (!CurrentToken.empty()) {
-                addtoken(CurrentToken, lineno, FileIndex, true);
-                _back->isExpandedMacro(expandedMacro);
-                CurrentToken.clear();
-            }
-            expandedMacro = true;
-            continue;
-        }
-
-        // char/string..
-        // multiline strings are not handled. The preprocessor should handle that for us.
-        else if (ch == '\'' || ch == '\"') {
-            std::string line;
-
-            // read char
-            bool special = false;
-            char c = ch;
-            do {
-                // Append token..
-                line += c;
-
-                // Special sequence '\.'
-                if (special)
-                    special = false;
-                else
-                    special = (c == '\\');
-
-                // Get next character
-                c = (char)code.get();
-            } while (code.good() && (special || c != ch));
-            line += ch;
-
-            // Handle #file "file.h"
-            if (CurrentToken == "#file") {
-                // Extract the filename
-                line = line.substr(1, line.length() - 2);
-
-                ++lineno;
-                fileIndexes.push(FileIndex);
-                FileIndex = appendFileIfNew(line);
-                lineNumbers.push(lineno);
-                lineno = 0;
-            } else {
-                // Add previous token
-                addtoken(CurrentToken, lineno, FileIndex);
-                if (!CurrentToken.empty())
-                    _back->isExpandedMacro(expandedMacro);
-
-                // Add content of the string
-                addtoken(line, lineno, FileIndex);
-                if (!line.empty())
-                    _back->isExpandedMacro(expandedMacro);
-            }
-
-            CurrentToken.clear();
-
-            continue;
-        }
-
-        if (ch == '.' &&
-            !CurrentToken.empty() &&
-            std::isdigit((unsigned char)CurrentToken[0])) {
-            // Don't separate doubles "5.4"
-        } else if (std::strchr("+-", ch) &&
-                   CurrentToken.length() > 0 &&
-                   std::isdigit((unsigned char)CurrentToken[0]) &&
-                   (endsWith(CurrentToken,'e') ||
-                    endsWith(CurrentToken,'E')) &&
-                   !MathLib::isIntHex(CurrentToken)) {
-            // Don't separate doubles "4.2e+10"
-        } else if (CurrentToken.empty() && ch == '.' && std::isdigit((unsigned char)code.peek())) {
-            // tokenize .125 into 0.125
-            CurrentToken = "0";
-        } else if (std::strchr("+-*/%&|^?!=<>[](){};:,.~\n ", ch)) {
-            if (CurrentToken == "#file") {
-                // Handle this where strings are handled
-                continue;
-            } else if (CurrentToken == "#line") {
-                // Read to end of line
-                std::string line;
-
-                std::getline(code, line);
-
-                unsigned int row=0;
-                std::istringstream fiss(line);
-                if (fiss >> row) {
-                    // Update the current line number
-                    lineno = row;
-
-                    std::string line2;
-                    if (std::getline(fiss, line2) && line2.length() > 4U) {
-                        // _"file_name" -> file_name
-                        line2 = line2.substr(2, line2.length() - 3);
-
-                        // Update the current file
-                        FileIndex = appendFileIfNew(line2);
-                    }
-                } else
-                    ++lineno;
-                CurrentToken.clear();
-                continue;
-            } else if (CurrentToken == "#endfile") {
-                if (lineNumbers.empty() || fileIndexes.empty()) { // error
-                    deallocateTokens();
-                    return false;
-                }
-
-                lineno = lineNumbers.top();
-                lineNumbers.pop();
-                FileIndex = fileIndexes.top();
-                fileIndexes.pop();
-                CurrentToken.clear();
-                continue;
-            }
-
-            addtoken(CurrentToken, lineno, FileIndex, true);
-            if (!CurrentToken.empty()) {
-                _back->isExpandedMacro(expandedMacro);
-                expandedMacro = false;
-                CurrentToken.clear();
-            }
-
-            if (ch == '\n') {
-                if (_settings->terminated())
-                    return false;
-
-                ++lineno;
-                continue;
-            } else if (ch == ' ') {
-                continue;
-            }
-
-            CurrentToken += ch;
-            // Add "++", "--", ">>" or ... token
-            if (std::strchr("+-<>=:&|", ch) && (code.peek() == ch))
-                CurrentToken += (char)code.get();
-            addtoken(CurrentToken, lineno, FileIndex);
-            _back->isExpandedMacro(expandedMacro);
-            CurrentToken.clear();
-            expandedMacro = false;
-            continue;
-        }
-
-        CurrentToken += ch;
-    }
-    addtoken(CurrentToken, lineno, FileIndex, true);
-    if (!CurrentToken.empty())
-        _back->isExpandedMacro(expandedMacro);
-
-    // Split up ++ and --..
-    for (Token *tok = _front; tok; tok = tok->next()) {
-        if (!Token::Match(tok, "++|--"))
-            continue;
-        if (Token::Match(tok->previous(), "%num% ++|--") ||
-            Token::Match(tok, "++|-- %num%")) {
-            tok->str(tok->str()[0]);
-            tok->insertToken(tok->str());
-        }
-    }
-
-    Token::assignProgressValues(_front);
-
-    for (std::size_t i = 1; i < _files.size(); i++)
-        _files[i] = Path::getRelativePath(_files[i], _settings->basePaths);
-
-    return true;
+    return outputList.empty();
 }
 
 //---------------------------------------------------------------------------
@@ -428,12 +242,34 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
     }
 
     for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
+
+        std::string str = tok->str;
+
+        // Replace hexadecimal value with decimal
+        // TODO: Remove this
+        const bool isHex = MathLib::isIntHex(str) ;
+        if (isHex || MathLib::isOct(str) || MathLib::isBin(str)) {
+            // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
+            std::string suffix;
+            if (isHex &&
+                str.size() == (2 + _settings->int_bit / 4) &&
+                (str[2] >= '8') &&  // includes A-F and a-f
+                MathLib::getSuffix(str).empty()
+               )
+                suffix = "U";
+            str = MathLib::value(str).str() + suffix;
+        }
+
+        // Float literal
+        if (str.size() > 1 && str[0] == '.' && std::isdigit(str[1]))
+            str = '0' + str;
+
         if (_back) {
-            _back->insertToken(tok->str);
+            _back->insertToken(str);
         } else {
             _front = new Token(&_back);
             _back = _front;
-            _back->str(tok->str);
+            _back->str(str);
         }
 
         if (isCPP() && _back->str() == "delete")

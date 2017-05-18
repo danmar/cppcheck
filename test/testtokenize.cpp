@@ -200,10 +200,6 @@ private:
         TEST_CASE(simplifyExternC);
         TEST_CASE(simplifyKeyword); // #5842 - remove C99 static keyword between []
 
-        TEST_CASE(file1);
-        TEST_CASE(file2);
-        TEST_CASE(file3);
-
         TEST_CASE(isZeroNumber);
         TEST_CASE(isOneNumber);
         TEST_CASE(isTwoNumber);
@@ -736,10 +732,10 @@ private:
     }
 
     void tokenize22() { // tokenize special marker $ from preprocessor
-        ASSERT_EQUALS("a $b", tokenizeAndStringify("a$b"));
+        ASSERT_EQUALS("a$b", tokenizeAndStringify("a$b"));
         ASSERT_EQUALS("a $b\nc", tokenizeAndStringify("a $b\nc"));
         ASSERT_EQUALS("a = $0 ;", tokenizeAndStringify("a = $0;"));
-        ASSERT_EQUALS("a $++ ;", tokenizeAndStringify("a$++;"));
+        ASSERT_EQUALS("a$ ++ ;", tokenizeAndStringify("a$++;"));
         ASSERT_EQUALS("$if ( ! p )", tokenizeAndStringify("$if(!p)"));
     }
 
@@ -2983,78 +2979,6 @@ private:
     void simplifyExternC() {
         ASSERT_EQUALS("int foo ( ) ;", tokenizeAndStringify("extern \"C\" int foo();"));
         ASSERT_EQUALS("int foo ( ) ;", tokenizeAndStringify("extern \"C\" { int foo(); }"));
-    }
-
-
-    void file1() {
-        const char code[] = "a1\n"
-                            "#file \"b\"\n"
-                            "b1\n"
-                            "b2\n"
-                            "#endfile\n"
-                            "a3\n";
-
-        errout.str("");
-
-        // tokenize..
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "a");
-
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
-            std::ostringstream ostr;
-            ostr << char('a' + tok->fileIndex()) << tok->linenr();
-            ASSERT_EQUALS(tok->str(), ostr.str());
-        }
-    }
-
-
-    void file2() {
-        const char code[] = "a1\n"
-                            "#file \"b\"\n"
-                            "b1\n"
-                            "b2\n"
-                            "#file \"c\"\n"
-                            "c1\n"
-                            "c2\n"
-                            "#endfile\n"
-                            "b4\n"
-                            "#endfile\n"
-                            "a3\n"
-                            "#file \"d\"\n"
-                            "d1\n"
-                            "#endfile\n"
-                            "a5\n";
-
-        errout.str("");
-
-        // tokenize..
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "a");
-
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
-            std::ostringstream ostr;
-            ostr << char('a' + tok->fileIndex()) << tok->linenr();
-            ASSERT_EQUALS(tok->str(), ostr.str());
-        }
-    }
-
-
-
-    void file3() {
-        const char code[] = "#file \"c:\\a.h\"\n"
-                            "123 ;\n"
-                            "#endfile\n";
-
-        errout.str("");
-
-        // tokenize..
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "a.cpp");
-
-        ASSERT_EQUALS(Path::toNativeSeparators("[c:\\a.h:1]"), tokenizer.list.fileLine(tokenizer.tokens()));
     }
 
     void simplifyFunctionParameters() {
@@ -6228,9 +6152,9 @@ private:
                             "    dst[0] = 0;"
                             "    _tcscat(dst, src);"
                             "    LPTSTR d = _tcsdup(str);"
-                            "    _tprintf(_T(\"Hello world!\n\"));"
-                            "    _stprintf(dst, _T(\"Hello!\n\"));"
-                            "    _sntprintf(dst, sizeof(dst) / sizeof(TCHAR), _T(\"Hello world!\n\"));"
+                            "    _tprintf(_T(\"Hello world!\"));"
+                            "    _stprintf(dst, _T(\"Hello!\"));"
+                            "    _sntprintf(dst, sizeof(dst) / sizeof(TCHAR), _T(\"Hello world!\"));"
                             "    _tscanf(_T(\"%s\"), dst);"
                             "    _stscanf(dst, _T(\"%s\"), dst);"
                             "}"
@@ -6249,9 +6173,9 @@ private:
                                 "dst [ 0 ] = 0 ; "
                                 "strcat ( dst , src ) ; "
                                 "char * d ; d = strdup ( str ) ; "
-                                "printf ( \"Hello world!\n\" ) ; "
-                                "sprintf ( dst , \"Hello!\n\" ) ; "
-                                "_snprintf ( dst , sizeof ( dst ) / sizeof ( char ) , \"Hello world!\n\" ) ; "
+                                "printf ( \"Hello world!\" ) ; "
+                                "sprintf ( dst , \"Hello!\" ) ; "
+                                "_snprintf ( dst , sizeof ( dst ) / sizeof ( char ) , \"Hello world!\" ) ; "
                                 "scanf ( \"%s\" , dst ) ; "
                                 "sscanf ( dst , \"%s\" , dst ) ; "
                                 "} "
@@ -6275,9 +6199,9 @@ private:
                             "    dst[0] = 0;"
                             "    _tcscat(dst, src);"
                             "    LPTSTR d = _tcsdup(str);"
-                            "    _tprintf(_T(\"Hello world!\n\"));"
-                            "    _stprintf(dst, _T(\"Hello!\n\"));"
-                            "    _sntprintf(dst, sizeof(dst) / sizeof(TCHAR), _T(\"Hello world!\n\"));"
+                            "    _tprintf(_T(\"Hello world!\"));"
+                            "    _stprintf(dst, _T(\"Hello!\"));"
+                            "    _sntprintf(dst, sizeof(dst) / sizeof(TCHAR), _T(\"Hello world!\"));"
                             "    _tscanf(_T(\"%s\"), dst);"
                             "    _stscanf(dst, _T(\"%s\"), dst);"
                             "}";
@@ -6296,9 +6220,9 @@ private:
                                 "dst [ 0 ] = 0 ; "
                                 "wcscat ( dst , src ) ; "
                                 "wchar_t * d ; d = wcsdup ( str ) ; "
-                                "wprintf ( L\"Hello world!\n\" ) ; "
-                                "swprintf ( dst , L\"Hello!\n\" ) ; "
-                                "_snwprintf ( dst , sizeof ( dst ) / sizeof ( wchar_t ) , L\"Hello world!\n\" ) ; "
+                                "wprintf ( L\"Hello world!\" ) ; "
+                                "swprintf ( dst , L\"Hello!\" ) ; "
+                                "_snwprintf ( dst , sizeof ( dst ) / sizeof ( wchar_t ) , L\"Hello world!\" ) ; "
                                 "wscanf ( L\"%s\" , dst ) ; "
                                 "swscanf ( dst , L\"%s\" , dst ) ; "
                                 "}";

@@ -1815,23 +1815,6 @@ void Tokenizer::combineOperators()
                 tok->deleteNext();
                 continue;
             }
-
-            // simplify "->"
-            else if (c1 == '-' && c2 == '>') {
-                // If the preceding sequence is "( & %name% )", replace it by "%name%"
-                Token *t = tok->tokAt(-4);
-                if (Token::Match(t, "( & %name% )")) {
-                    t->deleteThis();
-                    t->deleteThis();
-                    t->deleteNext();
-                    tok = t->next();
-                }
-                // Replace "->" with "."
-                tok->str(".");
-                tok->originalName("->");
-                tok->deleteNext();
-                continue;
-            }
         } else if (tok->next()->str() == "=") {
             if (tok->str() == ">>") {
                 tok->str(">>=");
@@ -1869,6 +1852,14 @@ void Tokenizer::combineOperators()
                 tok->deleteNext();
             }
         } else if (tok->str() == "->") {
+            // If the preceding sequence is "( & %name% )", replace it by "%name%"
+            Token *t = tok->tokAt(-4);
+            if (Token::Match(t, "( & %name% )")) {
+                t->deleteThis();
+                t->deleteThis();
+                t->deleteNext();
+            }
+
             tok->str(".");
             tok->originalName("->");
         }

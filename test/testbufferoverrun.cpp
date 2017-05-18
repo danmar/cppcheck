@@ -1475,7 +1475,7 @@ private:
         check("void bufferAccessOutOfBounds2() {\n"
               "    char *buffer[]={\"a\",\"b\",\"c\"};\n"
               "    for(int i=3; i--;) {\n"
-              "        printf(\"files(%i): %s\n\", 3-i, buffer[3-i]);\n"
+              "        printf(\"files(%i): %s\", 3-i, buffer[3-i]);\n"
               "    }\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array 'buffer[3]' accessed at index 3, which is out of bounds.\n", "", errout.str());

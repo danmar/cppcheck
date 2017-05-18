@@ -19,7 +19,7 @@
 #include "tokenize.h"
 #include "checksizeof.h"
 #include "testsuite.h"
-
+#include <simplecpp.h>
 
 class TestSizeof : public TestFixture {
 public:
@@ -54,6 +54,31 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+
+        // Check...
+        CheckSizeof checkSizeof(&tokenizer, &settings, this);
+        checkSizeof.runChecks(&tokenizer, &settings, this);
+    }
+
+    void checkP(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Raw tokens..
+        std::vector<std::string> files;
+        files.push_back("test.cpp");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        tokenizer.createTokens(&tokens2);
+        tokenizer.simplifyTokens1("");
 
         // Check...
         CheckSizeof checkSizeof(&tokenizer, &settings, this);
@@ -109,23 +134,28 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
 
         // #6888
-        check("int f(int i) {\n"
-              "  $($void$)$sizeof$($i $!= $2$);\n" // '$' sets Token::isExpandedMacro() to true
-              "  $($void$)$($($($($sizeof$($i $!= $2$)$)$)$)$);\n"
-              "  $static_cast<void>$($sizeof($i $!= $2$)$);\n"
-              "  $static_cast<void>$($($($($($sizeof$($i $!= $2$)$)$)$)$)$);\n"
-              "  return i + foo(1);\n"
-              "}");
+        checkP("#define SIZEOF1   sizeof(i != 2)\n"
+               "#define SIZEOF2   ((sizeof(i != 2)))\n"
+               "#define VOIDCAST1 (void)\n"
+               "#define VOIDCAST2(SZ) static_cast<void>(SZ)\n"
+               "int f(int i) {\n"
+               "  VOIDCAST1 SIZEOF1;\n"
+               "  VOIDCAST1 SIZEOF2;\n"
+               "  VOIDCAST2(SIZEOF1);\n"
+               "  VOIDCAST2(SIZEOF2);\n"
+               "  return i + foo(1);\n"
+               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("int f(int i) {\n"
-              "  $sizeof$($i $!= $2$);\n"
-              "  $($($sizeof($i $!= 2$)$)$);\n"
-              "  return i + foo(1);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found calculation inside sizeof().\n"
-                      "[test.cpp:3]: (warning, inconclusive) Found calculation inside sizeof().\n", errout.str());
-
+        checkP("#define SIZEOF1   sizeof(i != 2)\n"
+               "#define SIZEOF2   ((sizeof(i != 2)))\n"
+               "int f(int i) {\n"
+               "  SIZEOF1;\n"
+               "  SIZEOF2;\n"
+               "  return i + foo(1);\n"
+               "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Found calculation inside sizeof().\n"
+                      "[test.cpp:5]: (warning, inconclusive) Found calculation inside sizeof().\n", errout.str());
     }
 
     void sizeofForArrayParameter() {
@@ -202,7 +232,7 @@ private:
         check("typedef char Fixname[1000];\n"
               "int f2(Fixname& f2v) {\n"
               "  int i = sizeof(f2v);\n"
-              "  printf(\"sizeof f2v %d\n\", i);\n"
+              "  printf(\"sizeof f2v %d\", i);\n"
               "   }\n"
              );
         ASSERT_EQUALS("", errout.str());

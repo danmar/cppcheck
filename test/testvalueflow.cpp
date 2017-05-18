@@ -22,6 +22,7 @@
 #include "tokenize.h"
 #include "token.h"
 
+#include <simplecpp.h>
 #include <vector>
 #include <string>
 #include <cmath>
@@ -167,12 +168,21 @@ private:
 
     void bailout(const char code[]) {
         settings.debugwarnings = true;
+        errout.str("");
+
+        std::vector<std::string> files;
+        files.push_back("test.cpp");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        errout.str("");
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.createTokens(&tokens2);
+        tokenizer.simplifyTokens1("");
 
         settings.debugwarnings = false;
     }
@@ -893,11 +903,12 @@ private:
 
     void valueFlowBeforeConditionMacro() {
         // bailout: condition is a expanded macro
-        bailout("void f(int x) {\n"
+        bailout("#define M  if (x==123) {}\n"
+                "void f(int x) {\n"
                 "    a = x;\n"
-                "    $if ($x==$123){}\n"
+                "    M;\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x, condition is defined in macro\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: variable x, condition is defined in macro\n", errout.str());
     }
 
     void valueFlowBeforeConditionGoto() {

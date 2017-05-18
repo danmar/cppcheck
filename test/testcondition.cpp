@@ -20,7 +20,7 @@
 #include "checkcondition.h"
 #include "testsuite.h"
 #include <tinyxml2.h>
-
+#include <simplecpp.h>
 
 class TestCondition : public TestFixture {
 public:
@@ -92,12 +92,24 @@ private:
 
         settings0.inconclusive = inconclusive;
 
-        CheckCondition checkCondition;
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        // Raw tokens..
+        std::vector<std::string> files;
+        files.push_back(filename);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        // Tokenizer..
+        Tokenizer tokenizer(&settings0, this);
+        tokenizer.createTokens(&tokens2);
+        tokenizer.simplifyTokens1("");
+
+        // Run checks..
+        CheckCondition checkCondition;
         checkCondition.runChecks(&tokenizer, &settings0, this);
         tokenizer.simplifyTokenList2();
         checkCondition.runSimplifiedChecks(&tokenizer, &settings0, this);
@@ -1033,8 +1045,9 @@ private:
     }
 
     void incorrectLogicOperator4() {
-        check("void f(int x) {\n"
-              "  if (x && x != $0) {}\n"
+        check("#define ZERO 0\n"
+              "void f(int x) {\n"
+              "  if (x && x != ZERO) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1791,22 +1804,25 @@ private:
                       errout.str());
 
         // Avoid FP when condition comes from macro
-        check("void f() {\n"
+        check("#define NOT !\n"
+              "void f() {\n"
               "  int x = 0;\n"
               "  if (a) { return; }\n" // <- this is just here to fool simplifyKnownVariabels
-              "  if ($!x) {}\n"
+              "  if (NOT x) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
+        check("#define M  x != 0\n"
+              "void f() {\n"
               "  int x = 0;\n"
               "  if (a) { return; }\n" // <- this is just here to fool simplifyKnownVariabels
-              "  if ($x != $0) {}\n"
+              "  if (M) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
-              "  $if $( 1 $&& $x()) {}\n"
+        check("#define IF(X)  if (X && x())\n"
+              "void f() {\n"
+              "  IF(1) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 

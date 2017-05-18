@@ -419,7 +419,7 @@ private:
                                "} var = {0};\n"
                                "int main(int argc, char *argv[])\n"
                                "{\n"
-                               "    printf(\"var.struct1.a = %d\n\", var.struct1.a);\n"
+                               "    printf(\"var.struct1.a = %d\", var.struct1.a);\n"
                                "    return 1;\n"
                                "}\n");
         ASSERT_EQUALS("", errout.str());
