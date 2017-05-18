@@ -43,6 +43,10 @@
 #define SIMPLECPP_WINDOWS
 #endif
 
+static bool isHex(const std::string &s) {
+    return s.size()>2 && (s.compare(0,2,"0x")==0 || s.compare(0,2,"0X")==0);
+}
+
 namespace {
     const simplecpp::TokenString DEFINE("define");
     const simplecpp::TokenString UNDEF("undef");
@@ -73,7 +77,7 @@ namespace {
     long long stringToLL(const std::string &s)
     {
         long long ret;
-        const bool hex = (s.length()>2 && s.compare(0, 2, "0x") == 0);
+        const bool hex = isHex(s);
         std::istringstream istr(hex ? s.substr(2) : s);
         if (hex)
             istr >> std::hex;
@@ -84,7 +88,7 @@ namespace {
     unsigned long long stringToULL(const std::string &s)
     {
         unsigned long long ret;
-        const bool hex = (s.length()>2 && s.compare(0, 2, "0x") == 0);
+        const bool hex = isHex(s);
         std::istringstream istr(hex ? s.substr(2) : s);
         if (hex)
             istr >> std::hex;
@@ -585,15 +589,27 @@ void simplecpp::TokenList::constFold()
     }
 }
 
+static bool isFloatSuffix(const simplecpp::Token *tok) {
+    if (!tok || tok->str.size() > 2)
+        return false;
+    std::string s = tok->str;
+    std::transform(s.begin(), s.end(), s.begin(), static_cast<int (*)(int)>(std::tolower));
+    return s == "lf" || s == "f";
+}
+
 void simplecpp::TokenList::combineOperators()
 {
     for (Token *tok = front(); tok; tok = tok->next) {
         if (tok->op == '.') {
+            if (tok->previous && tok->previous->op == '.')
+                continue;
+            if (tok->next && tok->next->op == '.')
+                continue;
             // float literals..
             if (tok->previous && tok->previous->number) {
                 tok->setstr(tok->previous->str + '.');
                 deleteToken(tok->previous);
-                if (tok->next && tok->next->startsWithOneOf("Ee")) {
+                if (isFloatSuffix(tok->next) || (tok->next && tok->next->startsWithOneOf("Ee"))) {
                     tok->setstr(tok->str + tok->next->str);
                     deleteToken(tok->next);
                 }
@@ -605,7 +621,7 @@ void simplecpp::TokenList::combineOperators()
         }
         // match: [0-9.]+E [+-] [0-9]+
         const char lastChar = tok->str[tok->str.size() - 1];
-        if (tok->number && (lastChar == 'E' || lastChar == 'e') && tok->next && tok->next->isOneOf("+-") && tok->next->next && tok->next->next->number) {
+        if (tok->number && !isHex(tok->str) && (lastChar == 'E' || lastChar == 'e') && tok->next && tok->next->isOneOf("+-") && tok->next->next && tok->next->next->number) {
             tok->setstr(tok->str + tok->next->op + tok->next->next->str);
             deleteToken(tok->next);
             deleteToken(tok->next);
