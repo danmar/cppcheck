@@ -1972,9 +1972,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
 
             std::list<ValueFlow::Value> values = tok->astOperand2()->values();
             for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
-                std::string info = "Assignment";
-                if (it->isIntValue())
-                    info += ", integer value " + MathLib::toString(it->intvalue);
+                std::string info = "Assignment, " + it->infoString();
                 it->errorPath.push_back(ErrorPathItem(tok->astOperand2(), info));
             }
             const bool constValue = tok->astOperand2()->isNumber();
@@ -2538,6 +2536,7 @@ static void valueFlowForLoopSimplifyAfter(Token *fortok, unsigned int varid, con
 
     std::list<ValueFlow::Value> values;
     values.push_back(ValueFlow::Value(num));
+    values.back().errorPath.push_back(ErrorPathItem(fortok,"After for loop, " + values.back().infoString()));
 
     valueFlowForward(fortok->linkAt(1)->linkAt(1)->next(),
                      endToken,
@@ -2768,7 +2767,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
 
             // Error path..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it)
-                it->errorPath.push_back(ErrorPathItem(argtok, "Function argument, integer value " + MathLib::toString(it->intvalue)));
+                it->errorPath.push_back(ErrorPathItem(argtok, "Function argument, " + it->infoString()));
 
             // passed values are not "known"..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
@@ -2936,6 +2935,23 @@ ValueFlow::Value::Value(const Token *c, long long val)
       valueKind(ValueKind::Possible)
 {
     errorPath.push_back(ErrorPathItem(c, "Condition '" + c->expressionString() + "'"));
+}
+
+std::string ValueFlow::Value::infoString() const
+{
+    switch (valueType) {
+    case INT:
+        return "integer value " + MathLib::toString(intvalue);
+    case TOK:
+        return "value " + tokvalue->str();
+    case FLOAT:
+        return "float value " + MathLib::toString(floatValue);
+    case MOVED:
+        return "value <Moved>";
+    case UNINIT:
+        return "value <Uninit>";
+    };
+    throw InternalError(nullptr, "Invalid ValueFlow Value type");
 }
 
 const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(const Token *expr, const Settings *settings)

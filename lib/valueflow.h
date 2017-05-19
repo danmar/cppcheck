@@ -74,6 +74,8 @@ namespace ValueFlow {
                    valueKind == rhs.valueKind;
         }
 
+        std::string infoString() const;
+
         enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT } valueType;
         bool isIntValue() const {
             return valueType == INT;

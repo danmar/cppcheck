@@ -618,6 +618,14 @@ private:
         ASSERT_EQUALS("5,Assignment, integer value 3\n"
                       "6,Function argument, integer value 4\n",
                       getErrorPathForX(code, 2U));
+
+        code = "void f(int a) {\n"
+               "  int x;\n"
+               "  for (x = a; x < 50; x++) {}\n"
+               "  b = x;\n"
+               "}\n";
+        ASSERT_EQUALS("3,After for loop, integer value 50\n",
+                      getErrorPathForX(code, 4U));
     }
 
     void valueFlowBeforeCondition() {
