@@ -2746,45 +2746,36 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         if (!functionScope)
             continue;
 
-        unsigned int argnr = 0U;
-        for (const Token *argtok = tok->tokAt(2); argtok; argtok = argtok->nextArgument()) {
+        const std::vector<const Token *> &callArguments = getArguments(tok);
+        for (unsigned int argnr = 0U; argnr < callArguments.size(); ++argnr) {
+            const Token *argtok = callArguments[argnr];
             // Get function argument
-            const Variable * const arg = currentFunction->getArgumentVar(argnr++);
-            if (!arg)
+            const Variable * const argvar = currentFunction->getArgumentVar(argnr);
+            if (!argvar)
                 break;
 
-            std::list<ValueFlow::Value> argvalues;
-
             // passing value(s) to function
-            if (!argtok->values().empty() && Token::Match(argtok, "%name%|%num%|%str% [,)]"))
+            std::list<ValueFlow::Value> argvalues;
+            if (Token::Match(argtok, "%comp%|%oror%|&&|!") && !argtok->hasKnownIntValue()) {
+                argvalues.push_back(ValueFlow::Value(0));
+                argvalues.push_back(ValueFlow::Value(1));
+            } else {
                 argvalues = argtok->values();
-            else {
-                // bool operator => values 1/0 are passed to function..
-                const Token *op = argtok;
-                while (op && op->astParent() && !Token::Match(op->astParent(), "[(,]"))
-                    op = op->astParent();
-                if (Token::Match(op, "%comp%|%oror%|&&|!")) {
-                    argvalues.clear();
-                    argvalues.push_back(ValueFlow::Value(0));
-                    argvalues.push_back(ValueFlow::Value(1));
-                } else if (Token::Match(op, "%cop%") && !op->values().empty()) {
-                    argvalues = op->values();
-                } else {
-                    // possible values are unknown..
-                    continue;
-                }
             }
+
+            if (argvalues.empty())
+                continue;
 
             // Error path..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it)
-                it->errorPath.push_back(ErrorPathItem(argtok, "function call argument"));
+                it->errorPath.push_back(ErrorPathItem(argtok, "Function argument, integer value " + MathLib::toString(it->intvalue)));
 
             // passed values are not "known"..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
                 it->changeKnownToPossible();
             }
 
-            valueFlowInjectParameter(tokenlist, errorLogger, settings, arg, functionScope, argvalues);
+            valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, functionScope, argvalues);
         }
     }
 }

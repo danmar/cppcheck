@@ -53,6 +53,8 @@ private:
 
         TEST_CASE(valueFlowCalculations);
 
+        TEST_CASE(valueFlowErrorPath);
+
         TEST_CASE(valueFlowBeforeCondition);
         TEST_CASE(valueFlowBeforeConditionAndAndOrOrGuard);
         TEST_CASE(valueFlowBeforeConditionAssignIncDec);
@@ -108,6 +110,30 @@ private:
         return false;
     }
 
+    std::string getErrorPathForX(const char code[], unsigned int linenr) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() != "x" || tok->linenr() != linenr)
+                continue;
+
+            std::ostringstream ostr;
+            std::list<ValueFlow::Value>::const_iterator it;
+            for (it = tok->values().begin(); it != tok->values().end(); ++it) {
+                for (ValueFlow::Value::ErrorPath::const_iterator ep = it->errorPath.begin(); ep != it->errorPath.end(); ++ep) {
+                    const Token *eptok = ep->first;
+                    const std::string &msg = ep->second;
+                    ostr << eptok->linenr() << ',' << msg << '\n';
+                }
+            }
+            return ostr.str();
+        }
+
+        return "";
+    }
 
     bool testValueOfX(const char code[], unsigned int linenr, const char value[]) {
         // Tokenize..
@@ -560,6 +586,38 @@ private:
         values = tokenValues("f(0 != \"xyz\");", "!=");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.front().intvalue);
+    }
+
+    void valueFlowErrorPath() {
+        const char *code;
+
+        code = "void f() {\n"
+               "  int x = 53;\n"
+               "  a = x;\n"
+               "}\n";
+        ASSERT_EQUALS("2,Assignment, integer value 53\n",
+                      getErrorPathForX(code, 3U));
+
+        code = "void f(int y) {\n"
+               "  int x = y;\n"
+               "  a = x;\n"
+               "  y += 12;\n"
+               "  if (y == 32) {}"
+               "}\n";
+        ASSERT_EQUALS("5,Condition 'y==32'\n"
+                      "2,Assignment, integer value 20\n",
+                      getErrorPathForX(code, 3U));
+
+        code = "void f1(int x) {\n"
+               "  a = x;\n"
+               "}\n"
+               "void f2() {\n"
+               "  int x = 3;\n"
+               "  f1(x+1);\n"
+               "}\n";
+        ASSERT_EQUALS("5,Assignment, integer value 3\n"
+                      "6,Function argument, integer value 4\n",
+                      getErrorPathForX(code, 2U));
     }
 
     void valueFlowBeforeCondition() {
