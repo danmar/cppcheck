@@ -992,7 +992,7 @@ void CmdLineParser::PrintHelp()
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}' or\n"
               "                         '{callstack} {message}'\n"
-              "                         Pre-defined templates: gcc, vs, edit.\n"
+              "                         Pre-defined templates: clang, gcc, vs, edit.\n"
               "    -v, --verbose        Output more detailed error information.\n"
               "    --version            Print out version number.\n"
               "    --xml                Write results in xml format to error stream (stderr).\n"

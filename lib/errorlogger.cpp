@@ -399,7 +399,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     // Save this ErrorMessage in plain text.
 
     // No template is given
-    if (outputFormat.length() == 0) {
+    if (outputFormat.empty()) {
         std::ostringstream text;
         if (!_callStack.empty())
             text << callStackToString(_callStack) << ": ";
@@ -410,6 +410,30 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
             text << ") ";
         }
         text << (verbose ? _verboseMessage : _shortMessage);
+        return text.str();
+    }
+
+    else if (outputFormat == "clang") {
+        std::ostringstream text;
+        text << _callStack.back().getfile()
+             << ':'
+             << _callStack.back().line
+             << ':'
+             << _callStack.back().col
+             << ": "
+             << Severity::toString(_severity)
+             << ": "
+             << (verbose ? _verboseMessage : _shortMessage)
+             << " [" << _id << ']';
+        for (std::list<FileLocation>::const_iterator loc = _callStack.begin(); loc != _callStack.end(); ++loc)
+            text << std::endl
+                 << loc->getfile()
+                 << ':'
+                 << loc->line
+                 << ':'
+                 << loc->col
+                 << ": note: "
+                 << (loc->getinfo().empty() ? _shortMessage : loc->getinfo());
         return text.str();
     }
 

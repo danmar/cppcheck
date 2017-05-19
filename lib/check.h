@@ -169,7 +169,7 @@ protected:
         ErrorPath errorPath;
         if (!value) {
             errorPath.push_back(ErrorPathItem(errtok,""));
-        } else if (_settings->verbose) {
+        } else if (_settings->verbose || _settings->outputFormat == "clang") {
             errorPath = value->errorPath;
             errorPath.push_back(ErrorPathItem(errtok,""));
         } else {
