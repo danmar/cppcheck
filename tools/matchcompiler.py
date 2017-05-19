@@ -22,6 +22,7 @@ import sys
 import re
 import glob
 import argparse
+import errno
 
 
 class MatchCompiler:
@@ -667,8 +668,16 @@ def main():
         sys.exit(-1)
 
     # Create build directory if needed
-    if not os.path.exists(build_dir):
+    try:
         os.makedirs(build_dir)
+    except OSError as e:
+        # due to race condition in case of parallel build,
+        # makedirs may fail. Ignore that; if there's actual
+        # problem with directory creation, it'll be caught
+        # by the following isdir check
+        if e.errno != errno.EEXIST:
+            raise
+
     if not os.path.isdir(build_dir):
         raise Exception(build_dir + ' is not a directory')
 
