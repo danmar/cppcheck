@@ -1656,7 +1656,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
         return;
     }
 
-    const ErrorPath errorPath = getErrorPath(tok, value);
+    const ErrorPath errorPath = getErrorPath(tok, value, "Division by zero");
 
     std::ostringstream errmsg;
     if (value->condition)

@@ -425,6 +425,10 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
              << ": "
              << (verbose ? _verboseMessage : _shortMessage)
              << " [" << _id << ']';
+
+        if (_callStack.size() == 1U)
+            return text.str();
+
         for (std::list<FileLocation>::const_iterator loc = _callStack.begin(); loc != _callStack.end(); ++loc)
             text << std::endl
                  << loc->getfile()

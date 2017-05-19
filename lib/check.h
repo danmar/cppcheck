@@ -165,19 +165,19 @@ protected:
             reportError(errmsg);
     }
 
-    ErrorPath getErrorPath(const Token *errtok, const ValueFlow::Value *value) const {
+    ErrorPath getErrorPath(const Token *errtok, const ValueFlow::Value *value, const std::string &bug) const {
         ErrorPath errorPath;
         if (!value) {
-            errorPath.push_back(ErrorPathItem(errtok,""));
+            errorPath.push_back(ErrorPathItem(errtok,bug));
         } else if (_settings->verbose || _settings->outputFormat == "clang") {
             errorPath = value->errorPath;
-            errorPath.push_back(ErrorPathItem(errtok,""));
+            errorPath.push_back(ErrorPathItem(errtok,bug));
         } else {
             if (value->condition)
                 errorPath.push_back(ErrorPathItem(value->condition, "condition '" + value->condition->expressionString() + "'"));
             //else if (!value->isKnown() || value->defaultArg)
             //    errorPath = value->callstack;
-            errorPath.push_back(ErrorPathItem(errtok,""));
+            errorPath.push_back(ErrorPathItem(errtok,bug));
         }
         return errorPath;
     }

@@ -1780,7 +1780,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, MathLib::bigint in
 
 void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::Value &index)
 {
-    const ErrorPath errorPath = getErrorPath(tok, &index);
+    const ErrorPath errorPath = getErrorPath(tok, &index, "Negative array index");
     std::ostringstream errmsg;
     if (index.condition)
         errmsg << ValueFlow::eitherTheConditionIsRedundant(index.condition)
