@@ -497,8 +497,7 @@ if __name__ == '__main__':
                                               encoding=options.source_encoding)
         htmlFormatter.errors = errors
 
-        with io.open(os.path.join(options.report_dir, htmlfile),
-                     'w') as output_file:
+        with io.open(os.path.join(options.report_dir, htmlfile), 'w', encoding='utf-8') as output_file:
             output_file.write(HTML_HEAD %
                               (options.title,
                                htmlFormatter.get_style_defs('.highlight'),
