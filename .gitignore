@@ -5,6 +5,7 @@
 cppcheck
 cppcheck.exe
 dmake
+dmake.exe
 reduce
 reduce.exe
 tags

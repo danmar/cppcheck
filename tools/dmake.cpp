@@ -364,13 +364,13 @@ int main(int argc, char **argv)
         fout << " \\\n" << std::string(14, ' ') << objfile(testfiles[i]);
     fout << "\n\n";
 
-    fout << ".PHONY: run-dmake\n\n";
+    fout << ".PHONY: run-dmake tags\n\n";
     fout << "\n###### Targets\n\n";
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
     fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
@@ -378,11 +378,11 @@ int main(int argc, char **argv)
     fout << "checkcfg:\tcppcheck\n";
     fout << "\t./test/cfg/runtests.sh\n\n";
     fout << "dmake:\ttools/dmake.o cli/filelister.o lib/pathmatch.o lib/path.o\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -o dmake tools/dmake.o cli/filelister.o lib/pathmatch.o lib/path.o -Ilib $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -o $@ tools/dmake.o cli/filelister.o lib/pathmatch.o lib/path.o -Ilib $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
     fout << "reduce:\ttools/reduce.o $(LIBOBJ) $(EXTOBJ)\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -g -o reduce tools/reduce.o $(INCLUDE_FOR_LIB) $(LIBOBJ) $(LIBS) $(EXTOBJ) $(LDFLAGS) $(RDYNAMIC)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -g -o $@ tools/reduce.o $(INCLUDE_FOR_LIB) $(LIBOBJ) $(LIBS) $(EXTOBJ) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "clean:\n";
     fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner reduce dmake cppcheck cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
