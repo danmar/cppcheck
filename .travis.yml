@@ -101,7 +101,7 @@ script:
   - git clean -dfx
   - make dmake
   - make run-dmake
-#   now, if dmake modified the makefile, return false!
+# now, if dmake modified the makefile, return false!
   - git diff --exit-code
 
 notifications:
