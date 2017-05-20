@@ -2782,10 +2782,10 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
                                                       "', " +
                                                       nr +
                                                       " argument '" +
-                                                       argvar->name() +
+                                                      argvar->name() +
                                                       "' value is " +
                                                       it->infoString()));
-}
+            }
 
             // passed values are not "known"..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
