@@ -1972,7 +1972,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
 
             std::list<ValueFlow::Value> values = tok->astOperand2()->values();
             for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
-                std::string info = "Assignment, " + it->infoString();
+                const std::string info = "Assignment '" + tok->expressionString() + "', assigned value is " + it->infoString();
                 it->errorPath.push_back(ErrorPathItem(tok->astOperand2(), info));
             }
             const bool constValue = tok->astOperand2()->isNumber();
@@ -2536,7 +2536,7 @@ static void valueFlowForLoopSimplifyAfter(Token *fortok, unsigned int varid, con
 
     std::list<ValueFlow::Value> values;
     values.push_back(ValueFlow::Value(num));
-    values.back().errorPath.push_back(ErrorPathItem(fortok,"After for loop, " + values.back().infoString()));
+    values.back().errorPath.push_back(ErrorPathItem(fortok,"After for loop, " + var->name() + " has value " + values.back().infoString()));
 
     valueFlowForward(fortok->linkAt(1)->linkAt(1)->next(),
                      endToken,
@@ -2731,8 +2731,8 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         if (!Token::Match(tok, "%name% ("))
             continue;
 
-        const Function * const currentFunction = tok->function();
-        if (!currentFunction) {
+        const Function * const calledFunction = tok->function();
+        if (!calledFunction) {
             // library function?
             const std::string& returnValue(settings->library.returnValue(tok));
             if (!returnValue.empty())
@@ -2740,16 +2740,15 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             continue;
         }
 
-        // Function scope..
-        const Scope * const functionScope = currentFunction->functionScope;
-        if (!functionScope)
+        const Scope * const calledFunctionScope = calledFunction->functionScope;
+        if (!calledFunctionScope)
             continue;
 
         const std::vector<const Token *> &callArguments = getArguments(tok);
         for (unsigned int argnr = 0U; argnr < callArguments.size(); ++argnr) {
             const Token *argtok = callArguments[argnr];
             // Get function argument
-            const Variable * const argvar = currentFunction->getArgumentVar(argnr);
+            const Variable * const argvar = calledFunction->getArgumentVar(argnr);
             if (!argvar)
                 break;
 
@@ -2766,15 +2765,34 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
                 continue;
 
             // Error path..
-            for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it)
-                it->errorPath.push_back(ErrorPathItem(argtok, "Function argument, " + it->infoString()));
+            for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
+                std::string nr = MathLib::toString(argnr + 1);
+                if (argnr==0)
+                    nr += "st";
+                else if (argnr==1)
+                    nr += "nd";
+                else if (argnr==2)
+                    nr += "rd";
+                else
+                    nr += "th";
+
+                it->errorPath.push_back(ErrorPathItem(argtok,
+                                                      "Calling function '" +
+                                                      calledFunction->name() +
+                                                      "', " +
+                                                      nr +
+                                                      " argument '" +
+                                                       argvar->name() +
+                                                      "' value is " +
+                                                      it->infoString()));
+}
 
             // passed values are not "known"..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
                 it->changeKnownToPossible();
             }
 
-            valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, functionScope, argvalues);
+            valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
         }
     }
 }
@@ -2934,22 +2952,22 @@ ValueFlow::Value::Value(const Token *c, long long val)
       defaultArg(false),
       valueKind(ValueKind::Possible)
 {
-    errorPath.push_back(ErrorPathItem(c, "Condition '" + c->expressionString() + "'"));
+    errorPath.push_back(ErrorPathItem(c, "Assuming that condition '" + c->expressionString() + "' is not redundant"));
 }
 
 std::string ValueFlow::Value::infoString() const
 {
     switch (valueType) {
     case INT:
-        return "integer value " + MathLib::toString(intvalue);
+        return MathLib::toString(intvalue);
     case TOK:
-        return "value " + tokvalue->str();
+        return tokvalue->str();
     case FLOAT:
-        return "float value " + MathLib::toString(floatValue);
+        return MathLib::toString(floatValue);
     case MOVED:
-        return "value <Moved>";
+        return "<Moved>";
     case UNINIT:
-        return "value <Uninit>";
+        return "<Uninit>";
     };
     throw InternalError(nullptr, "Invalid ValueFlow Value type");
 }

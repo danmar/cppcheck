@@ -595,7 +595,7 @@ private:
                "  int x = 53;\n"
                "  a = x;\n"
                "}\n";
-        ASSERT_EQUALS("2,Assignment, integer value 53\n",
+        ASSERT_EQUALS("2,Assignment 'x=53', assigned value is 53\n",
                       getErrorPathForX(code, 3U));
 
         code = "void f(int y) {\n"
@@ -604,8 +604,8 @@ private:
                "  y += 12;\n"
                "  if (y == 32) {}"
                "}\n";
-        ASSERT_EQUALS("5,Condition 'y==32'\n"
-                      "2,Assignment, integer value 20\n",
+        ASSERT_EQUALS("5,Assuming that condition 'y==32' is not redundant\n"
+                      "2,Assignment 'x=y', assigned value is 20\n",
                       getErrorPathForX(code, 3U));
 
         code = "void f1(int x) {\n"
@@ -615,8 +615,8 @@ private:
                "  int x = 3;\n"
                "  f1(x+1);\n"
                "}\n";
-        ASSERT_EQUALS("5,Assignment, integer value 3\n"
-                      "6,Function argument, integer value 4\n",
+        ASSERT_EQUALS("5,Assignment 'x=3', assigned value is 3\n"
+                      "6,Calling function 'f1', 1st argument 'x' value is 4\n",
                       getErrorPathForX(code, 2U));
 
         code = "void f(int a) {\n"
@@ -624,7 +624,7 @@ private:
                "  for (x = a; x < 50; x++) {}\n"
                "  b = x;\n"
                "}\n";
-        ASSERT_EQUALS("3,After for loop, integer value 50\n",
+        ASSERT_EQUALS("3,After for loop, x has value 50\n",
                       getErrorPathForX(code, 4U));
     }
 
