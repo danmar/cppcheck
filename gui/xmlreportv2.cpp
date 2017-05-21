@@ -33,8 +33,12 @@ static const char CppcheckElementName[] = "cppcheck";
 static const char ErrorElementName[] = "error";
 static const char ErrorsElementName[] = "errors";
 static const char LocationElementName[] = "location";
+static const char ColAttribute[] = "col";
+static const char CWEAttribute[] = "cwe";
 static const char FilenameAttribute[] = "file";
 static const char IncludedFromFilenameAttribute[] = "file0";
+static const char InconclusiveAttribute[] = "inconclusive";
+static const char InfoAttribute[] = "info";
 static const char LineAttribute[] = "line";
 static const char IdAttribute[] = "id";
 static const char SeverityAttribute[] = "severity";
@@ -103,10 +107,6 @@ void XmlReportV2::WriteError(const ErrorItem &error)
     </error>
     */
 
-    // Don't write inconclusive errors to XML V2 until we decide the format
-    if (error.inconclusive)
-        return;
-
     mXmlWriter->writeStartElement(ErrorElementName);
     mXmlWriter->writeAttribute(IdAttribute, error.errorId);
 
@@ -116,18 +116,24 @@ void XmlReportV2::WriteError(const ErrorItem &error)
     mXmlWriter->writeAttribute(MsgAttribute, summary);
     const QString message = XmlReport::quoteMessage(error.message);
     mXmlWriter->writeAttribute(VerboseAttribute, message);
+    if (error.inconclusive)
+        mXmlWriter->writeAttribute(InconclusiveAttribute, "true");
+    if (error.cwe > 0)
+        mXmlWriter->writeAttribute(CWEAttribute, QString::number(error.cwe));
 
-    for (int i = 0; i < error.files.count(); i++) {
+    for (int i = error.errorPath.count() - 1; i >= 0; i--) {
         mXmlWriter->writeStartElement(LocationElementName);
 
-        QString file = QDir::toNativeSeparators(error.files[i]);
+        QString file = QDir::toNativeSeparators(error.errorPath[i].file);
         if (!error.file0.isEmpty() && file != error.file0) {
             mXmlWriter->writeAttribute(IncludedFromFilenameAttribute, quoteMessage(error.file0));
         }
-        file = XmlReport::quoteMessage(file);
-        mXmlWriter->writeAttribute(FilenameAttribute, file);
-        const QString line = QString::number(error.lines[i]);
-        mXmlWriter->writeAttribute(LineAttribute, line);
+        mXmlWriter->writeAttribute(FilenameAttribute, XmlReport::quoteMessage(file));
+        mXmlWriter->writeAttribute(LineAttribute, QString::number(error.errorPath[i].line));
+        if (error.errorPath[i].col > 0)
+            mXmlWriter->writeAttribute(ColAttribute, QString::number(error.errorPath[i].col));
+        if (error.errorPath.count() > 1)
+            mXmlWriter->writeAttribute(InfoAttribute, XmlReport::quoteMessage(error.errorPath[i].info));
 
         mXmlWriter->writeEndElement();
     }
@@ -199,6 +205,10 @@ ErrorItem XmlReportV2::ReadError(QXmlStreamReader *reader)
         item.summary = XmlReport::unquoteMessage(summary);
         const QString message = attribs.value("", VerboseAttribute).toString();
         item.message = XmlReport::unquoteMessage(message);
+        if (attribs.hasAttribute("", InconclusiveAttribute))
+            item.inconclusive = true;
+        if (attribs.hasAttribute("", CWEAttribute))
+            item.cwe = attribs.value("", CWEAttribute).toString().toInt();
     }
 
     bool errorRead = false;
@@ -209,16 +219,17 @@ ErrorItem XmlReportV2::ReadError(QXmlStreamReader *reader)
             // Read location element from inside error element
             if (mXmlReader->name() == LocationElementName) {
                 QXmlStreamAttributes attribs = mXmlReader->attributes();
-                QString file = attribs.value("", FilenameAttribute).toString();
                 QString file0 = attribs.value("", IncludedFromFilenameAttribute).toString();
-                file = XmlReport::unquoteMessage(file);
-                if (item.file.isEmpty())
-                    item.file = file;
                 if (!file0.isEmpty())
                     item.file0 = XmlReport::unquoteMessage(file0);
-                item.files.push_back(file);
-                const int line = attribs.value("", LineAttribute).toString().toUInt();
-                item.lines.push_back(line);
+                QErrorPathItem loc;
+                loc.file = XmlReport::unquoteMessage(attribs.value("", FilenameAttribute).toString());
+                loc.line = attribs.value("", LineAttribute).toString().toUInt();
+                if (attribs.hasAttribute("", ColAttribute))
+                    loc.col = attribs.value("", ColAttribute).toString().toInt();
+                if (attribs.hasAttribute("", InfoAttribute))
+                    loc.info = XmlReport::unquoteMessage(attribs.value("", InfoAttribute).toString());
+                item.errorPath.push_front(loc);
             }
             break;
 

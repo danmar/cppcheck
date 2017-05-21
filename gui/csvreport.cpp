@@ -58,8 +58,8 @@ void CsvReport::WriteError(const ErrorItem &error)
     gui/test.cpp,23,error,Mismatching allocation and deallocation: k
     */
 
-    const QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
-    QString line = QString("%1,%2,").arg(file).arg(error.lines[error.lines.size() - 1]);
+    const QString file = QDir::toNativeSeparators(error.errorPath.back().file);
+    QString line = QString("%1,%2,").arg(file).arg(error.errorPath.back().line);
     line += QString("%1,%2").arg(GuiSeverity::toString(error.severity)).arg(error.summary);
 
     mTxtWriter << line << endl;

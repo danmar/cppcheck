@@ -45,8 +45,8 @@ void PrintableReport::WriteFooter()
 
 void PrintableReport::WriteError(const ErrorItem &error)
 {
-    const QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
-    QString line = QString("%1,%2,").arg(file).arg(error.lines[error.lines.size() - 1]);
+    const QString file = QDir::toNativeSeparators(error.errorPath.back().file);
+    QString line = QString("%1,%2,").arg(file).arg(error.errorPath.back().line);
     line += QString("%1,%2").arg(GuiSeverity::toString(error.severity)).arg(error.summary);
 
     mFormattedReport += line;

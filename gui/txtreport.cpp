@@ -56,14 +56,14 @@ void TxtReport::WriteError(const ErrorItem &error)
 
     QString line;
 
-    for (int i = 0; i < error.lines.size(); i++) {
-        const QString file = QDir::toNativeSeparators(error.files[i]);
-        line += QString("[%1:%2]").arg(file).arg(error.lines[i]);
-        if (i < error.lines.size() - 1 && !error.lines.isEmpty()) {
+    for (int i = 0; i < error.errorPath.size(); i++) {
+        const QString file = QDir::toNativeSeparators(error.errorPath[i].file);
+        line += QString("[%1:%2]").arg(file).arg(error.errorPath[i].line);
+        if (i < error.errorPath.size() - 1 && !error.errorPath.isEmpty()) {
             line += " -> ";
         }
 
-        if (i == error.lines.size() - 1) {
+        if (i == error.errorPath.size() - 1) {
             line += ": ";
         }
     }

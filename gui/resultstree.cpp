@@ -114,11 +114,11 @@ QStandardItem *ResultsTree::CreateLineNumberItem(const QString &linenumber)
 
 bool ResultsTree::AddErrorItem(const ErrorItem &item)
 {
-    if (item.files.isEmpty()) {
+    if (item.errorPath.isEmpty()) {
         return false;
     }
 
-    QString realfile = StripPath(item.files[0], false);
+    QString realfile = StripPath(item.errorPath.back().file, false);
 
     if (realfile.isEmpty()) {
         realfile = tr("Undefined file");
@@ -130,7 +130,7 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
     if (!hide && !mFilter.isEmpty()) {
         if (!item.summary.contains(mFilter, Qt::CaseInsensitive) &&
             !item.message.contains(mFilter, Qt::CaseInsensitive) &&
-            !item.file.contains(mFilter, Qt::CaseInsensitive) &&
+            !item.errorPath.back().file.contains(mFilter, Qt::CaseInsensitive) &&
             !item.errorId.contains(mFilter, Qt::CaseInsensitive)) {
             hide = true;
         }
@@ -143,15 +143,15 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
 
     ErrorLine line;
     line.file = realfile;
+    line.line = item.errorPath.back().line;
     line.errorId = item.errorId;
     line.inconclusive = item.inconclusive;
-    line.line = item.lines[0];
     line.summary = item.summary;
     line.message = item.message;
     line.severity = item.severity;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
-    QStandardItem* fileItem = EnsureFileItem(item.files[0], item.file0, hide);
+    QStandardItem* fileItem = EnsureFileItem(item.errorPath.back().file, item.file0, hide);
     QStandardItem* stditem = AddBacktraceFiles(fileItem,
                              line,
                              hide,
@@ -167,34 +167,38 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
     data["severity"]  = ShowTypes::SeverityToShowType(item.severity);
     data["summary"] = item.summary;
     data["message"]  = item.message;
-    data["file"]  = item.files[0];
-    data["line"]  = item.lines[0];
+    data["file"]  = item.errorPath.back().file;
+    data["line"]  = item.errorPath.back().line;
     data["id"]  = item.errorId;
     data["inconclusive"] = item.inconclusive;
     data["file0"] = StripPath(item.file0, true);
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
-    for (int i = 1; i < item.files.size(); i++) {
-        line.file = StripPath(item.files[i], false);
-        line.line = item.lines[i];
-        QStandardItem *child_item;
-        child_item = AddBacktraceFiles(stditem,
-                                       line,
-                                       hide,
-                                       ":images/go-down.png",
-                                       true);
+    if (item.errorPath.size() > 1U) {
+        for (int i = 0; i < item.errorPath.size(); i++) {
+            const QErrorPathItem &e = item.errorPath[i];
+            line.file = e.file;
+            line.line = e.line;
+            line.message = line.summary = e.info;
+            QStandardItem *child_item;
+            child_item = AddBacktraceFiles(stditem,
+                                           line,
+                                           hide,
+                                           ":images/go-down.png",
+                                           true);
 
-        //Add user data to that item
-        QMap<QString, QVariant> child_data;
-        child_data["severity"]  = ShowTypes::SeverityToShowType(line.severity);
-        child_data["summary"] = line.summary;
-        child_data["message"]  = line.message;
-        child_data["file"]  = item.files[i];
-        child_data["line"]  = line.line;
-        child_data["id"]  = line.errorId;
-        child_data["inconclusive"] = line.inconclusive;
-        child_item->setData(QVariant(child_data));
+            //Add user data to that item
+            QMap<QString, QVariant> child_data;
+            child_data["severity"]  = ShowTypes::SeverityToShowType(line.severity);
+            child_data["summary"] = line.summary;
+            child_data["message"]  = line.message;
+            child_data["file"]  = e.file;
+            child_data["line"]  = e.line;
+            child_data["id"]  = line.errorId;
+            child_data["inconclusive"] = line.inconclusive;
+            child_item->setData(QVariant(child_data));
+        }
     }
 
     // Partially refresh the tree: Unhide file item if necessary
@@ -209,7 +213,6 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
         const bool hide,
         const QString &icon,
         bool childOfMessage)
-
 {
     if (!parent) {
         return 0;
@@ -217,29 +220,14 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
 
     QList<QStandardItem*> list;
     // Ensure shown path is with native separators
-    const QString file = QDir::toNativeSeparators(item.file);
-    list << CreateNormalItem(file);
-    if (childOfMessage)
-        list << CreateNormalItem("");
-    else {
-        const QString severity = SeverityToTranslatedString(item.severity);
-        list << CreateNormalItem(severity);
-    }
-    list << CreateLineNumberItem(QString("%1").arg(item.line));
-    if (childOfMessage)
-        list << CreateNormalItem("");
-    else
-        list << CreateNormalItem(item.errorId);
-    if (childOfMessage)
-        list << CreateNormalItem("");
-    else
-        list << CreateCheckboxItem(item.inconclusive);
+    list << CreateNormalItem(QDir::toNativeSeparators(item.file))
+         << CreateNormalItem(childOfMessage ? tr("note") : SeverityToTranslatedString(item.severity))
+         << CreateLineNumberItem(QString::number(item.line))
+         << CreateNormalItem(childOfMessage ? QString() : item.errorId)
+         << (childOfMessage ? CreateNormalItem(QString()) : CreateCheckboxItem(item.inconclusive))
+         << CreateNormalItem(item.summary);
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
-    if (childOfMessage)
-        list << CreateNormalItem("");
-    else
-        list << CreateNormalItem(item.summary.toLatin1());
 
     // Check for duplicate rows and don't add them if found
     for (int i = 0; i < parent->rowCount(); i++) {
@@ -1014,11 +1002,14 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item) const
         item.errorId = data["id"].toString();
         item.inconclusive = data["inconclusive"].toBool();
         item.file0 = data["file0"].toString();
-        QString file = StripPath(data["file"].toString(), true);
-        unsigned int line = data["line"].toUInt();
 
-        item.files << file;
-        item.lines << line;
+        if (error->rowCount() == 0) {
+            QErrorPathItem e;
+            e.file = StripPath(data["file"].toString(), true);
+            e.line = data["line"].toUInt();
+            e.info = data["message"].toString();
+            item.errorPath << e;
+        }
 
         for (int j = 0; j < error->rowCount(); j++) {
             QStandardItem *child_error = error->child(j, 0);
@@ -1027,11 +1018,11 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item) const
             //Convert it to QVariantMap
             QVariantMap child_data = child_userdata.toMap();
 
-            file = StripPath(child_data["file"].toString(), true);
-            line = child_data["line"].toUInt();
-
-            item.files << file;
-            item.lines << line;
+            QErrorPathItem e;
+            e.file = StripPath(child_data["file"].toString(), true);
+            e.line = child_data["line"].toUInt();
+            e.info = child_data["message"].toString();
+            item.errorPath << e;
         }
 
         report->WriteError(item);

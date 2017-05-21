@@ -60,28 +60,7 @@ void ThreadResult::FileChecked(const QString &file)
 void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
     QMutexLocker locker(&mutex);
-
-    QList<unsigned int> lines;
-    QStringList files;
-
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = msg._callStack.begin();
-         tok != msg._callStack.end();
-         ++tok) {
-        files << QString::fromStdString((*tok).getfile(false));
-        lines << (*tok).line;
-    }
-
-    ErrorItem item;
-    item.file = QString::fromStdString(callStackToString(msg._callStack));
-    item.files = files;
-    item.errorId = QString::fromStdString(msg._id);
-    item.lines = lines;
-    item.summary = QString::fromStdString(msg.shortMessage());
-    item.message = QString::fromStdString(msg.verboseMessage());
-    item.severity = msg._severity;
-    item.inconclusive = msg._inconclusive;
-    item.file0 = QString::fromStdString(msg.file0);
-
+    const ErrorItem item(msg);
     if (msg._severity != Severity::debug)
         emit Error(item);
     else

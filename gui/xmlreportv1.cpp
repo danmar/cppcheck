@@ -92,10 +92,10 @@ void XmlReportV1::WriteError(const ErrorItem &error)
         return;
 
     mXmlWriter->writeStartElement(ErrorElementName);
-    QString file = QDir::toNativeSeparators(error.files[error.files.size() - 1]);
+    QString file = QDir::toNativeSeparators(error.errorPath.back().file);
     file = XmlReport::quoteMessage(file);
     mXmlWriter->writeAttribute(FilenameAttribute, file);
-    const QString line = QString::number(error.lines[error.lines.size() - 1]);
+    const QString line = QString::number(error.errorPath.back().line);
     mXmlWriter->writeAttribute(LineAttribute, line);
     mXmlWriter->writeAttribute(IdAttribute, error.errorId);
 
@@ -155,10 +155,10 @@ ErrorItem XmlReportV1::ReadError(QXmlStreamReader *reader)
         QXmlStreamAttributes attribs = reader->attributes();
         QString file = attribs.value("", FilenameAttribute).toString();
         file = XmlReport::unquoteMessage(file);
-        item.file = file;
-        item.files.push_back(file);
-        const int line = attribs.value("", LineAttribute).toString().toUInt();
-        item.lines.push_back(line);
+        QErrorPathItem e;
+        e.file = file;
+        e.line = attribs.value("", LineAttribute).toString().toUInt();
+        item.errorPath << e;
         item.errorId = attribs.value("", IdAttribute).toString();
         item.severity = GuiSeverity::fromString(attribs.value("", SeverityAttribute).toString());
 
