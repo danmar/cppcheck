@@ -26,14 +26,6 @@ QErrorPathItem::QErrorPathItem(const ErrorLogger::ErrorMessage::FileLocation &lo
 {
 }
 
-QErrorPathItem::QErrorPathItem(const QErrorPathItem &e)
-    : file(e.file)
-    , line(e.line)
-    , col(e.col)
-    , info(e.info)
-{
-}
-
 ErrorItem::ErrorItem()
     : severity(Severity::none)
     , inconclusive(false)
