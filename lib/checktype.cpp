@@ -132,7 +132,7 @@ void CheckType::checkIntegerOverflow()
             const ValueFlow::Value *value = tok->getValueGE(maxint + 1, _settings);
             if (!value)
                 value = tok->getValueLE(-maxint - 2, _settings);
-            if (!value)
+            if (!value || !_settings->isEnabled(value,false))
                 continue;
 
             // For left shift, it's common practice to shift into the sign bit
@@ -155,7 +155,7 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
     else
         msg = "Signed integer overflow for expression '" + expr + "'.";
 
-    reportError(tok,
+    reportError(getErrorPath(tok, &value, "Integer overflow"),
                 value.condition ? Severity::warning : Severity::error,
                 "integerOverflow",
                 msg,
