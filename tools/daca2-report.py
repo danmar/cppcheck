@@ -99,11 +99,11 @@ for lib in range(2):
                 '<tr>' +
                 '<td><a href="daca2-' + a + '.html">' + a + '</a></td>' +
                 '<td>' + datestr + '</td>' +
-                '<td>' + str(data.count('(error)')) + '</td>' +
-                '<td>' + str(data.count('(warning)')) + '</td>' +
-                '<td>' + str(data.count('(performance)')) + '</td>' +
-                '<td>' + str(data.count('(portability)')) + '</td>' +
-                '<td>' + str(data.count('(style)')) + '</td>' +
+                '<td>' + str(data.count(': error:')) + '</td>' +
+                '<td>' + str(data.count(': warning:')) + '</td>' +
+                '<td>' + str(data.count(': performance:')) + '</td>' +
+                '<td>' + str(data.count(': portability:')) + '</td>' +
+                '<td>' + str(data.count(': style:')) + '</td>' +
                 '<td>' + str(data.count('Crash?')) + '</td>' +
                 '<td>' + str(data.count('with varid 0.')) + '</td>' +
                 '</tr>\n')
