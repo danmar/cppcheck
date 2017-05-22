@@ -36,7 +36,7 @@ namespace {
 
         bool getIntValue(unsigned int varid, MathLib::bigint* result) const {
             const std::map<unsigned int, ValueFlow::Value>::const_iterator it = values.find(varid);
-            bool found = it != values.end() && it->second.isIntValue();
+            const bool found = it != values.end() && it->second.isIntValue();
             if (found)
                 *result = it->second.intvalue;
             return found;
@@ -48,7 +48,7 @@ namespace {
 
         bool getTokValue(unsigned int varid, const Token** result) const {
             const std::map<unsigned int, ValueFlow::Value>::const_iterator it = values.find(varid);
-            bool found = it != values.end() && it->second.isTokValue();
+            const bool found = it != values.end() && it->second.isTokValue();
             if (found)
                 *result = it->second.tokvalue;
             return found;
@@ -2309,7 +2309,7 @@ static void execute(const Token *expr,
     }
 
     else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
-        const Token *tokvalue;
+        const Token *tokvalue = nullptr;
         if (!programMemory->getTokValue(expr->astOperand1()->varId(), &tokvalue)) {
             if (expr->astOperand1()->values().size() != 1U || !expr->astOperand1()->values().front().isTokValue()) {
                 *error = true;
