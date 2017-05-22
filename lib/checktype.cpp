@@ -44,9 +44,6 @@ static const struct CWE CWE190(190U);   // Integer Overflow or Wraparound
 
 void CheckType::checkTooBigBitwiseShift()
 {
-    const bool printWarnings = _settings->isEnabled(Settings::WARNING);
-    const bool printInconclusive = _settings->inconclusive;
-
     // unknown sizeof(int) => can't run this checker
     if (_settings->platformType == Settings::Unspecified)
         return;
@@ -82,28 +79,27 @@ void CheckType::checkTooBigBitwiseShift()
 
             // Get biggest rhs value. preferably a value which doesn't have 'condition'.
             const ValueFlow::Value *value = tok->astOperand2()->getValueGE(lhsbits, _settings);
-            if (!value)
-                continue;
-            if (value->condition && !printWarnings)
-                continue;
-            if (value->inconclusive && !printInconclusive)
-                continue;
-            tooBigBitwiseShiftError(tok, lhsbits, *value);
+            if (value && _settings->isEnabled(value, false))
+                tooBigBitwiseShiftError(tok, lhsbits, *value);
         }
     }
 }
 
 void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
 {
-    std::list<const Token*> callstack;
-    callstack.push_back(tok);
-    if (rhsbits.condition)
-        callstack.push_back(rhsbits.condition);
+    if (!tok) {
+        reportError(tok, Severity::error, "shiftTooManyBits", "Shifting 32-bit value by 40 bits is undefined behaviour", CWE758, false);
+        return;
+    }
+
+    const ErrorPath errorPath = getErrorPath(tok, &rhsbits, "Shift");
+
     std::ostringstream errmsg;
     errmsg << "Shifting " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is undefined behaviour";
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
-    reportError(callstack, rhsbits.condition ? Severity::warning : Severity::error, "shiftTooManyBits", errmsg.str(), CWE758, rhsbits.inconclusive);
+
+    reportError(errorPath, rhsbits.condition ? Severity::warning : Severity::error, "shiftTooManyBits", errmsg.str(), CWE758, rhsbits.inconclusive);
 }
 
 //---------------------------------------------------------------------------
