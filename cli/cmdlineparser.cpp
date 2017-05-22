@@ -695,6 +695,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                     _settings->platform(Settings::Unix32);
                 else if (platform == "unix64")
                     _settings->platform(Settings::Unix64);
+                else if (platform == "avr8")
+                    _settings->platform(Settings::AVR8);
                 else if (platform == "native")
                     _settings->platform(Settings::Native);
                 else if (platform == "unspecified")
@@ -941,6 +943,8 @@ void CmdLineParser::PrintHelp()
               "                                 32 bit Windows UNICODE character encoding\n"
               "                          * win64\n"
               "                                 64 bit Windows\n"
+              "                          * avr8\n"
+              "                                 8 bit AVR microcontrollers\n"
               "                          * native\n"
               "                                 Type sizes of host system are assumed, but no\n"
               "                                 further assumptions.\n"
