@@ -336,7 +336,7 @@ void CheckType::checkFloatToIntegerOverflow()
             for (std::list<ValueFlow::Value>::const_iterator it = op1->values().begin(); it != op1->values().end(); ++it) {
                 if (it->valueType != ValueFlow::Value::FLOAT)
                     continue;
-                if (it->inconclusive && !_settings->inconclusive)
+                if (!_settings->isEnabled(&(*it), false))
                     continue;
                 if (it->floatValue > ~0ULL)
                     floatToIntegerOverflowError(tok, *it);
@@ -367,9 +367,9 @@ void CheckType::checkFloatToIntegerOverflow()
 void CheckType::floatToIntegerOverflowError(const Token *tok, const ValueFlow::Value &value)
 {
     std::ostringstream errmsg;
-    errmsg << "Undefined behaviour: float (" << value.floatValue << ") conversion overflow.";
-    reportError(tok,
-                Severity::error,
+    errmsg << "Undefined behaviour: float (" << value.floatValue << ") to integer conversion overflow.";
+    reportError(getErrorPath(tok, &value, "float to integer conversion"),
+                value.condition ? Severity::warning : Severity::error,
                 "floatConversionOverflow",
                 errmsg.str(), CWE190, value.inconclusive);
 }

@@ -222,7 +222,7 @@ private:
     // be stringified differently.
     static std::string removeFloat(const std::string& msg) {
         std::string::size_type pos1 = msg.find("float (");
-        std::string::size_type pos2 = msg.find(") conversion");
+        std::string::size_type pos2 = msg.find(") to integer conversion");
         if (pos1 == std::string::npos || pos2 == std::string::npos || pos1 > pos2)
             return msg;
         return msg.substr(0,pos1+7) + msg.substr(pos2);
@@ -232,22 +232,22 @@ private:
         check("void f(void) {\n"
               "  return (int)1E100;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () conversion overflow.\n", removeFloat(errout.str()));
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (int)-1E100;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () conversion overflow.\n", removeFloat(errout.str()));
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (short)1E6;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () conversion overflow.\n", removeFloat(errout.str()));
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)256.0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () conversion overflow.\n", removeFloat(errout.str()));
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)255.5;\n"
