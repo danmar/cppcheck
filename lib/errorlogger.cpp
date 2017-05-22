@@ -415,18 +415,18 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
 
     else if (outputFormat == "clang") {
         std::ostringstream text;
-        text << _callStack.back().getfile()
-             << ':'
-             << _callStack.back().line
-             << ':'
-             << _callStack.back().col
-             << ": "
-             << Severity::toString(_severity)
+        if (_callStack.empty()) {
+            text << "nofile:0:0: ";
+        } else {
+            const ErrorLogger::ErrorMessage::FileLocation &loc = _callStack.back();
+            text << loc.getfile() << ':' << loc.line << ':' << loc.col << ": ";
+        }
+        text << Severity::toString(_severity)
              << ": "
              << (verbose ? _verboseMessage : _shortMessage)
              << " [" << _id << ']';
 
-        if (_callStack.size() == 1U)
+        if (_callStack.size() <= 1U)
             return text.str();
 
         for (std::list<FileLocation>::const_iterator loc = _callStack.begin(); loc != _callStack.end(); ++loc)
