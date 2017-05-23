@@ -165,6 +165,10 @@ namespace ValueFlow {
             if (isKnown())
                 valueKind = ValueKind::Possible;
         }
+
+        bool errorSeverity() const {
+            return !condition && !defaultArg;
+        }
     };
 
     /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).

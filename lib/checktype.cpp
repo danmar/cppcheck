@@ -99,7 +99,7 @@ void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Val
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
 
-    reportError(errorPath, rhsbits.condition ? Severity::warning : Severity::error, "shiftTooManyBits", errmsg.str(), CWE758, rhsbits.inconclusive);
+    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, "shiftTooManyBits", errmsg.str(), CWE758, rhsbits.inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -156,7 +156,7 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
         msg = "Signed integer overflow for expression '" + expr + "'.";
 
     reportError(getErrorPath(tok, &value, "Integer overflow"),
-                value.condition ? Severity::warning : Severity::error,
+                value.errorSeverity() ? Severity::error : Severity::warning,
                 "integerOverflow",
                 msg,
                 CWE190,
@@ -369,7 +369,7 @@ void CheckType::floatToIntegerOverflowError(const Token *tok, const ValueFlow::V
     std::ostringstream errmsg;
     errmsg << "Undefined behaviour: float (" << value.floatValue << ") to integer conversion overflow.";
     reportError(getErrorPath(tok, &value, "float to integer conversion"),
-                value.condition ? Severity::warning : Severity::error,
+                value.errorSeverity() ? Severity::error : Severity::warning,
                 "floatConversionOverflow",
                 errmsg.str(), CWE190, value.inconclusive);
 }

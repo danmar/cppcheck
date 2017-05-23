@@ -1666,7 +1666,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
         errmsg << "Division by zero.";
 
     reportError(errorPath,
-                value->condition ? Severity::warning : Severity::error,
+                value->errorSeverity() ? Severity::error : Severity::warning,
                 value->condition ? "zerodivcond" : "zerodiv",
                 errmsg.str(), CWE369, value->inconclusive);
 }

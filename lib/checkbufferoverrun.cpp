@@ -1787,7 +1787,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::V
                << ", otherwise there is negative array index " << index.intvalue << ".";
     else
         errmsg << "Array index " << index.intvalue << " is out of bounds.";
-    reportError(errorPath, index.condition ? Severity::warning : Severity::error, "negativeIndex", errmsg.str(), CWE786, index.inconclusive);
+    reportError(errorPath, index.errorSeverity() ? Severity::error : Severity::warning, "negativeIndex", errmsg.str(), CWE786, index.inconclusive);
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo()
