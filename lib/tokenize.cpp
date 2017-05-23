@@ -3062,7 +3062,9 @@ void Tokenizer::createLinks2()
         } else if (token->str() == ">") {
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
-            if (token->next() && !Token::Match(token->next(), "%name%|>|&|*|::|,|(|)|{|}|;|[|:"))
+            if (token->next() &&
+                !Token::Match(token->next(), "%name%|>|&|*|::|,|(|)|{|}|;|[|:") &&
+                !Token::Match(token->next(), "&& %name% ="))
                 continue;
 
             // if > is followed by [ .. "new a<b>[" is expected
