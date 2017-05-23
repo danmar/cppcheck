@@ -104,7 +104,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
     } else {
         errorPath.push_back(ErrorPathItem(tok, "Array index out of bounds"));
         if (condition)
-            errorPath.push_back(ErrorPathItem(condition, "Condition '" + condition->expressionString() + "'"));
+            errorPath.push_back(ErrorPathItem(condition, "Assuming that condition '" + condition->expressionString() + "' is not redundant"));
     }
 
     if (condition != nullptr) {
