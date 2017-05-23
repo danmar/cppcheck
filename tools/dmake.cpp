@@ -346,6 +346,15 @@ int main(int argc, char **argv)
     fout << "XP=xsltproc -''-nonet -''-param man.charmap.use.subset \"0\"\n";
     fout << "MAN_SOURCE=man/cppcheck.1.xml\n\n";
 
+	fout << "Validation of library files:\n";
+    fout << "ConfigFiles := $(wildcard cfg/*.cfg)\n";
+    fout << "ConfigFilesCHECKED := $(patsubst %.cfg,%.checked,$(ConfigFiles))\n";
+    fout << ".PHONY: validateCFG\n";
+    fout << "%.checked:%.cfg\n";
+    fout << "\txmllint --noout --relaxng cfg/cppcheck-cfg.rng $<\n";
+    fout << "validateCFG: ${ConfigFilesCHECKED}\n\n";
+
+
     fout << "\n###### Object Files\n\n";
     fout << "LIBOBJ =      " << objfile(libfiles[0]);
     for (size_t i = 1; i < libfiles.size(); ++i)

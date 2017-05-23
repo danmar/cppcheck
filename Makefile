@@ -125,6 +125,14 @@ DB2MAN?=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl
 XP=xsltproc -''-nonet -''-param man.charmap.use.subset "0"
 MAN_SOURCE=man/cppcheck.1.xml
 
+Validation of library files:
+ConfigFiles := $(wildcard cfg/*.cfg)
+ConfigFilesCHECKED := $(patsubst %.cfg,%.checked,$(ConfigFiles))
+.PHONY: validateCFG
+%.checked:%.cfg
+	xmllint --noout --relaxng cfg/cppcheck-cfg.rng $<
+validateCFG: ${ConfigFilesCHECKED}
+
 
 ###### Object Files
 
