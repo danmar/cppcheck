@@ -133,12 +133,20 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
         errmsg << " The value is " << invalidValue->intvalue << " but the valid values are '" << validstr << "'.";
     else
         errmsg << " The value is 0 or 1 (boolean) but the valid values are '" << validstr << "'.";
-    reportError(tok,
-                (!invalidValue || !invalidValue->condition) ? Severity::error : Severity::warning,
-                "invalidFunctionArg",
-                errmsg.str(),
-                CWE628,
-                invalidValue && invalidValue->inconclusive);
+    if (invalidValue)
+        reportError(getErrorPath(tok, invalidValue, "Invalid argument"),
+                    invalidValue->errorSeverity() ? Severity::error : Severity::warning,
+                    "invalidFunctionArg",
+                    errmsg.str(),
+                    CWE628,
+                    invalidValue->inconclusive);
+    else
+        reportError(tok,
+                    Severity::error,
+                    "invalidFunctionArg",
+                    errmsg.str(),
+                    CWE628,
+                    false);
 }
 
 void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr)
