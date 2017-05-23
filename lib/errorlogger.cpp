@@ -421,8 +421,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
             const ErrorLogger::ErrorMessage::FileLocation &loc = _callStack.back();
             text << loc.getfile() << ':' << loc.line << ':' << loc.col << ": ";
         }
-        text << Severity::toString(_severity)
-             << ": "
+        text << ((_id == "syntaxError" || _id=="internalError") ? "error: " : "warning: ")
              << (verbose ? _verboseMessage : _shortMessage)
              << " [" << _id << ']';
 
