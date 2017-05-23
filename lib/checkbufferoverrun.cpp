@@ -26,6 +26,7 @@
 #include "mathlib.h"
 #include "symboldatabase.h"
 #include "astutils.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <sstream>
@@ -77,10 +78,33 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
 
 void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index)
 {
+    bool inconclusive = false;
     const Token *condition = nullptr;
     for (std::size_t i = 0; i < index.size(); ++i) {
+        inconclusive |= index[i].inconclusive;
         if (condition == nullptr)
             condition = index[i].condition;
+    }
+
+    std::list<ErrorPathItem> errorPath;
+    if (_settings->xml || _settings->outputFormat == "clang" || _settings->outputFormat == "cppcheck2") {
+        for (std::size_t i = 0; i < index.size(); ++i) {
+            const ErrorPath &e = getErrorPath(tok, &index[i], "");
+            for (ErrorPath::const_iterator it = e.begin(); it != e.end(); ++it) {
+                const std::string &info = it->second;
+                if (info.empty())
+                    continue;
+                std::string nr;
+                if (index.size() > 1U)
+                    nr = "(" + MathLib::toString(i + 1) + getOrdinalText(i+1) + " array index) ";
+                errorPath.push_back(ErrorPathItem(it->first, nr + info));
+            }
+        }
+        errorPath.push_back(ErrorPathItem(tok,"Array index out of bounds"));
+    } else {
+        errorPath.push_back(ErrorPathItem(tok, "Array index out of bounds"));
+        if (condition)
+            errorPath.push_back(ErrorPathItem(condition, "Condition '" + condition->expressionString() + "'"));
     }
 
     if (condition != nullptr) {
@@ -100,10 +124,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
             errmsg << " is out of bounds.";
         }
 
-        std::list<const Token *> callstack;
-        callstack.push_back(tok);
-        callstack.push_back(condition);
-        reportError(callstack, Severity::warning, "arrayIndexOutOfBoundsCond", errmsg.str(), CWE119, false);
+        reportError(errorPath, Severity::warning, "arrayIndexOutOfBoundsCond", errmsg.str(), CWE119, inconclusive);
     } else {
         std::ostringstream errmsg;
         errmsg << "Array '" << arrayInfo.varname();
@@ -118,7 +139,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
             errmsg << " out of bounds.";
         }
 
-        reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str(), CWE119, false);
+        reportError(errorPath, Severity::error, "arrayIndexOutOfBounds", errmsg.str(), CWE119, inconclusive);
     }
 }
 
