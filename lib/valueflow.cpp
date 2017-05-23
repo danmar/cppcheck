@@ -24,6 +24,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenlist.h"
+#include "utils.h"
 #include <stack>
 
 namespace {
@@ -2766,15 +2767,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
 
             // Error path..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
-                std::string nr = MathLib::toString(argnr + 1);
-                if (argnr==0)
-                    nr += "st";
-                else if (argnr==1)
-                    nr += "nd";
-                else if (argnr==2)
-                    nr += "rd";
-                else
-                    nr += "th";
+                std::string nr = MathLib::toString(argnr + 1) + getOrdinalText(argnr + 1);
 
                 it->errorPath.push_back(ErrorPathItem(argtok,
                                                       "Calling function '" +
