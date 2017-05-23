@@ -413,7 +413,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         return text.str();
     }
 
-    else if (outputFormat == "clang") {
+    else if (outputFormat == "clang" || outputFormat == "cppcheck2") {
         std::ostringstream text;
         if (_callStack.empty()) {
             text << "nofile:0:0: ";
@@ -421,8 +421,16 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
             const ErrorLogger::ErrorMessage::FileLocation &loc = _callStack.back();
             text << loc.getfile() << ':' << loc.line << ':' << loc.col << ": ";
         }
-        text << ((_id == "syntaxError" || _id=="internalError") ? "error: " : "warning: ")
-             << (verbose ? _verboseMessage : _shortMessage)
+
+        if (outputFormat == "clang")
+            text << ((_id == "syntaxError" || _id=="internalError") ? "error: " : "warning: ");
+        else {
+            if (_inconclusive)
+                text << "inconclusive ";
+            text << Severity::toString(_severity) << ": ";
+        }
+
+        text << (verbose ? _verboseMessage : _shortMessage)
              << " [" << _id << ']';
 
         if (_callStack.size() <= 1U)
