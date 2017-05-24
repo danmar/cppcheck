@@ -386,7 +386,7 @@ static bool iscast(const Token *tok)
 // int(1), int*(2), ..
 static Token * findCppTypeInitPar(Token *tok)
 {
-    if (!tok || !Token::Match(tok->previous(), "[,(] %name%"))
+    if (!tok || !Token::Match(tok->previous(), "[,()] %name%"))
         return nullptr;
     while (Token::Match(tok, "%name%|::|<")) {
         if (tok->str() == "<") {
