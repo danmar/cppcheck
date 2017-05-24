@@ -78,4 +78,6 @@ inline static const char *getOrdinalText(int i)
     return "th";
 }
 
+#define UNUSED(x) (void)(x)
+
 #endif

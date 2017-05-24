@@ -388,7 +388,7 @@ static bool checkMinSizes(const std::vector<Library::ArgumentChecks::MinSize> &m
                         parameters.push_back(nullptr);
                 }
                 const MathLib::biguint len = CheckBufferOverrun::countSprintfLength(formatstr, parameters);
-                if (len > arraySize + 2U)
+                if (len > arraySize + 2)
                     error = true;
             } else {
                 const Token *strtoken = argtok->getValueTokenMaxStrLength();
