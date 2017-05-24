@@ -383,6 +383,26 @@ static bool iscast(const Token *tok)
     return false;
 }
 
+// int(1), int*(2), ..
+static Token * findCppTypeInitPar(Token *tok)
+{
+    if (!tok || !Token::Match(tok->previous(), "[,(] %name%"))
+        return nullptr;
+    while (Token::Match(tok, "%name%|::|<")) {
+        if (tok->str() == "<") {
+            tok = tok->link();
+            if (!tok)
+                return nullptr;
+        }
+        tok = tok->next();
+    }
+    if (!Token::Match(tok, "[*&]"))
+        return nullptr;
+    while (Token::Match(tok, "[*&]"))
+        tok = tok->next();
+    return (tok && tok->str() == "(") ? tok : nullptr;
+}
+
 // X{} X<Y>{} etc
 static bool iscpp11init(const Token * const tok)
 {
@@ -492,6 +512,10 @@ static void compileTerm(Token *&tok, AST_state& state)
         } else if (Token::Match(tok, "sizeof !!(")) {
             compileUnaryOp(tok, state, compileExpression);
             state.op.pop();
+        } else if (state.cpp && findCppTypeInitPar(tok))  { // int(0), int*(123), ..
+            tok = findCppTypeInitPar(tok);
+            state.op.push(tok);
+            tok = tok->tokAt(2);
         } else if (state.cpp && iscpp11init(tok)) { // X{} X<Y>{} etc
             state.op.push(tok);
             tok = tok->next();

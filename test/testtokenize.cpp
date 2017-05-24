@@ -7930,6 +7930,10 @@ private:
         ASSERT_EQUALS("f\"A\"1,(",testAst("f(\"A\" B, 1);"));
         ASSERT_EQUALS("fA1,(",testAst("f(A \"B\", 1);"));
 
+        // C++ : type()
+        ASSERT_EQUALS("fint(0,(", testAst("f(int(),0);"));
+        ASSERT_EQUALS("f(0,(", testAst("f(int *(),0);"));  // typedef int* X; f(X(),0);
+
         // for
         ASSERT_EQUALS("for;;(", testAst("for(;;)"));
         ASSERT_EQUALS("fora0=a8<a++;;(", testAst("for(a=0;a<8;a++)"));
