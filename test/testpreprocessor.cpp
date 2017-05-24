@@ -79,6 +79,7 @@ private:
         TEST_CASE(error4);  // #2919 - wrong filename is reported
         TEST_CASE(error5);
         TEST_CASE(error6);
+        TEST_CASE(error7);
 
         TEST_CASE(setPlatformInfo);
 
@@ -407,6 +408,21 @@ private:
                                  "#endif\n";
         ASSERT_EQUALS("A;B\n", getConfigsStr(filedata3));
 
+    }
+
+    void error7() { // #8074
+        const char filedata[] = "#define A\n"
+                                "\n"
+                                "#if defined(B)\n"
+                                "#else\n"
+                                "#error \"1\"\n"
+                                "#endif\n"
+                                "\n"
+                                "#if defined(A)\n"
+                                "#else\n"
+                                "#error \"2\"\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nB\n", getConfigsStr(filedata));
     }
 
     void setPlatformInfo() {

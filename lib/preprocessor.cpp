@@ -352,9 +352,12 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 sameline(cmdtok->next, cmdtok->next->next) &&
                 cmdtok->next->op == '#' &&
                 cmdtok->next->next->str == "error") {
-                if (!elseError.empty())
-                    elseError += ';';
-                elseError += cfg(configs_if, userDefines);
+                const std::string &ifcfg = cfg(configs_if, userDefines);
+                if (!ifcfg.empty()) {
+                    if (!elseError.empty())
+                        elseError += ';';
+                    elseError += ifcfg;
+                }
             }
             if (!configs_if.empty())
                 configs_if.pop_back();
