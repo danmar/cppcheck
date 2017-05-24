@@ -1089,6 +1089,67 @@ private:
               "    delete [] str;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: str\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *str = new char[10];\n"
+              "    str = new char[20];\n"
+              "    delete [] str;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: str\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *str;\n"
+              "    str = new char;\n"
+              "    str = new char;\n"
+              "    delete str;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: str\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *str = new char;\n"
+              "    str = new char;\n"
+              "    delete str;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: str\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *str1 = new char;\n"
+              "    char *str2 = new char;\n"
+              "    delete str1, str2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: str2\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *str1 = new char[10];\n"
+              "    char *str2 = new char[20];\n"
+              "    delete[] str1, str2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: str2\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *str1 = new char;\n"
+              "    char *str2 = new char;\n"
+              "    char *str3 = new char;\n"
+              "    delete str1, str2, str3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: str2\n"
+                      "[test.cpp:7]: (error) Memory leak: str3\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *str1 = new char[10];\n"
+              "    char *str2 = new char[20];\n"
+              "    char *str3 = new char[15];\n"
+              "    delete[] str1, str2, str3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: str2\n"
+                      "[test.cpp:7]: (error) Memory leak: str3\n", errout.str());
     }
 
     void ifelse6() {
