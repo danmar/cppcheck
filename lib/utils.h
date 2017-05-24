@@ -78,4 +78,7 @@ inline static const char *getOrdinalText(int i)
     return "th";
 }
 
+template<typename T>
+inline void UNUSED(T&&) {}
+
 #endif

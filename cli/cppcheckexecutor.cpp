@@ -279,6 +279,11 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
         }
     }
 #undef ADDRESSDISPLAYLENGTH
+#else
+    UNUSED(output);
+    UNUSED(demangling);
+    UNUSED(maxdepth);
+    UNUSED(lowMem);
 #endif
 }
 
@@ -341,7 +346,10 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     if (uc) {
         type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
     }
+#else
+    UNUSED(context);
 #endif
+
     const Signalmap_t::const_iterator it=listofsignals.find(signo);
     const char * const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
     bool printCallstack=true; // try to print a callstack?
