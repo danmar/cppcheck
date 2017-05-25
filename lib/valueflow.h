@@ -21,7 +21,6 @@
 #define valueflowH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 #include <list>
 #include <string>
 #include <utility>

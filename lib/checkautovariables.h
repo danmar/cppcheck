@@ -22,7 +22,6 @@
 #define checkautovariablesH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 
 #include "check.h"
 #include "config.h"

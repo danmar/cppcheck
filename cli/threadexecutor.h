@@ -20,7 +20,6 @@
 #define THREADEXECUTOR_H
 
 #include <stddef.h>
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>

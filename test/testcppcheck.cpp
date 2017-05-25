@@ -17,7 +17,6 @@
  */
 
 #include <algorithm>
-#include <iosfwd>
 #include <list>
 #include <string>
 

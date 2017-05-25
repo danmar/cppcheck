@@ -22,7 +22,6 @@
 #define checkleakautovarH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 #include <map>
 #include <set>
 

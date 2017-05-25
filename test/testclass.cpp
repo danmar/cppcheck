@@ -17,7 +17,6 @@
  */
 
 #include <tinyxml2.h>
-#include <iosfwd>
 
 #include "checkclass.h"
 #include "library.h"

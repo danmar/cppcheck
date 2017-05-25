@@ -21,7 +21,6 @@
 #define checkH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 #include <list>
 #include <set>
 #include <string>

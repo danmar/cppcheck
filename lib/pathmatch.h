@@ -19,7 +19,6 @@
 #ifndef PATHMATCH_H
 #define PATHMATCH_H
 
-#include <iosfwd>
 #include <string>
 #include <vector>
 

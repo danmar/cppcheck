@@ -18,14 +18,13 @@
 
 #include "cmdlineparser.h"
 
-#include <stdio.h>
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib> // EXIT_FAILURE
 #include <cstring>
 #include <iostream>
 #include <list>
 #include <set>
-#include <string>
 
 #include "check.h"
 #include "cppcheckexecutor.h"

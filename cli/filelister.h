@@ -20,7 +20,6 @@
 #define filelisterH
 
 #include <stddef.h>
-#include <iosfwd>
 #include <map>
 #include <set>
 #include <string>

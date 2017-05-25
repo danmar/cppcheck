@@ -22,7 +22,6 @@
 #define checkconditionH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 
 #include "check.h"
 #include "config.h"

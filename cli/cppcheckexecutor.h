@@ -21,7 +21,6 @@
 
 #include <cstdio>
 #include <ctime>
-#include <iosfwd>
 #include <map>
 #include <set>
 #include <string>

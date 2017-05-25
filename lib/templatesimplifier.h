@@ -23,7 +23,6 @@
 //---------------------------------------------------------------------------
 
 #include <ctime>
-#include <iosfwd>
 #include <list>
 #include <set>
 #include <string>

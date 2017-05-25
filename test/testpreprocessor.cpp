@@ -25,7 +25,6 @@
 #include <__functional_base>
 #include <__tree>
 #include <cstring>
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <set>

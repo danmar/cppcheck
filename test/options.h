@@ -17,7 +17,6 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-#include <iosfwd>
 #include <set>
 #include <string>
 

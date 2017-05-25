@@ -21,7 +21,6 @@
 #define checkexceptionsafetyH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 #include <list>
 #include <string>
 

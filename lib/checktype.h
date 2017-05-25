@@ -22,7 +22,6 @@
 #define checktypeH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 
 #include "check.h"
 #include "config.h"

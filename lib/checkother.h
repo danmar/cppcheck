@@ -23,7 +23,6 @@
 //---------------------------------------------------------------------------
 
 #include <stddef.h>
-#include <iosfwd>
 #include <vector>
 
 #include "check.h"

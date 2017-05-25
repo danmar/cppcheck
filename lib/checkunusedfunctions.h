@@ -22,7 +22,6 @@
 #define checkunusedfunctionsH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <set>

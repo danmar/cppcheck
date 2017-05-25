@@ -22,7 +22,6 @@
 #define checknullpointerH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 #include <list>
 
 #include "check.h"

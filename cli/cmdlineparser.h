@@ -19,7 +19,6 @@
 #ifndef CMDLINE_PARSER_H
 #define CMDLINE_PARSER_H
 
-#include <iosfwd>
 #include <string>
 #include <vector>
 

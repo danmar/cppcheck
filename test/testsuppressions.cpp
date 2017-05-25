@@ -19,7 +19,6 @@
 #include <__functional_base>
 #include <__tree>
 #include <cstddef>
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>

@@ -17,7 +17,6 @@
  */
 
 
-#include <iosfwd>
 
 #include "checkstring.h"
 #include "settings.h"

@@ -21,7 +21,6 @@
 #define platformH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 #include <string>
 
 #include "config.h"

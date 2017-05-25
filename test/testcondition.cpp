@@ -18,7 +18,6 @@
 
 #include <simplecpp.h>
 #include <tinyxml2.h>
-#include <iosfwd>
 #include <map>
 #include <vector>
 

@@ -22,7 +22,6 @@
 #define checkuninitvarH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 #include <set>
 
 #include "check.h"

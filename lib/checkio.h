@@ -21,7 +21,6 @@
 #define checkioH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 
 #include "check.h"
 #include "config.h"

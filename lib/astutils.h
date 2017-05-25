@@ -22,7 +22,6 @@
 #define astutilsH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 #include <string>
 #include <vector>
 

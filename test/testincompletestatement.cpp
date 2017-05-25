@@ -17,7 +17,6 @@
  */
 
 #include <simplecpp.h>
-#include <iosfwd>
 #include <map>
 #include <vector>
 

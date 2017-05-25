@@ -17,7 +17,6 @@
  */
 
 #include <__tree>
-#include <iosfwd>
 #include <list>
 #include <set>
 #include <sstream>

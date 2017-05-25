@@ -22,7 +22,6 @@
 #define checkpostfixoperatorH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 
 #include "check.h"
 #include "config.h"

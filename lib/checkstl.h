@@ -22,7 +22,6 @@
 #define checkstlH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 #include <map>
 
 #include "check.h"

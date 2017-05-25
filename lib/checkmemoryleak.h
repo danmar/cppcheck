@@ -32,7 +32,6 @@
  * - CheckMemoryLeakStructMember checks allocation/deallocation of structs and struct members
  */
 
-#include <iosfwd>
 #include <list>
 #include <string>
 

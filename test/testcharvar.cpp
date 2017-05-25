@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iosfwd>
 
 #include "checkother.h"
 #include "platform.h"

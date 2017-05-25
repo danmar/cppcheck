@@ -22,7 +22,6 @@
 #define check64bitH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 
 #include "check.h"
 #include "config.h"

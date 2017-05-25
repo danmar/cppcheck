@@ -21,7 +21,6 @@
 #define checkunusedvarH
 //---------------------------------------------------------------------------
 
-#include <iosfwd>
 #include <map>
 
 #include "check.h"

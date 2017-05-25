@@ -17,7 +17,6 @@
  */
 
 #include <stddef.h>
-#include <iosfwd>
 #include <string>
 
 #include "checkstl.h"
