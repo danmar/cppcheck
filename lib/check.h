@@ -169,7 +169,7 @@ protected:
         ErrorPath errorPath;
         if (!value) {
             errorPath.push_back(ErrorPathItem(errtok,bug));
-        } else if (_settings->verbose || _settings->xml || _settings->outputFormat == "clang" || _settings->outputFormat == "cppcheck2") {
+        } else if (_settings->verbose || _settings->xml || _settings->outputFormat == "daca2") {
             errorPath = value->errorPath;
             errorPath.push_back(ErrorPathItem(errtok,bug));
         } else {

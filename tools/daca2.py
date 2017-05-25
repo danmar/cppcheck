@@ -152,7 +152,7 @@ def scanarchive(filepath, jobs, cpulimit):
         cmd = 'cpulimit --limit=' + cpulimit
     else:
         cmd = 'nice --adjustment=1000'
-    cmd = cmd + ' ../cppcheck-O2 -D__GCC__ --enable=style --inconclusive --error-exitcode=0 --exception-handling=stderr ' + jobs + ' --template=cppcheck2 .'
+    cmd = cmd + ' ../cppcheck-O2 -D__GCC__ --enable=style --inconclusive --error-exitcode=0 --exception-handling=stderr ' + jobs + ' --template=daca2 .'
     cmds = cmd.split()
 
     p = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
