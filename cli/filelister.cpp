@@ -23,7 +23,6 @@
 #include <__functional_base>
 #include <cstddef>
 #include <cstring>
-#include <string>
 
 #include "path.h"
 #include "pathmatch.h"

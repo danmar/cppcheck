@@ -30,9 +30,7 @@
 #include <ostream>
 #include <set>
 #include <stack>
-#include <string>
 #include <type_traits>
-#include <vector>
 
 #include "astutils.h"
 #include "errorlogger.h"

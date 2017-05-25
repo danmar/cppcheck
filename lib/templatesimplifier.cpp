@@ -22,12 +22,8 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <list>
-#include <set>
 #include <stack>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "errorlogger.h"
 #include "mathlib.h"

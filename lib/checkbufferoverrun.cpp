@@ -27,7 +27,6 @@
 #include <__tree>
 #include <algorithm>
 #include <cstdlib>
-#include <list>
 #include <sstream>
 #include <stack>
 #include <utility>

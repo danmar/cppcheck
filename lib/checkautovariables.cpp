@@ -24,8 +24,6 @@
 
 #include <stddef.h>
 #include <list>
-#include <string>
-#include <vector>
 
 #include "errorlogger.h"
 #include "library.h"

@@ -26,7 +26,6 @@
 #include <sstream>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "checknullpointer.h"
 #include "errorlogger.h"

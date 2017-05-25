@@ -28,7 +28,6 @@
 #include <ostream>
 #include <set>
 #include <stack>
-#include <string>
 #include <utility>
 
 #include "astutils.h"

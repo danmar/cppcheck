@@ -28,9 +28,7 @@
 #include <iostream>
 #include <list>
 #include <stack>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "astutils.h"
 #include "checkmemoryleak.h"  // <- CheckMemoryLeak::memoryLeak

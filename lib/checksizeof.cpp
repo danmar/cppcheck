@@ -22,7 +22,6 @@
 
 #include <stddef.h>
 #include <string>
-#include <vector>
 
 #include "errorlogger.h"
 #include "settings.h"

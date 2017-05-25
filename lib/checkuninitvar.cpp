@@ -29,7 +29,6 @@
 #include <stack>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "astutils.h"
 #include "checknullpointer.h"   // CheckNullPointer::isPointerDeref

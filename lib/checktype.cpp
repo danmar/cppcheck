@@ -25,7 +25,6 @@
 #include <ostream>
 #include <stack>
 #include <string>
-#include <vector>
 
 #include "errorlogger.h"
 #include "mathlib.h"

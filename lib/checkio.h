@@ -21,6 +21,8 @@
 #define checkioH
 //---------------------------------------------------------------------------
 
+#include <ostream>
+#include <string>
 
 #include "check.h"
 #include "config.h"

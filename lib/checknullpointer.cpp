@@ -24,8 +24,6 @@
 #include <algorithm>
 #include <cctype>
 #include <set>
-#include <string>
-#include <vector>
 
 #include "errorlogger.h"
 #include "library.h"

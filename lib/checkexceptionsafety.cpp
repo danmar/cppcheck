@@ -22,7 +22,6 @@
 #include <stddef.h>
 #include <set>
 #include <utility>
-#include <vector>
 
 #include "settings.h"
 #include "symboldatabase.h"

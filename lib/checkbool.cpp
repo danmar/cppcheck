@@ -22,8 +22,6 @@
 
 #include <stddef.h>
 #include <list>
-#include <string>
-#include <vector>
 
 #include "astutils.h"
 #include "errorlogger.h"

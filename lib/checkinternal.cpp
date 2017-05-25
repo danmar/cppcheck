@@ -22,7 +22,6 @@
 #include "symboldatabase.h"
 #include "utils.h"
 #include "astutils.h"
-#include <string>
 #include <set>
 #include <cstring>
 

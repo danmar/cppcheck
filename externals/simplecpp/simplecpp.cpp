@@ -21,22 +21,16 @@
 #include <__functional_base>
 #include <__tree>
 #include <algorithm>
-#include <cctype>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <limits>
-#include <list>
-#include <map>
-#include <set>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
-#include <string>
 #include <utility>
-#include <vector>
 
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
 #define NOMINMAX

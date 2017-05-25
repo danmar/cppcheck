@@ -27,8 +27,6 @@
 #include <algorithm>
 #include <cctype>
 #include <sstream>
-#include <string>
-#include <vector>
 
 #include "utils.h"
 #ifndef _WIN32

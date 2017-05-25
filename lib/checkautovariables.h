@@ -22,6 +22,7 @@
 #define checkautovariablesH
 //---------------------------------------------------------------------------
 
+#include <string>
 
 #include "check.h"
 #include "config.h"

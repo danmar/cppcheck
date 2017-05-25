@@ -28,7 +28,6 @@
 #include <sys/fcntl.h>
 #include <__functional_base>
 #include <iostream>
-#include <string>
 #include <utility>
 
 #include "config.h"

@@ -22,6 +22,7 @@
 #define check64bitH
 //---------------------------------------------------------------------------
 
+#include <string>
 
 #include "check.h"
 #include "config.h"

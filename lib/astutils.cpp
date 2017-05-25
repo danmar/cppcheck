@@ -21,7 +21,6 @@
 #include "astutils.h"
 
 #include <list>
-#include <string>
 
 #include "library.h"
 #include "mathlib.h"

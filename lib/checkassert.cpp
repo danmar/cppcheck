@@ -22,8 +22,6 @@
 
 #include "checkassert.h"
 
-#include <string>
-
 #include "errorlogger.h"
 #include "settings.h"
 #include "symboldatabase.h"

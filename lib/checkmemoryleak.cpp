@@ -24,8 +24,6 @@
 #include <algorithm>
 #include <set>
 #include <stack>
-#include <string>
-#include <vector>
 
 #include "astutils.h"
 #include "library.h"

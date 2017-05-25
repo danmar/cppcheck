@@ -28,7 +28,6 @@
 #include <istream>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "errorlogger.h"
 #include "library.h"
