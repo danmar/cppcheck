@@ -87,7 +87,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
     }
 
     std::list<ErrorPathItem> errorPath;
-    if (_settings->xml || _settings->outputFormat == "clang" || _settings->outputFormat == "cppcheck2") {
+    if (_settings->xml || _settings->outputFormat == "daca2") {
         for (std::size_t i = 0; i < index.size(); ++i) {
             const ErrorPath &e = getErrorPath(tok, &index[i], "");
             for (ErrorPath::const_iterator it = e.begin(); it != e.end(); ++it) {
