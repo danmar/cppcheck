@@ -22,8 +22,8 @@
 
 #include <cstddef>
 #include <list>
-#include <type_traits>
 #include <vector>
+#include <utility>
 
 #include "astutils.h"
 #include "errorlogger.h"

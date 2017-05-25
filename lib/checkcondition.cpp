@@ -29,7 +29,7 @@
 #include <ostream>
 #include <set>
 #include <stack>
-#include <type_traits>
+#include <utility>
 
 #include "astutils.h"
 #include "errorlogger.h"
