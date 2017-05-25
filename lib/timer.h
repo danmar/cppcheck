@@ -20,6 +20,7 @@
 #define timerH
 //---------------------------------------------------------------------------
 
+#include <sys/_types/_clock_t.h>
 #include <ctime>
 #include <iosfwd>
 #include <map>

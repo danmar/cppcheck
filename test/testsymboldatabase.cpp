@@ -37,7 +37,6 @@
 #include "tokenlist.h"
 #include "utils.h"
 
-class TestSymbolDatabase;
 struct InternalError;
 
 #define GET_SYMBOL_DB(code) \

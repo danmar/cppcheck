@@ -17,7 +17,7 @@
  */
 
 #include <__functional_base>
-#include <cstring>
+#include <cstddef>
 #include <fstream>
 #include <map>
 #include <string>

@@ -22,7 +22,6 @@
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
 #include <stack>
-#include <sstream>
 #include <string>
 #include <utility>
 

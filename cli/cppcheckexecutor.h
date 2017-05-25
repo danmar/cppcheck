@@ -19,6 +19,7 @@
 #ifndef CPPCHECKEXECUTOR_H
 #define CPPCHECKEXECUTOR_H
 
+#include <sys/_types/_time_t.h>
 #include <cstdio>
 #include <ctime>
 #include <iosfwd>
