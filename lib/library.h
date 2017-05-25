@@ -21,15 +21,22 @@
 #define libraryH
 //---------------------------------------------------------------------------
 
-#include "config.h"
-#include "mathlib.h"
-#include "standards.h"
-#include "errorlogger.h"
-
+#include <stddef.h>
+#include <__functional_base>
+#include <__tree>
+#include <iosfwd>
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
+
+#include "config.h"
+#include "errorlogger.h"
+#include "mathlib.h"
+#include "standards.h"
+
+class Token;
 
 namespace tinyxml2 {
     class XMLDocument;

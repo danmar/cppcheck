@@ -21,13 +21,15 @@
 #define preprocessorH
 //---------------------------------------------------------------------------
 
-#include "config.h"
 #include <simplecpp.h>
-#include <map>
 #include <istream>
-#include <string>
 #include <list>
+#include <map>
 #include <set>
+#include <string>
+#include <vector>
+
+#include "config.h"
 
 class ErrorLogger;
 class Settings;

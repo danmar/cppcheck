@@ -17,20 +17,25 @@
  */
 
 #include "templatesimplifier.h"
-#include "mathlib.h"
-#include "token.h"
-#include "tokenize.h"
-#include "errorlogger.h"
-#include "settings.h"
+
+#include <__tree>
 #include <algorithm>
-#include <sstream>
+#include <cassert>
+#include <cstddef>
+#include <iostream>
 #include <list>
 #include <set>
 #include <stack>
-#include <vector>
 #include <string>
-#include <cassert>
-#include <iostream>
+#include <utility>
+#include <vector>
+
+#include "errorlogger.h"
+#include "mathlib.h"
+#include "settings.h"
+#include "token.h"
+#include "tokenize.h"
+#include "tokenlist.h"
 
 #ifdef GDB_HELPERS
 

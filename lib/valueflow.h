@@ -21,15 +21,18 @@
 #define valueflowH
 //---------------------------------------------------------------------------
 
+#include <iosfwd>
 #include <list>
 #include <string>
+#include <utility>
+
 #include "config.h"
 
-class Token;
-class TokenList;
-class SymbolDatabase;
 class ErrorLogger;
 class Settings;
+class SymbolDatabase;
+class Token;
+class TokenList;
 
 namespace ValueFlow {
     class CPPCHECKLIB Value {

@@ -22,17 +22,19 @@
 #define templatesimplifierH
 //---------------------------------------------------------------------------
 
-#include <set>
-#include <list>
-#include <string>
 #include <ctime>
+#include <iosfwd>
+#include <list>
+#include <set>
+#include <string>
 #include <vector>
+
 #include "config.h"
 
-class Token;
-class TokenList;
 class ErrorLogger;
 class Settings;
+class Token;
+class TokenList;
 
 
 /// @addtogroup Core

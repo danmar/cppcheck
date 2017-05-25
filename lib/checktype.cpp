@@ -19,10 +19,21 @@
 
 //---------------------------------------------------------------------------
 #include "checktype.h"
-#include "mathlib.h"
-#include "symboldatabase.h"
 
+#include <stddef.h>
+#include <list>
+#include <ostream>
 #include <stack>
+#include <string>
+#include <vector>
+
+#include "errorlogger.h"
+#include "mathlib.h"
+#include "platform.h"
+#include "settings.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

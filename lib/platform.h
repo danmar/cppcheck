@@ -21,8 +21,10 @@
 #define platformH
 //---------------------------------------------------------------------------
 
-#include "config.h"
+#include <iosfwd>
 #include <string>
+
+#include "config.h"
 
 /// @addtogroup Core
 /// @{

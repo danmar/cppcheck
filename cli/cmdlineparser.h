@@ -19,8 +19,9 @@
 #ifndef CMDLINE_PARSER_H
 #define CMDLINE_PARSER_H
 
-#include <vector>
+#include <iosfwd>
 #include <string>
+#include <vector>
 
 class Settings;
 

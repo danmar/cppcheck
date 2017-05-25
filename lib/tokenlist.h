@@ -21,12 +21,14 @@
 #define tokenlistH
 //---------------------------------------------------------------------------
 
+#include <iosfwd>
 #include <string>
 #include <vector>
+
 #include "config.h"
 
-class Token;
 class Settings;
+class Token;
 
 namespace simplecpp {
     class TokenList;

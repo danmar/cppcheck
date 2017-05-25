@@ -22,18 +22,26 @@
 
 #include "checkbufferoverrun.h"
 
-#include "tokenize.h"
-#include "mathlib.h"
-#include "symboldatabase.h"
-#include "astutils.h"
-#include "utils.h"
-
-#include <algorithm>
-#include <sstream>
-#include <list>
-#include <cstdlib>
-#include <stack>
 #include <tinyxml2.h>
+#include <__functional_base>
+#include <__tree>
+#include <algorithm>
+#include <cstdlib>
+#include <list>
+#include <sstream>
+#include <stack>
+#include <utility>
+
+#include "astutils.h"
+#include "library.h"
+#include "mathlib.h"
+#include "settings.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+#include "tokenlist.h"
+#include "utils.h"
+#include "valueflow.h"
 
 //---------------------------------------------------------------------------
 

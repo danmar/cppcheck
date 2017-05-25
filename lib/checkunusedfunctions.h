@@ -22,8 +22,18 @@
 #define checkunusedfunctionsH
 //---------------------------------------------------------------------------
 
-#include "config.h"
+#include <iosfwd>
+#include <list>
+#include <map>
+#include <set>
+
 #include "check.h"
+#include "config.h"
+
+class ErrorLogger;
+class Function;
+class Settings;
+class Tokenizer;
 
 namespace tinyxml2 {
     class XMLElement;

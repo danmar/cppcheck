@@ -19,10 +19,16 @@
 
 //---------------------------------------------------------------------------
 #include "astutils.h"
+
+#include <list>
+#include <string>
+
+#include "library.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
-#include "tokenize.h"
+#include "valueflow.h"
 
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
 {

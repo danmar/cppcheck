@@ -32,14 +32,20 @@
  * - CheckMemoryLeakStructMember checks allocation/deallocation of structs and struct members
  */
 
-#include "config.h"
-#include "check.h"
-
+#include <iosfwd>
 #include <list>
 #include <string>
 
-class Scope;
+#include "check.h"
+#include "config.h"
+#include "errorlogger.h"
+#include "tokenize.h"
+
 class Function;
+class Scope;
+class Settings;
+class SymbolDatabase;
+class Token;
 class Variable;
 
 /// @addtogroup Core

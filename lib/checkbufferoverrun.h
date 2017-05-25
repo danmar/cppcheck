@@ -22,13 +22,28 @@
 #define checkbufferoverrunH
 //---------------------------------------------------------------------------
 
-#include "config.h"
-#include "check.h"
-#include "mathlib.h"
-
+#include <stddef.h>
+#include <iosfwd>
 #include <list>
-#include <vector>
+#include <map>
 #include <string>
+#include <vector>
+
+#include "check.h"
+#include "config.h"
+#include "errorlogger.h"
+#include "mathlib.h"
+#include "tokenize.h"
+
+class Settings;
+class SymbolDatabase;
+class Token;
+namespace ValueFlow {
+class Value;
+}  // namespace ValueFlow
+namespace tinyxml2 {
+class XMLElement;
+}  // namespace tinyxml2
 
 // CWE ids used
 static const struct CWE CWE119(119U); // Improper Restriction of Operations within the Bounds of a Memory Buffer

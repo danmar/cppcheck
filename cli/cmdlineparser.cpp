@@ -17,23 +17,28 @@
  */
 
 #include "cmdlineparser.h"
-#include "cppcheck.h"
+
+#include <stdio.h>
+#include <algorithm>
+#include <cstdlib> // EXIT_FAILURE
+#include <cstring>
+#include <iostream>
+#include <list>
+#include <set>
+#include <string>
+
+#include "check.h"
 #include "cppcheckexecutor.h"
 #include "filelister.h"
+#include "importproject.h"
 #include "path.h"
+#include "platform.h"
 #include "settings.h"
-#include "timer.h"
-#include "check.h"
+#include "standards.h"
+#include "suppressions.h"
 #include "threadexecutor.h" // Threading model
+#include "timer.h"
 #include "utils.h"
-
-#include <algorithm>
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <cstdlib> // EXIT_FAILURE
 
 #ifdef HAVE_RULES
 // xml is used for rules

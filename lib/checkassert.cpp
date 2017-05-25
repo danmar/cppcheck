@@ -21,7 +21,15 @@
 //---------------------------------------------------------------------------
 
 #include "checkassert.h"
+
+#include <string>
+
+#include "errorlogger.h"
+#include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+#include "tokenlist.h"
 
 //---------------------------------------------------------------------------
 

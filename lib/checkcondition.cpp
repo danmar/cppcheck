@@ -21,12 +21,26 @@
 //---------------------------------------------------------------------------
 
 #include "checkcondition.h"
-#include "astutils.h"
-#include "checkother.h"
-#include "symboldatabase.h"
 
+#include <stddef.h>
+#include <__tree>
+#include <algorithm>
 #include <limits>
+#include <list>
+#include <ostream>
+#include <set>
 #include <stack>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+#include "astutils.h"
+#include "errorlogger.h"
+#include "settings.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+#include "valueflow.h"
 
 // CWE ids used
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality

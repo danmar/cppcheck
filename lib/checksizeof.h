@@ -22,10 +22,16 @@
 #define checksizeofH
 //---------------------------------------------------------------------------
 
-#include "config.h"
-#include "check.h"
+#include <iosfwd>
 
+#include "check.h"
+#include "config.h"
+
+class ErrorLogger;
 class Function;
+class Settings;
+class Token;
+class Tokenizer;
 class Variable;
 
 /// @addtogroup Checks

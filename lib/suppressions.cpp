@@ -17,12 +17,16 @@
  */
 
 #include "suppressions.h"
-#include "path.h"
 
+#include <__functional_base>
 #include <algorithm>
+#include <cctype>   // std::isdigit, std::isalnum, etc
 #include <sstream>
 #include <stack>
-#include <cctype>   // std::isdigit, std::isalnum, etc
+#include <string>
+#include <utility>
+
+#include "path.h"
 
 std::string Suppressions::parseFile(std::istream &istr)
 {

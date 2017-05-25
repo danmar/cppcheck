@@ -22,9 +22,14 @@
 #define checkboostH
 //---------------------------------------------------------------------------
 
-#include "config.h"
-#include "check.h"
+#include <iosfwd>
 
+#include "check.h"
+#include "config.h"
+#include "tokenize.h"
+
+class ErrorLogger;
+class Settings;
 class Token;
 
 /// @addtogroup Checks

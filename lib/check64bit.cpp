@@ -21,7 +21,16 @@
 //---------------------------------------------------------------------------
 
 #include "check64bit.h"
+
+#include <stddef.h>
+#include <string>
+#include <vector>
+
+#include "errorlogger.h"
+#include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
 
 //---------------------------------------------------------------------------
 

@@ -19,9 +19,12 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
+#include <stddef.h>
+#include <iosfwd>
+#include <list>
 #include <map>
 #include <string>
-#include <list>
+
 #include "errorlogger.h"
 #include "importproject.h"
 

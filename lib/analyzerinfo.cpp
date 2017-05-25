@@ -17,10 +17,16 @@
 */
 
 #include "analyzerinfo.h"
+
+#include <tinyxml2.h>
+#include <__functional_base>
+#include <cstring>
+#include <map>
+#include <sstream>
+#include <string>
+
 #include "path.h"
 #include "utils.h"
-#include <tinyxml2.h>
-#include <sstream>
 
 AnalyzerInformation::~AnalyzerInformation()
 {

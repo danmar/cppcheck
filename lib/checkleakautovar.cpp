@@ -21,14 +21,27 @@
 //---------------------------------------------------------------------------
 
 #include "checkleakautovar.h"
+
+#include <stddef.h>
+#include <__functional_base>
+#include <__tree>
+#include <iostream>
+#include <list>
+#include <stack>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "astutils.h"
 #include "checkmemoryleak.h"  // <- CheckMemoryLeak::memoryLeak
 #include "checknullpointer.h" // <- CheckNullPointer::isPointerDeRef
-#include "tokenize.h"
+#include "errorlogger.h"
+#include "mathlib.h"
+#include "settings.h"
 #include "symboldatabase.h"
-#include "astutils.h"
-
-#include <iostream>
-#include <stack>
+#include "token.h"
+#include "tokenize.h"
+#include "valueflow.h"
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

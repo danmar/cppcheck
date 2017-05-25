@@ -17,10 +17,15 @@
  */
 
 #include "filelister.h"
-#include "path.h"
-#include "pathmatch.h"
+
+#include <sys/_types/_s_ifmt.h>
+#include <sys/dirent.h>
+#include <__functional_base>
 #include <cstring>
 #include <string>
+
+#include "path.h"
+#include "pathmatch.h"
 
 
 #ifdef _WIN32
@@ -163,9 +168,6 @@ bool FileLister::fileExists(const std::string &path)
 #endif
 
 #include <dirent.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <limits.h>
 #include <sys/stat.h>
 
 

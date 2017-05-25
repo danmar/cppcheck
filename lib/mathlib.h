@@ -21,8 +21,9 @@
 #define mathlibH
 //---------------------------------------------------------------------------
 
-#include <string>
 #include <sstream>
+#include <string>
+
 #include "config.h"
 
 /// @addtogroup Core

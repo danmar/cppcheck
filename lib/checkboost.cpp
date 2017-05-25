@@ -17,7 +17,13 @@
  */
 
 #include "checkboost.h"
+
+#include <stddef.h>
+#include <vector>
+
+#include "errorlogger.h"
 #include "symboldatabase.h"
+#include "token.h"
 
 // Register this check class (by creating a static instance of it)
 namespace {

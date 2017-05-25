@@ -21,13 +21,15 @@
 #define errorloggerH
 //---------------------------------------------------------------------------
 
-#include "config.h"
-#include "suppressions.h"
-
+#include <stddef.h>
 #include <fstream>
 #include <list>
 #include <string>
+#include <utility>
 #include <vector>
+
+#include "config.h"
+#include "suppressions.h"
 
 /**
  * CWE id (Common Weakness Enumeration)
@@ -42,6 +44,7 @@ struct CWE {
 
 class Token;
 class TokenList;
+
 namespace tinyxml2 {
     class XMLElement;
 }

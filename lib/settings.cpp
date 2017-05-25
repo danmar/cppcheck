@@ -17,12 +17,10 @@
  */
 
 #include "settings.h"
-#include "preprocessor.h"       // Preprocessor
-#include "utils.h"
-#include "valueflow.h"
 
 #include <fstream>
-#include <set>
+
+#include "valueflow.h"
 
 bool Settings::_terminated;
 

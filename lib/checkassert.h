@@ -22,8 +22,16 @@
 #define checkassertH
 //---------------------------------------------------------------------------
 
-#include "config.h"
+#include <iosfwd>
+
 #include "check.h"
+#include "config.h"
+
+class ErrorLogger;
+class Scope;
+class Settings;
+class Token;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{

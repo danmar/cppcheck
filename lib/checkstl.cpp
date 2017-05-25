@@ -17,10 +17,24 @@
  */
 
 #include "checkstl.h"
-#include "symboldatabase.h"
-#include "checknullpointer.h"
-#include "utils.h"
+
+#include <stddef.h>
+#include <__functional_base>
+#include <__tree>
+#include <list>
+#include <set>
 #include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "checknullpointer.h"
+#include "errorlogger.h"
+#include "settings.h"
+#include "standards.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "utils.h"
 
 // Register this check class (by creating a static instance of it)
 namespace {

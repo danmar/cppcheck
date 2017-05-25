@@ -18,15 +18,26 @@
 
 
 #include "checkmemoryleak.h"
-#include "symboldatabase.h"
-#include "mathlib.h"
-#include "tokenize.h"
-#include "astutils.h"
-#include "utils.h"
 
+#include <stddef.h>
+#include <__tree>
 #include <algorithm>
 #include <set>
 #include <stack>
+#include <string>
+#include <vector>
+
+#include "astutils.h"
+#include "library.h"
+#include "mathlib.h"
+#include "settings.h"
+#include "standards.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+#include "tokenlist.h"
+#include "utils.h"
+#include "valueflow.h"
 
 //---------------------------------------------------------------------------
 

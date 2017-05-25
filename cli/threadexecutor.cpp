@@ -17,31 +17,42 @@
  */
 
 #include "threadexecutor.h"
+
+#include <sys/_select.h>
+#include <sys/_types/_fd_def.h>
+#include <sys/_types/_fd_isset.h>
+#include <sys/_types/_fd_set.h>
+#include <sys/_types/_fd_zero.h>
+#include <sys/_types/_timeval.h>
+#include <sys/errno.h>
+#include <sys/fcntl.h>
+#include <__functional_base>
+#include <iostream>
+#include <string>
+#include <utility>
+
+#include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
-#include <iostream>
+#include "importproject.h"
+#include "settings.h"
+#include "suppressions.h"
 #ifdef __SVR4  // Solaris
 #include <sys/loadavg.h>
 #endif
 #ifdef THREADING_MODEL_FORK
-#include <algorithm>
-#include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <fcntl.h>
+#include <algorithm>
 #include <cstdlib>
-#include <cstdio>
-#include <errno.h>
-#include <time.h>
 #include <cstring>
-#include <sstream>
 #endif
 #ifdef THREADING_MODEL_WIN
+#include <errno.h>
 #include <process.h>
 #include <windows.h>
 #include <algorithm>
 #include <cstring>
-#include <errno.h>
 #endif
 
 // required for FD_ZERO

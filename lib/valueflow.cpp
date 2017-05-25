@@ -17,15 +17,28 @@
  */
 
 #include "valueflow.h"
+
+#include <stddef.h>
+#include <__functional_base>
+#include <__tree>
+#include <algorithm>
+#include <limits>
+#include <map>
+#include <set>
+#include <stack>
+#include <vector>
+
 #include "astutils.h"
 #include "errorlogger.h"
+#include "library.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "settings.h"
+#include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
-#include <stack>
 
 namespace {
     struct ProgramMemory {

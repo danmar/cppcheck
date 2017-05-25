@@ -21,8 +21,17 @@
 #define checkioH
 //---------------------------------------------------------------------------
 
+#include <iosfwd>
+
 #include "check.h"
 #include "config.h"
+#include "errorlogger.h"
+
+class Function;
+class Settings;
+class Token;
+class Tokenizer;
+class Variable;
 
 /// @addtogroup Checks
 /// @{

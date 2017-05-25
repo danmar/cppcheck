@@ -21,21 +21,23 @@
 #define tokenH
 //---------------------------------------------------------------------------
 
+#include <stddef.h>
 #include <list>
+#include <ostream>
 #include <string>
 #include <vector>
-#include <ostream>
-#include "config.h"
-#include "valueflow.h"
-#include "mathlib.h"
 
-class Scope;
-class Type;
-class Function;
-class Variable;
-class ValueType;
-class Settings;
+#include "config.h"
+#include "mathlib.h"
+#include "valueflow.h"
+
 class Enumerator;
+class Function;
+class Scope;
+class Settings;
+class Type;
+class ValueType;
+class Variable;
 
 /// @addtogroup Core
 /// @{

@@ -19,12 +19,26 @@
 //---------------------------------------------------------------------------
 #include "checkio.h"
 
-#include "tokenize.h"
-#include "symboldatabase.h"
-#include "utils.h"
-
+#include <__functional_base>
+#include <__tree>
 #include <cctype>
 #include <cstdlib>
+#include <list>
+#include <map>
+#include <ostream>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "library.h"
+#include "mathlib.h"
+#include "settings.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+#include "utils.h"
+#include "valueflow.h"
 
 //---------------------------------------------------------------------------
 

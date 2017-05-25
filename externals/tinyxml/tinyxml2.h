@@ -41,6 +41,7 @@ distribution.
 #   include <cstring>
 #endif
 #include <stdint.h>
+#include <sys/_types/_int64_t.h>
 
 /*
    TODO: intern strings instead of allocation.
@@ -85,9 +86,11 @@ distribution.
 #       define TIXMLASSERT( x )           if ( !((void)0,(x))) { __debugbreak(); }
 #   elif defined (ANDROID_NDK)
 #       include <android/log.h>
+
 #       define TIXMLASSERT( x )           if ( !(x)) { __android_log_assert( "assert", "grinliz", "ASSERT in '%s' at %d.", __FILE__, __LINE__ ); }
 #   else
 #       include <assert.h>
+
 #       define TIXMLASSERT                assert
 #   endif
 #else
@@ -104,14 +107,14 @@ static const int TIXML2_PATCH_VERSION = 1;
 
 namespace tinyxml2
 {
-class XMLDocument;
-class XMLElement;
 class XMLAttribute;
 class XMLComment;
-class XMLText;
 class XMLDeclaration;
-class XMLUnknown;
+class XMLDocument;
+class XMLElement;
 class XMLPrinter;
+class XMLText;
+class XMLUnknown;
 
 /*
 	A class that wraps strings. Normally stores the start and end

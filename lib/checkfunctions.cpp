@@ -21,9 +21,19 @@
 //---------------------------------------------------------------------------
 
 #include "checkfunctions.h"
-#include "astutils.h"
-#include "symboldatabase.h"
+
+#include <stddef.h>
 #include <cmath>
+#include <ostream>
+#include <vector>
+
+#include "astutils.h"
+#include "mathlib.h"
+#include "standards.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+#include "valueflow.h"
 
 //---------------------------------------------------------------------------
 

@@ -17,13 +17,20 @@
  */
 
 #include "importproject.h"
+
+#include <__functional_base>
+#include <__tree>
+#include <cstring>
+#include <fstream>
+#include <utility>
+
 #include "path.h"
 #include "settings.h"
-#include "tokenize.h"
-#include "token.h"
 #include "tinyxml2.h"
+#include "token.h"
+#include "tokenize.h"
+#include "tokenlist.h"
 #include "utils.h"
-#include <fstream>
 
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {

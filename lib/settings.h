@@ -21,17 +21,20 @@
 #define settingsH
 //---------------------------------------------------------------------------
 
+#include <__tree>
+#include <iosfwd>
 #include <list>
-#include <vector>
-#include <string>
 #include <set>
+#include <string>
+#include <vector>
+
 #include "config.h"
+#include "errorlogger.h"
+#include "importproject.h"
 #include "library.h"
 #include "platform.h"
-#include "importproject.h"
-#include "suppressions.h"
 #include "standards.h"
-#include "errorlogger.h"
+#include "suppressions.h"
 #include "timer.h"
 
 namespace ValueFlow {

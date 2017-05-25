@@ -22,8 +22,15 @@
 #define checkautovariablesH
 //---------------------------------------------------------------------------
 
-#include "config.h"
+#include <iosfwd>
+
 #include "check.h"
+#include "config.h"
+
+class ErrorLogger;
+class Settings;
+class Token;
+class Tokenizer;
 
 /// @addtogroup Checks
 /** @brief Various small checks for automatic variables */

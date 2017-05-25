@@ -21,11 +21,22 @@
 #define checkclassH
 //---------------------------------------------------------------------------
 
-#include "config.h"
-#include "check.h"
+#include <iosfwd>
+#include <list>
+#include <map>
+#include <set>
+#include <vector>
 
-class Scope;
+#include "check.h"
+#include "config.h"
+#include "tokenize.h"
+
+class ErrorLogger;
 class Function;
+class Scope;
+class Settings;
+class SymbolDatabase;
+class Token;
 
 /// @addtogroup Checks
 /// @{

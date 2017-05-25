@@ -19,10 +19,21 @@
 
 //---------------------------------------------------------------------------
 #include "checknullpointer.h"
-#include "mathlib.h"
-#include "symboldatabase.h"
-#include "utils.h"
+
+#include <stddef.h>
+#include <algorithm>
 #include <cctype>
+#include <set>
+#include <string>
+#include <vector>
+
+#include "errorlogger.h"
+#include "library.h"
+#include "settings.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+#include "utils.h"
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

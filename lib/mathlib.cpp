@@ -19,14 +19,16 @@
 
 
 #include "mathlib.h"
-#include "errorlogger.h"
-#include "utils.h"
 
-#include <algorithm> // VS2013: std::min and std::max
-#include <cmath>
+#include <__locale>
 #include <cctype>
+#include <cmath>
 #include <cstdlib>
 #include <limits>
+#include <string>
+
+#include "errorlogger.h"
+#include "utils.h"
 
 
 #if defined(_MSC_VER) && _MSC_VER <= 1700  // VS2012 doesn't have std::isinf and std::isnan

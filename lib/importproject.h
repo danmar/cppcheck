@@ -21,13 +21,15 @@
 #define importprojectH
 //---------------------------------------------------------------------------
 
-#include "config.h"
-#include "platform.h"
+#include <iosfwd>
 #include <list>
 #include <map>
-#include <string>
 #include <set>
+#include <string>
 #include <vector>
+
+#include "config.h"
+#include "platform.h"
 
 /// @addtogroup Core
 /// @{

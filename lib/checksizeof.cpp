@@ -19,9 +19,16 @@
 
 //---------------------------------------------------------------------------
 #include "checksizeof.h"
+
+#include <stddef.h>
+#include <string>
+#include <vector>
+
+#include "errorlogger.h"
+#include "settings.h"
 #include "symboldatabase.h"
-#include <algorithm>
-#include <cctype>
+#include "token.h"
+#include "tokenize.h"
 
 
 //---------------------------------------------------------------------------

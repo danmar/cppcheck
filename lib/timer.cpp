@@ -17,8 +17,13 @@
  */
 
 #include "timer.h"
+
+#include <__functional_base>
 #include <algorithm>
 #include <iostream>
+#include <string>
+#include <type_traits>
+#include <utility>
 #include <vector>
 /*
     TODO:

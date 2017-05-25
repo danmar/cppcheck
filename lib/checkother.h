@@ -22,10 +22,19 @@
 #define checkotherH
 //---------------------------------------------------------------------------
 
-#include "config.h"
-#include "check.h"
+#include <stddef.h>
+#include <iosfwd>
+#include <vector>
 
+#include "check.h"
+#include "config.h"
+#include "valueflow.h"
+
+class ErrorLogger;
 class Function;
+class Settings;
+class Token;
+class Tokenizer;
 class Variable;
 
 /// @addtogroup Checks

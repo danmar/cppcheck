@@ -21,19 +21,21 @@
 #define tokenizeH
 //---------------------------------------------------------------------------
 
-#include "errorlogger.h"
-#include "tokenlist.h"
-#include "config.h"
-
-#include <string>
+#include <ctime>
+#include <iosfwd>
+#include <list>
 #include <map>
 #include <set>
-#include <list>
-#include <ctime>
+#include <string>
+
+#include "config.h"
+#include "errorlogger.h"
+#include "tokenlist.h"
 
 class Settings;
 class SymbolDatabase;
 class TimerResults;
+class Token;
 
 namespace simplecpp {
     class TokenList;

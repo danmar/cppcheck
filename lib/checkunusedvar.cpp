@@ -19,9 +19,23 @@
 
 //---------------------------------------------------------------------------
 #include "checkunusedvar.h"
-#include "symboldatabase.h"
+
+#include <ctype.h>
+#include <stddef.h>
+#include <__tree>
 #include <algorithm>
+#include <list>
+#include <set>
+#include <string>
 #include <utility>
+#include <vector>
+
+#include "errorlogger.h"
+#include "settings.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+#include "valueflow.h"
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
