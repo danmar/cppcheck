@@ -20,7 +20,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QStringList>
-#include <stdlib.h>
+#include <cstdlib>
 #include "common.h"
 #include "applicationlist.h"
 #include "application.h"

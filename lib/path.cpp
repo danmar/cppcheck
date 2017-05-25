@@ -21,11 +21,11 @@
 #endif
 #include "path.h"
 
-#include <stdlib.h>
 #include <strings.h>
 #include <__tree>
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 #include <sstream>
 
 #include "utils.h"
