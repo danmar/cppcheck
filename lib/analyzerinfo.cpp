@@ -22,7 +22,6 @@
 #include <__functional_base>
 #include <cstring>
 #include <map>
-#include <sstream>
 #include <string>
 
 #include "path.h"
