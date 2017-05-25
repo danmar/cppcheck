@@ -16,9 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tokenize.h"
+#include <stddef.h>
+#include <iosfwd>
+#include <string>
+
 #include "checkstl.h"
+#include "settings.h"
+#include "standards.h"
 #include "testsuite.h"
+#include "tokenize.h"
 
 
 class TestStl : public TestFixture {

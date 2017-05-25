@@ -16,7 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iosfwd>
+
 #include "checkio.h"
+#include "platform.h"
+#include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 

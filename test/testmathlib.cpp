@@ -16,8 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iosfwd>
+
 #include "mathlib.h"
 #include "testsuite.h"
+
+struct InternalError;
 
 
 class TestMathLib : public TestFixture {

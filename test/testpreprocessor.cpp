@@ -21,18 +21,23 @@
 // the code for a known configuration, it generates the code for each configuration.
 
 
-#include "testsuite.h"
-#include "preprocessor.h"
-#include "tokenize.h"
-#include "token.h"
-#include "settings.h"
-
 #include <simplecpp.h>
-
+#include <__functional_base>
+#include <__tree>
 #include <cstring>
+#include <iosfwd>
+#include <list>
 #include <map>
-#include <string>
 #include <set>
+#include <string>
+#include <vector>
+
+#include "platform.h"
+#include "preprocessor.h"
+#include "settings.h"
+#include "testsuite.h"
+
+class ErrorLogger;
 
 
 class TestPreprocessor : public TestFixture {

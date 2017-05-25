@@ -16,10 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <simplecpp.h>
+#include <iosfwd>
+#include <map>
+#include <vector>
+
+#include "checkother.h"
+#include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
-#include "checkother.h"
-#include <simplecpp.h>
 
 class TestIncompleteStatement : public TestFixture {
 public:

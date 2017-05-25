@@ -16,9 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "timer.h"
-#include "testsuite.h"
+#include <sys/_types/_clock_t.h>
+#include <time.h>
 #include <cmath>
+
+#include "testsuite.h"
+#include "timer.h"
 
 
 class TestTimer : public TestFixture {

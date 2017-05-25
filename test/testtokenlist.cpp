@@ -16,13 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsuite.h"
-#include "path.h"
-#include "settings.h"
-#include "tokenlist.h"
-#include "token.h"
-#include <cstring>
 #include <sstream>
+
+#include "settings.h"
+#include "testsuite.h"
+#include "token.h"
+#include "tokenlist.h"
 
 
 class TestTokenList : public TestFixture {

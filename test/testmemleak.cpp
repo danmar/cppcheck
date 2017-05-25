@@ -16,12 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <list>
+#include <ostream>
+#include <string>
+#include <vector>
+
+#include "checkmemoryleak.h"
+#include "preprocessor.h"
+#include "settings.h"
+#include "simplecpp.h"
+#include "standards.h"
+#include "symboldatabase.h"
+#include "testsuite.h"
+#include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
-#include "checkmemoryleak.h"
-#include "testsuite.h"
-#include "symboldatabase.h"
-#include "preprocessor.h"
+
+struct InternalError;
 
 
 class TestMemleak : private TestFixture {

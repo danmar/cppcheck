@@ -16,11 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsuite.h"
-#include "tokenize.h"
-#include "token.h"
+#include <iosfwd>
+
+#include "config.h"
+#include "platform.h"
 #include "settings.h"
 #include "templatesimplifier.h"
+#include "testsuite.h"
+#include "token.h"
+#include "tokenize.h"
+
+struct InternalError;
 
 
 class TestSimplifyTemplate : public TestFixture {

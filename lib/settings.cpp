@@ -18,8 +18,6 @@
 
 #include "settings.h"
 
-#include <fstream>
-
 #include "valueflow.h"
 
 bool Settings::_terminated;

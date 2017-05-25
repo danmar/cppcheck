@@ -17,9 +17,14 @@
  */
 
 
-#include "tokenize.h"
-#include "testsuite.h"
+#include <ostream>
+#include <string>
+
 #include "checkunusedfunctions.h"
+#include "platform.h"
+#include "settings.h"
+#include "testsuite.h"
+#include "tokenize.h"
 
 
 class TestUnusedFunctions : public TestFixture {

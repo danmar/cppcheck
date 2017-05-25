@@ -17,13 +17,17 @@
  */
 
 
-#include "cppcheck.h"
+#include <__functional_base>
+#include <__tree>
+#include <cstring>
+#include <map>
+#include <ostream>
+#include <string>
+#include <utility>
+
+#include "settings.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
-#include "cppcheckexecutor.h"
-
-#include <map>
-#include <string>
 
 
 class TestThreadExecutor : public TestFixture {

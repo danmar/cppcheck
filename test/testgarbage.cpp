@@ -16,11 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsuite.h"
-#include "tokenize.h"
-#include "token.h"
-#include "settings.h"
+#include <iosfwd>
+#include <list>
+
 #include "check.h"
+#include "errorlogger.h"
+#include "settings.h"
+#include "testsuite.h"
+#include "token.h"
+#include "tokenize.h"
 
 
 class TestGarbage : public TestFixture {

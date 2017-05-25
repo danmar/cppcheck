@@ -17,10 +17,16 @@
  */
 
 
-#include "tokenize.h"
-#include "checkclass.h"
-#include "testsuite.h"
 #include <simplecpp.h>
+#include <iosfwd>
+#include <map>
+#include <vector>
+
+#include "checkclass.h"
+#include "platform.h"
+#include "settings.h"
+#include "testsuite.h"
+#include "tokenize.h"
 
 class TestUnusedPrivateFunction : public TestFixture {
 public:

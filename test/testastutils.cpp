@@ -16,11 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iosfwd>
+
 #include "astutils.h"
-#include "token.h"
 #include "settings.h"
-#include "tokenize.h"
 #include "testsuite.h"
+#include "token.h"
+#include "tokenize.h"
+#include "tokenlist.h"
 
 
 class TestAstUtils : public TestFixture {

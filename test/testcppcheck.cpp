@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cppcheck.h"
-#include "cppcheckexecutor.h"
-#include "testsuite.h"
-#include "path.h"
-#include "check.h"
-
 #include <algorithm>
+#include <iosfwd>
 #include <list>
 #include <string>
+
+#include "check.h"
+#include "cppcheck.h"
+#include "errorlogger.h"
+#include "testsuite.h"
 
 
 class TestCppcheck : public TestFixture {

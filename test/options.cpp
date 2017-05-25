@@ -16,6 +16,8 @@
 
 #include "options.h"
 
+#include <iterator>
+
 options::options(int argc, const char* argv[])
     :_options(argv + 1, argv + argc)
     ,_which_test("")

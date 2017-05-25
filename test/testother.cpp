@@ -16,14 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "preprocessor.h"
-#include "tokenize.h"
-#include "symboldatabase.h"
-#include "checkother.h"
-#include "testsuite.h"
-#include "testutils.h"
-#include <tinyxml2.h>
 #include <simplecpp.h>
+#include <tinyxml2.h>
+#include <__functional_base>
+#include <iosfwd>
+#include <map>
+#include <string>
+#include <vector>
+
+#include "checkother.h"
+#include "library.h"
+#include "platform.h"
+#include "settings.h"
+#include "standards.h"
+#include "testsuite.h"
+#include "tokenize.h"
 
 class TestOther : public TestFixture {
 public:

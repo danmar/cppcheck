@@ -16,12 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tokenize.h"
-#include "checkbufferoverrun.h"
-#include "testsuite.h"
-
 #include <tinyxml2.h>
 #include <climits>
+#include <list>
+#include <ostream>
+#include <string>
+
+#include "checkbufferoverrun.h"
+#include "library.h"
+#include "settings.h"
+#include "testsuite.h"
+#include "token.h"
+#include "tokenize.h"
 
 
 class TestBufferOverrun : public TestFixture {

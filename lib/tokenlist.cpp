@@ -24,7 +24,6 @@
 #include <cctype>
 #include <cstring>
 #include <set>
-#include <sstream>
 #include <stack>
 #include <string>
 

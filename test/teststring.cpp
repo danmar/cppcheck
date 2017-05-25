@@ -17,10 +17,12 @@
  */
 
 
-#include "tokenize.h"
+#include <iosfwd>
+
 #include "checkstring.h"
+#include "settings.h"
 #include "testsuite.h"
-#include "testutils.h"
+#include "tokenize.h"
 
 
 class TestString : public TestFixture {

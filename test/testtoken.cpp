@@ -16,13 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iosfwd>
+#include <string>
+#include <vector>
+
+#include "settings.h"
 #include "testsuite.h"
 #include "testutils.h"
 #include "token.h"
-#include "settings.h"
+#include "tokenize.h"
+#include "tokenlist.h"
 
-#include <vector>
-#include <string>
+struct InternalError;
 
 
 class TestToken : public TestFixture {

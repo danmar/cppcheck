@@ -21,7 +21,6 @@
 #include <__functional_base>
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
-#include <sstream>
 #include <stack>
 #include <string>
 #include <utility>
