@@ -25,11 +25,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <list>
 #include <map>
 #include <set>
+#include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <string>

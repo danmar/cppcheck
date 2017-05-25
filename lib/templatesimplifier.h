@@ -22,7 +22,6 @@
 #define templatesimplifierH
 //---------------------------------------------------------------------------
 
-#include <sys/_types/_time_t.h>
 #include <ctime>
 #include <iosfwd>
 #include <list>
