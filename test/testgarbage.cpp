@@ -219,6 +219,7 @@ private:
         TEST_CASE(templateSimplifierCrashes);
         TEST_CASE(syntaxErrorFirstToken); // Make sure syntax errors are detected and reported
         TEST_CASE(syntaxErrorLastToken); // Make sure syntax errors are detected and reported
+        TEST_CASE(enumTrailingComma);
     }
 
     std::string checkCode(const char code[], bool cpp = true) {
@@ -1465,6 +1466,10 @@ private:
         ASSERT_THROW(checkCode("{} const const\n"), InternalError); // #2637
 
         // ASSERT_THROW(  , InternalError)
+    }
+
+    void enumTrailingComma() {
+        ASSERT_THROW(checkCode("enum ssl_shutdown_t {ssl_shutdown_none = 0,ssl_shutdown_close_notify = , } ;"), InternalError); // #8079
     }
 };
 

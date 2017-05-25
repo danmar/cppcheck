@@ -1341,6 +1341,8 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
             // look for initialization tokens that can be converted to enumerators and convert them
             if (enumerator.start) {
+                if (!enumerator.end)
+                    _tokenizer->syntaxError(enumerator.start);
                 for (const Token * tok3 = enumerator.start; tok3 && tok3 != enumerator.end->next(); tok3 = tok3->next()) {
                     if (tok3->tokType() == Token::eName) {
                         const Enumerator * e = findEnumerator(tok3);
@@ -1350,19 +1352,17 @@ void SymbolDatabase::createSymbolDatabaseEnums()
                 }
 
                 // look for possible constant folding expressions
-                if (enumerator.start) {
-                    // rhs of operator:
-                    const Token *rhs = enumerator.start->previous()->astOperand2();
+                // rhs of operator:
+                const Token *rhs = enumerator.start->previous()->astOperand2();
 
-                    // constant folding of expression:
-                    ValueFlow::valueFlowConstantFoldAST(rhs, _settings);
+                // constant folding of expression:
+                ValueFlow::valueFlowConstantFoldAST(rhs, _settings);
 
-                    // get constant folded value:
-                    if (rhs && rhs->values().size() == 1U && rhs->values().front().isKnown()) {
-                        enumerator.value = rhs->values().front().intvalue;
-                        enumerator.value_known = true;
-                        value = enumerator.value + 1;
-                    }
+                // get constant folded value:
+                if (rhs && rhs->values().size() == 1U && rhs->values().front().isKnown()) {
+                    enumerator.value = rhs->values().front().intvalue;
+                    enumerator.value_known = true;
+                    value = enumerator.value + 1;
                 }
             }
 
