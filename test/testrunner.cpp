@@ -17,6 +17,7 @@
  */
 
 #include <cstdlib>
+#include <iostream>
 
 #include "options.h"
 #include "preprocessor.h"

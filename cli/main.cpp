@@ -102,6 +102,8 @@ void CheckOther::checkZeroDivision()
 
 #include "cppcheckexecutor.h"
 
+#include <iostream>
+
 #ifdef _WIN32
 #include <windows.h>
 
