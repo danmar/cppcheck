@@ -19,7 +19,6 @@
 //---------------------------------------------------------------------------
 #include "symboldatabase.h"
 
-#include <algorithm>
 #include <climits>
 #include <iomanip>
 #include <iostream>

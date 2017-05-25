@@ -24,7 +24,6 @@
 #include <ctime>
 #include <list>
 #include <map>
-#include <set>
 #include <string>
 
 #include "config.h"
