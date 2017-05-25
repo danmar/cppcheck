@@ -27,7 +27,6 @@
 #include <map>
 #include <set>
 #include <stack>
-#include <string>
 #include <type_traits>
 
 #include "errorlogger.h"

@@ -23,7 +23,6 @@
 #include <climits>
 #include <iomanip>
 #include <iostream>
-#include <string>
 
 #include "errorlogger.h"
 #include "platform.h"

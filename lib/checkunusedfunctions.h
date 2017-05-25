@@ -25,6 +25,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <string>
 
 #include "check.h"
 #include "config.h"

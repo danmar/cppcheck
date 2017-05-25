@@ -20,7 +20,6 @@
 
 #include <stddef.h>
 #include <list>
-#include <string>
 
 #include "errorlogger.h"
 #include "settings.h"

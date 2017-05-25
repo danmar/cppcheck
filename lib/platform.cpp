@@ -20,7 +20,6 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <string>
 
 #include "tinyxml2.h"
 

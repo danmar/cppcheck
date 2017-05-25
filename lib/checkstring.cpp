@@ -22,7 +22,6 @@
 
 #include <stddef.h>
 #include <list>
-#include <string>
 #include <type_traits>
 #include <vector>
 

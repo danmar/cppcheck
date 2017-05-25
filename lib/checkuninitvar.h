@@ -23,6 +23,7 @@
 //---------------------------------------------------------------------------
 
 #include <set>
+#include <string>
 
 #include "check.h"
 #include "config.h"

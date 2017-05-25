@@ -22,7 +22,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <list>
-#include <string>
 
 #include "astutils.h"
 #include "mathlib.h"

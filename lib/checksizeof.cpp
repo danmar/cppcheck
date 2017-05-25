@@ -21,7 +21,6 @@
 #include "checksizeof.h"
 
 #include <stddef.h>
-#include <string>
 
 #include "errorlogger.h"
 #include "settings.h"

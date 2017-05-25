@@ -25,7 +25,6 @@
 #include <cstring>
 #include <set>
 #include <stack>
-#include <string>
 
 #include "errorlogger.h"
 #include "mathlib.h"

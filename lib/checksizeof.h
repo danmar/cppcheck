@@ -22,6 +22,7 @@
 #define checksizeofH
 //---------------------------------------------------------------------------
 
+#include <string>
 
 #include "check.h"
 #include "config.h"

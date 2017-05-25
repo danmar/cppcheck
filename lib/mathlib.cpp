@@ -25,7 +25,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <limits>
-#include <string>
 
 #include "errorlogger.h"
 #include "utils.h"

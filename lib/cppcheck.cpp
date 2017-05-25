@@ -25,7 +25,6 @@
 #include <new>
 #include <set>
 #include <stdexcept>
-#include <string>
 #include <vector>
 
 #include "check.h"

@@ -26,7 +26,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <istream>
-#include <string>
 #include <utility>
 
 #include "errorlogger.h"

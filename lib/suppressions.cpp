@@ -23,7 +23,6 @@
 #include <cctype>   // std::isdigit, std::isalnum, etc
 #include <stack>
 #include <sstream>
-#include <string>
 #include <utility>
 
 #include "path.h"

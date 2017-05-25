@@ -25,7 +25,6 @@
 #include <algorithm>
 #include <cstring>
 #include <set>
-#include <string>
 #include <utility>
 
 #include "errorlogger.h"

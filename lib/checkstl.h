@@ -22,6 +22,8 @@
 #define checkstlH
 //---------------------------------------------------------------------------
 
+#include <string>
+
 #include <map>
 
 #include "check.h"
