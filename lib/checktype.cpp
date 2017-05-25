@@ -20,7 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checktype.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <list>
 #include <ostream>
 #include <stack>

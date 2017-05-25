@@ -21,10 +21,10 @@
 #define symboldatabaseH
 //---------------------------------------------------------------------------
 
-#include <stddef.h>
 #include <__functional_base>
 #include <__tree>
 #include <algorithm>
+#include <cstddef>
 #include <list>
 #include <map>
 #include <set>

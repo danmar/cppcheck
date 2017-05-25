@@ -18,7 +18,7 @@
 
 #include "checkvaarg.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <list>
 
 #include "errorlogger.h"

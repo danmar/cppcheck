@@ -20,7 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checkstring.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <list>
 #include <type_traits>
 #include <vector>

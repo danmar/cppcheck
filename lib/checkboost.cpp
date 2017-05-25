@@ -18,7 +18,7 @@
 
 #include "checkboost.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 #include "errorlogger.h"
 #include "symboldatabase.h"

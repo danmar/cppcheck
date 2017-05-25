@@ -21,7 +21,7 @@
 #define errorloggerH
 //---------------------------------------------------------------------------
 
-#include <stddef.h>
+#include <cstddef>
 #include <fstream>
 #include <list>
 #include <string>

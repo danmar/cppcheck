@@ -20,7 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checkbool.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <list>
 
 #include "astutils.h"

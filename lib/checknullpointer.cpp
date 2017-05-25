@@ -20,9 +20,9 @@
 //---------------------------------------------------------------------------
 #include "checknullpointer.h"
 
-#include <stddef.h>
 #include <algorithm>
 #include <cctype>
+#include <cstddef>
 #include <set>
 
 #include "errorlogger.h"

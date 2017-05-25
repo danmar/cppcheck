@@ -18,8 +18,8 @@
 
 #include "pathmatch.h"
 
+#include <cstddef>
 #include <ctype.h>
-#include <stddef.h>
 #include <algorithm>
 
 #include "path.h"

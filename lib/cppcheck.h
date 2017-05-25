@@ -21,7 +21,7 @@
 #define cppcheckH
 //---------------------------------------------------------------------------
 
-#include <stddef.h>
+#include <cstddef>
 #include <istream>
 #include <list>
 #include <map>

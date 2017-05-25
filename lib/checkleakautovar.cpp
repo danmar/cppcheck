@@ -22,9 +22,9 @@
 
 #include "checkleakautovar.h"
 
-#include <stddef.h>
 #include <__functional_base>
 #include <__tree>
+#include <cstddef>
 #include <iostream>
 #include <list>
 #include <stack>

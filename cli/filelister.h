@@ -19,7 +19,7 @@
 #ifndef filelisterH
 #define filelisterH
 
-#include <stddef.h>
+#include <cstddef>
 #include <map>
 #include <set>
 #include <string>

@@ -19,7 +19,7 @@
 //---------------------------------------------------------------------------
 #include "checkexceptionsafety.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <set>
 #include <utility>
 

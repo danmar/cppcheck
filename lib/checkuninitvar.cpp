@@ -20,10 +20,10 @@
 //---------------------------------------------------------------------------
 #include "checkuninitvar.h"
 
-#include <stddef.h>
 #include <__functional_base>
 #include <__tree>
 #include <cassert>
+#include <cstddef>
 #include <list>
 #include <map>
 #include <stack>

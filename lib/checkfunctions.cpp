@@ -22,8 +22,8 @@
 
 #include "checkfunctions.h"
 
-#include <stddef.h>
 #include <cmath>
+#include <cstddef>
 #include <ostream>
 #include <vector>
 

@@ -21,7 +21,7 @@
 #define tokenH
 //---------------------------------------------------------------------------
 
-#include <stddef.h>
+#include <cstddef>
 #include <list>
 #include <ostream>
 #include <string>

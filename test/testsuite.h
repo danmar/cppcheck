@@ -20,7 +20,7 @@
 #ifndef testsuiteH
 #define testsuiteH
 
-#include <stddef.h>
+#include <cstddef>
 #include <set>
 #include <sstream>
 

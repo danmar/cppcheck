@@ -22,9 +22,9 @@
 
 #include "checkcondition.h"
 
-#include <stddef.h>
 #include <__tree>
 #include <algorithm>
+#include <cstddef>
 #include <limits>
 #include <list>
 #include <ostream>

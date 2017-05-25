@@ -22,7 +22,7 @@
 
 #include "check64bit.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 #include "errorlogger.h"
 #include "settings.h"

@@ -18,9 +18,9 @@
 
 #include "checkstl.h"
 
-#include <stddef.h>
 #include <__functional_base>
 #include <__tree>
+#include <cstddef>
 #include <list>
 #include <set>
 #include <sstream>

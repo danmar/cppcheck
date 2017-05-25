@@ -22,7 +22,7 @@
 
 #include "checkautovariables.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <list>
 
 #include "errorlogger.h"

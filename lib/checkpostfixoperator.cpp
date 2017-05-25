@@ -23,7 +23,7 @@
 
 #include "checkpostfixoperator.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 #include "errorlogger.h"
 #include "settings.h"

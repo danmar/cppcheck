@@ -18,10 +18,10 @@
 
 #include "valueflow.h"
 
-#include <stddef.h>
 #include <__functional_base>
 #include <__tree>
 #include <algorithm>
+#include <cstddef>
 #include <limits>
 #include <map>
 #include <set>

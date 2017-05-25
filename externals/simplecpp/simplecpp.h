@@ -19,8 +19,8 @@
 #ifndef simplecppH
 #define simplecppH
 
-#include <stddef.h>
 #include <cctype>
+#include <cstddef>
 #include <istream>
 #include <list>
 #include <map>

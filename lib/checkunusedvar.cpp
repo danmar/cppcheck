@@ -21,9 +21,9 @@
 #include "checkunusedvar.h"
 
 #include <ctype.h>
-#include <stddef.h>
 #include <__tree>
 #include <algorithm>
+#include <cstddef>
 #include <list>
 #include <set>
 #include <utility>

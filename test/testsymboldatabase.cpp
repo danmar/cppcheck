@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stddef.h>
 #include <__functional_base>
+#include <cstddef>
 #include <list>
 #include <map>
 #include <set>

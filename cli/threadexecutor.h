@@ -19,7 +19,7 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
-#include <stddef.h>
+#include <cstddef>
 #include <list>
 #include <map>
 #include <string>
