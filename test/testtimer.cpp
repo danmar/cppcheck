@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sys/_types/_clock_t.h>
 #include <time.h>
 #include <cmath>
 
