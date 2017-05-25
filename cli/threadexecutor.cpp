@@ -18,14 +18,9 @@
 
 #include "threadexecutor.h"
 
-#include <sys/_select.h>
-#include <sys/_types/_fd_def.h>
-#include <sys/_types/_fd_isset.h>
-#include <sys/_types/_fd_set.h>
-#include <sys/_types/_fd_zero.h>
-#include <sys/_types/_timeval.h>
-#include <sys/errno.h>
-#include <sys/fcntl.h>
+#include <algorithm>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <utility>
 
@@ -39,18 +34,16 @@
 #include <sys/loadavg.h>
 #endif
 #ifdef THREADING_MODEL_FORK
+#include <sys/select.h>
 #include <sys/wait.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
-#include <algorithm>
-#include <cstdlib>
-#include <cstring>
 #endif
 #ifdef THREADING_MODEL_WIN
 #include <errno.h>
 #include <process.h>
 #include <windows.h>
-#include <algorithm>
-#include <cstring>
 #endif
 
 // required for FD_ZERO

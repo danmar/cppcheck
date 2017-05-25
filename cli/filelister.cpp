@@ -18,8 +18,6 @@
 
 #include "filelister.h"
 
-#include <sys/_types/_s_ifmt.h>
-#include <sys/dirent.h>
 #include <cstddef>
 #include <cstring>
 

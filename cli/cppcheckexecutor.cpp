@@ -18,8 +18,6 @@
 
 #include "cppcheckexecutor.h"
 
-#include <sys/_types/_sigaltstack.h>
-#include <sys/signal.h>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
 #include <iostream>
