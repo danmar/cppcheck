@@ -22,8 +22,6 @@
 
 #include "checkleakautovar.h"
 
-#include <__functional_base>
-#include <__tree>
 #include <cstddef>
 #include <iostream>
 #include <list>

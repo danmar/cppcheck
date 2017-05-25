@@ -21,8 +21,6 @@
 #include "checkunusedfunctions.h"
 
 #include <tinyxml2.h>
-#include <__functional_base>
-#include <__tree>
 #include <cstdlib>
 #include <cstring>
 #include <istream>

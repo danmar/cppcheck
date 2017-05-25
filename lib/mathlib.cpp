@@ -20,11 +20,11 @@
 
 #include "mathlib.h"
 
-#include <__locale>
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
 #include <limits>
+#include <locale>
 
 #include "errorlogger.h"
 #include "utils.h"

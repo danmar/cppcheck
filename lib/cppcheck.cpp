@@ -19,7 +19,6 @@
 
 #include <simplecpp.h>
 #include <tinyxml2.h>
-#include <__tree>
 #include <algorithm>
 #include <cstring>
 #include <new>

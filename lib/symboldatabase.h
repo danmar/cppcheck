@@ -21,8 +21,6 @@
 #define symboldatabaseH
 //---------------------------------------------------------------------------
 
-#include <__functional_base>
-#include <__tree>
 #include <algorithm>
 #include <cstddef>
 #include <list>

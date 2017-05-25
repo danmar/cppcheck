@@ -21,8 +21,6 @@
 #define libraryH
 //---------------------------------------------------------------------------
 
-#include <__functional_base>
-#include <__tree>
 #include <cstddef>
 #include <map>
 #include <set>

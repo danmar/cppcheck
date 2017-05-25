@@ -19,8 +19,6 @@
 //---------------------------------------------------------------------------
 #include "tokenize.h"
 
-#include <__functional_base>
-#include <__tree>
 #include <algorithm>
 #include <cassert>
 #include <cctype>

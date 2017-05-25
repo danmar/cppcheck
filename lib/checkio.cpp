@@ -19,8 +19,6 @@
 //---------------------------------------------------------------------------
 #include "checkio.h"
 
-#include <__functional_base>
-#include <__tree>
 #include <cctype>
 #include <cstdlib>
 #include <list>

@@ -20,7 +20,6 @@
 
 #include <sys/_types/_s_ifmt.h>
 #include <sys/dirent.h>
-#include <__functional_base>
 #include <cstddef>
 #include <cstring>
 

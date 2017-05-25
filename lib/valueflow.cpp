@@ -18,8 +18,6 @@
 
 #include "valueflow.h"
 
-#include <__functional_base>
-#include <__tree>
 #include <algorithm>
 #include <cstddef>
 #include <limits>

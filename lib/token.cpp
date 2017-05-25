@@ -18,8 +18,6 @@
 
 #include "token.h"
 
-#include <__functional_base>
-#include <__tree>
 #include <cassert>
 #include <cctype>
 #include <cstring>

@@ -20,8 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checkuninitvar.h"
 
-#include <__functional_base>
-#include <__tree>
 #include <cassert>
 #include <cstddef>
 #include <list>

@@ -20,7 +20,6 @@
 #include "tokenlist.h"
 
 #include <simplecpp.h>
-#include <__tree>
 #include <cctype>
 #include <cstring>
 #include <set>

@@ -17,8 +17,6 @@
  */
 
 #include <tinyxml2.h>
-#include <__functional_base>
-#include <__tree>
 #include <map>
 #include <set>
 #include <string>

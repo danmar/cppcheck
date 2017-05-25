@@ -26,7 +26,6 @@
 #include <sys/_types/_timeval.h>
 #include <sys/errno.h>
 #include <sys/fcntl.h>
-#include <__functional_base>
 #include <iostream>
 #include <utility>
 

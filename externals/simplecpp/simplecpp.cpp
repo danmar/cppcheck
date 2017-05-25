@@ -18,8 +18,6 @@
 
 #include "simplecpp.h"
 
-#include <__functional_base>
-#include <__tree>
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>

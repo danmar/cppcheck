@@ -22,8 +22,6 @@
 
 
 #include <simplecpp.h>
-#include <__functional_base>
-#include <__tree>
 #include <cstring>
 #include <list>
 #include <map>

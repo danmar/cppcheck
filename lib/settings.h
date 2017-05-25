@@ -21,7 +21,6 @@
 #define settingsH
 //---------------------------------------------------------------------------
 
-#include <__tree>
 #include <list>
 #include <set>
 #include <string>

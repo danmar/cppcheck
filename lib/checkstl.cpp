@@ -18,8 +18,6 @@
 
 #include "checkstl.h"
 
-#include <__functional_base>
-#include <__tree>
 #include <cstddef>
 #include <list>
 #include <set>

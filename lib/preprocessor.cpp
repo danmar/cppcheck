@@ -20,8 +20,6 @@
 #include "preprocessor.h"
 
 #include <_types/_uint32_t.h>
-#include <__functional_base>
-#include <__tree>
 #include <algorithm>
 #include <cstring>
 #include <utility>

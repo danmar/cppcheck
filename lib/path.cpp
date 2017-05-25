@@ -21,7 +21,6 @@
 #endif
 #include "path.h"
 
-#include <__tree>
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>

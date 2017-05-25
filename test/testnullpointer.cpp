@@ -18,7 +18,6 @@
 
 #include <simplecpp.h>
 #include <tinyxml2.h>
-#include <__functional_base>
 #include <list>
 #include <map>
 #include <string>

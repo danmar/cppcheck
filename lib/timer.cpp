@@ -18,7 +18,6 @@
 
 #include "timer.h"
 
-#include <__functional_base>
 #include <algorithm>
 #include <iostream>
 #include <type_traits>

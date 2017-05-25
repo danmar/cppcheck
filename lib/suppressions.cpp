@@ -18,7 +18,6 @@
 
 #include "suppressions.h"
 
-#include <__functional_base>
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
 #include <stack>

@@ -18,7 +18,6 @@
 
 #include "templatesimplifier.h"
 
-#include <__tree>
 #include <algorithm>
 #include <cassert>
 #include <iostream>

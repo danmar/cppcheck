@@ -23,8 +23,6 @@
 #include "checkbufferoverrun.h"
 
 #include <tinyxml2.h>
-#include <__functional_base>
-#include <__tree>
 #include <algorithm>
 #include <cstdlib>
 #include <sstream>
