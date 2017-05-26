@@ -19,11 +19,6 @@
 
 #include "checkmemoryleak.h"
 
-#include <algorithm>
-#include <cstddef>
-#include <set>
-#include <stack>
-
 #include "astutils.h"
 #include "library.h"
 #include "mathlib.h"
@@ -35,6 +30,11 @@
 #include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
+
+#include <algorithm>
+#include <cstddef>
+#include <set>
+#include <stack>
 
 //---------------------------------------------------------------------------
 

@@ -19,10 +19,10 @@
 #ifndef PATHMATCH_H
 #define PATHMATCH_H
 
+#include "config.h"
+
 #include <string>
 #include <vector>
-
-#include "config.h"
 
 /// @addtogroup CLI
 /// @{

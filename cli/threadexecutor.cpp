@@ -18,18 +18,19 @@
 
 #include "threadexecutor.h"
 
-#include <algorithm>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <utility>
-
 #include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include "importproject.h"
 #include "settings.h"
 #include "suppressions.h"
+
+#include <algorithm>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <utility>
+
 #ifdef __SVR4  // Solaris
 #include <sys/loadavg.h>
 #endif

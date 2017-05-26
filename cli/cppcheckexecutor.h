@@ -19,13 +19,13 @@
 #ifndef CPPCHECKEXECUTOR_H
 #define CPPCHECKEXECUTOR_H
 
+#include "errorlogger.h"
+
 #include <cstdio>
 #include <ctime>
 #include <map>
 #include <set>
 #include <string>
-
-#include "errorlogger.h"
 
 class CppCheck;
 class Library;

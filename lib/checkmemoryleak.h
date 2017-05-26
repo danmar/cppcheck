@@ -32,13 +32,13 @@
  * - CheckMemoryLeakStructMember checks allocation/deallocation of structs and struct members
  */
 
-#include <list>
-#include <string>
-
 #include "check.h"
 #include "config.h"
 #include "errorlogger.h"
 #include "tokenize.h"
+
+#include <list>
+#include <string>
 
 class Function;
 class Scope;

@@ -22,17 +22,17 @@
 #define checkbufferoverrunH
 //---------------------------------------------------------------------------
 
-#include <cstddef>
-#include <list>
-#include <map>
-#include <string>
-#include <vector>
-
 #include "check.h"
 #include "config.h"
 #include "errorlogger.h"
 #include "mathlib.h"
 #include "tokenize.h"
+
+#include <cstddef>
+#include <list>
+#include <map>
+#include <string>
+#include <vector>
 
 class Settings;
 class SymbolDatabase;

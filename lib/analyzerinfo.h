@@ -21,14 +21,13 @@
 #define analyzerinfoH
 //---------------------------------------------------------------------------
 
-#include <fstream>
-#include <list>
-#include <string>
-
 #include "config.h"
 #include "errorlogger.h"
 #include "importproject.h"
 
+#include <fstream>
+#include <list>
+#include <string>
 
 /// @addtogroup Core
 /// @{

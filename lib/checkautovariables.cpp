@@ -22,9 +22,6 @@
 
 #include "checkautovariables.h"
 
-#include <cstddef>
-#include <list>
-
 #include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
@@ -32,6 +29,9 @@
 #include "token.h"
 #include "tokenize.h"
 #include "valueflow.h"
+
+#include <cstddef>
+#include <list>
 
 //---------------------------------------------------------------------------
 

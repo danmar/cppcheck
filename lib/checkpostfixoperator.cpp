@@ -23,12 +23,12 @@
 
 #include "checkpostfixoperator.h"
 
-#include <cstddef>
-
 #include "errorlogger.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
+
+#include <cstddef>
 
 //---------------------------------------------------------------------------
 

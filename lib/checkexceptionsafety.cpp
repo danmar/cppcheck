@@ -19,12 +19,12 @@
 //---------------------------------------------------------------------------
 #include "checkexceptionsafety.h"
 
+#include "settings.h"
+#include "symboldatabase.h"
+
 #include <cstddef>
 #include <set>
 #include <utility>
-
-#include "settings.h"
-#include "symboldatabase.h"
 
 //---------------------------------------------------------------------------
 

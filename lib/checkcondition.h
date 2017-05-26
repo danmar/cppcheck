@@ -22,11 +22,11 @@
 #define checkconditionH
 //---------------------------------------------------------------------------
 
-#include <string>
-
 #include "check.h"
 #include "config.h"
 #include "mathlib.h"
+
+#include <string>
 
 class ErrorLogger;
 class Settings;

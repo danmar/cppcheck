@@ -22,13 +22,13 @@
 #define checkotherH
 //---------------------------------------------------------------------------
 
-#include <cstddef>
-#include <string>
-#include <vector>
-
 #include "check.h"
 #include "config.h"
 #include "valueflow.h"
+
+#include <cstddef>
+#include <string>
+#include <vector>
 
 class ErrorLogger;
 class Function;

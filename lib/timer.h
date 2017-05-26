@@ -20,11 +20,11 @@
 #define timerH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+
 #include <ctime>
 #include <map>
 #include <string>
-
-#include "config.h"
 
 enum SHOWTIME_MODES {
     SHOWTIME_NONE = 0,

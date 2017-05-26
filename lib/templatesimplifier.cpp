@@ -18,18 +18,18 @@
 
 #include "templatesimplifier.h"
 
-#include <algorithm>
-#include <cassert>
-#include <iostream>
-#include <stack>
-#include <utility>
-
 #include "errorlogger.h"
 #include "mathlib.h"
 #include "settings.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+
+#include <algorithm>
+#include <cassert>
+#include <iostream>
+#include <stack>
+#include <utility>
 
 #ifdef GDB_HELPERS
 

@@ -19,13 +19,13 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
+#include "errorlogger.h"
+#include "importproject.h"
+
 #include <cstddef>
 #include <list>
 #include <map>
 #include <string>
-
-#include "errorlogger.h"
-#include "importproject.h"
 
 #if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 #define THREADING_MODEL_FORK

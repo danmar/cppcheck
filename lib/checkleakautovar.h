@@ -22,13 +22,13 @@
 #define checkleakautovarH
 //---------------------------------------------------------------------------
 
-#include <map>
-#include <set>
-#include <string>
-
 #include "check.h"
 #include "config.h"
 #include "library.h"
+
+#include <map>
+#include <set>
+#include <string>
 
 class ErrorLogger;
 class Settings;

@@ -20,11 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checknullpointer.h"
 
-#include <algorithm>
-#include <cctype>
-#include <cstddef>
-#include <set>
-
 #include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
@@ -32,6 +27,11 @@
 #include "token.h"
 #include "tokenize.h"
 #include "utils.h"
+
+#include <algorithm>
+#include <cctype>
+#include <cstddef>
+#include <set>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

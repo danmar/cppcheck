@@ -22,11 +22,11 @@
 #define checkpostfixoperatorH
 //---------------------------------------------------------------------------
 
-#include <string>
-
 #include "check.h"
 #include "config.h"
 #include "tokenize.h"
+
+#include <string>
 
 class ErrorLogger;
 class Settings;

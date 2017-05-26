@@ -18,13 +18,6 @@
 
 #include "cppcheckexecutor.h"
 
-#include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
-#include <cstring>
-#include <iostream>
-#include <list>
-#include <utility>
-#include <vector>
-
 #include "analyzerinfo.h"
 #include "cmdlineparser.h"
 #include "config.h"
@@ -40,6 +33,13 @@
 #include "suppressions.h"
 #include "threadexecutor.h"
 #include "utils.h"
+
+#include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
+#include <cstring>
+#include <iostream>
+#include <list>
+#include <utility>
+#include <vector>
 
 #if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__OS2__)
 #define USE_UNIX_SIGNAL_HANDLING

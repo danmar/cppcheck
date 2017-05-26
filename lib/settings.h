@@ -21,11 +21,6 @@
 #define settingsH
 //---------------------------------------------------------------------------
 
-#include <list>
-#include <set>
-#include <string>
-#include <vector>
-
 #include "config.h"
 #include "errorlogger.h"
 #include "importproject.h"
@@ -34,6 +29,11 @@
 #include "standards.h"
 #include "suppressions.h"
 #include "timer.h"
+
+#include <list>
+#include <set>
+#include <string>
+#include <vector>
 
 namespace ValueFlow {
     class Value;

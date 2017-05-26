@@ -18,11 +18,11 @@
 
 #include "checkboost.h"
 
-#include <cstddef>
-
 #include "errorlogger.h"
 #include "symboldatabase.h"
 #include "token.h"
+
+#include <cstddef>
 
 // Register this check class (by creating a static instance of it)
 namespace {

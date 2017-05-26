@@ -21,15 +21,15 @@
 #define errorloggerH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+#include "suppressions.h"
+
 #include <cstddef>
 #include <fstream>
 #include <list>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "config.h"
-#include "suppressions.h"
 
 /**
  * CWE id (Common Weakness Enumeration)

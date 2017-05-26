@@ -20,14 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checkother.h"
 
-#include <algorithm> // find_if()
-#include <list>
-#include <map>
-#include <ostream>
-#include <set>
-#include <stack>
-#include <utility>
-
 #include "astutils.h"
 #include "errorlogger.h"
 #include "library.h"
@@ -38,6 +30,14 @@
 #include "token.h"
 #include "tokenize.h"
 #include "utils.h"
+
+#include <algorithm> // find_if()
+#include <list>
+#include <map>
+#include <ostream>
+#include <set>
+#include <stack>
+#include <utility>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

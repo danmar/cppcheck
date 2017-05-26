@@ -19,14 +19,6 @@
 //---------------------------------------------------------------------------
 #include "checkio.h"
 
-#include <cctype>
-#include <cstdlib>
-#include <list>
-#include <map>
-#include <set>
-#include <utility>
-#include <vector>
-
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -35,6 +27,14 @@
 #include "tokenize.h"
 #include "utils.h"
 #include "valueflow.h"
+
+#include <cctype>
+#include <cstdlib>
+#include <list>
+#include <map>
+#include <set>
+#include <utility>
+#include <vector>
 
 //---------------------------------------------------------------------------
 

@@ -22,10 +22,10 @@
 #define checkstringH
 //---------------------------------------------------------------------------
 
-#include <string>
-
 #include "check.h"
 #include "config.h"
+
+#include <string>
 
 class ErrorLogger;
 class Settings;

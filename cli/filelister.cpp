@@ -18,12 +18,11 @@
 
 #include "filelister.h"
 
-#include <cstddef>
-#include <cstring>
-
 #include "path.h"
 #include "pathmatch.h"
 
+#include <cstddef>
+#include <cstring>
 
 #ifdef _WIN32
 

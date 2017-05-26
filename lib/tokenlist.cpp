@@ -19,17 +19,17 @@
 //---------------------------------------------------------------------------
 #include "tokenlist.h"
 
-#include <simplecpp.h>
-#include <cctype>
-#include <cstring>
-#include <set>
-#include <stack>
-
 #include "errorlogger.h"
 #include "mathlib.h"
 #include "path.h"
 #include "settings.h"
 #include "token.h"
+
+#include <simplecpp.h>
+#include <cctype>
+#include <cstring>
+#include <set>
+#include <stack>
 
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test

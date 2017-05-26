@@ -22,13 +22,13 @@
 #define templatesimplifierH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+
 #include <ctime>
 #include <list>
 #include <set>
 #include <string>
 #include <vector>
-
-#include "config.h"
 
 class ErrorLogger;
 class Settings;

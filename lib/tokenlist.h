@@ -21,10 +21,10 @@
 #define tokenlistH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+
 #include <string>
 #include <vector>
-
-#include "config.h"
 
 class Settings;
 class Token;

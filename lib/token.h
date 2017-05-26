@@ -21,15 +21,15 @@
 #define tokenH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+#include "mathlib.h"
+#include "valueflow.h"
+
 #include <cstddef>
 #include <list>
 #include <ostream>
 #include <string>
 #include <vector>
-
-#include "config.h"
-#include "mathlib.h"
-#include "valueflow.h"
 
 class Enumerator;
 class Function;

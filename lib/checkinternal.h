@@ -22,10 +22,10 @@
 #define checkinternalH
 //---------------------------------------------------------------------------
 
-#include <string>
-
 #include "check.h"
 #include "config.h"
+
+#include <string>
 
 /// @addtogroup Checks
 /// @{

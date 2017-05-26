@@ -22,11 +22,10 @@
 #define checkassertH
 //---------------------------------------------------------------------------
 
-
-#include <string>
-
 #include "check.h"
 #include "config.h"
+
+#include <string>
 
 class ErrorLogger;
 class Scope;

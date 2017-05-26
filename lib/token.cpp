@@ -18,6 +18,12 @@
 
 #include "token.h"
 
+#include "errorlogger.h"
+#include "library.h"
+#include "settings.h"
+#include "symboldatabase.h"
+#include "utils.h"
+
 #include <cassert>
 #include <cctype>
 #include <cstring>
@@ -26,13 +32,6 @@
 #include <set>
 #include <stack>
 #include <utility>
-
-#include "errorlogger.h"
-#include "library.h"
-#include "settings.h"
-#include "symboldatabase.h"
-#include "utils.h"
-
 
 Token::Token(Token **tokens) :
     tokensBack(tokens),

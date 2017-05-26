@@ -20,11 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checktype.h"
 
-#include <cstddef>
-#include <list>
-#include <ostream>
-#include <stack>
-
 #include "errorlogger.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -32,6 +27,11 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+
+#include <cstddef>
+#include <list>
+#include <ostream>
+#include <stack>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

@@ -21,11 +21,11 @@
 #define checkunusedvarH
 //---------------------------------------------------------------------------
 
-#include <map>
-#include <string>
-
 #include "check.h"
 #include "config.h"
+
+#include <map>
+#include <string>
 
 class ErrorLogger;
 class Scope;

@@ -18,14 +18,14 @@
 
 #include "checkvaarg.h"
 
-#include <cstddef>
-#include <list>
-
 #include "errorlogger.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+
+#include <cstddef>
+#include <list>
 
 //---------------------------------------------------------------------------
 

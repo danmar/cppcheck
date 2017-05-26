@@ -19,16 +19,6 @@
 //---------------------------------------------------------------------------
 #include "tokenize.h"
 
-#include <algorithm>
-#include <cassert>
-#include <cctype>
-#include <cstring>
-#include <ctime>
-#include <iostream>
-#include <stack>
-#include <utility>
-#include <vector>
-
 #include "check.h"
 #include "library.h"
 #include "mathlib.h"
@@ -43,6 +33,15 @@
 #include "utils.h"
 #include "valueflow.h"
 
+#include <algorithm>
+#include <cassert>
+#include <cctype>
+#include <cstring>
+#include <ctime>
+#include <iostream>
+#include <stack>
+#include <utility>
+#include <vector>
 //---------------------------------------------------------------------------
 
 namespace {

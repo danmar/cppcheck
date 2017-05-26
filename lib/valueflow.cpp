@@ -18,14 +18,6 @@
 
 #include "valueflow.h"
 
-#include <algorithm>
-#include <cstddef>
-#include <limits>
-#include <map>
-#include <set>
-#include <stack>
-#include <vector>
-
 #include "astutils.h"
 #include "errorlogger.h"
 #include "library.h"
@@ -37,6 +29,14 @@
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
+
+#include <algorithm>
+#include <cstddef>
+#include <limits>
+#include <map>
+#include <set>
+#include <stack>
+#include <vector>
 
 namespace {
     struct ProgramMemory {

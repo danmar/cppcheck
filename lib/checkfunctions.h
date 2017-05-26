@@ -22,15 +22,15 @@
 #define checkfunctionsH
 //---------------------------------------------------------------------------
 
-#include <map>
-#include <string>
-#include <utility>
-
 #include "check.h"
 #include "config.h"
 #include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
+
+#include <map>
+#include <string>
+#include <utility>
 
 class Token;
 class Tokenizer;

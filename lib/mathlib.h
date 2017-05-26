@@ -21,10 +21,10 @@
 #define mathlibH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+
 #include <sstream>
 #include <string>
-
-#include "config.h"
 
 /// @addtogroup Core
 /// @{

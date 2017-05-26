@@ -22,13 +22,6 @@
 
 #include "checkbufferoverrun.h"
 
-#include <tinyxml2.h>
-#include <algorithm>
-#include <cstdlib>
-#include <sstream>
-#include <stack>
-#include <utility>
-
 #include "astutils.h"
 #include "library.h"
 #include "mathlib.h"
@@ -39,6 +32,13 @@
 #include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
+
+#include <tinyxml2.h>
+#include <algorithm>
+#include <cstdlib>
+#include <sstream>
+#include <stack>
+#include <utility>
 
 //---------------------------------------------------------------------------
 

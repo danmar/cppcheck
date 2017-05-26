@@ -22,11 +22,11 @@
 #define checkuninitvarH
 //---------------------------------------------------------------------------
 
-#include <set>
-#include <string>
-
 #include "check.h"
 #include "config.h"
+
+#include <set>
+#include <string>
 
 class ErrorLogger;
 class Scope;

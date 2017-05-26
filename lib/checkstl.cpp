@@ -18,12 +18,6 @@
 
 #include "checkstl.h"
 
-#include <cstddef>
-#include <list>
-#include <set>
-#include <sstream>
-#include <utility>
-
 #include "checknullpointer.h"
 #include "errorlogger.h"
 #include "settings.h"
@@ -31,6 +25,12 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "utils.h"
+
+#include <cstddef>
+#include <list>
+#include <set>
+#include <sstream>
+#include <utility>
 
 // Register this check class (by creating a static instance of it)
 namespace {

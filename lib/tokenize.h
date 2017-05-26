@@ -21,14 +21,14 @@
 #define tokenizeH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+#include "errorlogger.h"
+#include "tokenlist.h"
+
 #include <ctime>
 #include <list>
 #include <map>
 #include <string>
-
-#include "config.h"
-#include "errorlogger.h"
-#include "tokenlist.h"
 
 class Settings;
 class SymbolDatabase;

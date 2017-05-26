@@ -21,12 +21,12 @@
 #define checkioH
 //---------------------------------------------------------------------------
 
-#include <ostream>
-#include <string>
-
 #include "check.h"
 #include "config.h"
 #include "errorlogger.h"
+
+#include <ostream>
+#include <string>
 
 class Function;
 class Settings;

@@ -21,9 +21,9 @@
 #define platformH
 //---------------------------------------------------------------------------
 
-#include <string>
-
 #include "config.h"
+
+#include <string>
 
 /// @addtogroup Core
 /// @{

@@ -20,11 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checkstring.h"
 
-#include <cstddef>
-#include <list>
-#include <vector>
-#include <utility>
-
 #include "astutils.h"
 #include "errorlogger.h"
 #include "mathlib.h"
@@ -33,6 +28,11 @@
 #include "token.h"
 #include "tokenize.h"
 #include "utils.h"
+
+#include <cstddef>
+#include <list>
+#include <vector>
+#include <utility>
 
 //---------------------------------------------------------------------------
 

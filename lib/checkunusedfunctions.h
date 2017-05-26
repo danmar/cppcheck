@@ -22,13 +22,13 @@
 #define checkunusedfunctionsH
 //---------------------------------------------------------------------------
 
+#include "check.h"
+#include "config.h"
+
 #include <list>
 #include <map>
 #include <set>
 #include <string>
-
-#include "check.h"
-#include "config.h"
 
 class ErrorLogger;
 class Function;

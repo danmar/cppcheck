@@ -17,6 +17,8 @@
  */
 
 
+#include "errorlogger.h"
+#include "utils.h"
 
 #include "mathlib.h"
 
@@ -25,10 +27,6 @@
 #include <cstdlib>
 #include <limits>
 #include <locale>
-
-#include "errorlogger.h"
-#include "utils.h"
-
 
 #if defined(_MSC_VER) && _MSC_VER <= 1700  // VS2012 doesn't have std::isinf and std::isnan
 #define ISINF(x)      (!_finite(x))

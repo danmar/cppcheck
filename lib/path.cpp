@@ -20,13 +20,13 @@
 #undef __STRICT_ANSI__
 #endif
 #include "path.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
 #include <sstream>
 
-#include "utils.h"
 #ifndef _WIN32
 #include <unistd.h>
 #else

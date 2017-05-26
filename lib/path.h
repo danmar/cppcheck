@@ -21,11 +21,11 @@
 #define pathH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+
 #include <set>
 #include <string>
 #include <vector>
-
-#include "config.h"
 
 /// @addtogroup Core
 /// @{

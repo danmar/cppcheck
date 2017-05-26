@@ -22,11 +22,6 @@
 
 #include "checkfunctions.h"
 
-#include <cmath>
-#include <cstddef>
-#include <ostream>
-#include <vector>
-
 #include "astutils.h"
 #include "mathlib.h"
 #include "standards.h"
@@ -34,6 +29,11 @@
 #include "token.h"
 #include "tokenize.h"
 #include "valueflow.h"
+
+#include <cmath>
+#include <cstddef>
+#include <ostream>
+#include <vector>
 
 //---------------------------------------------------------------------------
 

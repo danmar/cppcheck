@@ -20,12 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checkunusedfunctions.h"
 
-#include <tinyxml2.h>
-#include <cstdlib>
-#include <cstring>
-#include <istream>
-#include <utility>
-
 #include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
@@ -33,6 +27,12 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+
+#include <tinyxml2.h>
+#include <cstdlib>
+#include <cstring>
+#include <istream>
+#include <utility>
 //---------------------------------------------------------------------------
 
 

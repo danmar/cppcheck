@@ -17,15 +17,6 @@
  */
 #include "cppcheck.h"
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
-#include <algorithm>
-#include <cstring>
-#include <new>
-#include <set>
-#include <stdexcept>
-#include <vector>
-
 #include "check.h"
 #include "checkunusedfunctions.h"
 #include "library.h"
@@ -39,6 +30,15 @@
 #include "tokenize.h" // Tokenizer
 #include "tokenlist.h"
 #include "version.h"
+
+#include <simplecpp.h>
+#include <tinyxml2.h>
+#include <algorithm>
+#include <cstring>
+#include <new>
+#include <set>
+#include <stdexcept>
+#include <vector>
 
 #ifdef HAVE_RULES
 #define PCRE_STATIC

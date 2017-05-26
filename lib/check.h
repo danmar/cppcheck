@@ -21,16 +21,16 @@
 #define checkH
 //---------------------------------------------------------------------------
 
-#include <list>
-#include <set>
-#include <string>
-
 #include "config.h"
 #include "errorlogger.h"
 #include "settings.h"
 #include "token.h"
 #include "tokenize.h"
 #include "valueflow.h"
+
+#include <list>
+#include <set>
+#include <string>
 
 /**
  * Use this macro Cppcheck data can be wrong and you need a to check if that happens to avoid crash/hang

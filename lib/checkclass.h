@@ -21,15 +21,15 @@
 #define checkclassH
 //---------------------------------------------------------------------------
 
+#include "check.h"
+#include "config.h"
+#include "tokenize.h"
+
 #include <list>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
-
-#include "check.h"
-#include "config.h"
-#include "tokenize.h"
 
 class ErrorLogger;
 class Function;

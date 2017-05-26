@@ -19,10 +19,6 @@
 //---------------------------------------------------------------------------
 #include "checkclass.h"
 
-#include <algorithm>
-#include <cstdlib>
-#include <utility>
-
 #include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
@@ -32,6 +28,9 @@
 #include "tokenize.h"
 #include "utils.h"
 
+#include <algorithm>
+#include <cstdlib>
+#include <utility>
 //---------------------------------------------------------------------------
 
 // Register CheckClass..

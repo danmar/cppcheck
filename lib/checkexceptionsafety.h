@@ -21,15 +21,15 @@
 #define checkexceptionsafetyH
 //---------------------------------------------------------------------------
 
-#include <list>
-#include <string>
-
 #include "check.h"
 #include "config.h"
 #include "errorlogger.h"
 #include "token.h"
 #include "tokenize.h"
 #include "utils.h"
+
+#include <list>
+#include <string>
 
 class Settings;
 

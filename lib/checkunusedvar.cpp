@@ -20,20 +20,20 @@
 //---------------------------------------------------------------------------
 #include "checkunusedvar.h"
 
-#include <ctype.h>
-#include <algorithm>
-#include <cstddef>
-#include <list>
-#include <set>
-#include <utility>
-#include <vector>
-
 #include "errorlogger.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
 #include "valueflow.h"
+
+#include <algorithm>
+#include <cctype>
+#include <cstddef>
+#include <list>
+#include <set>
+#include <utility>
+#include <vector>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

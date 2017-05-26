@@ -21,6 +21,11 @@
 #define symboldatabaseH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+#include "library.h"
+#include "mathlib.h"
+#include "token.h"
+
 #include <algorithm>
 #include <cstddef>
 #include <list>
@@ -29,11 +34,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "config.h"
-#include "library.h"
-#include "mathlib.h"
-#include "token.h"
 
 class ErrorLogger;
 class Function;

@@ -22,12 +22,6 @@
 
 #include "checkleakautovar.h"
 
-#include <cstddef>
-#include <iostream>
-#include <list>
-#include <stack>
-#include <utility>
-
 #include "astutils.h"
 #include "checkmemoryleak.h"  // <- CheckMemoryLeak::memoryLeak
 #include "checknullpointer.h" // <- CheckNullPointer::isPointerDeRef
@@ -38,6 +32,13 @@
 #include "token.h"
 #include "tokenize.h"
 #include "valueflow.h"
+
+#include <cstddef>
+#include <iostream>
+#include <list>
+#include <stack>
+#include <utility>
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

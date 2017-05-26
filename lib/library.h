@@ -21,17 +21,17 @@
 #define libraryH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+#include "errorlogger.h"
+#include "mathlib.h"
+#include "standards.h"
+
 #include <cstddef>
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "config.h"
-#include "errorlogger.h"
-#include "mathlib.h"
-#include "standards.h"
 
 class Token;
 

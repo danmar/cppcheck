@@ -18,6 +18,13 @@
 
 #include "errorlogger.h"
 
+#include "cppcheck.h"
+#include "mathlib.h"
+#include "path.h"
+#include "token.h"
+#include "tokenlist.h"
+#include "utils.h"
+
 #include <tinyxml2.h>
 #include <array>
 #include <cassert>
@@ -25,13 +32,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
-
-#include "cppcheck.h"
-#include "mathlib.h"
-#include "path.h"
-#include "token.h"
-#include "tokenlist.h"
-#include "utils.h"
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg)

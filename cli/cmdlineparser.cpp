@@ -18,14 +18,6 @@
 
 #include "cmdlineparser.h"
 
-#include <algorithm>
-#include <cstdio>
-#include <cstdlib> // EXIT_FAILURE
-#include <cstring>
-#include <iostream>
-#include <list>
-#include <set>
-
 #include "check.h"
 #include "cppcheckexecutor.h"
 #include "filelister.h"
@@ -38,6 +30,14 @@
 #include "threadexecutor.h" // Threading model
 #include "timer.h"
 #include "utils.h"
+
+#include <algorithm>
+#include <cstdio>
+#include <cstdlib> // EXIT_FAILURE
+#include <cstring>
+#include <iostream>
+#include <list>
+#include <set>
 
 #ifdef HAVE_RULES
 // xml is used for rules

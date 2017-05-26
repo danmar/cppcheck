@@ -19,10 +19,6 @@
 //---------------------------------------------------------------------------
 #include "symboldatabase.h"
 
-#include <climits>
-#include <iomanip>
-#include <iostream>
-
 #include "errorlogger.h"
 #include "platform.h"
 #include "settings.h"
@@ -32,6 +28,9 @@
 #include "utils.h"
 #include "valueflow.h"
 
+#include <climits>
+#include <iomanip>
+#include <iostream>
 //---------------------------------------------------------------------------
 
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)

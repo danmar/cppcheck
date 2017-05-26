@@ -22,12 +22,12 @@
 #define checknullpointerH
 //---------------------------------------------------------------------------
 
-#include <list>
-#include <string>
-
 #include "check.h"
 #include "config.h"
 #include "valueflow.h"
+
+#include <list>
+#include <string>
 
 class ErrorLogger;
 class Library;

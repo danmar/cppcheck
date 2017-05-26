@@ -21,11 +21,11 @@
 #define valueflowH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+
 #include <list>
 #include <string>
 #include <utility>
-
-#include "config.h"
 
 class ErrorLogger;
 class Settings;

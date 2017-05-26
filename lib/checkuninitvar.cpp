@@ -20,13 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checkuninitvar.h"
 
-#include <cassert>
-#include <cstddef>
-#include <list>
-#include <map>
-#include <stack>
-#include <utility>
-
 #include "astutils.h"
 #include "checknullpointer.h"   // CheckNullPointer::isPointerDeref
 #include "errorlogger.h"
@@ -37,6 +30,13 @@
 #include "token.h"
 #include "tokenize.h"
 #include "valueflow.h"
+
+#include <cassert>
+#include <cstddef>
+#include <list>
+#include <map>
+#include <stack>
+#include <utility>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

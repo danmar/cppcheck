@@ -18,11 +18,6 @@
 
 #include "library.h"
 
-#include <cctype>
-#include <cstdlib>
-#include <cstring>
-#include <list>
-
 #include "astutils.h"
 #include "mathlib.h"
 #include "path.h"
@@ -31,6 +26,11 @@
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
+
+#include <cctype>
+#include <cstdlib>
+#include <cstring>
+#include <list>
 
 static std::vector<std::string> getnames(const char *names)
 {

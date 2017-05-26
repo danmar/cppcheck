@@ -20,11 +20,12 @@
 #include <QObject>
 #include <QSettings>
 #include <QStringList>
-#include <cstdlib>
+
 #include "common.h"
 #include "applicationlist.h"
 #include "application.h"
 
+#include <cstdlib>
 
 ApplicationList::ApplicationList(QObject *parent) :
     QObject(parent),

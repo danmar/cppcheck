@@ -22,7 +22,6 @@
 #define checktypeH
 //---------------------------------------------------------------------------
 
-
 #include "check.h"
 #include "config.h"
 #include "valueflow.h"
