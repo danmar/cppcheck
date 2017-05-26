@@ -16,10 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <vector>
-
 #include "path.h"
 #include "testsuite.h"
+
+#include <vector>
 
 class TestPath : public TestFixture {
 public:

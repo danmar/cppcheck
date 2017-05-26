@@ -16,13 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cstddef>
-#include <list>
-#include <map>
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "config.h"
 #include "cppcheck.h"
 #include "settings.h"
@@ -30,6 +23,12 @@
 #include "testsuite.h"
 #include "threadexecutor.h"
 
+#include <cstddef>
+#include <list>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
 
 class TestSuppressions : public TestFixture {
 public:

@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "importproject.h"
+#include "testsuite.h"
+
 #include <list>
 #include <map>
 #include <string>
-
-#include "importproject.h"
-#include "testsuite.h"
 
 class TestImportProject : public TestFixture {
 public:

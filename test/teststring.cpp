@@ -17,7 +17,6 @@
  */
 
 
-
 #include "checkstring.h"
 #include "settings.h"
 #include "testsuite.h"

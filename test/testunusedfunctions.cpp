@@ -16,16 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <ostream>
-#include <string>
-
 #include "checkunusedfunctions.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <ostream>
+#include <string>
 
 class TestUnusedFunctions : public TestFixture {
 public:

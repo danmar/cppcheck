@@ -16,12 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
-#include <map>
-#include <string>
-#include <vector>
-
 #include "checkother.h"
 #include "library.h"
 #include "platform.h"
@@ -29,6 +23,12 @@
 #include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
+
+#include <simplecpp.h>
+#include <tinyxml2.h>
+#include <map>
+#include <string>
+#include <vector>
 
 class TestOther : public TestFixture {
 public:

@@ -16,12 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <list>
-#include <set>
-#include <sstream>
-#include <string>
-#include <vector>
-
 #include "cmdlineparser.h"
 #include "platform.h"
 #include "redirect.h"
@@ -31,6 +25,11 @@
 #include "testsuite.h"
 #include "timer.h"
 
+#include <list>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
 class TestCmdlineParser : public TestFixture {
 public:

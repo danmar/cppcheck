@@ -18,13 +18,13 @@
 
 #include "testsuite.h"
 
+#include "options.h"
+#include "redirect.h"
+
 #include <cstdio>
 #include <iostream>
 #include <list>
 #include <string>
-
-#include "options.h"
-#include "redirect.h"
 
 std::ostringstream errout;
 std::ostringstream output;

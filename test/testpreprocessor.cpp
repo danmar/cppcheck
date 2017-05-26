@@ -20,6 +20,10 @@
 // The preprocessor that Cppcheck uses is a bit special. Instead of generating
 // the code for a known configuration, it generates the code for each configuration.
 
+#include "platform.h"
+#include "preprocessor.h"
+#include "settings.h"
+#include "testsuite.h"
 
 #include <simplecpp.h>
 #include <cstring>
@@ -29,13 +33,7 @@
 #include <string>
 #include <vector>
 
-#include "platform.h"
-#include "preprocessor.h"
-#include "settings.h"
-#include "testsuite.h"
-
 class ErrorLogger;
-
 
 class TestPreprocessor : public TestFixture {
 public:

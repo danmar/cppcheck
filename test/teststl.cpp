@@ -16,14 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cstddef>
-#include <string>
-
 #include "checkstl.h"
 #include "settings.h"
 #include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
+
+#include <cstddef>
+#include <string>
 
 
 class TestStl : public TestFixture {

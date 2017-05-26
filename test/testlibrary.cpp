@@ -16,12 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <tinyxml2.h>
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
-
 #include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
@@ -30,6 +24,12 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+
+#include <tinyxml2.h>
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
 
 
 class TestLibrary : public TestFixture {

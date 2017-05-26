@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include <list>
-#include <ostream>
-#include <string>
-#include <vector>
-
 #include "checkmemoryleak.h"
 #include "preprocessor.h"
 #include "settings.h"
@@ -31,6 +25,11 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+
+#include <list>
+#include <ostream>
+#include <string>
+#include <vector>
 
 struct InternalError;
 

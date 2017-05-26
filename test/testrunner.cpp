@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cstdlib>
-#include <iostream>
-
 #include "options.h"
 #include "preprocessor.h"
 #include "testsuite.h"
+
+#include <cstdlib>
+#include <iostream>
 
 int main(int argc, char *argv[])
 {

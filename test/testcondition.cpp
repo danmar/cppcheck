@@ -16,16 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
-#include <map>
-#include <vector>
-
 #include "checkcondition.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
+
+#include <simplecpp.h>
+#include <tinyxml2.h>
+#include <map>
+#include <vector>
 
 class TestCondition : public TestFixture {
 public:

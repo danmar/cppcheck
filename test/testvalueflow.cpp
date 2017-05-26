@@ -16,6 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "library.h"
+#include "platform.h"
+#include "settings.h"
+#include "testsuite.h"
+#include "token.h"
+#include "tokenize.h"
+#include "valueflow.h"
+
 #include <simplecpp.h>
 #include <cmath>
 #include <list>
@@ -24,14 +32,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "library.h"
-#include "platform.h"
-#include "settings.h"
-#include "testsuite.h"
-#include "token.h"
-#include "tokenize.h"
-#include "valueflow.h"
 
 class TestValueFlow : public TestFixture {
 public:

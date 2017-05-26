@@ -16,15 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cstddef>
-#include <list>
-#include <map>
-#include <set>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
 #include "library.h"
 #include "platform.h"
 #include "settings.h"
@@ -35,6 +26,15 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
+
+#include <cstddef>
+#include <list>
+#include <map>
+#include <set>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 class TestSymbolDatabase;
 struct InternalError;

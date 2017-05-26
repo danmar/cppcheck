@@ -20,12 +20,12 @@
 #ifndef testsuiteH
 #define testsuiteH
 
+#include "config.h"
+#include "errorlogger.h"
+
 #include <cstddef>
 #include <set>
 #include <sstream>
-
-#include "config.h"
-#include "errorlogger.h"
 
 class options;
 

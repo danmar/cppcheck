@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ostream>
-#include <string>
-
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+
+#include <ostream>
+#include <string>
 
 
 class TestSimplifyTokens : public TestFixture {

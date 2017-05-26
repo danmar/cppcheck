@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-#include <vector>
-
 #include "settings.h"
 #include "testsuite.h"
 #include "testutils.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+
+#include <string>
+#include <vector>
 
 struct InternalError;
 

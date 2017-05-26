@@ -16,14 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
-#include <list>
-#include <string>
-
 #include "check.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
 #include "testsuite.h"
+
+#include <algorithm>
+#include <list>
+#include <string>
 
 
 class TestCppcheck : public TestFixture {

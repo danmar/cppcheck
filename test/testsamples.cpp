@@ -16,6 +16,13 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "cppcheckexecutor.h"
+#include "filelister.h"
+#include "path.h"
+#include "pathmatch.h"
+#include "redirect.h"
+#include "testsuite.h"
+
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
@@ -26,13 +33,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "cppcheckexecutor.h"
-#include "filelister.h"
-#include "path.h"
-#include "pathmatch.h"
-#include "redirect.h"
-#include "testsuite.h"
 
 
 class TestSamples : public TestFixture {

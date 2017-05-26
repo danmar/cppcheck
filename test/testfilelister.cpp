@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "filelister.h"
+#include "pathmatch.h"
+#include "testsuite.h"
+
 #include <cstddef>
 #include <fstream>
 #include <map>
 #include <string>
 #include <utility>
-
-#include "filelister.h"
-#include "pathmatch.h"
-#include "testsuite.h"
 
 #ifndef _WIN32
 #include <vector>
