@@ -22,6 +22,7 @@
 #include "tokenlist.h"
 
 #include <sstream>
+#include <string>
 
 class TestTokenList : public TestFixture {
 public:

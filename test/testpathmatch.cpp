@@ -19,6 +19,7 @@
 #include "pathmatch.h"
 #include "testsuite.h"
 
+#include <string>
 #include <vector>
 
 

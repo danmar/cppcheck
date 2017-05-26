@@ -22,6 +22,7 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <sstream>
 #include <string>
 
 struct InternalError;

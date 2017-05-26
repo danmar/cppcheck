@@ -19,8 +19,8 @@
 #include "testsuite.h"
 #include "timer.h"
 
-#include <time.h>
 #include <cmath>
+#include <ctime>
 
 class TestTimer : public TestFixture {
 public:
