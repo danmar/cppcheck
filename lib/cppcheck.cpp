@@ -143,11 +143,11 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
         if (!_settings.plistOutput.empty()) {
             std::string filename2;
-            if (filename.find("/") != std::string::npos)
-                filename2 = filename.substr(filename.rfind("/") + 1);
+            if (filename.find('/') != std::string::npos)
+                filename2 = filename.substr(filename.rfind('/') + 1);
             else
                 filename2 = filename;
-            filename2 = _settings.plistOutput + filename2.substr(0, filename2.find(".")) + ".plist";
+            filename2 = _settings.plistOutput + filename2.substr(0, filename2.find('.')) + ".plist";
             plistFile.open(filename2);
             plistFile << ErrorLogger::plistHeader(version(), files);
         }
