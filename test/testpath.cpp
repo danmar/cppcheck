@@ -19,6 +19,7 @@
 #include "path.h"
 #include "testsuite.h"
 
+#include <string>
 #include <vector>
 
 class TestPath : public TestFixture {
