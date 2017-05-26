@@ -2019,7 +2019,6 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     std::stack<int> ifstates;
     ifstates.push(TRUE);
 
-    std::list<TokenList *> includes;
     std::stack<const Token *> includetokenstack;
 
     std::set<std::string> pragmaOnce;
