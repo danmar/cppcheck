@@ -26,7 +26,6 @@
 #include "mathlib.h"
 #include "token.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <list>
 #include <map>

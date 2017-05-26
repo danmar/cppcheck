@@ -28,6 +28,7 @@
 #include "utils.h"
 #include "valueflow.h"
 
+#include <algorithm>
 #include <climits>
 #include <iomanip>
 #include <iostream>
