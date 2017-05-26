@@ -28,11 +28,9 @@
 #include <string>
 
 class ErrorLogger;
-class Function;
 class Settings;
 class Token;
 class Tokenizer;
-class Variable;
 
 /// @addtogroup Checks
 /// @{

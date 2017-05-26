@@ -35,10 +35,6 @@ class Function;
 class Settings;
 class Tokenizer;
 
-namespace tinyxml2 {
-    class XMLElement;
-}
-
 /// @addtogroup Checks
 /** @brief Check for functions never called */
 /// @{

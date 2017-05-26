@@ -36,7 +36,6 @@
 #include <string>
 #include <vector>
 
-class TestSymbolDatabase;
 struct InternalError;
 
 #define GET_SYMBOL_DB(code) \

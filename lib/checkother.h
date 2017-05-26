@@ -31,7 +31,6 @@
 #include <vector>
 
 class ErrorLogger;
-class Function;
 class Settings;
 class Token;
 class Tokenizer;

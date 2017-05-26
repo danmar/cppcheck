@@ -29,7 +29,6 @@
 #include "valueflow.h"
 
 #include <list>
-#include <set>
 #include <string>
 
 /**
