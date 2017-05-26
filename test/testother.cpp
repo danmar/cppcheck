@@ -227,11 +227,11 @@ private:
         }
     }
 
-    void checkP(const char code[], const char *filename = "test.cpp", Settings* settings = 0) {
+    void checkP(const char code[], const char *filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
-        settings = &_settings;
+        Settings* settings = &_settings;
         settings->addEnabled("style");
         settings->addEnabled("warning");
         settings->addEnabled("portability");
