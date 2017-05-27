@@ -37,7 +37,7 @@ static std::string builddir(std::string filename)
 
 static std::string objfile(std::string cppfile)
 {
-    cppfile.erase(cppfile.rfind("."));
+    cppfile.erase(cppfile.rfind('.'));
     return builddir(cppfile + ".o");
 }
 
@@ -50,15 +50,15 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
     std::ifstream f(filename.c_str());
     if (! f.is_open()) {
         if (filename.compare(0, 4, "cli/") == 0 || filename.compare(0, 5, "test/") == 0)
-            getDeps("lib" + filename.substr(filename.find("/")), depfiles);
+            getDeps("lib" + filename.substr(filename.find('/')), depfiles);
         return;
     }
     if (filename.find(".c") == std::string::npos)
         depfiles.push_back(filename);
 
     std::string path(filename);
-    if (path.find("/") != std::string::npos)
-        path.erase(1 + path.rfind("/"));
+    if (path.find('/') != std::string::npos)
+        path.erase(1 + path.rfind('/'));
 
     std::string line;
     while (std::getline(f, line)) {
@@ -67,7 +67,7 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
             continue;
         pos1 += 10;
 
-        std::string::size_type pos2 = line.find("\"", pos1);
+        std::string::size_type pos2 = line.find('\"', pos1);
         std::string hfile(path + line.substr(pos1, pos2 - pos1));
         if (hfile.find("/../") != std::string::npos)    // TODO: Ugly fix
             hfile.erase(0, 4 + hfile.find("/../"));
