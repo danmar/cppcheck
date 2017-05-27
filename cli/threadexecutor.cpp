@@ -49,6 +49,7 @@ using std::memset;
 
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : _files(files), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
+    // Not initialized _fileSync, _errorSync, _reportSync
 {
 #if defined(THREADING_MODEL_FORK)
     _wpipe = 0;
