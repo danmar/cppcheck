@@ -1962,6 +1962,7 @@ XMLDocument::XMLDocument( bool processEntities, Whitespace whitespace ) :
     _errorID(XML_SUCCESS),
     _whitespace( whitespace ),
     _charBuffer( 0 )
+    // Not initialized _errorLineNum, _parseCurLineNum
 {
     // avoid VC++ C4355 warning about 'this' in initializer list (C4355 is off by default in VS2012+)
     _document = this;
