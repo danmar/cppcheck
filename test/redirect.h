@@ -18,6 +18,8 @@
 #define REDIRECT_H
 
 #include <iostream>
+#include <sstream>
+#include <string>
 
 extern std::ostringstream errout;
 extern std::ostringstream output;

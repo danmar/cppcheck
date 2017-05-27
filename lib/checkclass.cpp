@@ -19,15 +19,18 @@
 //---------------------------------------------------------------------------
 #include "checkclass.h"
 
-#include "tokenize.h"
-#include "token.h"
 #include "errorlogger.h"
+#include "library.h"
+#include "settings.h"
+#include "standards.h"
 #include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
 #include "utils.h"
 
-#include <string>
 #include <algorithm>
-
+#include <cstdlib>
+#include <utility>
 //---------------------------------------------------------------------------
 
 // Register CheckClass..

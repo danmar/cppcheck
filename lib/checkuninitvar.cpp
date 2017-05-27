@@ -19,13 +19,24 @@
 
 //---------------------------------------------------------------------------
 #include "checkuninitvar.h"
+
 #include "astutils.h"
-#include "mathlib.h"
 #include "checknullpointer.h"   // CheckNullPointer::isPointerDeref
+#include "errorlogger.h"
+#include "library.h"
+#include "mathlib.h"
+#include "settings.h"
 #include "symboldatabase.h"
-#include <map>
+#include "token.h"
+#include "tokenize.h"
+#include "valueflow.h"
+
 #include <cassert>
+#include <cstddef>
+#include <list>
+#include <map>
 #include <stack>
+#include <utility>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

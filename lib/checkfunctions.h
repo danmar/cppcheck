@@ -22,9 +22,21 @@
 #define checkfunctionsH
 //---------------------------------------------------------------------------
 
-#include "config.h"
 #include "check.h"
+#include "config.h"
+#include "errorlogger.h"
+#include "library.h"
+#include "settings.h"
+
+#include <map>
 #include <string>
+#include <utility>
+
+class Token;
+class Tokenizer;
+namespace ValueFlow {
+class Value;
+}  // namespace ValueFlow
 
 
 /// @addtogroup Checks

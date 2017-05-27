@@ -21,9 +21,17 @@
 #define checkexceptionsafetyH
 //---------------------------------------------------------------------------
 
-#include "config.h"
 #include "check.h"
+#include "config.h"
+#include "errorlogger.h"
+#include "token.h"
+#include "tokenize.h"
 #include "utils.h"
+
+#include <list>
+#include <string>
+
+class Settings;
 
 // CWE ID used:
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality

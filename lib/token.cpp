@@ -17,21 +17,21 @@
  */
 
 #include "token.h"
+
 #include "errorlogger.h"
+#include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "utils.h"
-#include <cassert>
-#include <cstdlib>
-#include <cstring>
-#include <string>
-#include <iostream>
-#include <cctype>
-#include <sstream>
-#include <map>
-#include <stack>
-#include <algorithm>
 
+#include <cassert>
+#include <cctype>
+#include <cstring>
+#include <iostream>
+#include <map>
+#include <set>
+#include <stack>
+#include <utility>
 
 Token::Token(Token **tokens) :
     tokensBack(tokens),

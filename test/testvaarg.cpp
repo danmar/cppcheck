@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsuite.h"
+
 #include "checkvaarg.h"
+#include "settings.h"
+#include "testsuite.h"
 #include "tokenize.h"
 
 

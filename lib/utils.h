@@ -22,6 +22,8 @@
 //---------------------------------------------------------------------------
 
 #include <algorithm>
+#include <cstddef>
+#include <string>
 
 /*! Helper class to aid in the initializing global const data */
 template < typename Cont >

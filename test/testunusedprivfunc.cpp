@@ -16,11 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include "tokenize.h"
 #include "checkclass.h"
+#include "platform.h"
+#include "settings.h"
 #include "testsuite.h"
+#include "tokenize.h"
+
 #include <simplecpp.h>
+#include <map>
+#include <vector>
 
 class TestUnusedPrivateFunction : public TestFixture {
 public:

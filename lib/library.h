@@ -22,14 +22,18 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errorlogger.h"
 #include "mathlib.h"
 #include "standards.h"
-#include "errorlogger.h"
 
+#include <cstddef>
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
+
+class Token;
 
 namespace tinyxml2 {
     class XMLDocument;

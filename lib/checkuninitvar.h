@@ -22,10 +22,17 @@
 #define checkuninitvarH
 //---------------------------------------------------------------------------
 
-#include "config.h"
 #include "check.h"
+#include "config.h"
 
+#include <set>
+#include <string>
+
+class ErrorLogger;
 class Scope;
+class Settings;
+class Token;
+class Tokenizer;
 class Variable;
 
 /// @addtogroup Checks

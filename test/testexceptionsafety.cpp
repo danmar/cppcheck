@@ -16,9 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tokenize.h"
+
 #include "checkexceptionsafety.h"
+#include "settings.h"
 #include "testsuite.h"
+#include "tokenize.h"
 
 
 class TestExceptionSafety : public TestFixture {

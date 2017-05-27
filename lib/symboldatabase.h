@@ -21,24 +21,26 @@
 #define symboldatabaseH
 //---------------------------------------------------------------------------
 
-#include <string>
-#include <list>
-#include <vector>
-#include <set>
-#include <algorithm>
-#include <map>
-
 #include "config.h"
-#include "token.h"
-#include "mathlib.h"
 #include "library.h"
+#include "mathlib.h"
+#include "token.h"
 
-class Tokenizer;
-class Settings;
+#include <cstddef>
+#include <list>
+#include <map>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+
 class ErrorLogger;
-
+class Function;
 class Scope;
+class Settings;
 class SymbolDatabase;
+class Tokenizer;
+class ValueType;
 
 /**
  * @brief Access control enumerations.

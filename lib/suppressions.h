@@ -20,11 +20,12 @@
 #define suppressionsH
 //---------------------------------------------------------------------------
 
-#include <list>
-#include <string>
-#include <istream>
-#include <map>
 #include "config.h"
+
+#include <istream>
+#include <list>
+#include <map>
+#include <string>
 
 /// @addtogroup Core
 /// @{

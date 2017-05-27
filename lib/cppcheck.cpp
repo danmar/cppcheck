@@ -17,23 +17,28 @@
  */
 #include "cppcheck.h"
 
-#include "preprocessor.h" // Preprocessor
-#include "tokenize.h" // Tokenizer
-
 #include "check.h"
-#include "path.h"
-
 #include "checkunusedfunctions.h"
+#include "library.h"
+#include "mathlib.h"
+#include "path.h"
+#include "platform.h"
+#include "preprocessor.h" // Preprocessor
+#include "suppressions.h"
 #include "timer.h"
+#include "token.h"
+#include "tokenize.h" // Tokenizer
+#include "tokenlist.h"
 #include "version.h"
 
 #include <simplecpp.h>
-
-#include <algorithm>
-#include <fstream>
-#include <sstream>
-#include <stdexcept>
 #include <tinyxml2.h>
+#include <algorithm>
+#include <cstring>
+#include <new>
+#include <set>
+#include <stdexcept>
+#include <vector>
 
 #ifdef HAVE_RULES
 #define PCRE_STATIC

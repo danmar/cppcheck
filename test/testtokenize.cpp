@@ -16,14 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsuite.h"
-#include "tokenize.h"
-#include "token.h"
-#include "settings.h"
-#include "path.h"
+#include "config.h"
+#include "platform.h"
 #include "preprocessor.h" // usually tests here should not use preprocessor...
-#include <cstring>
+#include "settings.h"
+#include "standards.h"
+#include "testsuite.h"
+#include "token.h"
+#include "tokenize.h"
+#include "tokenlist.h"
+
+#include <list>
+#include <set>
 #include <sstream>
+#include <string>
+
+struct InternalError;
 
 class TestTokenizer : public TestFixture {
 public:

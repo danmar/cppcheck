@@ -22,8 +22,18 @@
 #define checknullpointerH
 //---------------------------------------------------------------------------
 
-#include "config.h"
 #include "check.h"
+#include "config.h"
+#include "valueflow.h"
+
+#include <list>
+#include <string>
+
+class ErrorLogger;
+class Library;
+class Settings;
+class Token;
+class Tokenizer;
 
 
 /// @addtogroup Checks

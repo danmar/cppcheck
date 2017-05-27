@@ -19,19 +19,19 @@
 //---------------------------------------------------------------------------
 #include "symboldatabase.h"
 
-#include "tokenize.h"
-#include "token.h"
-#include "settings.h"
 #include "errorlogger.h"
+#include "platform.h"
+#include "settings.h"
+#include "token.h"
+#include "tokenize.h"
+#include "tokenlist.h"
 #include "utils.h"
+#include "valueflow.h"
 
-#include <string>
-#include <ostream>
+#include <algorithm>
 #include <climits>
-#include <iostream>
 #include <iomanip>
-#include <cctype>
-
+#include <iostream>
 //---------------------------------------------------------------------------
 
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)

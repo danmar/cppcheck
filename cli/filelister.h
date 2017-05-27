@@ -19,9 +19,10 @@
 #ifndef filelisterH
 #define filelisterH
 
-#include <string>
-#include <set>
+#include <cstddef>
 #include <map>
+#include <set>
+#include <string>
 
 class PathMatch;
 

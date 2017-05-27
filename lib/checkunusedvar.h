@@ -21,13 +21,18 @@
 #define checkunusedvarH
 //---------------------------------------------------------------------------
 
-#include "config.h"
 #include "check.h"
+#include "config.h"
 
 #include <map>
+#include <string>
 
-class Type;
+class ErrorLogger;
 class Scope;
+class Settings;
+class Token;
+class Tokenizer;
+class Type;
 class Variables;
 
 /// @addtogroup Checks

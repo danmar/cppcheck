@@ -25,8 +25,8 @@
 #include <string>
 #include <vector>
 
-class Settings;
 class Library;
+class Settings;
 class Token;
 
 /** Is expression a 'signed char' if no promotion is used */

@@ -16,11 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tokenize.h"
 #include "checknullpointer.h"
+#include "library.h"
+#include "settings.h"
 #include "testsuite.h"
-#include <tinyxml2.h>
+#include "token.h"
+#include "tokenize.h"
+
 #include <simplecpp.h>
+#include <tinyxml2.h>
+#include <list>
+#include <map>
+#include <string>
+#include <vector>
 
 class TestNullPointer : public TestFixture {
 public:

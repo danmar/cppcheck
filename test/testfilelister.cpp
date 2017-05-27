@@ -16,18 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsuite.h"
 #include "filelister.h"
-#include "settings.h"
 #include "pathmatch.h"
+#include "testsuite.h"
+
+#include <cstddef>
 #include <fstream>
+#include <map>
+#include <string>
+#include <utility>
 
 #ifndef _WIN32
 #include <vector>
-#include <limits.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
 #endif
 
 class TestFileLister: public TestFixture {

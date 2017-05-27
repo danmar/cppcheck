@@ -19,13 +19,25 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
+
 #include "astutils.h"
+#include "errorlogger.h"
+#include "library.h"
 #include "mathlib.h"
+#include "settings.h"
+#include "standards.h"
 #include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
 #include "utils.h"
 
-#include <stack>
 #include <algorithm> // find_if()
+#include <list>
+#include <map>
+#include <ostream>
+#include <set>
+#include <stack>
+#include <utility>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

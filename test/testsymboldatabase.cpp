@@ -16,12 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "library.h"
+#include "platform.h"
+#include "settings.h"
+#include "symboldatabase.h"
 #include "testsuite.h"
 #include "testutils.h"
-#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+#include "tokenlist.h"
 #include "utils.h"
+
+#include <cstddef>
+#include <list>
+#include <map>
+#include <set>
 #include <sstream>
 #include <stdexcept>
+#include <string>
+#include <vector>
+
+struct InternalError;
 
 #define GET_SYMBOL_DB(code) \
     Tokenizer tokenizer(&settings1, this); \

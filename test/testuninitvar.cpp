@@ -16,10 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsuite.h"
 #include "checkuninitvar.h"
-#include "tokenize.h"
+#include "library.h"
 #include "settings.h"
+#include "testsuite.h"
+#include "tokenize.h"
+
+#include <sstream>
+#include <string>
+
+struct InternalError;
 
 
 class TestUninitVar : public TestFixture {

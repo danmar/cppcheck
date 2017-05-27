@@ -21,15 +21,18 @@
 #define cppcheckH
 //---------------------------------------------------------------------------
 
-#include "config.h"
-#include "settings.h"
-#include "errorlogger.h"
-#include "check.h"
 #include "analyzerinfo.h"
+#include "check.h"
+#include "config.h"
+#include "errorlogger.h"
+#include "importproject.h"
+#include "settings.h"
 
-#include <string>
-#include <list>
+#include <cstddef>
 #include <istream>
+#include <list>
+#include <map>
+#include <string>
 
 class Tokenizer;
 

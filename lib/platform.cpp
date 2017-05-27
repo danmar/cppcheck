@@ -17,8 +17,11 @@
 */
 
 #include "platform.h"
+
 #include "tinyxml2.h"
 
+#include <cstdlib>
+#include <cstring>
 
 cppcheck::Platform::Platform()
 {

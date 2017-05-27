@@ -16,10 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pathmatch.h"
+#include "testsuite.h"
+
 #include <string>
 #include <vector>
-#include "testsuite.h"
-#include "pathmatch.h"
 
 
 class TestPathMatch : public TestFixture {

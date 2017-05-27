@@ -19,9 +19,17 @@
 
 //---------------------------------------------------------------------------
 #include "checkbool.h"
-#include "mathlib.h"
-#include "symboldatabase.h"
+
 #include "astutils.h"
+#include "errorlogger.h"
+#include "mathlib.h"
+#include "settings.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+
+#include <cstddef>
+#include <list>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

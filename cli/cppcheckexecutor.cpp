@@ -17,30 +17,39 @@
  */
 
 #include "cppcheckexecutor.h"
+
 #include "analyzerinfo.h"
 #include "cmdlineparser.h"
+#include "config.h"
 #include "cppcheck.h"
 #include "filelister.h"
+#include "importproject.h"
+#include "library.h"
 #include "path.h"
 #include "pathmatch.h"
 #include "preprocessor.h"
+#include "settings.h"
+#include "standards.h"
+#include "suppressions.h"
 #include "threadexecutor.h"
 #include "utils.h"
 
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
-#include <algorithm>
 #include <iostream>
-#include <sstream>
+#include <list>
+#include <utility>
+#include <vector>
 
 #if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__OS2__)
 #define USE_UNIX_SIGNAL_HANDLING
-#include <cstdio>
 #include <signal.h>
 #include <unistd.h>
+#include <cstdio>
 #if defined(__APPLE__)
 #   define _XOPEN_SOURCE // ucontext.h APIs can only be used on Mac OSX >= 10.7 if _XOPEN_SOURCE is defined
 #   include <ucontext.h>
+
 #   undef _XOPEN_SOURCE
 #elif !defined(__OpenBSD__)
 #   include <ucontext.h>
@@ -59,10 +68,10 @@
 
 #if defined(_MSC_VER)
 #define USE_WINDOWS_SEH
-#include <Windows.h>
 #include <DbgHelp.h>
-#include <excpt.h>
 #include <TCHAR.H>
+#include <Windows.h>
+#include <excpt.h>
 #endif
 
 

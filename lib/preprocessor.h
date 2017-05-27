@@ -22,12 +22,14 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+
 #include <simplecpp.h>
-#include <map>
 #include <istream>
-#include <string>
 #include <list>
+#include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 class ErrorLogger;
 class Settings;

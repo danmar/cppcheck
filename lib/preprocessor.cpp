@@ -18,18 +18,18 @@
 
 
 #include "preprocessor.h"
-#include "path.h"
+
 #include "errorlogger.h"
+#include "library.h"
+#include "path.h"
 #include "settings.h"
+#include "simplecpp.h"
+#include "suppressions.h"
 
 #include <algorithm>
-#include <functional>
-#include <sstream>
-#include <cstdlib>
-#include <cctype>
-#include <vector>
-#include <set>
 #include <cstdint>
+#include <cstring>
+#include <utility>
 
 /**
  * Remove heading and trailing whitespaces from the input parameter.

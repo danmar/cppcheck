@@ -19,12 +19,20 @@
 
 //---------------------------------------------------------------------------
 #include "checkunusedfunctions.h"
-#include "tokenize.h"
-#include "token.h"
+
+#include "errorlogger.h"
+#include "library.h"
+#include "settings.h"
 #include "symboldatabase.h"
-#include "analyzerinfo.h"
-#include <cctype>
+#include "token.h"
+#include "tokenize.h"
+#include "tokenlist.h"
+
 #include <tinyxml2.h>
+#include <cstdlib>
+#include <cstring>
+#include <istream>
+#include <utility>
 //---------------------------------------------------------------------------
 
 

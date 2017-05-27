@@ -16,10 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "timer.h"
 #include "testsuite.h"
-#include <cmath>
+#include "timer.h"
 
+#include <cmath>
+#include <ctime>
 
 class TestTimer : public TestFixture {
 public:

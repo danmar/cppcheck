@@ -17,10 +17,13 @@
  */
 
 #include "pathmatch.h"
+
 #include "path.h"
 #include "utils.h"
+
 #include <algorithm>
-#include <ctype.h>
+#include <cctype>
+#include <cstddef>
 
 PathMatch::PathMatch(const std::vector<std::string> &excludedPaths, bool caseSensitive)
     : _excludedPaths(excludedPaths), _caseSensitive(caseSensitive)

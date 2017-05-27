@@ -22,11 +22,18 @@
 #define checkleakautovarH
 //---------------------------------------------------------------------------
 
-#include "config.h"
 #include "check.h"
+#include "config.h"
+#include "library.h"
 
 #include <map>
 #include <set>
+#include <string>
+
+class ErrorLogger;
+class Settings;
+class Token;
+class Tokenizer;
 
 
 class CPPCHECKLIB VarInfo {

@@ -24,9 +24,11 @@
 #include "config.h"
 #include "suppressions.h"
 
+#include <cstddef>
 #include <fstream>
 #include <list>
 #include <string>
+#include <utility>
 #include <vector>
 
 /**
@@ -42,6 +44,7 @@ struct CWE {
 
 class Token;
 class TokenList;
+
 namespace tinyxml2 {
     class XMLElement;
 }

@@ -16,14 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "preprocessor.h"
-#include "tokenize.h"
-#include "symboldatabase.h"
 #include "checktype.h"
+#include "platform.h"
+#include "settings.h"
 #include "testsuite.h"
-#include "testutils.h"
-#include <tinyxml2.h>
+#include "tokenize.h"
 
+#include <string>
 
 class TestType : public TestFixture {
 public:

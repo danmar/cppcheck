@@ -16,9 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-#include "testsuite.h"
 #include "path.h"
+#include "testsuite.h"
+
+#include <string>
+#include <vector>
 
 class TestPath : public TestFixture {
 public:

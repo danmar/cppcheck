@@ -16,9 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tokenize.h"
+
 #include "check64bit.h"
+#include "settings.h"
 #include "testsuite.h"
+#include "tokenize.h"
 
 
 class Test64BitPortability : public TestFixture {

@@ -23,6 +23,16 @@
 
 #include "check.h"
 #include "config.h"
+#include "errorlogger.h"
+
+#include <ostream>
+#include <string>
+
+class Function;
+class Settings;
+class Token;
+class Tokenizer;
+class Variable;
 
 /// @addtogroup Checks
 /// @{

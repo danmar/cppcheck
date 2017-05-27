@@ -16,10 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tokenize.h"
 #include "checksizeof.h"
+#include "settings.h"
 #include "testsuite.h"
+#include "tokenize.h"
+
 #include <simplecpp.h>
+#include <map>
+#include <vector>
 
 class TestSizeof : public TestFixture {
 public:

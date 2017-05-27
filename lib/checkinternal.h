@@ -25,6 +25,8 @@
 #include "check.h"
 #include "config.h"
 
+#include <string>
+
 /// @addtogroup Checks
 /// @{
 

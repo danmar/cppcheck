@@ -18,22 +18,30 @@
 
 //---------------------------------------------------------------------------
 #include "tokenize.h"
-#include "mathlib.h"
-#include "settings.h"
+
 #include "check.h"
+#include "library.h"
+#include "mathlib.h"
 #include "path.h"
+#include "platform.h"
+#include "settings.h"
+#include "standards.h"
 #include "symboldatabase.h"
 #include "templatesimplifier.h"
 #include "timer.h"
+#include "token.h"
 #include "utils.h"
+#include "valueflow.h"
 
-#include <cstring>
-#include <sstream>
+#include <algorithm>
 #include <cassert>
 #include <cctype>
-#include <stack>
+#include <cstring>
+#include <ctime>
 #include <iostream>
-
+#include <stack>
+#include <utility>
+#include <vector>
 //---------------------------------------------------------------------------
 
 namespace {

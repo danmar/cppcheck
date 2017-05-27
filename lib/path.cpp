@@ -21,11 +21,12 @@
 #endif
 #include "path.h"
 #include "utils.h"
+
 #include <algorithm>
-#include <vector>
-#include <sstream>
-#include <cstring>
 #include <cctype>
+#include <cstdlib>
+#include <sstream>
+
 #ifndef _WIN32
 #include <unistd.h>
 #else

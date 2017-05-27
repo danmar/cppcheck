@@ -21,9 +21,17 @@
 //---------------------------------------------------------------------------
 
 #include "checkautovariables.h"
-#include "symboldatabase.h"
 
-#include <string>
+#include "errorlogger.h"
+#include "library.h"
+#include "settings.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+#include "valueflow.h"
+
+#include <cstddef>
+#include <list>
 
 //---------------------------------------------------------------------------
 

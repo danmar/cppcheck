@@ -21,18 +21,19 @@
 #define settingsH
 //---------------------------------------------------------------------------
 
-#include <list>
-#include <vector>
-#include <string>
-#include <set>
 #include "config.h"
+#include "errorlogger.h"
+#include "importproject.h"
 #include "library.h"
 #include "platform.h"
-#include "importproject.h"
-#include "suppressions.h"
 #include "standards.h"
-#include "errorlogger.h"
+#include "suppressions.h"
 #include "timer.h"
+
+#include <list>
+#include <set>
+#include <string>
+#include <vector>
 
 namespace ValueFlow {
     class Value;

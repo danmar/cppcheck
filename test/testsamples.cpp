@@ -16,15 +16,23 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "filelister.h"
-#include "testsuite.h"
 #include "cppcheckexecutor.h"
+#include "filelister.h"
 #include "path.h"
 #include "pathmatch.h"
 #include "redirect.h"
-#include <fstream>
-#include <cstring>
+#include "testsuite.h"
+
 #include <algorithm>
+#include <cstddef>
+#include <cstring>
+#include <fstream>
+#include <iterator>
+#include <map>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 
 class TestSamples : public TestFixture {

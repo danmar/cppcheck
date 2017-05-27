@@ -17,16 +17,20 @@
  */
 
 #include "library.h"
-#include "path.h"
-#include "tinyxml2.h"
-#include "tokenlist.h"
-#include "mathlib.h"
-#include "token.h"
-#include "symboldatabase.h"
+
 #include "astutils.h"
+#include "mathlib.h"
+#include "path.h"
+#include "symboldatabase.h"
+#include "tinyxml2.h"
+#include "token.h"
+#include "tokenlist.h"
 #include "utils.h"
 
-#include <string>
+#include <cctype>
+#include <cstdlib>
+#include <cstring>
+#include <list>
 
 static std::vector<std::string> getnames(const char *names)
 {

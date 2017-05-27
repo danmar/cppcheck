@@ -22,8 +22,19 @@
 #define checkstlH
 //---------------------------------------------------------------------------
 
-#include "config.h"
 #include "check.h"
+#include "config.h"
+#include "library.h"
+#include "tokenize.h"
+
+#include <map>
+#include <string>
+
+class ErrorLogger;
+class Scope;
+class Settings;
+class Token;
+class Variable;
 
 
 /// @addtogroup Checks

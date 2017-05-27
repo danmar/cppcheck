@@ -19,11 +19,14 @@
 
 //---------------------------------------------------------------------------
 #include "checksizeof.h"
+
+#include "errorlogger.h"
+#include "settings.h"
 #include "symboldatabase.h"
-#include <algorithm>
-#include <cctype>
+#include "token.h"
+#include "tokenize.h"
 
-
+#include <cstddef>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

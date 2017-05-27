@@ -16,15 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
 #include "cppcheck.h"
 #include "settings.h"
+#include "suppressions.h"
 #include "testsuite.h"
-#include "cppcheckexecutor.h"
 #include "threadexecutor.h"
 
-#include <string>
+#include <cstddef>
+#include <list>
 #include <map>
-
+#include <string>
+#include <utility>
+#include <vector>
 
 class TestSuppressions : public TestFixture {
 public:

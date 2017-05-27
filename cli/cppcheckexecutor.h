@@ -20,14 +20,16 @@
 #define CPPCHECKEXECUTOR_H
 
 #include "errorlogger.h"
+
 #include <cstdio>
 #include <ctime>
+#include <map>
 #include <set>
 #include <string>
 
 class CppCheck;
-class Settings;
 class Library;
+class Settings;
 
 /**
  * This class works as an example of how CppCheck can be used in external

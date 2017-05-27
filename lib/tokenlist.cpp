@@ -18,19 +18,17 @@
 
 //---------------------------------------------------------------------------
 #include "tokenlist.h"
-#include "token.h"
+
+#include "errorlogger.h"
 #include "mathlib.h"
 #include "path.h"
-#include "preprocessor.h"
 #include "settings.h"
-#include "errorlogger.h"
-#include "utils.h"
+#include "token.h"
 
 #include <simplecpp.h>
-
-#include <cstring>
-#include <sstream>
 #include <cctype>
+#include <cstring>
+#include <set>
 #include <stack>
 
 // How many compileExpression recursions are allowed?

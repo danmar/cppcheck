@@ -19,9 +19,18 @@
 
 //---------------------------------------------------------------------------
 #include "checktype.h"
-#include "mathlib.h"
-#include "symboldatabase.h"
 
+#include "errorlogger.h"
+#include "mathlib.h"
+#include "platform.h"
+#include "settings.h"
+#include "symboldatabase.h"
+#include "token.h"
+#include "tokenize.h"
+
+#include <cstddef>
+#include <list>
+#include <ostream>
 #include <stack>
 //---------------------------------------------------------------------------
 

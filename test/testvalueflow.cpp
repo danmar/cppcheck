@@ -16,16 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "library.h"
+#include "platform.h"
+#include "settings.h"
 #include "testsuite.h"
-#include "testutils.h"
-#include "valueflow.h"
-#include "tokenize.h"
 #include "token.h"
+#include "tokenize.h"
+#include "valueflow.h"
 
 #include <simplecpp.h>
-#include <vector>
-#include <string>
 #include <cmath>
+#include <list>
+#include <map>
+#include <ostream>
+#include <string>
+#include <utility>
+#include <vector>
 
 class TestValueFlow : public TestFixture {
 public:
