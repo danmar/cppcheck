@@ -340,7 +340,7 @@ class CppCheckHandler(XmlContentHandler):
             self.versionCppcheck = attributes['version']
         if name == 'error':
             # is there a better solution than this?
-            if (attributes.has_key('inconclusive') and attributes.has_key('cwe')):
+            if ('inconclusive' in attributes and 'cwe' in attributes):
                 self.errors.append({
                     'file': '',
                     'line': 0,
@@ -351,7 +351,7 @@ class CppCheckHandler(XmlContentHandler):
                     'inconclusive': attributes['inconclusive'],
                     'cwe': attributes['cwe']
                 })
-            elif attributes.has_key('inconclusive'):
+            elif 'inconclusive' in attributes:
                 self.errors.append({
                     'file': '',
                     'line': 0,
@@ -361,7 +361,7 @@ class CppCheckHandler(XmlContentHandler):
                     'verbose': attributes.get('verbose'),
                     'inconclusive': attributes['inconclusive']
                 })
-            elif attributes.has_key('cwe'):
+            elif 'cwe' in attributes:
                 self.errors.append({
                     'file': '',
                     'line': 0,
