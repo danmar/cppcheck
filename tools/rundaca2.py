@@ -17,7 +17,7 @@ for arg in sys.argv[1:]:
     else:
         PASSWORD = arg
 
-# Upload file to sourceforge web server using scp
+# Upload file to trac.cppcheck.net server using scp
 def upload(file_to_upload, destination):
     if not os.path.isfile(file_to_upload):
         return
