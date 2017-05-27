@@ -32,6 +32,9 @@
 #else
 #include <direct.h>
 #endif
+#if defined(__CYGWIN__)
+#include <strings.h>
+#endif
 
 /** Is the filesystem case insensitive? */
 static bool caseInsensitiveFilesystem()
