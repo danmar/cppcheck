@@ -50,6 +50,7 @@ gui/temp/
 # Other (generated) GUI files
 gui/*.qm
 gui/cppcheck-gui
+gui/cppcheck-gui.exe
 gui/gui.sln
 gui/gui.vcproj
 gui/Makefile
