@@ -144,6 +144,25 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
         simplecpp::TokenList tokens1(fileStream, files, filename, &outputList);
+
+        // If there is a syntax error, report it and stop
+        for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
+            if (it->type != simplecpp::Output::SYNTAX_ERROR)
+                continue;
+            const ErrorLogger::ErrorMessage::FileLocation loc1(it->location.file(), it->location.line);
+            std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+            callstack.push_back(loc1);
+
+            ErrorLogger::ErrorMessage errmsg(callstack,
+                                             "",
+                                             Severity::error,
+                                             it->msg,
+                                             "syntaxError",
+                                             false);
+            _errorLogger.reportErr(errmsg);
+            return 1;
+        }
+
         preprocessor.loadFiles(tokens1, files);
 
         if (!_settings.plistOutput.empty()) {
