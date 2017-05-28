@@ -186,6 +186,10 @@ private:
         TEST_CASE(constructors_crash1);    // ticket #5641
         TEST_CASE(classWithOperatorInName);// ticket #2827
         TEST_CASE(templateConstructor);    // ticket #7942
+
+        TEST_CASE(uninitAssignmentWithOperator);  // ticket #7429
+        TEST_CASE(uninitCompoundAssignment);      // ticket #7429
+        TEST_CASE(uninitComparisonAssignment);    // ticket #7429
     }
 
 
@@ -3359,6 +3363,314 @@ private:
               "};\n"
               "template <class T> Containter<T>::Containter() : mElements(nullptr) {}\n"
               "Containter<int> intContainer;");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitAssignmentWithOperator() {
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = false;\n"
+              "        b = b && SetValue();\n"
+              "    }\n"
+              "    bool SetValue() {\n"
+              "        x = 1;\n"
+              "        return true;\n"
+              "    }\n"
+              "};", true);
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Member variable 'C::x' is not initialized in the constructor.\n",
+                           "[test.cpp:3]: (warning) Member variable 'C::x' is not initialized in the constructor.\n", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = false;\n"
+              "        b = true || SetValue();\n"
+              "    }\n"
+              "    bool SetValue() {\n"
+              "        x = 1;\n"
+              "        return true;\n"
+              "    }\n"
+              "};", true);
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Member variable 'C::x' is not initialized in the constructor.\n",
+                           "[test.cpp:3]: (warning) Member variable 'C::x' is not initialized in the constructor.\n", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = true;\n"
+              "        b = b & SetValue();\n"
+              "    }\n"
+              "    bool SetValue() {\n"
+              "        x = 1;\n"
+              "        return true;\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = false;\n"
+              "        b = true | SetValue();\n"
+              "    }\n"
+              "    bool SetValue() {\n"
+              "        x = 1;\n"
+              "        return true;\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i = i * SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i = i / SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i = i % SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i = i + SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i = i - SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i = i << SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i = i >> SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i = i ^ SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitCompoundAssignment() {
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = true;\n"
+              "        b &= SetValue();\n"
+              "    }\n"
+              "    bool SetValue() {\n"
+              "        x = 1;\n"
+              "        return true;\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = false;\n"
+              "        b |= SetValue();\n"
+              "    }\n"
+              "    bool SetValue() {\n"
+              "        x = 1;\n"
+              "        return true;\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i *= SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i /= SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i %= SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i += SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i -= SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i <<= SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i >>= SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        int i = 0;\n"
+              "        i ^= SetValue();\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitComparisonAssignment() {
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = true;\n"
+              "        b = (true == SetValue());\n"
+              "    }\n"
+              "    bool SetValue() {\n"
+              "        x = 1;\n"
+              "        return true;\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = false;\n"
+              "        b |= (true != SetValue());\n"
+              "    }\n"
+              "    bool SetValue() {\n"
+              "        x = 1;\n"
+              "        return true;\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = (0 < SetValue());\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = (0 <= SetValue());\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = (0 > SetValue());\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n"
+              "    int x;\n"
+              "    C() {\n"
+              "        bool b = (0 >= SetValue());\n"
+              "    }\n"
+              "    int SetValue() { return x = 1; }\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 };
