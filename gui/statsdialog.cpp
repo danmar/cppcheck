@@ -98,29 +98,28 @@ void StatsDialog::PDFexport()
 {
     const QString Stat = QString(
                              "<center><h1>%1   %2</h1></center>\n"
-                             "<font color=\"red\"><h3>%3   :   %4</h3></color>\n"
-                             "<font color=\"green\"><h3>%5   :   %6</h3></color>\n"
-                             "<font color=\"orange\"><h3>%7   :   %8</h3></color>\n"
-                             "<font color=\"blue\"><h3>%9   :   %10</h3></color>\n"
-                             "<font color=\"blue\"><h3>%11  :   %12</h3></color>\n"
-                             "<font color=\"purple\"><h3>%13  :   %14</h3></color>\n")
-                         .arg("Statistics")
+                             "<font color=\"red\"><h3>%3   :   %4</h3></font>\n"
+                             "<font color=\"green\"><h3>%5   :   %6</h3></font>\n"
+                             "<font color=\"orange\"><h3>%7   :   %8</h3></font>\n"
+                             "<font color=\"blue\"><h3>%9   :   %10</h3></font>\n"
+                             "<font color=\"blue\"><h3>%11  :   %12</h3></font>\n"
+                             "<font color=\"purple\"><h3>%13  :   %14</h3></font>\n")
+                         .arg(tr("Statistics"))
                          .arg(QDate::currentDate().toString("dd.MM.yyyy"))
-                         .arg("Errors")
+                         .arg(tr("Errors"))
                          .arg(mStatistics->GetCount(ShowTypes::ShowErrors))
-                         .arg("Warnings")
+                         .arg(tr("Warnings"))
                          .arg(mStatistics->GetCount(ShowTypes::ShowWarnings))
-                         .arg("Style warnings")
+                         .arg(tr("Style warnings"))
                          .arg(mStatistics->GetCount(ShowTypes::ShowStyle))
-                         .arg("Portability warnings")
+                         .arg(tr("Portability warnings"))
                          .arg(mStatistics->GetCount(ShowTypes::ShowPortability))
-                         .arg("Performance warnings")
+                         .arg(tr("Performance warnings"))
                          .arg(mStatistics->GetCount(ShowTypes::ShowPerformance))
-                         .arg("Information messages")
-                         .arg(mStatistics->GetCount(ShowTypes::ShowInformation)
-                             );
+                         .arg(tr("Information messages"))
+                         .arg(mStatistics->GetCount(ShowTypes::ShowInformation));
 
-    QString fileName = QFileDialog::getSaveFileName((QWidget*)0, "Export PDF", QString(), "*.pdf");
+    QString fileName = QFileDialog::getSaveFileName((QWidget*)0, tr("Export PDF"), QString(), "*.pdf");
     if (QFileInfo(fileName).suffix().isEmpty()) {
         fileName.append(".pdf");
     }
