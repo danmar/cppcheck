@@ -4777,8 +4777,13 @@ bool Tokenizer::simplifyConditions()
                     bool eq = false;
                     if (MathLib::isInt(op1) && MathLib::isInt(op2))
                         eq = (MathLib::toLongNumber(op1) == MathLib::toLongNumber(op2));
-                    else
+                    else {
                         eq = (op1 == op2);
+
+                        // It is inconclusive whether two unequal float representations are numerically equal
+                        if (!eq && MathLib::isFloat(op1))
+                            cmp = "";
+                    }
 
                     if (cmp == "==")
                         result = eq;

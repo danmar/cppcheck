@@ -2624,6 +2624,21 @@ private:
 
             ASSERT_EQUALS("void f ( ) { ; }", tok(code));
         }
+
+        {
+            // #7849
+            const char code[] =
+                    "void f() {\n"
+                    "if (-1e-2 == -0.01) \n"
+                    "    g();\n"
+                    "else\n"
+                    "    h();\n"
+                    "}";
+            // condition cannot be safely be calculated to be true due to numerics
+            TODO_ASSERT_EQUALS("void f ( ) { g ( ) ; }",
+                               "void f ( ) { if ( -1e-2 == -0.01 ) { g ( ) ; } else { h ( ) ; } }",
+                               tok(code));
+        }
     }
 
     void simplify_condition() {
