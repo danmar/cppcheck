@@ -64,6 +64,7 @@ public:
 
 private slots:
     void copyToClipboard();
+    void PDFexport();
 
 private:
     Ui::StatsDialog mUI;
