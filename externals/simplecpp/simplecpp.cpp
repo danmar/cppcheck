@@ -19,21 +19,16 @@
 #include "simplecpp.h"
 
 #include <algorithm>
-#include <cctype>
 #include <cstdlib>
-#include <limits>
-#include <list>
-#include <map>
-#include <set>
-#include <stdexcept>
-#include <vector>
 #include <cstring>
-#include <cstdlib> // strtoll, etc
-#include <sstream>
+#include <exception>
 #include <fstream>
 #include <iostream>
+#include <limits>
+#include <sstream>
 #include <stack>
-#include <string>
+#include <stdexcept>
+#include <utility>
 
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
 #define NOMINMAX
@@ -533,6 +528,18 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
             if (currentToken.size() < 2U)
                 // TODO report
                 return;
+
+            std::string s = currentToken;
+            std::string::size_type pos;
+            while ((pos = s.find_first_of("\r\n")) != std::string::npos) {
+                s.erase(pos,1);
+            }
+
+            push_back(new Token(s, location)); // push string without newlines
+
+            location.adjust(currentToken);
+
+            continue;
         }
 
         else {
@@ -900,12 +907,25 @@ std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &
     std::string ret;
     ret += start;
 
+    bool backslash = false;
     char ch = 0;
     while (ch != end && ch != '\r' && ch != '\n' && istr.good()) {
         ch = (unsigned char)istr.get();
+        if (backslash && ch == '\n') {
+            ch = 0;
+            backslash = false;
+            continue;
+        }
+        backslash = false;
         ret += ch;
-        if (ch == '\\')
-            ret += (unsigned char)istr.get();
+        if (ch == '\\') {
+            const char next = (unsigned char)istr.get();
+            if (next == '\r' || next == '\n') {
+                ret.erase(ret.size()-1U);
+                backslash = (next == '\r');
+            }
+            ret += next;
+        }
     }
 
     if (!istr.good() || ch != end) {

@@ -20,13 +20,13 @@
 #define simplecppH
 
 #include <cctype>
+#include <cstddef>
 #include <istream>
 #include <list>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
-
 
 #ifdef _WIN32
 #  ifdef SIMPLECPP_EXPORT
