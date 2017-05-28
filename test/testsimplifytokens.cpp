@@ -2628,12 +2628,12 @@ private:
         {
             // #7849
             const char code[] =
-                    "void f() {\n"
-                    "if (-1e-2 == -0.01) \n"
-                    "    g();\n"
-                    "else\n"
-                    "    h();\n"
-                    "}";
+                "void f() {\n"
+                "if (-1e-2 == -0.01) \n"
+                "    g();\n"
+                "else\n"
+                "    h();\n"
+                "}";
             ASSERT_EQUALS("void f ( ) { if ( -1e-2 == -0.01 ) { g ( ) ; } else { h ( ) ; } }",
                           tok(code));
         }

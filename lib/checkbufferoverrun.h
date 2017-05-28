@@ -38,10 +38,10 @@ class Settings;
 class SymbolDatabase;
 class Token;
 namespace ValueFlow {
-class Value;
+    class Value;
 }  // namespace ValueFlow
 namespace tinyxml2 {
-class XMLElement;
+    class XMLElement;
 }  // namespace tinyxml2
 
 // CWE ids used

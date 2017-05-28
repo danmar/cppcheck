@@ -35,7 +35,7 @@
 class Token;
 class Tokenizer;
 namespace ValueFlow {
-class Value;
+    class Value;
 }  // namespace ValueFlow
 
 
