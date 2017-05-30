@@ -78,7 +78,7 @@
 /*static*/ FILE* CppCheckExecutor::exceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : _settings(0), time1(0), errorlist(false)
+    : _settings(0), time1(0), errorOutput(stderr), errorlist(false)
 {
 }
 
@@ -808,6 +808,10 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     if (settings.reportProgress)
         time1 = std::time(0);
 
+    if (!settings.outputFile.empty()) {
+        errorOutput = fopen(settings.outputFile.c_str(), "wt");
+    }
+
     if (settings.xml) {
         reportErr(ErrorLogger::ErrorMessage::getXMLHeader(settings.xml_version));
     }
@@ -923,7 +927,7 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
         return;
 
     _errorList.insert(errmsg);
-    std::cerr << errmsg << std::endl;
+    std::fprintf(errorOutput, "%s\n", errmsg.c_str());
 }
 
 void CppCheckExecutor::reportOut(const std::string &outmsg)

@@ -272,6 +272,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+            // Write results in file
+            else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
+                _settings->outputFile = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 14));
+
             // Write results in results.plist
             else if (std::strncmp(argv[i], "--plist-output=", 15) == 0) {
                 _settings->plistOutput = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 15));
@@ -923,6 +927,7 @@ void CmdLineParser::PrintHelp()
               "                         distributed with Cppcheck is loaded automatically.\n"
               "                         For more information about library files, read the\n"
               "                         manual.\n"
+              "    --output-file=<file> Write results to file, rather than standard error.\n"
               "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
               "                         Studio Solution (*.sln), Visual Studio Project\n"
               "                         (*.vcxproj), or compile database\n"

@@ -177,6 +177,11 @@ private:
     static FILE* exceptionOutput;
 
     /**
+     * Error output (default stderr)
+     */
+    FILE* errorOutput;
+
+    /**
      * Has --errorlist been given?
      */
     bool errorlist;
