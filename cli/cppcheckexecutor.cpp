@@ -78,12 +78,13 @@
 /*static*/ FILE* CppCheckExecutor::exceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : _settings(0), time1(0), errorOutput(stderr), errorlist(false)
+    : _settings(0), time1(0), errorOutput(nullptr), errorlist(false)
 {
 }
 
 CppCheckExecutor::~CppCheckExecutor()
 {
+    delete errorOutput;
 }
 
 bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
@@ -809,7 +810,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         time1 = std::time(0);
 
     if (!settings.outputFile.empty()) {
-        errorOutput = fopen(settings.outputFile.c_str(), "wt");
+        errorOutput = new std::ofstream(settings.outputFile);
     }
 
     if (settings.xml) {
@@ -927,7 +928,10 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
         return;
 
     _errorList.insert(errmsg);
-    std::fprintf(errorOutput, "%s\n", errmsg.c_str());
+    if (errorOutput)
+        *errorOutput << errmsg << std::endl;
+    else
+        std::cerr << errmsg << std::endl;
 }
 
 void CppCheckExecutor::reportOut(const std::string &outmsg)

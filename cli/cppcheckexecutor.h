@@ -177,9 +177,9 @@ private:
     static FILE* exceptionOutput;
 
     /**
-     * Error output (default stderr)
+     * Error output
      */
-    FILE* errorOutput;
+    std::ofstream *errorOutput;
 
     /**
      * Has --errorlist been given?
