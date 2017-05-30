@@ -78,7 +78,7 @@
 /*static*/ FILE* CppCheckExecutor::exceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : _settings(0), time1(0), errorlist(false)
+    : _settings(0), time1(0), xmlResults(0), errorlist(false)
 {
 }
 
@@ -809,7 +809,16 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         time1 = std::time(0);
 
     if (settings.xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLHeader(settings.xml_version));
+        if (settings.xml_results.length()) {
+            xmlResults = new std::ofstream(settings.xml_results);
+        }
+        std::string xmlHeader = ErrorLogger::ErrorMessage::getXMLHeader(settings.xml_version);
+        if (xmlResults) {
+            *xmlResults << xmlHeader << "\n";
+        }
+        else {
+            reportErr(xmlHeader);
+        }
     }
 
     if (!settings.buildDir.empty()) {
@@ -906,7 +915,16 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (settings.xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLFooter(settings.xml_version));
+        std::string xmlFooter = ErrorLogger::ErrorMessage::getXMLFooter(settings.xml_version);
+        if (xmlResults) {
+            *xmlResults << xmlFooter << "\n";
+            xmlResults->close();
+            delete xmlResults;
+            xmlResults = 0;
+        }
+        else {
+            reportErr(xmlFooter);
+        }
     }
 
     _settings = 0;
@@ -976,7 +994,13 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     if (errorlist) {
         reportOut(msg.toXML(false, _settings->xml_version));
     } else if (_settings->xml) {
-        reportErr(msg.toXML(_settings->verbose, _settings->xml_version));
+        std::string xmlMessage = msg.toXML(_settings->verbose, _settings->xml_version);
+        if (xmlResults) {
+            *xmlResults << xmlMessage << "\n";
+        }
+        else {
+            reportErr(xmlMessage);
+        }
     } else {
         reportErr(msg.toString(_settings->verbose, _settings->outputFormat));
     }

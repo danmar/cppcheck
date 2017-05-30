@@ -547,6 +547,12 @@ There are false positives with this option. Each result must be carefully invest
           <para>Select the XML file version. Currently versions 1 and 2 are available. The default version is 1.</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term><option>--xml-results=&lt;file&gt;</option></term>
+        <listitem>
+          <para>Write XML results to file, rather than standard error.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1 id="author">

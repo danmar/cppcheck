@@ -26,6 +26,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <fstream>
 
 class CppCheck;
 class Library;
@@ -175,6 +176,11 @@ private:
      * Output file name for exception handler
      */
     static FILE* exceptionOutput;
+
+    /**
+     * Output file for XML results
+     */
+    std::ofstream* xmlResults;
 
     /**
      * Has --errorlist been given?

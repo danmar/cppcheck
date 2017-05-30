@@ -305,6 +305,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->xml = true;
             }
 
+            else if (std::strncmp(argv[i], "--xml-results=", 14) == 0) {
+                // Enable also XML if version is set
+                _settings->xml_results = std::string(argv[i]+14);
+                _settings->xml = true;
+            }
+
             // Only print something when there are errors
             else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
                 _settings->quiet = true;
@@ -1007,6 +1013,8 @@ void CmdLineParser::PrintHelp()
               "    --xml-version=<version>\n"
               "                         Select the XML file version. Currently versions 1 and\n"
               "                         2 are available. The default version is 1."
+              "    --xml-results==<file>\n"
+              "                         Write XML results to file, rather than standard error.\n"
               "\n"
               "Example usage:\n"
               "  # Recursively check the current folder. Print the progress on the screen and\n"
