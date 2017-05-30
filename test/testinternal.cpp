@@ -416,35 +416,35 @@ private:
               "    const Token *tok;\n"
               "    if(tok && Token::findsimplematch(tok, \"foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unneccessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
 
         // findmatch
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(tok && Token::findmatch(tok, \"%str% foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unneccessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
 
         // Match
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(tok && Token::Match(tok, \"5str% foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unneccessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
 
         // simpleMatch
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(tok && Token::simpleMatch(tok, \"foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unneccessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
 
         // Match
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(tok->previous() && Token::Match(tok->previous(), \"5str% foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unneccessary check of \"tok->previous()\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok->previous()\", match-function already checks if it is null.\n", errout.str());
 
         // don't report:
         // tok->previous() vs tok
