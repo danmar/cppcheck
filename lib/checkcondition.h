@@ -55,6 +55,7 @@ public:
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
         checkCondition.multiCondition();
         checkCondition.clarifyCondition();   // not simplified because ifAssign
+        checkCondition.clarifyAssignmentAndLogicalCondition();
         checkCondition.oppositeInnerCondition();
         checkCondition.checkIncorrectLogicOperator();
         checkCondition.checkInvalidTestForOverflow();
@@ -102,6 +103,9 @@ public:
     /** @brief Suspicious condition (assignment+comparison) */
     void clarifyCondition();
 
+    /** @brief Suspicious condition (assignment + logical function call) */
+    void clarifyAssignmentAndLogicalCondition();
+
     /** @brief Condition is always true/false */
     void alwaysTrueFalse();
 
@@ -129,6 +133,8 @@ private:
 
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
 
+    void clarifyAssignmentAndLogicalConditionError(const Token* tok);
+
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
 
     void alwaysTrueFalseError(const Token *tok, bool knownResult);
@@ -147,6 +153,7 @@ private:
         c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false);
         c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
         c.moduloAlwaysTrueFalseError(nullptr, "1");
+        c.clarifyAssignmentAndLogicalConditionError(nullptr);
         c.clarifyConditionError(nullptr, true, false);
         c.alwaysTrueFalseError(nullptr, true);
         c.invalidTestForOverflow(nullptr, false);
