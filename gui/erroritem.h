@@ -88,7 +88,7 @@ public:
     QList<QErrorPathItem> errorPath;
 };
 
-Q_DECLARE_METATYPE(ErrorItem);
+Q_DECLARE_METATYPE(ErrorItem)
 
 /**
 * @brief A class containing error data for one shown error line.
