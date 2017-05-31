@@ -78,6 +78,7 @@ public:
     void str(T&& s) {
         _str = s;
         _varId = 0;
+        values.clear();
 
         update_property_info();
     }
