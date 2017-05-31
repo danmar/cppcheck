@@ -1149,6 +1149,11 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 tok = tok->tokAt(2);
             }
 
+            else if (varid && Token::Match(tok, "return free|fclose|pclose|closedir ( %varid% )", varid)) {
+                addtoken(&rettail, tok, "dealloc");
+                tok = tok->tokAt(4);
+            }
+
             else {
                 bool use = false;
 
@@ -2100,6 +2105,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *startTok, const std::str
         bool noerr = false;
         noerr = noerr || Token::simpleMatch(first, "alloc ; }");
         noerr = noerr || Token::simpleMatch(first, "alloc ; dealloc ; }");
+        noerr = noerr || Token::simpleMatch(first, "alloc ; return dealloc ; }");
         noerr = noerr || Token::simpleMatch(first, "alloc ; return use ; }");
         noerr = noerr || Token::simpleMatch(first, "alloc ; use ; }");
         noerr = noerr || Token::simpleMatch(first, "alloc ; use ; return ; }");
