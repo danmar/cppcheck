@@ -251,7 +251,7 @@ bool Path::isC(const std::string &path)
 bool Path::isCPP(const std::string &path)
 {
     const std::string extension = getFilenameExtensionInLowerCase(path);
-    if (extension == ".cpp" ||
+    return extension == ".cpp" ||
         extension == ".cxx" ||
         extension == ".cc" ||
         extension == ".c++" ||
@@ -259,12 +259,9 @@ bool Path::isCPP(const std::string &path)
         extension == ".hxx" ||
         extension == ".hh" ||
         extension == ".tpp" ||
-        extension == ".txx") {
-        return true;
-    }
-
+        extension == ".txx" ||
+        getFilenameExtension(path) == ".C";
     // In unix, ".C" is considered C++ file
-    return (getFilenameExtension(path) == ".C");
 }
 
 bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra)

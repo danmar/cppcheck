@@ -231,19 +231,13 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
 bool FileLister::isDirectory(const std::string &path)
 {
     struct stat file_stat;
-    if (stat(path.c_str(), &file_stat) != -1)
-        return ((file_stat.st_mode & S_IFMT) == S_IFDIR);
-
-    return false;
+    return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFDIR);
 }
 
 bool FileLister::fileExists(const std::string &path)
 {
     struct stat file_stat;
-    if (stat(path.c_str(), &file_stat) != -1)
-        return ((file_stat.st_mode & S_IFMT) == S_IFREG);
-
-    return false;
+    return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFREG);
 }
 
 #endif
