@@ -893,7 +893,7 @@ private:
      * @return true if flag set or false in flag not set
      */
     bool getFlag(unsigned int flag_) const {
-        return bool((_flags & flag_) != 0);
+        return ((_flags & flag_) != 0);
     }
 
     /**

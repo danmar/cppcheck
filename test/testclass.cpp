@@ -4436,7 +4436,7 @@ private:
                    "        x = 0;\n"
                    "    }\n"
                    "    bool isValid() {\n"
-                   "        return bool(x == 0x11224488);\n"
+                   "        return (x == 0x11224488);\n"
                    "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:9]: (style, inconclusive) Technically the member function 'Fred::isValid' can be const.\n", errout.str());
