@@ -82,7 +82,7 @@ std::string Path::simplifyPath(std::string originalPath)
     std::vector<std::string> pathParts;
     for (std::size_t i = 0; i < originalPath.size(); ++i) {
         if (originalPath[i] == '/' || originalPath[i] == '\\') {
-            if (subPath.length() > 0) {
+            if (!subPath.empty()) {
                 pathParts.push_back(subPath);
                 subPath = "";
             }
@@ -92,7 +92,7 @@ std::string Path::simplifyPath(std::string originalPath)
             subPath.append(1, originalPath[i]);
     }
 
-    if (subPath.length() > 0)
+    if (!subPath.empty())
         pathParts.push_back(subPath);
 
     // First filter out all double slashes
