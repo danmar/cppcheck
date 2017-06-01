@@ -2245,6 +2245,13 @@ private:
         ASSERT_EQUALS(9, value.intvalue);
         ASSERT(value.isPossible());
 
+        code = "void f(int c) {\n"
+               "  int x = 0;\n"
+               "  if (c) {} else { x++; }\n"
+               "  return x + 2;\n" // <- possible value
+               "}";
+        ASSERT(isNotKnownValues(code, "+"));
+
         code = "void f() {\n"
                "  int x = 0;\n"
                "  fred.dostuff(x);\n"
