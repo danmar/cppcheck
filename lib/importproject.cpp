@@ -255,14 +255,22 @@ namespace {
                 if (e->GetText()) {
                     if (std::strcmp(e->Name(),"Configuration")==0)
                         configuration = e->GetText();
-                    else if (std::strcmp(e->Name(),"Platform")==0)
-                        platform = e->GetText();
+                    else if (std::strcmp(e->Name(),"Platform")==0) {
+                        platformStr = e->GetText();
+                        if (platformStr == "Win32")
+                            platform = Win32;
+                        else if (platformStr == "x64")
+                            platform = x64;
+                        else
+                            platform = Unknown;
+                    }
                 }
             }
         }
         std::string name;
         std::string configuration;
-        std::string platform;
+        enum { Win32, x64, Unknown } platform;
+        std::string platformStr;
     };
 
     struct ItemDefinitionGroup {
@@ -300,7 +308,7 @@ namespace {
                 return true;
             std::string c = '(' + condition + ");";
             replaceAll(c, "$(Configuration)", p.configuration);
-            replaceAll(c, "$(Platform)", p.platform);
+            replaceAll(c, "$(Platform)", p.platformStr);
 
             // TODO : Better evaluation
             Settings s;
@@ -423,8 +431,11 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         if (std::strcmp(node->Name(), "ItemGroup") == 0) {
             if (node->Attribute("Label") && std::strcmp(node->Attribute("Label"), "ProjectConfigurations") == 0) {
                 for (const tinyxml2::XMLElement *cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
-                    if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0)
-                        projectConfigurationList.push_back(ProjectConfiguration(cfg));
+                    if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0) {
+                        ProjectConfiguration p(cfg);
+                        if (p.platform != ProjectConfiguration::Unknown)
+                            projectConfigurationList.push_back(ProjectConfiguration(cfg));
+                    }
                 }
             } else {
                 for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
@@ -455,9 +466,9 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             fs.filename = Path::simplifyPath(Path::getPathFromFilename(filename) + *c);
             fs.cfg = p->name;
             fs.defines = "_MSC_VER=1900;_WIN32=1";
-            if (p->platform == "Win32")
+            if (p->platform == ProjectConfiguration::Win32)
                 fs.platformType = cppcheck::Platform::Win32W;
-            else if (p->platform == "x64") {
+            else if (p->platform == ProjectConfiguration::x64) {
                 fs.platformType = cppcheck::Platform::Win64;
                 fs.defines += ";_WIN64=1";
             }
