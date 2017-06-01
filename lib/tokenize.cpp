@@ -7371,9 +7371,6 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
 
 bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
 {
-    if (isC()) // C does not support references
-        return true;
-
     // TODO: If symbol database is available, use it.
     const Token *ftok;
 

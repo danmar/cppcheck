@@ -2362,6 +2362,20 @@ private:
         }
 
         {
+            const char code[] = "void f() {\n"
+                                "   char a[10];\n"
+                                "   strcpy(a, \"hello\");\n"
+                                "   strcat(a, \"!\");\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char a [ 10 ] ;\n"
+                                    "strcpy ( a , \"hello\" ) ;\n"
+                                    "strcat ( a , \"!\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.c"));
+        }
+
+        {
             const char code[] = "void f() {"
                                 "    char *s = malloc(10);"
                                 "    strcpy(s, \"\");"
