@@ -132,10 +132,10 @@ public:
     /** @brief Paths used as base for conversion to relative paths. */
     std::vector<std::string> basePaths;
 
-    /** @brief write results (--output-file=<file>) */
+    /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
 
-    /** @brief plist output (--plist-output=<dir>) */
+    /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
 
     /** @brief write XML results (--xml) */
