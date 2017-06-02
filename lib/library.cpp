@@ -72,7 +72,7 @@ Library::Error Library::load(const char exename[], const char path[])
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
         // failed to open file.. is there no extension?
         std::string fullfilename(path);
-        if (Path::getFilenameExtension(fullfilename) == "") {
+        if (Path::getFilenameExtension(fullfilename).empty()) {
             fullfilename += ".cfg";
             error = doc.LoadFile(fullfilename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)

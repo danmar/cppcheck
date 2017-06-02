@@ -84,7 +84,7 @@ std::string Path::simplifyPath(std::string originalPath)
         if (originalPath[i] == '/' || originalPath[i] == '\\') {
             if (subPath.length() > 0) {
                 pathParts.push_back(subPath);
-                subPath = "";
+                subPath.clear();
             }
 
             pathParts.push_back(std::string(1 , originalPath[i]));
