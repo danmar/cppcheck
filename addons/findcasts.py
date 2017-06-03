@@ -1,4 +1,4 @@
-#/usr/bin/python
+#!/usr/bin/env python
 #
 # Locate casts in the code
 #
@@ -6,7 +6,7 @@
 import cppcheckdata
 import sys
 
-messages = []
+messages = set()
 
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
@@ -35,6 +35,6 @@ for arg in sys.argv[1:]:
 
             msg = '[' + token.file + ':' + str(
                 token.linenr) + '] (information) findcasts.py: found a cast\n'
-            if not msg in messages:
-                messages.append(msg)
+            if msg not in messages:
+                messages.add(msg)
                 sys.stderr.write(msg)

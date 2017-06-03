@@ -1,4 +1,4 @@
-#/usr/bin/python
+#!/usr/bin/env python
 #
 # This script analyses Cppcheck dump files to locate threadsafety issues
 # - warn about static local objects
@@ -15,8 +15,8 @@ def reportError(token, severity, msg):
 
 def checkstatic(data):
     for var in data.variables:
-        if var.isStatic == True and var.isLocal == True and var.isClass == True:
-            reportError(var.typeStartToken, 'warning', ('Local static object: ' + var.nameToken.str) )
+        if var.isStatic and var.isLocal and var.isClass:
+            reportError(var.typeStartToken, 'warning', ('Local static object: ' + var.nameToken.str))
 
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')

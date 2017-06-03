@@ -1,10 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import subprocess
 import pexpect
 import os
-import shutil
-import time
 import sys
 
 START = 0
@@ -18,37 +16,37 @@ for arg in sys.argv[1:]:
         PASSWORD = arg
 
 
-
 def compilecppcheck(CPPFLAGS):
     subprocess.call(['nice', 'make', 'clean'])
-    subprocess.call(['nice', 'make', 'SRCDIR=build', 'CFGDIR=' + os.path.expanduser('~/cppcheck/cfg'), 'CXXFLAGS=-g -O2', 'CPPFLAGS=' + CPPFLAGS])
+    subprocess.call(['nice', 'make', 'SRCDIR=build', 'CFGDIR=' +
+                    os.path.expanduser('~/cppcheck/cfg'), 'CXXFLAGS=-g -O2', 'CPPFLAGS=' + CPPFLAGS])
     subprocess.call(['cp', 'cppcheck', os.path.expanduser('~/daca2/cppcheck-O2')])
+
 
 def runcppcheck(rev, folder):
     subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/' + folder)])
-    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), folder, '--rev=' + rev])
+    subprocess.call(['nice', '--adjustment=19', 'python',
+                    os.path.expanduser('~/cppcheck/tools/daca2.py'), folder, '--rev=' + rev])
+
 
 def daca2report(reportfolder):
     subprocess.call(['rm', '-rf', reportfolder])
     subprocess.call(['mkdir', reportfolder])
     subprocess.call(['python', os.path.expanduser('~/cppcheck/tools/daca2-report.py'), reportfolder])
 
+
 # Upload file to sourceforge server using scp
 def upload(localfolder, webfolder):
-    if len(PASSWORD)<3:
+    if len(PASSWORD) < 3:
         return
     try:
         child = pexpect.spawn(
             'scp -r ' + localfolder + ' danielmarjamaki,cppcheck@web.sf.net:htdocs/' + webfolder)
-        #child.expect('upload@trac.cppcheck.net\'s password:')
+        # child.expect('upload@trac.cppcheck.net\'s password:')
         child.expect('Password:')
         child.sendline(PASSWORD)
         child.interact()
-    except IOError:
-        pass
-    except OSError:
-        pass
-    except pexpect.TIMEOUT:
+    except (IOError, OSError, pexpect.TIMEOUT):
         pass
 
 

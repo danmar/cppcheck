@@ -1,4 +1,4 @@
-#/usr/bin/python
+#!/usr/bin/env python
 #
 # cppcheck addon for naming conventions
 #

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import glob
 import os
@@ -44,24 +45,24 @@ def parseheader(cppcheckpath, filename):
     posixcfg = f.read()
     f.close()
 
-    while data.find('/*') >= 0:
+    while '/*' in data:
         pos1 = data.find('/*')
         pos2 = data.find('*/', pos1 + 2)
         data = data[:pos1] + data[pos2 + 2:]
 
     data = data.replace('\\\n', '')
 
-    while data.find('\n#') >= 0:
+    while '\n#' in data:
         pos1 = data.find('\n#')
         pos2 = data.find('\n', pos1 + 1)
         data = data[:pos1] + data[pos2:]
 
-    while data.find('\n__BEGIN') >= 0:
+    while '\n__BEGIN' in data:
         pos1 = data.find('\n__BEGIN')
         pos2 = data.find('\n', pos1 + 1)
         data = data[:pos1] + data[pos2:]
 
-    while data.find('\n__END') >= 0:
+    while '\n__END' in data:
         pos1 = data.find('\n__END')
         pos2 = data.find('\n', pos1 + 1)
         data = data[:pos1] + data[pos2:]
@@ -75,24 +76,24 @@ def parseheader(cppcheckpath, filename):
     output = []
 
     for line in data.split('\n'):
-        if (line[:7] != 'extern ' and line.find(' extern ') < 0) or line[-1] != ';':
+        if (line[:7] != 'extern ' and ' extern ' not in line) or line[-1] != ';':
             continue
 
         functionNameEnd = line.find('(') - 1
         if functionNameEnd < 0:
             continue
         while line[functionNameEnd] == ' ':
-            functionNameEnd = functionNameEnd - 1
+            functionNameEnd -= 1
         if functionNameEnd < 10:
             continue
         functionNameStart = functionNameEnd
         while line[functionNameStart] == '_' or line[functionNameStart].isalnum():
-            functionNameStart = functionNameStart - 1
+            functionNameStart -= 1
         if functionNameStart < 10:
             continue
         if line[functionNameStart] != '*' and line[functionNameStart] != ' ':
             continue
-        functionNameStart = functionNameStart + 1
+        functionNameStart += 1
         if not line[functionNameStart].isalpha():
             continue
 
@@ -102,13 +103,13 @@ def parseheader(cppcheckpath, filename):
 
         nonnullStart = line.find('__nonnull')
         if nonnullStart > 0:
-            nonnullStart = nonnullStart + 9
+            nonnullStart += 9
             while nonnullStart < len(line) and line[nonnullStart] == ' ':
-                nonnullStart = nonnullStart + 1
+                nonnullStart += 1
             if nonnullStart >= len(line) or line[nonnullStart] != '(':
                 continue
             while line[nonnullStart] == '(':
-                nonnullStart = nonnullStart + 1
+                nonnullStart += 1
             nonnullEnd = line.find(')', nonnullStart)
             nonnull = line[nonnullStart:nonnullEnd]
 

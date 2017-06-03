@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Cppcheck - A tool for static C/C++ code analysis
 # Copyright (C) 2007-2016 Cppcheck team.
@@ -31,7 +31,8 @@ class MatchCompilerTest(unittest.TestCase):
         self.assertEqual(self.mc.parseMatch('  Token::Match(tok,', 2), None)
         # multiline Token::Match is not supported yet
         self.assertEqual(self.mc.parseMatch('  Token::Match(Token::findsimplematch(tok,")"), ";")', 2), [
-                         'Token::Match(Token::findsimplematch(tok,")"), ";")', 'Token::findsimplematch(tok,")")', ' ";"'])  # inner function call
+                         'Token::Match(Token::findsimplematch(tok,")"), ";")',
+                         'Token::findsimplematch(tok,")")', ' ";"'])  # inner function call
 
     def test_replaceTokenMatch(self):
         input = 'if (Token::Match(tok, "foobar")) {'
@@ -140,12 +141,14 @@ class MatchCompilerTest(unittest.TestCase):
         # offset '5' is chosen as an abritary start offset to look for
         res = self.mc._parseStringComparison(input, 5)
         self.assertEqual(2, len(res))
-        self.assertEqual('str == MatchCompiler::makeConstString("abc")', input[:res[0]] + "MatchCompiler::makeConstString(" + input[res[0]:res[1]] + ")" + input[res[1]:])
+        self.assertEqual('str == MatchCompiler::makeConstString("abc")', input[:res[0]] +
+                         "MatchCompiler::makeConstString(" + input[res[0]:res[1]] + ")" + input[res[1]:])
 
         input = 'str == "a\\"b\\"c"'
         res = self.mc._parseStringComparison(input, 5)
         self.assertEqual(2, len(res))
-        self.assertEqual('str == MatchCompiler::makeConstString("a\\"b\\"c")', input[:res[0]] + "MatchCompiler::makeConstString(" + input[res[0]:res[1]] + ")" + input[res[1]:])
+        self.assertEqual('str == MatchCompiler::makeConstString("a\\"b\\"c")', input[:res[0]] +
+                         "MatchCompiler::makeConstString(" + input[res[0]:res[1]] + ")" + input[res[1]:])
 
     def test_replaceCStrings(self):
         # str() ==
@@ -161,7 +164,9 @@ class MatchCompilerTest(unittest.TestCase):
         # strAt()
         input = 'if (match16(parent->tokAt(-3)) && tok->strAt(1) == ")")'
         output = self.mc._replaceCStrings(input)
-        self.assertEqual('if (match16(parent->tokAt(-3)) && tok->strAt(1) == MatchCompiler::makeConstString(")"))', output)
+        self.assertEqual(
+            'if (match16(parent->tokAt(-3)) && tok->strAt(1) == MatchCompiler::makeConstString(")"))',
+            output)
 
 if __name__ == '__main__':
     unittest.main()

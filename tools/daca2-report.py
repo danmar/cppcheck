@@ -1,6 +1,7 @@
+#!/usr/bin/env python
 import os
 import sys
-import subprocess
+
 
 def readdate(data):
     datepos = -1
@@ -54,7 +55,8 @@ mainpage.write('</head>\n')
 mainpage.write('<body>\n')
 mainpage.write('<h1>DACA2</h1>\n')
 mainpage.write('<p>Results when running latest (git head) Cppcheck on Debian.</p>\n')
-mainpage.write('<p>For performance reasons the analysis is limited. Files larger than 1mb are skipped. If analysis of a file takes more than 10 minutes it may be stopped.</p>\n')
+mainpage.write('<p>For performance reasons the analysis is limited. Files larger than 1mb are skipped. ' +
+               'If analysis of a file takes more than 10 minutes it may be stopped.</p>\n')
 mainpage.write('<table class="sortable">\n')
 mainpage.write(
     '<tr>' +
@@ -72,9 +74,9 @@ lastupdate = None
 recent = []
 
 daca2 = daca2folder
-for lib in [False, True]:
+for lib in (False, True):
     for a in "0123456789abcdefghijklmnopqrstuvwxyz":
-        if lib == True:
+        if lib:
             a = "lib" + a
         if not os.path.isfile(daca2 + a + '/results.txt'):
             continue
@@ -83,7 +85,7 @@ for lib in [False, True]:
         data = f.read()
         f.close()
 
-        if data.find('ftp://')<0:
+        if 'ftp://' not in data:
             continue
 
         datestr = readdate(data)

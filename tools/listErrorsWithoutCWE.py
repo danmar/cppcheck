@@ -1,12 +1,12 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import argparse
 import xml.etree.ElementTree as ET
 
 
 def main():
-
     parser = argparse.ArgumentParser(description="List all error without a CWE assigned in CSV format")
-    parser.add_argument("-F", metavar="filename", required=True, help="XML file containing output from: ./cppcheck --errorlist --xml-version=2")
+    parser.add_argument("-F", metavar="filename", required=True,
+                        help="XML file containing output from: ./cppcheck --errorlist --xml-version=2")
     parsed = parser.parse_args()
 
     tree = ET.parse(vars(parsed)["F"])

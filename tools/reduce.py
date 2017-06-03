@@ -1,6 +1,5 @@
-
+#!/usr/bin/env python
 import subprocess
-import os
 import sys
 
 CMD = None
@@ -23,7 +22,7 @@ if CMD is None:
     print('Abort: No --cmd')
     sys.exit(1)
 
-if SEGFAULT == False and EXPECTED is None:
+if not SEGFAULT and EXPECTED is None:
     print('Abort: No --expected')
     sys.exit(1)
 
@@ -38,6 +37,7 @@ else:
     print('EXPECTED=' + EXPECTED)
 print('FILE=' + FILE)
 
+
 def runtool():
     p = subprocess.Popen(CMD.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
@@ -46,9 +46,10 @@ def runtool():
             return True
     elif p.returncode == 0:
         out = comm[0] + '\n' + comm[1]
-        if (out.find('error:') < 0) and (out.find(EXPECTED) > 0):
+        if ('error:' not in out) and (out.find(EXPECTED) > 0):
             return True
     return False
+
 
 def writefile(filename, filedata):
     f = open(filename, 'wt')
@@ -56,18 +57,20 @@ def writefile(filename, filedata):
         f.write(line)
     f.close()
 
+
 def replaceandrun(what, filedata, i, line):
     print(what + ' ' + str(i + 1) + '/' + str(len(filedata)) + '..')
     bak = filedata[i]
     filedata[i] = line
     writefile(FILE, filedata)
-    if runtool() == True:
+    if runtool():
         print('pass')
         writefile(BACKUPFILE, filedata)
         return True
     print('fail')
     filedata[i] = bak
     return False
+
 
 def replaceandrun2(what, filedata, i, line1, line2):
     print(what + ' ' + str(i + 1) + '/' + str(len(filedata)) + '..')
@@ -76,13 +79,14 @@ def replaceandrun2(what, filedata, i, line1, line2):
     filedata[i] = line1
     filedata[i + 1] = line2
     writefile(FILE, filedata)
-    if runtool() == True:
+    if runtool():
         print('pass')
         writefile(BACKUPFILE, filedata)
     else:
         print('fail')
         filedata[i] = bak1
         filedata[i + 1] = bak2
+
 
 def clearandrun(what, filedata, i1, i2):
     print(what + ' ' + str(i1 + 1) + '/' + str(len(filedata)) + '..')
@@ -92,18 +96,20 @@ def clearandrun(what, filedata, i1, i2):
         filedata2[i] = ''
         i = i + 1
     writefile(FILE, filedata2)
-    if runtool() == True:
+    if runtool():
         print('pass')
         writefile(BACKUPFILE, filedata2)
         return filedata2
     print('fail')
     return filedata
 
+
 def removecomments(filedata):
     for i in range(len(filedata)):
         line = filedata[i]
-        if line.find('//') >= 0:
+        if '//' in line:
             replaceandrun('remove comment', filedata, i, line[:line.find('//')].rstrip())
+
 
 def checkpar(line):
     par = 0
@@ -115,6 +121,7 @@ def checkpar(line):
             if par < 0:
                 return False
     return par == 0
+
 
 def combinelines(filedata):
     if len(filedata) < 3:
@@ -156,10 +163,12 @@ def combinelines(filedata):
         fd2 = filedata[line + 1].lstrip()
         replaceandrun2('combine lines', filedata, line, fd1 + fd2, '')
 
+
 def removedirectives(filedata):
     for i in range(len(filedata)):
         if filedata[i].lstrip().startswith('#'):
             replaceandrun('remove preprocessor directive', filedata, i, '')
+
 
 def removeblocks(filedata):
     if len(filedata) < 3:
@@ -169,7 +178,7 @@ def removeblocks(filedata):
         strippedline = filedata[i].strip()
         if len(strippedline) == 0:
             continue
-        if ';{}'.find(strippedline[-1]) < 0:
+        if strippedline[-1] not in ';{}':
             continue
 
         i1 = i + 1
@@ -201,6 +210,7 @@ def removeblocks(filedata):
 
     return filedata
 
+
 def removeline(filedata):
     stmt = True
     for i in range(len(filedata)):
@@ -210,13 +220,13 @@ def removeline(filedata):
         if len(strippedline) == 0:
             continue
 
-        if stmt and strippedline[-1] == ';' and checkpar(line) and line.find('{') < 0 and line.find('}') < 0:
+        if stmt and strippedline[-1] == ';' and checkpar(line) and '{' not in line and '}' not in line:
             replaceandrun('remove line', filedata, i, '')
 
         elif stmt and strippedline.find('{') > 0 and strippedline.find('}') == len(strippedline) - 1:
             replaceandrun('remove line', filedata, i, '')
 
-        if ';{}'.find(strippedline[-1]) >= 0:
+        if strippedline[-1] in ';{}':
             stmt = True
         else:
             stmt = False
@@ -224,7 +234,7 @@ def removeline(filedata):
 
 # reduce..
 print('Make sure error can be reproduced...')
-if runtool() == False:
+if not runtool():
     print("Cannot reproduce")
     sys.exit(1)
 
