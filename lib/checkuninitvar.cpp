@@ -651,7 +651,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 tok = tok->next();
             }
 
-            return bool(noreturn==nullptr);
+            return (noreturn == nullptr);
         }
 
         // variable is seen..

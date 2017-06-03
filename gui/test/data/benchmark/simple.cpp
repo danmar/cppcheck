@@ -1064,7 +1064,7 @@ public:
 
         /** is variable unused? */
         bool unused() const {
-            return (_read == false && _write == false);
+            return (!_read && !_write);
         }
 
         const Token *_name;

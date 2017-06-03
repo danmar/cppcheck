@@ -396,7 +396,7 @@ bool CheckAutoVariables::returnTemporary(const Token *tok)
     if (!func && tok->type())
         return true;
 
-    return bool(!retref && retvalue);
+    return (!retref && retvalue);
 }
 
 //---------------------------------------------------------------------------
