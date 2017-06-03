@@ -1551,14 +1551,15 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("class X {\n"
-              "    uint64_t i;\n"
+              "    void* i;\n"
               "};\n"
               "class Y : X {\n"
-              "    uint64_t j;\n"
+              "    void* j;\n"
+              "    void* k;\n"
               "};\n"
               "void f(X x, Y y) {\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (performance) Function parameter 'y' should be passed by reference.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (performance) Function parameter 'y' should be passed by reference.\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
