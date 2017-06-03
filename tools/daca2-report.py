@@ -36,12 +36,12 @@ path = ''
 for arg in sys.argv[1:]:
     if arg.startswith('--daca2='):
         daca2folder = arg[8:]
-        if daca2folder[-1:] != '/':
+        if daca2folder[-1] != '/':
             daca2folder = daca2folder + '/'
-    else
+    else:
         path = arg
-        if daca2folder[-1:] != '/':
-            daca2folder = daca2folder + '/'
+        if path[-1] != '/':
+            path = path + '/'
 
 mainpage = open(path + 'daca2.html', 'wt')
 mainpage.write('<!DOCTYPE html>\n')

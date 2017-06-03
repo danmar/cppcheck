@@ -29,23 +29,24 @@ def runcppcheck(rev, folder, destpath):
     subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), folder, '--rev=' + rev, '--skip=virtuoso-opensource'])
     subprocess.call(['rm', '-rf', destpath + folder])
     subprocess.call(['cp', '-R', os.path.expanduser('~/daca2/' + folder), destpath + folder])
-    subprocess.call(['cp', '', os.path.expanduser('~/daca2/' + folder)])
-    upload(os.path.expanduser('~/daca2/' + folder + '/results.txt'), 'evidente/results-' + folder + '.txt')
+
     subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/lib' + folder)])
     subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), 'lib' + folder, '--rev=' + rev])
-    upload(os.path.expanduser('~/daca2/lib' + folder + '/results.txt'), 'evidente/results-lib' + folder + '.txt')
+    subprocess.call(['rm', '-rf', destpath + 'lib' + folder])
+    subprocess.call(['cp', '-R', os.path.expanduser('~/daca2/lib' + folder), destpath + 'lib' + folder])
 
-def daca2report(daca2folder):
-    subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2-report')])
-    subprocess.call(['mkdir', os.path.expanduser('~/daca2-report')])
-    subprocess.call(['python', os.path.expanduser('~/cppcheck/tools/daca2-report.py'), '--daca2='+daca2folder, os.path.expanduser('~/daca2-report')])
+def daca2report(daca2folder, reportfolder):
+    subprocess.call(['rm', '-rf', reportfolder])
+    subprocess.call(['mkdir', reportfolder])
+    subprocess.call(['python', os.path.expanduser('~/cppcheck/tools/daca2-report.py'), '--daca2='+daca2folder, reportfolder])
 
 # Upload file to sourceforge server using scp
-def upload(folder):
+def upload(localfolder, webfolder):
     try:
         child = pexpect.spawn(
-            'scp -r ' + os.path.expanduser('~/daca2-report') + ' danmar,cppcheck@web.sf.net:htdocs/devinfo/' + folder)
-        child.expect('upload@trac.cppcheck.net\'s password:')
+            'scp -r ' + localfolder + ' danielmarjamaki,cppcheck@web.sf.net:htdocs/' + webfolder)
+        #child.expect('upload@trac.cppcheck.net\'s password:')
+        child.expect('Password:')
         child.sendline(PASSWORD)
         child.interact()
     except IOError:
@@ -63,7 +64,7 @@ def daca2(foldernum):
     print('Daca2 folder=' + folder)
 
     os.chdir(os.path.expanduser('~/cppcheck'))
-    #subprocess.call(['git', 'pull'])
+    subprocess.call(['git', 'pull'])
     p = subprocess.Popen(['git', 'show', '--format=%h'],
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
@@ -73,14 +74,14 @@ def daca2(foldernum):
     # unstable
     compilecppcheck('-DMAXTIME=600 -DUNSTABLE')
     runcppcheck(rev, folder, os.path.expanduser('~/daca2-unstable/'))
-    daca2report(os.path.expanduser('~/daca2-unstable/'))
-    #upload('daca2-unstable')
+    daca2report(os.path.expanduser('~/daca2-unstable'), os.path.expanduser('~/daca2-unstable-report'))
+    upload(os.path.expanduser('~/daca2-unstable-report'), 'devinfo/')
 
     # stable
     compilecppcheck('-DMAXTIME=600')
     runcppcheck(rev, folder, os.path.expanduser('~/daca2-stable/'))
-    daca2report(os.path.expanduser('~/daca2-stable/'))
-    #upload('daca2-stable')
+    daca2report(os.path.expanduser('~/daca2-stable/'), os.path.expanduser('~/daca2-stable-report/'))
+    upload(os.path.expanduser('~/daca2-stable-report'), 'devinfo/')
 
 foldernum = START
 while True:
