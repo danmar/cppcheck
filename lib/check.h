@@ -32,14 +32,15 @@
 #include <string>
 
 /**
- * Cppcheck data can be wrong and you need a to check if that happens to avoid crash/hang
- * Using this macro we can make sure that released binaries don't crash/hang but the problem is not hidden
- * in debug builds.
+ * When -DUNSTABLE is used, Cppcheck will be more unstable and can crash
+ * when there is wrong data. This is intended to be used in daca2.
+ * 
+ * Use CHECK_WRONG_DATA in checkers when you avoid crashes for wrong data.
  */
-#ifndef HIDE_WRONG_DATA
-#define CHECK_WRONG_DATA(X)   (1)  // Debug (crash/hang)
+#ifdef UNSTABLE
+#define CHECK_WRONG_DATA(X)   (1)  // crash/hang
 #else
-#define CHECK_WRONG_DATA(X)   (X)  // Release (don't crash/hang)
+#define CHECK_WRONG_DATA(X)   (X)  // don't crash/hang
 #endif
 
 namespace tinyxml2 {
