@@ -34,7 +34,7 @@
 /**
  * When -DUNSTABLE is used, Cppcheck will be more unstable and can crash
  * when there is wrong data. This is intended to be used in daca2.
- * 
+ *
  * Use CHECK_WRONG_DATA in checkers when you avoid crashes for wrong data.
  */
 #ifdef UNSTABLE
