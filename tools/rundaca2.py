@@ -17,14 +17,34 @@ for arg in sys.argv[1:]:
     else:
         PASSWORD = arg
 
-# Upload file to trac.cppcheck.net server using scp
-def upload(file_to_upload, destination):
-    if not os.path.isfile(file_to_upload):
-        return
 
+
+def compilecppcheck(CPPFLAGS):
+    subprocess.call(['nice', 'make', 'clean'])
+    subprocess.call(['nice', 'make', 'SRCDIR=build', 'CFGDIR=' + os.path.expanduser('~/cppcheck/cfg'), 'CXXFLAGS=-g -O2', 'CPPFLAGS=' + CPPFLAGS])
+    subprocess.call(['cp', 'cppcheck', os.path.expanduser('~/daca2/cppcheck-O2')])
+
+def runcppcheck(rev, folder, destpath):
+    subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/' + folder)])
+    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), folder, '--rev=' + rev, '--skip=virtuoso-opensource'])
+    subprocess.call(['rm', '-rf', destpath + folder])
+    subprocess.call(['cp', '-R', os.path.expanduser('~/daca2/' + folder), destpath + folder])
+    subprocess.call(['cp', '', os.path.expanduser('~/daca2/' + folder)])
+    upload(os.path.expanduser('~/daca2/' + folder + '/results.txt'), 'evidente/results-' + folder + '.txt')
+    subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/lib' + folder)])
+    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), 'lib' + folder, '--rev=' + rev])
+    upload(os.path.expanduser('~/daca2/lib' + folder + '/results.txt'), 'evidente/results-lib' + folder + '.txt')
+
+def daca2report(daca2folder):
+    subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2-report')])
+    subprocess.call(['mkdir', os.path.expanduser('~/daca2-report')])
+    subprocess.call(['python', os.path.expanduser('~/cppcheck/tools/daca2-report.py'), '--daca2='+daca2folder, os.path.expanduser('~/daca2-report')])
+
+# Upload file to sourceforge server using scp
+def upload(folder):
     try:
         child = pexpect.spawn(
-            'scp ' + file_to_upload + ' upload@trac.cppcheck.net:' + destination)
+            'scp -r ' + os.path.expanduser('~/daca2-report') + ' danmar,cppcheck@web.sf.net:htdocs/devinfo/' + folder)
         child.expect('upload@trac.cppcheck.net\'s password:')
         child.sendline(PASSWORD)
         child.interact()
@@ -43,32 +63,24 @@ def daca2(foldernum):
     print('Daca2 folder=' + folder)
 
     os.chdir(os.path.expanduser('~/cppcheck'))
-    subprocess.call(['git', 'pull'])
+    #subprocess.call(['git', 'pull'])
     p = subprocess.Popen(['git', 'show', '--format=%h'],
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
     rev = comm[0]
     rev = rev[:rev.find('\n')]
 
-    # compile cppcheck
-    subprocess.call(['nice', 'make', 'SRCDIR=build', 'CFGDIR=' + os.path.expanduser('~/cppcheck/cfg'), 'CXXFLAGS=-g -O2', 'CPPFLAGS=-DMAXTIME=600'])
-    subprocess.call(['cp', 'cppcheck', os.path.expanduser('~/daca2/cppcheck-O2')])
+    # unstable
+    compilecppcheck('-DMAXTIME=600 -DUNSTABLE')
+    runcppcheck(rev, folder, os.path.expanduser('~/daca2-unstable/'))
+    daca2report(os.path.expanduser('~/daca2-unstable/'))
+    #upload('daca2-unstable')
 
-    # run cppcheck
-    subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/' + folder)])
-    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), folder, '--rev=' + rev, '--skip=virtuoso-opensource'])
-    upload(os.path.expanduser('~/daca2/' + folder + '/results.txt'), 'evidente/results-' + folder + '.txt')
-    subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/lib' + folder)])
-    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), 'lib' + folder, '--rev=' + rev])
-    upload(os.path.expanduser('~/daca2/lib' + folder + '/results.txt'), 'evidente/results-lib' + folder + '.txt')
-
-    # run cppcheck addons
-    subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/' + folder)])
-    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2-addons.py'), folder, '--rev=' + rev, '--skip=virtuoso-opensource'])
-    upload(os.path.expanduser('~/daca2/' + folder + '/results.txt'), 'evidente/addons-' + folder + '.txt')
-    subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/lib' + folder)])
-    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2-addons.py'), 'lib' + folder, '--rev=' + rev])
-    upload(os.path.expanduser('~/daca2/lib' + folder + '/results.txt'), 'evidente/addons-lib' + folder + '.txt')
+    # stable
+    compilecppcheck('-DMAXTIME=600')
+    runcppcheck(rev, folder, os.path.expanduser('~/daca2-stable/'))
+    daca2report(os.path.expanduser('~/daca2-stable/'))
+    #upload('daca2-stable')
 
 foldernum = START
 while True:

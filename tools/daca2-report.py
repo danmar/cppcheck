@@ -31,11 +31,19 @@ def readdate(data):
             return None
         datepos = datepos + 1
 
-path = '.'
-if len(sys.argv) == 2:
-    path = sys.argv[1]
+daca2folder = os.path.expanduser('~/daca2/')
+path = ''
+for arg in sys.argv[1:]:
+    if arg.startswith('--daca2='):
+        daca2folder = arg[8:]
+        if daca2folder[-1:] != '/':
+            daca2folder = daca2folder + '/'
+    else
+        path = arg
+        if daca2folder[-1:] != '/':
+            daca2folder = daca2folder + '/'
 
-mainpage = open(path + '/daca2.html', 'wt')
+mainpage = open(path + 'daca2.html', 'wt')
 mainpage.write('<!DOCTYPE html>\n')
 mainpage.write('<html lang="en">\n')
 mainpage.write('<head>\n')
@@ -64,10 +72,10 @@ mainpage.write(
 lastupdate = None
 recent = []
 
-daca2 = os.path.expanduser('~/daca2/')
-for lib in range(2):
+daca2 = daca2folder
+for lib in [False, True]:
     for a in "0123456789abcdefghijklmnopqrstuvwxyz":
-        if lib == 1:
+        if lib == True:
             a = "lib" + a
         if os.path.isfile(daca2 + a + '/results.txt'):
             f = open(daca2 + a + '/results.txt', 'rt')
@@ -113,7 +121,7 @@ for lib in range(2):
             data = data.replace('>', '&gt;')
             data = data.replace('\n', '\n')
 
-            f = open(path + '/daca2-' + a + '.html', 'wt')
+            f = open(path + 'daca2-' + a + '.html', 'wt')
             f.write('<!DOCTYPE html>\n')
             f.write('<html lang="en">\n')
             f.write('<head>\n')
