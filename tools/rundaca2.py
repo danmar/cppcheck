@@ -42,6 +42,8 @@ def daca2report(daca2folder, reportfolder):
 
 # Upload file to sourceforge server using scp
 def upload(localfolder, webfolder):
+    if len(PASSWORD)<3:
+        return
     try:
         child = pexpect.spawn(
             'scp -r ' + localfolder + ' danielmarjamaki,cppcheck@web.sf.net:htdocs/' + webfolder)
