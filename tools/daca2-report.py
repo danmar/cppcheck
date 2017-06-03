@@ -2,7 +2,6 @@ import os
 import sys
 import subprocess
 
-
 def readdate(data):
     datepos = -1
     if data[:5] == 'DATE ':
@@ -77,63 +76,58 @@ for lib in [False, True]:
     for a in "0123456789abcdefghijklmnopqrstuvwxyz":
         if lib == True:
             a = "lib" + a
-        if os.path.isfile(daca2 + a + '/results.txt'):
-            f = open(daca2 + a + '/results.txt', 'rt')
-            data = f.read()
-            f.close()
+        if not os.path.isfile(daca2 + a + '/results.txt'):
+            continue
 
-            datestr = readdate(data)
+        f = open(daca2 + a + '/results.txt', 'rt')
+        data = f.read()
+        f.close()
 
-            if os.path.isfile(daca2 + 'results-' + a + '.txt'):
-                f2 = open(daca2 + 'results-' + a + '.txt')
-                data2 = f2.read()
-                f2.close()
+        if data.find('ftp://')<0:
+            continue
 
-                datestr2 = readdate(data2)
-                if not datestr or datestr < datestr2:
-                    data = data2
-                    datestr = datestr2
+        datestr = readdate(data)
 
-            if datestr:
-                if not lastupdate or datestr > lastupdate:
-                    lastupdate = datestr
-                    recent = []
-                if datestr == lastupdate:
-                    recent.append(a)
-            else:
-                datestr = ''
+        if datestr:
+            if not lastupdate or datestr > lastupdate:
+                lastupdate = datestr
+                recent = []
+            if datestr == lastupdate:
+                recent.append(a)
+        else:
+            datestr = ''
 
-            mainpage.write(
-                '<tr>' +
-                '<td><a href="daca2-' + a + '.html">' + a + '</a></td>' +
-                '<td>' + datestr + '</td>' +
-                '<td>' + str(data.count(': error:')) + '</td>' +
-                '<td>' + str(data.count(': warning:')) + '</td>' +
-                '<td>' + str(data.count(': performance:')) + '</td>' +
-                '<td>' + str(data.count(': portability:')) + '</td>' +
-                '<td>' + str(data.count(': style:')) + '</td>' +
-                '<td>' + str(data.count('Crash?')) + '</td>' +
-                '<td>' + str(data.count('with varid 0.')) + '</td>' +
-                '</tr>\n')
+        mainpage.write(
+            '<tr>' +
+            '<td><a href="daca2-' + a + '.html">' + a + '</a></td>' +
+            '<td>' + datestr + '</td>' +
+            '<td>' + str(data.count(': error:')) + '</td>' +
+            '<td>' + str(data.count(': warning:')) + '</td>' +
+            '<td>' + str(data.count(': performance:')) + '</td>' +
+            '<td>' + str(data.count(': portability:')) + '</td>' +
+            '<td>' + str(data.count(': style:')) + '</td>' +
+            '<td>' + str(data.count('Crash?')) + '</td>' +
+            '<td>' + str(data.count('with varid 0.')) + '</td>' +
+            '</tr>\n')
 
-            data = data.replace('&', '&amp;')
-            data = data.replace('<', '&lt;')
-            data = data.replace('>', '&gt;')
-            data = data.replace('\n', '\n')
+        data = data.replace('&', '&amp;')
+        data = data.replace('<', '&lt;')
+        data = data.replace('>', '&gt;')
+        data = data.replace('\n', '\n')
 
-            f = open(path + 'daca2-' + a + '.html', 'wt')
-            f.write('<!DOCTYPE html>\n')
-            f.write('<html lang="en">\n')
-            f.write('<head>\n')
-            f.write('<meta charset="utf-8">\n')
-            f.write('<title>DACA2 - ' + a + '</title>\n')
-            f.write('</head>\n')
-            f.write('<body>\n')
-            f.write('<h1>DACA2 - ' + a + '</h1>')
-            f.write('<pre>\n' + data + '</pre>\n')
-            f.write('</body>\n')
-            f.write('</html>\n')
-            f.close()
+        f = open(path + 'daca2-' + a + '.html', 'wt')
+        f.write('<!DOCTYPE html>\n')
+        f.write('<html lang="en">\n')
+        f.write('<head>\n')
+        f.write('<meta charset="utf-8">\n')
+        f.write('<title>DACA2 - ' + a + '</title>\n')
+        f.write('</head>\n')
+        f.write('<body>\n')
+        f.write('<h1>DACA2 - ' + a + '</h1>')
+        f.write('<pre>\n' + data + '</pre>\n')
+        f.write('</body>\n')
+        f.write('</html>\n')
+        f.close()
 
 mainpage.write('</table>\n')
 
