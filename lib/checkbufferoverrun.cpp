@@ -1645,7 +1645,7 @@ MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input
                 input_string_size += tempDigits;
 
             parameterLength = 0;
-            digits_string = "";
+            digits_string.clear();
             i_d_x_f_found = false;
             percentCharFound = false;
             handleNextParameter = false;

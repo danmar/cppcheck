@@ -4782,7 +4782,7 @@ bool Tokenizer::simplifyConditions()
 
                         // It is inconclusive whether two unequal float representations are numerically equal
                         if (!eq && MathLib::isFloat(op1))
-                            cmp = "";
+                            cmp.clear();
                     }
 
                     if (cmp == "==")
@@ -4801,7 +4801,7 @@ bool Tokenizer::simplifyConditions()
                     else if (cmp == "<")
                         result = (op1 < op2);
                     else
-                        cmp = "";
+                        cmp.clear();
                 }
             } else {
                 // Compare boolean
@@ -4821,7 +4821,7 @@ bool Tokenizer::simplifyConditions()
                 else if (cmp == "<")
                     result = (op1 < op2);
                 else
-                    cmp = "";
+                    cmp.clear();
             }
 
             if (! cmp.empty()) {

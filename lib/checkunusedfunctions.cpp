@@ -176,7 +176,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                     if (funcToken->str()==",") {
                         if (++index == argIndex)
                             break;
-                        value = "";
+                        value.clear();
                     } else
                         value += funcToken->str();
                     funcToken = funcToken->next();

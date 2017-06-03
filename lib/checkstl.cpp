@@ -610,7 +610,7 @@ void CheckStl::pushback()
                 } else {
                     vectorid = 0;
                 }
-                invalidIterator = "";
+                invalidIterator.clear();
             }
 
             // push_back on vector..
