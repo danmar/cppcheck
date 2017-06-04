@@ -37,7 +37,7 @@
  *
  * Use CHECK_WRONG_DATA in checkers when you check for wrong data.
  */
-#ifdef DACA2
+#if defined(DACA2) || defined(UNSTABLE)
 #define CHECK_WRONG_DATA(COND, TOK)  ({ if(!(COND)) reportError(nullptr,Severity::error,"DacaWrongData","Wrong data detected, " #COND); (COND);})
 #else
 #define CHECK_WRONG_DATA(COND, TOK)  (COND)
