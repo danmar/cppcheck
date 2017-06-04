@@ -445,6 +445,7 @@ private:
 
         // AST data
         TEST_CASE(astexpr);
+        TEST_CASE(astexpr2); // limit large expressions
         TEST_CASE(astpar);
         TEST_CASE(astnewdelete);
         TEST_CASE(astbrackets);
@@ -7866,6 +7867,8 @@ private:
         tokenList.prepareTernaryOpForAST();
         tokenList.list.createAst();
 
+        tokenList.list.validateAst();
+
         // Basic AST validation
         for (const Token *tok = tokenList.list.front(); tok; tok = tok->next()) {
             if (tok->astOperand2() && !tok->astOperand1() && tok->str() != ";" && tok->str() != ":")
@@ -7985,6 +7988,69 @@ private:
         ASSERT_EQUALS("DerivedDerived::(", testAst("Derived::~Derived() {}"));
 
         ASSERT_EQUALS("ifCA_FarReadfilenew(,sizeofobjtype(,(!(", testAst("if (!CA_FarRead(file, (void far *)new, sizeof(objtype)))")); // #5910 - don't hang if C code is parsed as C++
+    }
+
+    void astexpr2() { // limit for large expressions
+        // #7724 - wrong AST causes hang
+        // Ideally a proper AST is created for this code.
+        const char code[] = "const char * a(int type) {\n"
+                            "  return (\n"
+                            "   (type == 1) ? \"\"\n"
+                            " : (type == 2) ? \"\"\n"
+                            " : (type == 3) ? \"\"\n"
+                            " : (type == 4) ? \"\"\n"
+                            " : (type == 5) ? \"\"\n"
+                            " : (type == 6) ? \"\"\n"
+                            " : (type == 7) ? \"\"\n"
+                            " : (type == 8) ? \"\"\n"
+                            " : (type == 9) ? \"\"\n"
+                            " : (type == 10) ? \"\"\n"
+                            " : (type == 11) ? \"\"\n"
+                            " : (type == 12) ? \"\"\n"
+                            " : (type == 13) ? \"\"\n"
+                            " : (type == 14) ? \"\"\n"
+                            " : (type == 15) ? \"\"\n"
+                            " : (type == 16) ? \"\"\n"
+                            " : (type == 17) ? \"\"\n"
+                            " : (type == 18) ? \"\"\n"
+                            " : (type == 19) ? \"\"\n"
+                            " : (type == 20) ? \"\"\n"
+                            " : (type == 21) ? \"\"\n"
+                            " : (type == 22) ? \"\"\n"
+                            " : (type == 23) ? \"\"\n"
+                            " : (type == 24) ? \"\"\n"
+                            " : (type == 25) ? \"\"\n"
+                            " : (type == 26) ? \"\"\n"
+                            " : (type == 27) ? \"\"\n"
+                            " : (type == 28) ? \"\"\n"
+                            " : (type == 29) ? \"\"\n"
+                            " : (type == 30) ? \"\"\n"
+                            " : (type == 31) ? \"\"\n"
+                            " : (type == 32) ? \"\"\n"
+                            " : (type == 33) ? \"\"\n"
+                            " : (type == 34) ? \"\"\n"
+                            " : (type == 35) ? \"\"\n"
+                            " : (type == 36) ? \"\"\n"
+                            " : (type == 37) ? \"\"\n"
+                            " : (type == 38) ? \"\"\n"
+                            " : (type == 39) ? \"\"\n"
+                            " : (type == 40) ? \"\"\n"
+                            " : (type == 41) ? \"\"\n"
+                            " : (type == 42) ? \"\"\n"
+                            " : (type == 43) ? \"\"\n"
+                            " : (type == 44) ? \"\"\n"
+                            " : (type == 45) ? \"\"\n"
+                            " : (type == 46) ? \"\"\n"
+                            " : (type == 47) ? \"\"\n"
+                            " : (type == 48) ? \"\"\n"
+                            " : (type == 49) ? \"\"\n"
+                            " : (type == 50) ? \"\"\n"
+                            " : (type == 51) ? \"\"\n"
+                            " : \"\");\n"
+                            "}\n";
+        // Ensure that the AST is validated for the simplified token list
+        tokenizeAndStringify(code); // this does not crash/hang
+        ASSERT_THROW(tokenizeAndStringify(code,true), InternalError); // when parentheses are simplified the AST will be wrong
     }
 
     void astnewdelete() {
