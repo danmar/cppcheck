@@ -196,11 +196,7 @@ void CheckFunctions::checkIgnoredReturnValue()
                 continue;
             }
 
-            const Token* parent = tok;
-            while (parent->astParent() && parent->astParent()->str() == "::")
-                parent = parent->astParent();
-
-            if (CHECK_WRONG_DATA(tok->next()->astOperand1(), tok) && !tok->next()->astParent() && (!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.isUseRetVal(tok))
+            if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.isUseRetVal(tok) && CHECK_WRONG_DATA(tok->next()->astOperand1(), tok))
                 ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
         }
     }
