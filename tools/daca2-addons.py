@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # 1. Create a folder daca2-addons in your HOME folder
 # 2. Put cppcheck-O2 in daca2-addons. It should be built with all optimisations.
@@ -14,13 +14,13 @@ import os
 import datetime
 import time
 
-DEBIAN = ['ftp://ftp.se.debian.org/debian/',
-          'ftp://ftp.debian.org/debian/']
+DEBIAN = ('ftp://ftp.se.debian.org/debian/',
+          'ftp://ftp.debian.org/debian/')
 
 
 def wget(filepath):
     filename = filepath
-    if filepath.find('/') >= 0:
+    if '/' in filepath:
         filename = filename[filename.rfind('/') + 1:]
     for d in DEBIAN:
         subprocess.call(
@@ -126,8 +126,7 @@ def dumpfiles(path):
         if os.path.islink(g):
             continue
         if os.path.isdir(g):
-            for df in dumpfiles(path + g + '/'):
-                ret.append(df)
+            ret.extend(dumpfiles(path + g + '/'))
         elif os.path.isfile(g) and g[-5:] == '.dump':
             ret.append(g)
     return ret
@@ -166,7 +165,8 @@ def scanarchive(filepath, jobs):
 # gcc-arm - no ticket. Reproducible timeout in daca2 though as of 1.73/early 2016.
 #
 
-    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:7] == 'insight' or filename[:8] == 'valgrind' or filename[:7] == 'gcc-arm':
+    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:7] == 'insight' or\
+            filename[:8] == 'valgrind' or filename[:7] == 'gcc-arm':
         results = open('results.txt', 'at')
         results.write('fixme: skipped package to avoid hang\n')
         results.close()

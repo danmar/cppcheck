@@ -1,5 +1,4 @@
-
-import glob
+#!/usr/bin/env python
 import sys
 import re
 
@@ -22,11 +21,12 @@ fin = open(resultfile, 'rt')
 results = fin.read()
 fin.close()
 
-out = {}
-out['untriaged'] = ''
-out['fn'] = ''
-out['fp'] = ''
-out['tp'] = ''
+out = {
+    'untriaged': '',
+    'fn': '',
+    'fp': '',
+    'tp': ''
+}
 
 numberOfFalsePositives = 0
 numberOfTruePositives = 0
@@ -71,7 +71,7 @@ for result in results.split('\n'):
 f = open(project + '/true-positives.txt', 'rt')
 for line in f.readlines():
     line = line.strip()
-    if line.find('] -> [') > 0 or line.find('(error)') < 0:
+    if line.find('] -> [') > 0 or '(error)' not in line:
         continue
 
     res = re.match('\\[(' + project + '.+):([0-9]+)\\]:\s+[(][a-z]+[)] (.+)', line)
@@ -107,7 +107,8 @@ else:
     project2 = project
 
 fout = open('report.html', 'wt')
-fout.write('<html><head><title>Cppcheck results for ' + project + '</title><link rel="stylesheet" type="text/css" href="theme1.css"></head><body>\n')
+fout.write('<html><head><title>Cppcheck results for ' + project +
+           '</title><link rel="stylesheet" type="text/css" href="theme1.css"></head><body>\n')
 fout.write('<h1>Cppcheck results for ' + project + '</h1>\n')
 fout.write('<p>Number of false negatives: ' + str(numberOfFalseNegatives) + '</p>\n')
 fout.write('<p>Number of true positives: ' + str(numberOfTruePositives) + '</p>\n')

@@ -1,4 +1,4 @@
-#/usr/bin/python
+#!/usr/bin/env python
 #
 # Cert: Some extra CERT checkers
 #
@@ -43,11 +43,11 @@ def isLocalUnpackedStruct(arg):
 
 
 def isBitwiseOp(token):
-    return token and (token.str in ['&', '|', '^'])
+    return token and (token.str in {'&', '|', '^'})
 
 
 def isComparisonOp(token):
-    return token and (token.str in ['==', '!=', '>', '>=', '<', '<='])
+    return token and (token.str in {'==', '!=', '>', '>=', '<', '<='})
 
 
 # EXP42-C
@@ -66,13 +66,13 @@ def exp42(data):
 
         if token.astOperand1.str == 'memcmp' and (isLocalUnpackedStruct(arg1) or isLocalUnpackedStruct(arg2)):
             reportError(
-                token, 'style', 'EXP42-C Comparison of struct padding data (fix either by packing the struct using \'#pragma pack\' or by rewriting the comparison)')
+                token, 'style', "EXP42-C Comparison of struct padding data " +
+                "(fix either by packing the struct using '#pragma pack' or by rewriting the comparison)")
+
 
 # EXP46-C
 # Do not use a bitwise operator with a Boolean-like operand
 #   int x = (a == b) & c;
-
-
 def exp46(data):
     for token in data.tokenlist:
         if isBitwiseOp(token) and (isComparisonOp(token.astOperand1) or isComparisonOp(token.astOperand2)):

@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python3
 # Times script using Visual Studio compiler in Windows
 #
 # This script assumes that you have:
@@ -49,7 +49,8 @@ for rev in range(rev1, rev2):
         subprocess.call([r'c:\cygwin64\bin\sed.exe', '-i', 's/140/120/', vcxproj])
     subprocess.call('msbuild cppcheck.sln /t:build /p:configuration=Release,platform=x64'.split())
     print('Revision:' + str(rev))
-    p = subprocess.Popen(r'bin\cppcheck.exe src -q --showtime=summary'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(r'bin\cppcheck.exe src -q --showtime=summary'.split(),
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
     f = open('results.txt', 'at')
     f.write('\nREV ' + str(rev) + '\n')

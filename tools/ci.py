@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # continuous integration
 # build daily reports (doxygen,coverage,etc)
@@ -8,9 +8,7 @@ import time
 import subprocess
 import pexpect
 import glob
-import os
 import sys
-import urllib
 
 
 # Upload file to sourceforge web server using scp
@@ -24,16 +22,11 @@ def upload(file_to_upload, destination):
         child.expect('Password:')
         child.sendline(password)
         child.interact()
-    except IOError:
+    except (IOError, OSError, pexpect.TIMEOUT):
         pass
-    except OSError:
-        pass
-    except pexpect.TIMEOUT:
-        pass
+
 
 # git push
-
-
 def gitpush():
     try:
         password = sys.argv[1]
@@ -41,11 +34,7 @@ def gitpush():
         child.expect("Enter passphrase for key '/home/daniel/.ssh/id_rsa':")
         child.sendline(password)
         child.interact()
-    except IOError:
-        pass
-    except OSError:
-        pass
-    except pexpect.TIMEOUT:
+    except (IOError, OSError, pexpect.TIMEOUT):
         pass
 
 
@@ -53,7 +42,7 @@ def iconv(filename):
     p = subprocess.Popen(['file', '-i', filename],
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     comm = p.communicate()
-    if comm[0].find('charset=iso-8859-1') >= 0:
+    if 'charset=iso-8859-1' in comm[0]:
         subprocess.call(
             ["iconv", filename, "--from=ISO-8859-1", "--to=UTF-8", "-o", filename])
 
@@ -83,11 +72,7 @@ def gitpull():
         child.expect('Already up-to-date.')
         child.interact()
 
-    except IOError:
-        pass
-    except OSError:
-        pass
-    except pexpect.TIMEOUT:
+    except (IOError, OSError, pexpect.TIMEOUT):
         pass
     except pexpect.EOF:
         return True

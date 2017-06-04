@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Cppcheck - A tool for static C/C++ code analysis
 # Copyright (C) 2007-2016 Cppcheck team.
@@ -150,7 +150,8 @@ class MatchCompiler:
             # if varid is provided, check that it's non-zero on first use
             if varid and tok.find('%varid%') != -1 and checked_varid is False:
                 ret += '    if (varid==0U)\n'
-                ret += '        throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");\n'
+                ret += '        throw InternalError(tok, "Internal error. Token::Match called with varid 0. ' +\
+                    'Please report this to Cppcheck developers");\n'
                 checked_varid = True
 
             # [abc]
@@ -189,7 +190,7 @@ class MatchCompiler:
                 gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
 
             else:
-                negatedTok ="!" + self._compileCmd(tok)
+                negatedTok = "!" + self._compileCmd(tok)
                 # fold !true => false ; !false => true
                 # this avoids cppcheck warnings about condition always being true/false
                 if (negatedTok == "!false"):
@@ -323,12 +324,14 @@ class MatchCompiler:
         # Don't use assert() here, it's disabled for optimized builds.
         # We also need to verify builds in 'release' mode
         ret += '    if (res_parsed_match != res_compiled_match) {\n'
-#        ret += '        std::cout << "res_parsed_match' + str(verifyNumber) + ': " << res_parsed_match << ", res_compiled_match: " << res_compiled_match << "\\n";\n'
-#        ret += '        if (tok)\n'
-#        ret += '            std::cout << "tok: " << tok->str();\n'
-#        ret += '        if (tok->next())\n'
-#        ret += '            std::cout << "tok next: " << tok->next()->str();\n'
-        ret += '        throw InternalError(tok, "Internal error. compiled match returned different result than parsed match: ' + pattern + '");\n'
+        # ret += '        std::cout << "res_parsed_match' + str(verifyNumber) +\
+        #     ': " << res_parsed_match << ", res_compiled_match: " << res_compiled_match << "\\n";\n'
+        # ret += '        if (tok)\n'
+        # ret += '            std::cout << "tok: " << tok->str();\n'
+        # ret += '        if (tok->next())\n'
+        # ret += '            std::cout << "tok next: " << tok->next()->str();\n'
+        ret += '        throw InternalError(tok, "Internal error.' +\
+            'compiled match returned different result than parsed match: ' + pattern + '");\n'
         ret += '    }\n'
         ret += '    return res_compiled_match;\n'
         ret += '}\n'
@@ -403,7 +406,7 @@ class MatchCompiler:
             res = re.match(r'\s*"((?:.|\\")*?)"\s*$', raw_pattern)
             if res is None:
                 if self._showSkipped:
-                    print(filename +":" + str(linenr) +" skipping match pattern:" + raw_pattern)
+                    print(filename + ":" + str(linenr) + " skipping match pattern:" + raw_pattern)
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
@@ -454,7 +457,8 @@ class MatchCompiler:
         # Don't use assert() here, it's disabled for optimized builds.
         # We also need to verify builds in 'release' mode
         ret += '    if (res_parsed_findmatch != res_compiled_findmatch) {\n'
-        ret += '        throw InternalError(tok, "Internal error. compiled findmatch returned different result than parsed findmatch: ' + pattern + '");\n'
+        ret += '        throw InternalError(tok, "Internal error. ' +\
+            'compiled findmatch returned different result than parsed findmatch: ' + pattern + '");\n'
         ret += '    }\n'
         ret += '    return res_compiled_findmatch;\n'
         ret += '}\n'
@@ -524,9 +528,8 @@ class MatchCompiler:
             if res is None:
                 break
 
+            # assert that Token::find(simple)match has either 2, 3 or 4 arguments
             assert(len(res) >= 3 or len(res) < 6)
-            # assert that Token::find(simple)match has either 2, 3 or 4
-            # arguments
 
             g0 = res[0]
             tok = res[1]
@@ -556,7 +559,7 @@ class MatchCompiler:
             res = re.match(r'\s*"((?:.|\\")*?)"\s*$', pattern)
             if res is None:
                 if self._showSkipped:
-                    print(filename +":" + str(linenr) +" skipping findmatch pattern:" + pattern)
+                    print(filename + ":" + str(linenr) + " skipping findmatch pattern:" + pattern)
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
@@ -588,7 +591,8 @@ class MatchCompiler:
             startPos = res[0]
             endPos = res[1]
             text = line[startPos + 1:endPos - 1]
-            line = line[:startPos] + 'MatchCompiler::makeConstStringBegin' + text + 'MatchCompiler::makeConstStringEnd' + line[endPos:]
+            line = line[:startPos] + 'MatchCompiler::makeConstStringBegin' +\
+                text + 'MatchCompiler::makeConstStringEnd' + line[endPos:]
         line = line.replace('MatchCompiler::makeConstStringBegin', 'MatchCompiler::makeConstString("')
         line = line.replace('MatchCompiler::makeConstStringEnd', '")')
         return line

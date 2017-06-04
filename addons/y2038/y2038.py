@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 #
 # cppcheck addon for Y2038 safeness detection
 #
@@ -18,18 +18,17 @@ import cppcheckdata
 import sys
 import os
 import re
-import argparse
 
-#---------------
+# --------------
 # Error handling
-#---------------
+# --------------
 
 diagnostics = {}
 
 
 def reportDiagnostic(template, configuration, file, line, severity, message):
     # collect diagnostics by configuration
-    if not configuration in diagnostics:
+    if configuration not in diagnostics:
         diagnostics[configuration] = []
     # add error to this configuration
     diagnostics[configuration].append(
@@ -58,9 +57,9 @@ def reportTokDiag(template, cfg, token, severity, msg):
                      token.file, token.linenr,
                      severity, msg)
 
-#---------------------------------------------
+# --------------------------------------------
 # #define/#undef detection regular expressions
-#---------------------------------------------
+# --------------------------------------------
 
 # test for '#define _TIME_BITS 64'
 re_define_time_bits_64 = re.compile(r'^\s*#\s*define\s+_TIME_BITS\s+64\s*$')
@@ -77,14 +76,14 @@ re_define_use_time_bits64 = re.compile(r'^\s*#\s*define\s+_USE_TIME_BITS64\s*$')
 # test for '#undef _USE_TIME_BITS64' (if it ever happens)
 re_undef_use_time_bits64 = re.compile(r'^\s*#\s*undef\s+_USE_TIME_BITS64\s*$')
 
-#---------------------------------
+# --------------------------------
 # List of Y2038-unsafe identifiers
-#---------------------------------
+# --------------------------------
 
 # This is WIP. Eventually it should contain all identifiers (types
 # and functions) which would be affected by the Y2038 bug.
 
-id_Y2038 = [
+id_Y2038 = {
     # Y2038-unsafe types by definition
     'time_t'
     # Types using Y2038-unsafe types
@@ -184,44 +183,42 @@ id_Y2038 = [
     'getutxid',
     'getutxline',
     'pututxline'
-]
+}
+
 
 # return all files ending in .dump among or under the given paths
-
 def find_dump_files(paths):
     dumpfiles = []
     for path in paths:
         if path.endswith('.dump'):
-            if not path in dumpfiles:
+            if path not in dumpfiles:
                 dumpfiles.append(path)
         else:
             for (top, subdirs, files) in os.walk(path):
                 for file in files:
                     if file.endswith('.dump'):
                         f = top + '/' + file
-                        if not f in dumpfiles:
+                        if f not in dumpfiles:
                             dumpfiles.append(f)
     dumpfiles.sort()
     return dumpfiles
 
-#------------------
+# -----------------
 # Let's get to work
-#------------------
+# -----------------
 
 # extend cppcheck parser with our own options
-
 parser = cppcheckdata.ArgumentParser()
 parser.add_argument('-q', '--quiet', action='store_true',
                     help='do not print "Checking ..." lines')
 parser.add_argument('paths', nargs='+', metavar='path',
                     help='path to dump file or directory')
 
-# parse command line
 
+# parse command line
 args = parser.parse_args()
 
 # now operate on each file in turn
-
 dumpfiles = find_dump_files(args.paths)
 
 for dumpfile in dumpfiles:
@@ -258,7 +255,7 @@ for dumpfile in dumpfiles:
             if re_define_use_time_bits64.match(directive.str):
                 safe = int(srclinenr)
                 # warn about _TIME_BITS not being defined
-                if time_bits_defined == False:
+                if not time_bits_defined:
                     reportDirDiag(args.template,
                                   cfg, srcfile, srclinenr, directive, 'warning',
                                   '_USE_TIME_BITS64 is defined but _TIME_BITS was not')
