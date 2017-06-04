@@ -7,9 +7,9 @@ with open('README.txt') as f:
 
 setup(
     name="cppcheck",
-    description='Python script to parse the XML (version 2) output of '
-    + 'cppcheck and generate an HTML report using Pygments for syntax '
-    + 'highlighting.',
+    description='Python script to parse the XML (version 2) output of ' +
+                'cppcheck and generate an HTML report using Pygments for syntax ' +
+                'highlighting.',
     long_description=readme,
     author='Henrik Nilsson',
     url='https://github.com/danmar/cppcheck',

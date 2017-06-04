@@ -37,6 +37,7 @@ class Directive:
         self.file = element.get('file')
         self.linenr = element.get('linenr')
 
+
 class ValueType:
     """
     ValueType class. Contains (promoted) type information for each node in the AST.
@@ -70,10 +71,11 @@ class ValueType:
         self.typeScope = IdMap[self.typeScopeId]
 
     def isIntegral(self):
-        return self.type == 'bool' or self.type == 'char' or self.type == 'short' or self.type == 'int' or self.type == 'long' or self.type == 'long long'
+        return self.type in {'bool', 'char', 'short', 'int', 'long', 'long long'}
 
     def isFloat(self):
-        return self.type == 'float' or self.type == 'double' or self.type == 'long double'
+        return self.type in {'float', 'double', 'long double'}
+
 
 class Token:
     """
@@ -128,7 +130,6 @@ class Token:
       print(code)
     @endcode
     """
-
 
     Id = None
     str = None
@@ -302,7 +303,6 @@ class Scope:
         self.nestedIn = IdMap[self.nestedInId]
 
 
-
 class Function:
     """
     Information about a function
@@ -391,7 +391,6 @@ class Variable:
         self.typeEndToken = IdMap[self.typeEndTokenId]
 
 
-
 class ValueFlow:
     """
     ValueFlow::Value class
@@ -403,7 +402,6 @@ class ValueFlow:
     Attributes:
         values    Possible values
     """
-
 
     Id = None
     values = None
@@ -436,7 +434,6 @@ class ValueFlow:
         self.values = []
         for value in element:
             self.values.append(ValueFlow.Value(value))
-
 
 
 class Configuration:
@@ -619,18 +616,14 @@ class CppcheckData:
                     tok = Token(node)
                     tok.file = files[int(node.get('fileIndex'))]
                     self.rawTokens.append(tok)
-            for i in range(len(self.rawTokens)):
-                if i > 0:
-                    self.rawTokens[i].previous = self.rawTokens[i-1]
-                if i + 1 < len(self.rawTokens):
-                    self.rawTokens[i].next = self.rawTokens[i+1]
-
+            for i in range(len(self.rawTokens) - 1):
+                self.rawTokens[i + 1].previous = self.rawTokens[i]
+                self.rawTokens[i].next = self.rawTokens[i + 1]
 
         # root is 'dumps' node, each config has its own 'dump' subnode.
         for cfgnode in data.getroot():
-            if cfgnode.tag=='dump':
+            if cfgnode.tag == 'dump':
                 self.configurations.append(Configuration(cfgnode))
-
 
 
 def parsedump(filename):
@@ -638,7 +631,6 @@ def parsedump(filename):
     parse a cppcheck dump file
     """
     return CppcheckData(filename)
-
 
 
 def astIsFloat(token):
@@ -651,9 +643,7 @@ def astIsFloat(token):
     if token.str == '.':
         return astIsFloat(token.astOperand2)
     if '+-*/%'.find(token.str) == 0:
-        if True == astIsFloat(token.astOperand1):
-            return True
-        return astIsFloat(token.astOperand2)
+        return astIsFloat(token.astOperand1) or astIsFloat(token.astOperand2)
     if not token.variable:
         # float literal?
         if token.str[0].isdigit():
@@ -682,6 +672,7 @@ class CppCheckFormatter(argparse.HelpFormatter):
             return text[2:].splitlines()
         return argparse.HelpFormatter._split_lines(self, text, width)
 
+
 def ArgumentParser():
     """
         Returns an argparse argument parser with an already-added
@@ -696,6 +687,7 @@ def ArgumentParser():
                         "'{callstack} {message}'\n"
                         "Pre-defined templates: gcc, vs, edit")
     return parser
+
 
 def reportError(template, callstack=[], severity='', message='', id=''):
     """
@@ -715,7 +707,7 @@ def reportError(template, callstack=[], severity='', message='', id=''):
     elif template == 'edit':
         template = '{file} +{line}: {severity}: {message}'
     # compute 'callstack}, {file} and {line} replacements
-    stack = ' -> '.join(['[' + f + ':' + str(l) + ']' for (f, l) in callstack])
+    stack = ' -> '.join('[' + f + ':' + str(l) + ']' for (f, l) in callstack)
     file = callstack[-1][0]
     line = str(callstack[-1][1])
     # format message

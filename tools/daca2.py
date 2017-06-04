@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # 1. Create a folder daca2 in your HOME folder
 # 2. Put cppcheck-O2 in daca2. It should be built with all optimisations.
@@ -16,13 +16,13 @@ import datetime
 import time
 import logging
 
-DEBIAN = ['ftp://ftp.se.debian.org/debian/',
-          'ftp://ftp.debian.org/debian/']
+DEBIAN = ('ftp://ftp.se.debian.org/debian/',
+          'ftp://ftp.debian.org/debian/')
 
 
 def wget(filepath):
     filename = filepath
-    if filepath.find('/') >= 0:
+    if '/' in filepath:
         filename = filename[filename.rfind('/') + 1:]
     for d in DEBIAN:
         subprocess.call(
@@ -76,10 +76,8 @@ def handleRemoveReadonly(func, path, exc):
 
 def removeAllExceptResults():
     filenames = []
-    for g in glob.glob('[A-Za-z0-9]*'):
-        filenames.append(g)
-    for g in glob.glob('.[a-z]*'):
-        filenames.append(g)
+    filenames.extend(glob.glob('[A-Za-z0-9]*'))
+    filenames.extend(glob.glob('.[a-z]*'))
 
     for filename in filenames:
         count = 5
@@ -104,7 +102,7 @@ def removeAllExceptResults():
 
 def removeLargeFiles(path):
     for g in glob.glob(path + '*'):
-        if g == '.' or g == '..':
+        if g in {'.', '..'}:
             continue
         if os.path.islink(g):
             continue
@@ -122,8 +120,10 @@ def removeLargeFiles(path):
                 except OSError as err:
                     logging.error('Failed to remove {}: {}'.format(g, err))
 
+
 def strfCurrTime(fmt):
     return datetime.time.strftime(datetime.datetime.now().time(), fmt)
+
 
 def scanarchive(filepath, jobs, cpulimit):
     # remove all files/folders except RESULTS_FILENAME
@@ -152,7 +152,8 @@ def scanarchive(filepath, jobs, cpulimit):
         cmd = 'cpulimit --limit=' + cpulimit
     else:
         cmd = 'nice --adjustment=1000'
-    cmd = cmd + ' ../cppcheck-O2 -D__GCC__ --enable=style --inconclusive --error-exitcode=0 --exception-handling=stderr ' + jobs + ' --template=daca2 .'
+    cmd = cmd + ' ../cppcheck-O2 -D__GCC__ --enable=style --inconclusive --error-exitcode=0 ' +\
+        '--exception-handling=stderr ' + jobs + ' --template=daca2 .'
     cmds = cmd.split()
 
     p = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -160,7 +161,7 @@ def scanarchive(filepath, jobs, cpulimit):
 
     if p.returncode == 0:
         logging.info(comm[1] + strfCurrTime('[%H:%M]'))
-    elif comm[0].find('cppcheck: error: could not find or open any of the paths given.') < 0:
+    elif 'cppcheck: error: could not find or open any of the paths given.' not in comm[0]:
         logging.error(comm[1] + strfCurrTime('[%H:%M]'))
         logging.error('Exit code is not zero! Crash?\n')
 
@@ -188,9 +189,9 @@ RESULTS_FILENAME = 'results.txt'
 RESULTS_FILE = os.path.join(workdir, RESULTS_FILENAME)
 
 logging.basicConfig(
-        filename=RESULTS_FILE,
-        level=logging.INFO,
-        format='%(message)s')
+    filename=RESULTS_FILE,
+    level=logging.INFO,
+    format='%(message)s')
 
 print(workdir)
 
