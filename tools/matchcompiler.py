@@ -148,7 +148,7 @@ class MatchCompiler:
             gotoNextToken = '    tok = tok->next();\n'
 
             # if varid is provided, check that it's non-zero on first use
-            if varid and tok.find('%varid%') != -1 and checked_varid is False:
+            if varid and '%varid%' in tok and not checked_varid:
                 ret += '    if (varid==0U)\n'
                 ret += '        throw InternalError(tok, "Internal error. Token::Match called with varid 0. ' +\
                     'Please report this to Cppcheck developers");\n'
@@ -160,7 +160,7 @@ class MatchCompiler:
                 ret += '        ' + returnStatement
 
             # a|b|c
-            elif tok.find('|') > 0:
+            elif '|' in tok:
                 tokens2 = tok.split('|')
                 logicalOp = ' || '
                 if "" in tokens2:
@@ -537,7 +537,7 @@ class MatchCompiler:
 
             # Check for varId
             varId = None
-            if not is_findsimplematch and g0.find("%varid%") != -1:
+            if not is_findsimplematch and "%varid%" not in g0:
                 if len(res) == 5:
                     varId = res[4]
                 else:

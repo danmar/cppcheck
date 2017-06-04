@@ -23,10 +23,8 @@ def parsefile(filename):
             functionName = res.group(1)
         if line.startswith('}'):
             functionName = ''
-        elif line.find('BUG') > 0 or line.find('WARN') > 0 or filename == 'ub.c':
-            spaces = ''
-            for i in range(100):
-                spaces = spaces + ' '
+        elif 'BUG' in line or 'WARN' in line or filename == 'ub.c':
+            spaces = ' ' * 100
             s = filename + spaces
             s = s[:15] + str(linenr) + spaces
             s = s[:20] + functionName + spaces

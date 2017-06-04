@@ -55,7 +55,7 @@ def getpackages(folder):
             filename = None
         elif line[:13 + len(folder)] == './pool/main/' + folder + '/':
             path = line[2:-1]
-        elif path and line.find('.orig.tar.') > 0:
+        elif path and '.orig.tar.' in line:
             filename = line[1 + line.rfind(' '):]
 
     for a in archives:
@@ -82,7 +82,7 @@ def removeAllExceptResults():
     for filename in filenames:
         count = 5
         while count > 0:
-            count = count - 1
+            count -= 1
 
             try:
                 if os.path.isdir(filename):

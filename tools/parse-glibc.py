@@ -19,9 +19,9 @@ def checknonnull(cfg, functionName, nonnull):
             continue
         argpos2 = functionCfg.find('</arg>', argpos1)
         notnullpos = functionCfg.find('not-null', argpos1)
-        if notnullpos > 0 and notnullpos < argpos2:
+        if 0 <= notnullpos < argpos2:
             if s:
-                s = s + ', ' + str(argnr)
+                s += ', ' + str(argnr)
             else:
                 s = str(argnr)
     if s != nonnull:
@@ -102,7 +102,7 @@ def parseheader(cppcheckpath, filename):
         nonnull = None
 
         nonnullStart = line.find('__nonnull')
-        if nonnullStart > 0:
+        if nonnullStart >= 0:
             nonnullStart += 9
             while nonnullStart < len(line) and line[nonnullStart] == ' ':
                 nonnullStart += 1

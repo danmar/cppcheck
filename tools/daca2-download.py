@@ -52,7 +52,7 @@ def getpackages():
             filename = None
         elif line[:12] == './pool/main/':
             path = line[2:-1]
-        elif path and line.find('.orig.tar.') > 0:
+        elif path and '.orig.tar.' in line:
             filename = line[1 + line.rfind(' '):]
 
     for a in archives:
@@ -74,7 +74,7 @@ def handleRemoveReadonly(func, path, exc):
 def removeAll():
     count = 5
     while count > 0:
-        count = count - 1
+        count -= 1
 
         filenames = []
         for g in glob.glob('[#_A-Za-z0-9]*'):
