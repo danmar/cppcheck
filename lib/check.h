@@ -40,7 +40,7 @@
 #ifdef DACA2
 #define CHECK_WRONG_DATA(X, TOK)  ({ if(X) reportError(TOK,Severity::error,"DacaWrongData","Wrong data detected"); X;})
 #else
-#define CHECK_WRONG_DATA(X)   (X)
+#define CHECK_WRONG_DATA(X, TOK)  (X)
 #endif
 
 namespace tinyxml2 {
