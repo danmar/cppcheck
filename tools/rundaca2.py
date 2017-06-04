@@ -28,9 +28,6 @@ def runcppcheck(rev, folder):
     subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/' + folder)])
     subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), folder, '--rev=' + rev])
 
-    subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/lib' + folder)])
-    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), 'lib'+folder, '--rev=' + rev])
-
 def daca2report(reportfolder):
     subprocess.call(['rm', '-rf', reportfolder])
     subprocess.call(['mkdir', reportfolder])
@@ -71,6 +68,7 @@ def daca2(foldernum):
 
     compilecppcheck('-DMAXTIME=600 -DDACA2')
     runcppcheck(rev, folder)
+    runcppcheck(rev, 'lib' + folder)
     daca2report(os.path.expanduser('~/daca2-report'))
     upload(os.path.expanduser('~/daca2-report'), 'devinfo/')
 
