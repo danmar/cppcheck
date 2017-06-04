@@ -32,15 +32,15 @@
 #include <string>
 
 /**
- * When -DUNSTABLE is used, Cppcheck will be more unstable and can crash
- * when there is wrong data. This is intended to be used in daca2.
+ * When -DDACA2 is used, Cppcheck will print error messages when wrong
+ * data is seen. Intended to be used in Daca2
  *
- * Use CHECK_WRONG_DATA in checkers when you avoid crashes for wrong data.
+ * Use CHECK_WRONG_DATA in checkers when you check for wrong data.
  */
-#ifdef UNSTABLE
-#define CHECK_WRONG_DATA(X)   (1)  // crash/hang
+#ifdef DACA2
+#define CHECK_WRONG_DATA(X, TOK)  ({ if(X) reportError(TOK,Severity::error,"DacaWrongData","Wrong data detected"); X;})
 #else
-#define CHECK_WRONG_DATA(X)   (X)  // don't crash/hang
+#define CHECK_WRONG_DATA(X)   (X)
 #endif
 
 namespace tinyxml2 {

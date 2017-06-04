@@ -24,21 +24,17 @@ def compilecppcheck(CPPFLAGS):
     subprocess.call(['nice', 'make', 'SRCDIR=build', 'CFGDIR=' + os.path.expanduser('~/cppcheck/cfg'), 'CXXFLAGS=-g -O2', 'CPPFLAGS=' + CPPFLAGS])
     subprocess.call(['cp', 'cppcheck', os.path.expanduser('~/daca2/cppcheck-O2')])
 
-def runcppcheck(rev, folder, destpath):
+def runcppcheck(rev, folder):
     subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/' + folder)])
-    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), folder, '--rev=' + rev, '--skip=virtuoso-opensource'])
-    subprocess.call(['rm', '-rf', destpath + folder])
-    subprocess.call(['cp', '-R', os.path.expanduser('~/daca2/' + folder), destpath + folder])
+    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), folder, '--rev=' + rev])
 
     subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/lib' + folder)])
-    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), 'lib' + folder, '--rev=' + rev])
-    subprocess.call(['rm', '-rf', destpath + 'lib' + folder])
-    subprocess.call(['cp', '-R', os.path.expanduser('~/daca2/lib' + folder), destpath + 'lib' + folder])
+    subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2.py'), 'lib'+folder, '--rev=' + rev])
 
-def daca2report(daca2folder, reportfolder):
+def daca2report(reportfolder):
     subprocess.call(['rm', '-rf', reportfolder])
     subprocess.call(['mkdir', reportfolder])
-    subprocess.call(['python', os.path.expanduser('~/cppcheck/tools/daca2-report.py'), '--daca2='+daca2folder, reportfolder])
+    subprocess.call(['python', os.path.expanduser('~/cppcheck/tools/daca2-report.py'), reportfolder])
 
 # Upload file to sourceforge server using scp
 def upload(localfolder, webfolder):
@@ -73,17 +69,10 @@ def daca2(foldernum):
     rev = comm[0]
     rev = rev[:rev.find('\n')]
 
-    # unstable
-    compilecppcheck('-DMAXTIME=600 -DUNSTABLE')
-    runcppcheck(rev, folder, os.path.expanduser('~/daca2-unstable/'))
-    daca2report(os.path.expanduser('~/daca2-unstable'), os.path.expanduser('~/daca2-unstable-report'))
-    upload(os.path.expanduser('~/daca2-unstable-report'), 'devinfo/')
-
-    # stable
-    compilecppcheck('-DMAXTIME=600')
-    runcppcheck(rev, folder, os.path.expanduser('~/daca2-stable/'))
-    daca2report(os.path.expanduser('~/daca2-stable/'), os.path.expanduser('~/daca2-stable-report/'))
-    upload(os.path.expanduser('~/daca2-stable-report'), 'devinfo/')
+    compilecppcheck('-DMAXTIME=600 -DDACA2')
+    runcppcheck(rev, folder)
+    daca2report(os.path.expanduser('~/daca2-report'))
+    upload(os.path.expanduser('~/daca2-report'), 'devinfo/')
 
 foldernum = START
 while True:
