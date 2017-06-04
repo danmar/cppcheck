@@ -537,7 +537,7 @@ class MatchCompiler:
 
             # Check for varId
             varId = None
-            if not is_findsimplematch and "%varid%" not in g0:
+            if not is_findsimplematch and "%varid%" in g0:
                 if len(res) == 5:
                     varId = res[4]
                 else:
