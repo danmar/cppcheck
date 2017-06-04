@@ -38,9 +38,9 @@
  * Use CHECK_WRONG_DATA in checkers when you check for wrong data.
  */
 #ifdef DACA2
-#define CHECK_WRONG_DATA(X, TOK)  ({ if(X) reportError(TOK,Severity::error,"DacaWrongData","Wrong data detected"); X;})
+#define CHECK_WRONG_DATA(COND, TOK)  ({ if(!(COND)) reportError(TOK,Severity::error,"DacaWrongData","Wrong data detected"); (COND);})
 #else
-#define CHECK_WRONG_DATA(X, TOK)  (X)
+#define CHECK_WRONG_DATA(COND, TOK)  (COND)
 #endif
 
 namespace tinyxml2 {
