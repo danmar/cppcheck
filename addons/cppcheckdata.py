@@ -642,7 +642,7 @@ def astIsFloat(token):
         return False
     if token.str == '.':
         return astIsFloat(token.astOperand2)
-    if token.str not in '+-*/%':
+    if token.str in '+-*/%':
         return astIsFloat(token.astOperand1) or astIsFloat(token.astOperand2)
     if not token.variable:
         # float literal?
