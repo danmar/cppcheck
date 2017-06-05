@@ -31,21 +31,12 @@
 #include <list>
 #include <string>
 
-/**
- * When -DDACA2 is used, Cppcheck will print error messages when wrong
- * data is seen. Intended to be used in Daca2
- *
- * Use CHECK_WRONG_DATA in checkers when you check for wrong data.
- */
-#if defined(DACA2) || defined(UNSTABLE)
-#define CHECK_WRONG_DATA(COND, TOK)  ({ if(!(COND)) reportError(TOK,Severity::debug,"DacaWrongData","Wrong data detected, " #COND); (COND);})
-#else
-#define CHECK_WRONG_DATA(COND, TOK)  (COND)
-#endif
-
 namespace tinyxml2 {
     class XMLElement;
 }
+
+/** Use WRONG_DATA in checkers to mark conditions that check that data is correct */
+#define WRONG_DATA(COND, TOK)  (wrongData((TOK), (COND), #COND))
 
 /// @addtogroup Core
 /// @{
@@ -187,6 +178,11 @@ protected:
         return errorPath;
     }
 
+    /**
+     * Use WRONG_DATA in checkers when you check for wrong data. That
+     * will call this method
+     */
+    bool wrongData(const Token *tok, bool condition, const char *str);
 private:
     const std::string _name;
 

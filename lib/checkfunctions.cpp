@@ -196,7 +196,7 @@ void CheckFunctions::checkIgnoredReturnValue()
                 continue;
             }
 
-            if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.isUseRetVal(tok) && CHECK_WRONG_DATA(tok->next()->astOperand1(), tok))
+            if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.isUseRetVal(tok) && !WRONG_DATA(tok->next()->astOperand1(), tok))
                 ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
         }
     }
@@ -323,7 +323,7 @@ void CheckFunctions::memsetZeroBytes()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|wmemset (") && (numberOfArguments(tok)==3)) {
                 const std::vector<const Token *> &arguments = getArguments(tok);
-                if (!CHECK_WRONG_DATA(arguments.size() == 3U, tok))
+                if (WRONG_DATA(arguments.size() == 3U, tok))
                     continue;
                 const Token* lastParamTok = arguments[2];
                 if (lastParamTok->str() == "0")
