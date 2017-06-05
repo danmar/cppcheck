@@ -1551,15 +1551,49 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("class X {\n"
-              "    void* i;\n"
+              "    char a[1024];\n"
               "};\n"
               "class Y : X {\n"
-              "    void* j;\n"
-              "    void* k;\n"
+              "    char b;\n"
+              "};\n"
+              "void f(Y y) {\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Function parameter 'y' should be passed by reference.\n", errout.str());
+
+        check("class X {\n"
+              "    void* a;\n"
+              "    void* b;\n"
+              "};\n"
+              "class Y {\n"
+              "    void* a;\n"
+              "    void* b;\n"
+              "    char c;\n"
               "};\n"
               "void f(X x, Y y) {\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (performance) Function parameter 'y' should be passed by reference.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (performance) Function parameter 'y' should be passed by reference.\n", errout.str());
+
+        const auto originalPlatform = _settings.platformType;
+
+        _settings.platform(cppcheck::Platform::Unix32);
+        check("class X {\n"
+              "    uint64_t a;\n"
+              "    uint64_t b;\n"
+              "};\n"
+              "void f(X x) {\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by reference.\n", errout.str());
+
+        _settings.platform(cppcheck::Platform::Unix64);
+        check("class X {\n"
+              "    uint64_t a;\n"
+              "    uint64_t b;\n"
+              "};\n"
+              "void f(X x) {\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        _settings.platform(originalPlatform);
     }
 
     void switchRedundantAssignmentTest() {
