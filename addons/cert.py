@@ -26,7 +26,7 @@ def isUnpackedStruct(var):
             if structScope:
                 linenr = int(structScope.classStart.linenr)
                 for line in open(structScope.classStart.file):
-                    linenr = linenr - 1
+                    linenr -= 1
                     if linenr == 0:
                         return True
                     if re.match(r'#pragma\s+pack\s*\(', line):

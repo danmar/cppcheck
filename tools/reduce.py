@@ -46,7 +46,7 @@ def runtool():
             return True
     elif p.returncode == 0:
         out = comm[0] + '\n' + comm[1]
-        if ('error:' not in out) and (out.find(EXPECTED) > 0):
+        if 'error:' not in out and EXPECTED in out:
             return True
     return False
 
@@ -223,7 +223,7 @@ def removeline(filedata):
         if stmt and strippedline[-1] == ';' and checkpar(line) and '{' not in line and '}' not in line:
             replaceandrun('remove line', filedata, i, '')
 
-        elif stmt and strippedline.find('{') > 0 and strippedline.find('}') == len(strippedline) - 1:
+        elif stmt and '{' in strippedline and strippedline.find('}') == len(strippedline) - 1:
             replaceandrun('remove line', filedata, i, '')
 
         if strippedline[-1] in ';{}':

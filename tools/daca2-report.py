@@ -10,26 +10,26 @@ def readdate(data):
     else:
         datepos = data.find('\nDATE ')
         if datepos >= 0:
-            datepos = datepos + 1
+            datepos += 1
 
     if datepos < 0:
         return None
 
     datestr = ''
-    datepos = datepos + 5
+    datepos += 5
     while True:
         if datepos >= len(data):
             return None
         d = data[datepos]
         if d >= '0' and d <= '9':
-            datestr = datestr + d
+            datestr += d
         elif d == '\n' or d == '\r':
             if len(datestr) == 8:
                 return datestr[:4] + '-' + datestr[4:6] + '-' + datestr[6:]
             return None
         elif d != ' ' and d != '-':
             return None
-        datepos = datepos + 1
+        datepos += 1
 
 daca2folder = os.path.expanduser('~/daca2/')
 path = ''
@@ -37,11 +37,11 @@ for arg in sys.argv[1:]:
     if arg.startswith('--daca2='):
         daca2folder = arg[8:]
         if daca2folder[-1] != '/':
-            daca2folder = daca2folder + '/'
+            daca2folder += '/'
     else:
         path = arg
         if path[-1] != '/':
-            path = path + '/'
+            path += '/'
 
 mainpage = open(path + 'daca2.html', 'wt')
 mainpage.write('<!DOCTYPE html>\n')

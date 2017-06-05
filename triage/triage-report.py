@@ -71,7 +71,7 @@ for result in results.split('\n'):
 f = open(project + '/true-positives.txt', 'rt')
 for line in f.readlines():
     line = line.strip()
-    if line.find('] -> [') > 0 or '(error)' not in line:
+    if '] -> [' in line or '(error)' not in line:
         continue
 
     res = re.match('\\[(' + project + '.+):([0-9]+)\\]:\s+[(][a-z]+[)] (.+)', line)
@@ -101,7 +101,7 @@ for line in f.readlines():
 f.close()
 
 project2 = ''
-if project.find('-') > 0:
+if '-' in project:
     project2 = project[:project.find('-')]
 else:
     project2 = project

@@ -53,7 +53,7 @@ def getpackages(folder):
             filename = None
         elif line[:13 + len(folder)] == './pool/main/' + folder + '/':
             path = line[2:-1]
-        elif path and line.find('.orig.tar.') > 0:
+        elif path and '.orig.tar.' in line:
             filename = line[1 + line.rfind(' '):]
 
     for a in archives:
@@ -75,7 +75,7 @@ def handleRemoveReadonly(func, path, exc):
 def removeAllExceptResults():
     count = 5
     while count > 0:
-        count = count - 1
+        count -= 1
 
         filenames = []
         for g in glob.glob('[A-Za-z0-9]*'):
@@ -116,7 +116,7 @@ def removeLargeFiles(path):
             removeLargeFiles(g + '/')
         elif os.path.isfile(g) and g[-4:] != '.txt':
             statinfo = os.stat(g)
-            if path.find('/clang/INPUTS/') > 0 or statinfo.st_size > 100000:
+            if '/clang/INPUTS/' in path or statinfo.st_size > 100000:
                 os.remove(g)
 
 
@@ -194,7 +194,7 @@ def scanarchive(filepath, jobs):
     addons = sorted(glob.glob(os.path.expanduser('~/cppcheck/addons/*.py')))
     for dumpfile in sorted(dumpfiles('')):
         for addon in addons:
-            if addon.find('cppcheckdata.py') > 0:
+            if 'cppcheckdata.py' in addon:
                 continue
 
             p2 = subprocess.Popen(['nice',

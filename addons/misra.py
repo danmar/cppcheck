@@ -223,7 +223,7 @@ def isUnsignedInt(expr):
     if not expr:
         return False
     if expr.isNumber:
-        return expr.str.find('u') > 0 or expr.str.find('U') > 0
+        return 'u' in expr.str or 'U' in expr.str
     if expr.str in {'+', '-', '*', '/', '%'}:
         return isUnsignedInt(expr.astOperand1) or isUnsignedInt(expr.astOperand2)
     return False
@@ -811,7 +811,7 @@ def misra_16_3(rawTokens):
             else:
                 state = 0
         elif token.str.startswith('/*') or token.str.startswith('//'):
-            if token.str.lower().find('fallthrough') > 0:
+            if 'fallthrough' in token.str.lower():
                 state = 2
         elif token.str == '{':
             state = 2
@@ -956,7 +956,7 @@ def misra_20_2(data):
         if not directive.str.startswith('#include '):
             continue
         for pattern in {'\\', '//', '/*', "'"}:
-            if directive.str.find(pattern) > 0:
+            if pattern in directive.str:
                 reportError(directive, 20, 2)
                 break
 
