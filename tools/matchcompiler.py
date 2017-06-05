@@ -160,7 +160,7 @@ class MatchCompiler:
                 ret += '        ' + returnStatement
 
             # a|b|c
-            elif '|' in tok:
+            elif tok.find('|') > 0:
                 tokens2 = tok.split('|')
                 logicalOp = ' || '
                 if "" in tokens2:
