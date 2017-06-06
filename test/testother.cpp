@@ -232,6 +232,10 @@ private:
         }
     }
 
+    void check(const char code[], Settings *s) {
+        check(code,"test.cpp",false,true,true,s);
+    }
+
     void checkP(const char code[], const char *filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
@@ -1573,27 +1577,24 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:10]: (performance) Function parameter 'y' should be passed by reference.\n", errout.str());
 
-        const auto originalPlatform = _settings.platformType;
+        {
+            // 8-byte data should be passed by reference on 32-bit platform but not on 64-bit platform
+            const char code[] = "class X {\n"
+                                "    uint64_t a;\n"
+                                "    uint64_t b;\n"
+                                "};\n"
+                                "void f(X x) {}";
 
-        _settings.platform(cppcheck::Platform::Unix32);
-        check("class X {\n"
-              "    uint64_t a;\n"
-              "    uint64_t b;\n"
-              "};\n"
-              "void f(X x) {\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by reference.\n", errout.str());
+            Settings s32(_settings);
+            s32.platform(cppcheck::Platform::Unix32);
+            check(code, &s32);
+            ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by reference.\n", errout.str());
 
-        _settings.platform(cppcheck::Platform::Unix64);
-        check("class X {\n"
-              "    uint64_t a;\n"
-              "    uint64_t b;\n"
-              "};\n"
-              "void f(X x) {\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        _settings.platform(originalPlatform);
+            Settings s64(_settings);
+            s64.platform(cppcheck::Platform::Unix64);
+            check(code, &s64);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void switchRedundantAssignmentTest() {
