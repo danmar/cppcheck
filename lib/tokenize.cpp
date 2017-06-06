@@ -8130,6 +8130,18 @@ void Tokenizer::validate() const
         cppcheckError(lastTok);
 }
 
+static const std::set<std::string> controlFlowKeywords = make_container< std::set<std::string> > () <<
+        "goto" <<
+        "do" <<
+        "if" <<
+        "else" <<
+        "for" <<
+        "while" <<
+        "switch" <<
+        "case" <<
+        "break" <<
+        "continue" <<
+        "return";
 
 const Token * Tokenizer::findGarbageCode() const
 {
@@ -8178,23 +8190,14 @@ const Token * Tokenizer::findGarbageCode() const
         return list.back();
     if (list.back()->str() == ")" && !Token::Match(list.back()->link()->previous(), "%name% ("))
         return list.back();
-    if (Token::Match(list.back(), "void|char|short|int|long|float|double|const|volatile|static|inline|struct|class|enum|union|template|sizeof|break|continue|typedef"))
+    if (Token::Match(list.back(), "void|char|short|int|long|float|double|const|volatile|static|inline|struct|class|enum|union|template|sizeof|case|break|continue|typedef"))
         return list.back();
+    if ((list.back()->str()==")"||list.back()->str()=="}") && list.back()->previous() && controlFlowKeywords.find(list.back()->previous()->str()) != controlFlowKeywords.end())
+        return list.back()->previous();
 
     return nullptr;
 }
 
-static const std::set<std::string> controlFlowKeywords = make_container< std::set<std::string> > () <<
-        "goto" <<
-        "do" <<
-        "if" <<
-        "else" <<
-        "for" <<
-        "while" <<
-        "switch" <<
-        "break" <<
-        "continue" <<
-        "return";
 
 bool Tokenizer::isGarbageExpr(const Token *start, const Token *end)
 {

@@ -111,16 +111,20 @@ namespace cppcheck {
 
         const char *platformString() const {
             switch (platformType) {
-            case Unix32:
-                return "unix32";
-            case Unix64:
-                return "unix64";
+            case Unspecified:
+                return "Unspecified";
+            case Native:
+                return "Native";
             case Win32A:
                 return "win32A";
             case Win32W:
                 return "win32W";
             case Win64:
                 return "win64";
+            case Unix32:
+                return "unix32";
+            case Unix64:
+                return "unix64";
             case AVR8:
                 return "avr8";
             default:
