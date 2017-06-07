@@ -1083,12 +1083,12 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     tok = tok->previous();
                     if (Token::Match(tok->tokAt(-4), "[;{}] %name% = %name% [+-|] 0 ;") &&
                         tok->strAt(-3) == tok->previous()->str()) {
-                        tok = tok->tokAt(-3);
+                        tok = tok->tokAt(-4);
+                        tok->deleteNext(5);
+                    } else {
+                        tok = tok->previous();
                         tok->deleteNext(2);
-                        tok->deleteThis();
                     }
-                    tok->deleteNext();
-                    tok->deleteThis();
                     ret = true;
                 } else if (Token::Match(tok->previous(), "[=([,] 0 [+|]") ||
                            Token::Match(tok->previous(), "return|case 0 [+|]")) {
