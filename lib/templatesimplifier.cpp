@@ -1146,7 +1146,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
             }
 
             // Remove parentheses around number..
-            if (Token::Match(tok->tokAt(-2), "%op%|< ( %num% )") && !tok->tokAt(-2)->isName() && tok->strAt(-2) != ">") {
+            if (Token::Match(tok->tokAt(-2), "%op%|< ( %num% )") && tok->strAt(-2) != ">") {
                 tok = tok->previous();
                 tok->deleteThis();
                 tok->deleteNext();
@@ -1155,10 +1155,10 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
 
             if (Token::simpleMatch(tok->previous(), "( 0 |") ||
                 Token::simpleMatch(tok->previous(), "| 0 )")) {
-                if (tok->previous()->isConstOp())
+                tok = tok->previous();
+                if (tok->str() == "|")
                     tok = tok->previous();
-                tok->deleteNext();
-                tok->deleteThis();
+                tok->deleteNext(2);
                 ret = true;
             }
 
