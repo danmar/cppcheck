@@ -1056,7 +1056,13 @@ private:
                             "void foo() {\n"
                             "  TestArithmetic<int>();\n"
                             "}";
-        ASSERT_THROW(tok(code), InternalError);
+        const char exp[] = "void foo ( ) {"
+                           " TestArithmetic < int > ( ) ; "
+                           "} "
+                           "void TestArithmetic < int > ( ) {"
+                           " x ( CheckedNumeric < int > ( ) ) ; "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_enum() {

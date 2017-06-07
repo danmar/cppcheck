@@ -1137,11 +1137,10 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
             }
 
             if (Token::Match(tok->tokAt(-2), "%any% * 1") || Token::Match(tok->previous(), "%any% 1 *")) {
-                if (tok->isNumber())
-                    tok = tok->previous();
                 tok = tok->previous();
-                tok->deleteNext();
-                tok->deleteNext();
+                if (tok->str() == "*")
+                    tok = tok->previous();
+                tok->deleteNext(2);
                 ret = true;
             }
 
