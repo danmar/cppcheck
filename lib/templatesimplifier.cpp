@@ -1263,14 +1263,14 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     const bool isfunc(tok->strAt(namepos + 1) == "(");
 
     // locate template usage..
-    std::string::size_type amountOftemplateInstantiations = templateInstantiations.size();
+    std::string::size_type numberOfTemplateInstantiations = templateInstantiations.size();
     unsigned int recursiveCount = 0;
 
     bool instantiated = false;
 
     for (std::list<Token *>::const_iterator iter2 = templateInstantiations.begin(); iter2 != templateInstantiations.end(); ++iter2) {
-        if (amountOftemplateInstantiations != templateInstantiations.size()) {
-            amountOftemplateInstantiations = templateInstantiations.size();
+        if (numberOfTemplateInstantiations != templateInstantiations.size()) {
+            numberOfTemplateInstantiations = templateInstantiations.size();
             simplifyCalculations(tokenlist.front());
             ++recursiveCount;
             if (recursiveCount > 100) {
