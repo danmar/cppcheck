@@ -1136,11 +1136,12 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                 }
             }
 
-            if (Token::simpleMatch(tok->previous(), "* 1") || Token::simpleMatch(tok, "1 *")) {
-                if (tok->previous() && tok->previous()->isConstOp())
+            if (Token::Match(tok->tokAt(-2), "%any% * 1") || Token::Match(tok->previous(), "%any% 1 *")) {
+                if (tok->isNumber())
                     tok = tok->previous();
+                tok = tok->previous();
                 tok->deleteNext();
-                tok->deleteThis();
+                tok->deleteNext();
                 ret = true;
             }
 

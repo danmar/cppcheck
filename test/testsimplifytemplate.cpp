@@ -95,6 +95,7 @@ private:
         TEST_CASE(template55);  // #6604 - simplify "const const" to "const" in template instantiations
         TEST_CASE(template56);  // #7117 - const ternary operator simplification as template parameter
         TEST_CASE(template57);  // #7891
+        TEST_CASE(template58);  // #6021 - use after free (deleted tokens in simplifyCalculations)
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
@@ -1045,6 +1046,17 @@ private:
         const char exp [] = "Test < unsigned long > test ( 0 ) ; "
                             "struct Test < unsigned long > { Test < unsigned long > ( long ) ; } ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template58() { // #6021
+        const char code[] = "template <typename A>\n"
+                            "void TestArithmetic() {\n"
+                            "  x(1 * CheckedNumeric<A>());\n"
+                            "}\n"
+                            "void foo() {\n"
+                            "  TestArithmetic<int>();\n"
+                            "}";
+        ASSERT_THROW(tok(code), InternalError);
     }
 
     void template_enum() {
