@@ -154,6 +154,20 @@ public:
         std::set<std::string> &expandedtemplates);
 
     /**
+     * Replace all matching template usages  'Foo < int >' => 'Foo<int>'
+     * @param instantiationToken Template instantiation token
+     * @param templateMatchPattern Pattern compatible with Token::simpleMatch
+     * @param newName The new type name
+     * @param typesUsedInTemplateInstantiation template instantiation parameters
+     * @param templateInstantiations All seen instantiations
+     */
+    static void replaceTemplateUsage(Token *const instantiationToken,
+                                     const std::string &templateMatchPattern,
+                                     const std::string &newName,
+                                     const std::vector<const Token *> &typesUsedInTemplateInstantiation,
+                                     std::list<Token *> &templateInstantiations);
+
+    /**
      * Simplify templates
      * @param tokenlist token list
      * @param errorlogger error logger
