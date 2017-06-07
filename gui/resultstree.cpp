@@ -187,6 +187,8 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
                                            hide,
                                            ":images/go-down.png",
                                            true);
+            if (!child_item)
+                continue;
 
             //Add user data to that item
             QMap<QString, QVariant> child_data;
@@ -215,7 +217,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
         bool childOfMessage)
 {
     if (!parent) {
-        return 0;
+        return nullptr;
     }
 
     QList<QStandardItem*> list;
@@ -240,7 +242,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
                 // the sixth column is the summary so check it last
                 if (parent->child(i, 5)->text() == list[5]->text()) {
                     // this row matches so don't add it
-                    return 0;
+                    return nullptr;
                 }
             }
         }
