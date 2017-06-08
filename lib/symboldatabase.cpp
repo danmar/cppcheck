@@ -1581,7 +1581,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             }
 
             // should be at a sequence point if this is a function
-            if (!Token::Match(tok1, ">|{|}|;|public:|protected:|private:") && tok1)
+            if (!Token::Match(tok1, ">|{|}|;|)|public:|protected:|private:") && tok1)
                 return false;
         }
 

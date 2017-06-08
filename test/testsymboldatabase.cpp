@@ -346,6 +346,9 @@ private:
         TEST_CASE(auto7);
         TEST_CASE(auto8);
         TEST_CASE(auto9); // #8044 (segmentation fault)
+
+        TEST_CASE(macroFuncionTest1);
+        TEST_CASE(macroFuncionTest2);
     }
 
     void array() {
@@ -5204,6 +5207,42 @@ private:
                       "  }\n"
                       "}");
         ASSERT_EQUALS(true,  db != nullptr); // not null
+    }
+
+    void macroFuncionTest1() {
+        GET_SYMBOL_DB("class MacroTest\n {"
+            "public:\n"
+            "    SOME_MACRO_WITH_NO_SEMICOLON()\n"
+            "    void Init() { }\n"
+            "};\n");
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3);
+
+        if (!db)
+            return;
+
+        const Scope *scope = db->findScopeByName("MacroTest");
+        ASSERT(scope && scope->functionList.size() == 1);
+        ASSERT(findFunctionByName("Init", scope) != NULL);
+    }
+
+    void macroFuncionTest2() {
+        GET_SYMBOL_DB("class MacroTest\n {"
+            "public:\n"
+            "    SOME_MACRO_WITH_NO_SEMICOLON(1, 2, 3)\n"
+            "    void Init() { }\n"
+            "};\n");
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3);
+
+        if (!db)
+            return;
+
+        const Scope *scope = db->findScopeByName("MacroTest");
+        ASSERT(scope && scope->functionList.size() == 1);
+        ASSERT(findFunctionByName("Init", scope) != NULL);
     }
 
 };
