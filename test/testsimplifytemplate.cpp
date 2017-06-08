@@ -96,6 +96,7 @@ private:
         TEST_CASE(template56);  // #7117 - const ternary operator simplification as template parameter
         TEST_CASE(template57);  // #7891
         TEST_CASE(template58);  // #6021 - use after free (deleted tokens in simplifyCalculations)
+        TEST_CASE(template59);  // #8051 - TemplateSimplifier::simplifyTemplateInstantiation failure
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
@@ -1062,6 +1063,32 @@ private:
                            "void TestArithmetic < int > ( ) {"
                            " x ( CheckedNumeric < int > ( ) ) ; "
                            "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template59() { // #8051
+        const char code[] = "template<int N>\n"
+                            "struct Factorial {\n"
+                            "    enum FacHelper { value = N * Factorial<N - 1>::value };\n"
+                            "};\n"
+                            "template <>\n"
+                            "struct Factorial<0> {\n"
+                            "    enum FacHelper { value = 1 };\n"
+                            "};\n"
+                            "template<int DiagonalDegree>\n"
+                            "int diagonalGroupTest() {\n"
+                            "    return Factorial<DiagonalDegree>::value;\n"
+                            "}\n"
+                            "int main () {\n"
+                            "    return diagonalGroupTest<4>();\n"
+                            "}";
+        const char exp[] = "struct Factorial < 0 > { enum FacHelper { value = 1 } ; } ; "
+                           "int main ( ) { return diagonalGroupTest < 4 > ( ) ; } "
+                           "int diagonalGroupTest < 4 > ( ) { return Factorial < 4 > :: value ; } "
+                           "struct Factorial < 4 > { enum FacHelper { value = 4 * Factorial < 3 > :: value } ; } ; "
+                           "struct Factorial < 3 > { enum FacHelper { value = 3 * Factorial < 2 > :: value } ; } ; "
+                           "struct Factorial < 2 > { enum FacHelper { value = 2 * Factorial < 1 > :: value } ; } ; "
+                           "struct Factorial < 1 > { enum FacHelper { value = Factorial < 0 > :: value } ; } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
