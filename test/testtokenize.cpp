@@ -454,6 +454,7 @@ private:
         TEST_CASE(asttemplate);
         TEST_CASE(astcast);
         TEST_CASE(astlambda);
+        TEST_CASE(astcase);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -8281,6 +8282,12 @@ private:
         ASSERT_EQUALS("x{([= 0return", testAst("x = [](){return 0; };"));
 
         ASSERT_EQUALS("ab{[(= cd=", testAst("a = b([&]{c=d;});"));
+    }
+
+    void astcase() {
+        ASSERT_EQUALS("0case", testAst("case 0:"));
+        ASSERT_EQUALS("12+case", testAst("case 1+2:"));
+        ASSERT_EQUALS("xyz:?case", testAst("case (x?y:z):"));
     }
 
     void compileLimits() {

@@ -321,7 +321,8 @@ struct AST_state {
     unsigned int inArrayAssignment;
     bool cpp;
     unsigned int assign;
-    explicit AST_state(bool cpp_) : depth(0), inArrayAssignment(0), cpp(cpp_), assign(0U) {}
+    bool inCase;
+    explicit AST_state(bool cpp_) : depth(0), inArrayAssignment(0), cpp(cpp_), assign(0U), inCase(false) {}
 };
 
 static Token * skipDecl(Token *tok)
@@ -503,10 +504,14 @@ static void compileTerm(Token *&tok, AST_state& state)
         do {
             tok = tok->next();
         } while (Token::Match(tok, "%name%|%str%"));
-    } else if (tok->isName() && tok->str() != "case") {
-        if (tok->str() == "return") {
+    } else if (tok->isName()) {
+        if (Token::Match(tok, "return|case")) {
+            if (tok->str() == "case")
+                state.inCase = true;
             compileUnaryOp(tok, state, compileExpression);
             state.op.pop();
+            if (state.inCase && Token::simpleMatch(tok, ": ;"))
+                tok = tok->next();
         } else if (Token::Match(tok, "sizeof !!(")) {
             compileUnaryOp(tok, state, compileExpression);
             state.op.pop();
@@ -644,7 +649,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             const std::size_t oldOpSize = state.op.size();
             compileExpression(tok, state);
             tok = tok2;
-            if ((tok->previous() && tok->previous()->isName() && (tok->strAt(-1) != "return" && (!state.cpp || !Token::Match(tok->previous(), "throw|delete"))))
+            if ((tok->previous() && tok->previous()->isName() && (!Token::Match(tok->previous(), "return|case") && (!state.cpp || !Token::Match(tok->previous(), "throw|delete"))))
                 || (tok->strAt(-1) == "]" && (!state.cpp || !Token::Match(tok->linkAt(-1)->previous(), "new|delete")))
                 || (tok->strAt(-1) == ">" && tok->linkAt(-1))
                 || (tok->strAt(-1) == ")" && !iscast(tok->linkAt(-1))) // Don't treat brackets to clarify precedence as function calls
@@ -889,6 +894,8 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
             compileBinOp(tok, state, compileAssignTernary);
             state.assign = assign;
         } else if (tok->str() == ":") {
+            if (state.depth == 1U && state.inCase)
+                break;
             if (state.assign > 0U)
                 break;
             compileBinOp(tok, state, compileAssignTernary);
@@ -1079,7 +1086,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     if (Token::Match(tok, "%type% <") && !Token::Match(tok->linkAt(1), "> [({]"))
         return tok->linkAt(1);
 
-    if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%name% %op%|(|[|.|::|<|?|;") || Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{")) {
+    if (Token::Match(tok, "return|case") || !tok->previous() || Token::Match(tok, "%name% %op%|(|[|.|::|<|?|;") || Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{")) {
         if (cpp && (Token::Match(tok->tokAt(-2), "[;{}] new|delete %name%") || Token::Match(tok->tokAt(-3), "[;{}] :: new|delete %name%")))
             tok = tok->previous();
 
