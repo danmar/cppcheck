@@ -1471,6 +1471,25 @@ namespace simplecpp {
                 return tok2->next;
             }
 
+            else if (tok->str == DEFINED) {
+                const Token *tok2 = tok->next;
+                const Token *tok3 = tok2 ? tok2->next : NULL;
+                const Token *tok4 = tok3 ? tok3->next : NULL;
+                const Token *defToken = NULL;
+                const Token *lastToken = NULL;
+                if (sameline(tok, tok4) && tok2->op == '(' && tok3->name && tok4->op == ')') {
+                    defToken = tok3;
+                    lastToken = tok4;
+                } else if (sameline(tok,tok2) && tok2->name) {
+                    defToken = lastToken = tok2;
+                }
+                if (defToken) {
+                    const bool def = (macros.find(defToken->str) != macros.end());
+                    output->push_back(newMacroToken(def ? "1" : "0", loc, true));
+                    return lastToken->next;
+                }
+            }
+
             output->push_back(newMacroToken(tok->str, loc, true));
             return tok->next;
         }
@@ -1708,23 +1727,23 @@ namespace simplecpp {
         // replace backslash separators
         std::replace(path.begin(), path.end(), '\\', '/');
 
-        // "./" at the start
-        if (path.size() > 3 && path.compare(0,2,"./") == 0 && path[2] != '/')
-            path.erase(0,2);
-
-        // remove "/./"
+        // remove "./"
         pos = 0;
-        while ((pos = path.find("/./",pos)) != std::string::npos) {
-            path.erase(pos,2);
+        while ((pos = path.find("./",pos)) != std::string::npos) {
+            if (pos == 0 || path[pos - 1U] == '/')
+                path.erase(pos,2);
+            else
+                pos += 2;
         }
 
         // remove "xyz/../"
         pos = 1U;
         while ((pos = path.find("/../", pos)) != std::string::npos) {
             const std::string::size_type pos1 = path.rfind('/', pos - 1U);
-            if (pos1 == std::string::npos)
-                pos++;
-            else {
+            if (pos1 == std::string::npos) {
+                path.erase(0,pos+4);
+                pos = 0;
+            } else {
                 path.erase(pos1,pos-pos1+3);
                 pos = std::min((std::string::size_type)1, pos1);
             }
@@ -2039,7 +2058,6 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     std::stack<int> ifstates;
     ifstates.push(TRUE);
 
-    std::list<TokenList *> includes;
     std::stack<const Token *> includetokenstack;
 
     std::set<std::string> pragmaOnce;
