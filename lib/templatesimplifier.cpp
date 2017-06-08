@@ -1152,10 +1152,10 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                 ret = true;
             }
 
-            if (Token::simpleMatch(tok->previous(), "( 0 |") ||
-                Token::simpleMatch(tok->previous(), "| 0 )")) {
+            if (Token::Match(tok->previous(), "( 0 [|+]") ||
+                Token::Match(tok->previous(), "[|+-] 0 )")) {
                 tok = tok->previous();
-                if (tok->str() == "|")
+                if (Token::Match(tok, "[|+-]"))
                     tok = tok->previous();
                 tok->deleteNext(2);
                 ret = true;
