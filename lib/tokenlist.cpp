@@ -405,21 +405,19 @@ static Token * findCppTypeInitPar(Token *tok)
 // X{} X<Y>{} etc
 static bool iscpp11init(const Token * const tok)
 {
-    const Token *nameToken = nullptr;
-    if (tok->isName())
-        nameToken = tok;
-    else if (Token::Match(tok->previous(), "%name% {"))
-        nameToken = tok->previous();
-    else if (tok->linkAt(-1) && Token::simpleMatch(tok->previous(), "> {") && Token::Match(tok->linkAt(-1)->previous(),"%name% <"))
-        nameToken = tok->linkAt(-1)->previous();
+    const Token *nameToken = tok;
+    while (nameToken && nameToken->str() == "{") {
+        nameToken = nameToken->previous();
+        if (nameToken && nameToken->str() == "," && Token::simpleMatch(nameToken->previous(), "} ,"))
+            nameToken = nameToken->linkAt(-1);
+    }
     if (!nameToken)
         return false;
-
-    if (Token::Match(nameToken, "%name% { ["))
-        return false;
+    if (nameToken->str() == ">" && nameToken->link())
+        nameToken = nameToken->link()->previous();
 
     const Token *endtok = nullptr;
-    if (Token::Match(nameToken,"%name% {"))
+    if (Token::Match(nameToken, "%name% { !!["))
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
         endtok = nameToken->linkAt(1)->linkAt(1);
@@ -543,8 +541,14 @@ static void compileTerm(Token *&tok, AST_state& state)
             prev = prev->link()->previous();
         if (Token::simpleMatch(tok->link(),"} [")) {
             tok = tok->next();
-        } else if (tok->previous() && tok->previous()->isName()) {
-            compileBinOp(tok, state, compileExpression);
+        } else if (state.cpp && iscpp11init(tok)) {
+            if (state.op.empty() || Token::Match(tok->previous(), "[{,]"))
+                compileUnaryOp(tok, state, compileExpression);
+            else
+                compileBinOp(tok, state, compileExpression);
+            if (Token::simpleMatch(tok, "} ,")) {
+                tok = tok->next();
+            }
         } else if (!state.inArrayAssignment && !Token::simpleMatch(prev, "=")) {
             state.op.push(tok);
             tok = tok->link()->next();
