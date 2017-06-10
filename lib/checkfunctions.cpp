@@ -182,7 +182,7 @@ void CheckFunctions::checkIgnoredReturnValue()
             // skip c++11 initialization, ({...})
             if (Token::Match(tok, "%var%|(|, {"))
                 tok = tok->linkAt(1);
-            else if (tok->str() == "(")
+            else if (Token::Match(tok, "[(<]") && tok->link())
                 tok = tok->link();
 
             if (tok->varId() || !Token::Match(tok, "%name% ("))
