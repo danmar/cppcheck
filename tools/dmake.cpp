@@ -275,7 +275,7 @@ int main(int argc, char **argv)
 
     // skip "-D_GLIBCXX_DEBUG" if clang, since it breaks the build
     makeConditionalVariable(fout, "CXX", "g++");
-    fout << "ifeq ($(CXX), clang++)\n"
+    fout << "ifeq (clang++, $(findstring clang++,$(CXX)))\n"
          << "    CPPCHK_GLIBCXX_DEBUG=\n"
          << "endif\n";
 
@@ -315,9 +315,9 @@ int main(int argc, char **argv)
                                 "-g");
     }
 
-    fout << "ifeq ($(CXX), g++)\n"
+    fout << "ifeq (g++, $(findstring g++,$(CXX)))\n"
          << "    override CXXFLAGS += -std=c++0x\n"
-         << "else ifeq ($(CXX), clang++)\n"
+         << "else ifeq (clang++, $(findstring clang++,$(CXX)))\n"
          << "    override CXXFLAGS += -std=c++0x\n"
          << "else ifeq ($(CXX), c++)\n"
          << "    ifeq ($(shell uname -s), Darwin)\n"
