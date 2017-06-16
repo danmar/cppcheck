@@ -76,16 +76,16 @@ ifndef CXX
     CXX=g++
 endif
 
-ifeq ($(CXX), clang++)
+ifeq (clang++, $(findstring clang++,$(CXX)))
     CPPCHK_GLIBCXX_DEBUG=
 endif
 ifndef CXXFLAGS
     CXXFLAGS=-include lib/cxx11emu.h -pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wshadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar $(CPPCHK_GLIBCXX_DEBUG) -g
 endif
 
-ifeq ($(CXX), g++)
+ifeq (g++, $(findstring g++,$(CXX)))
     override CXXFLAGS += -std=c++0x
-else ifeq ($(CXX), clang++)
+else ifeq (clang++, $(findstring clang++,$(CXX)))
     override CXXFLAGS += -std=c++0x
 else ifeq ($(CXX), c++)
     ifeq ($(shell uname -s), Darwin)
