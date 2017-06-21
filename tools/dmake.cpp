@@ -377,8 +377,8 @@ int main(int argc, char **argv)
     fout << "\t./testrunner -q\n\n";
     fout << "checkcfg:\tcppcheck\n";
     fout << "\t./test/cfg/runtests.sh\n\n";
-    fout << "dmake:\ttools/dmake.o cli/filelister.o lib/pathmatch.o lib/path.o externals/simplecpp/simplecpp.o\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -o $@ tools/dmake.o cli/filelister.o lib/pathmatch.o lib/path.o externals/simplecpp/simplecpp.o -Ilib $(LDFLAGS)\n\n";
+    fout << "dmake:\ttools/dmake.o cli/filelister.o $(SRCDIR)/pathmatch.o $(SRCDIR)/path.o externals/simplecpp/simplecpp.o\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -o $@ tools/dmake.o cli/filelister.o $(SRCDIR)/pathmatch.o $(SRCDIR)/path.o externals/simplecpp/simplecpp.o -Ilib $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
     fout << "reduce:\ttools/reduce.o $(LIBOBJ) $(EXTOBJ)\n";
