@@ -294,6 +294,9 @@ namespace simplecpp {
      * Deallocate data
      */
     SIMPLECPP_LIB void cleanup(std::map<std::string, TokenList*> &filedata);
+
+    /** Simplify path */
+    SIMPLECPP_LIB std::string simplifyPath(std::string path);
 }
 
 #endif
