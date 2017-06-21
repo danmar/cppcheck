@@ -265,8 +265,8 @@ check:	all
 checkcfg:	cppcheck
 	./test/cfg/runtests.sh
 
-dmake:	tools/dmake.o cli/filelister.o lib/pathmatch.o lib/path.o
-	$(CXX) $(CXXFLAGS) -o $@ tools/dmake.o cli/filelister.o lib/pathmatch.o lib/path.o -Ilib $(LDFLAGS)
+dmake:	tools/dmake.o cli/filelister.o lib/pathmatch.o lib/path.o externals/simplecpp/simplecpp.o
+	$(CXX) $(CXXFLAGS) -o $@ tools/dmake.o cli/filelister.o lib/pathmatch.o lib/path.o externals/simplecpp/simplecpp.o -Ilib $(LDFLAGS)
 
 run-dmake: dmake
 	./dmake
