@@ -268,6 +268,7 @@ namespace simplecpp {
     };
 
     struct SIMPLECPP_LIB DUI {
+        DUI() {}
         std::list<std::string> defines;
         std::set<std::string> undefined;
         std::list<std::string> includePaths;
