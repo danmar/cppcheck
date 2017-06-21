@@ -36,6 +36,8 @@
 #include <strings.h>
 #endif
 
+#include <simplecpp.h>
+
 /** Is the filesystem case insensitive? */
 static bool caseInsensitiveFilesystem()
 {
@@ -70,66 +72,7 @@ std::string Path::fromNativeSeparators(std::string path)
 
 std::string Path::simplifyPath(std::string originalPath)
 {
-    const bool isUnc = originalPath.compare(0,2,"//") == 0;
-
-    // Remove ./, .//, ./// etc. at the beginning
-    while (originalPath.compare(0,2,"./") == 0) { // remove "./././"
-        const size_t toErase = originalPath.find_first_not_of('/', 2);
-        originalPath = originalPath.erase(0, toErase);
-    }
-
-    std::string subPath;
-    std::vector<std::string> pathParts;
-    for (std::size_t i = 0; i < originalPath.size(); ++i) {
-        if (originalPath[i] == '/' || originalPath[i] == '\\') {
-            if (!subPath.empty()) {
-                pathParts.push_back(subPath);
-                subPath.clear();
-            }
-
-            pathParts.push_back(std::string(1 , originalPath[i]));
-        } else
-            subPath.append(1, originalPath[i]);
-    }
-
-    if (!subPath.empty())
-        pathParts.push_back(subPath);
-
-    // First filter out all double slashes
-    for (unsigned int i = 1; i < pathParts.size(); ++i) {
-        if (i > 0 && pathParts[i] == "/" && pathParts[i-1] == "/") {
-            pathParts.erase(pathParts.begin() + static_cast<int>(i) - 1);
-            --i;
-        }
-    }
-
-    for (unsigned int i = 1; i < pathParts.size(); ++i) {
-        if (i > 1 && pathParts[i-2] != ".." && pathParts[i] == ".." && pathParts.size() > i + 1) {
-            pathParts.erase(pathParts.begin() + static_cast<int>(i) + 1);
-            pathParts.erase(pathParts.begin() + static_cast<int>(i));
-            pathParts.erase(pathParts.begin() + static_cast<int>(i) - 1);
-            pathParts.erase(pathParts.begin() + static_cast<int>(i) - 2);
-            i = 0;
-        } else if (i > 0 && pathParts[i] == ".") {
-            pathParts.erase(pathParts.begin() + static_cast<int>(i));
-            i = 0;
-        } else if (i > 0 && pathParts[i] == "/" && pathParts[i-1] == "/") {
-            pathParts.erase(pathParts.begin() + static_cast<int>(i) - 1);
-            i = 0;
-        }
-    }
-
-    if (isUnc) {
-        // Restore the leading double slash
-        pathParts.insert(pathParts.begin(), "/");
-    }
-
-    std::ostringstream oss;
-    for (std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i) {
-        oss << pathParts[i];
-    }
-
-    return oss.str();
+    return simplecpp::simplifyPath(originalPath);
 }
 
 std::string Path::getPathFromFilename(const std::string &filename)
