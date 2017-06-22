@@ -127,7 +127,7 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
     uniqueIncludePaths.sort();
     uniqueIncludePaths.unique();
 
-    for (std::list<std::string>::const_iterator it = uniqueIncludePaths.begin(); uniqueIncludePaths != in.end(); ++it) {
+    for (std::list<std::string>::const_iterator it = uniqueIncludePaths.begin(); it != uniqueIncludePaths.end(); ++it) {
         if (it->empty())
             continue;
         if (it->compare(0,2,"%(")==0)
