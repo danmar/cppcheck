@@ -188,7 +188,8 @@ bool Path::isC(const std::string &path)
 {
     // In unix, ".C" is considered C++ file
     const std::string extension = getFilenameExtension(path);
-    return (extension == ".c");
+    return extension == ".c" ||
+           extension == ".cl";
 }
 
 bool Path::isCPP(const std::string &path)
