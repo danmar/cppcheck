@@ -75,6 +75,8 @@ private:
         ASSERT_EQUALS("a/index.h", Path::simplifyPath("a/../a/index.h"));
         ASSERT_EQUALS(".", Path::simplifyPath("a/.."));
         ASSERT_EQUALS(".", Path::simplifyPath("./a/.."));
+		ASSERT_EQUALS("C:/foo.cpp", Path::simplifyPath("C:/foo.cpp"));
+		ASSERT_EQUALS("c:/foo.cpp", Path::simplifyPath("c:/foo.cpp"));
         ASSERT_EQUALS("../../src/test.cpp", Path::simplifyPath("../../src/test.cpp"));
         ASSERT_EQUALS("../../../src/test.cpp", Path::simplifyPath("../../../src/test.cpp"));
         ASSERT_EQUALS("src/test.cpp", Path::simplifyPath(".//src/test.cpp"));
