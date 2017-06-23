@@ -30,8 +30,8 @@ public:
 private:
 
     void run() {
-        TEST_CASE(simplify_path);
-        TEST_CASE(accept_file);
+        TEST_CASE(removeQuotationMarks);
+        TEST_CASE(acceptFile);
         TEST_CASE(getCurrentPath);
         TEST_CASE(isAbsolute);
         TEST_CASE(getRelative);
@@ -40,53 +40,7 @@ private:
         TEST_CASE(get_path_from_filename);
     }
 
-    void simplify_path() const {
-        // Path::simplifyPath()
-        ASSERT_EQUALS("index.h", Path::simplifyPath("index.h"));
-        ASSERT_EQUALS("index.h", Path::simplifyPath("./index.h"));
-        ASSERT_EQUALS("index.h", Path::simplifyPath(".//index.h"));
-        ASSERT_EQUALS("index.h", Path::simplifyPath(".///index.h"));
-        ASSERT_EQUALS("/index.h", Path::simplifyPath("/index.h"));
-        ASSERT_EQUALS("/path/", Path::simplifyPath("/path/"));
-        ASSERT_EQUALS("/", Path::simplifyPath("/"));
-        ASSERT_EQUALS("/", Path::simplifyPath("/."));
-        ASSERT_EQUALS("/", Path::simplifyPath("/./"));
-        ASSERT_EQUALS("/index.h", Path::simplifyPath("/./index.h"));
-        ASSERT_EQUALS("/", Path::simplifyPath("/.//"));
-        ASSERT_EQUALS("/index.h", Path::simplifyPath("/.//index.h"));
-        ASSERT_EQUALS("../index.h", Path::simplifyPath("../index.h"));
-        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../index.h"));
-        ASSERT_EQUALS("index.h", Path::simplifyPath("./path/../index.h"));
-        ASSERT_EQUALS("index.h", Path::simplifyPath("path/../index.h"));
-        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path//../index.h"));
-        ASSERT_EQUALS("index.h", Path::simplifyPath("./path//../index.h"));
-        ASSERT_EQUALS("index.h", Path::simplifyPath("path//../index.h"));
-        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/..//index.h"));
-        ASSERT_EQUALS("index.h", Path::simplifyPath("./path/..//index.h"));
-        ASSERT_EQUALS("index.h", Path::simplifyPath("path/..//index.h"));
-        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path//..//index.h"));
-        ASSERT_EQUALS("index.h", Path::simplifyPath("./path//..//index.h"));
-        ASSERT_EQUALS("index.h", Path::simplifyPath("path//..//index.h"));
-        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../other/../index.h"));
-        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../other///././../index.h"));
-        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../other/././..///index.h"));
-        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../other///././..///index.h"));
-        ASSERT_EQUALS("../path/index.h", Path::simplifyPath("../path/other/../index.h"));
-        ASSERT_EQUALS("a/index.h", Path::simplifyPath("a/../a/index.h"));
-        ASSERT_EQUALS(".", Path::simplifyPath("a/.."));
-        ASSERT_EQUALS(".", Path::simplifyPath("./a/.."));
-        ASSERT_EQUALS("../../src/test.cpp", Path::simplifyPath("../../src/test.cpp"));
-        ASSERT_EQUALS("../../../src/test.cpp", Path::simplifyPath("../../../src/test.cpp"));
-        ASSERT_EQUALS("src/test.cpp", Path::simplifyPath(".//src/test.cpp"));
-        ASSERT_EQUALS("src/test.cpp", Path::simplifyPath(".///src/test.cpp"));
-        ASSERT_EQUALS("test.cpp", Path::simplifyPath("./././././test.cpp"));
-        ASSERT_EQUALS("src/", Path::simplifyPath("src/abc/.."));
-        ASSERT_EQUALS("src/", Path::simplifyPath("src/abc/../"));
-
-        // Handling of UNC paths on Windows
-        ASSERT_EQUALS("//src/test.cpp", Path::simplifyPath("//src/test.cpp"));
-        ASSERT_EQUALS("//src/test.cpp", Path::simplifyPath("///src/test.cpp"));
-
+    void removeQuotationMarks() const {
         // Path::removeQuotationMarks()
         ASSERT_EQUALS("index.cpp", Path::removeQuotationMarks("index.cpp"));
         ASSERT_EQUALS("index.cpp", Path::removeQuotationMarks("\"index.cpp"));
@@ -98,7 +52,7 @@ private:
         ASSERT_EQUALS("the/path to/index.cpp", Path::removeQuotationMarks("\"the/path to/index.cpp\""));
     }
 
-    void accept_file() const {
+    void acceptFile() const {
         ASSERT(Path::acceptFile("index.cpp"));
         ASSERT(Path::acceptFile("index.invalid.cpp"));
         ASSERT(Path::acceptFile("index.invalid.Cpp"));
