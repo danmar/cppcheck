@@ -122,7 +122,12 @@ static bool simplifyPathWithVariables(std::string &s, const std::map<std::string
 void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, const std::map<std::string, std::string> &variables)
 {
     std::list<std::string> I;
-    for (std::list<std::string>::const_iterator it = in.begin(); it != in.end(); ++it) {
+    // only parse each includePath once - so remove duplicates
+    std::list<std::string> uniqueIncludePaths = in;
+    uniqueIncludePaths.sort();
+    uniqueIncludePaths.unique();
+
+    for (std::list<std::string>::const_iterator it = uniqueIncludePaths.begin(); it != uniqueIncludePaths.end(); ++it) {
         if (it->empty())
             continue;
         if (it->compare(0,2,"%(")==0)
