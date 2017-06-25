@@ -222,8 +222,6 @@ void MainWindow::HandleCLIParams(const QStringList &params)
         index = params.indexOf("-p");
         if ((index + 1) < params.length())
             LoadProjectFile(params[index + 1]);
-    } else if ((index = params.indexOf(QRegExp(".*\\.cppcheck$", Qt::CaseInsensitive), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
-        LoadProjectFile(params[index]);
     } else if (params.contains("-l")) {
         QString logFile;
         index = params.indexOf("-l");
@@ -240,6 +238,8 @@ void MainWindow::HandleCLIParams(const QStringList &params)
         } else {
             LoadResults(logFile);
         }
+    } else if ((index = params.indexOf(QRegExp(".*\\.cppcheck$", Qt::CaseInsensitive), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
+        LoadProjectFile(params[index]);
     } else if ((index = params.indexOf(QRegExp(".*\\.xml$", Qt::CaseInsensitive), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
         LoadResults(params[index],QDir::currentPath());
     } else
