@@ -123,8 +123,6 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
 				variables[var] = variableValue;
 			}
 			else {
-				// remember that there is no value other than the variable name
-				variables[var] = var;
 				break;
 			}
 		}
