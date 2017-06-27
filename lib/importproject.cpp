@@ -111,23 +111,16 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
 		std::map<std::string, std::string>::const_iterator it1 = variables.find(var);
 		std::string variableValue;
 		// variable was not found within defined variables
-		if (it1 != variables.end()) {
-			variableValue = it1->second;
-		}
-		// also search environment variables
-		else {
-			char const* envValue = std::getenv(var.c_str());
-			if (envValue) {
-				variableValue = std::string(envValue);
-				// also cache value for next time to reduce system access
-				variables[var] = variableValue;
-			}
-			else {
+		if (it1 == variables.end()) {
+			const char *envValue = std::getenv(var.c_str());
+			if (!envValue) {
+				//! @TODO generate a debug/info message about undefined variable
 				break;
 			}
+			variables[var] = std::string(envValue);
+			it1 = variables.find(var);
 		}
-
-		s = s.substr(0, start) + variableValue + s.substr(end + 1);
+		s = s.substr(0, start) + it1->second + s.substr(end + 1);
     }
     if (s.find("$(") != std::string::npos)
         return false;
