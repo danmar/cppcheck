@@ -49,7 +49,7 @@ public:
         cppcheck::Platform::PlatformType platformType;
 
         void setDefines(std::string defs);
-        void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, const std::map<std::string, std::string> &variables);
+        void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string> &variables);
     };
     std::list<FileSettings> fileSettings;
 
@@ -61,7 +61,7 @@ public:
 private:
     void importCompileCommands(std::istream &istr);
     void importSln(std::istream &istr, const std::string &path);
-    void importVcxproj(const std::string &filename, std::map<std::string, std::string> variables, const std::string &additionalIncludeDirectories);
+    void importVcxproj(const std::string &filename, std::map<std::string, std::string> &variables, const std::string &additionalIncludeDirectories);
 };
 
 /// @}

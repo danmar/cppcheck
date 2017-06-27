@@ -96,7 +96,7 @@ void ImportProject::FileSettings::setDefines(std::string defs)
     defines.swap(defs);
 }
 
-static bool simplifyPathWithVariables(std::string &s, const std::map<std::string, std::string> &variables)
+static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std::string> &variables)
 {
     std::set<std::string> expanded;
     std::string::size_type start = 0;
@@ -109,9 +109,17 @@ static bool simplifyPathWithVariables(std::string &s, const std::map<std::string
             break;
         expanded.insert(var);
         std::map<std::string, std::string>::const_iterator it1 = variables.find(var);
-        if (it1 == variables.end())
-            break;
-        s = s.substr(0,start) + it1->second + s.substr(end+1);
+        // variable was not found within defined variables
+        if (it1 == variables.end()) {
+            const char *envValue = std::getenv(var.c_str());
+            if (!envValue) {
+                //! @TODO generate a debug/info message about undefined variable
+                break;
+            }
+            variables[var] = std::string(envValue);
+            it1 = variables.find(var);
+        }
+        s = s.substr(0, start) + it1->second + s.substr(end + 1);
     }
     if (s.find("$(") != std::string::npos)
         return false;
@@ -119,7 +127,7 @@ static bool simplifyPathWithVariables(std::string &s, const std::map<std::string
     return true;
 }
 
-void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, const std::map<std::string, std::string> &variables)
+void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string> &variables)
 {
     std::list<std::string> I;
     // only parse each includePath once - so remove duplicates
@@ -387,7 +395,7 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
 static void loadVisualStudioProperties(const std::string &props, std::map<std::string,std::string> *variables, std::string *includePath, const std::string &additionalIncludeDirectories, std::list<ItemDefinitionGroup> &itemDefinitionGroupList)
 {
     std::string filename(props);
-    if (!simplifyPathWithVariables(filename,*variables))
+    if (!simplifyPathWithVariables(filename, *variables))
         return;
     tinyxml2::XMLDocument doc;
     if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_SUCCESS)
@@ -414,7 +422,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
     }
 }
 
-void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string> variables, const std::string &additionalIncludeDirectories)
+void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string> &variables, const std::string &additionalIncludeDirectories)
 {
     variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
 
