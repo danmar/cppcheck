@@ -778,10 +778,24 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
             if (isMemberVariableAssignment(tok, membervar)) {
                 bool assign = true;
                 bool rhs = false;
+                // Used for tracking if an ")" is inner or outer
+                const Token *rpar = nullptr;
                 for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "=")
                         rhs = true;
-                    if (tok2->str() == ";")
+
+                    // Look at inner expressions but not outer expressions
+                    if (!rpar && tok2->str() == "(")
+                        rpar = tok2->link();
+                    else if (tok2->str() == ")") {
+                        // No rpar => this is an outer right parenthesis
+                        if (!rpar)
+                            break;
+                        if (rpar == tok2)
+                            rpar = nullptr;
+                    }
+
+                    if (tok2->str() == ";" || (!rpar && tok2->str() == ","))
                         break;
                     if (rhs && tok2->varId() == var.declarationId() && isMemberVariableUsage(tok2, var.isPointer(), alloc, membervar)) {
                         assign = false;
@@ -791,9 +805,6 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                 if (assign)
                     return true;
             }
-
-            if (Token::Match(tok, "%name% ="))
-                return true;
 
             if (isMemberVariableUsage(tok, var.isPointer(), alloc, membervar))
                 usetok = tok;

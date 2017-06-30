@@ -3346,6 +3346,13 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
 
+        checkUninitVar("struct AB { int a; };\n"
+                       "void f() {\n"
+                       "    struct AB ab;\n"
+                       "    while (x) { init(&ab); z = ab.a; }\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // address of member
         checkUninitVar("struct AB { int a[10]; int b; };\n"
                        "void f() {\n"
