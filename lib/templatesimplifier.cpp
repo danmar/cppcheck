@@ -789,6 +789,8 @@ void TemplateSimplifier::expandTemplate(
         }
         if (Token::Match(tok3, "{|(|["))
             tok3 = tok3->link();
+        else if (Token::simpleMatch(tok3, "namespace {"))
+            tok3 = tok3->tokAt(2);
 
         // Start of template..
         if (tok3 == tok) {

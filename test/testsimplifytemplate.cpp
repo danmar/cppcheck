@@ -105,6 +105,7 @@ private:
         TEST_CASE(template_constructor);    // #3152 - template constructor is removed
         TEST_CASE(syntax_error_templates_1);
         TEST_CASE(template_member_ptr); // Ticket #5786 - crash upon valid code
+        TEST_CASE(template_namespace);
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
@@ -1374,6 +1375,16 @@ private:
             "};");
     }
 
+    void template_namespace() {
+        // #6570
+        const char code[] = "namespace {\n"
+                            "  template<class T> void Fred(T value) { }\n"
+                            "}\n"
+                            "Fred<int>(123);";
+        ASSERT_EQUALS("namespace { } "
+                      "Fred < int > ( 123 ) ; "
+                      "void Fred < int > ( int value ) { }", tok(code));
+    }
 
     unsigned int templateParameters(const char code[]) {
         Tokenizer tokenizer(&settings, this);
