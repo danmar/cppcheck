@@ -89,6 +89,7 @@ private:
         TEST_CASE(ifelse6); // #3370
         TEST_CASE(ifelse7); // #5576 - if (fd < 0)
         TEST_CASE(ifelse8); // #5747 - if (fd == -1)
+        TEST_CASE(ifelse9); // #5273 - if (X(p==NULL, 0))
 
         // switch
         TEST_CASE(switch1);
@@ -1020,6 +1021,16 @@ private:
               "    int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
               "    if (fd == -1)\n"
               "        return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse9() { // #5273
+        check("void f() {\n"
+              "    char *p = malloc(100);\n"
+              "    if (dostuff(p==NULL,0))\n"
+              "        return;\n"
+              "    free(p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

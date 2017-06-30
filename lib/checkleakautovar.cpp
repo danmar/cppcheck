@@ -351,6 +351,24 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     if (tok3->str() == "(" && Token::Match(tok3->astOperand1(), "UNLIKELY|LIKELY")) {
                         tokens.push(tok3->astOperand2());
                         continue;
+                    } else if (tok3->str() == "(" && Token::Match(tok3->previous(), "%name%")) {
+                        std::vector<const Token *> params = getArguments(tok3->previous());
+                        for (unsigned int i = 0; i < params.size(); ++i) {
+                            const Token *par = params[i];
+                            if (!par->isComparisonOp())
+                                continue;
+                            const Token *vartok = nullptr;
+                            if (astIsVariableComparison(par, "!=", "0", &vartok) ||
+                                astIsVariableComparison(par, "==", "0", &vartok) ||
+                                astIsVariableComparison(par, "<", "0", &vartok) ||
+                                astIsVariableComparison(par, ">", "0", &vartok) ||
+                                astIsVariableComparison(par, "==", "-1", &vartok) ||
+                                astIsVariableComparison(par, "!=", "-1", &vartok)) {
+                                varInfo1.erase(vartok->varId());
+                                varInfo2.erase(vartok->varId());
+                            }
+                        }
+                        continue;
                     }
 
                     const Token *vartok = nullptr;
