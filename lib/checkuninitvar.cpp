@@ -763,68 +763,71 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
     assert(tok->str() == "{");
 
     for (const Token * const end = tok->link(); tok != end; tok = tok->next()) {
-        if (tok->varId() == var.declarationId()) {
-            if (!membervar.empty()) {
-                if (isMemberVariableAssignment(tok, membervar)) {
-                    bool assign = true;
-                    bool rhs = false;
-                    for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                        if (tok2->str() == "=")
-                            rhs = true;
-                        if (tok2->str() == ";")
-                            break;
-                        if (rhs && tok2->varId() == var.declarationId() && isMemberVariableUsage(tok2, var.isPointer(), alloc, membervar)) {
-                            assign = false;
-                            break;
-                        }
-                    }
-                    if (assign)
-                        return true;
-                }
-
-                if (Token::Match(tok, "%name% ="))
-                    return true;
-
-                if (isMemberVariableUsage(tok, var.isPointer(), alloc, membervar))
-                    usetok = tok;
-                else if (Token::Match(tok->previous(), "[(,] %name% [,)]"))
-                    return true;
-            } else {
-                if (isVariableUsage(tok, var.isPointer(), alloc))
-                    usetok = tok;
-                else if (tok->strAt(1) == "=") {
-                    // Is var used in rhs?
-                    bool rhs = false;
-                    std::stack<const Token *> tokens;
-                    tokens.push(tok->next()->astOperand2());
-                    while (!tokens.empty()) {
-                        const Token *t = tokens.top();
-                        tokens.pop();
-                        if (!t)
-                            continue;
-                        if (t->varId() == var.declarationId()) {
-                            // var is used in rhs
-                            rhs = true;
-                            break;
-                        }
-                        if (Token::simpleMatch(t->previous(),"sizeof ("))
-                            continue;
-                        tokens.push(t->astOperand1());
-                        tokens.push(t->astOperand2());
-                    }
-                    if (!rhs)
-                        return true;
-                } else {
-                    return true;
-                }
-            }
-        }
-
-        if (Token::Match(tok, "sizeof|typeof ("))
+        if (Token::Match(tok, "sizeof|typeof (")) {
             tok = tok->next()->link();
+            continue;
+        }
 
         if (Token::Match(tok, "asm ( %str% ) ;"))
             return true;
+
+        if (tok->varId() != var.declarationId())
+            continue;
+
+        if (!membervar.empty()) {
+            if (isMemberVariableAssignment(tok, membervar)) {
+                bool assign = true;
+                bool rhs = false;
+                for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "=")
+                        rhs = true;
+                    if (tok2->str() == ";")
+                        break;
+                    if (rhs && tok2->varId() == var.declarationId() && isMemberVariableUsage(tok2, var.isPointer(), alloc, membervar)) {
+                        assign = false;
+                        break;
+                    }
+                }
+                if (assign)
+                    return true;
+            }
+
+            if (Token::Match(tok, "%name% ="))
+                return true;
+
+            if (isMemberVariableUsage(tok, var.isPointer(), alloc, membervar))
+                usetok = tok;
+            else if (Token::Match(tok->previous(), "[(,] %name% [,)]"))
+                return true;
+        } else {
+            if (isVariableUsage(tok, var.isPointer(), alloc))
+                usetok = tok;
+            else if (tok->strAt(1) == "=") {
+                // Is var used in rhs?
+                bool rhs = false;
+                std::stack<const Token *> tokens;
+                tokens.push(tok->next()->astOperand2());
+                while (!tokens.empty()) {
+                    const Token *t = tokens.top();
+                    tokens.pop();
+                    if (!t)
+                        continue;
+                    if (t->varId() == var.declarationId()) {
+                        // var is used in rhs
+                        rhs = true;
+                        break;
+                    }
+                    if (Token::simpleMatch(t->previous(),"sizeof ("))
+                        continue;
+                    tokens.push(t->astOperand1());
+                    tokens.push(t->astOperand2());
+                }
+                if (!rhs)
+                    return true;
+            } else {
+                return true;
+            }
+        }
     }
 
     if (!suppressErrors && usetok) {
