@@ -352,7 +352,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         tokens.push(tok3->astOperand2());
                         continue;
                     } else if (tok3->str() == "(" && Token::Match(tok3->previous(), "%name%")) {
-                        std::vector<const Token *> params = getArguments(tok3->previous());
+                        const std::vector<const Token *> params = getArguments(tok3->previous());
                         for (unsigned int i = 0; i < params.size(); ++i) {
                             const Token *par = params[i];
                             if (!par->isComparisonOp())
