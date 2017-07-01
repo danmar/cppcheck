@@ -691,7 +691,7 @@ static void useFunctionArgs(const Token *tok, Variables& variables)
     // TODO: Match function args to see if they are const or not. Assume that const data is not written.
     if (!tok)
         return;
-    if (Token::Match(tok, "[,+]")) {
+    if (Token::Match(tok, "[,+?:]")) {
         useFunctionArgs(tok->astOperand1(), variables);
         useFunctionArgs(tok->astOperand2(), variables);
     } else if (tok->variable() && tok->variable()->isArray()) {
