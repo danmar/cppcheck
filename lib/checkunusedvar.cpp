@@ -691,7 +691,10 @@ static void useFunctionArgs(const Token *tok, Variables& variables)
     // TODO: Match function args to see if they are const or not. Assume that const data is not written.
     if (!tok)
         return;
-    if (Token::Match(tok, "[,+?:]")) {
+    if (tok->str() == ",") {
+        useFunctionArgs(tok->astOperand1(), variables);
+        useFunctionArgs(tok->astOperand2(), variables);
+    } else if (Token::Match(tok, "[+:]") && (!tok->valueType() || tok->valueType()->pointer)) {
         useFunctionArgs(tok->astOperand1(), variables);
         useFunctionArgs(tok->astOperand2(), variables);
     } else if (tok->variable() && tok->variable()->isArray()) {
@@ -1147,10 +1150,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.use(tok->varId(), tok);   // use = read + write
         }
 
-        else if (Token::Match(tok, "[?:]")) {
-            // TODO: This is to avoid FP for 'p = c ? buf1 : buf2;'.
-            // Check if the address is taken. If not this is just a read.
-            // maybe handle struct members better
+        else if (tok->str() == ":" && (!tok->valueType() || tok->valueType()->pointer)) {
             if (tok->astOperand1())
                 variables.use(tok->astOperand1()->varId(), tok->astOperand1());
             if (tok->astOperand2())
