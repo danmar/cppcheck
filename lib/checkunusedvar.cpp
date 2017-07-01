@@ -1147,6 +1147,16 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.use(tok->varId(), tok);   // use = read + write
         }
 
+        else if (Token::Match(tok, "[?:]")) {
+            // TODO: This is to avoid FP for 'p = c ? buf1 : buf2;'.
+            // Check if the address is taken. If not this is just a read.
+            // maybe handle struct members better
+            if (tok->astOperand1())
+                variables.use(tok->astOperand1()->varId(), tok->astOperand1());
+            if (tok->astOperand2())
+                variables.use(tok->astOperand2()->varId(), tok->astOperand2());
+        }
+
         else if (tok->isExtendedOp() && tok->next() && tok->next()->varId() && tok->strAt(2) != "=") {
             variables.readAll(tok->next()->varId(), tok);
         }

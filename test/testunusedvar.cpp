@@ -2019,7 +2019,8 @@ private:
         ASSERT_EQUALS("[test.cpp:16]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvar50() { // #6261
+    void localvar50() { // #6261, #6542
+        // #6261 - ternary operator in function call
         functionVariableUsage("void foo() {\n"
                               "  char buf1[10];\n"
                               "  dostuff(cond?buf1:buf2);\n"
@@ -2029,6 +2030,14 @@ private:
         functionVariableUsage("void foo() {\n"
                               "  char buf1[10];\n"
                               "  dostuff(cond?buf2:buf1);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #6542 - ternary operator
+        functionVariableUsage("void foo(int c) {\n"
+                              "  char buf1[10], buf2[10];\n"
+                              "  char *p = c ? buf1 : buf2;\n"
+                              "  dostuff(p);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
