@@ -76,6 +76,9 @@ private:
         TEST_CASE(exit2);
         TEST_CASE(exit3);
 
+        // handling function calls
+        TEST_CASE(functioncall1);
+
         // goto
         TEST_CASE(goto1);
         TEST_CASE(goto2);
@@ -891,6 +894,15 @@ private:
               "  }"
               "  free(p);\n"
               "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void functioncall1() {
+        check("void f(struct S *p) {\n"
+              "  p->x = malloc(10);\n"
+              "  free(p->x);\n"
+              "  p->x = 0;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
