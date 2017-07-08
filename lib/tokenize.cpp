@@ -6249,7 +6249,7 @@ bool Tokenizer::simplifyKnownVariables()
     // auto variables..
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // Search for a block of code
-        Token *start = const_cast<Token *>(startOfExecutableScope(tok));
+        Token * const start = const_cast<Token *>(startOfExecutableScope(tok));
         if (!start)
             continue;
 
