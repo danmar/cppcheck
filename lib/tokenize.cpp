@@ -7934,13 +7934,13 @@ void Tokenizer::simplifyComma()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
 
         // skip enums
-        if (Token::Match(tok, "enum class| %name%| :| %name%| {")) {
-            while (tok && tok->str() != "{")
-                tok = tok->next();
-            if (tok)
-                tok = tok->link()->next();
+        if (Token::Match(tok, "enum class|struct| %name%| :|{")) {
+            Token *defStart = tok->next();
+            while (Token::Match(defStart, "%name%|::|:"))
+                defStart = defStart->next();
+            if (defStart && defStart->str() == "{")
+                tok = defStart->link()->next();
         }
-
         if (!tok)
             syntaxError(nullptr); // invalid code like in #4195
 
@@ -9112,6 +9112,13 @@ void Tokenizer::simplifyNamespaceStd()
 
     for (const Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
         bool insert = false;
+        if (Token::Match(tok, "enum class|struct| %name%| :|{")) { // Don't replace within enum definitions
+            Token *defStart = tok->next();
+            while (Token::Match(defStart, "%name%|::|:"))
+                defStart = defStart->next();
+            if (defStart && defStart->str() == "{")
+                tok = defStart->link();
+        }
         if (!Token::Match(tok->previous(), ".|::")) {
             if (Token::Match(tok, "%name% (") && !Token::Match(tok->linkAt(1)->next(), "%name%|{") && stdFunctions.find(tok->str()) != stdFunctions.end())
                 insert = true;
