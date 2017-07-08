@@ -291,6 +291,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 // Possibly automatically deallocated memory
                 if (!var->typeStartToken()->isStandardType() && Token::Match(varTok, "%var% = new"))
                     continue;
+                if (!var->isPointer() && !var->typeStartToken()->isStandardType())
+                    continue;
             }
 
             // allocation?

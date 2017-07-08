@@ -1208,6 +1208,9 @@ private:
 
         check("void f() { Fred *p = new Fred; }", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() { Fred fred = malloc(10); }", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void throw1() { // 3987 - Execution reach a 'throw'
