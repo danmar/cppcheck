@@ -3001,98 +3001,99 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 {
     // check for non-empty argument list "( ... )"
     const Token * start = arg ? arg : argDef;
-    if (start && start->link() != start->next() && !Token::simpleMatch(start, "( void )")) {
-        unsigned int count = 0;
+    if (!(start && start->link() != start->next() && !Token::simpleMatch(start, "( void )")))
+        return;
 
-        for (const Token* tok = start->next(); tok; tok = tok->next()) {
-            if (Token::Match(tok, ",|)"))
-                return; // Syntax error
+    unsigned int count = 0;
 
-            const Token* startTok = tok;
-            const Token* endTok   = nullptr;
-            const Token* nameTok  = nullptr;
+    for (const Token* tok = start->next(); tok; tok = tok->next()) {
+        if (Token::Match(tok, ",|)"))
+            return; // Syntax error
 
-            do {
-                if (tok->varId() != 0) {
-                    nameTok = tok;
-                    endTok = tok->previous();
-                } else if (tok->str() == "[") {
-                    // skip array dimension(s)
-                    tok = tok->link();
-                    while (tok->next()->str() == "[")
-                        tok = tok->next()->link();
-                } else if (tok->str() == "<") {
-                    tok = tok->link();
-                    if (!tok) // something is wrong so just bail out
-                        return;
-                }
+        const Token* startTok = tok;
+        const Token* endTok   = nullptr;
+        const Token* nameTok  = nullptr;
 
-                tok = tok->next();
-
-                if (!tok) // something is wrong so just bail
+        do {
+            if (tok->varId() != 0) {
+                nameTok = tok;
+                endTok = tok->previous();
+            } else if (tok->str() == "[") {
+                // skip array dimension(s)
+                tok = tok->link();
+                while (tok->next()->str() == "[")
+                    tok = tok->next()->link();
+            } else if (tok->str() == "<") {
+                tok = tok->link();
+                if (!tok) // something is wrong so just bail out
                     return;
-            } while (tok->str() != "," && tok->str() != ")" && tok->str() != "=");
+            }
 
-            const Token *typeTok = startTok;
-            // skip over stuff to get to type
-            while (Token::Match(typeTok, "const|enum|struct|::"))
-                typeTok = typeTok->next();
-            // skip over qualification
-            while (Token::Match(typeTok, "%type% ::"))
-                typeTok = typeTok->tokAt(2);
+            tok = tok->next();
 
-            // check for argument with no name or missing varid
-            if (!endTok) {
-                if (tok->previous()->isName() && tok->strAt(-1) != "const") {
-                    if (tok->previous() != typeTok) {
-                        nameTok = tok->previous();
-                        endTok = nameTok->previous();
+            if (!tok) // something is wrong so just bail
+                return;
+        } while (tok->str() != "," && tok->str() != ")" && tok->str() != "=");
 
-                        if (hasBody())
-                            symbolDatabase->debugMessage(nameTok, "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
-                    } else
-                        endTok = typeTok;
+        const Token *typeTok = startTok;
+        // skip over stuff to get to type
+        while (Token::Match(typeTok, "const|enum|struct|::"))
+            typeTok = typeTok->next();
+        // skip over qualification
+        while (Token::Match(typeTok, "%type% ::"))
+            typeTok = typeTok->tokAt(2);
+
+        // check for argument with no name or missing varid
+        if (!endTok) {
+            if (tok->previous()->isName() && tok->strAt(-1) != "const") {
+                if (tok->previous() != typeTok) {
+                    nameTok = tok->previous();
+                    endTok = nameTok->previous();
+
+                    if (hasBody())
+                        symbolDatabase->debugMessage(nameTok, "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
                 } else
-                    endTok = tok->previous();
-            }
-
-            const ::Type *argType = nullptr;
-            if (!typeTok->isStandardType()) {
-                argType = findVariableTypeIncludingUsedNamespaces(symbolDatabase, scope, typeTok);
-
-                // save type
-                const_cast<Token *>(typeTok)->type(argType);
-            }
-
-            // skip default values
-            if (tok->str() == "=") {
-                do {
-                    if (tok->link() && Token::Match(tok, "[{[(<]"))
-                        tok = tok->link();
-                    tok = tok->next();
-                } while (tok->str() != "," && tok->str() != ")");
-            }
-
-            // skip over stuff before type
-            while (Token::Match(startTok, "enum|struct|const"))
-                startTok = startTok->next();
-
-            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, argType, functionScope, &symbolDatabase->_settings->library));
-
-            if (tok->str() == ")") {
-                // check for a variadic function
-                if (Token::simpleMatch(startTok, ". . ."))
-                    isVariadic(true);
-
-                break;
-            }
+                    endTok = typeTok;
+            } else
+                endTok = tok->previous();
         }
 
-        // count default arguments
-        for (const Token* tok = argDef->next(); tok && tok != argDef->link(); tok = tok->next()) {
-            if (tok->str() == "=")
-                initArgCount++;
+        const ::Type *argType = nullptr;
+        if (!typeTok->isStandardType()) {
+            argType = findVariableTypeIncludingUsedNamespaces(symbolDatabase, scope, typeTok);
+
+            // save type
+            const_cast<Token *>(typeTok)->type(argType);
         }
+
+        // skip default values
+        if (tok->str() == "=") {
+            do {
+                if (tok->link() && Token::Match(tok, "[{[(<]"))
+                    tok = tok->link();
+                tok = tok->next();
+            } while (tok->str() != "," && tok->str() != ")");
+        }
+
+        // skip over stuff before type
+        while (Token::Match(startTok, "enum|struct|const"))
+            startTok = startTok->next();
+
+        argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, argType, functionScope, &symbolDatabase->_settings->library));
+
+        if (tok->str() == ")") {
+            // check for a variadic function
+            if (Token::simpleMatch(startTok, ". . ."))
+                isVariadic(true);
+
+            break;
+        }
+    }
+
+    // count default arguments
+    for (const Token* tok = argDef->next(); tok && tok != argDef->link(); tok = tok->next()) {
+        if (tok->str() == "=")
+            initArgCount++;
     }
 }
 
