@@ -594,9 +594,16 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
             } else { // not a local variable (or an unsupported local variable)
                 if (var1->_type == Variables::pointer && !dereference) {
                     // check if variable declaration is in this scope
-                    if (var1->_var->scope() == scope)
+                    if (var1->_var->scope() == scope) {
+                        // If variable is used in RHS then "use" variable
+                        for (const Token *rhs = tok; rhs && rhs->str() != ";"; rhs = rhs->next()) {
+                            if (rhs->varId() == varid1) {
+                                variables.use(varid1, tok);
+                                break;
+                            }
+                        }
                         variables.clearAliases(varid1);
-                    else {
+                    } else {
                         // no other assignment in this scope
                         if (var1->_assignments.find(scope) == var1->_assignments.end()) {
                             /**

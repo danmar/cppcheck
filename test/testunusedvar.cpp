@@ -116,6 +116,7 @@ private:
         TEST_CASE(localvaralias11); // ticket #4423 - iterator
         TEST_CASE(localvaralias12); // ticket #4394
         TEST_CASE(localvaralias13); // ticket #4487
+        TEST_CASE(localvaralias14); // ticket #5619
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -3006,6 +3007,14 @@ private:
                               "    strcpy(p, \"x\");\n"
                               "}");
         TODO_ASSERT_EQUALS("a is assigned value that is never used", "", errout.str());
+    }
+
+    void localvaralias14() { // #5619
+        functionVariableUsage("void f() {\n"
+                              "    char a[4], *p=a;\n"
+                              "    p = dostuff(p);\n"
+                              "}");
+        TODO_ASSERT_EQUALS("p is assigned a value that is never used", "", errout.str());
     }
 
     void localvarasm() {
