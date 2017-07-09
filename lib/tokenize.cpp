@@ -8310,6 +8310,8 @@ void Tokenizer::simplifyWhile0()
         if (Token::simpleMatch(tok->next()->link(), ") {")) {
             Token *end = tok->next()->link(), *old_prev = tok->previous();
             end = end->next()->link();
+            if (Token::Match(tok, "for ( %name% ="))
+                old_prev = end->link();
             eraseDeadCode(old_prev, end->next());
             if (old_prev && old_prev->next())
                 tok = old_prev->next();
