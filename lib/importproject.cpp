@@ -253,8 +253,10 @@ void ImportProject::importSln(std::istream &istr, const std::string &path)
         const std::string::size_type pos1 = line.rfind('\"',pos);
         if (pos == std::string::npos)
             continue;
-        const std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
-        importVcxproj(path + Path::fromNativeSeparators(vcxproj), variables, emptyString);
+        std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
+		if (!Path::isAbsolute(vcxproj))
+			vcxproj = path + vcxproj;
+        importVcxproj(Path::fromNativeSeparators(vcxproj), variables, emptyString);
     }
 }
 
