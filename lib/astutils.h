@@ -85,7 +85,7 @@ bool isReturnScope(const Token *endToken);
 bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed in block of code? */
-bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, const Settings *settings);
+bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings);
 
 /** Determines the number of arguments - if token is a function call or macro
  * @param start token which is supposed to be the function/macro name.

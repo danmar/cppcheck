@@ -418,10 +418,13 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     return arg && !arg->isConst() && arg->isReference();
 }
 
-bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, const Settings *settings)
+bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varid) {
+            if (globalvar && Token::Match(tok, "%name% ("))
+                // TODO: Is global variable really changed by function call?
+                return true;
             continue;
         }
 

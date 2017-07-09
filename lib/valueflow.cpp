@@ -1063,7 +1063,7 @@ static void valueFlowReverse(TokenList *tokenlist,
 
                 const Token *start = tok2;
                 const Token *end   = start->link();
-                if (isVariableChanged(start,end,varid, settings)) {
+                if (isVariableChanged(start,end,varid,var->isGlobal(),settings)) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " is assigned in loop. so valueflow analysis bailout when start of loop is reached.");
                     break;
@@ -1142,7 +1142,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
 
                 // Variable changed in 3rd for-expression
                 if (Token::simpleMatch(tok2->previous(), "for (")) {
-                    if (tok2->astOperand2() && tok2->astOperand2()->astOperand2() && isVariableChanged(tok2->astOperand2()->astOperand2(), tok2->link(), varid, settings)) {
+                    if (tok2->astOperand2() && tok2->astOperand2()->astOperand2() && isVariableChanged(tok2->astOperand2()->astOperand2(), tok2->link(), varid, var->isGlobal(), settings)) {
                         varid = 0U;
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, tok, "variable " + var->name() + " used in loop");
@@ -1154,7 +1154,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
                     const Token * const start = tok2->link()->next();
                     const Token * const end   = start->link();
 
-                    if (isVariableChanged(start,end,varid, settings)) {
+                    if (isVariableChanged(start,end,varid,var->isGlobal(),settings)) {
                         varid = 0U;
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, tok, "variable " + var->name() + " used in loop");
@@ -1248,13 +1248,14 @@ static void handleKnownValuesInLoop(const Token                 *startToken,
                                     const Token                 *endToken,
                                     std::list<ValueFlow::Value> *values,
                                     unsigned int                varid,
+                                    bool                        globalvar,
                                     const Settings              *settings)
 {
     bool isChanged = false;
     for (std::list<ValueFlow::Value>::iterator it = values->begin(); it != values->end(); ++it) {
         if (it->isKnown()) {
             if (!isChanged) {
-                if (!isVariableChanged(startToken, endToken, varid, settings))
+                if (!isVariableChanged(startToken, endToken, varid, globalvar, settings))
                     break;
                 isChanged = true;
             }
@@ -1320,7 +1321,7 @@ static bool valueFlowForward(Token * const               startToken,
             } else if (indentlevel <= 0 &&
                        Token::simpleMatch(tok2->link()->previous(), "else {") &&
                        !isReturnScope(tok2->link()->tokAt(-2)) &&
-                       isVariableChanged(tok2->link(), tok2, varid, settings)) {
+                       isVariableChanged(tok2->link(), tok2, varid, var->isGlobal(), settings)) {
                 std::list<ValueFlow::Value>::iterator it;
                 for (it = values.begin(); it != values.end(); ++it)
                     it->changeKnownToPossible();
@@ -1366,19 +1367,19 @@ static bool valueFlowForward(Token * const               startToken,
             if (Token::simpleMatch(end, "} while ("))
                 end = end->linkAt(2);
 
-            if (isVariableChanged(start, end, varid, settings)) {
+            if (isVariableChanged(start, end, varid, var->isGlobal(), settings)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in do-while");
                 return false;
             }
 
-            handleKnownValuesInLoop(start, end, &values, varid, settings);
+            handleKnownValuesInLoop(start, end, &values, varid, var->isGlobal(), settings);
         }
 
         // conditional block of code that assigns variable..
         else if (!tok2->varId() && Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // is variable changed in condition?
-            if (isVariableChanged(tok2->next(), tok2->next()->link(), varid, settings)) {
+            if (isVariableChanged(tok2->next(), tok2->next()->link(), varid, var->isGlobal(), settings)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in condition");
                 return false;
@@ -1386,7 +1387,7 @@ static bool valueFlowForward(Token * const               startToken,
 
             // if known variable is changed in loop body, change it to a possible value..
             if (Token::Match(tok2, "for|while"))
-                handleKnownValuesInLoop(tok2, tok2->linkAt(1)->linkAt(1), &values, varid, settings);
+                handleKnownValuesInLoop(tok2, tok2->linkAt(1)->linkAt(1), &values, varid, var->isGlobal(), settings);
 
             // Set values in condition
             for (Token* tok3 = tok2->tokAt(2); tok3 != tok2->next()->link(); tok3 = tok3->next()) {
@@ -1426,7 +1427,7 @@ static bool valueFlowForward(Token * const               startToken,
                                  errorLogger,
                                  settings);
 
-                if (isVariableChanged(startToken1, startToken1->link(), varid, settings)) {
+                if (isVariableChanged(startToken1, startToken1->link(), varid, var->isGlobal(), settings)) {
                     removeValues(values, truevalues);
 
                     std::list<ValueFlow::Value>::iterator it;
@@ -1449,7 +1450,7 @@ static bool valueFlowForward(Token * const               startToken,
             Token * const start = tok2->linkAt(1)->next();
             Token * const end   = start->link();
             bool varusage = (indentlevel >= 0 && constValue && number_of_if == 0U) ?
-                            isVariableChanged(start,end,varid, settings) :
+                            isVariableChanged(start,end,varid,var->isGlobal(),settings) :
                             (nullptr != Token::findmatch(start, "%varid%", end, varid));
             if (!read) {
                 read = bool(nullptr != Token::findmatch(tok2, "%varid% !!=", end, varid));
@@ -1518,7 +1519,7 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
 
-            if (isVariableChanged(start, end, varid, settings)) {
+            if (isVariableChanged(start, end, varid, var->isGlobal(), settings)) {
                 if ((!read || number_of_if == 0) &&
                     Token::simpleMatch(tok2, "if (") &&
                     !(Token::simpleMatch(end, "} else {") &&
@@ -1804,7 +1805,7 @@ static bool valueFlowForward(Token * const               startToken,
             Token::simpleMatch(tok2->linkAt(1), "] (") &&
             Token::simpleMatch(tok2->linkAt(1)->linkAt(1), ") {")) {
             const Token *bodyStart = tok2->linkAt(1)->linkAt(1)->next();
-            if (isVariableChanged(bodyStart, bodyStart->link(), varid, settings)) {
+            if (isVariableChanged(bodyStart, bodyStart->link(), varid, var->isGlobal(), settings)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "valueFlowForward, " + var->name() + " is changed in lambda function");
                 return false;
@@ -2107,7 +2108,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 // does condition reassign variable?
                 if (tok != top->astOperand2() &&
                     Token::Match(top->astOperand2(), "%oror%|&&") &&
-                    isVariableChanged(top, top->link(), varid, settings)) {
+                    isVariableChanged(top, top->link(), varid, var->isGlobal(), settings)) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok, "assignment in condition");
                     continue;
@@ -2150,7 +2151,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                     if (!valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, false, tokenlist, errorLogger, settings))
                         continue;
                     values.front().setPossible();
-                    if (isVariableChanged(startToken, startToken->link(), varid, settings)) {
+                    if (isVariableChanged(startToken, startToken->link(), varid, var->isGlobal(), settings)) {
                         // TODO: The endToken should not be startToken->link() in the valueFlowForward call
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, startToken->link(), "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
@@ -2449,12 +2450,12 @@ static bool valueFlowForLoop2(const Token *tok,
     return true;
 }
 
-static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int varid, const MathLib::bigint value, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int varid, bool globalvar, const MathLib::bigint value, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     const Token * const bodyEnd = bodyStart->link();
 
     // Is variable modified inside for loop
-    if (isVariableChanged(bodyStart, bodyEnd, varid, settings))
+    if (isVariableChanged(bodyStart, bodyEnd, varid, globalvar, settings))
         return;
 
     for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
@@ -2587,8 +2588,8 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
 
         if (valueFlowForLoop1(tok, &varid, &num1, &num2, &numAfter)) {
             if (num1 <= num2) {
-                valueFlowForLoopSimplify(bodyStart, varid, num1, tokenlist, errorLogger, settings);
-                valueFlowForLoopSimplify(bodyStart, varid, num2, tokenlist, errorLogger, settings);
+                valueFlowForLoopSimplify(bodyStart, varid, false, num1, tokenlist, errorLogger, settings);
+                valueFlowForLoopSimplify(bodyStart, varid, false, num2, tokenlist, errorLogger, settings);
                 valueFlowForLoopSimplifyAfter(tok, varid, numAfter, tokenlist, errorLogger, settings);
             } else
                 valueFlowForLoopSimplifyAfter(tok, varid, num1, tokenlist, errorLogger, settings);
@@ -2599,12 +2600,12 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
                 for (it = mem1.values.begin(); it != mem1.values.end(); ++it) {
                     if (!it->second.isIntValue())
                         continue;
-                    valueFlowForLoopSimplify(bodyStart, it->first, it->second.intvalue, tokenlist, errorLogger, settings);
+                    valueFlowForLoopSimplify(bodyStart, it->first, false, it->second.intvalue, tokenlist, errorLogger, settings);
                 }
                 for (it = mem2.values.begin(); it != mem2.values.end(); ++it) {
                     if (!it->second.isIntValue())
                         continue;
-                    valueFlowForLoopSimplify(bodyStart, it->first, it->second.intvalue, tokenlist, errorLogger, settings);
+                    valueFlowForLoopSimplify(bodyStart, it->first, false, it->second.intvalue, tokenlist, errorLogger, settings);
                 }
                 for (it = memAfter.values.begin(); it != memAfter.values.end(); ++it) {
                     if (!it->second.isIntValue())

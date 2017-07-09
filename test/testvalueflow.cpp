@@ -2296,6 +2296,16 @@ private:
                "}\n";
         ASSERT(isNotKnownValues(code, "<"));
 
+        code = "int x;\n"
+               "void f() {\n"
+               "  x = 4;\n"
+               "  while (1) {\n"
+               "    a = x+2;\n"
+               "    dostuff();\n"
+               "  }\n"
+               "}";
+        ASSERT(isNotKnownValues(code, "+"));
+
         code = "void f() {\n"
                "  int x = 0;\n"
                "  if (y) { dostuff(x); }\n"

@@ -162,7 +162,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                 // is variable changed in loop?
                 const Token *bodyStart = tok2->linkAt(1)->next();
                 const Token *bodyEnd   = bodyStart ? bodyStart->link() : nullptr;
-                if (!bodyEnd || bodyEnd->str() != "}" || isVariableChanged(bodyStart, bodyEnd, varid, _settings))
+                if (!bodyEnd || bodyEnd->str() != "}" || isVariableChanged(bodyStart, bodyEnd, varid, !islocal, _settings))
                     continue;
             }
 
