@@ -3071,7 +3071,7 @@ void Tokenizer::createLinks2()
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
             if (token->next() &&
-                !Token::Match(token->next(), "%name%|>|&|*|::|,|(|)|{|}|;|[|:") &&
+                !Token::Match(token->next(), "%name%|>|&|&&|*|::|,|(|)|{|}|;|[|:") &&
                 !Token::Match(token->next(), "&& %name% ="))
                 continue;
 
