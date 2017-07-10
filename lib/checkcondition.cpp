@@ -112,8 +112,6 @@ static bool isParameterChanged(const Token *partok)
     ftok = ftok ? ftok->previous() : nullptr;
     if (!(ftok && ftok->function()))
         return true;
-    if (ftok->function()->isConst())
-        return false;
     const Variable *par = ftok->function()->getArgumentVar(argumentNumber);
     if (!par)
         return true;

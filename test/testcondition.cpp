@@ -1403,6 +1403,16 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
 
+        check("void foo(const int &i);\n"
+              "void bar(int i) {\n"
+              "    if(i>5) {\n"
+              "        foo(i);\n"
+              "        if(i<5) {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+
         check("void foo(int i);\n"
               "void bar() {\n"
               "    int i; i = func();\n"
@@ -1413,6 +1423,15 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+
+        check("class C { void f(int &i) const; };\n" // #7028 - variable is changed by const method
+              "void foo(C c, int i) {\n"
+              "  if (i==5) {\n"
+              "    c.f(i);\n"
+              "    if (i != 5) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         // see linux revision 1f80c0cc
         check("int generic_write_sync(int,int,int);\n"
