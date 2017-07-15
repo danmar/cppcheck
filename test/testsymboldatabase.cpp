@@ -255,6 +255,7 @@ private:
         TEST_CASE(symboldatabase55); // #7767 (return unknown macro)
         TEST_CASE(symboldatabase56); // #7909
         TEST_CASE(symboldatabase57);
+        TEST_CASE(symboldatabase58); // #6985 (using namespace type lookup)
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -2774,6 +2775,39 @@ private:
                 ASSERT((++it)->type == Scope::eFunction);
                 ASSERT((++it)->type == Scope::eIf);
                 ASSERT((++it)->type == Scope::eElse);
+            }
+        }
+    }
+
+    void symboldatabase58() { // #6985 (using namespace type lookup)
+        GET_SYMBOL_DB("namespace N2\n"
+                      "{\n"
+                      "class B { };\n"
+                      "}\n"
+                      "using namespace N2;\n"
+                      "class C {\n"
+                      "    class A : public B\n"
+                      "    {\n"
+                      "    };\n"
+                      "};");
+        ASSERT(db != nullptr);
+        if (db) {
+            ASSERT(db->typeList.size() == 3U);
+            if (db->typeList.size() == 3U) {
+                std::list<Type>::const_iterator it = db->typeList.begin();
+                const Type * classB = &(*it);
+                const Type * classC = &(*(++it));
+                const Type * classA = &(*(++it));
+                ASSERT(classA->name() == "A" && classB->name() == "B" && classC->name() == "C");
+                if (classA->name() == "A" && classB->name() == "B" && classC->name() == "C") {
+                    ASSERT(classA->derivedFrom.size() == 1U);
+                    if (classA->derivedFrom.size() == 1) {
+                        ASSERT(classA->derivedFrom[0].type);
+                        if (classA->derivedFrom[0].type) {
+                            ASSERT(classA->derivedFrom[0].type == classB);
+                        }
+                    }
+                }
             }
         }
     }

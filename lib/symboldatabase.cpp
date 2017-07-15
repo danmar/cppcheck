@@ -844,6 +844,22 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 void SymbolDatabase::createSymbolDatabaseClassInfo()
 {
     if (!_tokenizer->isC()) {
+        // fill in using info
+        for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+            for (std::list<Scope::UsingInfo>::iterator i = it->usingList.begin(); i != it->usingList.end(); ++i) {
+                // only find if not already found
+                if (i->scope == nullptr) {
+                    // check scope for match
+                    Scope *scope = findScope(i->start->tokAt(2), &(*it));
+                    if (scope) {
+                        // set found scope
+                        i->scope = scope;
+                        break;
+                    }
+                }
+            }
+        }
+
         // fill in base class info
         for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
             // finish filling in base class info
@@ -862,22 +878,6 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
         for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
             for (std::list<Type::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
                 i->type = findType(i->nameStart, it->enclosingScope);
-            }
-        }
-
-        // fill in using info
-        for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-            for (std::list<Scope::UsingInfo>::iterator i = it->usingList.begin(); i != it->usingList.end(); ++i) {
-                // only find if not already found
-                if (i->scope == nullptr) {
-                    // check scope for match
-                    Scope *scope = findScope(i->start->tokAt(2), &(*it));
-                    if (scope) {
-                        // set found scope
-                        i->scope = scope;
-                        break;
-                    }
-                }
             }
         }
     }
@@ -4401,14 +4401,16 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
     if (startTok->str() == startScope->className && startScope->isClassOrStruct() && startTok->strAt(1) != "::")
         return startScope->definedType;
 
+    const Scope* start_scope = startScope;
+
     // absolute path - directly start in global scope
     if (startTok->str() == "::") {
         startTok = startTok->next();
-        startScope = &scopeList.front();
+        start_scope = &scopeList.front();
     }
 
     const Token* tok = startTok;
-    const Scope* scope = startScope;
+    const Scope* scope = start_scope;
 
     while (scope && tok && tok->isName()) {
         if (tok->strAt(1) == "::") {
@@ -4416,14 +4418,51 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
             if (scope) {
                 tok = tok->tokAt(2);
             } else {
-                startScope = startScope->nestedIn;
-                if (!startScope)
+                start_scope = start_scope->nestedIn;
+                if (!start_scope)
                     break;
-                scope = startScope;
+                scope = start_scope;
                 tok = startTok;
             }
-        } else
-            return scope->findType(tok->str());
+        } else {
+            const Type * type = scope->findType(tok->str());
+            if (type)
+                return type;
+            else
+                break;
+        }
+    }
+
+    // check using namespaces
+    while (startScope) {
+        for (std::list<Scope::UsingInfo>::const_iterator it = startScope->usingList.begin();
+             it != startScope->usingList.end(); ++it) {
+            tok = startTok;
+            scope = it->scope;
+            start_scope = startScope;
+
+            while (scope && tok && tok->isName()) {
+                if (tok->strAt(1) == "::") {
+                    scope = scope->findRecordInNestedList(tok->str());
+                    if (scope) {
+                        tok = tok->tokAt(2);
+                    } else {
+                        start_scope = start_scope->nestedIn;
+                        if (!start_scope)
+                            break;
+                        scope = start_scope;
+                        tok = startTok;
+                    }
+                } else {
+                    const Type * type = scope->findType(tok->str());
+                    if (type)
+                        return type;
+                    else
+                        break;
+                }
+            }
+        }
+        startScope = startScope->nestedIn;
     }
 
     // not a valid path
