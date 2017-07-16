@@ -347,6 +347,7 @@ private:
         TEST_CASE(auto7);
         TEST_CASE(auto8);
         TEST_CASE(auto9); // #8044 (segmentation fault)
+        TEST_CASE(auto10); // #8020
     }
 
     void array() {
@@ -5238,6 +5239,22 @@ private:
                       "  }\n"
                       "}");
         ASSERT_EQUALS(true,  db != nullptr); // not null
+    }
+
+    void auto10() { // #8020
+        GET_SYMBOL_DB("void f() {\n"
+                      "    std::vector<int> ints(4);\n"
+                      "    auto iter = ints.begin() + (ints.size() - 1);\n"
+                      "}");
+        const Token *autotok = Token::findsimplematch(tokenizer.tokens(), "auto iter");
+
+        ASSERT(db && autotok && autotok->valueType());
+        if (db && autotok && autotok->valueType()) {
+            ASSERT_EQUALS(0, autotok->valueType()->constness);
+            ASSERT_EQUALS(0, autotok->valueType()->pointer);
+            ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, autotok->valueType()->sign);
+            ASSERT_EQUALS(ValueType::ITERATOR, autotok->valueType()->type);
+        }
     }
 
 };
