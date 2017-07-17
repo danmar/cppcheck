@@ -4872,6 +4872,13 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 0U));
             return;
         }
+
+        // iterator +/- integral = iterator
+        if (vt1->type == ValueType::Type::ITERATOR && vt2 && vt2->isIntegral() &&
+            (parent->str() == "+" || parent->str() == "-")) {
+            setValueType(parent, *vt1);
+            return;
+        }
     }
 
     if (vt1->isIntegral() && vt1->pointer == 0U &&
