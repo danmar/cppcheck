@@ -499,9 +499,7 @@ class Configuration:
                 for values in element:
                     self.valueflow.append(ValueFlow(values))
 
-        IdMap = {}
-        IdMap[None] = None
-        IdMap['0'] = None
+        IdMap = {None: None, '0': None}
         for token in self.tokenlist:
             IdMap[token.Id] = token
         for scope in self.scopes:
@@ -689,7 +687,7 @@ def ArgumentParser():
     return parser
 
 
-def reportError(template, callstack=[], severity='', message='', id=''):
+def reportError(template, callstack=(), severity='', message='', id=''):
     """
         Format an error message according to the template.
 

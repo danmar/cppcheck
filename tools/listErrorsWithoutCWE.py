@@ -12,9 +12,8 @@ def main():
     tree = ET.parse(vars(parsed)["F"])
     root = tree.getroot()
     for child in root.iter("error"):
-
         if "cwe" not in child.attrib:
-            print child.attrib["id"], ",", child.attrib["severity"], ",", child.attrib["verbose"]
+            print(child.attrib["id"], child.attrib["severity"], child.attrib["verbose"], sep=", ")
 
 if __name__ == "__main__":
     main()

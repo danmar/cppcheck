@@ -67,8 +67,6 @@ def handleRemoveReadonly(func, path, exc):
         # Is the error an access error ?
         os.chmod(path, stat.S_IWUSR)
         func(path)
-    else:
-        raise
 
 
 def removeAll():
@@ -77,10 +75,8 @@ def removeAll():
         count -= 1
 
         filenames = []
-        for g in glob.glob('[#_A-Za-z0-9]*'):
-            filenames.append(g)
-        for g in glob.glob('.[A-Za-z]*'):
-            filenames.append(g)
+        filenames.extend(glob.glob('[#_A-Za-z0-9]*'))
+        filenames.extend(glob.glob('.[A-Za-z]*'))
 
         try:
             for filename in filenames:
