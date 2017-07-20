@@ -185,7 +185,7 @@ void CheckFunctions::checkIgnoredReturnValue()
             else if (Token::Match(tok, "[(<]") && tok->link())
                 tok = tok->link();
 
-            if (tok->varId() || !Token::Match(tok, "%name% ("))
+            if (tok->varId() > 0 || !Token::Match(tok, "%name% ("))
                 continue;
 
             if (tok->next()->astParent())
@@ -222,7 +222,7 @@ void CheckFunctions::checkMathFunctions()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->varId())
+            if (tok->varId() > 0)
                 continue;
             if (printWarnings && Token::Match(tok, "%name% ( !!)")) {
                 if (tok->strAt(-1) != "."
@@ -417,7 +417,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (Token::Match(tok, "%name% (") &&
             !Token::Match(tok, "for|if|while|switch|sizeof|catch|asm|return") &&
             !tok->function() &&
-            !tok->varId() &&
+            tok->varId() == 0 &&
             !tok->type() &&
             !tok->isStandardType() &&
             tok->linkAt(1)->strAt(1) != "(" &&

@@ -101,7 +101,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
                     continue;
                 std::string nr;
                 if (index.size() > 1U)
-                    nr = "(" + MathLib::toString(i + 1) + getOrdinalText(i+1) + " array index) ";
+                    nr = "(" + MathLib::toString(i + 1) + getOrdinalText(i + 1) + " array index) ";
                 errorPath.push_back(ErrorPathItem(it->first, nr + info));
             }
         }
@@ -770,7 +770,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<const st
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
-        if (declarationId && Token::Match(tok, "= %varid% + %num% ;", declarationId)) {
+        if (declarationId > 0 && Token::Match(tok, "= %varid% + %num% ;", declarationId)) {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
             if (printPortability && index > size)
                 pointerOutOfBoundsError(tok->tokAt(2));
@@ -909,7 +909,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, std::map<unsigned int, Arr
     unsigned int reassigned = 0;
 
     for (const Token* const end = tok->scope()->classEnd; tok != end; tok = tok->next()) {
-        if (reassigned && tok->str() == ";") {
+        if (reassigned > 0 && tok->str() == ";") {
             arrayInfos.erase(reassigned);
             reassigned = 0;
         }
@@ -1299,7 +1299,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 continue;
             }
 
-            if (var == 0)
+            if (var == nullptr)
                 continue;
 
             const MathLib::bigint totalSize = size * static_cast<int>(sizeOfType(var->typeStartToken()));
@@ -1666,7 +1666,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
             unsigned int dstVarId = tok->varId();
             unsigned int srcVarId;
 
-            if (!dstVarId || tok->strAt(1) != "=")
+            if (dstVarId == 0 || tok->strAt(1) != "=")
                 continue;
 
             tok = tok->tokAt(2);

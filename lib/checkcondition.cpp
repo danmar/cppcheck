@@ -63,7 +63,7 @@ void CheckCondition::assignIf()
 
         if (Token::Match(tok->tokAt(-2), "[;{}] %var% =")) {
             const Variable *var = tok->previous()->variable();
-            if (var == 0)
+            if (var == nullptr)
                 continue;
 
             char bitop = '\0';
@@ -241,7 +241,7 @@ static void getnumchildren(const Token *tok, std::list<MathLib::bigint> &numchil
 /* Return whether tok is in the body for a function returning a boolean. */
 static bool inBooleanFunction(const Token *tok)
 {
-    const Scope *scope = tok ? tok->scope() : 0;
+    const Scope *scope = tok ? tok->scope() : nullptr;
     while (scope && scope->isLocal())
         scope = scope->nestedIn;
     if (scope && scope->type == Scope::eFunction) {
@@ -316,15 +316,15 @@ void CheckCondition::comparison()
                 if ((expr1->str() == "&" && (num1 & num2) != num2) ||
                     (expr1->str() == "|" && (num1 | num2) != num2)) {
                     const std::string& op(tok->str());
-                    comparisonError(expr1, expr1->str(), num1, op, num2, op=="==" ? false : true);
+                    comparisonError(expr1, expr1->str(), num1, op, num2, op != "==");
                 }
             } else if (expr1->str() == "&") {
                 const bool or_equal = Token::Match(tok, ">=|<=");
                 const std::string& op(tok->str());
                 if ((Token::Match(tok, ">=|<")) && (num1 < num2)) {
-                    comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? false : true);
+                    comparisonError(expr1, expr1->str(), num1, op, num2, !or_equal);
                 } else if ((Token::Match(tok, "<=|>")) && (num1 <= num2)) {
-                    comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? true : false);
+                    comparisonError(expr1, expr1->str(), num1, op, num2, or_equal);
                 }
             } else if (expr1->str() == "|") {
                 if ((expr1->astOperand1()->valueType()) &&
@@ -334,11 +334,11 @@ void CheckCondition::comparison()
                     if ((Token::Match(tok, ">=|<")) && (num1 >= num2)) {
                         //"(a | 0x07) >= 7U" is always true for unsigned a
                         //"(a | 0x07) < 7U" is always false for unsigned a
-                        comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? true : false);
+                        comparisonError(expr1, expr1->str(), num1, op, num2, or_equal);
                     } else if ((Token::Match(tok, "<=|>")) && (num1 > num2)) {
                         //"(a | 0x08) <= 7U" is always false for unsigned a
                         //"(a | 0x07) > 6U" is always true for unsigned a
-                        comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? false : true);
+                        comparisonError(expr1, expr1->str(), num1, op, num2, !or_equal);
                     }
                 }
             }
@@ -461,7 +461,7 @@ void CheckCondition::oppositeInnerCondition()
         bool nonlocal = false; // nonlocal variable used in condition
         std::set<unsigned int> vars; // variables used in condition
         for (const Token *cond = scope->classDef->linkAt(1); cond != scope->classDef; cond = cond->previous()) {
-            if (cond->varId()) {
+            if (cond->varId() > 0) {
                 vars.insert(cond->varId());
                 const Variable *var = cond->variable();
                 nonlocal |= (var && (!var->isLocal() || var->isStatic()) && !var->isArgument());
@@ -486,8 +486,8 @@ void CheckCondition::oppositeInnerCondition()
             // TODO: handle loops.
             if (Token::Match(tok, "for|while|do"))
                 break;
-            if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
-                (!tok->varId() && nonlocal)) {
+            if ((tok->varId() > 0 && vars.find(tok->varId()) != vars.end()) ||
+                (tok->varId() == 0 && nonlocal)) {
                 if (Token::Match(tok, "%name% %assign%|++|--"))
                     break;
                 if (Token::Match(tok, "%name% [")) {
@@ -1125,9 +1125,9 @@ void CheckCondition::checkInvalidTestForOverflow()
                 continue;
 
             // Only warn for signed integer overflows and pointer overflows.
-            if (!(calcToken->valueType() && (calcToken->valueType()->pointer || calcToken->valueType()->sign == ValueType::Sign::SIGNED)))
+            if (!(calcToken->valueType() && (calcToken->valueType()->pointer > 0 || calcToken->valueType()->sign == ValueType::Sign::SIGNED)))
                 continue;
-            if (!(exprToken->valueType() && (exprToken->valueType()->pointer || exprToken->valueType()->sign == ValueType::Sign::SIGNED)))
+            if (!(exprToken->valueType() && (exprToken->valueType()->pointer > 0 || exprToken->valueType()->sign == ValueType::Sign::SIGNED)))
                 continue;
 
             const Token *termToken;

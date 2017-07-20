@@ -35,11 +35,11 @@
 
 Token::Token(Token **tokens) :
     tokensBack(tokens),
-    _next(0),
-    _previous(0),
-    _link(0),
-    _scope(0),
-    _function(0), // Initialize whole union
+    _next(nullptr),
+    _previous(nullptr),
+    _link(nullptr),
+    _scope(nullptr),
+    _function(nullptr), // Initialize whole union
     _varId(0),
     _fileIndex(0),
     _linenr(0),
@@ -69,7 +69,7 @@ void Token::update_property_info()
         if (_str == "true" || _str == "false")
             _tokType = eBoolean;
         else if (std::isalpha((unsigned char)_str[0]) || _str[0] == '_' || _str[0] == '$') { // Name
-            if (_varId)
+            if (_varId > 0)
                 _tokType = eVariable;
             else if (_tokType != eVariable && _tokType != eFunction && _tokType != eType && _tokType != eKeyword)
                 _tokType = eName;
@@ -186,7 +186,7 @@ std::string Token::strValue() const
 
 void Token::deleteNext(unsigned long index)
 {
-    while (_next && index) {
+    while (_next && index > 0) {
         Token *n = _next;
         _next = n->next();
         delete n;
@@ -529,7 +529,7 @@ int Token::multiCompare(const Token *tok, const char *haystack, unsigned int var
 
             do {
                 ++haystack;
-            } while (*haystack != ' ' && *haystack != '|' && *haystack);
+            } while (*haystack != ' ' && *haystack != '|' && (*haystack != 0));
 
             if (*haystack == ' ' || *haystack == '\0') {
                 return -1;
@@ -554,14 +554,14 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
     if (!next)
         next = pattern + std::strlen(pattern);
 
-    while (*current) {
+    while (*current != 0) {
         std::size_t length = next - current;
 
         if (!tok || length != tok->_str.length() || std::strncmp(current, tok->_str.c_str(), length))
             return false;
 
         current = next;
-        if (*next) {
+        if (*next != 0) {
             next = std::strchr(++current, ' ');
             if (!next)
                 next = current + std::strlen(current);
@@ -591,7 +591,7 @@ const char *Token::chrInFirstWord(const char *str, char c)
 {
     for (;;) {
         if (*str == ' ' || *str == 0)
-            return 0;
+            return nullptr;
 
         if (*str == c)
             return str;
@@ -603,7 +603,7 @@ const char *Token::chrInFirstWord(const char *str, char c)
 bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 {
     const char *p = pattern;
-    while (*p) {
+    while (*p != 0) {
         // Skip spaces in pattern..
         while (*p == ' ')
             ++p;
@@ -615,7 +615,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         if (!tok) {
             // If we have no tokens, pattern "!!else" should return true
             if (p[0] == '!' && p[1] == '!' && p[2] != '\0') {
-                while (*p && *p != ' ')
+                while (*p != 0 && *p != ' ')
                     ++p;
                 continue;
             } else
@@ -630,7 +630,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             const char *temp = p+1;
             bool chrFound = false;
             unsigned int count = 0;
-            while (*temp && *temp != ' ') {
+            while (*temp != 0 && *temp != ' ') {
                 if (*temp == ']') {
                     ++count;
                 }
@@ -650,7 +650,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 return false;
 
             p = temp;
-            while (*p && *p != ' ')
+            while (*p != 0 && *p != ' ')
                 ++p;
         }
 
@@ -659,7 +659,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             p += 2;
             if (firstWordEquals(p, tok->str().c_str()))
                 return false;
-            while (*p && *p != ' ')
+            while (*p != 0 && *p != ' ')
                 ++p;
         }
 
@@ -668,7 +668,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             int res = multiCompare(tok, p, varid);
             if (res == 0) {
                 // Empty alternative matches, use the same token on next round
-                while (*p && *p != ' ')
+                while (*p != 0 && *p != ' ')
                     ++p;
                 continue;
             } else if (res == -1) {
@@ -677,7 +677,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             }
         }
 
-        while (*p && *p != ' ')
+        while (*p != 0 && *p != ' ')
             ++p;
 
         tok = tok->next();
@@ -868,7 +868,7 @@ const Token *Token::findsimplematch(const Token * const startTok, const char pat
         if (Token::simpleMatch(tok, pattern))
             return tok;
     }
-    return 0;
+    return nullptr;
 }
 
 const Token *Token::findsimplematch(const Token * const startTok, const char pattern[], const Token * const end)
@@ -960,16 +960,16 @@ void Token::createMutualLinks(Token *begin, Token *end)
 
 void Token::printOut(const char *title) const
 {
-    if (title && title[0])
+    if (title && title[0] != 0)
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(true, true, true, true, true, 0, 0) << std::endl;
+    std::cout << stringifyList(true, true, true, true, true, nullptr, nullptr) << std::endl;
 }
 
 void Token::printOut(const char *title, const std::vector<std::string> &fileNames) const
 {
-    if (title && title[0])
+    if (title && title[0] != 0)
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(true, true, true, true, true, &fileNames, 0) << std::endl;
+    std::cout << stringifyList(true, true, true, true, true, &fileNames, nullptr) << std::endl;
 }
 
 void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro) const
@@ -1067,12 +1067,12 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
 
 std::string Token::stringifyList(const Token* end, bool attributes) const
 {
-    return stringifyList(false, attributes, false, false, false, 0, end);
+    return stringifyList(false, attributes, false, false, false, nullptr, end);
 }
 
 std::string Token::stringifyList(bool varid) const
 {
-    return stringifyList(varid, false, true, true, true, 0, 0);
+    return stringifyList(varid, false, true, true, true, nullptr, nullptr);
 }
 
 void Token::astOperand1(Token *tok)

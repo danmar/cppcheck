@@ -188,7 +188,7 @@ static void addFiles2(std::map<std::string, std::size_t> &files,
             std::string new_path;
             new_path.reserve(path.length() + 100);// prealloc some memory to avoid constant new/deletes in loop
 
-            while ((readdir_r(dir, &entry, &dir_result) == 0) && (dir_result != NULL)) {
+            while ((readdir_r(dir, &entry, &dir_result) == 0) && (dir_result != nullptr)) {
 
                 if ((std::strcmp(dir_result->d_name, ".") == 0) ||
                     (std::strcmp(dir_result->d_name, "..") == 0))

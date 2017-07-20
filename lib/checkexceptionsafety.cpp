@@ -159,7 +159,7 @@ void CheckExceptionSafety::checkRethrowCopy()
             continue;
 
         const unsigned int varid = i->classStart->tokAt(-2)->varId();
-        if (varid) {
+        if (varid > 0) {
             for (const Token* tok = i->classStart->next(); tok && tok != i->classEnd; tok = tok->next()) {
                 if (Token::simpleMatch(tok, "catch (") && tok->next()->link() && tok->next()->link()->next()) { // Don't check inner catch - it is handled in another iteration of outer loop.
                     tok = tok->next()->link()->next()->link();

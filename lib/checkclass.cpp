@@ -329,7 +329,7 @@ void CheckClass::copyconstructors()
                         tok=tok->next();
                         while (Token::Match(tok, "%name% (")) {
                             if (allocatedVars.find(tok->varId()) != allocatedVars.end()) {
-                                if (tok->varId() && Token::Match(tok->tokAt(2), "%name% . %name% )"))
+                                if (tok->varId() > 0 && Token::Match(tok->tokAt(2), "%name% . %name% )"))
                                     copiedVars.insert(tok);
                                 else if (!Token::Match(tok->tokAt(2), "%any% )"))
                                     allocatedVars.erase(tok->varId()); // Assume memory is allocated
@@ -504,7 +504,7 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage)
 {
     if (!func.functionScope)
-        throw InternalError(0, "Internal Error: Invalid syntax"); // #5702
+        throw InternalError(nullptr, "Internal Error: Invalid syntax"); // #5702
     bool initList = func.isConstructor();
     const Token *ftok = func.arg->link()->next();
     int level = 0;
@@ -1022,7 +1022,7 @@ static const Scope* findFunctionOf(const Scope* scope)
             return scope->functionOf;
         scope = scope->nestedIn;
     }
-    return 0;
+    return nullptr;
 }
 
 void CheckClass::checkMemset()
@@ -1364,7 +1364,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         }
         return;
     }
-    if (_settings->library.isScopeNoReturn(last, 0)) {
+    if (_settings->library.isScopeNoReturn(last, nullptr)) {
         // Typical wrong way to prohibit default assignment operator
         // by always throwing an exception or calling a noreturn function
         operatorEqShouldBeLeftUnimplementedError(func->token);
@@ -1956,10 +1956,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             for (;;) {
                 if (Token::Match(end->next(), ". %name%")) {
                     end = end->tokAt(2);
-                    if (end->varId())
+                    if (end->varId() > 0)
                         lastVarTok = end;
                 } else if (end->strAt(1) == "[") {
-                    if (end->varId()) {
+                    if (end->varId() > 0) {
                         const Variable *var = end->variable();
                         if (var && var->isStlType(stl_containers_not_const))
                             return false;
@@ -2049,7 +2049,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
 
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic)
 {
-    checkConstError2(tok, 0, classname, funcname, suggestStatic);
+    checkConstError2(tok, nullptr, classname, funcname, suggestStatic);
 }
 
 void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic)
@@ -2392,24 +2392,24 @@ void CheckClass::checkCopyCtorAndEqOperator()
         if (vars == 0)
             continue;
 
-        int hasCopyCtor = 0;
-        int hasAssignmentOperator = 0;
+        int copyCtors = 0;
+        int assignmentOperators = 0;
 
         std::list<Function>::const_iterator func;
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (!hasCopyCtor && func->type == Function::eCopyConstructor) {
-                hasCopyCtor = func->hasBody() ? 2 : 1;
+            if (copyCtors == 0 && func->type == Function::eCopyConstructor) {
+                copyCtors = func->hasBody() ? 2 : 1;
             }
-            if (!hasAssignmentOperator && func->type == Function::eOperatorEqual) {
+            if (assignmentOperators == 0 && func->type == Function::eOperatorEqual) {
                 const Variable * variable = func->getArgumentVar(0);
                 if (variable && variable->type() && variable->type()->classScope == scope) {
-                    hasAssignmentOperator = func->hasBody() ? 2 : 1;
+                    assignmentOperators = func->hasBody() ? 2 : 1;
                 }
             }
         }
 
-        if (std::abs(hasCopyCtor - hasAssignmentOperator) == 2)
-            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, hasCopyCtor);
+        if (std::abs(copyCtors - assignmentOperators) == 2)
+            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, copyCtors > 0);
     }
 }
 

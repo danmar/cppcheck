@@ -67,7 +67,7 @@ bool astIsFloat(const Token *tok, bool unknown)
 
 bool astIsBool(const Token *tok)
 {
-    return tok && (tok->isBoolean() || (tok->valueType() && tok->valueType()->type == ValueType::Type::BOOL && !tok->valueType()->pointer));
+    return tok && (tok->isBoolean() || (tok->valueType() && tok->valueType()->type == ValueType::Type::BOOL && tok->valueType()->pointer == 0));
 }
 
 std::string astCanonicalType(const Token *expr)
@@ -92,7 +92,7 @@ static bool match(const Token *tok, const std::string &rhs)
 {
     if (tok->str() == rhs)
         return true;
-    if (tok->isName() && !tok->varId() && tok->values().size() == 1U && tok->values().front().isKnown() && MathLib::toString(tok->values().front().intvalue) == rhs)
+    if (tok->isName() && tok->varId() == 0 && tok->values().size() == 1U && tok->values().front().isKnown() && MathLib::toString(tok->values().front().intvalue) == rhs)
         return true;
     return false;
 }
@@ -224,7 +224,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (cpp && tok1->str() == "+") {
         const ValueType* vt1 = tok1->astOperand1()->valueType();
         const ValueType* vt2 = tok1->astOperand1()->valueType();
-        if (!(vt1 && (vt1->type >= ValueType::VOID || vt1->pointer) && vt2 && (vt2->type >= ValueType::VOID || vt2->pointer)))
+        if (!(vt1 && (vt1->type >= ValueType::VOID || vt1->pointer > 0) && vt2 && (vt2->type >= ValueType::VOID || vt2->pointer > 0)))
             return false;
     }
 
@@ -311,7 +311,7 @@ bool isWithoutSideEffects(bool cpp, const Token* tok)
 
     while (tok && tok->astOperand2() && tok->astOperand2()->str() != "(")
         tok = tok->astOperand2();
-    if (tok && tok->varId()) {
+    if (tok && tok->varId() > 0) {
         const Variable* var = tok->variable();
         return var && (!var->isClass() || var->isPointer() || var->isStlType());
     }
@@ -393,7 +393,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     if (!Token::Match(tok, "%name% ("))
         return false; // not a function => variable not changed
 
-    if (tok->varId())
+    if (tok->varId() > 0)
         return false; // Constructor call of tok => variable probably not changed by constructor call
 
     if (!tok->function()) {

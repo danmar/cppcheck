@@ -49,7 +49,7 @@ static void AddFilesToList(const std::string& FileList, std::vector<std::string>
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
     std::istream *Files;
     std::ifstream Infile;
-    if (FileList.compare("-") == 0) { // read from stdin
+    if (FileList == "-") { // read from stdin
         Files = &std::cin;
     } else {
         Infile.open(FileList.c_str());
@@ -163,7 +163,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
                 std::string str;
-                if (argv[i][2]) {
+                if (argv[i][2] != 0) {
                     str = argv[i]+11;
                 } else {
                     i++;

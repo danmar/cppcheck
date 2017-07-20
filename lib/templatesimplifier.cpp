@@ -412,7 +412,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
         while (tok2 && (tok2->isName() || tok2->str() == "*"))
             tok2 = tok2->next();
 
-        if (!TemplateSimplifier::templateParameters(tok2))
+        if (TemplateSimplifier::templateParameters(tok2) == 0)
             continue;
 
         // unknown template.. bail out
@@ -480,7 +480,7 @@ std::list<Token *> TemplateSimplifier::getTemplateDeclarations(Token *tokens, bo
                 else if (tok2->str() == ")")
                     --indentlevel;
 
-                if (indentlevel) // In an argument list; move to the next token
+                if (indentlevel > 0) // In an argument list; move to the next token
                     continue;
 
                 // Just a declaration => ignore this
@@ -525,13 +525,13 @@ std::list<Token *> TemplateSimplifier::getTemplateInstantiations(Token *tokens)
             // parse backwards and add template instantiations
             for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
                 if (Token::Match(tok2, ", %name% <") &&
-                    TemplateSimplifier::templateParameters(tok2->tokAt(2))) {
+                    TemplateSimplifier::templateParameters(tok2->tokAt(2)) > 0) {
                     used.push_back(tok2->next());
                 }
             }
 
             // Add outer template..
-            if (TemplateSimplifier::templateParameters(tok->next()))
+            if (TemplateSimplifier::templateParameters(tok->next()) > 0)
                 used.push_back(tok);
         }
     }
@@ -574,7 +574,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                 continue;
             }
 
-            if (tok->str() == "<" && templateParameters(tok))
+            if (tok->str() == "<" && templateParameters(tok) > 0)
                 ++templateParmDepth;
 
             // end of template parameters?
@@ -628,7 +628,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                     tok = tok->next();
                     const Token *from = (*it)->next();
                     std::stack<Token *> links;
-                    while (from && (!links.empty() || indentlevel || !Token::Match(from, ",|>"))) {
+                    while (from && (!links.empty() || indentlevel > 0 || !Token::Match(from, ",|>"))) {
                         if (from->str() == "<")
                             ++indentlevel;
                         else if (from->str() == ">")
@@ -659,7 +659,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                 }
                 if (Token::Match(tok2, "(|{|["))
                     tok2 = tok2->link();
-                else if (Token::Match(tok2, "%type% <") && templateParameters(tok2->next())) {
+                else if (Token::Match(tok2, "%type% <") && templateParameters(tok2->next()) > 0) {
                     std::list<Token*>::iterator ti = std::find(templateInstantiations->begin(),
                                                      templateInstantiations->end(),
                                                      tok2);
@@ -717,7 +717,7 @@ static bool getTemplateNamePositionTemplateMember(const Token *tok, int &namepos
         return false;
 
     int currPos = 0;
-    currPos = 2 + (Token::Match(tok, "> %type% %type%"));
+    currPos = 2 + static_cast<int>(Token::Match(tok, "> %type% %type%"));
 
     // Find the end of the template argument list
     const Token *templateParmEnd = tok->linkAt(currPos);
@@ -758,7 +758,7 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
         // Name not found
         return -1;
     }
-    if (Token::Match(tok->tokAt(starAmpPossiblePosition ? starAmpPossiblePosition : namepos), "*|&"))
+    if (Token::Match(tok->tokAt(starAmpPossiblePosition > 0 ? starAmpPossiblePosition : namepos), "*|&"))
         ++namepos;
 
     return namepos;
@@ -989,9 +989,9 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 
         // Logical operations
         else if (Token::Match(op, "%oror%|&&")) {
-            int op1 = !MathLib::isNullValue(tok->str());
-            int op2 = !MathLib::isNullValue(tok->strAt(2));
-            int result = (op->str() == "||") ? (op1 || op2) : (op1 && op2);
+            bool op1 = !MathLib::isNullValue(tok->str());
+            bool op2 = !MathLib::isNullValue(tok->strAt(2));
+            bool result = (op->str() == "||") ? (op1 || op2) : (op1 && op2);
             tok->str(result ? "1" : "0");
         }
 
@@ -1381,7 +1381,7 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
         // match parameters
         Token * tok2 = nameTok->tokAt(2);
         unsigned int typeCountInInstantiation = 1U; // There is always at least one type
-        const Token *typetok = (!typesUsedInTemplateInstantiation.empty()) ? typesUsedInTemplateInstantiation[0] : 0;
+        const Token *typetok = (!typesUsedInTemplateInstantiation.empty()) ? typesUsedInTemplateInstantiation[0] : nullptr;
         unsigned int indentlevel2 = 0;  // indentlevel for tokgt
         while (tok2 && (indentlevel2 > 0 || tok2->str() != ">")) {
             if (tok2->str() == "<" && templateParameters(tok2) > 0)

@@ -144,11 +144,11 @@ void CheckBool::checkComparisonOfBoolWithInt()
             const Token* const left = tok->astOperand1();
             const Token* const right = tok->astOperand2();
             if (left && right && tok->isComparisonOp()) {
-                if (left->isBoolean() && right->varId()) { // Comparing boolean constant with variable
+                if (left->isBoolean() && right->varId() > 0) { // Comparing boolean constant with variable
                     if (tok->str() != "==" && tok->str() != "!=") {
                         comparisonOfBoolWithInvalidComparator(right, left->str());
                     }
-                } else if (left->varId() && right->isBoolean()) { // Comparing variable with boolean constant
+                } else if (left->varId() > 0 && right->isBoolean()) { // Comparing variable with boolean constant
                     if (tok->str() != "==" && tok->str() != "!=") {
                         comparisonOfBoolWithInvalidComparator(right, left->str());
                     }
@@ -265,7 +265,7 @@ void CheckBool::checkComparisonOfBoolWithBool()
             bool firstTokenBool = false;
 
             const Token *firstToken = tok->previous();
-            if (firstToken->varId()) {
+            if (firstToken->varId() > 0) {
                 if (isBool(firstToken->variable())) {
                     firstTokenBool = true;
                 }
@@ -275,7 +275,7 @@ void CheckBool::checkComparisonOfBoolWithBool()
 
             bool secondTokenBool = false;
             const Token *secondToken = tok->next();
-            if (secondToken->varId()) {
+            if (secondToken->varId() > 0) {
                 if (isBool(secondToken->variable())) {
                     secondTokenBool = true;
                 }

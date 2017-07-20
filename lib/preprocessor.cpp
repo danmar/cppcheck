@@ -909,7 +909,7 @@ void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList)
             continue;
 
         const simplecpp::Token *endasm = tok3;
-        while ((endasm = endasm->next) != 0) {
+        while ((endasm = endasm->next) != nullptr) {
             if (endasm->op != '#' || sameline(endasm,endasm->previousSkipComments()))
                 continue;
             const simplecpp::Token * const endasm2 = endasm->nextSkipComments();

@@ -188,19 +188,19 @@ void CheckSizeof::checkSizeofForPointerSize()
             // Only keep variables which are pointers
             const Variable *var = variable->variable();
             if (!var || !var->isPointer() || var->isArray()) {
-                variable = 0;
+                variable = nullptr;
             }
 
             if (variable2) {
                 var = variable2->variable();
                 if (!var || !var->isPointer() || var->isArray()) {
-                    variable2 = 0;
+                    variable2 = nullptr;
                 }
             }
 
             // If there are no pointer variable at this point, there is
             // no need to continue
-            if (variable == 0 && variable2 == 0) {
+            if (variable == nullptr && variable2 == nullptr) {
                 continue;
             }
 

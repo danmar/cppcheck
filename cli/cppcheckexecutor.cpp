@@ -34,6 +34,8 @@
 #include "threadexecutor.h"
 #include "utils.h"
 
+#include <csignal>
+#include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
 #include <iostream>
@@ -43,9 +45,7 @@
 
 #if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__OS2__)
 #define USE_UNIX_SIGNAL_HANDLING
-#include <signal.h>
 #include <unistd.h>
-#include <cstdio>
 #if defined(__APPLE__)
 #   define _XOPEN_SOURCE // ucontext.h APIs can only be used on Mac OSX >= 10.7 if _XOPEN_SOURCE is defined
 #   include <ucontext.h>
@@ -78,7 +78,7 @@
 /*static*/ FILE* CppCheckExecutor::exceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : _settings(0), time1(0), errorOutput(nullptr), errorlist(false)
+    : _settings(nullptr), time1(0), errorOutput(nullptr), errorlist(false)
 {
 }
 
@@ -201,8 +201,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
  *  Simple helper function:
  * \return size of array
  * */
-template<typename T, int size>
-std::size_t GetArrayLength(const T(&)[size])
+template<typename T, size_t size>
+std::size_t GetArrayLength(const T(&)[size] /*array*/)
 {
     return size;
 }
@@ -823,7 +823,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (settings.reportProgress)
-        time1 = std::time(0);
+        time1 = std::time(nullptr);
 
     if (!settings.outputFile.empty()) {
         errorOutput = new std::ofstream(settings.outputFile);
@@ -930,8 +930,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
     }
 
-    _settings = 0;
-    if (returnValue)
+    _settings = nullptr;
+    if (returnValue > 0)
         return settings.exitCode;
     else
         return 0;

@@ -138,7 +138,7 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
     if (scope->function) {
         for (unsigned int i = 0; i < scope->function->argCount(); i++) {
             const Variable *arg = scope->function->getArgumentVar(i);
-            if (arg && arg->declarationId() && Token::Match(arg->typeStartToken(), "%type% * %name% [,)]")) {
+            if (arg && arg->declarationId() > 0 && Token::Match(arg->typeStartToken(), "%type% * %name% [,)]")) {
                 // Treat the pointer as initialized until it is assigned by malloc
                 for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
                     if (Token::Match(tok, "[;{}] %varid% = %name% (", arg->declarationId()) &&
@@ -231,7 +231,7 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<unsigned
 
     else if (tok->isComparisonOp()) {
         if (tok->values().size() == 1U && tok->values().front().isKnown()) {
-            if (tok->values().front().intvalue)
+            if (tok->values().front().intvalue > 0)
                 *alwaysTrue = true;
             else
                 *alwaysFalse = true;
@@ -338,7 +338,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
     for (; tok; tok = tok->next()) {
         // End of scope..
         if (tok->str() == "}") {
-            if (number_of_if && possibleInit)
+            if (number_of_if > 0 && possibleInit)
                 *possibleInit = true;
 
             // might be a noreturn function..
@@ -397,7 +397,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 const Token *numtok = rhs && rhs->isNumber() ? rhs : lhs;
                 while (Token::simpleMatch(vartok, "."))
                     vartok = vartok->astOperand2();
-                if (vartok && vartok->varId() && numtok) {
+                if (vartok && vartok->varId() > 0 && numtok) {
                     std::map<unsigned int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
                     if (it != variableValue.end() && it->second != MathLib::toLongNumber(numtok->str()))
                         return true;   // this scope is not fully analysed => return true
@@ -1062,7 +1062,7 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
         return -1;
 
     if (Token::simpleMatch(start->link(), ") {"))
-        return (!pointer || alloc == NO_ALLOC);
+        return static_cast<int>(!pointer || alloc == NO_ALLOC);
 
     // is this a function call?
     if (Token::Match(start->previous(), "%name% (")) {
@@ -1090,15 +1090,15 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
 
         } else if (Token::Match(start->previous(), "if|while|for")) {
             // control-flow statement reading the variable "by value"
-            return alloc == NO_ALLOC;
+            return static_cast<int>(alloc == NO_ALLOC);
         } else {
             const bool isnullbad = _settings->library.isnullargbad(start->previous(), argumentNumber + 1);
             if (pointer && !address && isnullbad && alloc == NO_ALLOC)
                 return 1;
             const bool isuninitbad = _settings->library.isuninitargbad(start->previous(), argumentNumber + 1);
             if (alloc != NO_ALLOC)
-                return isnullbad && isuninitbad;
-            return isuninitbad && (!address || isnullbad);
+                return static_cast<int>(isnullbad && isuninitbad);
+            return static_cast<int>(isuninitbad && (!address || isnullbad));
         }
     }
 

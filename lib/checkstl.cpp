@@ -1215,7 +1215,7 @@ void CheckStl::checkAutoPointer()
                     if (Token::Match(tok3, "( new %type%") && hasArrayEndParen(tok3)) {
                         autoPointerArrayError(tok2->next());
                     }
-                    if (Token::Match(tok3, "( %name% (") && malloc && _settings->library.alloc(tok3->next(), -1) == malloc) {
+                    if (Token::Match(tok3, "( %name% (") && malloc > 0 && _settings->library.alloc(tok3->next(), -1) == malloc) {
                         // malloc-like function allocated memory passed to the auto_ptr constructor -> error
                         autoPointerMallocError(tok2->next(), tok3->next()->str());
                     }
@@ -1233,13 +1233,13 @@ void CheckStl::checkAutoPointer()
                         tok3 = tok3->tokAt(-2);
                         if (Token::simpleMatch(tok3->previous(), "[ ] )")) {
                             autoPointerArrayError(tok2->next());
-                        } else if (tok3->varId()) {
+                        } else if (tok3->varId() > 0) {
                             const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type%", tok3->varId());
                             if (decltok && hasArrayEnd(decltok)) {
                                 autoPointerArrayError(tok2->next());
                             }
                         }
-                        if (tok2->next()->varId()) {
+                        if (tok2->next()->varId() > 0) {
                             autoPtrVarId.insert(tok2->next()->varId());
                         }
                     }
@@ -1259,16 +1259,16 @@ void CheckStl::checkAutoPointer()
                 if (iter != autoPtrVarId.end()) {
                     autoPointerArrayError(tok);
                 }
-            } else if (Token::Match(tok, "%var% = %name% (") && malloc && _settings->library.alloc(tok->tokAt(2), -1) == malloc) {
+            } else if (Token::Match(tok, "%var% = %name% (") && malloc > 0 && _settings->library.alloc(tok->tokAt(2), -1) == malloc) {
                 // C library function like 'malloc' used together with auto pointer -> error
                 std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
                 if (iter != autoPtrVarId.end()) {
                     autoPointerMallocError(tok, tok->strAt(2));
-                } else if (tok->varId()) {
+                } else if (tok->varId() > 0) {
                     // it is not an auto pointer variable and it is allocated by malloc like function.
                     mallocVarId.insert(std::make_pair(tok->varId(), tok->strAt(2)));
                 }
-            } else if (Token::Match(tok, "%var% . reset ( %name% (") && malloc && _settings->library.alloc(tok->tokAt(4), -1) == malloc) {
+            } else if (Token::Match(tok, "%var% . reset ( %name% (") && malloc > 0 && _settings->library.alloc(tok->tokAt(4), -1) == malloc) {
                 // C library function like 'malloc' used when resetting auto pointer -> error
                 std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
                 if (iter != autoPtrVarId.end()) {
@@ -1542,7 +1542,7 @@ void CheckStl::readingEmptyStlContainer()
                     continue;
                 tok2 = tok2->next();
                 for (const Token* end2 = tok2->link(); tok2 && tok2 != end2; tok2 = tok2->next()) {
-                    if (!tok2->varId())
+                    if (tok2->varId() == 0)
                         continue;
 
                     const std::map<unsigned int, const Library::Container*>::const_iterator container = emptyContainer.find(tok2->varId());
@@ -1556,7 +1556,7 @@ void CheckStl::readingEmptyStlContainer()
             } else if (tok->str() == "{" && tok->next()->scope()->type == Scope::eLambda)
                 tok = tok->link();
 
-            if (!tok->varId())
+            if (tok->varId() == 0)
                 continue;
 
             // Check whether a variable should be marked as "empty"

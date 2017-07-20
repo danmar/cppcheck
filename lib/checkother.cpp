@@ -346,7 +346,7 @@ void CheckOther::invalidPointerCast()
 
             const ValueType* fromType = fromTok->valueType();
             const ValueType* toType = toTok->valueType();
-            if (!fromType || !toType || !fromType->pointer || !toType->pointer)
+            if (!fromType || !toType || fromType->pointer == 0 || toType->pointer == 0)
                 continue;
 
             if (fromType->type != toType->type && fromType->type >= ValueType::Type::BOOL && toType->type >= ValueType::Type::BOOL && (toType->type != ValueType::Type::CHAR || printInconclusive)) {
@@ -525,7 +525,7 @@ void CheckOther::checkRedundantAssignment()
                         // bail out if there is a variable in rhs - we only track 1 variable
                         bool bailout = false;
                         for (const Token *tok3 = tok2->link(); tok3 != tok2; tok3 = tok3->previous()) {
-                            if (tok3->varId()) {
+                            if (tok3->varId() > 0) {
                                 if (!tok3->variable())
                                     bailout = true;
                                 else {
@@ -625,7 +625,7 @@ void CheckOther::checkRedundantAssignment()
 
                                 // Warnings are inconclusive if there are possible side effects or if variable is not
                                 // tracked perfectly.
-                                const bool inconclusive = possibleSideEffects | nonlocal;
+                                const bool inconclusive = possibleSideEffects || nonlocal;
 
                                 if (printInconclusive || !inconclusive)
                                     if (_tokenizer->isC() || checkExceptionHandling(tok)) // see #6555 to see how exception handling might have an impact
@@ -650,13 +650,13 @@ void CheckOther::checkRedundantAssignment()
                 }
             } else if (Token::Match(tok, "%name% (") && !_settings->library.isFunctionConst(tok->str(), true)) { // Function call. Global variables might be used. Reset their status
                 const bool memfunc = Token::Match(tok, "memcpy|memmove|memset|strcpy|strncpy|sprintf|snprintf|strcat|strncat|wcscpy|wcsncpy|swprintf|wcscat|wcsncat");
-                if (tok->varId()) // operator() or function pointer
+                if (tok->varId() > 0) // operator() or function pointer
                     varAssignments.erase(tok->varId());
 
                 if (memfunc && tok->strAt(-1) != "(" && tok->strAt(-1) != "=") {
                     const Token* param1 = tok->tokAt(2);
                     writtenArgumentsEnd = param1->next();
-                    if (param1->varId() && param1->strAt(1) == "," && !Token::Match(tok, "strcat|strncat|wcscat|wcsncat") && param1->variable() && param1->variable()->isLocal() && param1->variable()->isArray()) {
+                    if (param1->varId() > 0 && param1->strAt(1) == "," && !Token::Match(tok, "strcat|strncat|wcscat|wcsncat") && param1->variable() && param1->variable()->isLocal() && param1->variable()->isArray()) {
                         if (tok->str() == "memset" && initialized.find(param1->varId()) == initialized.end())
                             initialized.insert(param1->varId());
                         else {
@@ -1209,7 +1209,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (Token::simpleMatch(tok, "for ("))
             forHeadEnd = tok->linkAt(1);
         if (tok == forHeadEnd)
-            forHeadEnd = 0;
+            forHeadEnd = nullptr;
 
         if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != Scope::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
             loopVariable = false;
@@ -2087,25 +2087,25 @@ void CheckOther::checkSignOfUnsignedVariable()
 
             if (Token::Match(tok, "<|<= 0") && tok->next() == tok->astOperand2()) {
                 const ValueType* vt = tok->astOperand1()->valueType();
-                if (vt && vt->pointer)
+                if (vt && vt->pointer > 0)
                     pointerLessThanZeroError(tok, inconclusive);
                 if (vt && vt->sign == ValueType::UNSIGNED)
                     unsignedLessThanZeroError(tok, tok->astOperand1()->expressionString(), inconclusive);
             } else if (Token::Match(tok->previous(), "0 >|>=") && tok->previous() == tok->astOperand1()) {
                 const ValueType* vt = tok->astOperand2()->valueType();
-                if (vt && vt->pointer)
+                if (vt && vt->pointer > 0)
                     pointerLessThanZeroError(tok, inconclusive);
                 if (vt && vt->sign == ValueType::UNSIGNED)
                     unsignedLessThanZeroError(tok, tok->astOperand2()->expressionString(), inconclusive);
             } else if (Token::simpleMatch(tok, ">= 0") && tok->next() == tok->astOperand2()) {
                 const ValueType* vt = tok->astOperand1()->valueType();
-                if (vt && vt->pointer)
+                if (vt && vt->pointer > 0)
                     pointerPositiveError(tok, inconclusive);
                 if (vt && vt->sign == ValueType::UNSIGNED)
                     unsignedPositiveError(tok, tok->astOperand1()->str(), inconclusive);
             } else if (Token::simpleMatch(tok->previous(), "0 <=") && tok->previous() == tok->astOperand1()) {
                 const ValueType* vt = tok->astOperand2()->valueType();
-                if (vt && vt->pointer)
+                if (vt && vt->pointer > 0)
                     pointerPositiveError(tok, inconclusive);
                 if (vt && vt->sign == ValueType::UNSIGNED)
                     unsignedPositiveError(tok, tok->astOperand2()->str(), inconclusive);
@@ -2303,7 +2303,7 @@ void CheckOther::checkIncompleteArrayFill()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|memcpy|memmove ( %var% ,") && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
                 const Variable *var = tok->tokAt(2)->variable();
-                if (!var || !var->isArray() || var->dimensions().empty() || !var->dimension(0))
+                if (!var || !var->isArray() || var->dimensions().empty() || var->dimension(0) == 0)
                     continue;
 
                 if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
@@ -2751,7 +2751,7 @@ void CheckOther::checkFuncArgNamesDifferent()
                 // skip over template
                 if (decl->link())
                     decl = decl->link();
-                else if (decl->varId())
+                else if (decl->varId() > 0)
                     declarations[j] = decl;
                 decl = decl->next();
             }

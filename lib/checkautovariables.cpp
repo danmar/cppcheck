@@ -38,7 +38,7 @@
 
 // Register this check class into cppcheck by creating a static instance of it..
 namespace {
-    static CheckAutoVariables instance;
+    CheckAutoVariables instance;
 }
 
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
@@ -253,7 +253,7 @@ void CheckAutoVariables::autoVariables()
                 const Token* varTok = tok->tokAt(2);
                 if (isAutoVar(varTok))
                     errorReturnAddressToAutoVariable(tok);
-                else if (varTok->varId()) {
+                else if (varTok->varId() > 0) {
                     const Variable * var1 = varTok->variable();
                     if (var1 && var1->isArgument() && var1->typeEndToken()->str() != "&")
                         errorReturnAddressOfFunctionParameter(tok, varTok->str());

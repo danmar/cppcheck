@@ -584,7 +584,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     const char *p = argnode->GetText();
                     bool error = false;
                     bool range = false;
-                    for (; *p; p++) {
+                    for (; *p != 0; p++) {
                         if (std::isdigit(*p))
                             error |= (*(p+1) == '-');
                         else if (*p == ':')
@@ -711,7 +711,7 @@ bool Library::isargvalid(const Token *ftok, int argnr, const MathLib::bigint arg
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
-    TokenList tokenList(0);
+    TokenList tokenList(nullptr);
     std::istringstream istr(ac->valid + ',');
     tokenList.createTokens(istr);
     for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
@@ -827,14 +827,14 @@ bool Library::isuninitargbad(const Token *ftok, int argnr) const
 const Library::AllocFunc* Library::alloc(const Token *tok) const
 {
     const std::string funcname = getFunctionName(tok);
-    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? 0 : getAllocDealloc(_alloc, funcname);
+    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(_alloc, funcname);
 }
 
 /** get deallocation info for function */
 const Library::AllocFunc* Library::dealloc(const Token *tok) const
 {
     const std::string funcname = getFunctionName(tok);
-    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? 0 : getAllocDealloc(_dealloc, funcname);
+    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(_dealloc, funcname);
 }
 
 /** get allocation id for function */
@@ -910,7 +910,7 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
             if (!iterator && container.endPattern.empty()) // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
                 return &container;
 
-            for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
+            for (const Token* tok = typeStart; tok && tok->varId() == 0; tok = tok->next()) {
                 if (tok->link()) {
                     const std::string& endPattern = iterator ? container.itEndPattern : container.endPattern;
                     if (Token::Match(tok->link(), endPattern.c_str()))
@@ -930,7 +930,7 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
         return true;
 
     // variables are not library functions.
-    if (ftok->varId())
+    if (ftok->varId() > 0)
         return true;
 
     return !matchArguments(ftok, getFunctionName(ftok));

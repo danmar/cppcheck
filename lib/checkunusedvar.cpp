@@ -62,7 +62,7 @@ public:
                                bool modified = false,
                                bool allocateMemory = false) :
             _var(var),
-            _lastAccess(var?var->nameToken():0),
+            _lastAccess(var ? var->nameToken() : nullptr),
             _type(type),
             _read(read),
             _write(write),
@@ -79,7 +79,7 @@ public:
 
         /** is variable unused? */
         bool unused() const {
-            return (_read == false && _write == false);
+            return (!_read && !_write);
         }
 
         std::set<unsigned int> _aliases;
@@ -382,12 +382,12 @@ void Variables::modified(unsigned int varid, const Token* tok)
 
 Variables::VariableUsage *Variables::find(unsigned int varid)
 {
-    if (varid) {
+    if (varid > 0) {
         std::map<unsigned int, VariableUsage>::iterator i = _varUsage.find(varid);
         if (i != _varUsage.end())
             return &i->second;
     }
-    return 0;
+    return nullptr;
 }
 
 void Variables::enterScope()
@@ -448,7 +448,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
         // jump behind '='
         tok = tok->next();
         while (!tok->isAssignmentOp()) {
-            if (tok->varId())
+            if (tok->varId() > 0)
                 variables.read(tok->varId(), tok);
             tok = tok->next();
         }
@@ -629,7 +629,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
     // check for alias to struct member
     // char c[10]; a.b = c;
     else if (Token::Match(tok->tokAt(-2), "%name% .")) {
-        if (tok->tokAt(2) && tok->tokAt(2)->varId()) {
+        if (tok->tokAt(2) && tok->tokAt(2)->varId() > 0) {
             const unsigned int varid2 = tok->tokAt(2)->varId();
             const Variables::VariableUsage *var2 = variables.find(varid2);
 
@@ -701,7 +701,7 @@ static void useFunctionArgs(const Token *tok, Variables& variables)
     if (tok->str() == ",") {
         useFunctionArgs(tok->astOperand1(), variables);
         useFunctionArgs(tok->astOperand2(), variables);
-    } else if (Token::Match(tok, "[+:]") && (!tok->valueType() || tok->valueType()->pointer)) {
+    } else if (Token::Match(tok, "[+:]") && (!tok->valueType() || tok->valueType()->pointer > 0)) {
         useFunctionArgs(tok->astOperand1(), variables);
         useFunctionArgs(tok->astOperand2(), variables);
     } else if (tok->variable() && tok->variable()->isArray()) {
@@ -780,7 +780,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     }
                     if (tokBraceStart) {
                         for (const Token* tok = tokBraceStart->next(); tok && tok != tokBraceStart->link(); tok = tok->next()) {
-                            if (tok->varId()) {
+                            if (tok->varId() > 0) {
                                 // Variables used to initialize the array read.
                                 variables.read(tok->varId(), i->nameToken());
                             }
@@ -809,7 +809,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             if (!tok)
                 break;
         }
-        if (tok->str() == "{" && tok != scope->classStart && !tok->previous()->varId()) {
+        if (tok->str() == "{" && tok != scope->classStart && tok->previous()->varId() == 0) {
             for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
                 if ((*i)->classStart == tok) { // Find associated scope
                     checkFunctionVariableUsage_iterateScopes(*i, variables, false); // Scan child scope
@@ -850,7 +850,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 std::set<unsigned int> varid;
                 const Token * const endTok = tok->linkAt(1)->linkAt(1);
                 for (const Token *tok2 = endTok->link(); tok2 && tok2 != endTok; tok2 = tok2->next()) {
-                    if (tok2->varId()) {
+                    if (tok2->varId() > 0) {
                         if (varid.find(tok2->varId()) == varid.end())
                             varid.insert(tok2->varId());
                         else
@@ -880,7 +880,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
         else if (Token::Match(tok->previous(), "[;{}]")) {
             for (const Token* tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                if (tok2->varId()) {
+                if (tok2->varId() > 0) {
                     // Is this a variable declaration?
                     const Variable *var = tok2->variable();
                     if (!var || var->nameToken() != tok2)
@@ -905,7 +905,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     } else if (tok->str() == "[" && Token::simpleMatch(skipBrackets(tok),"= {")) {
                         const Token * const rhs1 = skipBrackets(tok)->next();
                         for (const Token *rhs = rhs1->link(); rhs != rhs1; rhs = rhs->previous()) {
-                            if (rhs->varId())
+                            if (rhs->varId() > 0)
                                 variables.readAll(rhs->varId(), rhs);
                         }
                     } else if (var->typeEndToken()->str() == ">") // Be careful with types like std::vector
@@ -938,7 +938,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
         else if (Token::Match(tok, "return|throw")) {
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                if (tok2->varId())
+                if (tok2->varId() > 0)
                     variables.readAll(tok2->varId(), tok);
                 else if (tok2->str() == ";")
                     break;
@@ -1037,7 +1037,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         variables.allocateMemory(varid1, tok);
                     else
                         variables.write(varid1, tok);
-                } else if (varid1 && Token::Match(tok, "%varid% .", varid1)) {
+                } else if (varid1 > 0 && Token::Match(tok, "%varid% .", varid1)) {
                     variables.read(varid1, tok);
                     variables.write(varid1, start);
                 } else if (var &&
@@ -1160,22 +1160,22 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.read(tok->varId(), tok);
         }
 
-        else if (tok->varId() && Token::Match(tok, "%var% .")) {
+        else if (tok->varId() > 0 && Token::Match(tok, "%var% .")) {
             variables.use(tok->varId(), tok);   // use = read + write
         }
 
-        else if (tok->str() == ":" && (!tok->valueType() || tok->valueType()->pointer)) {
+        else if (tok->str() == ":" && (!tok->valueType() || tok->valueType()->pointer > 0)) {
             if (tok->astOperand1())
                 variables.use(tok->astOperand1()->varId(), tok->astOperand1());
             if (tok->astOperand2())
                 variables.use(tok->astOperand2()->varId(), tok->astOperand2());
         }
 
-        else if (tok->isExtendedOp() && tok->next() && tok->next()->varId() && tok->strAt(2) != "=") {
+        else if (tok->isExtendedOp() && tok->next() && tok->next()->varId() > 0 && tok->strAt(2) != "=") {
             variables.readAll(tok->next()->varId(), tok);
         }
 
-        else if (tok->varId() && tok->next() && (tok->next()->str() == ")" || tok->next()->isExtendedOp())) {
+        else if (tok->varId() > 0 && tok->next() && (tok->next()->str() == ")" || tok->next()->isExtendedOp())) {
             if (Token::Match(tok->tokAt(-2), "%name% ( %var% [,)]") &&
                 !(tok->tokAt(-2)->variable() && tok->tokAt(-2)->variable()->isReference()))
                 variables.use(tok->varId(), tok);
@@ -1188,7 +1188,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
 
         // ++|--
-        else if (tok->next() && tok->next()->tokType() == Token::eIncDecOp && tok->next()->astOperand1() && tok->next()->astOperand1()->varId()) {
+        else if (tok->next() && tok->next()->tokType() == Token::eIncDecOp && tok->next()->astOperand1() && tok->next()->astOperand1()->varId() > 0) {
             if (tok->next()->astParent())
                 variables.use(tok->next()->astOperand1()->varId(), tok);
             else
@@ -1197,7 +1197,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
         else if (tok->isAssignmentOp()) {
             for (const Token *tok2 = tok->next(); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
-                if (tok2->varId()) {
+                if (tok2->varId() > 0) {
                     if (tok2->strAt(1) == "=")
                         variables.write(tok2->varId(), tok);
                     else if (tok2->next() && tok2->next()->isAssignmentOp())
