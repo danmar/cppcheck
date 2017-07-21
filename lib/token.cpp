@@ -1203,12 +1203,12 @@ static std::string stringFromTokenRange(const Token* start, const Token* end)
 {
     std::ostringstream ret;
     if (end)
-		end = end->next();
+        end = end->next();
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-		if (tok->isUnsigned())
-			ret << "unsigned ";
-		if (tok->isLong())
-			ret << (tok->isLiteral() ? "L" : "long ");
+        if (tok->isUnsigned())
+            ret << "unsigned ";
+        if (tok->isLong())
+            ret << (tok->isLiteral() ? "L" : "long ");
         if (tok->originalName().empty()) {
             ret << tok->str();
         } else
