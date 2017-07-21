@@ -190,8 +190,9 @@ id_Y2038 = {
 def find_dump_files(paths):
     dumpfiles = []
     for path in paths:
-        if path.endswith('.dump') and path not in dumpfiles:
-            dumpfiles.append(path)
+        if path.endswith('.dump'):
+            if path not in dumpfiles:
+                dumpfiles.append(path)
         else:
             for (top, subdirs, files) in os.walk(path):
                 for file in files:
