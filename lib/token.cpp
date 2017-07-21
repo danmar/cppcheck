@@ -1202,15 +1202,20 @@ static const Token* goToRightParenthesis(const Token* start, const Token* end)
 static std::string stringFromTokenRange(const Token* start, const Token* end)
 {
     std::ostringstream ret;
+    if (end)
+		end = end->next();
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-        if (tok->originalName() == "->")
-            ret << "->";
-        else
+		if (tok->isUnsigned())
+			ret << "unsigned ";
+		if (tok->isLong())
+			ret << (tok->isLiteral() ? "L" : "long ");
+        if (tok->originalName().empty()) {
             ret << tok->str();
+        } else
+            ret << tok->originalName();
         if (Token::Match(tok, "%name%|%num% %name%|%num%"))
             ret << ' ';
     }
-    ret << end->str();
     return ret.str();
 }
 

@@ -96,6 +96,8 @@ private:
         TEST_CASE(canFindMatchingBracketsOuterPair);
         TEST_CASE(canFindMatchingBracketsWithTooManyClosing);
         TEST_CASE(canFindMatchingBracketsWithTooManyOpening);
+
+		TEST_CASE(expressionString);
     }
 
     void nextprevious() const {
@@ -945,6 +947,16 @@ private:
         t = var.tokens()->tokAt(4)->findClosingBracket();
         ASSERT(t == nullptr);
     }
+
+	void expressionString() {
+        givenACodeSampleToTokenize var1("void f() { *((unsigned long long *)x) = 0; }");
+        const Token *tok1 = Token::findsimplematch(var1.tokens(), "*");
+		ASSERT_EQUALS("*((unsigned long long*)x)", tok1->expressionString());
+
+        givenACodeSampleToTokenize var2("typedef unsigned long long u64; void f() { *((u64 *)x) = 0; }");
+        const Token *tok2 = Token::findsimplematch(var2.tokens(), "*");
+		ASSERT_EQUALS("*((unsigned long long*)x)", tok2->expressionString());
+	}
 };
 
 REGISTER_TEST(TestToken)

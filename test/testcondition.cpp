@@ -1892,7 +1892,7 @@ private:
               "  int x = 'd' ? 1 : 2;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition ''a'' is always true\n"
-                      "[test.cpp:3]: (style) Condition ''b'' is always true\n"
+                      "[test.cpp:3]: (style) Condition 'L'b'' is always true\n"
                       "[test.cpp:4]: (style) Condition ''c'' is always true\n"
                       "[test.cpp:5]: (style) Condition ''d'' is always true\n", errout.str());
     }
