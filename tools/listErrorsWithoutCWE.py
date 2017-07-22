@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import xml.etree.ElementTree as ET
 
@@ -12,9 +13,8 @@ def main():
     tree = ET.parse(vars(parsed)["F"])
     root = tree.getroot()
     for child in root.iter("error"):
-
         if "cwe" not in child.attrib:
-            print child.attrib["id"], ",", child.attrib["severity"], ",", child.attrib["verbose"]
+            print(child.attrib["id"], child.attrib["severity"], child.attrib["verbose"], sep=", ")
 
 if __name__ == "__main__":
     main()

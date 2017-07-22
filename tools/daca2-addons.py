@@ -68,8 +68,6 @@ def handleRemoveReadonly(func, path, exc):
         # Is the error an access error ?
         os.chmod(path, stat.S_IWUSR)
         func(path)
-    else:
-        raise
 
 
 def removeAllExceptResults():
@@ -78,10 +76,8 @@ def removeAllExceptResults():
         count -= 1
 
         filenames = []
-        for g in glob.glob('[A-Za-z0-9]*'):
-            filenames.append(g)
-        for g in glob.glob('.[a-z]*'):
-            filenames.append(g)
+        filenames.extend(glob.glob('[A-Za-z0-9]*'))
+        filenames.extend(glob.glob('.[a-z]*'))
 
         try:
             for filename in filenames:
@@ -187,7 +183,7 @@ def scanarchive(filepath, jobs):
          '.'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
-    comm = p.communicate()
+    p.communicate()
 
     results = open('results.txt', 'at')
 

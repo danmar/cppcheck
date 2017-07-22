@@ -262,13 +262,13 @@ for dumpfile in dumpfiles:
             elif re_undef_use_time_bits64.match(directive.str):
                 unsafe = int(srclinenr)
                 # do we have a safe..unsafe area?
-                if safe > 0 and unsafe > safe:
+                if unsafe > safe > 0:
                     safe_ranges.append((safe, unsafe))
                     safe = -1
         # check end of source beyond last directive
         if len(cfg.tokenlist) > 0:
             unsafe = int(cfg.tokenlist[-1].linenr)
-            if safe > 0 and unsafe > safe:
+            if unsafe > safe > 0:
                 safe_ranges.append((safe, unsafe))
         # go through all tokens
         for token in cfg.tokenlist:

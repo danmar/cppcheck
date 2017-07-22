@@ -36,8 +36,9 @@ class MatchCompiler:
         self._rawMatchFunctions = []
         self._matchFunctionCache = {}
 
+    @staticmethod
     def _generateCacheSignature(
-            self, pattern, endToken=None, varId=None, isFindMatch=False):
+            pattern, endToken=None, varId=None, isFindMatch=False):
         sig = pattern
 
         if endToken:
@@ -82,7 +83,8 @@ class MatchCompiler:
 
         self._matchFunctionCache[signature] = id
 
-    def _compileCmd(self, tok):
+    @staticmethod
+    def _compileCmd(tok):
         if tok == '%any%':
             return 'true'
         elif tok == '%assign%':
@@ -122,9 +124,6 @@ class MatchCompiler:
 
     def _compilePattern(self, pattern, nr, varid,
                         isFindMatch=False, tokenType="const Token"):
-        ret = ''
-        returnStatement = ''
-
         if isFindMatch:
             ret = '\n    ' + tokenType + ' * tok = start_tok;\n'
             returnStatement = 'continue;\n'
@@ -193,9 +192,9 @@ class MatchCompiler:
                 negatedTok = "!" + self._compileCmd(tok)
                 # fold !true => false ; !false => true
                 # this avoids cppcheck warnings about condition always being true/false
-                if (negatedTok == "!false"):
+                if negatedTok == "!false":
                     negatedTok = "true"
-                elif (negatedTok == "!true"):
+                elif negatedTok == "!true":
                     negatedTok = "false"
                 ret += '    if (!tok || ' + negatedTok + ')\n'
                 ret += '        ' + returnStatement
@@ -229,7 +228,8 @@ class MatchCompiler:
 
         return ret
 
-    def parseMatch(self, line, pos1):
+    @staticmethod
+    def parseMatch(line, pos1):
         parlevel = 0
         args = []
         argstart = 0
@@ -250,10 +250,8 @@ class MatchCompiler:
             elif line[pos] == ')':
                 parlevel -= 1
                 if parlevel == 0:
-                    ret = []
-                    ret.append(line[pos1:pos + 1])
-                    for arg in args:
-                        ret.append(arg)
+                    ret = [line[pos1:pos + 1]]
+                    ret.extend(args)
                     ret.append(line[argstart:pos])
                     return ret
             elif line[pos] == ',' and parlevel == 1:
@@ -263,7 +261,8 @@ class MatchCompiler:
 
         return None
 
-    def _isInString(self, line, pos1):
+    @staticmethod
+    def _isInString(line, pos1):
         pos = 0
         inString = False
         while pos != pos1:
@@ -274,9 +273,9 @@ class MatchCompiler:
             pos += 1
         return inString
 
-    def _parseStringComparison(self, line, pos1):
+    @staticmethod
+    def _parseStringComparison(line, pos1):
         startPos = 0
-        endPos = 0
         pos = pos1
         inString = False
         while pos < len(line):
@@ -286,7 +285,7 @@ class MatchCompiler:
                 elif line[pos] == '"':
                     inString = False
                     endPos = pos + 1
-                    return (startPos, endPos)
+                    return startPos, endPos
             elif line[pos] == '"':
                 startPos = pos
                 inString = True
@@ -294,8 +293,9 @@ class MatchCompiler:
 
         return None
 
+    @staticmethod
     def _compileVerifyTokenMatch(
-            self, is_simplematch, verifyNumber, pattern, patternNumber, varId):
+            is_simplematch, verifyNumber, pattern, patternNumber, varId):
         more_args = ''
         if varId:
             more_args = ', const unsigned int varid'
@@ -421,8 +421,9 @@ class MatchCompiler:
 
         return line
 
+    @staticmethod
     def _compileVerifyTokenFindMatch(
-            self, is_findsimplematch, verifyNumber, pattern, patternNumber, endToken, varId):
+            is_findsimplematch, verifyNumber, pattern, patternNumber, endToken, varId):
         more_args = ''
         if endToken:
             more_args += ', const Token * endToken'
@@ -514,7 +515,6 @@ class MatchCompiler:
         )
 
     def _replaceTokenFindMatch(self, line, linenr, filename):
-        pos1 = 0
         while True:
             is_findsimplematch = True
             pos1 = line.find('Token::findsimplematch(')

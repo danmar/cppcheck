@@ -26,7 +26,6 @@ def reportError(location, num1, num2):
     if VERIFY:
         VERIFY_ACTUAL.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
     else:
-        errmsg = None
         num = num1 * 100 + num2
         if num in ruleTexts:
             errmsg = ruleTexts[num] + ' [misra-c2012-' + str(num1) + '.' + str(num2) + ']'
@@ -42,14 +41,6 @@ def simpleMatch(token, pattern):
             return False
         token = token.next
     return True
-
-# Platform
-CHAR_BIT = 0
-SHORT_BIT = 0
-INT_BIT = 0
-LONG_BIT = 0
-LONG_LONG_BIT = 0
-POINTER_BIT = 0
 
 KEYWORDS = {
     'auto',
@@ -579,11 +570,11 @@ def misra_12_1(data):
         if p < 2 or p > 12:
             continue
         p1 = getPrecedence(token.astOperand1)
-        if p1 <= 12 and p1 > p and noParentheses(token.astOperand1, token):
+        if p < p1 <= 12 and noParentheses(token.astOperand1, token):
             reportError(token, 12, 1)
             continue
         p2 = getPrecedence(token.astOperand2)
-        if p2 <= 12 and p2 > p and noParentheses(token, token.astOperand2):
+        if p < p2 <= 12 and noParentheses(token, token.astOperand2):
             reportError(token, 12, 1)
             continue
 
@@ -617,7 +608,6 @@ def misra_12_3(data):
 
 
 def misra_12_4(data):
-    max_uint = 0
     if INT_BIT == 16:
         max_uint = 0xffff
     elif INT_BIT == 32:

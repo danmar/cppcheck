@@ -4,7 +4,6 @@ import sys
 
 
 def readdate(data):
-    datepos = -1
     if data[:5] == 'DATE ':
         datepos = 0
     else:
@@ -21,7 +20,7 @@ def readdate(data):
         if datepos >= len(data):
             return None
         d = data[datepos]
-        if d >= '0' and d <= '9':
+        if '0' <= d <= '9':
             datestr += d
         elif d == '\n' or d == '\r':
             if len(datestr) == 8:

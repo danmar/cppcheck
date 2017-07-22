@@ -70,8 +70,6 @@ def handleRemoveReadonly(func, path, exc):
         # Is the error an access error ?
         os.chmod(path, stat.S_IWUSR)
         func(path)
-    else:
-        raise
 
 
 def removeAllExceptResults():
