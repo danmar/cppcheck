@@ -1209,7 +1209,7 @@ static std::string stringFromTokenRange(const Token* start, const Token* end)
             ret << "unsigned ";
         if (tok->isLong())
             ret << (tok->isLiteral() ? "L" : "long ");
-        if (tok->originalName().empty()) {
+        if (tok->originalName().empty() || tok->isUnsigned() || tok->isLong()) {
             ret << tok->str();
         } else
             ret << tok->originalName();
