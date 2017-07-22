@@ -528,7 +528,14 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         return characterLiteralToLongNumber(str.substr(1,str.size()-2));
     }
 
-    bigint ret = 0;
+    if (str[0] == '-') {
+        bigint ret = 0;
+        std::istringstream istr(str);
+        istr >> ret;
+        return ret;
+    }
+
+    biguint ret = 0;
     std::istringstream istr(str);
     istr >> ret;
     return ret;

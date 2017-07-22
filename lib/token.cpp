@@ -1355,7 +1355,10 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 out << "      <value ";
                 switch (it->valueType) {
                 case ValueFlow::Value::INT:
-                    out << "intvalue=\"" << it->intvalue << '\"';
+                    if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
+                        out << "intvalue=\"" << (MathLib::biguint)it->intvalue << '\"';
+                    else
+                        out << "intvalue=\"" << it->intvalue << '\"';
                     break;
                 case ValueFlow::Value::TOK:
                     out << "tokvalue=\"" << it->tokvalue << '\"';
@@ -1384,7 +1387,10 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << ",";
                 switch (it->valueType) {
                 case ValueFlow::Value::INT:
-                    out << it->intvalue;
+                    if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
+                        out << (MathLib::biguint)it->intvalue;
+                    else
+                        out << it->intvalue;
                     break;
                 case ValueFlow::Value::TOK:
                     out << it->tokvalue->str();
