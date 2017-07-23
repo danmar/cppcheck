@@ -62,6 +62,7 @@ script:
   - tools/generate_and_run_more_tests.sh
 # check test/cfg
   - make checkcfg
+  - make validateCFG
   - cd ./gui
 # clean rebuild
   - git clean -dfx .
