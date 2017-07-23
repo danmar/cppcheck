@@ -770,8 +770,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     doAssignment(variables, i->nameToken(), false, scope);
                 } else {
                     // could be "var = {...}" OR "var{...}" (since C++11)
-                    const Token* tokBraceStart = NULL;
-                    if (defValTok->str() == "=" && defValTok->next()->str() == "{") {
+                    const Token* tokBraceStart = nullptr;
+                    if (Token::simpleMatch(defValTok, "= {")) {
                         // "var = {...}"
                         tokBraceStart = defValTok->next();
                     } else if (defValTok->str() == "{") {
@@ -902,6 +902,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         tok = tok->next();
                         if (!var->isReference())
                             variables.read(tok->varId(), tok);
+                    } else if (tok->str() == "[" && Token::simpleMatch(skipBrackets(tok),"= {")) {
+                        const Token * const rhs1 = skipBrackets(tok)->next();
+                        for (const Token *rhs = rhs1->link(); rhs != rhs1; rhs = rhs->previous()) {
+                            if (rhs->varId())
+                                variables.readAll(rhs->varId(), rhs);
+                        }
                     } else if (var->typeEndToken()->str() == ">") // Be careful with types like std::vector
                         tok = tok->previous();
                     break;
