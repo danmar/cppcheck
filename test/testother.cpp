@@ -1371,6 +1371,9 @@ private:
         check("void f(const std::string str) {}");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
 
+        check("void f(std::unique_ptr<std::string> ptr) {}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(const std::string::size_type x) {}");
         ASSERT_EQUALS("", errout.str());
 
