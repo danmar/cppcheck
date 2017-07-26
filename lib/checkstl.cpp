@@ -140,13 +140,12 @@ void CheckStl::iterators()
                 validIterator = true;
 
             // Is iterator compared against different container?
-            if (tok2->isComparisonOp() && container) {
+            if (tok2->isComparisonOp() && container && tok2->astOperand1() && tok2->astOperand2()) {
                 const Token *other = nullptr;
                 if (tok2->astOperand1()->varId() == iteratorId)
                     other = tok2->astOperand2()->tokAt(-3);
                 else if (tok2->astOperand2()->varId() == iteratorId)
                     other = tok2->astOperand1()->tokAt(-3);
-
                 if (Token::Match(other, "%name% . end|rend|cend|crend ( )") && other->varId() != container->declarationId())
                     iteratorsError(tok2, container->name(), other->str());
             }
