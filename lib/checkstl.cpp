@@ -386,41 +386,40 @@ void CheckStl::stlOutOfBounds()
         tok = tok->next();
 
         // check if the for loop condition is wrong
-        if (Token::Match(tok, "%var% <= %var% . %name% ( ) ;|)|%oror%")) {
-            // Is it a vector?
-            const Variable *var = tok->tokAt(2)->variable();
-            if (!var)
-                continue;
+        if (!Token::Match(tok, "%var% <= %var% . %name% ( ) ;|)|%oror%"))
+            continue;
+        // Is it a vector?
+        const Variable *var = tok->tokAt(2)->variable();
+        if (!var)
+            continue;
 
-            const Library::Container* container = _settings->library.detectContainer(var->typeStartToken());
-            if (!container)
-                continue;
+        const Library::Container* container = _settings->library.detectContainer(var->typeStartToken());
+        if (!container)
+            continue;
 
-            if (container->getYield(tok->strAt(4)) != Library::Container::SIZE)
-                continue;
+        if (container->getYield(tok->strAt(4)) != Library::Container::SIZE)
+            continue;
 
-            // variable id for loop variable.
-            const unsigned int numId = tok->varId();
+        // variable id for loop variable.
+        const unsigned int numId = tok->varId();
 
-            // variable id for the container variable
-            const unsigned int declarationId = var->declarationId();
+        // variable id for the container variable
+        const unsigned int declarationId = var->declarationId();
 
-            for (const Token *tok3 = i->classStart; tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
-                if (tok3->varId() == declarationId) {
-                    tok3 = tok3->next();
-                    if (Token::Match(tok3, ". %name% ( )")) {
-                        if (container->getYield(tok3->strAt(1)) == Library::Container::SIZE)
-                            break;
-                    } else if (container->arrayLike_indexOp && Token::Match(tok3, "[ %varid% ]", numId))
-                        stlOutOfBoundsError(tok3, tok3->strAt(1), var->name(), false);
-                    else if (Token::Match(tok3, ". %name% ( %varid% )", numId)) {
-                        Library::Container::Yield yield = container->getYield(tok3->strAt(1));
-                        if (yield == Library::Container::AT_INDEX)
-                            stlOutOfBoundsError(tok3, tok3->strAt(3), var->name(), true);
-                    }
+        for (const Token *tok3 = i->classStart; tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
+            if (tok3->varId() == declarationId) {
+                tok3 = tok3->next();
+                if (Token::Match(tok3, ". %name% ( )")) {
+                    if (container->getYield(tok3->strAt(1)) == Library::Container::SIZE)
+                        break;
+                } else if (container->arrayLike_indexOp && Token::Match(tok3, "[ %varid% ]", numId))
+                    stlOutOfBoundsError(tok3, tok3->strAt(1), var->name(), false);
+                else if (Token::Match(tok3, ". %name% ( %varid% )", numId)) {
+                    Library::Container::Yield yield = container->getYield(tok3->strAt(1));
+                    if (yield == Library::Container::AT_INDEX)
+                        stlOutOfBoundsError(tok3, tok3->strAt(3), var->name(), true);
                 }
             }
-            continue;
         }
     }
 }
