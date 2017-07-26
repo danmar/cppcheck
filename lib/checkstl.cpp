@@ -1409,56 +1409,56 @@ void CheckStl::checkDereferenceInvalidIterator()
     // be an iterator that is dereferenced before being checked for validity.
     const std::list<Scope>& scopeList = _tokenizer->getSymbolDatabase()->scopeList;
     for (std::list<Scope>::const_iterator i = scopeList.begin(); i != scopeList.end(); ++i) {
-        if (i->type == Scope::eIf || i->type == Scope::eDo || i->type == Scope::eWhile || i->type == Scope::eFor) {
+        if (!(i->type == Scope::eIf || i->type == Scope::eDo || i->type == Scope::eWhile || i->type == Scope::eFor))
+            continue;
 
-            const Token* const tok = i->classDef;
-            const Token* startOfCondition = tok->next();
-            if (i->type == Scope::eDo)
-                startOfCondition = startOfCondition->link()->tokAt(2);
-            if (!startOfCondition) // ticket #6626 invalid code
+        const Token* const tok = i->classDef;
+        const Token* startOfCondition = tok->next();
+        if (i->type == Scope::eDo)
+            startOfCondition = startOfCondition->link()->tokAt(2);
+        if (!startOfCondition) // ticket #6626 invalid code
+            continue;
+        const Token* endOfCondition = startOfCondition->link();
+        if (!endOfCondition)
+            continue;
+
+        // For "for" loops, only search between the two semicolons
+        if (i->type == Scope::eFor) {
+            startOfCondition = Token::findsimplematch(tok->tokAt(2), ";", endOfCondition);
+            if (!startOfCondition)
                 continue;
-            const Token* endOfCondition = startOfCondition->link();
+            endOfCondition = Token::findsimplematch(startOfCondition->next(), ";", endOfCondition);
             if (!endOfCondition)
                 continue;
-
-            // For "for" loops, only search between the two semicolons
-            if (i->type == Scope::eFor) {
-                startOfCondition = Token::findsimplematch(tok->tokAt(2), ";", endOfCondition);
-                if (!startOfCondition)
-                    continue;
-                endOfCondition = Token::findsimplematch(startOfCondition->next(), ";", endOfCondition);
-                if (!endOfCondition)
-                    continue;
-            }
-
-            // Only consider conditions composed of all "&&" terms and
-            // conditions composed of all "||" terms
-            const bool isOrExpression =
-                Token::findsimplematch(startOfCondition, "||", endOfCondition) != 0;
-            const bool isAndExpression =
-                Token::findsimplematch(startOfCondition, "&&", endOfCondition) != 0;
-
-            // Look for a check of the validity of an iterator
-            const Token* validityCheckTok = 0;
-            if (!isOrExpression && isAndExpression) {
-                validityCheckTok =
-                    Token::findmatch(startOfCondition, "&& %var% != %name% . end|rend|cend|crend ( )", endOfCondition);
-            } else if (isOrExpression && !isAndExpression) {
-                validityCheckTok =
-                    Token::findmatch(startOfCondition, "%oror% %var% == %name% . end|rend|cend|crend ( )", endOfCondition);
-            }
-
-            if (!validityCheckTok)
-                continue;
-            const unsigned int iteratorVarId = validityCheckTok->next()->varId();
-
-            // If the iterator dereference is to the left of the check for
-            // the iterator's validity, report an error.
-            const Token* const dereferenceTok =
-                Token::findmatch(startOfCondition, "* %varid%", validityCheckTok, iteratorVarId);
-            if (dereferenceTok)
-                dereferenceInvalidIteratorError(dereferenceTok, dereferenceTok->strAt(1));
         }
+
+        // Only consider conditions composed of all "&&" terms and
+        // conditions composed of all "||" terms
+        const bool isOrExpression =
+            Token::findsimplematch(startOfCondition, "||", endOfCondition) != 0;
+        const bool isAndExpression =
+            Token::findsimplematch(startOfCondition, "&&", endOfCondition) != 0;
+
+        // Look for a check of the validity of an iterator
+        const Token* validityCheckTok = 0;
+        if (!isOrExpression && isAndExpression) {
+            validityCheckTok =
+                Token::findmatch(startOfCondition, "&& %var% != %name% . end|rend|cend|crend ( )", endOfCondition);
+        } else if (isOrExpression && !isAndExpression) {
+            validityCheckTok =
+                Token::findmatch(startOfCondition, "%oror% %var% == %name% . end|rend|cend|crend ( )", endOfCondition);
+        }
+
+        if (!validityCheckTok)
+            continue;
+        const unsigned int iteratorVarId = validityCheckTok->next()->varId();
+
+        // If the iterator dereference is to the left of the check for
+        // the iterator's validity, report an error.
+        const Token* const dereferenceTok =
+            Token::findmatch(startOfCondition, "* %varid%", validityCheckTok, iteratorVarId);
+        if (dereferenceTok)
+            dereferenceInvalidIteratorError(dereferenceTok, dereferenceTok->strAt(1));
     }
 }
 
