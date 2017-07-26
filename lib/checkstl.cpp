@@ -140,9 +140,15 @@ void CheckStl::iterators()
                 validIterator = true;
 
             // Is iterator compared against different container?
-            if (Token::Match(tok2, "%varid% !=|== %name% . end|rend|cend|crend ( )", iteratorId) && container && tok2->tokAt(2)->varId() != container->declarationId()) {
-                iteratorsError(tok2, container->name(), tok2->strAt(2));
-                tok2 = tok2->tokAt(6);
+            if (tok2->isComparisonOp() && container) {
+                const Token *other = nullptr;
+                if (tok2->astOperand1()->varId() == iteratorId)
+                    other = tok2->astOperand2()->tokAt(-3);
+                else if (tok2->astOperand2()->varId() == iteratorId)
+                    other = tok2->astOperand1()->tokAt(-3);
+
+                if (Token::Match(other, "%name% . end|rend|cend|crend ( )") && other->varId() != container->declarationId())
+                    iteratorsError(tok2, container->name(), other->str());
             }
 
             // Is the iterator used in a insert/erase operation?

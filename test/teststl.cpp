@@ -172,6 +172,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
 
+        check("void f()\n"
+              "{\n"
+              "    list<int> l1;\n"
+              "    list<int> l2;\n"
+              "    for (list<int>::iterator it = l1.begin(); l2.end() != it; ++it)\n"
+              "    { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+
         // Same check with reverse iterator
         check("void f()\n"
               "{\n"
@@ -442,6 +451,14 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with different containers 'map1' and 'map2'.\n", errout.str());
 
+        check("void f() {\n"
+              "    std::map<int, int> map1;\n"
+              "    std::map<int, int> map2;\n"
+              "    std::map<int, int>::const_iterator it = map1.find(123);\n"
+              "    if (map2.end() == it) { }"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with different containers 'map1' and 'map2'.\n", errout.str());
+
         check("void f(std::string &s) {\n"
               "    int pos = s.find(x);\n"
               "    s.erase(pos);\n"
@@ -457,7 +474,7 @@ private:
               "    std::vector<int>::const_iterator it;\n"
               "    it = a.begin();\n"
               "    while (it!=a.end())\n"
-              "        v++it;\n"
+              "        ++it;\n"
               "    it = t.begin();\n"
               "    while (it!=a.end())\n"
               "        ++it;\n"
