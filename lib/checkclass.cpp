@@ -1304,51 +1304,52 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
 
     for (; tok && tok != last; tok = tok->next()) {
         // check for return of reference to this
-        if (tok->str() == "return") {
-            foundReturn = true;
-            std::string cast("( " + scope->className + " & )");
-            if (Token::simpleMatch(tok->next(), cast.c_str()))
-                tok = tok->tokAt(4);
+        if (tok->str() != "return")
+            continue;
 
-            // check if a function is called
-            if (tok->strAt(2) == "(" &&
-                tok->linkAt(2)->next()->str() == ";") {
-                std::list<Function>::const_iterator it;
+        foundReturn = true;
+        std::string cast("( " + scope->className + " & )");
+        if (Token::simpleMatch(tok->next(), cast.c_str()))
+            tok = tok->tokAt(4);
 
-                // check if it is a member function
-                for (it = scope->functionList.begin(); it != scope->functionList.end(); ++it) {
-                    // check for a regular function with the same name and a body
-                    if (it->type == Function::eFunction && it->hasBody() &&
-                        it->token->str() == tok->next()->str()) {
-                        // check for the proper return type
-                        if (it->tokenDef->previous()->str() == "&" &&
-                            it->tokenDef->strAt(-2) == scope->className) {
-                            // make sure it's not a const function
-                            if (!it->isConst()) {
-                                /** @todo make sure argument types match */
-                                // avoid endless recursions
-                                if (analyzedFunctions.find(&*it) == analyzedFunctions.end()) {
-                                    analyzedFunctions.insert(&*it);
-                                    checkReturnPtrThis(scope, &*it, it->arg->link()->next(), it->arg->link()->next()->link(),
-                                                       analyzedFunctions);
-                                }
-                                // just bail for now
-                                else
-                                    return;
+        // check if a function is called
+        if (tok->strAt(2) == "(" &&
+            tok->linkAt(2)->next()->str() == ";") {
+            std::list<Function>::const_iterator it;
+
+            // check if it is a member function
+            for (it = scope->functionList.begin(); it != scope->functionList.end(); ++it) {
+                // check for a regular function with the same name and a body
+                if (it->type == Function::eFunction && it->hasBody() &&
+                    it->token->str() == tok->next()->str()) {
+                    // check for the proper return type
+                    if (it->tokenDef->previous()->str() == "&" &&
+                        it->tokenDef->strAt(-2) == scope->className) {
+                        // make sure it's not a const function
+                        if (!it->isConst()) {
+                            /** @todo make sure argument types match */
+                            // avoid endless recursions
+                            if (analyzedFunctions.find(&*it) == analyzedFunctions.end()) {
+                                analyzedFunctions.insert(&*it);
+                                checkReturnPtrThis(scope, &*it, it->arg->link()->next(), it->arg->link()->next()->link(),
+                                                   analyzedFunctions);
                             }
+                            // just bail for now
+                            else
+                                return;
                         }
                     }
                 }
             }
-
-            // check if *this is returned
-            else if (!(Token::Match(tok->next(), "(| * this ;|=") ||
-                       Token::simpleMatch(tok->next(), "operator= (") ||
-                       Token::simpleMatch(tok->next(), "this . operator= (") ||
-                       (Token::Match(tok->next(), "%type% :: operator= (") &&
-                        tok->next()->str() == scope->className)))
-                operatorEqRetRefThisError(func->token);
         }
+
+        // check if *this is returned
+        else if (!(Token::Match(tok->next(), "(| * this ;|=") ||
+                   Token::simpleMatch(tok->next(), "operator= (") ||
+                   Token::simpleMatch(tok->next(), "this . operator= (") ||
+                   (Token::Match(tok->next(), "%type% :: operator= (") &&
+                    tok->next()->str() == scope->className)))
+            operatorEqRetRefThisError(func->token);
     }
     if (foundReturn) {
         return;
