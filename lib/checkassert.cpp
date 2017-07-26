@@ -52,39 +52,39 @@ void CheckAssert::assertWithSideEffects()
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
             checkVariableAssignment(tmp, tok->scope());
 
-            if (tmp->tokType() == Token::eFunction) {
-                const Function* f = tmp->function();
+            if (tmp->tokType() != Token::eFunction)
+                continue;
 
-                if (f->nestedIn->isClassOrStruct() && !f->isStatic() && !f->isConst())
-                    sideEffectInAssertError(tmp, f->name()); // Non-const member function called
-                else {
-                    const Scope* scope = f->functionScope;
-                    if (!scope) continue;
+            const Function* f = tmp->function();
+            if (f->nestedIn->isClassOrStruct() && !f->isStatic() && !f->isConst()) {
+                sideEffectInAssertError(tmp, f->name()); // Non-const member function called
+                continue;
+            }
+            const Scope* scope = f->functionScope;
+            if (!scope) continue;
 
-                    for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
-                        if (tok2->tokType() != Token::eAssignmentOp && tok2->tokType() != Token::eIncDecOp)
-                            continue;
+            for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
+                if (tok2->tokType() != Token::eAssignmentOp && tok2->tokType() != Token::eIncDecOp)
+                    continue;
 
-                        const Variable* var = tok2->previous()->variable();
-                        if (!var || var->isLocal() || (var->isArgument() && !var->isReference() && !var->isPointer()))
-                            continue; // See ticket #4937. Assigning function arguments not passed by reference is ok.
-                        if (var->isArgument() && var->isPointer() && tok2->strAt(-2) != "*")
-                            continue; // Pointers need to be dereferenced, otherwise there is no error
+                const Variable* var = tok2->previous()->variable();
+                if (!var || var->isLocal() || (var->isArgument() && !var->isReference() && !var->isPointer()))
+                    continue; // See ticket #4937. Assigning function arguments not passed by reference is ok.
+                if (var->isArgument() && var->isPointer() && tok2->strAt(-2) != "*")
+                    continue; // Pointers need to be dereferenced, otherwise there is no error
 
-                        bool noReturnInScope = true;
-                        for (const Token *rt = scope->classStart; rt != scope->classEnd; rt = rt->next()) {
-                            if (rt->str() != "return") continue; // find all return statements
-                            if (inSameScope(rt, tok2)) {
-                                noReturnInScope = false;
-                                break;
-                            }
-                        }
-                        if (noReturnInScope) continue;
-
-                        sideEffectInAssertError(tmp, f->name());
+                bool noReturnInScope = true;
+                for (const Token *rt = scope->classStart; rt != scope->classEnd; rt = rt->next()) {
+                    if (rt->str() != "return") continue; // find all return statements
+                    if (inSameScope(rt, tok2)) {
+                        noReturnInScope = false;
                         break;
                     }
                 }
+                if (noReturnInScope) continue;
+
+                sideEffectInAssertError(tmp, f->name());
+                break;
             }
         }
         tok = endTok;
