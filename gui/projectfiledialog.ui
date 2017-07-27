@@ -135,7 +135,7 @@
      </widget>
      <widget class="QWidget" name="mTabOther">
       <attribute name="title">
-       <string>Other</string>
+       <string>Paths and Defines</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>
