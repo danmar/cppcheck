@@ -45,6 +45,9 @@
         <layout class="QHBoxLayout" name="mLayoutBuildDir">
          <item>
           <widget class="QLabel" name="mLabelBuildDir">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the build dir, cppcheck stores data about each translation unit.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;With a build dir you get whole program analysis and faster analysis.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Cppcheck build dir (optional)</string>
            </property>
