@@ -190,9 +190,10 @@ void ProjectFileDialog::BrowseImportProject()
     const QFileInfo inf(mFilePath);
     const QDir &dir = inf.absoluteDir();
     QString fileName = QFileDialog::getOpenFileName(this, tr("Import Project"),
-                                                    dir.canonicalPath(),
-                                                    tr("Visual Studio (*.sln *.vcxproj);;Compile database (compile_database.json)"));
-    mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
+                       dir.canonicalPath(),
+                       tr("Visual Studio (*.sln *.vcxproj);;Compile database (compile_database.json)"));
+    if (!fileName.isEmpty())
+        mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
 }
 
 void ProjectFileDialog::AddIncludeDir(const QString &dir)
