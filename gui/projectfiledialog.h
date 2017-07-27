@@ -148,14 +148,9 @@ protected slots:
     void BrowseBuildDir();
 
     /**
-    * @brief Browse for Visual Studio solution/project.
+    * @brief Browse for solution / project / compile database.
     */
-    void BrowseVisualStudio();
-
-    /**
-    * @brief Browse for Compile Database.
-    */
-    void BrowseCompileDatabase();
+    void BrowseImportProject();
 
     /**
     * @brief Add new path to check.

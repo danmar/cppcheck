@@ -92,8 +92,7 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
     connect(mUI.mBtnBrowseBuildDir, SIGNAL(clicked()), this, SLOT(BrowseBuildDir()));
-    connect(mUI.mBtnBrowseCompileDatabase, SIGNAL(clicked()), this, SLOT(BrowseCompileDatabase()));
-    connect(mUI.mBtnBrowseVisualStudio, SIGNAL(clicked()), this, SLOT(BrowseVisualStudio()));
+    connect(mUI.mBtnBrowseImportProject, SIGNAL(clicked()), this, SLOT(BrowseImportProject()));
     connect(mUI.mBtnAddCheckPath, SIGNAL(clicked()), this, SLOT(AddCheckPath()));
     connect(mUI.mBtnEditCheckPath, SIGNAL(clicked()), this, SLOT(EditCheckPath()));
     connect(mUI.mBtnRemoveCheckPath, SIGNAL(clicked()), this, SLOT(RemoveCheckPath()));
@@ -186,24 +185,14 @@ void ProjectFileDialog::BrowseBuildDir()
         mUI.mEditBuildDir->setText(dir);
 }
 
-void ProjectFileDialog::BrowseCompileDatabase()
+void ProjectFileDialog::BrowseImportProject()
 {
     const QFileInfo inf(mFilePath);
     const QDir &dir = inf.absoluteDir();
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Compile Database"),
-                       dir.canonicalPath(),
-                       tr("Compile database (compile_database.json)"));
-    mUI.mEditCompileDatabase->setText(dir.relativeFilePath(fileName));
-}
-
-void ProjectFileDialog::BrowseVisualStudio()
-{
-    const QFileInfo inf(mFilePath);
-    const QDir &dir = inf.absoluteDir();
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Visual Studio"),
-                       dir.canonicalPath(),
-                       tr("Visual Studio Solution/Project (*.sln *.vcxproj)"));
-    mUI.mEditVisualStudio->setText(dir.relativeFilePath(fileName));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Import Project"),
+                                                    dir.canonicalPath(),
+                                                    tr("Visual Studio (*.sln *.vcxproj);;Compile database (compile_database.json)"));
+    mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
 }
 
 void ProjectFileDialog::AddIncludeDir(const QString &dir)
@@ -254,7 +243,7 @@ QString ProjectFileDialog::GetBuildDir() const
 
 QString ProjectFileDialog::GetImportProject() const
 {
-    return mUI.mEditCompileDatabase->text() + mUI.mEditVisualStudio->text();
+    return mUI.mEditImportProject->text();
 }
 
 QStringList ProjectFileDialog::GetIncludePaths() const
@@ -337,12 +326,7 @@ void ProjectFileDialog::SetBuildDir(const QString &buildDir)
 
 void ProjectFileDialog::SetImportProject(const QString &importProject)
 {
-    mUI.mEditCompileDatabase->setText("");
-    mUI.mEditVisualStudio->setText("");
-    if (importProject.endsWith("compile_database.json", Qt::CaseInsensitive))
-        mUI.mEditCompileDatabase->setText(importProject);
-    else if (importProject.endsWith(".sln",Qt::CaseInsensitive) || importProject.endsWith(".vcxproj",Qt::CaseInsensitive))
-        mUI.mEditVisualStudio->setText(importProject);
+    mUI.mEditImportProject->setText(importProject);
 }
 
 void ProjectFileDialog::SetIncludepaths(const QStringList &includes)

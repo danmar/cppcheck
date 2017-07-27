@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>635</width>
-    <height>368</height>
+    <width>642</width>
+    <height>434</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,13 +23,13 @@
       <attribute name="title">
        <string>Project</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_12">
+      <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <layout class="QHBoxLayout" name="mLayoutProjectRoot">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
           <widget class="QLabel" name="mLabelProjectRoot">
            <property name="text">
-            <string>Root:</string>
+            <string>&amp;Root:</string>
            </property>
            <property name="buddy">
             <cstring>mEditProjectRoot</cstring>
@@ -42,41 +42,60 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="mLayoutBuildDir">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
           <widget class="QLabel" name="mLabelBuildDir">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the build dir, cppcheck stores data about each translation unit.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;With a build dir you get whole program analysis and faster analysis.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the build dir, cppcheck stores data about each translation unit.&lt;/p&gt;&lt;p&gt;With a build dir you get whole program analysis.&lt;/p&gt;&lt;p&gt;Unchanged files will be analyzed much faster; Cppcheck skip the analysis of these files and reuse their old data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Cppcheck build dir (optional)</string>
+            <string>Cppcheck build dir (whole program analysis, faster analysis for unchanged files)</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="mEditBuildDir"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="mBtnBrowseBuildDir">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLineEdit" name="mEditBuildDir"/>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mBtnBrowseBuildDir">
+             <property name="text">
+              <string>...</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
        <item>
-        <spacer name="verticalSpacer_10">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>97</height>
-          </size>
-         </property>
-        </spacer>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QLabel" name="mLabelImport">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Cppcheck can import Visual studio solutions (*.sln), Visual studio projects (*.vcxproj) or compile databases.&lt;/p&gt;&lt;p&gt;Files to check, include paths, configurations, defines, platform settings are imported.\n\nLibrary settings are not imported.\n\n&lt;/p&gt;&lt;p&gt;A compile database can be generated from a cmake project using cmake, or from a Makefile project using bear (build ear).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Import Project (Visual studio / compile database)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLineEdit" name="mEditImportProject"/>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mBtnBrowseImportProject">
+             <property name="text">
+              <string>...</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="mLayoutLibraries">
@@ -108,100 +127,6 @@
           <size>
            <width>20</width>
            <height>96</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="mTabVisualStudio">
-      <attribute name="title">
-       <string>Visual Studio</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <item>
-        <widget class="QLabel" name="mLabelVisualStudio">
-         <property name="text">
-          <string>Visual Studio
-
-Cppcheck can import visual studio solutions and projects.
-
-Files to check, include paths, configurations, defines, platform settings are imported.
-
-Library settings are not imported.</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="mLayoutVisualStudio">
-         <item>
-          <widget class="QLineEdit" name="mEditVisualStudio"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="mBtnBrowseVisualStudio">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>149</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="mTabCMake">
-      <attribute name="title">
-       <string>CMake</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
-       <item>
-        <widget class="QLabel" name="mLabelCMake">
-         <property name="text">
-          <string>Compile database
-
-Cppcheck can import files to analyse, include paths, defines from the compile database.
-
-Platform settings are not provided in compile database and must be configured.
-
-Library settings are not provided in compile database, be careful about this configuration also.</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="mLayoutCMake">
-         <item>
-          <widget class="QLineEdit" name="mEditCompileDatabase"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="mBtnBrowseCompileDatabase">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_7">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>149</height>
           </size>
          </property>
         </spacer>
