@@ -117,16 +117,16 @@ void CheckStl::iterators()
 
         // the validIterator flag says if the iterator has a valid value or not
         bool validIterator = Token::Match(var->nameToken()->next(), "[(=:]");
-        const Scope* invalidationScope = 0;
+        const Scope* invalidationScope = nullptr;
 
         // The container this iterator can be used with
-        const Variable* container = 0;
-        const Scope* containerAssignScope = 0;
+        const Variable* container = nullptr;
+        const Scope* containerAssignScope = nullptr;
 
         // When "validatingToken" is reached the validIterator is set to true
-        const Token* validatingToken = 0;
+        const Token* validatingToken = nullptr;
 
-        const Token* eraseToken = 0;
+        const Token* eraseToken = nullptr;
 
         // Scan through the rest of the code and see if the iterator is
         // used against other containers.
@@ -134,7 +134,7 @@ void CheckStl::iterators()
             if (invalidationScope && tok2 == invalidationScope->classEnd)
                 validIterator = true; // Assume that the iterator becomes valid again
             if (containerAssignScope && tok2 == containerAssignScope->classEnd)
-                container = 0; // We don't know which containers might be used with the iterator
+                container = nullptr; // We don't know which containers might be used with the iterator
 
             if (tok2 == validatingToken)
                 validIterator = true;
@@ -550,7 +550,7 @@ void CheckStl::pushback()
         // the variable id for the vector
         unsigned int vectorid = 0;
 
-        const Token* validatingToken = 0;
+        const Token* validatingToken = nullptr;
 
         std::string invalidIterator;
         const Token* end2 = var->scope()->classEnd;
@@ -558,7 +558,7 @@ void CheckStl::pushback()
 
             if (validatingToken == tok2) {
                 invalidIterator.clear();
-                validatingToken = 0;
+                validatingToken = nullptr;
             }
 
             // Using push_back or push_front inside a loop..
@@ -576,7 +576,7 @@ void CheckStl::pushback()
                 const Token *tok3 = tok2->tokAt(20);
                 for (const Token* const end3 = tok3->linkAt(-1); tok3 != end3; tok3 = tok3->next()) {
                     if (tok3->str() == "break" || tok3->str() == "return") {
-                        pushbackTok = 0;
+                        pushbackTok = nullptr;
                         break;
                     } else if (Token::Match(tok3, "%varid% . push_front|push_back|insert|reserve|resize|clear|erase (", varId) && !tok3->previous()->isAssignmentOp()) {
                         if (tok3->strAt(2) != "erase" || (tok3->tokAt(4)->varId() != iteratorId && tok3->tokAt(5)->varId() != iteratorId)) // This case is handled in: CheckStl::iterators()
@@ -932,9 +932,9 @@ void CheckStl::missingComparison()
                 else if (Token::Match(tok3->previous(), "++ %varid% !!.", iteratorId))
                     incrementToken = tok3;
                 else if (Token::Match(tok3, "%varid% !=|==", iteratorId))
-                    incrementToken = 0;
+                    incrementToken = nullptr;
                 else if (tok3->str() == "break" || tok3->str() == "return")
-                    incrementToken = 0;
+                    incrementToken = nullptr;
                 else if (Token::Match(tok3, "%varid% = %name% . insert ( ++| %varid% ++| ,", iteratorId)) {
                     // skip insertion..
                     tok3 = tok3->linkAt(6);
@@ -1440,12 +1440,12 @@ void CheckStl::checkDereferenceInvalidIterator()
         // Only consider conditions composed of all "&&" terms and
         // conditions composed of all "||" terms
         const bool isOrExpression =
-            Token::findsimplematch(startOfCondition, "||", endOfCondition) != 0;
+            Token::findsimplematch(startOfCondition, "||", endOfCondition) != nullptr;
         const bool isAndExpression =
-            Token::findsimplematch(startOfCondition, "&&", endOfCondition) != 0;
+            Token::findsimplematch(startOfCondition, "&&", endOfCondition) != nullptr;
 
         // Look for a check of the validity of an iterator
-        const Token* validityCheckTok = 0;
+        const Token* validityCheckTok = nullptr;
         if (!isOrExpression && isAndExpression) {
             validityCheckTok =
                 Token::findmatch(startOfCondition, "&& %var% != %name% . end|rend|cend|crend ( )", endOfCondition);
