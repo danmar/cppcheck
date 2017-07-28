@@ -162,7 +162,7 @@ void ResultsView::Save(const QString &filename, Report::Type type) const
     }
 
     if (report) {
-        if (report->Create())
+        if (report->create())
             mUI.mTree->SaveResults(report);
         else {
             QMessageBox msgBox;
@@ -211,7 +211,7 @@ void ResultsView::Print(QPrinter* printer)
 
     PrintableReport report;
     mUI.mTree->SaveResults(&report);
-    QTextDocument doc(report.GetFormattedReportText());
+    QTextDocument doc(report.getFormattedReportText());
     doc.print(printer);
 }
 
@@ -322,8 +322,8 @@ void ResultsView::ReadErrorsXml(const QString &filename)
 
     QList<ErrorItem> errors;
     if (report) {
-        if (report->Open())
-            errors = report->Read();
+        if (report->open())
+            errors = report->read();
         else {
             QMessageBox msgBox;
             msgBox.setText(tr("Failed to read the report."));

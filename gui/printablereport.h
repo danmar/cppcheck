@@ -38,28 +38,28 @@ public:
     * @brief Create the report (file).
     * @return true if succeeded, false if file could not be created.
     */
-    virtual bool Create();
+    virtual bool create();
 
     /**
     * @brief Write report header.
     */
-    virtual void WriteHeader();
+    virtual void writeHeader();
 
     /**
     * @brief Write report footer.
     */
-    virtual void WriteFooter();
+    virtual void writeFooter();
 
     /**
     * @brief Write error to report.
     * @param error Error data.
     */
-    virtual void WriteError(const ErrorItem &error);
+    virtual void writeError(const ErrorItem &error);
 
     /**
     * @brief Returns the formatted report.
     */
-    QString GetFormattedReportText() const;
+    QString getFormattedReportText() const;
 
 private:
 

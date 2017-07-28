@@ -42,40 +42,40 @@ public:
     * @brief Create the report (file).
     * @return true if succeeded, false if file could not be created.
     */
-    virtual bool Create();
+    virtual bool create();
 
     /**
     * @brief Open existing report file.
     */
-    bool Open();
+    bool open();
 
     /**
     * @brief Write report header.
     */
-    virtual void WriteHeader();
+    virtual void writeHeader();
 
     /**
     * @brief Write report footer.
     */
-    virtual void WriteFooter();
+    virtual void writeFooter();
 
     /**
     * @brief Write error to report.
     * @param error Error data.
     */
-    virtual void WriteError(const ErrorItem &error);
+    virtual void writeError(const ErrorItem &error);
 
     /**
     * @brief Read contents of the report file.
     */
-    virtual QList<ErrorItem> Read();
+    virtual QList<ErrorItem> read();
 
 protected:
     /**
     * @brief Read and parse error item from XML stream.
     * @param reader XML stream reader to use.
     */
-    ErrorItem ReadError(QXmlStreamReader *reader);
+    ErrorItem readError(QXmlStreamReader *reader);
 
 private:
     /**

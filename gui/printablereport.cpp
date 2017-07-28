@@ -28,22 +28,22 @@ PrintableReport::~PrintableReport()
 {
 }
 
-bool PrintableReport::Create()
+bool PrintableReport::create()
 {
     return true;
 }
 
-void PrintableReport::WriteHeader()
+void PrintableReport::writeHeader()
 {
     // No header for printable report
 }
 
-void PrintableReport::WriteFooter()
+void PrintableReport::writeFooter()
 {
     // No footer for printable report
 }
 
-void PrintableReport::WriteError(const ErrorItem &error)
+void PrintableReport::writeError(const ErrorItem &error)
 {
     const QString file = QDir::toNativeSeparators(error.errorPath.back().file);
     QString line = QString("%1,%2,").arg(file).arg(error.errorPath.back().line);
@@ -53,7 +53,7 @@ void PrintableReport::WriteError(const ErrorItem &error)
     mFormattedReport += "\n";
 }
 
-QString PrintableReport::GetFormattedReportText() const
+QString PrintableReport::getFormattedReportText() const
 {
     return mFormattedReport;
 }

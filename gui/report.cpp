@@ -16,22 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
 #include <QString>
 #include <QFile>
 #include "report.h"
 
 Report::Report(const QString &filename) :
+    QObject(),
     mFilename(filename)
 {
 }
 
 Report::~Report()
 {
-    Close();
+    close();
 }
 
-bool Report::Create()
+bool Report::create()
 {
     bool succeed = false;
     if (!mFile.isOpen()) {
@@ -41,7 +41,7 @@ bool Report::Create()
     return succeed;
 }
 
-bool Report::Open()
+bool Report::open()
 {
     bool succeed = false;
     if (!mFile.isOpen()) {
@@ -51,13 +51,13 @@ bool Report::Open()
     return succeed;
 }
 
-void Report::Close()
+void Report::close()
 {
     if (mFile.isOpen())
         mFile.close();
 }
 
-QFile* Report::GetFile()
+QFile* Report::getFile()
 {
     return &mFile;
 }

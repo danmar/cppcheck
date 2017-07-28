@@ -47,41 +47,41 @@ public:
     * @brief Create the report (file).
     * @return true if succeeded, false if file could not be created.
     */
-    virtual bool Create();
+    virtual bool create();
 
     /**
     * @brief Open the existing report (file).
     * @return true if succeeded, false if file could not be created.
     */
-    virtual bool Open();
+    virtual bool open();
 
     /**
     * @brief Close the report (file).
     */
-    virtual void Close();
+    virtual void close();
 
     /**
     * @brief Write report header.
     */
-    virtual void WriteHeader() = 0;
+    virtual void writeHeader() = 0;
 
     /**
     * @brief Write report footer.
     */
-    virtual void WriteFooter() = 0;
+    virtual void writeFooter() = 0;
 
     /**
     * @brief Write error to report.
     * @param error Error data.
     */
-    virtual void WriteError(const ErrorItem &error) = 0;
+    virtual void writeError(const ErrorItem &error) = 0;
 
 protected:
 
     /**
     * @brief Get the file object where the report is written to.
     */
-    QFile* GetFile();
+    QFile* getFile();
 
 private:
 

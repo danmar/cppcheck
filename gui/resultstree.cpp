@@ -964,7 +964,7 @@ QString ResultsTree::SeverityToIcon(Severity::SeverityType severity) const
 
 void ResultsTree::SaveResults(Report *report) const
 {
-    report->WriteHeader();
+    report->writeHeader();
 
     for (int i = 0; i < mModel.rowCount(); i++) {
         QStandardItem *item = mModel.item(i, 0);
@@ -972,7 +972,7 @@ void ResultsTree::SaveResults(Report *report) const
             SaveErrors(report, item);
     }
 
-    report->WriteFooter();
+    report->writeFooter();
 }
 
 void ResultsTree::SaveErrors(Report *report, QStandardItem *item) const
@@ -1027,7 +1027,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item) const
             item.errorPath << e;
         }
 
-        report->WriteError(item);
+        report->writeError(item);
     }
 }
 

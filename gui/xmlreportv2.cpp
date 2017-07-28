@@ -59,25 +59,25 @@ XmlReportV2::~XmlReportV2()
     delete mXmlWriter;
 }
 
-bool XmlReportV2::Create()
+bool XmlReportV2::create()
 {
-    if (Report::Create()) {
-        mXmlWriter = new QXmlStreamWriter(Report::GetFile());
+    if (Report::create()) {
+        mXmlWriter = new QXmlStreamWriter(Report::getFile());
         return true;
     }
     return false;
 }
 
-bool XmlReportV2::Open()
+bool XmlReportV2::open()
 {
-    if (Report::Open()) {
-        mXmlReader = new QXmlStreamReader(Report::GetFile());
+    if (Report::open()) {
+        mXmlReader = new QXmlStreamReader(Report::getFile());
         return true;
     }
     return false;
 }
 
-void XmlReportV2::WriteHeader()
+void XmlReportV2::writeHeader()
 {
     mXmlWriter->setAutoFormatting(true);
     mXmlWriter->writeStartDocument();
@@ -89,14 +89,14 @@ void XmlReportV2::WriteHeader()
     mXmlWriter->writeStartElement(ErrorsElementName);
 }
 
-void XmlReportV2::WriteFooter()
+void XmlReportV2::writeFooter()
 {
     mXmlWriter->writeEndElement(); // errors
     mXmlWriter->writeEndElement(); // results
     mXmlWriter->writeEndDocument();
 }
 
-void XmlReportV2::WriteError(const ErrorItem &error)
+void XmlReportV2::writeError(const ErrorItem &error)
 {
     /*
     Error example from the core program in xml
@@ -141,7 +141,7 @@ void XmlReportV2::WriteError(const ErrorItem &error)
     mXmlWriter->writeEndElement();
 }
 
-QList<ErrorItem> XmlReportV2::Read()
+QList<ErrorItem> XmlReportV2::read()
 {
     QList<ErrorItem> errors;
     bool insideResults = false;
@@ -157,7 +157,7 @@ QList<ErrorItem> XmlReportV2::Read()
 
             // Read error element from inside result element
             if (insideResults && mXmlReader->name() == ErrorElementName) {
-                ErrorItem item = ReadError(mXmlReader);
+                ErrorItem item = readError(mXmlReader);
                 errors.append(item);
             }
             break;
@@ -183,7 +183,7 @@ QList<ErrorItem> XmlReportV2::Read()
     return errors;
 }
 
-ErrorItem XmlReportV2::ReadError(QXmlStreamReader *reader)
+ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
 {
     /*
     Error example from the core program in xml

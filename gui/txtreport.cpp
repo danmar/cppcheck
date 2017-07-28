@@ -28,26 +28,26 @@ TxtReport::~TxtReport()
 {
 }
 
-bool TxtReport::Create()
+bool TxtReport::create()
 {
-    if (Report::Create()) {
-        mTxtWriter.setDevice(Report::GetFile());
+    if (Report::create()) {
+        mTxtWriter.setDevice(Report::getFile());
         return true;
     }
     return false;
 }
 
-void TxtReport::WriteHeader()
+void TxtReport::writeHeader()
 {
     // No header for txt report
 }
 
-void TxtReport::WriteFooter()
+void TxtReport::writeFooter()
 {
     // No footer for txt report
 }
 
-void TxtReport::WriteError(const ErrorItem &error)
+void TxtReport::writeError(const ErrorItem &error)
 {
     /*
     Error example from the core program in text

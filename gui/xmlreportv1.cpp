@@ -48,38 +48,38 @@ XmlReportV1::~XmlReportV1()
     delete mXmlWriter;
 }
 
-bool XmlReportV1::Create()
+bool XmlReportV1::create()
 {
-    if (Report::Create()) {
-        mXmlWriter = new QXmlStreamWriter(Report::GetFile());
+    if (Report::create()) {
+        mXmlWriter = new QXmlStreamWriter(Report::getFile());
         return true;
     }
     return false;
 }
 
-bool XmlReportV1::Open()
+bool XmlReportV1::open()
 {
-    if (Report::Open()) {
-        mXmlReader = new QXmlStreamReader(Report::GetFile());
+    if (Report::open()) {
+        mXmlReader = new QXmlStreamReader(Report::getFile());
         return true;
     }
     return false;
 }
 
-void XmlReportV1::WriteHeader()
+void XmlReportV1::writeHeader()
 {
     mXmlWriter->setAutoFormatting(true);
     mXmlWriter->writeStartDocument();
     mXmlWriter->writeStartElement(ResultElementName);
 }
 
-void XmlReportV1::WriteFooter()
+void XmlReportV1::writeFooter()
 {
     mXmlWriter->writeEndElement();
     mXmlWriter->writeEndDocument();
 }
 
-void XmlReportV1::WriteError(const ErrorItem &error)
+void XmlReportV1::writeError(const ErrorItem &error)
 {
     /*
     Error example from the core program in xml
@@ -106,7 +106,7 @@ void XmlReportV1::WriteError(const ErrorItem &error)
     mXmlWriter->writeEndElement();
 }
 
-QList<ErrorItem> XmlReportV1::Read()
+QList<ErrorItem> XmlReportV1::read()
 {
     QList<ErrorItem> errors;
     bool insideResults = false;
@@ -122,7 +122,7 @@ QList<ErrorItem> XmlReportV1::Read()
 
             // Read error element from inside result element
             if (insideResults && mXmlReader->name() == ErrorElementName) {
-                ErrorItem item = ReadError(mXmlReader);
+                ErrorItem item = readError(mXmlReader);
                 errors.append(item);
             }
             break;
@@ -148,7 +148,7 @@ QList<ErrorItem> XmlReportV1::Read()
     return errors;
 }
 
-ErrorItem XmlReportV1::ReadError(QXmlStreamReader *reader)
+ErrorItem XmlReportV1::readError(QXmlStreamReader *reader)
 {
     ErrorItem item;
     if (reader->name().toString() == ErrorElementName) {

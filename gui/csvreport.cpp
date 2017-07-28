@@ -32,26 +32,26 @@ CsvReport::~CsvReport()
 {
 }
 
-bool CsvReport::Create()
+bool CsvReport::create()
 {
-    if (Report::Create()) {
-        mTxtWriter.setDevice(Report::GetFile());
+    if (Report::create()) {
+        mTxtWriter.setDevice(Report::getFile());
         return true;
     }
     return false;
 }
 
-void CsvReport::WriteHeader()
+void CsvReport::writeHeader()
 {
     // No header for CSV report
 }
 
-void CsvReport::WriteFooter()
+void CsvReport::writeFooter()
 {
     // No footer for CSV report
 }
 
-void CsvReport::WriteError(const ErrorItem &error)
+void CsvReport::writeError(const ErrorItem &error)
 {
     /*
     Error as CSV line

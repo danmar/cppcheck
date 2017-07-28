@@ -40,7 +40,7 @@ public:
     /**
      * @brief Read contents of the report file.
      */
-    virtual QList<ErrorItem> Read() = 0;
+    virtual QList<ErrorItem> read() = 0;
 
     /**
      * @brief Quote the message.
