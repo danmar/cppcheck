@@ -580,7 +580,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 hideallid->setDisabled(true);
                 opencontainingfolder->setDisabled(true);
             }
-            if (mThread->IsChecking())
+            if (mThread->isChecking())
                 recheckSelectedFiles->setDisabled(true);
             else
                 recheckSelectedFiles->setDisabled(false);

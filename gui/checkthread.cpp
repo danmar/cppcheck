@@ -69,17 +69,17 @@ void CheckThread::run()
         return;
     }
 
-    QString file = mResult.GetNextFile();
+    QString file = mResult.getNextFile();
     while (!file.isEmpty() && mState == Running) {
         qDebug() << "Checking file" << file;
         mCppcheck.check(file.toStdString());
         emit FileChecked(file);
 
         if (mState == Running)
-            file = mResult.GetNextFile();
+            file = mResult.getNextFile();
     }
 
-    ImportProject::FileSettings fileSettings = mResult.GetNextFileSettings();
+    ImportProject::FileSettings fileSettings = mResult.getNextFileSettings();
     while (!fileSettings.filename.empty() && mState == Running) {
         file = QString::fromStdString(fileSettings.filename);
         qDebug() << "Checking file" << file;
@@ -87,7 +87,7 @@ void CheckThread::run()
         emit FileChecked(file);
 
         if (mState == Running)
-            fileSettings = mResult.GetNextFileSettings();
+            fileSettings = mResult.getNextFileSettings();
     }
 
     if (mState == Running)

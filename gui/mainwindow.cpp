@@ -121,7 +121,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionToolBarFilter, SIGNAL(toggled(bool)), this, SLOT(toggleFilterToolBar()));
 
     connect(mUI.mActionAuthors, SIGNAL(triggered()), this, SLOT(showAuthors()));
-    connect(mThread, SIGNAL(Done()), this, SLOT(checkDone()));
+    connect(mThread, SIGNAL(done()), this, SLOT(checkDone()));
     connect(mUI.mResults, SIGNAL(gotResults()), this, SLOT(resultsAdded()));
     connect(mUI.mResults, SIGNAL(resultsHidden(bool)), mUI.mActionShowHidden, SLOT(setEnabled(bool)));
     connect(mUI.mResults, SIGNAL(checkSelected(QStringList)), this, SLOT(performSelectedFilesCheck(QStringList)));
@@ -138,7 +138,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     loadSettings();
 
-    mThread->Initialize(mUI.mResults);
+    mThread->initialize(mUI.mResults);
     formatAndSetTitle();
 
     enableCheckButtons(true);
@@ -371,7 +371,7 @@ void MainWindow::doCheckProject(ImportProject p)
     }
 
     mUI.mResults->clear(true);
-    mThread->ClearFiles();
+    mThread->clearFiles();
 
     mUI.mResults->checkingStarted(p.fileSettings.size());
 
@@ -394,8 +394,8 @@ void MainWindow::doCheckProject(ImportProject p)
     }
 
     //mThread->SetCheckProject(true);
-    mThread->SetProject(p);
-    mThread->Check(checkSettings, true);
+    mThread->setProject(p);
+    mThread->check(checkSettings, true);
 }
 
 void MainWindow::doCheckFiles(const QStringList &files)
@@ -416,7 +416,7 @@ void MainWindow::doCheckFiles(const QStringList &files)
     QStringList fileNames = pathList.getFileList();
 
     mUI.mResults->clear(true);
-    mThread->ClearFiles();
+    mThread->clearFiles();
 
     if (fileNames.isEmpty()) {
         QMessageBox msg(QMessageBox::Warning,
@@ -430,7 +430,7 @@ void MainWindow::doCheckFiles(const QStringList &files)
 
     mUI.mResults->checkingStarted(fileNames.count());
 
-    mThread->SetFiles(fileNames);
+    mThread->setFiles(fileNames);
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
     setPath(SETTINGS_LAST_CHECK_PATH, checkPath);
@@ -450,15 +450,15 @@ void MainWindow::doCheckFiles(const QStringList &files)
         AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.project.fileSettings);
     }
 
-    mThread->SetCheckFiles(true);
-    mThread->Check(checkSettings, true);
+    mThread->setCheckFiles(true);
+    mThread->check(checkSettings, true);
 }
 
 void MainWindow::checkCode(const QString& code, const QString& filename)
 {
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
-    result.SetFiles(QStringList(filename));
+    result.setFiles(QStringList(filename));
     connect(&result, SIGNAL(Progress(int, const QString&)),
             mUI.mResults, SLOT(Progress(int, const QString&)));
     connect(&result, SIGNAL(Error(const ErrorItem &)),
@@ -921,7 +921,7 @@ void MainWindow::reCheckSelected(QStringList files, bool all)
 {
     if (files.empty())
         return;
-    if (mThread->IsChecking())
+    if (mThread->isChecking())
         return;
 
     // Clear details, statistics and progress
@@ -937,19 +937,19 @@ void MainWindow::reCheckSelected(QStringList files, bool all)
     QStringList fileNames = pathList.getFileList();
     checkLockDownUI(); // lock UI while checking
     mUI.mResults->checkingStarted(fileNames.size());
-    mThread->SetCheckFiles(fileNames);
+    mThread->setCheckFiles(fileNames);
 
     // Saving last check start time, otherwise unchecked modified files will not be
     // considered in "Modified Files Check"  performed after "Selected Files Check"
     // TODO: Should we store per file CheckStartTime?
-    QDateTime saveCheckStartTime = mThread->GetCheckStartTime();
-    mThread->Check(getCppcheckSettings(), all);
-    mThread->SetCheckStartTime(saveCheckStartTime);
+    QDateTime saveCheckStartTime = mThread->getCheckStartTime();
+    mThread->check(getCppcheckSettings(), all);
+    mThread->setCheckStartTime(saveCheckStartTime);
 }
 
 void MainWindow::reCheck(bool all)
 {
-    const QStringList files = mThread->GetReCheckFiles(all);
+    const QStringList files = mThread->getReCheckFiles(all);
     if (files.empty())
         return;
 
@@ -966,8 +966,8 @@ void MainWindow::reCheck(bool all)
     if (mProject)
         qDebug() << "Rechecking project file" << mProject->getProjectFile()->getFilename();
 
-    mThread->SetCheckFiles(all);
-    mThread->Check(getCppcheckSettings(), all);
+    mThread->setCheckFiles(all);
+    mThread->check(getCppcheckSettings(), all);
 }
 
 void MainWindow::clearResults()
@@ -1036,7 +1036,7 @@ void MainWindow::enableCheckButtons(bool enable)
     mUI.mActionStop->setEnabled(!enable);
     mUI.mActionCheckFiles->setEnabled(enable);
 
-    if (!enable || mThread->HasPreviousFiles()) {
+    if (!enable || mThread->hasPreviousFiles()) {
         mUI.mActionRecheckModified->setEnabled(enable);
         mUI.mActionRecheckAll->setEnabled(enable);
     }
@@ -1087,7 +1087,7 @@ void MainWindow::uncheckAll()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     // Check that we aren't checking files
-    if (!mThread->IsChecking()) {
+    if (!mThread->isChecking()) {
         saveSettings();
         event->accept();
     } else {
@@ -1105,7 +1105,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         if (rv == QMessageBox::Yes) {
             // This isn't really very clean way to close threads but since the app is
             // exiting it doesn't matter.
-            mThread->Stop();
+            mThread->stop();
             saveSettings();
             mExiting = true;
         }
@@ -1253,7 +1253,7 @@ void MainWindow::aboutToShowViewMenu()
 
 void MainWindow::stopChecking()
 {
-    mThread->Stop();
+    mThread->stop();
     mUI.mResults->disableProgressbar();
 }
 
@@ -1432,8 +1432,8 @@ void MainWindow::showStatistics()
         statsDialog.setProject(*mProject);
     }
     statsDialog.setPathSelected(mCurrentDirectory);
-    statsDialog.setNumberOfFilesScanned(mThread->GetPreviousFilesCount());
-    statsDialog.setScanDuration(mThread->GetPreviousScanDuration() / 1000.0);
+    statsDialog.setNumberOfFilesScanned(mThread->getPreviousFilesCount());
+    statsDialog.setScanDuration(mThread->getPreviousScanDuration() / 1000.0);
     statsDialog.setStatistics(mUI.mResults->getStatistics());
 
     statsDialog.exec();

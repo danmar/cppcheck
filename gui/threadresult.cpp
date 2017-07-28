@@ -39,10 +39,10 @@ ThreadResult::~ThreadResult()
 
 void ThreadResult::reportOut(const std::string &outmsg)
 {
-    emit Log(QString::fromStdString(outmsg));
+    emit log(QString::fromStdString(outmsg));
 }
 
-void ThreadResult::FileChecked(const QString &file)
+void ThreadResult::fileChecked(const QString &file)
 {
     QMutexLocker locker(&mutex);
 
@@ -53,7 +53,7 @@ void ThreadResult::FileChecked(const QString &file)
         const int value = static_cast<int>(PROGRESS_MAX * mProgress / mMaxProgress);
         const QString description = tr("%1 of %2 files checked").arg(mFilesChecked).arg(mTotalFiles);
 
-        emit Progress(value, description);
+        emit progress(value, description);
     }
 }
 
@@ -62,12 +62,12 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
     QMutexLocker locker(&mutex);
     const ErrorItem item(msg);
     if (msg._severity != Severity::debug)
-        emit Error(item);
+        emit error(item);
     else
-        emit DebugError(item);
+        emit debugError(item);
 }
 
-QString ThreadResult::GetNextFile()
+QString ThreadResult::getNextFile()
 {
     QMutexLocker locker(&mutex);
     if (mFiles.isEmpty()) {
@@ -77,7 +77,7 @@ QString ThreadResult::GetNextFile()
     return mFiles.takeFirst();
 }
 
-ImportProject::FileSettings ThreadResult::GetNextFileSettings()
+ImportProject::FileSettings ThreadResult::getNextFileSettings()
 {
     QMutexLocker locker(&mutex);
     if (mFileSettings.empty()) {
@@ -88,7 +88,7 @@ ImportProject::FileSettings ThreadResult::GetNextFileSettings()
     return fs;
 }
 
-void ThreadResult::SetFiles(const QStringList &files)
+void ThreadResult::setFiles(const QStringList &files)
 {
     QMutexLocker locker(&mutex);
     mFiles = files;
@@ -105,7 +105,7 @@ void ThreadResult::SetFiles(const QStringList &files)
     mMaxProgress = sizeOfFiles;
 }
 
-void ThreadResult::SetProject(const ImportProject &prj)
+void ThreadResult::setProject(const ImportProject &prj)
 {
     QMutexLocker locker(&mutex);
     mFiles.clear();
@@ -123,7 +123,7 @@ void ThreadResult::SetProject(const ImportProject &prj)
     mMaxProgress = sizeOfFiles;
 }
 
-void ThreadResult::ClearFiles()
+void ThreadResult::clearFiles()
 {
     QMutexLocker locker(&mutex);
     mFiles.clear();
@@ -132,7 +132,7 @@ void ThreadResult::ClearFiles()
     mTotalFiles = 0;
 }
 
-int ThreadResult::GetFileCount() const
+int ThreadResult::getFileCount() const
 {
     QMutexLocker locker(&mutex);
     return mFiles.size() + mFileSettings.size();
