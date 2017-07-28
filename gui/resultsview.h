@@ -45,7 +45,7 @@ class ResultsView : public QWidget {
 public:
 
     explicit ResultsView(QWidget * parent = 0);
-    void Initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
+    void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
     virtual ~ResultsView();
 
     /**
@@ -55,23 +55,23 @@ public:
     * @param type Type of error to show/hide
     * @param show Should specified errors be shown (true) or hidden (false)
     */
-    void ShowResults(ShowTypes::ShowType type, bool show);
+    void showResults(ShowTypes::ShowType type, bool show);
 
     /**
      * @brief Clear results and statistics and reset progressinfo.
      * @param results Remove all the results from view?
      */
-    void Clear(bool results);
+    void clear(bool results);
 
     /**
      * @brief Remove a file from the results.
      */
-    void Clear(const QString &filename);
+    void clear(const QString &filename);
 
     /**
      * @brief Remove a recheck file from the results.
      */
-    void ClearRecheckFile(const QString &filename);
+    void clearRecheckFile(const QString &filename);
 
     /**
     * @brief Save results to a file
@@ -79,7 +79,7 @@ public:
     * @param filename Filename to save results to
     * @param type Type of the report.
     */
-    void Save(const QString &filename, Report::Type type) const;
+    void save(const QString &filename, Report::Type type) const;
 
     /**
     * @brief Update tree settings
@@ -91,7 +91,7 @@ public:
     * @param showErrorId Show error id?
     * @param showInconclusive Show inconclusive?
     */
-    void UpdateSettings(bool showFullPath,
+    void updateSettings(bool showFullPath,
                         bool saveFullPath,
                         bool saveAllErrors,
                         bool showNoErrorsMessage,
@@ -104,7 +104,7 @@ public:
     * This is used to split error file path to relative if necessary
     * @param dir Directory we are checking
     */
-    void SetCheckDirectory(const QString &dir);
+    void setCheckDirectory(const QString &dir);
 
     /**
     * @brief Get the directory we are checking
@@ -112,62 +112,62 @@ public:
     * @return Directory containing source files
     */
 
-    QString GetCheckDirectory(void);
+    QString getCheckDirectory(void);
 
     /**
     * @brief Inform the view that checking has started
     *
     * @param count Count of files to be checked.
     */
-    void CheckingStarted(int count);
+    void checkingStarted(int count);
 
     /**
     * @brief Inform the view that checking finished.
     *
     */
-    void CheckingFinished();
+    void checkingFinished();
 
     /**
     * @brief Do we have visible results to show?
     *
     * @return true if there is at least one warning/error to show.
     */
-    bool HasVisibleResults() const;
+    bool hasVisibleResults() const;
 
     /**
     * @brief Do we have results from check?
     *
     * @return true if there is at least one warning/error, hidden or visible.
     */
-    bool HasResults() const;
+    bool hasResults() const;
 
     /**
     * @brief Save View's settings
     *
     * @param settings program settings.
     */
-    void SaveSettings(QSettings *settings);
+    void saveSettings(QSettings *settings);
 
     /**
     * @brief Translate this view
     *
     */
-    void Translate();
+    void translate();
 
-    void DisableProgressbar();
+    void disableProgressbar();
 
     /**
     * @brief Read errors from report XML file.
     * @param filename Report file to read.
     *
     */
-    void ReadErrorsXml(const QString &filename);
+    void readErrorsXml(const QString &filename);
 
     /**
      * @brief Return checking statistics.
      * @return Pointer to checking statistics.
      */
-    CheckStatistics *GetStatistics() const {
+    CheckStatistics *getStatistics() const {
         return mStatistics;
     }
 
@@ -175,7 +175,7 @@ public:
      * @brief Return Showtypes.
      * @return Pointer to Showtypes.
      */
-    ShowTypes * GetShowTypes() const {
+    ShowTypes * getShowTypes() const {
         return &mUI.mTree->mShowSeverities;
     }
 
@@ -185,21 +185,21 @@ signals:
     * @brief Signal to be emitted when we have results
     *
     */
-    void GotResults();
+    void gotResults();
 
     /**
     * @brief Signal that results have been hidden or shown
     *
     * @param hidden true if there are some hidden results, or false if there are not
     */
-    void ResultsHidden(bool hidden);
+    void resultsHidden(bool hidden);
 
     /**
     * @brief Signal to perform recheck of selected files
     *
     * @param selectedFilesList list of selected files
     */
-    void CheckSelected(QStringList selectedFilesList);
+    void checkSelected(QStringList selectedFilesList);
 
 public slots:
 
@@ -209,57 +209,57 @@ public slots:
     * @param value Current progress value
     * @param description Description to accompany the progress
     */
-    void Progress(int value, const QString& description);
+    void progress(int value, const QString& description);
 
     /**
     * @brief Slot for new error to be displayed
     *
     * @param item Error data
     */
-    void Error(const ErrorItem &item);
+    void error(const ErrorItem &item);
 
     /**
     * @brief Collapse all results in the result list.
     */
-    void CollapseAllResults();
+    void collapseAllResults();
 
     /**
     * @brief Expand all results in the result list.
     */
-    void ExpandAllResults();
+    void expandAllResults();
 
     /**
     * @brief Filters the results in the result list.
     */
-    void FilterResults(const QString& filter);
+    void filterResults(const QString& filter);
 
     /**
     * @brief Show hidden results in the result list.
     */
-    void ShowHiddenResults();
+    void showHiddenResults();
 
     /**
     * @brief Update detailed message when selected item is changed.
     *
     * @param index Position of new selected item.
     */
-    void UpdateDetails(const QModelIndex &index);
+    void updateDetails(const QModelIndex &index);
 
     /**
     * @brief Slot opening a print dialog to print the current report
     */
-    void Print();
+    void print();
 
     /**
     * @brief Slot printing the current report to the printer.
     * @param printer The printer used for printing the report.
     */
-    void Print(QPrinter* printer);
+    void print(QPrinter* printer);
 
     /**
     * @brief Slot opening a print preview dialog
     */
-    void PrintPreview();
+    void printPreview();
 
 protected:
     /**
@@ -270,8 +270,6 @@ protected:
     Ui::ResultsView mUI;
 
     CheckStatistics *mStatistics;
-
-private:
 };
 /// @}
 #endif // RESULTSVIEW_H

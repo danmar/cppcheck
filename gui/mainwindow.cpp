@@ -66,7 +66,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 {
     mUI.setupUi(this);
     mThread = new ThreadHandler(this);
-    mUI.mResults->Initialize(mSettings, mApplications, mThread);
+    mUI.mResults->initialize(mSettings, mApplications, mThread);
 
     // Filter timer to delay filtering results slightly while typing
     mFilterTimer = new QTimer(this);
@@ -256,7 +256,7 @@ void MainWindow::loadSettings()
                mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
-    ShowTypes *types = mUI.mResults->GetShowTypes();
+    ShowTypes *types = mUI.mResults->getShowTypes();
     mUI.mActionShowStyle->setChecked(types->isShown(ShowTypes::ShowStyle));
     mUI.mActionShowErrors->setChecked(types->isShown(ShowTypes::ShowErrors));
     mUI.mActionShowWarnings->setChecked(types->isShown(ShowTypes::ShowWarnings));
@@ -352,7 +352,7 @@ void MainWindow::saveSettings() const
     mApplications->saveSettings();
 
     mSettings->setValue(SETTINGS_LANGUAGE, mTranslation->GetCurrentLanguage());
-    mUI.mResults->SaveSettings(mSettings);
+    mUI.mResults->saveSettings(mSettings);
 }
 
 void MainWindow::doCheckProject(ImportProject p)
@@ -370,10 +370,10 @@ void MainWindow::doCheckProject(ImportProject p)
         enableProjectActions(false);
     }
 
-    mUI.mResults->Clear(true);
+    mUI.mResults->clear(true);
     mThread->ClearFiles();
 
-    mUI.mResults->CheckingStarted(p.fileSettings.size());
+    mUI.mResults->checkingStarted(p.fileSettings.size());
 
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
@@ -381,7 +381,7 @@ void MainWindow::doCheckProject(ImportProject p)
 
     checkLockDownUI(); // lock UI while checking
 
-    mUI.mResults->SetCheckDirectory(checkPath);
+    mUI.mResults->setCheckDirectory(checkPath);
     Settings checkSettings = getCppcheckSettings();
     checkSettings.force = false;
 
@@ -415,7 +415,7 @@ void MainWindow::doCheckFiles(const QStringList &files)
     }
     QStringList fileNames = pathList.getFileList();
 
-    mUI.mResults->Clear(true);
+    mUI.mResults->clear(true);
     mThread->ClearFiles();
 
     if (fileNames.isEmpty()) {
@@ -428,7 +428,7 @@ void MainWindow::doCheckFiles(const QStringList &files)
         return;
     }
 
-    mUI.mResults->CheckingStarted(fileNames.count());
+    mUI.mResults->checkingStarted(fileNames.count());
 
     mThread->SetFiles(fileNames);
     QDir inf(mCurrentDirectory);
@@ -437,7 +437,7 @@ void MainWindow::doCheckFiles(const QStringList &files)
 
     checkLockDownUI(); // lock UI while checking
 
-    mUI.mResults->SetCheckDirectory(checkPath);
+    mUI.mResults->setCheckDirectory(checkPath);
     Settings checkSettings = getCppcheckSettings();
 
     if (mProject)
@@ -475,7 +475,7 @@ void MainWindow::checkCode(const QString& code, const QString& filename)
     // Check
     checkLockDownUI();
     clearResults();
-    mUI.mResults->CheckingStarted(1);
+    mUI.mResults->checkingStarted(1);
     cppcheck.check(filename.toStdString(), code.toStdString());
     checkDone();
 }
@@ -833,7 +833,7 @@ void MainWindow::checkDone()
         return;
     }
 
-    mUI.mResults->CheckingFinished();
+    mUI.mResults->checkingFinished();
     enableCheckButtons(true);
     mUI.mActionSettings->setEnabled(true);
     mUI.mActionOpenXML->setEnabled(true);
@@ -852,7 +852,7 @@ void MainWindow::checkDone()
     if (mScratchPad)
         mScratchPad->setEnabled(true);
 
-    if (mUI.mResults->HasResults()) {
+    if (mUI.mResults->hasResults()) {
         mUI.mActionClearResults->setEnabled(true);
         mUI.mActionSave->setEnabled(true);
         mUI.mActionPrint->setEnabled(true);
@@ -896,7 +896,7 @@ void MainWindow::programSettings()
     SettingsDialog dialog(mApplications, mTranslation, this);
     if (dialog.exec() == QDialog::Accepted) {
         dialog.SaveSettingValues();
-        mUI.mResults->UpdateSettings(dialog.ShowFullPath(),
+        mUI.mResults->updateSettings(dialog.ShowFullPath(),
                                      dialog.SaveFullPath(),
                                      dialog.SaveAllErrors(),
                                      dialog.ShowNoErrorsMessage(),
@@ -925,18 +925,18 @@ void MainWindow::reCheckSelected(QStringList files, bool all)
         return;
 
     // Clear details, statistics and progress
-    mUI.mResults->Clear(false);
+    mUI.mResults->clear(false);
     for (int i = 0; i < files.size(); ++i)
-        mUI.mResults->ClearRecheckFile(files[i]);
+        mUI.mResults->clearRecheckFile(files[i]);
 
-    mCurrentDirectory = mUI.mResults->GetCheckDirectory();
+    mCurrentDirectory = mUI.mResults->getCheckDirectory();
     FileList pathList;
     pathList.addPathList(files);
     if (mProject)
         pathList.addExcludeList(mProject->getProjectFile()->getExcludedPaths());
     QStringList fileNames = pathList.getFileList();
     checkLockDownUI(); // lock UI while checking
-    mUI.mResults->CheckingStarted(fileNames.size());
+    mUI.mResults->checkingStarted(fileNames.size());
     mThread->SetCheckFiles(fileNames);
 
     // Saving last check start time, otherwise unchecked modified files will not be
@@ -954,14 +954,14 @@ void MainWindow::reCheck(bool all)
         return;
 
     // Clear details, statistics and progress
-    mUI.mResults->Clear(all);
+    mUI.mResults->clear(all);
 
     // Clear results for changed files
     for (int i = 0; i < files.size(); ++i)
-        mUI.mResults->Clear(files[i]);
+        mUI.mResults->clear(files[i]);
 
     checkLockDownUI(); // lock UI while checking
-    mUI.mResults->CheckingStarted(files.size());
+    mUI.mResults->checkingStarted(files.size());
 
     if (mProject)
         qDebug() << "Rechecking project file" << mProject->getProjectFile()->getFilename();
@@ -972,7 +972,7 @@ void MainWindow::reCheck(bool all)
 
 void MainWindow::clearResults()
 {
-    mUI.mResults->Clear(true);
+    mUI.mResults->clear(true);
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
     mUI.mActionPrint->setEnabled(false);
@@ -981,7 +981,7 @@ void MainWindow::clearResults()
 
 void MainWindow::openResults()
 {
-    if (mUI.mResults->HasResults()) {
+    if (mUI.mResults->hasResults()) {
         QMessageBox msgBox(this);
         msgBox.setWindowTitle(tr("Cppcheck"));
         const QString msg(tr("Current results will be cleared.\n\n"
@@ -1017,10 +1017,10 @@ void MainWindow::loadResults(const QString selectedFile)
         if (mProject)
             closeProjectFile();
         mIsLogfileLoaded = true;
-        mUI.mResults->Clear(true);
+        mUI.mResults->clear(true);
         mUI.mActionRecheckModified->setEnabled(false);
         mUI.mActionRecheckAll->setEnabled(false);
-        mUI.mResults->ReadErrorsXml(selectedFile);
+        mUI.mResults->readErrorsXml(selectedFile);
         setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
     }
 }
@@ -1028,7 +1028,7 @@ void MainWindow::loadResults(const QString selectedFile)
 void MainWindow::loadResults(const QString selectedFile, const QString sourceDirectory)
 {
     loadResults(selectedFile);
-    mUI.mResults->SetCheckDirectory(sourceDirectory);
+    mUI.mResults->setCheckDirectory(sourceDirectory);
 }
 
 void MainWindow::enableCheckButtons(bool enable)
@@ -1046,32 +1046,32 @@ void MainWindow::enableCheckButtons(bool enable)
 
 void MainWindow::showStyle(bool checked)
 {
-    mUI.mResults->ShowResults(ShowTypes::ShowStyle, checked);
+    mUI.mResults->showResults(ShowTypes::ShowStyle, checked);
 }
 
 void MainWindow::showErrors(bool checked)
 {
-    mUI.mResults->ShowResults(ShowTypes::ShowErrors, checked);
+    mUI.mResults->showResults(ShowTypes::ShowErrors, checked);
 }
 
 void MainWindow::showWarnings(bool checked)
 {
-    mUI.mResults->ShowResults(ShowTypes::ShowWarnings, checked);
+    mUI.mResults->showResults(ShowTypes::ShowWarnings, checked);
 }
 
 void MainWindow::showPortability(bool checked)
 {
-    mUI.mResults->ShowResults(ShowTypes::ShowPortability, checked);
+    mUI.mResults->showResults(ShowTypes::ShowPortability, checked);
 }
 
 void MainWindow::showPerformance(bool checked)
 {
-    mUI.mResults->ShowResults(ShowTypes::ShowPerformance, checked);
+    mUI.mResults->showResults(ShowTypes::ShowPerformance, checked);
 }
 
 void MainWindow::showInformation(bool checked)
 {
-    mUI.mResults->ShowResults(ShowTypes::ShowInformation, checked);
+    mUI.mResults->showResults(ShowTypes::ShowInformation, checked);
 }
 
 void MainWindow::checkAll()
@@ -1194,7 +1194,7 @@ void MainWindow::save()
                 type = Report::CSV;
         }
 
-        mUI.mResults->Save(selectedFile, type);
+        mUI.mResults->save(selectedFile, type);
         setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
     }
 }
@@ -1238,7 +1238,7 @@ void MainWindow::setLanguage(const QString &code)
     if (mTranslation->SetLanguage(code)) {
         //Translate everything that is visible here
         mUI.retranslateUi(this);
-        mUI.mResults->Translate();
+        mUI.mResults->translate();
         delete mLogView;
         mLogView = 0;
     }
@@ -1254,7 +1254,7 @@ void MainWindow::aboutToShowViewMenu()
 void MainWindow::stopChecking()
 {
     mThread->Stop();
-    mUI.mResults->DisableProgressbar();
+    mUI.mResults->disableProgressbar();
 }
 
 void MainWindow::openHelpContents()
@@ -1434,7 +1434,7 @@ void MainWindow::showStatistics()
     statsDialog.setPathSelected(mCurrentDirectory);
     statsDialog.setNumberOfFilesScanned(mThread->GetPreviousFilesCount());
     statsDialog.setScanDuration(mThread->GetPreviousScanDuration() / 1000.0);
-    statsDialog.setStatistics(mUI.mResults->GetStatistics());
+    statsDialog.setStatistics(mUI.mResults->getStatistics());
 
     statsDialog.exec();
 }
@@ -1461,7 +1461,7 @@ void MainWindow::debugError(const ErrorItem &item)
 
 void MainWindow::filterResults()
 {
-    mUI.mResults->FilterResults(mLineEditFilter->text());
+    mUI.mResults->filterResults(mLineEditFilter->text());
 }
 
 void MainWindow::enableProjectActions(bool enable)
