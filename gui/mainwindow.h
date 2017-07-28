@@ -68,7 +68,7 @@ public:
      * @param code Content of the (virtual) file to be checked
      * @param filename Name of the (virtual) file to be checked - determines language.
      */
-    void CheckCode(const QString& code, const QString& filename);
+    void checkCode(const QString& code, const QString& filename);
 
 public slots:
 
@@ -224,26 +224,26 @@ protected slots:
 private:
 
     /** @brief Rechecks files */
-    void ReCheck(bool all);
+    void reCheck(bool all);
 
     /**
      * @brief Recheck selected files
      * @param files list of selected files
      * @param all true if all files of list, false if modified files of list
      */
-    void ReCheckSelected(QStringList files, bool all);
+    void reCheckSelected(QStringList files, bool all);
 
     /**
       * @brief Check the project.
       * @param project Pointer to the project to check.
       */
-    void CheckProject(Project *project);
+    void checkProject(Project *project);
 
     /**
      * @brief Set current language
      * @param code Language code of the language to set (e.g. "en").
      */
-    void SetLanguage(const QString &code);
+    void setLanguage(const QString &code);
 
     /** @brief Event coming when application is about to close. */
     virtual void closeEvent(QCloseEvent *event);
@@ -252,10 +252,10 @@ private:
      * @brief Helper function to toggle all show error menu items
      * @param checked Should all errors be shown (true) or hidden (false)
      */
-    void ToggleAllChecked(bool checked);
+    void toggleAllChecked(bool checked);
 
     /** @brief Helper function to enable/disable all check,recheck buttons */
-    void EnableCheckButtons(bool enable);
+    void enableCheckButtons(bool enable);
 
     /**
      * @brief Select files/or directory to check.
@@ -265,42 +265,42 @@ private:
      * @param mode Dialog open mode (files or directories)
      * @return QStringList of files or directories that were selected to check
      */
-    QStringList SelectFilesToCheck(QFileDialog::FileMode mode);
+    QStringList selectFilesToCheck(QFileDialog::FileMode mode);
 
     /**
      * @brief Check project
      * @param p imported project
      */
-    void DoCheckProject(ImportProject p);
+    void doCheckProject(ImportProject p);
 
     /**
      * @brief Check all files specified in parameter files
      *
      * @param files List of files and/or directories to check
      */
-    void DoCheckFiles(const QStringList &files);
+    void doCheckFiles(const QStringList &files);
 
     /**
      * @brief Get our default cppcheck settings and read project file.
      *
      * @return Default cppcheck settings
      */
-    Settings GetCppcheckSettings();
+    Settings getCppcheckSettings();
 
     /** @brief Load program settings */
-    void LoadSettings();
+    void loadSettings();
 
     /** @brief Save program settings */
-    void SaveSettings() const;
+    void saveSettings() const;
 
     /**
      * @brief Format main window title.
      * @param text Text added to end of the title.
      */
-    void FormatAndSetTitle(const QString &text = QString());
+    void formatAndSetTitle(const QString &text = QString());
 
     /** @brief Show help contents */
-    void OpenOnlineHelp();
+    void openOnlineHelp();
 
     /**
      * @brief Enable or disable project file actions.
@@ -308,46 +308,46 @@ private:
      * open and we are not checking files.
      * @param enable If true then actions are enabled.
      */
-    void EnableProjectActions(bool enable);
+    void enableProjectActions(bool enable);
 
     /**
      * @brief Enable or disable project file actions.
      * Project opening and creating actions should be disabled when checking.
      * @param enable If true then actions are enabled.
      */
-    void EnableProjectOpenActions(bool enable);
+    void enableProjectOpenActions(bool enable);
 
     /**
      * @brief Add include directories.
      * @param includeDirs List of include directories to add.
      * @param result Settings class where include directories are added.
      */
-    void AddIncludeDirs(const QStringList &includeDirs, Settings &result);
+    void addIncludeDirs(const QStringList &includeDirs, Settings &result);
 
     /**
      * @brief Handle command line parameters given to GUI.
      * @param params List of string given to command line.
      */
-    void HandleCLIParams(const QStringList &params);
+    void handleCLIParams(const QStringList &params);
 
     /**
      * @brief Load XML file to the GUI.
      * @param selectedFile Filename (inc. path) of XML file to load.
      */
-    void LoadResults(const QString selectedFile);
+    void loadResults(const QString selectedFile);
 
     /**
      * @brief Load XML file to the GUI.
      * @param selectedFile Filename (inc. path) of XML file to load.
      * @param sourceDirectory Path to the directory that the results were generated for.
      */
-    void LoadResults(const QString selectedFile, const QString sourceDirectory);
+    void loadResults(const QString selectedFile, const QString sourceDirectory);
 
     /**
      * @brief Load project file to the GUI.
      * @param filePath Filename (inc. path) of project file to load.
      */
-    void LoadProjectFile(const QString &filePath);
+    void loadProjectFile(const QString &filePath);
 
     /**
      * @brief Load library file
@@ -355,7 +355,7 @@ private:
      * @param filename filename (no path)
      * @return error code
      */
-    Library::Error LoadLibrary(Library *library, QString filename);
+    Library::Error loadLibrary(Library *library, QString filename);
 
     /**
      * @brief Tries to load library file, prints message on error
@@ -363,24 +363,24 @@ private:
      * @param filename filename (no path)
      * @return True if no error
      */
-    bool TryLoadLibrary(Library *library, QString filename);
+    bool tryLoadLibrary(Library *library, QString filename);
 
     /**
      * @brief Update project MRU items in File-menu.
      */
-    void UpdateMRUMenuItems();
+    void updateMRUMenuItems();
 
     /**
      * @brief Add project file (path) to the MRU list.
      * @param project Full path to the project file to add.
      */
-    void AddProjectMRU(const QString &project);
+    void addProjectMRU(const QString &project);
 
     /**
      * @brief Remove project file (path) from the MRU list.
      * @param project Full path of the project file to remove.
      */
-    void RemoveProjectMRU(const QString &project);
+    void removeProjectMRU(const QString &project);
 
     /** @brief Program settings */
     QSettings *mSettings;
