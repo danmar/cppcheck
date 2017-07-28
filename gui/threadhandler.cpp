@@ -179,16 +179,16 @@ void ThreadHandler::Stop()
 void ThreadHandler::Initialize(ResultsView *view)
 {
     connect(&mResults, SIGNAL(Progress(int, const QString&)),
-            view, SLOT(Progress(int, const QString&)));
+            view, SLOT(progress(int, const QString&)));
 
     connect(&mResults, SIGNAL(Error(const ErrorItem &)),
-            view, SLOT(Error(const ErrorItem &)));
+            view, SLOT(error(const ErrorItem &)));
 
     connect(&mResults, SIGNAL(Log(const QString &)),
-            parent(), SLOT(Log(const QString &)));
+            parent(), SLOT(log(const QString &)));
 
     connect(&mResults, SIGNAL(DebugError(const ErrorItem &)),
-            parent(), SLOT(DebugError(const ErrorItem &)));
+            parent(), SLOT(debugError(const ErrorItem &)));
 }
 
 void ThreadHandler::LoadSettings(QSettings &settings)

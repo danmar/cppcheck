@@ -72,69 +72,69 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mFilterTimer = new QTimer(this);
     mFilterTimer->setInterval(500);
     mFilterTimer->setSingleShot(true);
-    connect(mFilterTimer, SIGNAL(timeout()), this, SLOT(FilterResults()));
+    connect(mFilterTimer, SIGNAL(timeout()), this, SLOT(filterResults()));
 
     // "Filter" toolbar
     mLineEditFilter = new QLineEdit(mUI.mToolBarFilter);
     mLineEditFilter->setPlaceholderText(tr("Quick Filter:"));
     mUI.mToolBarFilter->addWidget(mLineEditFilter);
     connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
-    connect(mLineEditFilter, SIGNAL(returnPressed()), this, SLOT(FilterResults()));
+    connect(mLineEditFilter, SIGNAL(returnPressed()), this, SLOT(filterResults()));
 
-    connect(mUI.mActionPrint, SIGNAL(triggered()), mUI.mResults, SLOT(Print()));
-    connect(mUI.mActionPrintPreview, SIGNAL(triggered()), mUI.mResults, SLOT(PrintPreview()));
+    connect(mUI.mActionPrint, SIGNAL(triggered()), mUI.mResults, SLOT(print()));
+    connect(mUI.mActionPrintPreview, SIGNAL(triggered()), mUI.mResults, SLOT(printPreview()));
     connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
-    connect(mUI.mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
-    connect(mUI.mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
-    connect(mUI.mActionSettings, SIGNAL(triggered()), this, SLOT(ProgramSettings()));
-    connect(mUI.mActionClearResults, SIGNAL(triggered()), this, SLOT(ClearResults()));
-    connect(mUI.mActionOpenXML, SIGNAL(triggered()), this, SLOT(OpenResults()));
+    connect(mUI.mActionCheckFiles, SIGNAL(triggered()), this, SLOT(checkFiles()));
+    connect(mUI.mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(checkDirectory()));
+    connect(mUI.mActionSettings, SIGNAL(triggered()), this, SLOT(programSettings()));
+    connect(mUI.mActionClearResults, SIGNAL(triggered()), this, SLOT(clearResults()));
+    connect(mUI.mActionOpenXML, SIGNAL(triggered()), this, SLOT(openResults()));
 
-    connect(mUI.mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
-    connect(mUI.mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
-    connect(mUI.mActionShowWarnings, SIGNAL(toggled(bool)), this, SLOT(ShowWarnings(bool)));
-    connect(mUI.mActionShowPortability, SIGNAL(toggled(bool)), this, SLOT(ShowPortability(bool)));
-    connect(mUI.mActionShowPerformance, SIGNAL(toggled(bool)), this, SLOT(ShowPerformance(bool)));
-    connect(mUI.mActionShowInformation, SIGNAL(toggled(bool)), this, SLOT(ShowInformation(bool)));
-    connect(mUI.mActionCheckAll, SIGNAL(triggered()), this, SLOT(CheckAll()));
-    connect(mUI.mActionUncheckAll, SIGNAL(triggered()), this, SLOT(UncheckAll()));
-    connect(mUI.mActionCollapseAll, SIGNAL(triggered()), mUI.mResults, SLOT(CollapseAllResults()));
-    connect(mUI.mActionExpandAll, SIGNAL(triggered()), mUI.mResults, SLOT(ExpandAllResults()));
-    connect(mUI.mActionShowHidden, SIGNAL(triggered()), mUI.mResults, SLOT(ShowHiddenResults()));
-    connect(mUI.mActionViewLog, SIGNAL(triggered()), this, SLOT(ShowLogView()));
-    connect(mUI.mActionViewStats, SIGNAL(triggered()), this, SLOT(ShowStatistics()));
-    connect(mUI.mActionLibraryEditor, SIGNAL(triggered()), this, SLOT(ShowLibraryEditor()));
+    connect(mUI.mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(showStyle(bool)));
+    connect(mUI.mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(showErrors(bool)));
+    connect(mUI.mActionShowWarnings, SIGNAL(toggled(bool)), this, SLOT(showWarnings(bool)));
+    connect(mUI.mActionShowPortability, SIGNAL(toggled(bool)), this, SLOT(showPortability(bool)));
+    connect(mUI.mActionShowPerformance, SIGNAL(toggled(bool)), this, SLOT(showPerformance(bool)));
+    connect(mUI.mActionShowInformation, SIGNAL(toggled(bool)), this, SLOT(showInformation(bool)));
+    connect(mUI.mActionCheckAll, SIGNAL(triggered()), this, SLOT(checkAll()));
+    connect(mUI.mActionUncheckAll, SIGNAL(triggered()), this, SLOT(uncheckAll()));
+    connect(mUI.mActionCollapseAll, SIGNAL(triggered()), mUI.mResults, SLOT(collapseAllResults()));
+    connect(mUI.mActionExpandAll, SIGNAL(triggered()), mUI.mResults, SLOT(expandAllResults()));
+    connect(mUI.mActionShowHidden, SIGNAL(triggered()), mUI.mResults, SLOT(showHiddenResults()));
+    connect(mUI.mActionViewLog, SIGNAL(triggered()), this, SLOT(showLogView()));
+    connect(mUI.mActionViewStats, SIGNAL(triggered()), this, SLOT(showStatistics()));
+    connect(mUI.mActionLibraryEditor, SIGNAL(triggered()), this, SLOT(showLibraryEditor()));
 
-    connect(mUI.mActionRecheckModified, SIGNAL(triggered()), this, SLOT(ReCheckModified()));
-    connect(mUI.mActionRecheckAll, SIGNAL(triggered()), this, SLOT(ReCheckAll()));
+    connect(mUI.mActionRecheckModified, SIGNAL(triggered()), this, SLOT(reCheckModified()));
+    connect(mUI.mActionRecheckAll, SIGNAL(triggered()), this, SLOT(reCheckAll()));
 
-    connect(mUI.mActionStop, SIGNAL(triggered()), this, SLOT(StopChecking()));
-    connect(mUI.mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
+    connect(mUI.mActionStop, SIGNAL(triggered()), this, SLOT(stopChecking()));
+    connect(mUI.mActionSave, SIGNAL(triggered()), this, SLOT(save()));
 
     // About menu
-    connect(mUI.mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
-    connect(mUI.mActionLicense, SIGNAL(triggered()), this, SLOT(ShowLicense()));
+    connect(mUI.mActionAbout, SIGNAL(triggered()), this, SLOT(about()));
+    connect(mUI.mActionLicense, SIGNAL(triggered()), this, SLOT(showLicense()));
 
     // View > Toolbar menu
-    connect(mUI.mActionToolBarMain, SIGNAL(toggled(bool)), this, SLOT(ToggleMainToolBar()));
-    connect(mUI.mActionToolBarView, SIGNAL(toggled(bool)), this, SLOT(ToggleViewToolBar()));
-    connect(mUI.mActionToolBarFilter, SIGNAL(toggled(bool)), this, SLOT(ToggleFilterToolBar()));
+    connect(mUI.mActionToolBarMain, SIGNAL(toggled(bool)), this, SLOT(toggleMainToolBar()));
+    connect(mUI.mActionToolBarView, SIGNAL(toggled(bool)), this, SLOT(toggleViewToolBar()));
+    connect(mUI.mActionToolBarFilter, SIGNAL(toggled(bool)), this, SLOT(toggleFilterToolBar()));
 
-    connect(mUI.mActionAuthors, SIGNAL(triggered()), this, SLOT(ShowAuthors()));
-    connect(mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
-    connect(mUI.mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
-    connect(mUI.mResults, SIGNAL(ResultsHidden(bool)), mUI.mActionShowHidden, SLOT(setEnabled(bool)));
-    connect(mUI.mResults, SIGNAL(CheckSelected(QStringList)), this, SLOT(PerformSelectedFilesCheck(QStringList)));
-    connect(mUI.mMenuView, SIGNAL(aboutToShow()), this, SLOT(AboutToShowViewMenu()));
+    connect(mUI.mActionAuthors, SIGNAL(triggered()), this, SLOT(showAuthors()));
+    connect(mThread, SIGNAL(Done()), this, SLOT(checkDone()));
+    connect(mUI.mResults, SIGNAL(gotResults()), this, SLOT(resultsAdded()));
+    connect(mUI.mResults, SIGNAL(resultsHidden(bool)), mUI.mActionShowHidden, SLOT(setEnabled(bool)));
+    connect(mUI.mResults, SIGNAL(checkSelected(QStringList)), this, SLOT(performSelectedFilesCheck(QStringList)));
+    connect(mUI.mMenuView, SIGNAL(aboutToShow()), this, SLOT(aboutToShowViewMenu()));
 
     // File menu
-    connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(NewProjectFile()));
-    connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(OpenProjectFile()));
-    connect(mUI.mActionShowScratchpad, SIGNAL(triggered()), this, SLOT(ShowScratchpad()));
-    connect(mUI.mActionCloseProjectFile, SIGNAL(triggered()), this, SLOT(CloseProjectFile()));
-    connect(mUI.mActionEditProjectFile, SIGNAL(triggered()), this, SLOT(EditProjectFile()));
+    connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(newProjectFile()));
+    connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(openProjectFile()));
+    connect(mUI.mActionShowScratchpad, SIGNAL(triggered()), this, SLOT(showScratchpad()));
+    connect(mUI.mActionCloseProjectFile, SIGNAL(triggered()), this, SLOT(closeProjectFile()));
+    connect(mUI.mActionEditProjectFile, SIGNAL(triggered()), this, SLOT(editProjectFile()));
 
-    connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
+    connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(openHelpContents()));
 
     loadSettings();
 
@@ -159,7 +159,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         mRecentProjectActs[i] = new QAction(this);
         mRecentProjectActs[i]->setVisible(false);
         connect(mRecentProjectActs[i], SIGNAL(triggered()),
-                this, SLOT(OpenRecentProject()));
+                this, SLOT(openRecentProject()));
     }
     mRecentProjectActs[MaxRecentProjects] = NULL; // The separator
     mUI.mActionProjectMRU->setVisible(false);
@@ -182,7 +182,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         act->setCheckable(true);
         act->setActionGroup(mPlatformActions);
         mUI.mMenuCheck->insertAction(mUI.mActionPlatforms, act);
-        connect(act, SIGNAL(triggered()), this, SLOT(SelectPlatform()));
+        connect(act, SIGNAL(triggered()), this, SLOT(selectPlatform()));
     }
 
     mUI.mActionC89->setActionGroup(mCStandardActions);

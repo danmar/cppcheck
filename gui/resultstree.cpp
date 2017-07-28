@@ -61,7 +61,7 @@ ResultsTree::ResultsTree(QWidget * parent) :
     setSortingEnabled(true);
 
     connect(this, SIGNAL(doubleClicked(const QModelIndex &)),
-            this, SLOT(QuickStartApplication(const QModelIndex &)));
+            this, SLOT(quickStartApplication(const QModelIndex &)));
 }
 
 ResultsTree::~ResultsTree()
