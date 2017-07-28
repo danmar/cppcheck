@@ -215,7 +215,7 @@ protected:
     * @brief Function to delete all threads
     *
     */
-    void RemoveThreads();
+    void removeThreads();
 
     /**
     * @brief Thread results are stored here

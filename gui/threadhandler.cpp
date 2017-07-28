@@ -38,7 +38,7 @@ ThreadHandler::ThreadHandler(QObject *parent) :
 
 ThreadHandler::~ThreadHandler()
 {
-    RemoveThreads();
+    removeThreads();
 }
 
 void ThreadHandler::clearFiles()
@@ -116,7 +116,7 @@ void ThreadHandler::setThreadCount(const int count)
     }
 
     //Remove unused old threads
-    RemoveThreads();
+    removeThreads();
     //Create new threads
     for (int i = mThreads.size(); i < count; i++) {
         mThreads << new CheckThread(mResults);
@@ -129,14 +129,14 @@ void ThreadHandler::setThreadCount(const int count)
 }
 
 
-void ThreadHandler::RemoveThreads()
+void ThreadHandler::removeThreads()
 {
     for (int i = 0; i < mThreads.size(); i++) {
         mThreads[i]->terminate();
         disconnect(mThreads.last(), SIGNAL(Done()),
-                   this, SLOT(ThreadDone()));
+                   this, SLOT(threadDone()));
         disconnect(mThreads.last(), SIGNAL(FileChecked(const QString &)),
-                   &mResults, SLOT(FileChecked(const QString &)));
+                   &mResults, SLOT(fileChecked(const QString &)));
 
         delete mThreads[i];
     }
