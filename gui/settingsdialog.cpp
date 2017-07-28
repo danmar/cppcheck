@@ -40,7 +40,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 {
     mUI.setupUi(this);
     QSettings settings;
-    mTempApplications->Copy(list);
+    mTempApplications->copy(list);
 
     mUI.mJobs->setText(settings.value(SETTINGS_CHECK_THREADS, 1).toString());
     mUI.mForce->setCheckState(BoolToCheckState(settings.value(SETTINGS_CHECK_FORCE, false).toBool()));
@@ -205,7 +205,7 @@ void SettingsDialog::AddApplication()
     ApplicationDialog dialog(tr("Add a new application"), app, this);
 
     if (dialog.exec() == QDialog::Accepted) {
-        mTempApplications->AddApplication(app);
+        mTempApplications->addApplication(app);
         mUI.mListWidget->addItem(app.getName());
     }
 }
@@ -215,14 +215,14 @@ void SettingsDialog::RemoveApplication()
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
     foreach (QListWidgetItem *item, selected) {
         const int removeIndex = mUI.mListWidget->row(item);
-        const int currentDefault = mTempApplications->GetDefaultApplication();
-        mTempApplications->RemoveApplication(removeIndex);
+        const int currentDefault = mTempApplications->getDefaultApplication();
+        mTempApplications->removeApplication(removeIndex);
         if (removeIndex == currentDefault)
             // If default app is removed set default to unknown
-            mTempApplications->SetDefault(-1);
+            mTempApplications->setDefault(-1);
         else if (removeIndex < currentDefault)
             // Move default app one up if earlier app was removed
-            mTempApplications->SetDefault(currentDefault - 1);
+            mTempApplications->setDefault(currentDefault - 1);
     }
     mUI.mListWidget->clear();
     PopulateApplicationList();
@@ -234,12 +234,12 @@ void SettingsDialog::EditApplication()
     QListWidgetItem *item = 0;
     foreach (item, selected) {
         int row = mUI.mListWidget->row(item);
-        Application& app = mTempApplications->GetApplication(row);
+        Application& app = mTempApplications->getApplication(row);
         ApplicationDialog dialog(tr("Modify an application"), app, this);
 
         if (dialog.exec() == QDialog::Accepted) {
             QString name = app.getName();
-            if (mTempApplications->GetDefaultApplication() == row)
+            if (mTempApplications->getDefaultApplication() == row)
                 name += tr(" [Default]");
             item->setText(name);
         }
@@ -251,7 +251,7 @@ void SettingsDialog::DefaultApplication()
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
     if (!selected.isEmpty()) {
         int index = mUI.mListWidget->row(selected[0]);
-        mTempApplications->SetDefault(index);
+        mTempApplications->setDefault(index);
         mUI.mListWidget->clear();
         PopulateApplicationList();
     }
@@ -259,9 +259,9 @@ void SettingsDialog::DefaultApplication()
 
 void SettingsDialog::PopulateApplicationList()
 {
-    const int defapp = mTempApplications->GetDefaultApplication();
-    for (int i = 0; i < mTempApplications->GetApplicationCount(); i++) {
-        const Application& app = mTempApplications->GetApplication(i);
+    const int defapp = mTempApplications->getDefaultApplication();
+    for (int i = 0; i < mTempApplications->getApplicationCount(); i++) {
+        const Application& app = mTempApplications->getApplication(i);
         QString name = app.getName();
         if (i == defapp) {
             name += " ";
@@ -275,7 +275,7 @@ void SettingsDialog::PopulateApplicationList()
     if (defapp == -1)
         mUI.mListWidget->setCurrentRow(0);
     else {
-        if (mTempApplications->GetApplicationCount() > defapp)
+        if (mTempApplications->getApplicationCount() > defapp)
             mUI.mListWidget->setCurrentRow(defapp);
         else
             mUI.mListWidget->setCurrentRow(0);
@@ -284,7 +284,7 @@ void SettingsDialog::PopulateApplicationList()
 
 void SettingsDialog::Ok()
 {
-    mApplications->Copy(mTempApplications);
+    mApplications->copy(mTempApplications);
     accept();
 }
 

@@ -43,18 +43,18 @@ public:
     *  application list. Most probably because of older version settings need
     *  to be upgraded.
     */
-    bool LoadSettings();
+    bool loadSettings();
 
     /**
     * @brief Save all applications
     */
-    void SaveSettings() const;
+    void saveSettings() const;
 
     /**
     * @brief Get the amount of applications in the list
     * @return The count of applications
     */
-    int GetApplicationCount() const;
+    int getApplicationCount() const;
 
     /**
     * @brief Get specific application's name
@@ -62,14 +62,14 @@ public:
     * @param index Index of the application whose name to get
     * @return Name of the application
     */
-    const Application& GetApplication(const int index) const;
-    Application& GetApplication(const int index);
+    const Application& getApplication(const int index) const;
+    Application& getApplication(const int index);
 
     /**
     * @brief Return the default application.
     * @return Index of the default application.
     */
-    int GetDefaultApplication() const {
+    int getDefaultApplication() const {
         return mDefaultApplicationIndex;
     }
 
@@ -78,27 +78,27 @@ public:
     *
     * @param app Application to add.
     */
-    void AddApplication(const Application &app);
+    void addApplication(const Application &app);
 
     /**
     * @brief Remove an application from the list
     *
     * @param index Index of the application to remove.
     */
-    void RemoveApplication(const int index);
+    void removeApplication(const int index);
 
     /**
     * @brief Set application as default application.
     * @param index Index of the application to make the default one
     */
-    void SetDefault(const int index);
+    void setDefault(const int index);
 
     /**
     * @brief Remove all applications from this list and copy all applications from
     * list given as a parameter.
     * @param list Copying source
     */
-    void Copy(const ApplicationList *list);
+    void copy(const ApplicationList *list);
 
 protected:
 
@@ -106,17 +106,17 @@ protected:
     * @brief Clear the list
     *
     */
-    void Clear();
+    void clear();
 
     /**
     * @brief Find editor used by default in Windows.
     * Check if Notepad++ is installed and use it. If not, use Notepad.
     */
-    bool FindDefaultWindowsEditor();
+    bool findDefaultWindowsEditor();
 
 private:
 
-    bool CheckAndAddApplication(QString appPath, QString name, QString parameters);
+    bool checkAndAddApplication(QString appPath, QString name, QString parameters);
 
     /**
     * @brief List of applications

@@ -298,7 +298,7 @@ void MainWindow::LoadSettings()
     else
         mUI.mActionAutoDetectLanguage->setChecked(true);
 
-    bool succeeded = mApplications->LoadSettings();
+    bool succeeded = mApplications->loadSettings();
     if (!succeeded) {
         const QString msg = tr("There was a problem with loading the editor application settings.\n\n"
                                "This is probably because the settings were changed between the Cppcheck versions. "
@@ -349,7 +349,7 @@ void MainWindow::SaveSettings() const
     else
         mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::None);
 
-    mApplications->SaveSettings();
+    mApplications->saveSettings();
 
     mSettings->setValue(SETTINGS_LANGUAGE, mTranslation->GetCurrentLanguage());
     mUI.mResults->SaveSettings(mSettings);

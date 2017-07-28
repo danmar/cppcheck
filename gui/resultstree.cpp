@@ -530,12 +530,12 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         //member variables
         QSignalMapper *signalMapper = new QSignalMapper(this);
 
-        if (mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent()) {
+        if (mContextItem && mApplications->getApplicationCount() > 0 && mContextItem->parent()) {
             //Create an action for the application
-            int defaultApplicationIndex = mApplications->GetDefaultApplication();
+            int defaultApplicationIndex = mApplications->getDefaultApplication();
             if (defaultApplicationIndex < 0)
                 defaultApplicationIndex = 0;
-            const Application& app = mApplications->GetApplication(defaultApplicationIndex);
+            const Application& app = mApplications->getApplication(defaultApplicationIndex);
             QAction *start = new QAction(app.getName(), &menu);
             if (multipleSelection)
                 start->setDisabled(true);
@@ -558,7 +558,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
         // Add menuitems to copy full path/filename to clipboard
         if (mContextItem) {
-            if (mApplications->GetApplicationCount() > 0) {
+            if (mApplications->getApplicationCount() > 0) {
                 menu.addSeparator();
             }
 
@@ -609,7 +609,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         index = indexAt(e->pos());
         if (index.isValid()) {
             mContextItem = mModel.itemFromIndex(index);
-            if (mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent()) {
+            if (mContextItem && mApplications->getApplicationCount() > 0 && mContextItem->parent()) {
                 //Disconnect all signals
                 for (int i = 0; i < actions.size(); i++) {
 
@@ -628,7 +628,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 void ResultsTree::StartApplication(QStandardItem *target, int application)
 {
     //If there are no applications specified, tell the user about it
-    if (mApplications->GetApplicationCount() == 0) {
+    if (mApplications->getApplicationCount() == 0) {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
                         tr("No editor application configured.\n\n"
@@ -640,7 +640,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
     }
 
     if (application == -1)
-        application = mApplications->GetDefaultApplication();
+        application = mApplications->getDefaultApplication();
 
     if (application == -1) {
         QMessageBox msg(QMessageBox::Critical,
@@ -654,7 +654,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
 
     }
 
-    if (target && application >= 0 && application < mApplications->GetApplicationCount() && target->parent()) {
+    if (target && application >= 0 && application < mApplications->getApplicationCount() && target->parent()) {
         // Make sure we are working with the first column
         if (target->column() != 0)
             target = target->parent()->child(target->row(), 0);
@@ -694,7 +694,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
             file.append("\"");
         }
 
-        const Application& app = mApplications->GetApplication(application);
+        const Application& app = mApplications->getApplication(application);
         QString params = app.getParameters();
         params.replace("(file)", file, Qt::CaseInsensitive);
 
