@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <stack>
 #include <utility>
 //---------------------------------------------------------------------------
 
@@ -1486,21 +1487,28 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs)
         return false;
     const Token *last = func->functionScope->classEnd;
     for (const Token *tok = func->functionScope->classStart; tok && tok != last; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "if (")) {
-            const Token *tok1 = tok->tokAt(2);
-            const Token *tok2 = tok->next()->link();
+        if (!Token::simpleMatch(tok, "if ("))
+            continue;
 
-            if (tok1 && tok2) {
-                for (; tok1 && tok1 != tok2; tok1 = tok1->next()) {
-                    if (Token::Match(tok1, "this ==|!= & %name%")) {
-                        if (tok1->strAt(3) == rhs->str())
-                            return true;
-                    } else if (Token::Match(tok1, "& %name% ==|!= this")) {
-                        if (tok1->strAt(1) == rhs->str())
-                            return true;
-                    }
-                }
-            }
+        std::stack<const Token *> tokens;
+        tokens.push(tok->next()->astOperand2());
+        while (!tokens.empty()) {
+            const Token *tok2 = tokens.top();
+            tokens.pop();
+            if (!tok2)
+                continue;
+            tokens.push(tok2->astOperand1());
+            tokens.push(tok2->astOperand2());
+            if (!Token::Match(tok2, "==|!="))
+                continue;
+            if (Token::simpleMatch(tok2->astOperand1(), "this"))
+                tok2 = tok2->astOperand2();
+            else if (Token::simpleMatch(tok2->astOperand2(), "this"))
+                tok2 = tok2->astOperand1();
+            else
+                continue;
+            if (tok2 && tok2->str() == "&" && !tok2->astOperand2() && tok2->astOperand1() && tok2->astOperand1()->str() == rhs->str())
+                return true;
         }
     }
 
