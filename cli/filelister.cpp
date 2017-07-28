@@ -122,7 +122,7 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
 
         if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
             // File
-            if ((!checkAllFilesInDir || Path::acceptFile(fname, extra)) && !ignored.Match(fname)) {
+            if ((!checkAllFilesInDir || Path::acceptFile(fname, extra)) && !ignored.match(fname)) {
                 const std::string nativename = Path::fromNativeSeparators(fname);
 
                 // Limitation: file sizes are assumed to fit in a 'size_t'
@@ -197,11 +197,11 @@ static void addFiles2(std::map<std::string, std::size_t> &files,
                 new_path = path + '/' + dir_result->d_name;
 
                 if (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && FileLister::isDirectory(new_path))) {
-                    if (recursive && !ignored.Match(new_path)) {
+                    if (recursive && !ignored.match(new_path)) {
                         addFiles2(files, new_path, extra, recursive, ignored);
                     }
                 } else {
-                    if (Path::acceptFile(new_path, extra) && !ignored.Match(new_path)) {
+                    if (Path::acceptFile(new_path, extra) && !ignored.match(new_path)) {
                         files[new_path] = file_stat.st_size;
                     }
                 }
