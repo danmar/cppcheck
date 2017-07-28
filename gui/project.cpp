@@ -47,22 +47,22 @@ Project::~Project()
     delete mProjectFile;
 }
 
-QString Project::Filename() const
+QString Project::getFilename() const
 {
     return mFilename;
 }
 
-void Project::SetFilename(const QString &filename)
+void Project::setFilename(const QString &filename)
 {
     mFilename = filename;
 }
 
-bool Project::IsOpen() const
+bool Project::isOpen() const
 {
     return mProjectFile != NULL;
 }
 
-bool Project::Open()
+bool Project::open()
 {
     mProjectFile = new ProjectFile(mFilename, this);
     if (!QFile::exists(mFilename))
@@ -83,7 +83,7 @@ bool Project::Open()
     return true;
 }
 
-bool Project::Edit()
+bool Project::edit()
 {
     ProjectFileDialog dlg(mFilename, mParentWidget);
     dlg.LoadFromProjectFile(mProjectFile);
@@ -105,7 +105,7 @@ bool Project::Edit()
     return true;
 }
 
-void Project::Create()
+void Project::create()
 {
     mProjectFile = new ProjectFile(mFilename, this);
 }

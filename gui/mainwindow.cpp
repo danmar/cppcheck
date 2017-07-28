@@ -362,7 +362,7 @@ void MainWindow::DoCheckProject(ImportProject p)
     mIsLogfileLoaded = false;
     if (mProject) {
         std::vector<std::string> v;
-        foreach (const QString &s, mProject->GetProjectFile()->GetExcludedPaths()) {
+        foreach (const QString &s, mProject->getProjectFile()->GetExcludedPaths()) {
             v.push_back(s.toStdString());
         }
         p.ignorePaths(v);
@@ -386,7 +386,7 @@ void MainWindow::DoCheckProject(ImportProject p)
     checkSettings.force = false;
 
     if (mProject)
-        qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
+        qDebug() << "Checking project file" << mProject->getProjectFile()->GetFilename();
 
     if (!checkSettings.buildDir.empty()) {
         std::list<std::string> sourcefiles;
@@ -409,7 +409,7 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     FileList pathList;
     pathList.AddPathList(files);
     if (mProject) {
-        pathList.AddExcludeList(mProject->GetProjectFile()->GetExcludedPaths());
+        pathList.AddExcludeList(mProject->getProjectFile()->GetExcludedPaths());
     } else {
         EnableProjectActions(false);
     }
@@ -441,7 +441,7 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     Settings checkSettings = GetCppcheckSettings();
 
     if (mProject)
-        qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
+        qDebug() << "Checking project file" << mProject->getProjectFile()->GetFilename();
 
     if (!checkSettings.buildDir.empty()) {
         std::list<std::string> sourcefiles;
@@ -642,7 +642,7 @@ Library::Error MainWindow::LoadLibrary(Library *library, QString filename)
 
     // Try to load the library from the project folder..
     if (mProject) {
-        QString path = QFileInfo(mProject->GetProjectFile()->GetFilename()).canonicalPath();
+        QString path = QFileInfo(mProject->getProjectFile()->GetFilename()).canonicalPath();
         ret = library->load(NULL, (path+"/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
@@ -741,7 +741,7 @@ Settings MainWindow::GetCppcheckSettings()
 
     // If project file loaded, read settings from it
     if (mProject) {
-        ProjectFile *pfile = mProject->GetProjectFile();
+        ProjectFile *pfile = mProject->getProjectFile();
         QStringList dirs = pfile->GetIncludeDirs();
         AddIncludeDirs(dirs, result);
 
@@ -934,7 +934,7 @@ void MainWindow::ReCheckSelected(QStringList files, bool all)
     FileList pathList;
     pathList.AddPathList(files);
     if (mProject)
-        pathList.AddExcludeList(mProject->GetProjectFile()->GetExcludedPaths());
+        pathList.AddExcludeList(mProject->getProjectFile()->GetExcludedPaths());
     QStringList fileNames = pathList.GetFileList();
     CheckLockDownUI(); // lock UI while checking
     mUI.mResults->CheckingStarted(fileNames.size());
@@ -965,7 +965,7 @@ void MainWindow::ReCheck(bool all)
     mUI.mResults->CheckingStarted(files.size());
 
     if (mProject)
-        qDebug() << "Rechecking project file" << mProject->GetProjectFile()->GetFilename();
+        qDebug() << "Rechecking project file" << mProject->getProjectFile()->GetFilename();
 
     mThread->SetCheckFiles(all);
     mThread->Check(GetCppcheckSettings(), all);
@@ -1314,16 +1314,16 @@ void MainWindow::LoadProjectFile(const QString &filePath)
 
 void MainWindow::CheckProject(Project *project)
 {
-    if (!project->IsOpen()) {
-        if (!project->Open()) {
+    if (!project->isOpen()) {
+        if (!project->open()) {
             delete mProject;
             mProject = 0;
             return;
         }
     }
 
-    QFileInfo inf(project->Filename());
-    const QString rootpath = project->GetProjectFile()->GetRootPath();
+    QFileInfo inf(project->getFilename());
+    const QString rootpath = project->getProjectFile()->GetRootPath();
 
     // If the root path is not given or is not "current dir", use project
     // file's location directory as root path
@@ -1334,15 +1334,15 @@ void MainWindow::CheckProject(Project *project)
     else
         mCurrentDirectory = rootpath;
 
-    if (!project->GetProjectFile()->GetImportProject().isEmpty()) {
+    if (!project->getProjectFile()->GetImportProject().isEmpty()) {
         ImportProject p;
-        QString prjfile = inf.canonicalPath() + '/' + project->GetProjectFile()->GetImportProject();
+        QString prjfile = inf.canonicalPath() + '/' + project->getProjectFile()->GetImportProject();
         p.import(prjfile.toStdString());
         DoCheckProject(p);
         return;
     }
 
-    QStringList paths = project->GetProjectFile()->GetCheckPaths();
+    QStringList paths = project->getProjectFile()->GetCheckPaths();
 
     // If paths not given then check the root path (which may be the project
     // file's location, see above). This is to keep the compatibility with
@@ -1383,8 +1383,8 @@ void MainWindow::NewProjectFile()
 
     delete mProject;
     mProject = new Project(filepath, this);
-    mProject->Create();
-    if (mProject->Edit()) {
+    mProject->create();
+    if (mProject->edit()) {
         AddProjectMRU(filepath);
         CheckProject(mProject);
     }
@@ -1410,7 +1410,7 @@ void MainWindow::EditProjectFile()
         msg.exec();
         return;
     }
-    if (mProject->Edit())
+    if (mProject->edit())
         CheckProject(mProject);
 }
 

@@ -42,7 +42,7 @@ StatsDialog::StatsDialog(QWidget *parent)
 
 void StatsDialog::setProject(const Project& project)
 {
-    ProjectFile *projectFile = project.GetProjectFile();
+    ProjectFile *projectFile = project.getProjectFile();
     if (projectFile) {
         mUI.mProject->setText(projectFile->GetRootPath());
         mUI.mPaths->setText(projectFile->GetCheckPaths().join(";"));
