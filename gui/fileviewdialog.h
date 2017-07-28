@@ -52,14 +52,7 @@ protected:
     * @param filename File to load.
     * @param edit Control where to load the file contents.
     */
-    void LoadTextFile(const QString &filename, QTextEdit *edit);
-
-    /**
-    * @brief Format dialog title from filename.
-    *
-    * @param filename File to load.
-    */
-    QString FormatTitle(const QString &filename);
+    void loadTextFile(const QString &filename, QTextEdit *edit);
 
     Ui::Fileview mUI;
 };
