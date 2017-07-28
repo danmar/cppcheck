@@ -1448,14 +1448,14 @@ void MainWindow::showLibraryEditor()
 void MainWindow::log(const QString &logline)
 {
     if (mLogView) {
-        mLogView->AppendLine(logline);
+        mLogView->appendLine(logline);
     }
 }
 
 void MainWindow::debugError(const ErrorItem &item)
 {
     if (mLogView) {
-        mLogView->AppendLine(item.ToString());
+        mLogView->appendLine(item.ToString());
     }
 }
 

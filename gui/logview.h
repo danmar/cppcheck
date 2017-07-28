@@ -40,7 +40,7 @@ public:
     * @param line String to add.
     *
     */
-    void AppendLine(const QString &line);
+    void appendLine(const QString &line);
 
 protected slots:
 
@@ -48,19 +48,19 @@ protected slots:
     * @brief Called when close button is clicked.
     *
     */
-    void CloseButtonClicked();
+    void closeButtonClicked();
 
     /**
     * @brief Called when clear button is clicked.
     *
     */
-    void ClearButtonClicked();
+    void clearButtonClicked();
 
     /**
     * @brief Called when save button is clicked.
     *
     */
-    void SaveButtonClicked();
+    void saveButtonClicked();
 
 private:
     Ui::LogView mUI;

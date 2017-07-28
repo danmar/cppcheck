@@ -32,9 +32,9 @@ LogView::LogView(QWidget *parent)
     setWindowFlags(Qt::Tool);
 
     mUI.mButtonBox->button(QDialogButtonBox::Reset)->setText(tr("Clear"));
-    connect(mUI.mButtonBox->button(QDialogButtonBox::Close), SIGNAL(clicked()), this, SLOT(CloseButtonClicked()));
-    connect(mUI.mButtonBox->button(QDialogButtonBox::Reset), SIGNAL(clicked()), this, SLOT(ClearButtonClicked()));
-    connect(mUI.mButtonBox->button(QDialogButtonBox::Save), SIGNAL(clicked()), this, SLOT(SaveButtonClicked()));
+    connect(mUI.mButtonBox->button(QDialogButtonBox::Close), SIGNAL(clicked()), this, SLOT(closeButtonClicked()));
+    connect(mUI.mButtonBox->button(QDialogButtonBox::Reset), SIGNAL(clicked()), this, SLOT(clearButtonClicked()));
+    connect(mUI.mButtonBox->button(QDialogButtonBox::Save), SIGNAL(clicked()), this, SLOT(saveButtonClicked()));
 
     QSettings settings;
     resize(settings.value(SETTINGS_LOG_VIEW_WIDTH, 400).toInt(),
@@ -48,22 +48,22 @@ LogView::~LogView()
     settings.setValue(SETTINGS_LOG_VIEW_HEIGHT, size().height());
 }
 
-void LogView::AppendLine(const QString &line)
+void LogView::appendLine(const QString &line)
 {
     mUI.mLogEdit->appendPlainText(line);
 }
 
-void LogView::CloseButtonClicked()
+void LogView::closeButtonClicked()
 {
     close();
 }
 
-void LogView::ClearButtonClicked()
+void LogView::clearButtonClicked()
 {
     mUI.mLogEdit->clear();
 }
 
-void LogView::SaveButtonClicked()
+void LogView::saveButtonClicked()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Log"),
                        "", tr("Text files (*.txt *.log);;All files (*.*)"));
