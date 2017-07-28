@@ -322,11 +322,11 @@ void SettingsDialog::AddIncludePath()
 {
     QString selectedDir = QFileDialog::getExistingDirectory(this,
                           tr("Select include directory"),
-                          GetPath(SETTINGS_LAST_INCLUDE_PATH));
+                          getPath(SETTINGS_LAST_INCLUDE_PATH));
 
     if (!selectedDir.isEmpty()) {
         AddIncludePath(selectedDir);
-        SetPath(SETTINGS_LAST_INCLUDE_PATH, selectedDir);
+        setPath(SETTINGS_LAST_INCLUDE_PATH, selectedDir);
     }
 }
 

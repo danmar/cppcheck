@@ -60,11 +60,11 @@ void ApplicationDialog::Browse()
 #endif // Q_OS_WIN
     QString selectedFile = QFileDialog::getOpenFileName(this,
                            tr("Select viewer application"),
-                           GetPath(SETTINGS_LAST_APP_PATH),
+                           getPath(SETTINGS_LAST_APP_PATH),
                            filter);
 
     if (!selectedFile.isEmpty()) {
-        SetPath(SETTINGS_LAST_APP_PATH, selectedFile);
+        setPath(SETTINGS_LAST_APP_PATH, selectedFile);
         QString path(QDir::toNativeSeparators(selectedFile));
         mUI.mPath->setText(path);
     }
