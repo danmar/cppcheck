@@ -1333,6 +1333,22 @@ void MainWindow::checkProject(Project *project)
     else
         mCurrentDirectory = rootpath;
 
+    if (!project->getProjectFile()->getBuildDir().isEmpty()) {
+        QString buildDir = project->getProjectFile()->getBuildDir();
+        if (!QDir::isAbsolutePath(buildDir))
+            buildDir = mCurrentDirectory + '/' + buildDir;
+        if (!QDir(buildDir).exists()) {
+            QMessageBox msg(QMessageBox::Critical,
+                            tr("Cppcheck"),
+                            tr("Build dir '%1' does not exist, create it?").arg(buildDir),
+                            QMessageBox::Yes | QMessageBox::No,
+                            this);
+            if (msg.exec() == QMessageBox::Yes) {
+                QDir().mkdir(buildDir);
+            }
+        }
+    }
+
     if (!project->getProjectFile()->getImportProject().isEmpty()) {
         ImportProject p;
         QString prjfile = inf.canonicalPath() + '/' + project->getProjectFile()->getImportProject();
