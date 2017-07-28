@@ -187,7 +187,8 @@ void ProjectFileDialog::browseBuildDir()
         mUI.mEditBuildDir->setText(dir);
 }
 
-void ProjectFileDialog::updatePathsAndDefines() {
+void ProjectFileDialog::updatePathsAndDefines()
+{
     bool importProject = !mUI.mEditImportProject->text().isEmpty();
     mUI.mBtnClearImportProject->setEnabled(importProject);
     mUI.mListCheckPaths->setEnabled(!importProject);
@@ -202,7 +203,8 @@ void ProjectFileDialog::updatePathsAndDefines() {
     mUI.mBtnIncludeDown->setEnabled(!importProject);
 }
 
-void ProjectFileDialog::clearImportProject() {
+void ProjectFileDialog::clearImportProject()
+{
     mUI.mEditImportProject->clear();
     updatePathsAndDefines();
 }
