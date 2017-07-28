@@ -78,7 +78,7 @@ void ResultsView::Clear(bool results)
 
     mUI.mDetails->setText("");
 
-    mStatistics->Clear();
+    mStatistics->clear();
 
     //Clear the progressbar
     mUI.mProgress->setMaximum(PROGRESS_MAX);
@@ -106,7 +106,7 @@ void ResultsView::Error(const ErrorItem &item)
 {
     if (mUI.mTree->AddErrorItem(item)) {
         emit GotResults();
-        mStatistics->AddItem(ShowTypes::SeverityToShowType(item.severity));
+        mStatistics->addItem(ShowTypes::SeverityToShowType(item.severity));
     }
 }
 

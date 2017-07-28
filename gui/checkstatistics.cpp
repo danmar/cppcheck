@@ -22,10 +22,10 @@
 CheckStatistics::CheckStatistics(QObject *parent)
     : QObject(parent)
 {
-    Clear();
+    clear();
 }
 
-void CheckStatistics::AddItem(ShowTypes::ShowType type)
+void CheckStatistics::addItem(ShowTypes::ShowType type)
 {
     switch (type) {
     case ShowTypes::ShowStyle:
@@ -53,7 +53,7 @@ void CheckStatistics::AddItem(ShowTypes::ShowType type)
     }
 }
 
-void CheckStatistics::Clear()
+void CheckStatistics::clear()
 {
     mStyle = 0;
     mWarning = 0;
@@ -63,7 +63,7 @@ void CheckStatistics::Clear()
     mError = 0;
 }
 
-unsigned CheckStatistics::GetCount(ShowTypes::ShowType type) const
+unsigned CheckStatistics::getCount(ShowTypes::ShowType type) const
 {
     switch (type) {
     case ShowTypes::ShowStyle:

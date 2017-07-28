@@ -37,13 +37,13 @@ public:
     *
     * @param type Type of the item to add.
     */
-    void AddItem(ShowTypes::ShowType type);
+    void addItem(ShowTypes::ShowType type);
 
     /**
     * @brief Clear the statistics.
     *
     */
-    void Clear();
+    void clear();
 
     /**
     * @brief Return statistics for given type.
@@ -51,7 +51,7 @@ public:
     * @param type Type for which the statistics are returned.
     * @return Number of items of given type.
     */
-    unsigned GetCount(ShowTypes::ShowType type) const;
+    unsigned getCount(ShowTypes::ShowType type) const;
 
 private:
     unsigned mStyle;
