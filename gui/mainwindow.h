@@ -73,153 +73,153 @@ public:
 public slots:
 
     /** @brief Slot for check files menu item */
-    void CheckFiles();
+    void checkFiles();
 
     /** @brief Slot to recheck all files */
-    void ReCheckAll();
+    void reCheckAll();
 
     /**
      * @brief Slot to recheck selected files
      * @param selectedFilesList list of selected files
      */
-    void PerformSelectedFilesCheck(QStringList selectedFilesList);
+    void performSelectedFilesCheck(QStringList selectedFilesList);
 
     /** @brief Slot to recheck modified files */
-    void ReCheckModified();
+    void reCheckModified();
 
     /** @brief Slot to clear all search results */
-    void ClearResults();
+    void clearResults();
 
     /** @brief Slot to open XML report file */
-    void OpenResults();
+    void openResults();
 
     /**
      * @brief Show errors with type "style"
      * @param checked Should errors be shown (true) or hidden (false)
      */
-    void ShowStyle(bool checked);
+    void showStyle(bool checked);
 
     /**
      * @brief Show errors with type "error"
      * @param checked Should errors be shown (true) or hidden (false)
      */
-    void ShowErrors(bool checked);
+    void showErrors(bool checked);
 
     /**
      * @brief Show errors with type "warning"
      * @param checked Should errors be shown (true) or hidden (false)
      */
-    void ShowWarnings(bool checked);
+    void showWarnings(bool checked);
 
     /**
      * @brief Show errors with type "portability"
      * @param checked Should errors be shown (true) or hidden (false)
      */
-    void ShowPortability(bool checked);
+    void showPortability(bool checked);
 
     /**
      * @brief Show errors with type "performance"
      * @param checked Should errors be shown (true) or hidden (false)
      */
-    void ShowPerformance(bool checked);
+    void showPerformance(bool checked);
 
     /**
      * @brief Show errors with type "information"
      * @param checked Should errors be shown (true) or hidden (false)
      */
-    void ShowInformation(bool checked);
+    void showInformation(bool checked);
 
     /** @brief Slot to check all "Show errors" menu items */
-    void CheckAll();
+    void checkAll();
 
     /** @brief Slot to uncheck all "Show errors" menu items */
-    void UncheckAll();
+    void uncheckAll();
 
     /** @brief Slot for check directory menu item */
-    void CheckDirectory();
+    void checkDirectory();
 
     /** @brief Slot to open program's settings dialog */
-    void ProgramSettings();
+    void programSettings();
 
     /** @brief Slot to open program's about dialog */
-    void About();
+    void about();
 
     /** @brief Slot to to show license text */
-    void ShowLicense();
+    void showLicense();
 
     /** @brief Slot to to show authors list */
-    void ShowAuthors();
+    void showAuthors();
 
     /** @brief Slot to save results */
-    void Save();
+    void save();
 
     /** @brief Slot to create new project file */
-    void NewProjectFile();
+    void newProjectFile();
 
     /** @brief Slot to open project file and start checking contained paths. */
-    void OpenProjectFile();
+    void openProjectFile();
 
     /** @brief Slot to show scratchpad. */
-    void ShowScratchpad();
+    void showScratchpad();
 
     /** @brief Slot to close open project file. */
-    void CloseProjectFile();
+    void closeProjectFile();
 
     /** @brief Slot to edit project file. */
-    void EditProjectFile();
+    void editProjectFile();
 
     /** @brief Slot for showing the log view. */
-    void ShowLogView();
+    void showLogView();
 
     /** @brief Slot for showing the scan and project statistics. */
-    void ShowStatistics();
+    void showStatistics();
 
     /** @brief Slot for showing the library editor */
-    void ShowLibraryEditor();
+    void showLibraryEditor();
 
 protected slots:
 
     /** @brief Slot for checkthread's done signal */
-    void CheckDone();
+    void checkDone();
 
     /** @brief Lock down UI while checking */
-    void CheckLockDownUI();
+    void checkLockDownUI();
 
     /** @brief Slot for enabling save and clear button */
-    void ResultsAdded();
+    void resultsAdded();
 
     /** @brief Slot for showing/hiding standard toolbar */
-    void ToggleMainToolBar();
+    void toggleMainToolBar();
 
     /** @brief Slot for showing/hiding Categories toolbar */
-    void ToggleViewToolBar();
+    void toggleViewToolBar();
 
     /** @brief Slot for showing/hiding Filter toolbar */
-    void ToggleFilterToolBar();
+    void toggleFilterToolBar();
 
     /** @brief Slot for updating View-menu before it is shown. */
-    void AboutToShowViewMenu();
+    void aboutToShowViewMenu();
 
     /** @brief Slot when stop checking button is pressed */
-    void StopChecking();
+    void stopChecking();
 
     /** @brief Open help file contents */
-    void OpenHelpContents();
+    void openHelpContents();
 
     /** @brief Add new line to log. */
-    void Log(const QString &logline);
+    void log(const QString &logline);
 
     /** @brief Handle new debug error. */
-    void DebugError(const ErrorItem &item);
+    void debugError(const ErrorItem &item);
 
     /** @brief Filters the results in the result list. */
-    void FilterResults();
+    void filterResults();
 
     /** @brief Opens recently opened project file. */
-    void OpenRecentProject();
+    void openRecentProject();
 
     /** @brief Selects the platform as checked platform. */
-    void SelectPlatform();
+    void selectPlatform();
 
 private:
 
