@@ -318,7 +318,7 @@ void CheckClass::copyconstructors()
         }
 
         std::set<const Token*> copiedVars;
-        const Token* copyCtor = 0;
+        const Token* copyCtor = nullptr;
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eCopyConstructor) {
                 copyCtor = func->tokenDef;

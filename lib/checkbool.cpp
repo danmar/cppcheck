@@ -339,8 +339,8 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
             if (!tok->isComparisonOp())
                 continue;
 
-            const Token* numTok = 0;
-            const Token* boolExpr = 0;
+            const Token* numTok = nullptr;
+            const Token* boolExpr = nullptr;
             bool numInRhs;
             if (astIsBool(tok->astOperand1())) {
                 boolExpr = tok->astOperand1();

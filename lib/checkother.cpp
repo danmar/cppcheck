@@ -994,8 +994,8 @@ void CheckOther::checkUnreachableCode()
         const Scope * scope = symbolDatabase->functionScopes[i];
 
         for (const Token* tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            const Token* secondBreak = 0;
-            const Token* labelName = 0;
+            const Token* secondBreak = nullptr;
+            const Token* labelName = nullptr;
             if (tok->link() && Token::Match(tok, "(|[|<"))
                 tok = tok->link();
             else if (Token::Match(tok, "break|continue ;"))
@@ -1177,7 +1177,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
     const Scope* scope = tok->next()->scope();
     bool loopVariable = scope->type == Scope::eFor || scope->type == Scope::eWhile || scope->type == Scope::eDo;
     bool noContinue = true;
-    const Token* forHeadEnd = 0;
+    const Token* forHeadEnd = nullptr;
     const Token* end = tok->link();
     if (scope->type == Scope::eUnconditional && (tok->strAt(-1) == ")" || tok->previous()->isName())) // Might be an unknown macro like BOOST_FOREACH
         loopVariable = true;

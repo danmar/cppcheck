@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<rule version="1">
+    <tokenlist>raw</tokenlist> <!-- playground: https://regex101.com/r/vGfGSA/1 -->
+    <pattern><![CDATA[(\b\w+\b) \* (\b\w+\b) = 0 ;]]></pattern>
+    <message>
+        <id>modernizeUseNullPtr</id>
+        <severity>style</severity>
+        <summary>Prefer to use a 'nullptr' instead of initialize a pointer with 0.</summary>
+    </message>
+</rule>

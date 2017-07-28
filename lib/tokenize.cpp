@@ -4840,7 +4840,7 @@ bool Tokenizer::simplifyConditions()
 bool Tokenizer::simplifyConstTernaryOp()
 {
     bool ret = false;
-    const Token *templateParameterEnd = 0; // The end of the current template parameter list, if any
+    const Token *templateParameterEnd = nullptr; // The end of the current template parameter list, if any
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "<" && TemplateSimplifier::templateParameters(tok))
             templateParameterEnd = tok->findClosingBracket();

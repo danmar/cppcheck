@@ -180,7 +180,7 @@ void CheckIO::checkFileUsage()
                 }
             } else if (Token::Match(tok, "%name% (") && tok->previous() && (!tok->previous()->isName() || Token::Match(tok->previous(), "return|throw"))) {
                 std::string mode;
-                const Token* fileTok = 0;
+                const Token* fileTok = nullptr;
                 Filepointer::Operation operation = Filepointer::NONE;
 
                 if ((tok->str() == "fopen" || tok->str() == "freopen" || tok->str() == "tmpfile" ||
@@ -508,8 +508,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
         for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (!tok->isName()) continue;
 
-            const Token* argListTok = 0; // Points to first va_list argument
-            const Token* formatStringTok = 0; // Points to format string token
+            const Token* argListTok = nullptr; // Points to first va_list argument
+            const Token* formatStringTok = nullptr; // Points to format string token
 
             bool scan = false;
             bool scanf_s = false;
