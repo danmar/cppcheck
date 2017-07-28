@@ -39,7 +39,7 @@ private slots:
     /**
     * @brief Called when check button is clicked.
     */
-    void CheckButtonClicked();
+    void checkButtonClicked();
 
 private:
     Ui::ScratchPad mUI;

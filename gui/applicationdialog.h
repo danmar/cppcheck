@@ -51,13 +51,13 @@ public:
 
 protected slots:
 
-    void Ok();
+    void ok();
 
     /**
     * @brief Slot to browse for an application
     *
     */
-    void Browse();
+    void browse();
 
 protected:
 

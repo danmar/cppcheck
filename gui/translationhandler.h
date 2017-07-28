@@ -69,14 +69,14 @@ public:
     * @return List of available translation names.
     *
     */
-    const QStringList GetNames() const;
+    const QStringList getNames() const;
 
     /**
     * @brief Get a list of available translations.
     * @return List of available translations.
     *
     */
-    QList<TranslationInfo> GetTranslations() const {
+    QList<TranslationInfo> getTranslations() const {
         return mTranslations;
     }
 
@@ -86,14 +86,14 @@ public:
     * @return true if succeeds, false otherwise.
     *
     */
-    bool SetLanguage(const QString &code);
+    bool setLanguage(const QString &code);
 
     /**
     * @brief Get currently selected translation.
     * @return ISO 639 language code for current translation.
     *
     */
-    QString GetCurrentLanguage() const;
+    QString getCurrentLanguage() const;
 
     /**
     * @brief Get translation suggestion for the system.
@@ -103,7 +103,7 @@ public:
     * @return Suggested translation ISO 639 language code.
     *
     */
-    QString SuggestLanguage() const;
+    QString suggestLanguage() const;
 
 protected:
 
@@ -113,7 +113,7 @@ protected:
     * @param filename Filename of the translation.
     *
     */
-    void AddTranslation(const char *name, const char *filename);
+    void addTranslation(const char *name, const char *filename);
 
     /**
     * @brief Find language in the list and return its index.
@@ -121,7 +121,7 @@ protected:
     * @return Index at list, or -1 if not found.
     *
     */
-    int GetLanguageIndexByCode(const QString &code) const;
+    int getLanguageIndexByCode(const QString &code) const;
 
 private:
 

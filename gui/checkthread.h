@@ -67,9 +67,9 @@ signals:
     * @brief cpp checking is done
     *
     */
-    void Done();
+    void done();
 
-    void FileChecked(const QString &file);
+    void fileChecked(const QString &file);
 protected:
 
     /**

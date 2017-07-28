@@ -51,26 +51,26 @@ TranslationHandler::TranslationHandler(QObject *parent) :
 {
     // Add our available languages
     // Keep this list sorted
-    AddTranslation("Chinese (Simplified)", "cppcheck_zh_CN");
-    AddTranslation("Dutch", "cppcheck_nl");
-    AddTranslation("English", "cppcheck_en");
-    AddTranslation("Finnish", "cppcheck_fi");
-    AddTranslation("French", "cppcheck_fr");
-    AddTranslation("German", "cppcheck_de");
-    AddTranslation("Italian", "cppcheck_it");
-    AddTranslation("Japanese", "cppcheck_ja");
-    AddTranslation("Korean", "cppcheck_ko");
-    AddTranslation("Russian", "cppcheck_ru");
-    AddTranslation("Serbian", "cppcheck_sr");
-    AddTranslation("Spanish", "cppcheck_es");
-    AddTranslation("Swedish", "cppcheck_sv");
+    addTranslation("Chinese (Simplified)", "cppcheck_zh_CN");
+    addTranslation("Dutch", "cppcheck_nl");
+    addTranslation("English", "cppcheck_en");
+    addTranslation("Finnish", "cppcheck_fi");
+    addTranslation("French", "cppcheck_fr");
+    addTranslation("German", "cppcheck_de");
+    addTranslation("Italian", "cppcheck_it");
+    addTranslation("Japanese", "cppcheck_ja");
+    addTranslation("Korean", "cppcheck_ko");
+    addTranslation("Russian", "cppcheck_ru");
+    addTranslation("Serbian", "cppcheck_sr");
+    addTranslation("Spanish", "cppcheck_es");
+    addTranslation("Swedish", "cppcheck_sv");
 }
 
 TranslationHandler::~TranslationHandler()
 {
 }
 
-const QStringList TranslationHandler::GetNames() const
+const QStringList TranslationHandler::getNames() const
 {
     QStringList names;
     foreach (TranslationInfo translation, mTranslations) {
@@ -79,7 +79,7 @@ const QStringList TranslationHandler::GetNames() const
     return names;
 }
 
-bool TranslationHandler::SetLanguage(const QString &code)
+bool TranslationHandler::setLanguage(const QString &code)
 {
     bool failure = false;
     QString error;
@@ -98,7 +98,7 @@ bool TranslationHandler::SetLanguage(const QString &code)
     }
 
     //Make sure the translator is otherwise valid
-    int index = GetLanguageIndexByCode(code);
+    int index = getLanguageIndexByCode(code);
     if (index == -1) {
         error = QObject::tr("Unknown language specified!");
         failure = true;
@@ -161,19 +161,19 @@ bool TranslationHandler::SetLanguage(const QString &code)
     return true;
 }
 
-QString TranslationHandler::GetCurrentLanguage() const
+QString TranslationHandler::getCurrentLanguage() const
 {
     return mCurrentLanguage;
 }
 
-QString TranslationHandler::SuggestLanguage() const
+QString TranslationHandler::suggestLanguage() const
 {
     //Get language from system locale's name ie sv_SE or zh_CN
     QString language = QLocale::system().name();
     //qDebug()<<"Your language is"<<language;
 
     //And see if we can find it from our list of language files
-    int index = GetLanguageIndexByCode(language);
+    int index = getLanguageIndexByCode(language);
 
     //If nothing found, return English
     if (index < 0) {
@@ -183,7 +183,7 @@ QString TranslationHandler::SuggestLanguage() const
     return language;
 }
 
-void TranslationHandler::AddTranslation(const char *name, const char *filename)
+void TranslationHandler::addTranslation(const char *name, const char *filename)
 {
     TranslationInfo info;
     info.mName = name;
@@ -193,7 +193,7 @@ void TranslationHandler::AddTranslation(const char *name, const char *filename)
     mTranslations.append(info);
 }
 
-int TranslationHandler::GetLanguageIndexByCode(const QString &code) const
+int TranslationHandler::getLanguageIndexByCode(const QString &code) const
 {
     int index = -1;
     for (int i = 0; i < mTranslations.size(); i++) {

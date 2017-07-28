@@ -47,21 +47,21 @@ public:
     * @brief Save all values to QSettings
     *
     */
-    void SaveSettingValues() const;
+    void saveSettingValues() const;
 
     /**
     * @brief Get checkbox value for mShowFullPath
     *
     * @return should full path of errors be shown in the tree
     */
-    bool ShowFullPath() const;
+    bool showFullPath() const;
 
     /**
     * @brief Get checkbox value for mSaveFullPath
     *
     * @return should full path of files be saved when creating a report
     */
-    bool SaveFullPath() const;
+    bool saveFullPath() const;
 
 
     /**
@@ -69,14 +69,14 @@ public:
     *
     * @return Should "no errors message" be hidden
     */
-    bool ShowNoErrorsMessage() const;
+    bool showNoErrorsMessage() const;
 
     /**
     * @brief Get checkbox value for mShowIdColumn
     *
     * @return Should error id column be displayed
     */
-    bool ShowErrorId() const;
+    bool showErrorId() const;
 
 
     /**
@@ -84,63 +84,63 @@ public:
     *
     * @return Should inconclusive column be displayed
     */
-    bool ShowInconclusive() const;
+    bool showInconclusive() const;
 
     /**
     * @brief Get checkbox value for mSaveAllErrors
     *
     * @return should all errors be saved to report
     */
-    bool SaveAllErrors() const;
+    bool saveAllErrors() const;
 
 protected slots:
     /**
     * @brief Slot for clicking OK.
     *
     */
-    void Ok();
+    void ok();
 
     /**
     * @brief Slot for adding a new application to the list
     *
     */
-    void AddApplication();
+    void addApplication();
 
     /**
     * @brief Slot for deleting an application from the list
     *
     */
-    void RemoveApplication();
+    void removeApplication();
 
     /**
     * @brief Slot for modifying an application in the list
     *
     */
-    void EditApplication();
+    void editApplication();
 
     /**
     * @brief Slot for making the selected application as the default (first)
     *
     */
-    void DefaultApplication();
+    void defaultApplication();
 
     /**
     * @brief Slot for adding new include path
     *
     */
-    void AddIncludePath();
+    void addIncludePath();
 
     /**
     * @brief Slot for removing an include path.
     *
     */
-    void RemoveIncludePath();
+    void removeIncludePath();
 
     /**
     * @brief Slot for editing an include path.
     *
     */
-    void EditIncludePath();
+    void editIncludePath();
 
 protected:
 
@@ -149,27 +149,26 @@ protected:
     * @param path Path to add.
     *
     */
-    void AddIncludePath(const QString &path);
+    void addIncludePath(const QString &path);
 
     /**
     * @brief Clear all applications from the list and re insert them from mTempApplications
     *
     */
-    void PopulateApplicationList();
+    void populateApplicationList();
 
     /**
     * @brief Load saved values
     * Loads dialog size and column widths.
     *
     */
-    void SaveSettings() const;
+    void loadSettings();
 
     /**
     * @brief Save settings
     * Save dialog size and column widths.
-    *
     */
-    void LoadSettings();
+    void saveSettings() const;
 
     /**
      * @brief Save a single checkboxes value
@@ -178,7 +177,7 @@ protected:
      * @param box checkbox to save
      * @param name name for QSettings to store the value
      */
-    static void SaveCheckboxValue(QSettings *settings, QCheckBox *box, const QString &name);
+    static void saveCheckboxValue(QSettings *settings, QCheckBox *box, const QString &name);
 
     /**
     * @brief Convert bool to Qt::CheckState
@@ -186,7 +185,7 @@ protected:
     * @param yes value to convert
     * @return value converted to Qt::CheckState
     */
-    static Qt::CheckState BoolToCheckState(bool yes);
+    static Qt::CheckState boolToCheckState(bool yes);
 
     /**
     * @brief Converts Qt::CheckState to bool
@@ -194,17 +193,17 @@ protected:
     * @param state Qt::CheckState to convert
     * @return converted value
     */
-    static bool CheckStateToBool(Qt::CheckState state);
+    static bool checkStateToBool(Qt::CheckState state);
 
     /**
     * @brief Populate the include paths-list.
     */
-    void InitIncludepathsList();
+    void initIncludepathsList();
 
     /**
     * @brief Populate the translations list.
     */
-    void InitTranslationsList();
+    void initTranslationsList();
 
     /**
     * @brief List of applications user has specified

@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     }
 
     TranslationHandler* th = new TranslationHandler(&app);
-    th->SetLanguage(settings->value(SETTINGS_LANGUAGE, th->SuggestLanguage()).toString());
+    th->setLanguage(settings->value(SETTINGS_LANGUAGE, th->suggestLanguage()).toString());
 
     if (!CheckArgs(app.arguments()))
         return 0;

@@ -34,8 +34,8 @@ ApplicationDialog::ApplicationDialog(const QString &title,
 {
     mUI.setupUi(this);
 
-    connect(mUI.mButtonBrowse, SIGNAL(clicked()), this, SLOT(Browse()));
-    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
+    connect(mUI.mButtonBrowse, SIGNAL(clicked()), this, SLOT(browse()));
+    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(ok()));
     connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
     mUI.mPath->setText(app.getPath());
     mUI.mName->setText(app.getName());
@@ -50,7 +50,7 @@ ApplicationDialog::~ApplicationDialog()
     //dtor
 }
 
-void ApplicationDialog::Browse()
+void ApplicationDialog::browse()
 {
     QString filter;
 #ifdef Q_OS_WIN
@@ -70,7 +70,7 @@ void ApplicationDialog::Browse()
     }
 }
 
-void ApplicationDialog::Ok()
+void ApplicationDialog::ok()
 {
     if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty()) {
         QMessageBox msg(QMessageBox::Warning,

@@ -43,210 +43,210 @@ public:
     ProjectFileDialog(const QString &path, QWidget *parent = 0);
     virtual ~ProjectFileDialog();
 
-    void LoadFromProjectFile(const ProjectFile *projectFile);
-    void SaveToProjectFile(ProjectFile *projectFile) const;
+    void loadFromProjectFile(const ProjectFile *projectFile);
+    void saveToProjectFile(ProjectFile *projectFile) const;
 
     /**
     * @brief Return project root path from the dialog control.
     * @return Project root path.
     */
-    QString GetRootPath() const;
+    QString getRootPath() const;
 
-    QString GetImportProject() const;
+    QString getImportProject() const;
 
     /** Get Cppcheck build dir */
-    QString GetBuildDir() const;
+    QString getBuildDir() const;
 
     /**
     * @brief Return include paths from the dialog control.
     * @return List of include paths.
     */
-    QStringList GetIncludePaths() const;
+    QStringList getIncludePaths() const;
 
     /**
     * @brief Return define names from the dialog control.
     * @return List of define names.
     */
-    QStringList GetDefines() const;
+    QStringList getDefines() const;
 
     /**
     * @brief Return check paths from the dialog control.
     * @return List of check paths.
     */
-    QStringList GetCheckPaths() const;
+    QStringList getCheckPaths() const;
 
     /**
     * @brief Return excluded paths from the dialog control.
     * @return List of excluded paths.
     */
-    QStringList GetExcludedPaths() const;
+    QStringList getExcludedPaths() const;
 
     /**
     * @brief Return selected libraries from the dialog control.
     * @return List of libraries.
     */
-    QStringList GetLibraries() const;
+    QStringList getLibraries() const;
 
     /**
     * @brief Return suppressions from the dialog control.
     * @return List of suppressions.
     */
-    QStringList GetSuppressions() const;
+    QStringList getSuppressions() const;
 
     /**
     * @brief Set project root path to dialog control.
     * @param root Project root path to set to dialog control.
     */
-    void SetRootPath(const QString &root);
+    void setRootPath(const QString &root);
 
     /** Set build dir */
-    void SetBuildDir(const QString &buildDir);
+    void setBuildDir(const QString &buildDir);
 
-    void SetImportProject(const QString &importProject);
+    void setImportProject(const QString &importProject);
 
     /**
     * @brief Set include paths to dialog control.
     * @param includes List of include paths to set to dialog control.
     */
-    void SetIncludepaths(const QStringList &includes);
+    void setIncludepaths(const QStringList &includes);
 
     /**
     * @brief Set define names to dialog control.
     * @param defines List of define names to set to dialog control.
     */
-    void SetDefines(const QStringList &defines);
+    void setDefines(const QStringList &defines);
 
     /**
     * @brief Set check paths to dialog control.
     * @param paths List of path names to set to dialog control.
     */
-    void SetCheckPaths(const QStringList &paths);
+    void setCheckPaths(const QStringList &paths);
 
     /**
     * @brief Set excluded paths to dialog control.
     * @param paths List of path names to set to dialog control.
     */
-    void SetExcludedPaths(const QStringList &paths);
+    void setExcludedPaths(const QStringList &paths);
 
     /**
     * @brief Set libraries to dialog control.
     * @param libraries List of libraries to set to dialog control.
     */
-    void SetLibraries(const QStringList &libraries);
+    void setLibraries(const QStringList &libraries);
 
     /**
     * @brief Set suppressions to dialog control.
     * @param suppressions List of suppressions to set to dialog control.
     */
-    void SetSuppressions(const QStringList &suppressions);
+    void setSuppressions(const QStringList &suppressions);
 
 protected slots:
 
     /**
     * @brief Browse for build dir.
     */
-    void BrowseBuildDir();
+    void browseBuildDir();
 
     /**
     * @brief Browse for solution / project / compile database.
     */
-    void BrowseImportProject();
+    void browseImportProject();
 
     /**
     * @brief Add new path to check.
     */
-    void AddCheckPath();
+    void addCheckPath();
 
     /**
     * @brief Edit path in the list.
     */
-    void EditCheckPath();
+    void editCheckPath();
 
     /**
     * @brief Remove path from the list.
     */
-    void RemoveCheckPath();
+    void removeCheckPath();
 
     /**
     * @brief Browse for include directory.
     * Allow user to add new include directory to the list.
     */
-    void AddIncludeDir();
+    void addIncludeDir();
 
     /**
     * @brief Remove include directory from the list.
     */
-    void RemoveIncludeDir();
+    void removeIncludeDir();
 
     /**
     * @brief Edit include directory in the list.
     */
-    void EditIncludeDir();
+    void editIncludeDir();
 
     /**
     * @brief Add new path to exclude.
     */
-    void AddExcludePath();
+    void addExcludePath();
 
     /**
     * @brief Edit excluded path in the list.
     */
-    void EditExcludePath();
+    void editExcludePath();
 
     /**
     * @brief Remove excluded path from the list.
     */
-    void RemoveExcludePath();
+    void removeExcludePath();
 
     /**
       * @brief Move include path up in the list.
       */
-    void MoveIncludePathUp();
+    void moveIncludePathUp();
 
     /**
       * @brief Move include path down in the list.
       */
-    void MoveIncludePathDown();
+    void moveIncludePathDown();
 
     /**
     * @brief Add suppression to the list
     */
-    void AddSuppression();
+    void addSuppression();
 
     /**
     * @brief Remove selected suppression from the list
     */
-    void RemoveSuppression();
+    void removeSuppression();
 
 protected:
 
     /**
      * @brief Save dialog settings.
      */
-    void LoadSettings();
+    void loadSettings();
 
     /**
      * @brief Load dialog settings.
      */
-    void SaveSettings() const;
+    void saveSettings() const;
 
     /**
     * @brief Add new indlude directory.
     * @param dir Directory to add.
     */
-    void AddIncludeDir(const QString &dir);
+    void addIncludeDir(const QString &dir);
 
     /**
     * @brief Add new path to check.
     * @param path Path to add.
     */
-    void AddCheckPath(const QString &path);
+    void addCheckPath(const QString &path);
 
     /**
     * @brief Add new path to ignore list.
     * @param path Path to add.
     */
-    void AddExcludePath(const QString &path);
+    void addExcludePath(const QString &path);
 
 private:
     Ui::ProjectFile mUI;

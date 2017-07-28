@@ -553,7 +553,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             signalMapper->setMapping(start, defaultApplicationIndex);
 
             connect(signalMapper, SIGNAL(mapped(int)),
-                    this, SLOT(Context(int)));
+                    this, SLOT(context(int)));
         }
 
         // Add menuitems to copy full path/filename to clipboard
@@ -594,14 +594,14 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(hideallid);
             menu.addAction(opencontainingfolder);
 
-            connect(recheckSelectedFiles, SIGNAL(triggered()), this, SLOT(RecheckSelectedFiles()));
-            connect(copyfilename, SIGNAL(triggered()), this, SLOT(CopyFilename()));
-            connect(copypath, SIGNAL(triggered()), this, SLOT(CopyFullPath()));
-            connect(copymessage, SIGNAL(triggered()), this, SLOT(CopyMessage()));
-            connect(copymessageid, SIGNAL(triggered()), this, SLOT(CopyMessageId()));
-            connect(hide, SIGNAL(triggered()), this, SLOT(HideResult()));
-            connect(hideallid, SIGNAL(triggered()), this, SLOT(HideAllIdResult()));
-            connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(OpenContainingFolder()));
+            connect(recheckSelectedFiles, SIGNAL(triggered()), this, SLOT(recheckSelectedFiles()));
+            connect(copyfilename, SIGNAL(triggered()), this, SLOT(copyFilename()));
+            connect(copypath, SIGNAL(triggered()), this, SLOT(copyFullPath()));
+            connect(copymessage, SIGNAL(triggered()), this, SLOT(copyMessage()));
+            connect(copymessageid, SIGNAL(triggered()), this, SLOT(copyMessageId()));
+            connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
+            connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
+            connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));
         }
 
         //Start the menu
@@ -617,7 +617,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 }
 
                 disconnect(signalMapper, SIGNAL(mapped(int)),
-                           this, SLOT(Context(int)));
+                           this, SLOT(context(int)));
                 //And remove the signal mapper
                 delete signalMapper;
             }

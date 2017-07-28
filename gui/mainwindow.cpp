@@ -351,7 +351,7 @@ void MainWindow::saveSettings() const
 
     mApplications->saveSettings();
 
-    mSettings->setValue(SETTINGS_LANGUAGE, mTranslation->GetCurrentLanguage());
+    mSettings->setValue(SETTINGS_LANGUAGE, mTranslation->getCurrentLanguage());
     mUI.mResults->saveSettings(mSettings);
 }
 
@@ -459,14 +459,14 @@ void MainWindow::checkCode(const QString& code, const QString& filename)
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
     result.setFiles(QStringList(filename));
-    connect(&result, SIGNAL(Progress(int, const QString&)),
-            mUI.mResults, SLOT(Progress(int, const QString&)));
-    connect(&result, SIGNAL(Error(const ErrorItem &)),
-            mUI.mResults, SLOT(Error(const ErrorItem &)));
-    connect(&result, SIGNAL(Log(const QString &)),
-            this, SLOT(Log(const QString &)));
-    connect(&result, SIGNAL(DebugError(const ErrorItem &)),
-            this, SLOT(DebugError(const ErrorItem &)));
+    connect(&result, SIGNAL(progress(int, const QString&)),
+            mUI.mResults, SLOT(progress(int, const QString&)));
+    connect(&result, SIGNAL(error(const ErrorItem &)),
+            mUI.mResults, SLOT(error(const ErrorItem &)));
+    connect(&result, SIGNAL(log(const QString &)),
+            this, SLOT(log(const QString &)));
+    connect(&result, SIGNAL(debugError(const ErrorItem &)),
+            this, SLOT(debugError(const ErrorItem &)));
 
     // Create CppCheck instance
     CppCheck cppcheck(result, true);
@@ -895,13 +895,13 @@ void MainWindow::programSettings()
 {
     SettingsDialog dialog(mApplications, mTranslation, this);
     if (dialog.exec() == QDialog::Accepted) {
-        dialog.SaveSettingValues();
-        mUI.mResults->updateSettings(dialog.ShowFullPath(),
-                                     dialog.SaveFullPath(),
-                                     dialog.SaveAllErrors(),
-                                     dialog.ShowNoErrorsMessage(),
-                                     dialog.ShowErrorId(),
-                                     dialog.ShowInconclusive());
+        dialog.saveSettingValues();
+        mUI.mResults->updateSettings(dialog.showFullPath(),
+                                     dialog.saveFullPath(),
+                                     dialog.saveAllErrors(),
+                                     dialog.showNoErrorsMessage(),
+                                     dialog.showErrorId(),
+                                     dialog.showInconclusive());
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
         setLanguage(newLang);
     }
@@ -1231,11 +1231,11 @@ void MainWindow::formatAndSetTitle(const QString &text)
 
 void MainWindow::setLanguage(const QString &code)
 {
-    const QString currentLang = mTranslation->GetCurrentLanguage();
+    const QString currentLang = mTranslation->getCurrentLanguage();
     if (currentLang == code)
         return;
 
-    if (mTranslation->SetLanguage(code)) {
+    if (mTranslation->setLanguage(code)) {
         //Translate everything that is visible here
         mUI.retranslateUi(this);
         mUI.mResults->translate();

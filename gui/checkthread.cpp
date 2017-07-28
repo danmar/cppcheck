@@ -65,7 +65,7 @@ void CheckThread::run()
             mCppcheck.analyseWholeProgram(buildDir, files2);
         }
         mFiles.clear();
-        emit Done();
+        emit done();
         return;
     }
 
@@ -73,7 +73,7 @@ void CheckThread::run()
     while (!file.isEmpty() && mState == Running) {
         qDebug() << "Checking file" << file;
         mCppcheck.check(file.toStdString());
-        emit FileChecked(file);
+        emit fileChecked(file);
 
         if (mState == Running)
             file = mResult.getNextFile();
@@ -84,7 +84,7 @@ void CheckThread::run()
         file = QString::fromStdString(fileSettings.filename);
         qDebug() << "Checking file" << file;
         mCppcheck.check(fileSettings);
-        emit FileChecked(file);
+        emit fileChecked(file);
 
         if (mState == Running)
             fileSettings = mResult.getNextFileSettings();
@@ -95,7 +95,7 @@ void CheckThread::run()
     else
         mState = Stopped;
 
-    emit Done();
+    emit done();
 }
 
 void CheckThread::stop()

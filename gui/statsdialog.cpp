@@ -36,8 +36,7 @@ StatsDialog::StatsDialog(QWidget *parent)
     mUI.setupUi(this);
 
     connect(mUI.mCopyToClipboard, SIGNAL(pressed()), this, SLOT(copyToClipboard()));
-    connect(mUI.mPDFexport, SIGNAL(pressed()), this, SLOT(PDFexport()));
-
+    connect(mUI.mPDFexport, SIGNAL(pressed()), this, SLOT(pdfExport()));
 }
 
 void StatsDialog::setProject(const Project& project)
@@ -94,7 +93,7 @@ void StatsDialog::setScanDuration(double seconds)
 
     mUI.mScanDuration->setText(parts.join(tr(" and ")));
 }
-void StatsDialog::PDFexport()
+void StatsDialog::pdfExport()
 {
     const QString Stat = QString(
                              "<center><h1>%1   %2</h1></center>\n"

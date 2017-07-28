@@ -86,11 +86,11 @@ bool Project::open()
 bool Project::edit()
 {
     ProjectFileDialog dlg(mFilename, mParentWidget);
-    dlg.LoadFromProjectFile(mProjectFile);
+    dlg.loadFromProjectFile(mProjectFile);
     if (dlg.exec() != QDialog::Accepted)
         return false;
 
-    dlg.SaveToProjectFile(mProjectFile);
+    dlg.saveToProjectFile(mProjectFile);
 
     if (!mProjectFile->write()) {
         QMessageBox msg(QMessageBox::Critical,
