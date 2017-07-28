@@ -46,7 +46,7 @@ public:
      * @param path Path to match.
      * @return true if any of the masks match the path, false otherwise.
      */
-    bool Match(const std::string &path) const;
+    bool match(const std::string &path) const;
 
 protected:
 
@@ -55,7 +55,7 @@ protected:
      * @param path Path to edit.
      * @return path without filename part.
      */
-    static std::string RemoveFilename(const std::string &path);
+    static std::string removeFilename(const std::string &path);
 
 private:
     std::vector<std::string> _excludedPaths;

@@ -24,17 +24,17 @@
 #include "path.h"
 #include "pathmatch.h"
 
-QStringList FileList::GetDefaultFilters()
+QStringList FileList::getDefaultFilters()
 {
     QStringList extensions;
     extensions << "*.cpp" << "*.cxx" << "*.cc" << "*.c" << "*.c++" << "*.txx" << "*.tpp";
     return extensions;
 }
 
-bool FileList::FilterMatches(const QFileInfo &inf)
+bool FileList::filterMatches(const QFileInfo &inf)
 {
     if (inf.isFile()) {
-        const QStringList filters = FileList::GetDefaultFilters();
+        const QStringList filters = FileList::getDefaultFilters();
         QString ext("*.");
         ext += inf.suffix();
         if (filters.contains(ext, Qt::CaseInsensitive))
@@ -43,18 +43,18 @@ bool FileList::FilterMatches(const QFileInfo &inf)
     return false;
 }
 
-void FileList::AddFile(const QString &filepath)
+void FileList::addFile(const QString &filepath)
 {
     QFileInfo inf(filepath);
-    if (FilterMatches(inf))
+    if (filterMatches(inf))
         mFileList << inf;
 }
 
-void FileList::AddDirectory(const QString &directory, bool recursive)
+void FileList::addDirectory(const QString &directory, bool recursive)
 {
     QDir dir(directory);
     dir.setSorting(QDir::Name);
-    const QStringList filters = FileList::GetDefaultFilters();
+    const QStringList filters = FileList::getDefaultFilters();
     const QStringList origNameFilters = dir.nameFilters();
     dir.setNameFilters(filters);
     if (!recursive) {
@@ -72,24 +72,24 @@ void FileList::AddDirectory(const QString &directory, bool recursive)
         QFileInfo item;
         foreach (item, list) {
             const QString path = item.canonicalFilePath();
-            AddDirectory(path, recursive);
+            addDirectory(path, recursive);
         }
     }
 }
 
-void FileList::AddPathList(const QStringList &paths)
+void FileList::addPathList(const QStringList &paths)
 {
     QString path;
     foreach (path, paths) {
         QFileInfo inf(path);
         if (inf.isFile())
-            AddFile(path);
+            addFile(path);
         else
-            AddDirectory(path, true);
+            addDirectory(path, true);
     }
 }
 
-QStringList FileList::GetFileList() const
+QStringList FileList::getFileList() const
 {
     if (mExcludedPaths.empty()) {
         QStringList names;
@@ -99,11 +99,11 @@ QStringList FileList::GetFileList() const
         }
         return names;
     } else {
-        return ApplyExcludeList();
+        return applyExcludeList();
     }
 }
 
-void FileList::AddExcludeList(const QStringList &paths)
+void FileList::addExcludeList(const QStringList &paths)
 {
     mExcludedPaths = paths;
 }
@@ -117,7 +117,7 @@ static std::vector<std::string> toStdStringList(const QStringList &stringList)
     return ret;
 }
 
-QStringList FileList::ApplyExcludeList() const
+QStringList FileList::applyExcludeList() const
 {
 #ifdef _WIN32
     const PathMatch pathMatch(toStdStringList(mExcludedPaths), true);
@@ -128,7 +128,7 @@ QStringList FileList::ApplyExcludeList() const
     QStringList paths;
     foreach (QFileInfo item, mFileList) {
         QString name = QDir::fromNativeSeparators(item.canonicalFilePath());
-        if (!pathMatch.Match(name.toStdString()))
+        if (!pathMatch.match(name.toStdString()))
             paths << name;
     }
     return paths;

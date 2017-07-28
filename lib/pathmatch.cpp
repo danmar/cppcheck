@@ -34,7 +34,7 @@ PathMatch::PathMatch(const std::vector<std::string> &excludedPaths, bool caseSen
     _workingDirectory.push_back(Path::getCurrentPath());
 }
 
-bool PathMatch::Match(const std::string &path) const
+bool PathMatch::match(const std::string &path) const
 {
     if (path.empty())
         return false;
@@ -49,7 +49,7 @@ bool PathMatch::Match(const std::string &path) const
         // Filtering directory name
         if (endsWith(excludedPath,'/')) {
             if (!endsWith(findpath,'/'))
-                findpath = RemoveFilename(findpath);
+                findpath = removeFilename(findpath);
 
             if (excludedPath.length() > findpath.length())
                 continue;
@@ -78,7 +78,7 @@ bool PathMatch::Match(const std::string &path) const
     return false;
 }
 
-std::string PathMatch::RemoveFilename(const std::string &path)
+std::string PathMatch::removeFilename(const std::string &path)
 {
     const std::size_t ind = path.find_last_of('/');
     return path.substr(0, ind + 1);

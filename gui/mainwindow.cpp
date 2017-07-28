@@ -407,13 +407,13 @@ void MainWindow::doCheckFiles(const QStringList &files)
 
     mIsLogfileLoaded = false;
     FileList pathList;
-    pathList.AddPathList(files);
+    pathList.addPathList(files);
     if (mProject) {
-        pathList.AddExcludeList(mProject->getProjectFile()->getExcludedPaths());
+        pathList.addExcludeList(mProject->getProjectFile()->getExcludedPaths());
     } else {
         enableProjectActions(false);
     }
-    QStringList fileNames = pathList.GetFileList();
+    QStringList fileNames = pathList.getFileList();
 
     mUI.mResults->Clear(true);
     mThread->ClearFiles();
@@ -503,7 +503,7 @@ QStringList MainWindow::selectFilesToCheck(QFileDialog::FileMode mode)
                    tr("Select files to check"),
                    GetPath(SETTINGS_LAST_CHECK_PATH),
                    tr("C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)")
-                   .arg(FileList::GetDefaultFilters().join(" "))
+                   .arg(FileList::getDefaultFilters().join(" "))
                    .arg(compile_commands_json));
         if (selected.isEmpty())
             mCurrentDirectory.clear();
@@ -931,10 +931,10 @@ void MainWindow::reCheckSelected(QStringList files, bool all)
 
     mCurrentDirectory = mUI.mResults->GetCheckDirectory();
     FileList pathList;
-    pathList.AddPathList(files);
+    pathList.addPathList(files);
     if (mProject)
-        pathList.AddExcludeList(mProject->getProjectFile()->getExcludedPaths());
-    QStringList fileNames = pathList.GetFileList();
+        pathList.addExcludeList(mProject->getProjectFile()->getExcludedPaths());
+    QStringList fileNames = pathList.getFileList();
     checkLockDownUI(); // lock UI while checking
     mUI.mResults->CheckingStarted(fileNames.size());
     mThread->SetCheckFiles(fileNames);
