@@ -48,9 +48,9 @@ ResultsView::ResultsView(QWidget * parent) :
 {
     mUI.setupUi(this);
 
-    connect(mUI.mTree, SIGNAL(ResultsHidden(bool)), this, SIGNAL(ResultsHidden(bool)));
-    connect(mUI.mTree, SIGNAL(CheckSelected(QStringList)), this, SIGNAL(CheckSelected(QStringList)));
-    connect(mUI.mTree, SIGNAL(SelectionChanged(const QModelIndex &)), this, SLOT(UpdateDetails(const QModelIndex &)));
+    connect(mUI.mTree, SIGNAL(resultsHidden(bool)), this, SIGNAL(ResultsHidden(bool)));
+    connect(mUI.mTree, SIGNAL(checkSelected(QStringList)), this, SIGNAL(CheckSelected(QStringList)));
+    connect(mUI.mTree, SIGNAL(selectionChanged(const QModelIndex &)), this, SLOT(UpdateDetails(const QModelIndex &)));
 }
 
 void ResultsView::Initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
@@ -62,7 +62,7 @@ void ResultsView::Initialize(QSettings *settings, ApplicationList *list, ThreadH
     mUI.mVerticalSplitter->restoreState(state);
     mShowNoErrorsMessage = settings->value(SETTINGS_SHOW_NO_ERRORS, true).toBool();
 
-    mUI.mTree->Initialize(settings, list, checkThreadHandler);
+    mUI.mTree->initialize(settings, list, checkThreadHandler);
 }
 
 ResultsView::~ResultsView()
@@ -73,7 +73,7 @@ ResultsView::~ResultsView()
 void ResultsView::Clear(bool results)
 {
     if (results) {
-        mUI.mTree->Clear();
+        mUI.mTree->clear();
     }
 
     mUI.mDetails->setText("");
@@ -88,12 +88,12 @@ void ResultsView::Clear(bool results)
 
 void ResultsView::Clear(const QString &filename)
 {
-    mUI.mTree->Clear(filename);
+    mUI.mTree->clear(filename);
 }
 
 void ResultsView::ClearRecheckFile(const QString &filename)
 {
-    mUI.mTree->ClearRecheckFile(filename);
+    mUI.mTree->clearRecheckFile(filename);
 }
 
 void ResultsView::Progress(int value, const QString& description)
@@ -104,7 +104,7 @@ void ResultsView::Progress(int value, const QString& description)
 
 void ResultsView::Error(const ErrorItem &item)
 {
-    if (mUI.mTree->AddErrorItem(item)) {
+    if (mUI.mTree->addErrorItem(item)) {
         emit GotResults();
         mStatistics->addItem(ShowTypes::SeverityToShowType(item.severity));
     }
@@ -112,7 +112,7 @@ void ResultsView::Error(const ErrorItem &item)
 
 void ResultsView::ShowResults(ShowTypes::ShowType type, bool show)
 {
-    mUI.mTree->ShowResults(type, show);
+    mUI.mTree->showResults(type, show);
 }
 
 void ResultsView::CollapseAllResults()
@@ -127,12 +127,12 @@ void ResultsView::ExpandAllResults()
 
 void ResultsView::ShowHiddenResults()
 {
-    mUI.mTree->ShowHiddenResults();
+    mUI.mTree->showHiddenResults();
 }
 
 void ResultsView::FilterResults(const QString& filter)
 {
-    mUI.mTree->FilterResults(filter);
+    mUI.mTree->filterResults(filter);
 }
 
 void ResultsView::Save(const QString &filename, Report::Type type) const
@@ -163,7 +163,7 @@ void ResultsView::Save(const QString &filename, Report::Type type) const
 
     if (report) {
         if (report->create())
-            mUI.mTree->SaveResults(report);
+            mUI.mTree->saveResults(report);
         else {
             QMessageBox msgBox;
             msgBox.setText(tr("Failed to save the report."));
@@ -210,7 +210,7 @@ void ResultsView::Print(QPrinter* printer)
     }
 
     PrintableReport report;
-    mUI.mTree->SaveResults(&report);
+    mUI.mTree->saveResults(&report);
     QTextDocument doc(report.getFormattedReportText());
     doc.print(printer);
 }
@@ -222,18 +222,18 @@ void ResultsView::UpdateSettings(bool showFullPath,
                                  bool showErrorId,
                                  bool showInconclusive)
 {
-    mUI.mTree->UpdateSettings(showFullPath, saveFullPath, saveAllErrors, showErrorId, showInconclusive);
+    mUI.mTree->updateSettings(showFullPath, saveFullPath, saveAllErrors, showErrorId, showInconclusive);
     mShowNoErrorsMessage = showNoErrorsMessage;
 }
 
 void ResultsView::SetCheckDirectory(const QString &dir)
 {
-    mUI.mTree->SetCheckDirectory(dir);
+    mUI.mTree->setCheckDirectory(dir);
 }
 
 QString ResultsView::GetCheckDirectory(void)
 {
-    return mUI.mTree->GetCheckDirectory();
+    return mUI.mTree->getCheckDirectory();
 }
 
 void ResultsView::CheckingStarted(int count)
@@ -261,7 +261,7 @@ void ResultsView::CheckingFinished()
 
             msg.exec();
         } //If we have errors but they aren't visible, tell user about it
-        else if (!mUI.mTree->HasVisibleResults()) {
+        else if (!mUI.mTree->hasVisibleResults()) {
             QString text = tr("Errors were found, but they are configured to be hidden.\n"\
                               "To toggle what kind of errors are shown, open view menu.");
             QMessageBox msg(QMessageBox::Information,
@@ -277,17 +277,17 @@ void ResultsView::CheckingFinished()
 
 bool ResultsView::HasVisibleResults() const
 {
-    return mUI.mTree->HasVisibleResults();
+    return mUI.mTree->hasVisibleResults();
 }
 
 bool ResultsView::HasResults() const
 {
-    return mUI.mTree->HasResults();
+    return mUI.mTree->hasResults();
 }
 
 void ResultsView::SaveSettings(QSettings *settings)
 {
-    mUI.mTree->SaveSettings();
+    mUI.mTree->saveSettings();
     QByteArray state = mUI.mVerticalSplitter->saveState();
     settings->setValue(SETTINGS_MAINWND_SPLITTER_STATE, state);
     mUI.mVerticalSplitter->restoreState(state);
@@ -295,7 +295,7 @@ void ResultsView::SaveSettings(QSettings *settings)
 
 void ResultsView::Translate()
 {
-    mUI.mTree->Translate();
+    mUI.mTree->translate();
 }
 
 void ResultsView::DisableProgressbar()
@@ -341,9 +341,9 @@ void ResultsView::ReadErrorsXml(const QString &filename)
 
     ErrorItem item;
     foreach (item, errors) {
-        mUI.mTree->AddErrorItem(item);
+        mUI.mTree->addErrorItem(item);
     }
-    mUI.mTree->SetCheckDirectory("");
+    mUI.mTree->setCheckDirectory("");
 }
 
 void ResultsView::UpdateDetails(const QModelIndex &index)
@@ -378,7 +378,7 @@ void ResultsView::UpdateDetails(const QModelIndex &index)
     if (file0 != "" && Path::isHeader(data["file"].toString().toStdString()))
         formattedMsg += QString("\n\n%1: %2").arg(tr("First included by")).arg(QDir::toNativeSeparators(file0));
 
-    if (mUI.mTree->ShowIdColumn())
+    if (mUI.mTree->showIdColumn())
         formattedMsg.prepend(tr("Id") + ": " + data["id"].toString() + "\n");
     mUI.mDetails->setText(formattedMsg);
 }

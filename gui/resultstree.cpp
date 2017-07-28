@@ -56,7 +56,7 @@ ResultsTree::ResultsTree(QWidget * parent) :
     mSelectionModel(0)
 {
     setModel(&mModel);
-    Translate(); // Adds columns to grid
+    translate(); // Adds columns to grid
     setExpandsOnDoubleClick(false);
     setSortingEnabled(true);
 
@@ -71,21 +71,21 @@ ResultsTree::~ResultsTree()
 void ResultsTree::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
-        QuickStartApplication(this->currentIndex());
+        quickStartApplication(this->currentIndex());
     }
     QTreeView::keyPressEvent(event);
 }
 
-void ResultsTree::Initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
+void ResultsTree::initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
 {
     mSettings = settings;
     mApplications = list;
     mThread = checkThreadHandler;
-    LoadSettings();
+    loadSettings();
 }
 
 
-QStandardItem *ResultsTree::CreateNormalItem(const QString &name)
+QStandardItem *ResultsTree::createNormalItem(const QString &name)
 {
     QStandardItem *item = new QStandardItem(name);
     item->setData(name, Qt::ToolTipRole);
@@ -93,7 +93,7 @@ QStandardItem *ResultsTree::CreateNormalItem(const QString &name)
     return item;
 }
 
-QStandardItem *ResultsTree::CreateCheckboxItem(bool checked)
+QStandardItem *ResultsTree::createCheckboxItem(bool checked)
 {
     QStandardItem *item = new QStandardItem;
     item->setCheckable(true);
@@ -102,7 +102,7 @@ QStandardItem *ResultsTree::CreateCheckboxItem(bool checked)
     return item;
 }
 
-QStandardItem *ResultsTree::CreateLineNumberItem(const QString &linenumber)
+QStandardItem *ResultsTree::createLineNumberItem(const QString &linenumber)
 {
     QStandardItem *item = new QStandardItem();
     item->setData(QVariant(linenumber.toULongLong()), Qt::DisplayRole);
@@ -112,13 +112,13 @@ QStandardItem *ResultsTree::CreateLineNumberItem(const QString &linenumber)
     return item;
 }
 
-bool ResultsTree::AddErrorItem(const ErrorItem &item)
+bool ResultsTree::addErrorItem(const ErrorItem &item)
 {
     if (item.errorPath.isEmpty()) {
         return false;
     }
 
-    QString realfile = StripPath(item.errorPath.back().file, false);
+    QString realfile = stripPath(item.errorPath.back().file, false);
 
     if (realfile.isEmpty()) {
         realfile = tr("Undefined file");
@@ -151,11 +151,11 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
     line.severity = item.severity;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
-    QStandardItem* fileItem = EnsureFileItem(item.errorPath.back().file, item.file0, hide);
-    QStandardItem* stditem = AddBacktraceFiles(fileItem,
+    QStandardItem* fileItem = ensureFileItem(item.errorPath.back().file, item.file0, hide);
+    QStandardItem* stditem = addBacktraceFiles(fileItem,
                              line,
                              hide,
-                             SeverityToIcon(line.severity),
+                             severityToIcon(line.severity),
                              false);
 
     if (!stditem)
@@ -171,7 +171,7 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
     data["line"]  = item.errorPath.back().line;
     data["id"]  = item.errorId;
     data["inconclusive"] = item.inconclusive;
-    data["file0"] = StripPath(item.file0, true);
+    data["file0"] = stripPath(item.file0, true);
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
@@ -182,7 +182,7 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
             line.line = e.line;
             line.message = line.summary = e.info;
             QStandardItem *child_item;
-            child_item = AddBacktraceFiles(stditem,
+            child_item = addBacktraceFiles(stditem,
                                            line,
                                            hide,
                                            ":images/go-down.png",
@@ -210,7 +210,7 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
     return true;
 }
 
-QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
+QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
         const ErrorLine &item,
         const bool hide,
         const QString &icon,
@@ -222,12 +222,12 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
 
     QList<QStandardItem*> list;
     // Ensure shown path is with native separators
-    list << CreateNormalItem(QDir::toNativeSeparators(item.file))
-         << CreateNormalItem(childOfMessage ? tr("note") : SeverityToTranslatedString(item.severity))
-         << CreateLineNumberItem(QString::number(item.line))
-         << CreateNormalItem(childOfMessage ? QString() : item.errorId)
-         << (childOfMessage ? CreateNormalItem(QString()) : CreateCheckboxItem(item.inconclusive))
-         << CreateNormalItem(item.summary);
+    list << createNormalItem(QDir::toNativeSeparators(item.file))
+         << createNormalItem(childOfMessage ? tr("note") : severityToTranslatedString(item.severity))
+         << createLineNumberItem(QString::number(item.line))
+         << createNormalItem(childOfMessage ? QString() : item.errorId)
+         << (childOfMessage ? createNormalItem(QString()) : createCheckboxItem(item.inconclusive))
+         << createNormalItem(item.summary);
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
 
@@ -261,7 +261,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     return list[0];
 }
 
-QString ResultsTree::SeverityToTranslatedString(Severity::SeverityType severity)
+QString ResultsTree::severityToTranslatedString(Severity::SeverityType severity)
 {
     switch (severity) {
     case Severity::style:
@@ -291,7 +291,7 @@ QString ResultsTree::SeverityToTranslatedString(Severity::SeverityType severity)
     }
 }
 
-QStandardItem *ResultsTree::FindFileItem(const QString &name) const
+QStandardItem *ResultsTree::findFileItem(const QString &name) const
 {
     // The first column contains the file name. In Windows we can get filenames
     // "header.h" and "Header.h" and must compare them as identical.
@@ -307,14 +307,14 @@ QStandardItem *ResultsTree::FindFileItem(const QString &name) const
     return 0;
 }
 
-void ResultsTree::Clear()
+void ResultsTree::clear()
 {
     mModel.removeRows(0, mModel.rowCount());
 }
 
-void ResultsTree::Clear(const QString &filename)
+void ResultsTree::clear(const QString &filename)
 {
-    const QString stripped = StripPath(filename, false);
+    const QString stripped = stripPath(filename, false);
 
     for (int i = 0; i < mModel.rowCount(); ++i) {
         const QStandardItem *item = mModel.item(i, 0);
@@ -330,7 +330,7 @@ void ResultsTree::Clear(const QString &filename)
     }
 }
 
-void ResultsTree::ClearRecheckFile(const QString &filename)
+void ResultsTree::clearRecheckFile(const QString &filename)
 {
     for (int i = 0; i < mModel.rowCount(); ++i) {
         const QStandardItem *item = mModel.item(i, 0);
@@ -349,7 +349,7 @@ void ResultsTree::ClearRecheckFile(const QString &filename)
 }
 
 
-void ResultsTree::LoadSettings()
+void ResultsTree::loadSettings()
 {
     for (int i = 0; i < mModel.columnCount(); i++) {
         QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
@@ -360,11 +360,11 @@ void ResultsTree::LoadSettings()
     mSaveAllErrors = mSettings->value(SETTINGS_SAVE_ALL_ERRORS, false).toBool();
     mShowFullPath = mSettings->value(SETTINGS_SHOW_FULL_PATH, false).toBool();
 
-    ShowIdColumn(mSettings->value(SETTINGS_SHOW_ERROR_ID, false).toBool());
-    ShowInconclusiveColumn(mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
+    showIdColumn(mSettings->value(SETTINGS_SHOW_ERROR_ID, false).toBool());
+    showInconclusiveColumn(mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
 }
 
-void ResultsTree::SaveSettings() const
+void ResultsTree::saveSettings() const
 {
     for (int i = 0; i < mModel.columnCount(); i++) {
         QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
@@ -372,21 +372,21 @@ void ResultsTree::SaveSettings() const
     }
 }
 
-void ResultsTree::ShowResults(ShowTypes::ShowType type, bool show)
+void ResultsTree::showResults(ShowTypes::ShowType type, bool show)
 {
     if (type != ShowTypes::ShowNone && mShowSeverities.isShown(type) != show) {
         mShowSeverities.show(type, show);
-        RefreshTree();
+        refreshTree();
     }
 }
 
-void ResultsTree::FilterResults(const QString& filter)
+void ResultsTree::filterResults(const QString& filter)
 {
     mFilter = filter;
-    RefreshTree();
+    refreshTree();
 }
 
-void ResultsTree::ShowHiddenResults()
+void ResultsTree::showHiddenResults()
 {
     //Clear the "hide" flag for each item
     int filecount = mModel.rowCount();
@@ -409,12 +409,12 @@ void ResultsTree::ShowHiddenResults()
             }
         }
     }
-    RefreshTree();
-    emit ResultsHidden(false);
+    refreshTree();
+    emit resultsHidden(false);
 }
 
 
-void ResultsTree::RefreshTree()
+void ResultsTree::refreshTree()
 {
     mVisibleErrors = false;
     //Get the amount of files in the tree
@@ -481,12 +481,12 @@ void ResultsTree::RefreshTree()
     }
 }
 
-QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, const QString &file0, bool hide)
+QStandardItem *ResultsTree::ensureFileItem(const QString &fullpath, const QString &file0, bool hide)
 {
-    QString name = StripPath(fullpath, false);
+    QString name = stripPath(fullpath, false);
     // Since item has path with native separators we must use path with
     // native separators to find it.
-    QStandardItem *item = FindFileItem(QDir::toNativeSeparators(name));
+    QStandardItem *item = findFileItem(QDir::toNativeSeparators(name));
 
     if (item) {
         return item;
@@ -494,7 +494,7 @@ QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, const QStrin
 
     // Ensure shown path is with native separators
     name = QDir::toNativeSeparators(name);
-    item = CreateNormalItem(name);
+    item = createNormalItem(name);
     item->setIcon(QIcon(":images/text-x-generic.png"));
 
     //Add user data to that item
@@ -625,7 +625,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
     }
 }
 
-void ResultsTree::StartApplication(QStandardItem *target, int application)
+void ResultsTree::startApplication(QStandardItem *target, int application)
 {
     //If there are no applications specified, tell the user about it
     if (mApplications->getApplicationCount() == 0) {
@@ -682,7 +682,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
                 if (checkdir.isAbsolute() && checkdir.exists()) {
                     file = mCheckPath + "/" + file;
                 } else {
-                    QString dir = AskFileDir(file);
+                    QString dir = askFileDir(file);
                     dir += '/';
                     file = dir + file;
                 }
@@ -732,7 +732,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
     }
 }
 
-QString ResultsTree::AskFileDir(const QString &file)
+QString ResultsTree::askFileDir(const QString &file)
 {
     QString text = tr("Could not find file:\n%1\nPlease select the directory where file is located.").arg(file);
     QMessageBox msgbox(this);
@@ -749,17 +749,17 @@ QString ResultsTree::AskFileDir(const QString &file)
     return dir;
 }
 
-void ResultsTree::CopyFilename()
+void ResultsTree::copyFilename()
 {
-    CopyPathToClipboard(mContextItem, false);
+    copyPathToClipboard(mContextItem, false);
 }
 
-void ResultsTree::CopyFullPath()
+void ResultsTree::copyFullPath()
 {
-    CopyPathToClipboard(mContextItem, true);
+    copyPathToClipboard(mContextItem, true);
 }
 
-void ResultsTree::CopyMessage()
+void ResultsTree::copyMessage()
 {
     if (mContextItem) {
         // Make sure we are working with the first column
@@ -780,7 +780,7 @@ void ResultsTree::CopyMessage()
     }
 }
 
-void ResultsTree::CopyMessageId()
+void ResultsTree::copyMessageId()
 {
     if (mContextItem) {
         // Make sure we are working with the first column
@@ -795,7 +795,7 @@ void ResultsTree::CopyMessageId()
     }
 }
 
-void ResultsTree::HideResult()
+void ResultsTree::hideResult()
 {
     if (!mSelectionModel)
         return;
@@ -808,12 +808,12 @@ void ResultsTree::HideResult()
         data["hide"] = true;
         item->setData(QVariant(data));
 
-        RefreshTree();
-        emit ResultsHidden(true);
+        refreshTree();
+        emit resultsHidden(true);
     }
 }
 
-void ResultsTree::RecheckSelectedFiles()
+void ResultsTree::recheckSelectedFiles()
 {
     if (!mSelectionModel)
         return;
@@ -835,7 +835,7 @@ void ResultsTree::RecheckSelectedFiles()
                 fileNameWithCheckPath = currentFile;
             const QFileInfo fileInfo(fileNameWithCheckPath);
             if (!fileInfo.exists()) {
-                AskFileDir(currentFile);
+                askFileDir(currentFile);
                 return;
             }
             if (Path::isHeader(currentFile.toStdString())) {
@@ -848,10 +848,10 @@ void ResultsTree::RecheckSelectedFiles()
                 selectedItems<<fileNameWithCheckPath;
         }
     }
-    emit CheckSelected(selectedItems);
+    emit checkSelected(selectedItems);
 }
 
-void ResultsTree::HideAllIdResult()
+void ResultsTree::hideAllIdResult()
 {
     if (mContextItem && mContextItem->parent()) {
         // Make sure we are working with the first column
@@ -888,37 +888,37 @@ void ResultsTree::HideAllIdResult()
             }
         }
 
-        RefreshTree();
-        emit ResultsHidden(true);
+        refreshTree();
+        emit resultsHidden(true);
     }
 }
 
-void ResultsTree::OpenContainingFolder()
+void ResultsTree::openContainingFolder()
 {
-    QString filePath = GetFilePath(mContextItem, true);
+    QString filePath = getFilePath(mContextItem, true);
     if (!filePath.isEmpty()) {
         filePath = QFileInfo(filePath).absolutePath();
         QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
     }
 }
 
-void ResultsTree::Context(int application)
+void ResultsTree::context(int application)
 {
-    StartApplication(mContextItem, application);
+    startApplication(mContextItem, application);
 }
 
-void ResultsTree::QuickStartApplication(const QModelIndex &index)
+void ResultsTree::quickStartApplication(const QModelIndex &index)
 {
-    StartApplication(mModel.itemFromIndex(index));
+    startApplication(mModel.itemFromIndex(index));
 }
 
-void ResultsTree::CopyPathToClipboard(QStandardItem *target, bool fullPath)
+void ResultsTree::copyPathToClipboard(QStandardItem *target, bool fullPath)
 {
     QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(GetFilePath(target, fullPath));
+    clipboard->setText(getFilePath(target, fullPath));
 }
 
-QString ResultsTree::GetFilePath(QStandardItem *target, bool fullPath)
+QString ResultsTree::getFilePath(QStandardItem *target, bool fullPath)
 {
     if (target) {
         // Make sure we are working with the first column
@@ -942,7 +942,7 @@ QString ResultsTree::GetFilePath(QStandardItem *target, bool fullPath)
     return QString();
 }
 
-QString ResultsTree::SeverityToIcon(Severity::SeverityType severity) const
+QString ResultsTree::severityToIcon(Severity::SeverityType severity) const
 {
     switch (severity) {
     case Severity::error:
@@ -962,20 +962,20 @@ QString ResultsTree::SeverityToIcon(Severity::SeverityType severity) const
     }
 }
 
-void ResultsTree::SaveResults(Report *report) const
+void ResultsTree::saveResults(Report *report) const
 {
     report->writeHeader();
 
     for (int i = 0; i < mModel.rowCount(); i++) {
         QStandardItem *item = mModel.item(i, 0);
         if (!isRowHidden(i, QModelIndex()))
-            SaveErrors(report, item);
+            saveErrors(report, item);
     }
 
     report->writeFooter();
 }
 
-void ResultsTree::SaveErrors(Report *report, QStandardItem *item) const
+void ResultsTree::saveErrors(Report *report, QStandardItem *item) const
 {
     if (!item) {
         return;
@@ -1007,7 +1007,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item) const
 
         if (error->rowCount() == 0) {
             QErrorPathItem e;
-            e.file = StripPath(data["file"].toString(), true);
+            e.file = stripPath(data["file"].toString(), true);
             e.line = data["line"].toUInt();
             e.info = data["message"].toString();
             item.errorPath << e;
@@ -1021,7 +1021,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item) const
             QVariantMap child_data = child_userdata.toMap();
 
             QErrorPathItem e;
-            e.file = StripPath(child_data["file"].toString(), true);
+            e.file = stripPath(child_data["file"].toString(), true);
             e.line = child_data["line"].toUInt();
             e.info = child_data["message"].toString();
             item.errorPath << e;
@@ -1031,7 +1031,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item) const
     }
 }
 
-void ResultsTree::UpdateSettings(bool showFullPath,
+void ResultsTree::updateSettings(bool showFullPath,
                                  bool saveFullPath,
                                  bool saveAllErrors,
                                  bool showErrorId,
@@ -1039,28 +1039,28 @@ void ResultsTree::UpdateSettings(bool showFullPath,
 {
     if (mShowFullPath != showFullPath) {
         mShowFullPath = showFullPath;
-        RefreshFilePaths();
+        refreshFilePaths();
     }
 
     mSaveFullPath = saveFullPath;
     mSaveAllErrors = saveAllErrors;
 
-    ShowIdColumn(showErrorId);
-    ShowInconclusiveColumn(showInconclusive);
+    showIdColumn(showErrorId);
+    showInconclusiveColumn(showInconclusive);
 }
 
-void ResultsTree::SetCheckDirectory(const QString &dir)
+void ResultsTree::setCheckDirectory(const QString &dir)
 {
     mCheckPath = dir;
 }
 
 
-QString ResultsTree::GetCheckDirectory(void)
+QString ResultsTree::getCheckDirectory(void)
 {
     return mCheckPath;
 }
 
-QString ResultsTree::StripPath(const QString &path, bool saving) const
+QString ResultsTree::stripPath(const QString &path, bool saving) const
 {
     if ((!saving && mShowFullPath) || (saving && mSaveFullPath)) {
         return QString(path);
@@ -1070,7 +1070,7 @@ QString ResultsTree::StripPath(const QString &path, bool saving) const
     return dir.relativeFilePath(path);
 }
 
-void ResultsTree::RefreshFilePaths(QStandardItem *item)
+void ResultsTree::refreshFilePaths(QStandardItem *item)
 {
     if (!item) {
         return;
@@ -1097,7 +1097,7 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
         QString file = data["file"].toString();
 
         //Update this error's text
-        error->setText(StripPath(file, false));
+        error->setText(stripPath(file, false));
 
         //If this error has backtraces make sure the files list has enough filenames
         if (error->hasChildren()) {
@@ -1116,7 +1116,7 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
                 //Get list of files
                 QString child_files = child_data["file"].toString();
                 //Update file's path
-                child->setText(StripPath(child_files, false));
+                child->setText(stripPath(child_files, false));
             }
         }
 
@@ -1129,27 +1129,27 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
     }
 }
 
-void ResultsTree::RefreshFilePaths()
+void ResultsTree::refreshFilePaths()
 {
     qDebug("Refreshing file paths");
 
     //Go through all file items (these are parent items that contain the errors)
     for (int i = 0; i < mModel.rowCount(); i++) {
-        RefreshFilePaths(mModel.item(i, 0));
+        refreshFilePaths(mModel.item(i, 0));
     }
 }
 
-bool ResultsTree::HasVisibleResults() const
+bool ResultsTree::hasVisibleResults() const
 {
     return mVisibleErrors;
 }
 
-bool ResultsTree::HasResults() const
+bool ResultsTree::hasResults() const
 {
     return mModel.rowCount() > 0;
 }
 
-void ResultsTree::Translate()
+void ResultsTree::translate()
 {
     QStringList labels;
     labels << tr("File") << tr("Severity") << tr("Line") << tr("Id") << tr("Inconclusive") << tr("Summary");
@@ -1157,7 +1157,7 @@ void ResultsTree::Translate()
     //TODO go through all the errors in the tree and translate severity and message
 }
 
-void ResultsTree::ShowIdColumn(bool show)
+void ResultsTree::showIdColumn(bool show)
 {
     mShowErrorId = show;
     if (show)
@@ -1166,7 +1166,7 @@ void ResultsTree::ShowIdColumn(bool show)
         hideColumn(3);
 }
 
-void ResultsTree::ShowInconclusiveColumn(bool show)
+void ResultsTree::showInconclusiveColumn(bool show)
 {
     if (show)
         showColumn(4);
@@ -1177,5 +1177,5 @@ void ResultsTree::ShowInconclusiveColumn(bool show)
 void ResultsTree::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     QTreeView::currentChanged(current, previous);
-    emit SelectionChanged(current);
+    emit selectionChanged(current);
 }
