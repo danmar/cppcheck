@@ -46,6 +46,10 @@ public:
     void loadFromProjectFile(const ProjectFile *projectFile);
     void saveToProjectFile(ProjectFile *projectFile) const;
 
+private:
+    /** Enable and disable widgets in the 'Paths and Defines' tab */
+    void updatePathsAndDefines();
+
     /**
     * @brief Return project root path from the dialog control.
     * @return Project root path.
@@ -146,6 +150,11 @@ protected slots:
     * @brief Browse for build dir.
     */
     void browseBuildDir();
+
+    /**
+    * @brief Clear 'import project'.
+    */
+    void clearImportProject();
 
     /**
     * @brief Browse for solution / project / compile database.

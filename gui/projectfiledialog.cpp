@@ -92,6 +92,7 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
     connect(mUI.mBtnBrowseBuildDir, SIGNAL(clicked()), this, SLOT(browseBuildDir()));
+    connect(mUI.mBtnClearImportProject, SIGNAL(clicked(bool)), this, SLOT(clearImportProject()));
     connect(mUI.mBtnBrowseImportProject, SIGNAL(clicked()), this, SLOT(browseImportProject()));
     connect(mUI.mBtnAddCheckPath, SIGNAL(clicked()), this, SLOT(addCheckPath()));
     connect(mUI.mBtnEditCheckPath, SIGNAL(clicked()), this, SLOT(editCheckPath()));
@@ -138,6 +139,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     setSuppressions(projectFile->getSuppressions());
+    updatePathsAndDefines();
 }
 
 void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
@@ -185,6 +187,26 @@ void ProjectFileDialog::browseBuildDir()
         mUI.mEditBuildDir->setText(dir);
 }
 
+void ProjectFileDialog::updatePathsAndDefines() {
+    bool importProject = !mUI.mEditImportProject->text().isEmpty();
+    mUI.mBtnClearImportProject->setEnabled(importProject);
+    mUI.mListCheckPaths->setEnabled(!importProject);
+    mUI.mBtnAddCheckPath->setEnabled(!importProject);
+    mUI.mBtnEditCheckPath->setEnabled(!importProject);
+    mUI.mBtnRemoveCheckPath->setEnabled(!importProject);
+    mUI.mEditDefines->setEnabled(!importProject);
+    mUI.mBtnAddInclude->setEnabled(!importProject);
+    mUI.mBtnEditInclude->setEnabled(!importProject);
+    mUI.mBtnRemoveInclude->setEnabled(!importProject);
+    mUI.mBtnIncludeUp->setEnabled(!importProject);
+    mUI.mBtnIncludeDown->setEnabled(!importProject);
+}
+
+void ProjectFileDialog::clearImportProject() {
+    mUI.mEditImportProject->clear();
+    updatePathsAndDefines();
+}
+
 void ProjectFileDialog::browseImportProject()
 {
     const QFileInfo inf(mFilePath);
@@ -192,8 +214,15 @@ void ProjectFileDialog::browseImportProject()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Import Project"),
                        dir.canonicalPath(),
                        tr("Visual Studio (*.sln *.vcxproj);;Compile database (compile_database.json)"));
-    if (!fileName.isEmpty())
+    if (!fileName.isEmpty()) {
         mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
+        updatePathsAndDefines();
+    }
+}
+
+QString ProjectFileDialog::getImportProject() const
+{
+    return mUI.mEditImportProject->text();
 }
 
 void ProjectFileDialog::addIncludeDir(const QString &dir)
@@ -242,10 +271,6 @@ QString ProjectFileDialog::getBuildDir() const
     return mUI.mEditBuildDir->text();
 }
 
-QString ProjectFileDialog::getImportProject() const
-{
-    return mUI.mEditImportProject->text();
-}
 
 QStringList ProjectFileDialog::getIncludePaths() const
 {

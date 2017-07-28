@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>642</width>
-    <height>434</height>
+    <height>498</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,34 +70,6 @@
         </layout>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QLabel" name="mLabelImport">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Cppcheck can import Visual studio solutions (*.sln), Visual studio projects (*.vcxproj) or compile databases.&lt;/p&gt;&lt;p&gt;Files to check, include paths, configurations, defines, platform settings are imported.\n\nLibrary settings are not imported.\n\n&lt;/p&gt;&lt;p&gt;A compile database can be generated from a cmake project using cmake, or from a Makefile project using bear (build ear).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Import Project (Visual studio / compile database)</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QLineEdit" name="mEditImportProject"/>
-           </item>
-           <item>
-            <widget class="QPushButton" name="mBtnBrowseImportProject">
-             <property name="text">
-              <string>...</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-       <item>
         <layout class="QHBoxLayout" name="mLayoutLibraries">
          <item>
           <widget class="QLabel" name="mLabelLibraries">
@@ -137,7 +109,61 @@
       <attribute name="title">
        <string>Paths and Defines</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_10">
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QLabel" name="mLabelImport">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Cppcheck can import Visual studio solutions (*.sln), Visual studio projects (*.vcxproj) or compile databases.&lt;/p&gt;&lt;p&gt;Files to check, defines, include paths are imported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Import Project (Visual studio / compile database)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLineEdit" name="mEditImportProject">
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mBtnClearImportProject">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset>
+               <activeon>:/images/edit-clear.png</activeon>
+              </iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mBtnBrowseImportProject">
+             <property name="text">
+              <string>...</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
        <item>
         <layout class="QHBoxLayout" name="mLayoutCheckPaths">
          <item>
