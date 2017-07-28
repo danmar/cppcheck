@@ -91,7 +91,7 @@ void ThreadHandler::Check(const Settings &settings, bool all)
     }
 
     for (int i = 0; i < mRunningThreadCount; i++) {
-        mThreads[i]->Check(settings);
+        mThreads[i]->check(settings);
     }
 
     // Date and time when checking starts..
@@ -148,7 +148,7 @@ void ThreadHandler::RemoveThreads()
 void ThreadHandler::ThreadDone()
 {
     if (mRunningThreadCount == 1 && mAnalyseWholeProgram) {
-        mThreads[0]->AnalyseWholeProgram(mLastFiles);
+        mThreads[0]->analyseWholeProgram(mLastFiles);
         mAnalyseWholeProgram = false;
         return;
     }

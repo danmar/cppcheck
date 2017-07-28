@@ -36,14 +36,14 @@ CheckThread::~CheckThread()
     //dtor
 }
 
-void CheckThread::Check(const Settings &settings)
+void CheckThread::check(const Settings &settings)
 {
     mFiles.clear();
     mCppcheck.settings() = settings;
     start();
 }
 
-void CheckThread::AnalyseWholeProgram(const QStringList &files)
+void CheckThread::analyseWholeProgram(const QStringList &files)
 {
     mFiles = files;
     mAnalyseWholeProgram = true;

@@ -44,13 +44,13 @@ public:
     *
     * @param settings settings for cppcheck
     */
-    void Check(const Settings &settings);
+    void check(const Settings &settings);
 
     /**
     * @brief Run whole program analysis
     * @param files    All files
     */
-    void AnalyseWholeProgram(const QStringList &files);
+    void analyseWholeProgram(const QStringList &files);
 
     /**
     * @brief method that is run in a thread
