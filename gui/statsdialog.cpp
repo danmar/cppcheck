@@ -44,10 +44,10 @@ void StatsDialog::setProject(const Project& project)
 {
     ProjectFile *projectFile = project.getProjectFile();
     if (projectFile) {
-        mUI.mProject->setText(projectFile->GetRootPath());
-        mUI.mPaths->setText(projectFile->GetCheckPaths().join(";"));
-        mUI.mIncludePaths->setText(projectFile->GetIncludeDirs().join(";"));
-        mUI.mDefines->setText(projectFile->GetDefines().join(";"));
+        mUI.mProject->setText(projectFile->getRootPath());
+        mUI.mPaths->setText(projectFile->getCheckPaths().join(";"));
+        mUI.mIncludePaths->setText(projectFile->getIncludeDirs().join(";"));
+        mUI.mDefines->setText(projectFile->getDefines().join(";"));
     } else {
         mUI.mProject->setText("");
         mUI.mPaths->setText("");

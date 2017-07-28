@@ -129,28 +129,28 @@ void ProjectFileDialog::SaveSettings() const
 
 void ProjectFileDialog::LoadFromProjectFile(const ProjectFile *projectFile)
 {
-    SetRootPath(projectFile->GetRootPath());
-    SetBuildDir(projectFile->GetBuildDir());
-    SetIncludepaths(projectFile->GetIncludeDirs());
-    SetDefines(projectFile->GetDefines());
-    SetCheckPaths(projectFile->GetCheckPaths());
-    SetImportProject(projectFile->GetImportProject());
-    SetExcludedPaths(projectFile->GetExcludedPaths());
-    SetLibraries(projectFile->GetLibraries());
-    SetSuppressions(projectFile->GetSuppressions());
+    SetRootPath(projectFile->getRootPath());
+    SetBuildDir(projectFile->getBuildDir());
+    SetIncludepaths(projectFile->getIncludeDirs());
+    SetDefines(projectFile->getDefines());
+    SetCheckPaths(projectFile->getCheckPaths());
+    SetImportProject(projectFile->getImportProject());
+    SetExcludedPaths(projectFile->getExcludedPaths());
+    SetLibraries(projectFile->getLibraries());
+    SetSuppressions(projectFile->getSuppressions());
 }
 
 void ProjectFileDialog::SaveToProjectFile(ProjectFile *projectFile) const
 {
-    projectFile->SetRootPath(GetRootPath());
-    projectFile->SetBuildDir(GetBuildDir());
-    projectFile->SetImportProject(GetImportProject());
-    projectFile->SetIncludes(GetIncludePaths());
-    projectFile->SetDefines(GetDefines());
-    projectFile->SetCheckPaths(GetCheckPaths());
-    projectFile->SetExcludedPaths(GetExcludedPaths());
-    projectFile->SetLibraries(GetLibraries());
-    projectFile->SetSuppressions(GetSuppressions());
+    projectFile->setRootPath(GetRootPath());
+    projectFile->setBuildDir(GetBuildDir());
+    projectFile->setImportProject(GetImportProject());
+    projectFile->setIncludes(GetIncludePaths());
+    projectFile->setDefines(GetDefines());
+    projectFile->setCheckPaths(GetCheckPaths());
+    projectFile->setExcludedPaths(GetExcludedPaths());
+    projectFile->setLibraries(GetLibraries());
+    projectFile->setSuppressions(GetSuppressions());
 }
 
 QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool trailingSlash)

@@ -44,21 +44,21 @@ public:
      * @brief Read the project file.
      * @param filename Filename (can be also given to constructor).
      */
-    bool Read(const QString &filename = QString());
+    bool read(const QString &filename = QString());
 
     /**
      * @brief Get project root path.
      * @return project root path.
      */
-    QString GetRootPath() const {
+    QString getRootPath() const {
         return mRootPath;
     }
 
-    QString GetBuildDir() const {
+    QString getBuildDir() const {
         return mBuildDir;
     }
 
-    QString GetImportProject() const {
+    QString getImportProject() const {
         return mImportProject;
     }
 
@@ -66,7 +66,7 @@ public:
     * @brief Get list of include directories.
     * @return list of directories.
     */
-    QStringList GetIncludeDirs() const {
+    QStringList getIncludeDirs() const {
         return ProjectFile::fromNativeSeparators(mIncludeDirs);
     }
 
@@ -74,7 +74,7 @@ public:
     * @brief Get list of defines.
     * @return list of defines.
     */
-    QStringList GetDefines() const {
+    QStringList getDefines() const {
         return mDefines;
     }
 
@@ -82,7 +82,7 @@ public:
     * @brief Get list of paths to check.
     * @return list of paths.
     */
-    QStringList GetCheckPaths() const {
+    QStringList getCheckPaths() const {
         return ProjectFile::fromNativeSeparators(mPaths);
     }
 
@@ -90,7 +90,7 @@ public:
     * @brief Get list of paths to exclude from the check.
     * @return list of paths.
     */
-    QStringList GetExcludedPaths() const {
+    QStringList getExcludedPaths() const {
         return ProjectFile::fromNativeSeparators(mExcludedPaths);
     }
 
@@ -98,7 +98,7 @@ public:
     * @brief Get list libraries.
     * @return list of libraries.
     */
-    QStringList GetLibraries() const {
+    QStringList getLibraries() const {
         return mLibraries;
     }
 
@@ -106,7 +106,7 @@ public:
     * @brief Get list suppressions.
     * @return list of suppressions.
     */
-    QStringList GetSuppressions() const {
+    QStringList getSuppressions() const {
         return mSuppressions;
     }
 
@@ -114,7 +114,7 @@ public:
     * @brief Get filename for the project file.
     * @return file name.
     */
-    QString GetFilename() const {
+    QString getFilename() const {
         return mFilename;
     }
 
@@ -122,16 +122,16 @@ public:
     * @brief Set project root path.
     * @param rootpath new project root path.
     */
-    void SetRootPath(const QString &rootpath) {
+    void setRootPath(const QString &rootpath) {
         mRootPath = rootpath;
     }
 
 
-    void SetBuildDir(const QString &buildDir) {
+    void setBuildDir(const QString &buildDir) {
         mBuildDir = buildDir;
     }
 
-    void SetImportProject(const QString &importProject) {
+    void setImportProject(const QString &importProject) {
         mImportProject = importProject;
     }
 
@@ -139,58 +139,49 @@ public:
      * @brief Set list of includes.
      * @param includes List of defines.
      */
-    void SetIncludes(const QStringList &includes);
+    void setIncludes(const QStringList &includes);
 
     /**
      * @brief Set list of defines.
      * @param defines List of defines.
      */
-    void SetDefines(const QStringList &defines);
+    void setDefines(const QStringList &defines);
 
     /**
      * @brief Set list of paths to check.
      * @param paths List of paths.
      */
-    void SetCheckPaths(const QStringList &paths);
+    void setCheckPaths(const QStringList &paths);
 
     /**
      * @brief Set list of paths to exclude from the check.
      * @param paths List of paths.
      */
-    void SetExcludedPaths(const QStringList &paths);
+    void setExcludedPaths(const QStringList &paths);
 
     /**
      * @brief Set list of libraries.
      * @param libraries List of libraries.
      */
-    void SetLibraries(const QStringList &libraries);
+    void setLibraries(const QStringList &libraries);
 
     /**
      * @brief Set list of suppressions.
      * @param suppressions List of suppressions.
      */
-    void SetSuppressions(const QStringList &suppressions);
+    void setSuppressions(const QStringList &suppressions);
 
     /**
      * @brief Write project file (to disk).
      * @param filename Filename to use.
      */
-    bool Write(const QString &filename = QString());
-
-    /**
-     * @brief Write string list
-     * @param xmlWriter xml writer
-     * @param stringlist string list to write
-     * @param startelementname name of start element
-     * @param stringelementname name of each string element
-     */
-    static void WriteStringList(QXmlStreamWriter &xmlWriter, const QStringList &stringlist, const char startelementname[], const char stringelementname[]);
+    bool write(const QString &filename = QString());
 
     /**
      * @brief Set filename for the project file.
      * @param filename Filename to use.
      */
-    void SetFilename(const QString &filename) {
+    void setFilename(const QString &filename) {
         mFilename = filename;
     }
 
@@ -200,39 +191,39 @@ protected:
      * @brief Read optional root path from XML.
      * @param reader XML stream reader.
      */
-    void ReadRootPath(QXmlStreamReader &reader);
+    void readRootPath(QXmlStreamReader &reader);
 
-    void ReadBuildDir(QXmlStreamReader &reader);
+    void readBuildDir(QXmlStreamReader &reader);
 
     /**
      * @brief Read importproject from XML.
      * @param reader XML stream reader.
      */
-    void ReadImportProject(QXmlStreamReader &reader);
+    void readImportProject(QXmlStreamReader &reader);
 
     /**
      * @brief Read list of include directories from XML.
      * @param reader XML stream reader.
      */
-    void ReadIncludeDirs(QXmlStreamReader &reader);
+    void readIncludeDirs(QXmlStreamReader &reader);
 
     /**
      * @brief Read list of defines from XML.
      * @param reader XML stream reader.
      */
-    void ReadDefines(QXmlStreamReader &reader);
+    void readDefines(QXmlStreamReader &reader);
 
     /**
      * @brief Read list paths to check.
      * @param reader XML stream reader.
      */
-    void ReadCheckPaths(QXmlStreamReader &reader);
+    void readCheckPaths(QXmlStreamReader &reader);
 
     /**
      * @brief Read lists of excluded paths.
      * @param reader XML stream reader.
      */
-    void ReadExcludes(QXmlStreamReader &reader);
+    void readExcludes(QXmlStreamReader &reader);
 
     /**
       * @brief Read string list
@@ -240,7 +231,16 @@ protected:
       * @param reader       XML stream reader
       * @param elementname  elementname for each string
       */
-    void ReadStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
+    void readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
+
+    /**
+     * @brief Write string list
+     * @param xmlWriter xml writer
+     * @param stringlist string list to write
+     * @param startelementname name of start element
+     * @param stringelementname name of each string element
+     */
+    static void writeStringList(QXmlStreamWriter &xmlWriter, const QStringList &stringlist, const char startelementname[], const char stringelementname[]);
 
 private:
 

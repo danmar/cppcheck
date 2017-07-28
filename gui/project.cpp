@@ -68,7 +68,7 @@ bool Project::open()
     if (!QFile::exists(mFilename))
         return false;
 
-    if (!mProjectFile->Read()) {
+    if (!mProjectFile->read()) {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
                         tr("Could not read the project file."),
@@ -76,7 +76,7 @@ bool Project::open()
                         mParentWidget);
         msg.exec();
         mFilename = QString();
-        mProjectFile->SetFilename(mFilename);
+        mProjectFile->setFilename(mFilename);
         return false;
     }
 
@@ -92,7 +92,7 @@ bool Project::edit()
 
     dlg.SaveToProjectFile(mProjectFile);
 
-    if (!mProjectFile->Write()) {
+    if (!mProjectFile->write()) {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
                         tr("Could not write the project file."),

@@ -62,7 +62,7 @@ ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
 {
 }
 
-bool ProjectFile::Read(const QString &filename)
+bool ProjectFile::read(const QString &filename)
 {
     if (!filename.isEmpty())
         mFilename = filename;
@@ -83,43 +83,43 @@ bool ProjectFile::Read(const QString &filename)
             }
             // Read root path from inside project element
             if (insideProject && xmlReader.name() == RootPathName)
-                ReadRootPath(xmlReader);
+                readRootPath(xmlReader);
 
             // Read root path from inside project element
             if (insideProject && xmlReader.name() == BuildDirElementName)
-                ReadBuildDir(xmlReader);
+                readBuildDir(xmlReader);
 
             // Find paths to check from inside project element
             if (insideProject && xmlReader.name() == PathsElementName)
-                ReadCheckPaths(xmlReader);
+                readCheckPaths(xmlReader);
 
             if (insideProject && xmlReader.name() == ImportProjectElementName)
-                ReadImportProject(xmlReader);
+                readImportProject(xmlReader);
 
             // Find include directory from inside project element
             if (insideProject && xmlReader.name() == IncludeDirElementName)
-                ReadIncludeDirs(xmlReader);
+                readIncludeDirs(xmlReader);
 
             // Find preprocessor define from inside project element
             if (insideProject && xmlReader.name() == DefinesElementName)
-                ReadDefines(xmlReader);
+                readDefines(xmlReader);
 
             // Find exclude list from inside project element
             if (insideProject && xmlReader.name() == ExcludeElementName)
-                ReadExcludes(xmlReader);
+                readExcludes(xmlReader);
 
             // Find ignore list from inside project element
             // These are read for compatibility
             if (insideProject && xmlReader.name() == IgnoreElementName)
-                ReadExcludes(xmlReader);
+                readExcludes(xmlReader);
 
             // Find libraries list from inside project element
             if (insideProject && xmlReader.name() == LibrariesElementName)
-                ReadStringList(mLibraries, xmlReader,LibraryElementName);
+                readStringList(mLibraries, xmlReader,LibraryElementName);
 
             // Find suppressions list from inside project element
             if (insideProject && xmlReader.name() == SuppressionsElementName)
-                ReadStringList(mSuppressions, xmlReader,SuppressionElementName);
+                readStringList(mSuppressions, xmlReader,SuppressionElementName);
 
             break;
 
@@ -143,13 +143,10 @@ bool ProjectFile::Read(const QString &filename)
     }
 
     file.close();
-    if (projectTagFound)
-        return true;
-    else
-        return false;
+    return projectTagFound;
 }
 
-void ProjectFile::ReadRootPath(QXmlStreamReader &reader)
+void ProjectFile::readRootPath(QXmlStreamReader &reader)
 {
     QXmlStreamAttributes attribs = reader.attributes();
     QString name = attribs.value("", RootPathNameAttrib).toString();
@@ -157,7 +154,7 @@ void ProjectFile::ReadRootPath(QXmlStreamReader &reader)
         mRootPath = name;
 }
 
-void ProjectFile::ReadBuildDir(QXmlStreamReader &reader)
+void ProjectFile::readBuildDir(QXmlStreamReader &reader)
 {
     mBuildDir.clear();
     do {
@@ -182,7 +179,7 @@ void ProjectFile::ReadBuildDir(QXmlStreamReader &reader)
     } while (1);
 }
 
-void ProjectFile::ReadImportProject(QXmlStreamReader &reader)
+void ProjectFile::readImportProject(QXmlStreamReader &reader)
 {
     mImportProject.clear();
     do {
@@ -207,7 +204,7 @@ void ProjectFile::ReadImportProject(QXmlStreamReader &reader)
     } while (1);
 }
 
-void ProjectFile::ReadIncludeDirs(QXmlStreamReader &reader)
+void ProjectFile::readIncludeDirs(QXmlStreamReader &reader)
 {
     QXmlStreamReader::TokenType type;
     bool allRead = false;
@@ -245,7 +242,7 @@ void ProjectFile::ReadIncludeDirs(QXmlStreamReader &reader)
     } while (!allRead);
 }
 
-void ProjectFile::ReadDefines(QXmlStreamReader &reader)
+void ProjectFile::readDefines(QXmlStreamReader &reader)
 {
     QXmlStreamReader::TokenType type;
     bool allRead = false;
@@ -282,7 +279,7 @@ void ProjectFile::ReadDefines(QXmlStreamReader &reader)
     } while (!allRead);
 }
 
-void ProjectFile::ReadCheckPaths(QXmlStreamReader &reader)
+void ProjectFile::readCheckPaths(QXmlStreamReader &reader)
 {
     QXmlStreamReader::TokenType type;
     bool allRead = false;
@@ -320,7 +317,7 @@ void ProjectFile::ReadCheckPaths(QXmlStreamReader &reader)
     } while (!allRead);
 }
 
-void ProjectFile::ReadExcludes(QXmlStreamReader &reader)
+void ProjectFile::readExcludes(QXmlStreamReader &reader)
 {
     QXmlStreamReader::TokenType type;
     bool allRead = false;
@@ -367,7 +364,7 @@ void ProjectFile::ReadExcludes(QXmlStreamReader &reader)
 }
 
 
-void ProjectFile::ReadStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[])
+void ProjectFile::readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[])
 {
     QXmlStreamReader::TokenType type;
     bool allRead = false;
@@ -405,37 +402,37 @@ void ProjectFile::ReadStringList(QStringList &stringlist, QXmlStreamReader &read
     } while (!allRead);
 }
 
-void ProjectFile::SetIncludes(const QStringList &includes)
+void ProjectFile::setIncludes(const QStringList &includes)
 {
     mIncludeDirs = includes;
 }
 
-void ProjectFile::SetDefines(const QStringList &defines)
+void ProjectFile::setDefines(const QStringList &defines)
 {
     mDefines = defines;
 }
 
-void ProjectFile::SetCheckPaths(const QStringList &paths)
+void ProjectFile::setCheckPaths(const QStringList &paths)
 {
     mPaths = paths;
 }
 
-void ProjectFile::SetExcludedPaths(const QStringList &paths)
+void ProjectFile::setExcludedPaths(const QStringList &paths)
 {
     mExcludedPaths = paths;
 }
 
-void ProjectFile::SetLibraries(const QStringList &libraries)
+void ProjectFile::setLibraries(const QStringList &libraries)
 {
     mLibraries = libraries;
 }
 
-void ProjectFile::SetSuppressions(const QStringList &suppressions)
+void ProjectFile::setSuppressions(const QStringList &suppressions)
 {
     mSuppressions = suppressions;
 }
 
-bool ProjectFile::Write(const QString &filename)
+bool ProjectFile::write(const QString &filename)
 {
     if (!filename.isEmpty())
         mFilename = filename;
@@ -508,12 +505,12 @@ bool ProjectFile::Write(const QString &filename)
         xmlWriter.writeEndElement();
     }
 
-    WriteStringList(xmlWriter,
+    writeStringList(xmlWriter,
                     mLibraries,
                     LibrariesElementName,
                     LibraryElementName);
 
-    WriteStringList(xmlWriter,
+    writeStringList(xmlWriter,
                     mSuppressions,
                     SuppressionsElementName,
                     SuppressionElementName);
@@ -523,7 +520,7 @@ bool ProjectFile::Write(const QString &filename)
     return true;
 }
 
-void ProjectFile::WriteStringList(QXmlStreamWriter &xmlWriter, const QStringList &stringlist, const char startelementname[], const char stringelementname[])
+void ProjectFile::writeStringList(QXmlStreamWriter &xmlWriter, const QStringList &stringlist, const char startelementname[], const char stringelementname[])
 {
     if (stringlist.isEmpty())
         return;
