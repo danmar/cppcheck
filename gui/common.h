@@ -85,6 +85,7 @@
 #define SETTINGS_MRU_PROJECTS           "MRU Projects"
 #define SETTINGS_SHOW_ERROR_ID          "Show error Id"
 #define SETTINGS_SHOW_STATISTICS        "Show statistics"
+#define SETTINGS_OPEN_PROJECT           "Open Project"
 
 // The maximum value for the progress bar
 #define PROGRESS_MAX                    1024.0

@@ -27,6 +27,7 @@
 #include <QPrintPreviewDialog>
 #include <QSettings>
 #include <QDir>
+#include <QDate>
 #include "common.h"
 #include "erroritem.h"
 #include "resultsview.h"
@@ -132,6 +133,20 @@ void ResultsView::showHiddenResults()
 void ResultsView::filterResults(const QString& filter)
 {
     mUI.mTree->filterResults(filter);
+}
+
+void ResultsView::saveStatistics(const QString &filename) const
+{
+    QFile f(filename);
+    if (!f.open(QIODevice::Text | QIODevice::Append))
+        return;
+    QTextStream ts(&f);
+    ts << '[' << QDate::currentDate().toString("dd.MM.yyyy") << "]\n";
+    ts << "error:" << mStatistics->getCount(ShowTypes::ShowErrors) << '\n';
+    ts << "warning:" << mStatistics->getCount(ShowTypes::ShowWarnings) << '\n';
+    ts << "style:" << mStatistics->getCount(ShowTypes::ShowStyle) << '\n';
+    ts << "performance:" << mStatistics->getCount(ShowTypes::ShowPerformance) << '\n';
+    ts << "portability:" << mStatistics->getCount(ShowTypes::ShowPortability) << '\n';
 }
 
 void ResultsView::save(const QString &filename, Report::Type type) const

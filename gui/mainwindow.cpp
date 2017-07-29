@@ -139,7 +139,10 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     loadSettings();
 
     mThread->initialize(mUI.mResults);
-    formatAndSetTitle();
+    if (mProject)
+        formatAndSetTitle(tr("Project:") + ' ' + mProject->getFilename());
+    else
+        formatAndSetTitle();
 
     enableCheckButtons(true);
 
@@ -171,6 +174,9 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     if (!args.isEmpty()) {
         handleCLIParams(args);
     }
+
+    mUI.mActionCloseProjectFile->setEnabled(mProject != nullptr);
+    mUI.mActionEditProjectFile->setEnabled(mProject != nullptr);
 
     for (int i = 0; i < mPlatforms.getCount(); i++) {
         Platform plat = mPlatforms.mPlatforms[i];
@@ -310,9 +316,23 @@ void MainWindow::loadSettings()
                            QMessageBox::Ok,
                            this);
         msgBox.exec();
-
     }
 
+    const QString project = mSettings->value(SETTINGS_OPEN_PROJECT, QString()).toString();
+    if (!project.isEmpty() && QCoreApplication::arguments().size()==1) {
+        QFileInfo inf(project);
+        if (inf.exists() && inf.isReadable()) {
+            delete mProject;
+            mProject = new Project(project, this);
+            mProject->open();
+            if (!mProject->getProjectFile()->getBuildDir().isEmpty()) {
+                const QString buildDir = QFileInfo(project).absolutePath() + '/' + mProject->getProjectFile()->getBuildDir();
+                const QString lastResults = buildDir + "/lastResults.xml";
+                if (QFileInfo(lastResults).exists())
+                    mUI.mResults->readErrorsXml(lastResults);
+            }
+        }
+    }
 }
 
 void MainWindow::saveSettings() const
@@ -352,6 +372,9 @@ void MainWindow::saveSettings() const
     mApplications->saveSettings();
 
     mSettings->setValue(SETTINGS_LANGUAGE, mTranslation->getCurrentLanguage());
+
+    mSettings->setValue(SETTINGS_OPEN_PROJECT, mProject ? mProject->getFilename() : QString());
+
     mUI.mResults->saveSettings(mSettings);
 }
 
@@ -852,6 +875,15 @@ void MainWindow::checkDone()
     if (mScratchPad)
         mScratchPad->setEnabled(true);
 
+    if (mProject && !mProject->getProjectFile()->getBuildDir().isEmpty()) {
+        const QString prjpath = QFileInfo(mProject->getProjectFile()->getFilename()).absolutePath();
+        const QString buildDir = prjpath + '/' + mProject->getProjectFile()->getBuildDir();
+        if (QDir(buildDir).exists()) {
+            mUI.mResults->saveStatistics(buildDir + "/statistics.txt");
+            mUI.mResults->save(buildDir + "/lastResults.xml", Report::XMLV2);
+        }
+    }
+
     if (mUI.mResults->hasResults()) {
         mUI.mActionClearResults->setEnabled(true);
         mUI.mActionSave->setEnabled(true);
@@ -1293,7 +1325,7 @@ void MainWindow::loadProjectFile(const QString &filePath)
 {
     QFileInfo inf(filePath);
     const QString filename = inf.fileName();
-    formatAndSetTitle(tr("Project:") + QString(" ") + filename);
+    formatAndSetTitle(tr("Project:") + ' ' + filename);
     addProjectMRU(filePath);
 
     mIsLogfileLoaded = false;

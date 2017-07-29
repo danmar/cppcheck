@@ -968,8 +968,8 @@ void ResultsTree::saveResults(Report *report) const
 
     for (int i = 0; i < mModel.rowCount(); i++) {
         QStandardItem *item = mModel.item(i, 0);
-        if (!isRowHidden(i, QModelIndex()))
-            saveErrors(report, item);
+        //if (!isRowHidden(i, QModelIndex()))
+        saveErrors(report, item);
     }
 
     report->writeFooter();
