@@ -60,14 +60,24 @@ namespace {
         const bool isEnum;
         const unsigned int startVarid;
     };
+}
 
-    /** Return whether tok is the "{" that starts an enumerator list */
-    bool isEnumStart(const Token* tok)
-    {
-        if (!tok || tok->str() != "{")
-            return false;
-        return (tok->strAt(-1) == "enum") || (tok->strAt(-2) == "enum");
-    }
+/** Return whether tok is the "{" that starts an enumerator list */
+static bool isEnumStart(const Token* tok)
+{
+    if (!tok || tok->str() != "{")
+        return false;
+    return (tok->strAt(-1) == "enum") || (tok->strAt(-2) == "enum");
+}
+
+template<typename T>
+static void skipEnumBody(T **tok)
+{
+    T *defStart = *tok;
+    while (Token::Match(defStart, "%name%|::|:"))
+        defStart = defStart->next();
+    if (defStart && defStart->str() == "{")
+        *tok = defStart->link()->next();
 }
 
 const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith) const
@@ -7935,11 +7945,7 @@ void Tokenizer::simplifyComma()
 
         // skip enums
         if (Token::Match(tok, "enum class|struct| %name%| :|{")) {
-            Token *defStart = tok->next();
-            while (Token::Match(defStart, "%name%|::|:"))
-                defStart = defStart->next();
-            if (defStart && defStart->str() == "{")
-                tok = defStart->link()->next();
+            skipEnumBody(&tok);
         }
         if (!tok)
             syntaxError(nullptr); // invalid code like in #4195
@@ -9113,11 +9119,7 @@ void Tokenizer::simplifyNamespaceStd()
     for (const Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
         bool insert = false;
         if (Token::Match(tok, "enum class|struct| %name%| :|{")) { // Don't replace within enum definitions
-            Token *defStart = tok->next();
-            while (Token::Match(defStart, "%name%|::|:"))
-                defStart = defStart->next();
-            if (defStart && defStart->str() == "{")
-                tok = defStart->link();
+            skipEnumBody(&tok);
         }
         if (!Token::Match(tok->previous(), ".|::")) {
             if (Token::Match(tok, "%name% (") && !Token::Match(tok->linkAt(1)->next(), "%name%|{") && stdFunctions.find(tok->str()) != stdFunctions.end())
