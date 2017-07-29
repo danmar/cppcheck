@@ -17,11 +17,12 @@
 # git log --format='%aN' 1.77..HEAD | sort -u > AUTHORS2 && diff -y AUTHORS AUTHORS2 | less
 #
 # Update version numbers in:
-# sed -i "s/1.[0-9][0-9].99/1.62/" cli/main.cpp
-# sed -i "s/MINOR [0-9][0-9]/MINOR 62/" lib/version.h
-# sed -i "s/1.[0-9][0-9] dev/1.62/" man/manual.docbook
-# sed -i "s/1.[0-9][0-9] dev/1.62/" win_installer/productInfo.wxi
-# sed -i "s/1.[0-9][0-9].99/1.62/" win_installer/productInfo.wxi
+# sed -i "s/1.[0-9][0-9].99/1.80/" cli/main.cpp
+# sed -i "s/1.[0-9][0-9].99/1.80/" cmake/versions.cmake
+# sed -i "s/MINOR [0-9][0-9]/MINOR 80/" lib/version.h
+# sed -i "s/1.[0-9][0-9] dev/1.80/" man/manual.docbook
+# sed -i "s/1.[0-9][0-9] dev/1.80/" win_installer/productInfo.wxi
+# sed -i "s/1.[0-9][0-9].99/1.80/" win_installer/productInfo.wxi
 # Verify:
 # grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
 # git commit -a -m "1.43: Set versions"
