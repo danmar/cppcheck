@@ -85,7 +85,7 @@ static const Token *skipMembers(const Token *tok)
     return tok;
 }
 
-bool CheckStl::isIterator(const Variable *var) const
+static bool isIterator(const Variable *var)
 {
     // Check that its an iterator
     if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator|auto"))
