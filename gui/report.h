@@ -35,7 +35,6 @@ public:
 
     enum Type {
         TXT,
-        XML,
         XMLV2,
         CSV,
     };

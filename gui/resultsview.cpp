@@ -33,7 +33,6 @@
 #include "report.h"
 #include "txtreport.h"
 #include "xmlreport.h"
-#include "xmlreportv1.h"
 #include "xmlreportv2.h"
 #include "csvreport.h"
 #include "printablereport.h"
@@ -152,9 +151,6 @@ void ResultsView::save(const QString &filename, Report::Type type) const
         break;
     case Report::TXT:
         report = new TxtReport(filename);
-        break;
-    case Report::XML:
-        report = new XmlReportV1(filename);
         break;
     case Report::XMLV2:
         report = new XmlReportV2(filename);
@@ -313,12 +309,15 @@ void ResultsView::readErrorsXml(const QString &filename)
         msgBox.exec();
         return;
     }
+    if (version == 1) {
+        QMessageBox msgBox;
+        msgBox.setText(tr("XML format version 1 is no longer supported."));
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return;
+    }
 
-    XmlReport *report = NULL;
-    if (version == 1)
-        report = new XmlReportV1(filename);
-    else if (version == 2)
-        report = new XmlReportV2(filename);
+    XmlReport *report = new XmlReportV2(filename);
 
     QList<ErrorItem> errors;
     if (report) {

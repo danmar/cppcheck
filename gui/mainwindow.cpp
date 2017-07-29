@@ -1157,7 +1157,7 @@ void MainWindow::performSelectedFilesCheck(QStringList selectedFilesList)
 void MainWindow::save()
 {
     QString selectedFilter;
-    const QString filter(tr("XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
+    const QString filter(tr("XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
     QString selectedFile = QFileDialog::getSaveFileName(this,
                            tr("Save the report file"),
                            getPath(SETTINGS_LAST_RESULT_PATH),
@@ -1166,14 +1166,7 @@ void MainWindow::save()
 
     if (!selectedFile.isEmpty()) {
         Report::Type type = Report::TXT;
-        if (selectedFilter == tr("XML files version 1 (*.xml)")) {
-            QMessageBox msgBox(QMessageBox::Icon::Warning, tr("Deprecated XML format"), tr("XML format 1 is deprecated and will be removed in cppcheck 1.81."), QMessageBox::StandardButton::Ok);
-            msgBox.exec();
-
-            type = Report::XML;
-            if (!selectedFile.endsWith(".xml", Qt::CaseInsensitive))
-                selectedFile += ".xml";
-        } else if (selectedFilter == tr("XML files version 2 (*.xml)")) {
+        if (selectedFilter == tr("XML files (*.xml)")) {
             type = Report::XMLV2;
             if (!selectedFile.endsWith(".xml", Qt::CaseInsensitive))
                 selectedFile += ".xml";
@@ -1187,7 +1180,7 @@ void MainWindow::save()
                 selectedFile += ".csv";
         } else {
             if (selectedFile.endsWith(".xml", Qt::CaseInsensitive))
-                type = Report::XML;
+                type = Report::XMLV2;
             else if (selectedFile.endsWith(".txt", Qt::CaseInsensitive))
                 type = Report::TXT;
             else if (selectedFile.endsWith(".csv", Qt::CaseInsensitive))
