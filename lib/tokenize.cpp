@@ -423,12 +423,14 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
     return tok;
 }
 
-struct Space {
-    Space() : classEnd(nullptr), isNamespace(false) { }
-    std::string className;
-    const Token * classEnd;
-    bool isNamespace;
-};
+namespace {
+    struct Space {
+        Space() : classEnd(nullptr), isNamespace(false) { }
+        std::string className;
+        const Token * classEnd;
+        bool isNamespace;
+    };
+}
 
 static Token *splitDefinitionFromTypedef(Token *tok)
 {
