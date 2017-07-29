@@ -20,8 +20,8 @@
     </message>
     <message utf8="true">
         <location filename="about.ui" line="81"/>
-        <source>Copyright © 2007-2016 Cppcheck team.</source>
-        <translation>Copyright © 2007-2016 Cppcheck-Team.</translation>
+        <source>Copyright © 2007-2017 Cppcheck team.</source>
+        <translation>Copyright © 2007-2017 Cppcheck-Team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -1131,7 +1131,7 @@ Möchten Sie die Prüfung abbrechen und Cppcheck beenden?</translation>
     <message>
         <location filename="mainwindow.cpp" line="1343"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
-        <translation type="unfinished"></translation>
+        <translation>Erstellungsverzeichnis &apos;%1&apos; existiert nicht. Erstellen?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1385"/>
@@ -1264,27 +1264,27 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="49"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the build dir, cppcheck stores data about each translation unit.&lt;/p&gt;&lt;p&gt;With a build dir you get whole program analysis.&lt;/p&gt;&lt;p&gt;Unchanged files will be analyzed much faster; Cppcheck skip the analysis of these files and reuse their old data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Im Erstellungsverzeichnis speichert Cppcheck Daten über jede Übersetzungseinheit.&lt;/p&gt;&lt;p&gt;Mit einem Erstellungsverzeichnis ist eine dateiübergreifende Prüfung möglich.&lt;/p&gt;&lt;p&gt;Unveränderte Dateien werden erheblich schneller analysiert, da sie übersprungen und die gespeicherten Resultate genutzt werden können.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="52"/>
         <source>Cppcheck build dir (whole program analysis, faster analysis for unchanged files)</source>
-        <translation type="unfinished"></translation>
+        <translation>Cppcheck-Erstellungsverzeichnis (Dateiübergreifende Analyse, schnellere Analyse ungeänderter Dateien)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="110"/>
         <source>Paths and Defines</source>
-        <translation type="unfinished"></translation>
+        <translation>Pfade und Definitionen</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="118"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Cppcheck can import Visual studio solutions (*.sln), Visual studio projects (*.vcxproj) or compile databases.&lt;/p&gt;&lt;p&gt;Files to check, defines, include paths are imported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Cppcheck kann Visual-Studio-Projektmappen (*.sln), Visual-Studio-Projekte (*.vcxproj) oder Compile-Datenbanken importieren.&lt;/p&gt;&lt;p&gt;Zu prüfende Dateien, Definitionen und Includeverzeichnisse werden importiert.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="121"/>
         <source>Import Project (Visual studio / compile database)</source>
-        <translation type="unfinished"></translation>
+        <translation>Importiere Projekt (Visual Studio / Compile-Datenbank)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="251"/>
@@ -1294,8 +1294,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="32"/>
         <source>&amp;Root:</source>
-        <oldsource>Root:</oldsource>
-        <translation type="unfinished">Wurzelverzeichnis:</translation>
+        <translation>&amp;Wurzelverzeichnis:</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="77"/>
@@ -1308,58 +1307,10 @@ Options:
         <translation>Hinweis: Legen Sie eigene .cfg-Dateien in den Ordner der Projektdatei. Dann sollten sie oben sichtbar werden.</translation>
     </message>
     <message>
-        <source>Visual Studio</source>
-        <translation type="obsolete">Visual Studio</translation>
-    </message>
-    <message>
-        <source>Visual Studio
-
-Cppcheck can import visual studio solutions and projects.
-
-Files to check, include paths, configurations, defines, platform settings are imported.
-
-Library settings are not imported.</source>
-        <translation type="obsolete">Visual Studio
-
-Cppcheck kann Visual-Studio-Projektmappen und -Projekte öffnen.
-
-Zu prüfende Dateien, Includepfade, Konfigurationen, Definitionen und Plattformeinstellungen werden importiert.
-
-Bibliothekseinstellungen werden nicht importiert.</translation>
-    </message>
-    <message>
         <location filename="projectfiledialog.ui" line="64"/>
         <location filename="projectfiledialog.ui" line="152"/>
         <source>...</source>
         <translation>...</translation>
-    </message>
-    <message>
-        <source>Cppcheck build dir (optional)</source>
-        <translation type="obsolete">Cppcheck-Erstellungsverzeichnis (optional)</translation>
-    </message>
-    <message>
-        <source>CMake</source>
-        <translation type="obsolete">CMake</translation>
-    </message>
-    <message>
-        <source>Compile database
-
-Cppcheck can import files to analyse, include paths, defines from the compile database.
-
-Platform settings are not provided in compile database and must be configured.
-
-Library settings are not provided in compile database, be careful about this configuration also.</source>
-        <translation type="obsolete">Compile-Datenbank
-
-Cppcheck kann zu prüfende Dateien, Includepfade und Definitionen von der Compile-Datenbank importieren.
-
-Plattformeinstellungen werden nicht bereitgestellt und müssen konfiguriert werden.
-
-Bibliothekseinstellungen werden ebenfalls nicht bereitgestellt, geben Sie also auf deren Konfiguration acht.</translation>
-    </message>
-    <message>
-        <source>Other</source>
-        <translation type="obsolete">Andere</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="174"/>
@@ -1443,22 +1394,6 @@ Bibliothekseinstellungen werden ebenfalls nicht bereitgestellt, geben Sie also a
         <translation>Wähle Cppcheck-Erstellungsverzeichnis</translation>
     </message>
     <message>
-        <source>Compile Database</source>
-        <translation type="obsolete">Compile-Datenbank</translation>
-    </message>
-    <message>
-        <source>Compile database (compile_database.json)</source>
-        <translation type="obsolete">Compile-Datenbank (compile_database.json)</translation>
-    </message>
-    <message>
-        <source>Visual Studio</source>
-        <translation type="obsolete">Visual Studio</translation>
-    </message>
-    <message>
-        <source>Visual Studio Solution/Project (*.sln *.vcxproj)</source>
-        <translation type="obsolete">Visual-Studio-Projektmappe/-Projekt (*.sln *.vcxproj)</translation>
-    </message>
-    <message>
         <location filename="projectfiledialog.cpp" line="432"/>
         <source>Select include directory</source>
         <translation>Wähle Include-Verzeichnisse</translation>
@@ -1471,12 +1406,12 @@ Bibliothekseinstellungen werden ebenfalls nicht bereitgestellt, geben Sie also a
     <message>
         <location filename="projectfiledialog.cpp" line="216"/>
         <source>Import Project</source>
-        <translation type="unfinished"></translation>
+        <translation>Projekt importieren</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="218"/>
         <source>Visual Studio (*.sln *.vcxproj);;Compile database (compile_database.json)</source>
-        <translation type="unfinished"></translation>
+        <translation>Visual Studio (*.sln *.vcxproj);;Compile-Datenbank (compile_database.json)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="452"/>
@@ -1598,7 +1533,7 @@ Bibliothekseinstellungen werden ebenfalls nicht bereitgestellt, geben Sie also a
     <message>
         <location filename="resultstree.cpp" line="226"/>
         <source>note</source>
-        <translation type="unfinished"></translation>
+        <translation>Anmerkung</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="566"/>
@@ -2083,7 +2018,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="stats.ui" line="380"/>
         <source>Pdf Export</source>
-        <translation type="unfinished"></translation>
+        <translation>PDF-Export</translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="82"/>
@@ -2138,7 +2073,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="statsdialog.cpp" line="121"/>
         <source>Export PDF</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportiere PDF</translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="141"/>

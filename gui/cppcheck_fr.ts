@@ -26,7 +26,7 @@ General Public License version 3</translation>
         <translation>Visitez le site Cppcheck : %1</translation>
     </message>
     <message utf8="true">
-        <source>Copyright © 2007-2016 Cppcheck team.</source>
+        <source>Copyright © 2007-2017 Cppcheck team.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

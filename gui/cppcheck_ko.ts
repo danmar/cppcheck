@@ -30,15 +30,7 @@ of the GNU General Public License version 3</source>
         <translation>Cppcheck 홈페이지(%1)를 방문해보세요</translation>
     </message>
     <message utf8="true">
-        <source>Copyright © 2007-2013 Daniel Marjamäki and cppcheck team.</source>
-        <translation type="obsolete">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team. {2007-2013 ?}</translation>
-    </message>
-    <message utf8="true">
-        <source>Copyright © 2007-2016 Daniel Marjamäki and cppcheck team.</source>
-        <translation type="obsolete">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team. {2007-2013 ?} {2007-2016 ?}</translation>
-    </message>
-    <message utf8="true">
-        <source>Copyright © 2007-2016 Cppcheck team.</source>
+        <source>Copyright © 2007-2017 Cppcheck team.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

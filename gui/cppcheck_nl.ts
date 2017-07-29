@@ -20,9 +20,8 @@
     </message>
     <message utf8="true">
         <location filename="about.ui" line="81"/>
-        <source>Copyright © 2007-2016 Cppcheck team.</source>
-        <oldsource>Copyright © 2007-2016 Daniel Marjamäki and cppcheck team.</oldsource>
-        <translation type="unfinished">Copyright (C) 2007-2009 Daniel Marjamäki en het cppcheck team.</translation>
+        <source>Copyright © 2007-2017 Cppcheck team.</source>
+        <translation>Copyright © 2007-2017 het cppcheck team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>

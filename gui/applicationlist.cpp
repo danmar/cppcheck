@@ -79,7 +79,7 @@ bool ApplicationList::loadSettings()
             defapp = 0;
         }
 #else
-        if (FindDefaultWindowsEditor()) {
+        if (findDefaultWindowsEditor()) {
             defapp = 0;
         }
 #endif
