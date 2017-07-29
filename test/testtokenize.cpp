@@ -5568,6 +5568,33 @@ private:
                                          "void search ( ) { }\n"
                                          "} ;";
         ASSERT_EQUALS(expected14, tokenizeAndStringify(code14, false));
+
+        // Ticket #8091
+        ASSERT_EQUALS("enum Anonymous0 { string } ;",
+                      tokenizeAndStringify("using namespace std; "
+                                           "enum { string };"));
+        ASSERT_EQUALS("enum Type { string } ;",
+                      tokenizeAndStringify("using namespace std; "
+                                           "enum Type { string } ;"));
+        ASSERT_EQUALS("enum class Type { string } ;",
+                      tokenizeAndStringify("using namespace std; "
+                                           "enum class Type { string } ;"));
+        ASSERT_EQUALS("enum struct Type { string } ;",
+                      tokenizeAndStringify("using namespace std; "
+                                           "enum struct Type { string } ;"));
+        ASSERT_EQUALS("enum struct Type : int { f = 0 , string } ;",
+                      tokenizeAndStringify("using namespace std; "
+                                           "enum struct Type : int { f = 0 , string } ;"));
+        ASSERT_EQUALS("enum Type { a , b } ; void foo ( enum Type , std :: string ) { }",
+                      tokenizeAndStringify("using namespace std; "
+                                           "enum Type { a , b } ; void foo ( enum Type , string) {}"));
+        ASSERT_EQUALS("struct T { } ; enum struct Type : int { f = 0 , string } ;",
+                      tokenizeAndStringify("using namespace std; "
+                                           "struct T { typedef int type; } ; "
+                                           "enum struct Type : T :: type { f = 0 , string } ;"));
+        // Handle garbage enum code "well"
+        ASSERT_EQUALS("enum E : int ; void foo ( ) { std :: string s ; }",
+                      tokenizeAndStringify("using namespace std; enum E : int ; void foo ( ) { string s ; }"));
     }
 
     void microsoftMemory() {
