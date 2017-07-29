@@ -38,7 +38,7 @@ Check::Check(const std::string &aname)
 
 void Check::reportError(const ErrorLogger::ErrorMessage &errmsg)
 {
-    std::cout << errmsg.toXML(true, 1) << std::endl;
+    std::cout << errmsg.toXML() << std::endl;
 }
 
 bool Check::wrongData(const Token *tok, bool condition, const char *str)

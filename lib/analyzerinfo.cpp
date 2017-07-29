@@ -148,10 +148,10 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
     return true;
 }
 
-void AnalyzerInformation::reportErr(const ErrorLogger::ErrorMessage &msg, bool verbose)
+void AnalyzerInformation::reportErr(const ErrorLogger::ErrorMessage &msg, bool /*verbose*/)
 {
     if (fout.is_open())
-        fout << msg.toXML(verbose,2) << '\n';
+        fout << msg.toXML() << '\n';
 }
 
 void AnalyzerInformation::setFileInfo(const std::string &check, const std::string &fileInfo)

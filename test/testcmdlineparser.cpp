@@ -118,7 +118,6 @@ private:
         TEST_CASE(templatesVs);
         TEST_CASE(templatesEdit);
         TEST_CASE(xml);
-        TEST_CASE(xmlver1);
         TEST_CASE(xmlver2);
         TEST_CASE(xmlver2both);
         TEST_CASE(xmlver2both2);
@@ -827,16 +826,6 @@ private:
     void xml() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--xml", "file.cpp"};
-        settings.xml_version = 1;
-        settings.xml = false;
-        ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT(settings.xml);
-        ASSERT_EQUALS(1, settings.xml_version);
-    }
-
-    void xmlver1() {
-        REDIRECT;
-        const char *argv[] = {"cppcheck", "--xml-version=1", "file.cpp"};
         settings.xml_version = 1;
         settings.xml = false;
         ASSERT(defParser.ParseFromArgs(3, argv));

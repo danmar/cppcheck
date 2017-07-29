@@ -105,9 +105,9 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         if (parser.GetShowErrorMessages()) {
             errorlist = true;
-            std::cout << ErrorLogger::ErrorMessage::getXMLHeader(settings.xml_version);
+            std::cout << ErrorLogger::ErrorMessage::getXMLHeader();
             cppcheck->getErrorMessages();
-            std::cout << ErrorLogger::ErrorMessage::getXMLFooter(settings.xml_version) << std::endl;
+            std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
         }
 
         if (parser.ExitAfterPrinting()) {
@@ -830,7 +830,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (settings.xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLHeader(settings.xml_version));
+        reportErr(ErrorLogger::ErrorMessage::getXMLHeader());
     }
 
     if (!settings.buildDir.empty()) {
@@ -927,7 +927,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (settings.xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLFooter(settings.xml_version));
+        reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
     }
 
     _settings = 0;
@@ -998,9 +998,9 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
 void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
     if (errorlist) {
-        reportOut(msg.toXML(false, _settings->xml_version));
+        reportOut(msg.toXML());
     } else if (_settings->xml) {
-        reportErr(msg.toXML(_settings->verbose, _settings->xml_version));
+        reportErr(msg.toXML());
     } else {
         reportErr(msg.toString(_settings->verbose, _settings->outputFormat));
     }

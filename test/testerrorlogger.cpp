@@ -46,10 +46,6 @@ private:
         TEST_CASE(CustomFormat);
         TEST_CASE(CustomFormat2);
         TEST_CASE(CustomFormatLocations);
-        TEST_CASE(ToXml);
-        TEST_CASE(ToXmlLocations);
-        TEST_CASE(ToVerboseXml);
-        TEST_CASE(ToVerboseXmlLocations);
         TEST_CASE(ToXmlV2);
         TEST_CASE(ToXmlV2Locations);
         TEST_CASE(ToXmlV2Encoding);
@@ -190,42 +186,6 @@ private:
         ASSERT_EQUALS("Verbose error - bar.cpp(8):(error,errorId)", msg.toString(true, "{message} - {file}({line}):({severity},{id})"));
     }
 
-    void ToXml() const {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
-        ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
-        ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
-        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
-        ASSERT_EQUALS("    <error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Programming error.\"/>", msg.toXML(false,1));
-    }
-
-    void ToXmlLocations() const {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(fooCpp5);
-        locs.push_back(barCpp8);
-        ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
-        ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
-        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
-        ASSERT_EQUALS("    <error file=\"bar.cpp\" line=\"8\" id=\"errorId\" severity=\"error\" msg=\"Programming error.\"/>", msg.toXML(false,1));
-    }
-
-    void ToVerboseXml() const {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
-        ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
-        ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
-        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
-        ASSERT_EQUALS("    <error file=\"foo.cpp\" line=\"5\" id=\"errorId\" severity=\"error\" msg=\"Verbose error\"/>", msg.toXML(true,1));
-    }
-
-    void ToVerboseXmlLocations() const {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(fooCpp5);
-        locs.push_back(barCpp8);
-        ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
-        ASSERT_EQUALS("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>", ErrorLogger::ErrorMessage::getXMLHeader(1));
-        ASSERT_EQUALS("</results>", ErrorLogger::ErrorMessage::getXMLFooter(1));
-        ASSERT_EQUALS("    <error file=\"bar.cpp\" line=\"8\" id=\"errorId\" severity=\"error\" msg=\"Verbose error\"/>", msg.toXML(true,1));
-    }
-
     void ToXmlV2() const {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
@@ -233,12 +193,12 @@ private:
         header += "    <cppcheck version=\"";
         header += CppCheck::version();
         header += "\"/>\n    <errors>";
-        ASSERT_EQUALS(header, ErrorLogger::ErrorMessage::getXMLHeader(2));
-        ASSERT_EQUALS("    </errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter(2));
+        ASSERT_EQUALS(header, ErrorLogger::ErrorMessage::getXMLHeader());
+        ASSERT_EQUALS("    </errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter());
         std::string message("        <error id=\"errorId\" severity=\"error\"");
         message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
         message += "            <location file=\"foo.cpp\" line=\"5\"/>\n        </error>";
-        ASSERT_EQUALS(message, msg.toXML(false, 2));
+        ASSERT_EQUALS(message, msg.toXML());
     }
 
     void ToXmlV2Locations() const {
@@ -250,30 +210,30 @@ private:
         header += "    <cppcheck version=\"";
         header += CppCheck::version();
         header += "\"/>\n    <errors>";
-        ASSERT_EQUALS(header, ErrorLogger::ErrorMessage::getXMLHeader(2));
-        ASSERT_EQUALS("    </errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter(2));
+        ASSERT_EQUALS(header, ErrorLogger::ErrorMessage::getXMLHeader());
+        ASSERT_EQUALS("    </errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter());
         std::string message("        <error id=\"errorId\" severity=\"error\"");
         message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
         message += "            <location file=\"bar.cpp\" line=\"8\"/>\n";
         message += "            <location file=\"foo.cpp\" line=\"5\"/>\n        </error>";
-        ASSERT_EQUALS(message, msg.toXML(false, 2));
+        ASSERT_EQUALS(message, msg.toXML());
     }
 
     void ToXmlV2Encoding() const {
         {
             std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
             ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nComparing \"\203\" with \"\003\"", "errorId", false);
-            const std::string message("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Comparing &quot;\\203&quot; with &quot;\\003&quot;\"/>");
-            ASSERT_EQUALS(message, msg.toXML(false, 2));
+            const std::string expected("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Comparing &quot;\\203&quot; with &quot;\\003&quot;\"/>");
+            ASSERT_EQUALS(expected, msg.toXML());
         }
         {
             const char code1[]="äöü";
             const char code2[]="\x12\x00\x00\x01";
             std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
             ErrorMessage msg1(locs, emptyString, Severity::error, std::string("Programming error.\nReading \"")+code1+"\"", "errorId", false);
-            ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\303\\244\\303\\266\\303\\274&quot;\"/>", msg1.toXML(false, 2));
+            ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\303\\244\\303\\266\\303\\274&quot;\"/>", msg1.toXML());
             ErrorMessage msg2(locs, emptyString, Severity::error, std::string("Programming error.\nReading \"")+code2+"\"", "errorId", false);
-            ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\022&quot;\"/>", msg2.toXML(false, 2));
+            ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\022&quot;\"/>", msg2.toXML());
         }
     }
 
@@ -284,14 +244,11 @@ private:
         // Inconclusive error message
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error", "errorId", true);
 
-        // Don't save inconclusive messages if the xml version is 1
-        ASSERT_EQUALS("", msg.toXML(false, 1));
-
         // xml version 2 error message
         ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error\" verbose=\"Programming error\" inconclusive=\"true\">\n"
                       "            <location file=\"foo.cpp\" line=\"5\"/>\n"
                       "        </error>",
-                      msg.toXML(false, 2));
+                      msg.toXML());
     }
 
     void SerializeInconclusiveMessage() const {

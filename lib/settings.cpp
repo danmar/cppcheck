@@ -37,7 +37,7 @@ Settings::Settings()
       verbose(false),
       force(false),
       relativePaths(false),
-      xml(false), xml_version(1),
+      xml(false), xml_version(2),
       jobs(1),
       loadAverage(0),
       exitCode(0),

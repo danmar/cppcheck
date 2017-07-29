@@ -247,13 +247,11 @@ public:
 
         /**
          * Format the error message in XML format
-         * @param verbose use verbose message
-         * @param version XML version
          */
-        std::string toXML(bool verbose, int version) const;
+        std::string toXML() const;
 
-        static std::string getXMLHeader(int xml_version);
-        static std::string getXMLFooter(int xml_version);
+        static std::string getXMLHeader();
+        static std::string getXMLFooter();
 
         /**
          * Format the error message into a string.

@@ -287,7 +287,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     return true;
 }
 
-std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
+std::string ErrorLogger::ErrorMessage::getXMLHeader()
 {
     // xml_version 1 is the default xml format
 
@@ -298,21 +298,19 @@ std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
 
     // header
     printer.OpenElement("results", false);
-    // version 2 header
-    if (xml_version == 2) {
-        printer.PushAttribute("version", xml_version);
-        printer.OpenElement("cppcheck", false);
-        printer.PushAttribute("version", CppCheck::version());
-        printer.CloseElement(false);
-        printer.OpenElement("errors", false);
-    }
+
+    printer.PushAttribute("version", 2);
+    printer.OpenElement("cppcheck", false);
+    printer.PushAttribute("version", CppCheck::version());
+    printer.CloseElement(false);
+    printer.OpenElement("errors", false);
 
     return std::string(printer.CStr()) + '>';
 }
 
-std::string ErrorLogger::ErrorMessage::getXMLFooter(int xml_version)
+std::string ErrorLogger::ErrorMessage::getXMLFooter()
 {
-    return (xml_version<=1) ? "</results>" : "    </errors>\n</results>";
+    return "    </errors>\n</results>";
 }
 
 // There is no utf-8 support around but the strings should at least be safe for to tinyxml2.
@@ -337,55 +335,31 @@ std::string ErrorLogger::ErrorMessage::fixInvalidChars(const std::string& raw)
     return result;
 }
 
-std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
+std::string ErrorLogger::ErrorMessage::toXML() const
 {
-    // The default xml format
-    if (version == 1) {
-        // No inconclusive messages in the xml version 1
-        if (_inconclusive)
-            return "";
+    tinyxml2::XMLPrinter printer(0, false, 2);
+    printer.OpenElement("error", false);
+    printer.PushAttribute("id", _id.c_str());
+    printer.PushAttribute("severity", Severity::toString(_severity).c_str());
+    printer.PushAttribute("msg", fixInvalidChars(_shortMessage).c_str());
+    printer.PushAttribute("verbose", fixInvalidChars(_verboseMessage).c_str());
+    if (_cwe.id)
+        printer.PushAttribute("cwe", _cwe.id);
+    if (_inconclusive)
+        printer.PushAttribute("inconclusive", "true");
 
-        tinyxml2::XMLPrinter printer(0, false, 1);
-        printer.OpenElement("error", false);
-        if (!_callStack.empty()) {
-            printer.PushAttribute("file", _callStack.back().getfile().c_str());
-            printer.PushAttribute("line", _callStack.back().line);
-        }
-        printer.PushAttribute("id", _id.c_str());
-        printer.PushAttribute("severity", (_severity == Severity::error ? "error" : "style"));
-        printer.PushAttribute("msg", fixInvalidChars(verbose ? _verboseMessage : _shortMessage).c_str());
+    for (std::list<FileLocation>::const_reverse_iterator it = _callStack.rbegin(); it != _callStack.rend(); ++it) {
+        printer.OpenElement("location", false);
+        if (!file0.empty() && (*it).getfile() != file0)
+            printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
+        printer.PushAttribute("file", (*it).getfile().c_str());
+        printer.PushAttribute("line", (*it).line);
+        if (!it->getinfo().empty())
+            printer.PushAttribute("info", it->getinfo().c_str());
         printer.CloseElement(false);
-        return printer.CStr();
     }
-
-    // The xml format you get when you use --xml-version=2
-    else if (version == 2) {
-        tinyxml2::XMLPrinter printer(0, false, 2);
-        printer.OpenElement("error", false);
-        printer.PushAttribute("id", _id.c_str());
-        printer.PushAttribute("severity", Severity::toString(_severity).c_str());
-        printer.PushAttribute("msg", fixInvalidChars(_shortMessage).c_str());
-        printer.PushAttribute("verbose", fixInvalidChars(_verboseMessage).c_str());
-        if (_cwe.id)
-            printer.PushAttribute("cwe", _cwe.id);
-        if (_inconclusive)
-            printer.PushAttribute("inconclusive", "true");
-
-        for (std::list<FileLocation>::const_reverse_iterator it = _callStack.rbegin(); it != _callStack.rend(); ++it) {
-            printer.OpenElement("location", false);
-            if (!file0.empty() && (*it).getfile() != file0)
-                printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
-            printer.PushAttribute("file", (*it).getfile().c_str());
-            printer.PushAttribute("line", (*it).line);
-            if (!it->getinfo().empty())
-                printer.PushAttribute("info", it->getinfo().c_str());
-            printer.CloseElement(false);
-        }
-        printer.CloseElement(false);
-        return printer.CStr();
-    }
-
-    return "";
+    printer.CloseElement(false);
+    return printer.CStr();
 }
 
 void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)
