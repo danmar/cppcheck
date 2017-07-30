@@ -84,8 +84,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionPrint, SIGNAL(triggered()), mUI.mResults, SLOT(print()));
     connect(mUI.mActionPrintPreview, SIGNAL(triggered()), mUI.mResults, SLOT(printPreview()));
     connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
-    connect(mUI.mActionCheckFiles, SIGNAL(triggered()), this, SLOT(checkFiles()));
-    connect(mUI.mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(checkDirectory()));
+    connect(mUI.mActionAnalyzeFiles, SIGNAL(triggered()), this, SLOT(checkFiles()));
+    connect(mUI.mActionAnalyzeDirectory, SIGNAL(triggered()), this, SLOT(checkDirectory()));
     connect(mUI.mActionSettings, SIGNAL(triggered()), this, SLOT(programSettings()));
     connect(mUI.mActionClearResults, SIGNAL(triggered()), this, SLOT(clearResults()));
     connect(mUI.mActionOpenXML, SIGNAL(triggered()), this, SLOT(openResults()));
@@ -105,8 +105,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionViewStats, SIGNAL(triggered()), this, SLOT(showStatistics()));
     connect(mUI.mActionLibraryEditor, SIGNAL(triggered()), this, SLOT(showLibraryEditor()));
 
-    connect(mUI.mActionRecheckModified, SIGNAL(triggered()), this, SLOT(reCheckModified()));
-    connect(mUI.mActionRecheckAll, SIGNAL(triggered()), this, SLOT(reCheckAll()));
+    connect(mUI.mActionReanalyzeModified, SIGNAL(triggered()), this, SLOT(reCheckModified()));
+    connect(mUI.mActionReanalyzeAll, SIGNAL(triggered()), this, SLOT(reCheckAll()));
 
     connect(mUI.mActionStop, SIGNAL(triggered()), this, SLOT(stopChecking()));
     connect(mUI.mActionSave, SIGNAL(triggered()), this, SLOT(save()));
@@ -151,8 +151,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI.mActionPrintPreview->setEnabled(false);
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
-    mUI.mActionRecheckModified->setEnabled(false);
-    mUI.mActionRecheckAll->setEnabled(false);
+    mUI.mActionReanalyzeModified->setEnabled(false);
+    mUI.mActionReanalyzeAll->setEnabled(false);
     enableProjectOpenActions(true);
     enableProjectActions(false);
 
@@ -187,7 +187,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         act->setData(plat.mType);
         act->setCheckable(true);
         act->setActionGroup(mPlatformActions);
-        mUI.mMenuCheck->insertAction(mUI.mActionPlatforms, act);
+        mUI.mMenuAnalyze->insertAction(mUI.mActionPlatforms, act);
         connect(act, SIGNAL(triggered()), this, SLOT(selectPlatform()));
     }
 
@@ -863,8 +863,8 @@ void MainWindow::checkDone()
     if (mProject) {
         enableProjectActions(true);
     } else if (mIsLogfileLoaded) {
-        mUI.mActionRecheckModified->setEnabled(false);
-        mUI.mActionRecheckAll->setEnabled(false);
+        mUI.mActionReanalyzeModified->setEnabled(false);
+        mUI.mActionReanalyzeAll->setEnabled(false);
     }
     enableProjectOpenActions(true);
     mPlatformActions->setEnabled(true);
@@ -1050,8 +1050,8 @@ void MainWindow::loadResults(const QString selectedFile)
             closeProjectFile();
         mIsLogfileLoaded = true;
         mUI.mResults->clear(true);
-        mUI.mActionRecheckModified->setEnabled(false);
-        mUI.mActionRecheckAll->setEnabled(false);
+        mUI.mActionReanalyzeModified->setEnabled(false);
+        mUI.mActionReanalyzeAll->setEnabled(false);
         mUI.mResults->readErrorsXml(selectedFile);
         setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
     }
@@ -1066,14 +1066,14 @@ void MainWindow::loadResults(const QString selectedFile, const QString sourceDir
 void MainWindow::enableCheckButtons(bool enable)
 {
     mUI.mActionStop->setEnabled(!enable);
-    mUI.mActionCheckFiles->setEnabled(enable);
+    mUI.mActionAnalyzeFiles->setEnabled(enable);
 
     if (!enable || mThread->hasPreviousFiles()) {
-        mUI.mActionRecheckModified->setEnabled(enable);
-        mUI.mActionRecheckAll->setEnabled(enable);
+        mUI.mActionReanalyzeModified->setEnabled(enable);
+        mUI.mActionReanalyzeAll->setEnabled(enable);
     }
 
-    mUI.mActionCheckDirectory->setEnabled(enable);
+    mUI.mActionAnalyzeDirectory->setEnabled(enable);
 }
 
 void MainWindow::showStyle(bool checked)

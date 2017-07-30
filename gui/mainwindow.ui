@@ -127,9 +127,9 @@
     <addaction name="separator"/>
     <addaction name="mActionAbout"/>
    </widget>
-   <widget class="QMenu" name="mMenuCheck">
+   <widget class="QMenu" name="mMenuAnalyze">
     <property name="title">
-     <string>&amp;Check</string>
+     <string>Analyze</string>
     </property>
     <widget class="QMenu" name="menuCpp_standard">
      <property name="title">
@@ -146,10 +146,10 @@
      <addaction name="mActionC99"/>
      <addaction name="mActionC11"/>
     </widget>
-    <addaction name="mActionCheckFiles"/>
-    <addaction name="mActionCheckDirectory"/>
-    <addaction name="mActionRecheckModified"/>
-    <addaction name="mActionRecheckAll"/>
+    <addaction name="mActionAnalyzeFiles"/>
+    <addaction name="mActionAnalyzeDirectory"/>
+    <addaction name="mActionReanalyzeModified"/>
+    <addaction name="mActionReanalyzeAll"/>
     <addaction name="mActionStop"/>
     <addaction name="separator"/>
     <addaction name="menuC_standard"/>
@@ -172,7 +172,7 @@
    <addaction name="mMenuFile"/>
    <addaction name="mMenuEdit"/>
    <addaction name="mMenuView"/>
-   <addaction name="mMenuCheck"/>
+   <addaction name="mMenuAnalyze"/>
    <addaction name="mMenuHelp"/>
   </widget>
   <widget class="QToolBar" name="mToolBarMain">
@@ -185,12 +185,12 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="mActionCheckDirectory"/>
+   <addaction name="mActionAnalyzeDirectory"/>
    <addaction name="mActionOpenProjectFile"/>
    <addaction name="mActionShowScratchpad"/>
    <addaction name="mActionSave"/>
-   <addaction name="mActionRecheckModified"/>
-   <addaction name="mActionRecheckAll"/>
+   <addaction name="mActionReanalyzeModified"/>
+   <addaction name="mActionReanalyzeAll"/>
    <addaction name="mActionStop"/>
    <addaction name="mActionClearResults"/>
    <addaction name="mActionSettings"/>
@@ -243,21 +243,21 @@
     <string>&amp;About...</string>
    </property>
   </action>
-  <action name="mActionCheckFiles">
+  <action name="mActionAnalyzeFiles">
    <property name="text">
     <string>&amp;Files...</string>
    </property>
    <property name="iconText">
-    <string>Check files</string>
+    <string>Analyze files</string>
    </property>
    <property name="toolTip">
-    <string>Check files</string>
+    <string>Analyze files</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
    </property>
   </action>
-  <action name="mActionCheckDirectory">
+  <action name="mActionAnalyzeDirectory">
    <property name="icon">
     <iconset resource="gui.qrc">
      <normaloff>:/cppcheck-gui.png</normaloff>:/cppcheck-gui.png</iconset>
@@ -266,34 +266,34 @@
     <string>&amp;Directory...</string>
    </property>
    <property name="iconText">
-    <string>Check directory</string>
+    <string>Analyze directory</string>
    </property>
    <property name="toolTip">
-    <string>Check directory</string>
+    <string>Analyze directory</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
    </property>
   </action>
-  <action name="mActionRecheckModified">
+  <action name="mActionReanalyzeModified">
    <property name="icon">
     <iconset resource="gui.qrc">
      <normaloff>:/images/view-refresh.png</normaloff>:/images/view-refresh.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Recheck modified files</string>
+    <string>&amp;Reanalyze modified files</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
    </property>
   </action>
-  <action name="mActionRecheckAll">
+  <action name="mActionReanalyzeAll">
    <property name="icon">
     <iconset resource="gui.qrc">
      <normaloff>:/images/view-recheck.png</normaloff>:/images/view-recheck.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Recheck all files</string>
+    <string>&amp;Reanalyze all files</string>
    </property>
   </action>
   <action name="mActionStop">
@@ -305,10 +305,10 @@
     <string>&amp;Stop</string>
    </property>
    <property name="iconText">
-    <string>Stop checking</string>
+    <string>Stop analysis</string>
    </property>
    <property name="toolTip">
-    <string>Stop checking</string>
+    <string>Stop analysis</string>
    </property>
    <property name="shortcut">
     <string>Esc</string>
