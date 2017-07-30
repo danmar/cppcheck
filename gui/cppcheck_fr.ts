@@ -448,11 +448,11 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>No suitable files found to check!</source>
-        <translation>Pas de fichiers trouvés à vérifier !</translation>
+        <translation type="obsolete">Pas de fichiers trouvés à vérifier !</translation>
     </message>
     <message>
         <source>Select directory to check</source>
-        <translation>Sélectionner le répertoire à vérifier</translation>
+        <translation type="obsolete">Sélectionner le répertoire à vérifier</translation>
     </message>
     <message>
         <source>License</source>
@@ -618,7 +618,7 @@ Parameters: -l(line) (file)</source>
         <source>Checking is running.
 
 Do you want to stop the checking and exit Cppcheck?</source>
-        <translation>Vérification en cours.
+        <translation type="obsolete">Vérification en cours.
 		
 Voulez-vous arrêter la vérification et quitter CppCheck ?</translation>
     </message>
@@ -660,12 +660,6 @@ This is probably because the settings were changed between the Cppcheck versions
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Found project files from the directory.
-
-Do you want to proceed checking without using any of these project files?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -736,7 +730,7 @@ L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vo
     </message>
     <message>
         <source>Select files to check</source>
-        <translation>Sélectionner les fichiers à vérifier</translation>
+        <translation type="obsolete">Sélectionner les fichiers à vérifier</translation>
     </message>
     <message>
         <source>Cppcheck GUI - Command line parameters</source>
@@ -867,10 +861,6 @@ L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vo
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Select the configuration that will be checked</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Cppcheck GUI.
 
 Syntax:
@@ -921,6 +911,34 @@ Options:
     </message>
     <message>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No suitable files found to analyze!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select files to analyze</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select directory to analyze</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select the configuration that will be analyzed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Found project files from the directory.
+
+Do you want to proceed analysis without using any of these project files?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyzer is running.
+
+Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
