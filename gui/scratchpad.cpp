@@ -34,5 +34,5 @@ void ScratchPad::checkButtonClicked()
     QString filename = mUI.lineEdit->text();
     if (filename.isEmpty())
         filename = "test.cpp";
-    mMainWindow.checkCode(mUI.plainTextEdit->toPlainText(), filename);
+    mMainWindow.analyzeCode(mUI.plainTextEdit->toPlainText(), filename);
 }

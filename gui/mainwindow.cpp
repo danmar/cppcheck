@@ -84,8 +84,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionPrint, SIGNAL(triggered()), mUI.mResults, SLOT(print()));
     connect(mUI.mActionPrintPreview, SIGNAL(triggered()), mUI.mResults, SLOT(printPreview()));
     connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
-    connect(mUI.mActionAnalyzeFiles, SIGNAL(triggered()), this, SLOT(checkFiles()));
-    connect(mUI.mActionAnalyzeDirectory, SIGNAL(triggered()), this, SLOT(checkDirectory()));
+    connect(mUI.mActionAnalyzeFiles, SIGNAL(triggered()), this, SLOT(analyzeFiles()));
+    connect(mUI.mActionAnalyzeDirectory, SIGNAL(triggered()), this, SLOT(analyzeDirectory()));
     connect(mUI.mActionSettings, SIGNAL(triggered()), this, SLOT(programSettings()));
     connect(mUI.mActionClearResults, SIGNAL(triggered()), this, SLOT(clearResults()));
     connect(mUI.mActionOpenXML, SIGNAL(triggered()), this, SLOT(openResults()));
@@ -105,10 +105,10 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionViewStats, SIGNAL(triggered()), this, SLOT(showStatistics()));
     connect(mUI.mActionLibraryEditor, SIGNAL(triggered()), this, SLOT(showLibraryEditor()));
 
-    connect(mUI.mActionReanalyzeModified, SIGNAL(triggered()), this, SLOT(reCheckModified()));
-    connect(mUI.mActionReanalyzeAll, SIGNAL(triggered()), this, SLOT(reCheckAll()));
+    connect(mUI.mActionReanalyzeModified, SIGNAL(triggered()), this, SLOT(reAnalyzeModified()));
+    connect(mUI.mActionReanalyzeAll, SIGNAL(triggered()), this, SLOT(reAnalyzeAll()));
 
-    connect(mUI.mActionStop, SIGNAL(triggered()), this, SLOT(stopChecking()));
+    connect(mUI.mActionStop, SIGNAL(triggered()), this, SLOT(stopAnalysis()));
     connect(mUI.mActionSave, SIGNAL(triggered()), this, SLOT(save()));
 
     // About menu
@@ -477,7 +477,7 @@ void MainWindow::doCheckFiles(const QStringList &files)
     mThread->check(checkSettings, true);
 }
 
-void MainWindow::checkCode(const QString& code, const QString& filename)
+void MainWindow::analyzeCode(const QString& code, const QString& filename)
 {
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
@@ -500,10 +500,10 @@ void MainWindow::checkCode(const QString& code, const QString& filename)
     clearResults();
     mUI.mResults->checkingStarted(1);
     cppcheck.check(filename.toStdString(), code.toStdString());
-    checkDone();
+    analysisDone();
 }
 
-QStringList MainWindow::selectFilesToCheck(QFileDialog::FileMode mode)
+QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
 {
     if (mProject) {
         QMessageBox msgBox(this);
@@ -553,9 +553,9 @@ QStringList MainWindow::selectFilesToCheck(QFileDialog::FileMode mode)
     return selected;
 }
 
-void MainWindow::checkFiles()
+void MainWindow::analyzeFiles()
 {
-    QStringList selected = selectFilesToCheck(QFileDialog::ExistingFiles);
+    QStringList selected = selectFilesToAnalyze(QFileDialog::ExistingFiles);
 
     const QString file0 = (selected.size() ? selected[0].toLower() : "");
     if (file0.endsWith(".sln") || file0.endsWith(".vcxproj") || file0.endsWith(compile_commands_json)) {
@@ -585,9 +585,9 @@ void MainWindow::checkFiles()
     doCheckFiles(selected);
 }
 
-void MainWindow::checkDirectory()
+void MainWindow::analyzeDirectory()
 {
-    QStringList dir = selectFilesToCheck(QFileDialog::DirectoryOnly);
+    QStringList dir = selectFilesToAnalyze(QFileDialog::DirectoryOnly);
     if (dir.isEmpty())
         return;
 
@@ -849,7 +849,7 @@ Settings MainWindow::getCppcheckSettings()
     return result;
 }
 
-void MainWindow::checkDone()
+void MainWindow::analysisDone()
 {
     if (mExiting) {
         close();
@@ -939,14 +939,14 @@ void MainWindow::programSettings()
     }
 }
 
-void MainWindow::reCheckModified()
+void MainWindow::reAnalyzeModified()
 {
-    reCheck(false);
+    reAnalyze(false);
 }
 
-void MainWindow::reCheckAll()
+void MainWindow::reAnalyzeAll()
 {
-    reCheck(true);
+    reAnalyze(true);
 }
 
 void MainWindow::reCheckSelected(QStringList files, bool all)
@@ -979,7 +979,7 @@ void MainWindow::reCheckSelected(QStringList files, bool all)
     mThread->setCheckStartTime(saveCheckStartTime);
 }
 
-void MainWindow::reCheck(bool all)
+void MainWindow::reAnalyze(bool all)
 {
     const QStringList files = mThread->getReCheckFiles(all);
     if (files.empty())
@@ -1068,8 +1068,8 @@ void MainWindow::enableCheckButtons(bool enable)
     mUI.mActionStop->setEnabled(!enable);
     mUI.mActionAnalyzeFiles->setEnabled(enable);
 
-    if (!enable || mThread->hasPreviousFiles()) {
-        mUI.mActionReanalyzeModified->setEnabled(enable);
+    if (!enable || mProject || mThread->hasPreviousFiles()) {
+        mUI.mActionReanalyzeModified->setEnabled(!mProject && enable);
         mUI.mActionReanalyzeAll->setEnabled(enable);
     }
 
@@ -1276,7 +1276,7 @@ void MainWindow::aboutToShowViewMenu()
     mUI.mActionToolBarFilter->setChecked(mUI.mToolBarFilter->isVisible());
 }
 
-void MainWindow::stopChecking()
+void MainWindow::stopAnalysis()
 {
     mThread->stop();
     mUI.mResults->disableProgressbar();

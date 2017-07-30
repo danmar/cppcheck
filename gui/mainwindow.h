@@ -68,15 +68,15 @@ public:
      * @param code Content of the (virtual) file to be checked
      * @param filename Name of the (virtual) file to be checked - determines language.
      */
-    void checkCode(const QString& code, const QString& filename);
+    void analyzeCode(const QString& code, const QString& filename);
 
 public slots:
 
     /** @brief Slot for check files menu item */
-    void checkFiles();
+    void analyzeFiles();
 
     /** @brief Slot to recheck all files */
-    void reCheckAll();
+    void reAnalyzeAll();
 
     /**
      * @brief Slot to recheck selected files
@@ -85,7 +85,7 @@ public slots:
     void performSelectedFilesCheck(QStringList selectedFilesList);
 
     /** @brief Slot to recheck modified files */
-    void reCheckModified();
+    void reAnalyzeModified();
 
     /** @brief Slot to clear all search results */
     void clearResults();
@@ -136,7 +136,7 @@ public slots:
     void uncheckAll();
 
     /** @brief Slot for check directory menu item */
-    void checkDirectory();
+    void analyzeDirectory();
 
     /** @brief Slot to open program's settings dialog */
     void programSettings();
@@ -180,7 +180,7 @@ public slots:
 protected slots:
 
     /** @brief Slot for checkthread's done signal */
-    void checkDone();
+    void analysisDone();
 
     /** @brief Lock down UI while checking */
     void checkLockDownUI();
@@ -201,7 +201,7 @@ protected slots:
     void aboutToShowViewMenu();
 
     /** @brief Slot when stop checking button is pressed */
-    void stopChecking();
+    void stopAnalysis();
 
     /** @brief Open help file contents */
     void openHelpContents();
@@ -224,7 +224,7 @@ protected slots:
 private:
 
     /** @brief Rechecks files */
-    void reCheck(bool all);
+    void reAnalyze(bool all);
 
     /**
      * @brief Recheck selected files
@@ -265,7 +265,7 @@ private:
      * @param mode Dialog open mode (files or directories)
      * @return QStringList of files or directories that were selected to check
      */
-    QStringList selectFilesToCheck(QFileDialog::FileMode mode);
+    QStringList selectFilesToAnalyze(QFileDialog::FileMode mode);
 
     /**
      * @brief Check project
