@@ -1198,30 +1198,30 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
     for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.cbegin(); scope != symbolDatabase->scopeList.cend(); ++scope) {
         std::map<unsigned int, ArrayInfo> arrayInfos;
         for (std::list<Variable>::const_iterator var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var) {
-            if (var->isArray() && var->dimension(0) > 0) {
-                _errorLogger->reportProgress(_tokenizer->list.getSourceFilePath(),
-                                             "Check (BufferOverrun::checkGlobalAndLocalVariable 1)",
-                                             var->nameToken()->progressValue());
+            if (!var->isArray() || var->dimension(0) <= 0)
+                continue;
+            _errorLogger->reportProgress(_tokenizer->list.getSourceFilePath(),
+                                         "Check (BufferOverrun::checkGlobalAndLocalVariable 1)",
+                                         var->nameToken()->progressValue());
 
-                if (_tokenizer->isMaxTime())
-                    return;
+            if (_tokenizer->isMaxTime())
+                return;
 
-                const Token *tok = var->nameToken();
-                do {
-                    if (tok->str() == "{") {
-                        if (Token::simpleMatch(tok->previous(), "= {"))
-                            tok = tok->link();
-                        else
-                            break;
-                    }
-                    tok = tok->next();
-                } while (tok && tok->str() != ";");
-                if (!tok)
-                    break;
-                if (tok->str() == "{")
-                    tok = tok->next();
-                arrayInfos[var->declarationId()] = ArrayInfo(&*var, symbolDatabase, var->declarationId());
-            }
+            const Token *tok = var->nameToken();
+            do {
+                if (tok->str() == "{") {
+                    if (Token::simpleMatch(tok->previous(), "= {"))
+                        tok = tok->link();
+                    else
+                        break;
+                }
+                tok = tok->next();
+            } while (tok && tok->str() != ";");
+            if (!tok)
+                break;
+            if (tok->str() == "{")
+                tok = tok->next();
+            arrayInfos[var->declarationId()] = ArrayInfo(&*var, symbolDatabase, var->declarationId());
         }
         if (!arrayInfos.empty())
             checkScope(scope->classStart ? scope->classStart : _tokenizer->tokens(), arrayInfos);
