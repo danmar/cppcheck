@@ -249,7 +249,7 @@ void MainWindow::handleCLIParams(const QStringList &params)
     } else if ((index = params.indexOf(QRegExp(".*\\.xml$", Qt::CaseInsensitive), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
         loadResults(params[index],QDir::currentPath());
     } else
-        doCheckFiles(params);
+        doAnalyzeFiles(params);
 }
 
 void MainWindow::loadSettings()
@@ -378,7 +378,7 @@ void MainWindow::saveSettings() const
     mUI.mResults->saveSettings(mSettings);
 }
 
-void MainWindow::doCheckProject(ImportProject p)
+void MainWindow::doAnalyzeProject(ImportProject p)
 {
     clearResults();
 
@@ -416,12 +416,12 @@ void MainWindow::doCheckProject(ImportProject p)
         AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, p.fileSettings);
     }
 
-    //mThread->SetCheckProject(true);
+    //mThread->SetanalyzeProject(true);
     mThread->setProject(p);
     mThread->check(checkSettings, true);
 }
 
-void MainWindow::doCheckFiles(const QStringList &files)
+void MainWindow::doAnalyzeFiles(const QStringList &files)
 {
     if (files.isEmpty()) {
         return;
@@ -578,11 +578,11 @@ void MainWindow::analyzeFiles()
             p.ignoreOtherConfigs(cfg.toStdString());
         }
 
-        doCheckProject(p);
+        doAnalyzeProject(p);
         return;
     }
 
-    doCheckFiles(selected);
+    doAnalyzeFiles(selected);
 }
 
 void MainWindow::analyzeDirectory()
@@ -617,7 +617,7 @@ void MainWindow::analyzeDirectory()
                 path += projFiles[0];
                 loadProjectFile(path);
             } else {
-                doCheckFiles(dir);
+                doAnalyzeFiles(dir);
             }
         } else {
             // If multiple project files found inform that there are project
@@ -634,11 +634,11 @@ void MainWindow::analyzeDirectory()
             msgBox.setDefaultButton(QMessageBox::Yes);
             int dlgResult = msgBox.exec();
             if (dlgResult == QMessageBox::Yes) {
-                doCheckFiles(dir);
+                doAnalyzeFiles(dir);
             }
         }
     } else {
-        doCheckFiles(dir);
+        doAnalyzeFiles(dir);
     }
 }
 
@@ -949,7 +949,7 @@ void MainWindow::reAnalyzeAll()
     reAnalyze(true);
 }
 
-void MainWindow::reCheckSelected(QStringList files, bool all)
+void MainWindow::reAnalyzeSelected(QStringList files, bool all)
 {
     if (files.empty())
         return;
@@ -1183,7 +1183,7 @@ void MainWindow::showAuthors()
 
 void MainWindow::performSelectedFilesCheck(QStringList selectedFilesList)
 {
-    reCheckSelected(selectedFilesList, true);
+    reAnalyzeSelected(selectedFilesList, true);
 }
 
 void MainWindow::save()
@@ -1333,10 +1333,10 @@ void MainWindow::loadProjectFile(const QString &filePath)
     mUI.mActionEditProjectFile->setEnabled(true);
     delete mProject;
     mProject = new Project(filePath, this);
-    checkProject(mProject);
+    analyzeProject(mProject);
 }
 
-void MainWindow::checkProject(Project *project)
+void MainWindow::analyzeProject(Project *project)
 {
     if (!project->isOpen()) {
         if (!project->open()) {
@@ -1378,7 +1378,7 @@ void MainWindow::checkProject(Project *project)
         ImportProject p;
         QString prjfile = inf.canonicalPath() + '/' + project->getProjectFile()->getImportProject();
         p.import(prjfile.toStdString());
-        doCheckProject(p);
+        doAnalyzeProject(p);
         return;
     }
 
@@ -1400,7 +1400,7 @@ void MainWindow::checkProject(Project *project)
             paths[i] = QDir::cleanPath(path);
         }
     }
-    doCheckFiles(paths);
+    doAnalyzeFiles(paths);
 }
 
 void MainWindow::newProjectFile()
@@ -1426,7 +1426,7 @@ void MainWindow::newProjectFile()
     mProject->create();
     if (mProject->edit()) {
         addProjectMRU(filepath);
-        checkProject(mProject);
+        analyzeProject(mProject);
     }
 }
 
@@ -1451,7 +1451,7 @@ void MainWindow::editProjectFile()
         return;
     }
     if (mProject->edit())
-        checkProject(mProject);
+        analyzeProject(mProject);
 }
 
 void MainWindow::showLogView()

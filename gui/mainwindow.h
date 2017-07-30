@@ -231,13 +231,13 @@ private:
      * @param files list of selected files
      * @param all true if all files of list, false if modified files of list
      */
-    void reCheckSelected(QStringList files, bool all);
+    void reAnalyzeSelected(QStringList files, bool all);
 
     /**
       * @brief Check the project.
       * @param project Pointer to the project to check.
       */
-    void checkProject(Project *project);
+    void analyzeProject(Project *project);
 
     /**
      * @brief Set current language
@@ -271,14 +271,14 @@ private:
      * @brief Check project
      * @param p imported project
      */
-    void doCheckProject(ImportProject p);
+    void doAnalyzeProject(ImportProject p);
 
     /**
      * @brief Check all files specified in parameter files
      *
      * @param files List of files and/or directories to check
      */
-    void doCheckFiles(const QStringList &files);
+    void doAnalyzeFiles(const QStringList &files);
 
     /**
      * @brief Get our default cppcheck settings and read project file.
