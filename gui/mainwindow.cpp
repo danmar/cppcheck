@@ -318,19 +318,12 @@ void MainWindow::loadSettings()
         msgBox.exec();
     }
 
-    const QString project = mSettings->value(SETTINGS_OPEN_PROJECT, QString()).toString();
-    if (!project.isEmpty() && QCoreApplication::arguments().size()==1) {
-        QFileInfo inf(project);
+    const QString projectFile = mSettings->value(SETTINGS_OPEN_PROJECT, QString()).toString();
+    if (!projectFile.isEmpty() && QCoreApplication::arguments().size()==1) {
+        QFileInfo inf(projectFile);
         if (inf.exists() && inf.isReadable()) {
-            delete mProject;
-            mProject = new Project(project, this);
-            mProject->open();
-            if (!mProject->getProjectFile()->getBuildDir().isEmpty()) {
-                const QString buildDir = QFileInfo(project).absolutePath() + '/' + mProject->getProjectFile()->getBuildDir();
-                const QString lastResults = buildDir + "/lastResults.xml";
-                if (QFileInfo(lastResults).exists())
-                    mUI.mResults->readErrorsXml(lastResults);
-            }
+            mProject = new Project(projectFile, this);
+            loadLastResults();
         }
     }
 }
@@ -1333,7 +1326,24 @@ void MainWindow::loadProjectFile(const QString &filePath)
     mUI.mActionEditProjectFile->setEnabled(true);
     delete mProject;
     mProject = new Project(filePath, this);
-    analyzeProject(mProject);
+    if (!loadLastResults())
+        analyzeProject(mProject);
+}
+
+bool MainWindow::loadLastResults()
+{
+    if (!mProject)
+        return false;
+    if (!mProject->isOpen() && !mProject->open())
+        return false;
+    if (mProject->getProjectFile()->getBuildDir().isEmpty())
+        return false;
+    const QString buildDir = QFileInfo(mProject->getFilename()).absolutePath() + '/' + mProject->getProjectFile()->getBuildDir();
+    const QString lastResults = buildDir + "/lastResults.xml";
+    if (!QFileInfo(lastResults).exists())
+        return false;
+    mUI.mResults->readErrorsXml(lastResults);
+    return true;
 }
 
 void MainWindow::analyzeProject(Project *project)

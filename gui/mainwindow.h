@@ -344,6 +344,12 @@ private:
     void loadResults(const QString selectedFile, const QString sourceDirectory);
 
     /**
+    * @brief Load last project results to the GUI.
+    * @return Returns true if last results was loaded
+    */
+    bool loadLastResults();
+
+    /**
      * @brief Load project file to the GUI.
      * @param filePath Filename (inc. path) of project file to load.
      */
