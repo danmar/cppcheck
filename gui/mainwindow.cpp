@@ -444,7 +444,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files)
     if (fileNames.isEmpty()) {
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
-                        tr("No suitable files found to check!"),
+                        tr("No suitable files found to analyze!"),
                         QMessageBox::Ok,
                         this);
         msg.exec();
@@ -523,7 +523,7 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
     if (mode == QFileDialog::ExistingFiles) {
 
         selected = QFileDialog::getOpenFileNames(this,
-                   tr("Select files to check"),
+                   tr("Select files to analyze"),
                    getPath(SETTINGS_LAST_CHECK_PATH),
                    tr("C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)")
                    .arg(FileList::getDefaultFilters().join(" "))
@@ -537,7 +537,7 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
         formatAndSetTitle();
     } else if (mode == QFileDialog::DirectoryOnly) {
         QString dir = QFileDialog::getExistingDirectory(this,
-                      tr("Select directory to check"),
+                      tr("Select directory to analyze"),
                       getPath(SETTINGS_LAST_CHECK_PATH));
         if (!dir.isEmpty()) {
             qDebug() << "Setting current directory to: " << dir;
@@ -572,7 +572,7 @@ void MainWindow::analyzeFiles()
             configs.sort();
 
             bool ok = false;
-            const QString cfg = QInputDialog::getItem(this, tr("Select configuration"), tr("Select the configuration that will be checked"), configs, 0, false, &ok);
+            const QString cfg = QInputDialog::getItem(this, tr("Select configuration"), tr("Select the configuration that will be analyzed"), configs, 0, false, &ok);
             if (!ok)
                 return;
             p.ignoreOtherConfigs(cfg.toStdString());
@@ -625,7 +625,7 @@ void MainWindow::analyzeDirectory()
             QMessageBox msgBox(this);
             msgBox.setWindowTitle(tr("Cppcheck"));
             const QString msg(tr("Found project files from the directory.\n\n"
-                                 "Do you want to proceed checking without "
+                                 "Do you want to proceed analysis without "
                                  "using any of these project files?"));
             msgBox.setText(msg);
             msgBox.setIcon(QMessageBox::Warning);
@@ -1123,8 +1123,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
         saveSettings();
         event->accept();
     } else {
-        const QString text(tr("Checking is running.\n\n" \
-                              "Do you want to stop the checking and exit Cppcheck?"));
+        const QString text(tr("Analyzer is running.\n\n" \
+                              "Do you want to stop the analysis and exit Cppcheck?"));
 
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
