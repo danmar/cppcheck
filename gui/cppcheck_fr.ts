@@ -344,7 +344,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>&amp;Check</source>
-        <translation>&amp;Vérifier</translation>
+        <translation type="obsolete">&amp;Vérifier</translation>
     </message>
     <message>
         <source>&amp;Edit</source>
@@ -492,15 +492,15 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Check files</source>
-        <translation>Vérifier les fichiers</translation>
+        <translation type="obsolete">Vérifier les fichiers</translation>
     </message>
     <message>
         <source>Check directory</source>
-        <translation>Vérifier un répertoire</translation>
+        <translation type="obsolete">Vérifier un répertoire</translation>
     </message>
     <message>
         <source>Stop checking</source>
-        <translation>Arrêter la vérification</translation>
+        <translation type="obsolete">Arrêter la vérification</translation>
     </message>
     <message>
         <source>Style warnings</source>
@@ -621,18 +621,6 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation>Vérification en cours.
 		
 Voulez-vous arrêter la vérification et quitter CppCheck ?</translation>
-    </message>
-    <message>
-        <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>XML files version 1 (*.xml)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>XML files version 2 (*.xml)</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
@@ -856,11 +844,11 @@ L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vo
     </message>
     <message>
         <source>&amp;Recheck modified files</source>
-        <translation>&amp;Revérifier les fichiers modifiés</translation>
+        <translation type="obsolete">&amp;Revérifier les fichiers modifiés</translation>
     </message>
     <message>
         <source>&amp;Recheck all files</source>
-        <translation>&amp;Revérifier tous les fichiers</translation>
+        <translation type="obsolete">&amp;Revérifier tous les fichiers</translation>
     </message>
     <message>
         <source>Unknown element</source>
@@ -880,14 +868,6 @@ L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vo
     </message>
     <message>
         <source>Select the configuration that will be checked</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Deprecated XML format</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>XML format 1 is deprecated and will be removed in cppcheck 1.81.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -913,6 +893,34 @@ Options:
     </message>
     <message>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyze</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyze files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyze directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Reanalyze modified files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Reanalyze all files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1358,6 +1366,10 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>First included by</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML format version 1 is no longer supported.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -366,7 +366,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>&amp;Check</source>
-        <translation>검사(&amp;C)</translation>
+        <translation type="obsolete">검사(&amp;C)</translation>
     </message>
     <message>
         <source>&amp;Edit</source>
@@ -402,7 +402,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>Check files</source>
-        <translation>파일 검사</translation>
+        <translation type="obsolete">파일 검사</translation>
     </message>
     <message>
         <source>Ctrl+F</source>
@@ -414,7 +414,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>Check directory</source>
-        <translation>디렉토리 검사</translation>
+        <translation type="obsolete">디렉토리 검사</translation>
     </message>
     <message>
         <source>Ctrl+D</source>
@@ -434,7 +434,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>Stop checking</source>
-        <translation>검사 중지</translation>
+        <translation type="obsolete">검사 중지</translation>
     </message>
     <message>
         <source>Esc</source>
@@ -702,7 +702,7 @@ Do you want to stop the checking and exit Cppcheck?</source>
     </message>
     <message>
         <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation>XML 파일 버전 2 (*.xml);;XML 파일 버전 1 (*.xml);;텍스트 파일 (*.txt);;CSV 파일 (*.csv)</translation>
+        <translation type="obsolete">XML 파일 버전 2 (*.xml);;XML 파일 버전 1 (*.xml);;텍스트 파일 (*.txt);;CSV 파일 (*.csv)</translation>
     </message>
     <message>
         <source>Save the report file</source>
@@ -710,11 +710,11 @@ Do you want to stop the checking and exit Cppcheck?</source>
     </message>
     <message>
         <source>XML files version 1 (*.xml)</source>
-        <translation>XML 파일 버전 1 (*.xml)</translation>
+        <translation type="obsolete">XML 파일 버전 1 (*.xml)</translation>
     </message>
     <message>
         <source>XML files version 2 (*.xml)</source>
-        <translation>XML 파일 버전 2 (*.xml)</translation>
+        <translation type="obsolete">XML 파일 버전 2 (*.xml)</translation>
     </message>
     <message>
         <source>Text files (*.txt)</source>
@@ -893,14 +893,6 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Recheck modified files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Recheck all files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Unknown element</source>
         <translation type="unfinished"></translation>
     </message>
@@ -918,14 +910,6 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
     </message>
     <message>
         <source>Select the configuration that will be checked</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Deprecated XML format</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>XML format 1 is deprecated and will be removed in cppcheck 1.81.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -951,6 +935,34 @@ Options:
     </message>
     <message>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyze</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyze files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyze directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Reanalyze modified files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Reanalyze all files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1404,6 +1416,10 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>First included by</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>XML format version 1 is no longer supported.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
