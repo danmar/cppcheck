@@ -63,28 +63,28 @@ public:
     Platforms mPlatforms;
 
     /**
-     * @brief Checks given code
+     * @brief Analyze given code
      *
-     * @param code Content of the (virtual) file to be checked
-     * @param filename Name of the (virtual) file to be checked - determines language.
+     * @param code Content of the (virtual) file to be analyzed
+     * @param filename Name of the (virtual) file to be analyzed - determines language.
      */
     void analyzeCode(const QString& code, const QString& filename);
 
 public slots:
 
-    /** @brief Slot for check files menu item */
+    /** @brief Slot for analyze files menu item */
     void analyzeFiles();
 
-    /** @brief Slot to recheck all files */
+    /** @brief Slot to reanalyze all files */
     void reAnalyzeAll();
 
     /**
-     * @brief Slot to recheck selected files
+     * @brief Slot to reanalyze selected files
      * @param selectedFilesList list of selected files
      */
     void performSelectedFilesCheck(QStringList selectedFilesList);
 
-    /** @brief Slot to recheck modified files */
+    /** @brief Slot to reanalyze modified files */
     void reAnalyzeModified();
 
     /** @brief Slot to clear all search results */
@@ -135,7 +135,7 @@ public slots:
     /** @brief Slot to uncheck all "Show errors" menu items */
     void uncheckAll();
 
-    /** @brief Slot for check directory menu item */
+    /** @brief Slot for analyze directory menu item */
     void analyzeDirectory();
 
     /** @brief Slot to open program's settings dialog */
@@ -156,7 +156,7 @@ public slots:
     /** @brief Slot to create new project file */
     void newProjectFile();
 
-    /** @brief Slot to open project file and start checking contained paths. */
+    /** @brief Slot to open project file and start analyzing contained paths. */
     void openProjectFile();
 
     /** @brief Slot to show scratchpad. */
@@ -182,7 +182,7 @@ protected slots:
     /** @brief Slot for checkthread's done signal */
     void analysisDone();
 
-    /** @brief Lock down UI while checking */
+    /** @brief Lock down UI while analyzing */
     void checkLockDownUI();
 
     /** @brief Slot for enabling save and clear button */
@@ -200,7 +200,7 @@ protected slots:
     /** @brief Slot for updating View-menu before it is shown. */
     void aboutToShowViewMenu();
 
-    /** @brief Slot when stop checking button is pressed */
+    /** @brief Slot when stop analysis button is pressed */
     void stopAnalysis();
 
     /** @brief Open help file contents */
@@ -218,24 +218,24 @@ protected slots:
     /** @brief Opens recently opened project file. */
     void openRecentProject();
 
-    /** @brief Selects the platform as checked platform. */
+    /** @brief Selects the platform as analyzed platform. */
     void selectPlatform();
 
 private:
 
-    /** @brief Rechecks files */
+    /** @brief Reanalyzes files */
     void reAnalyze(bool all);
 
     /**
-     * @brief Recheck selected files
+     * @brief Reanalyze selected files
      * @param files list of selected files
      * @param all true if all files of list, false if modified files of list
      */
     void reAnalyzeSelected(QStringList files, bool all);
 
     /**
-      * @brief Check the project.
-      * @param project Pointer to the project to check.
+      * @brief Analyze the project.
+      * @param project Pointer to the project to analyze.
       */
     void analyzeProject(Project *project);
 
@@ -258,25 +258,25 @@ private:
     void enableCheckButtons(bool enable);
 
     /**
-     * @brief Select files/or directory to check.
+     * @brief Select files/or directory to analyze.
      * Helper function to open a dialog to ask user to select files or
-     * directory to check. Use native dialogs instead of Qt:s own dialogs.
+     * directory to analyze. Use native dialogs instead of Qt:s own dialogs.
      *
      * @param mode Dialog open mode (files or directories)
-     * @return QStringList of files or directories that were selected to check
+     * @return QStringList of files or directories that were selected to analyze
      */
     QStringList selectFilesToAnalyze(QFileDialog::FileMode mode);
 
     /**
-     * @brief Check project
+     * @brief Analyze project
      * @param p imported project
      */
     void doAnalyzeProject(ImportProject p);
 
     /**
-     * @brief Check all files specified in parameter files
+     * @brief Analyze all files specified in parameter files
      *
-     * @param files List of files and/or directories to check
+     * @param files List of files and/or directories to analyze
      */
     void doAnalyzeFiles(const QStringList &files);
 
@@ -305,14 +305,14 @@ private:
     /**
      * @brief Enable or disable project file actions.
      * Project editing and closing actions should be only enabled when project is
-     * open and we are not checking files.
+     * open and we are not analyzing files.
      * @param enable If true then actions are enabled.
      */
     void enableProjectActions(bool enable);
 
     /**
      * @brief Enable or disable project file actions.
-     * Project opening and creating actions should be disabled when checking.
+     * Project opening and creating actions should be disabled when analyzing.
      * @param enable If true then actions are enabled.
      */
     void enableProjectOpenActions(bool enable);
@@ -385,7 +385,7 @@ private:
     /** @brief Program settings */
     QSettings *mSettings;
 
-    /** @brief Thread to check files */
+    /** @brief Thread to analyze files */
     ThreadHandler *mThread;
 
     /** @brief List of user defined applications to open errors with */
@@ -397,7 +397,7 @@ private:
     /** @brief Class holding all UI components */
     Ui::MainWindow mUI;
 
-    /** @brief Current checked directory. */
+    /** @brief Current analyzed directory. */
     QString mCurrentDirectory;
 
     /** @brief Log view. */
@@ -415,7 +415,7 @@ private:
     /** @brief Timer to delay filtering while typing. */
     QTimer* mFilterTimer;
 
-    /** @brief GUI actions for selecting the checked platform. */
+    /** @brief GUI actions for selecting the analyzed platform. */
     QActionGroup *mPlatformActions;
 
     /** @brief GUI actions for selecting the coding standard. */
