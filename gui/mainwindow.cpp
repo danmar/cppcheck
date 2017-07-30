@@ -121,7 +121,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionToolBarFilter, SIGNAL(toggled(bool)), this, SLOT(toggleFilterToolBar()));
 
     connect(mUI.mActionAuthors, SIGNAL(triggered()), this, SLOT(showAuthors()));
-    connect(mThread, SIGNAL(done()), this, SLOT(checkDone()));
+    connect(mThread, SIGNAL(done()), this, SLOT(analysisDone()));
     connect(mUI.mResults, SIGNAL(gotResults()), this, SLOT(resultsAdded()));
     connect(mUI.mResults, SIGNAL(resultsHidden(bool)), mUI.mActionShowHidden, SLOT(setEnabled(bool)));
     connect(mUI.mResults, SIGNAL(checkSelected(QStringList)), this, SLOT(performSelectedFilesCheck(QStringList)));
@@ -151,8 +151,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI.mActionPrintPreview->setEnabled(false);
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
-    mUI.mActionReanalyzeModified->setEnabled(false);
-    mUI.mActionReanalyzeAll->setEnabled(false);
     enableProjectOpenActions(true);
     enableProjectActions(false);
 
@@ -322,6 +320,7 @@ void MainWindow::loadSettings()
     if (!projectFile.isEmpty() && QCoreApplication::arguments().size()==1) {
         QFileInfo inf(projectFile);
         if (inf.exists() && inf.isReadable()) {
+            setPath(SETTINGS_LAST_PROJECT_PATH, projectFile);
             mProject = new Project(projectFile, this);
             loadLastResults();
         }
@@ -939,7 +938,10 @@ void MainWindow::reAnalyzeModified()
 
 void MainWindow::reAnalyzeAll()
 {
-    reAnalyze(true);
+    if (mProject)
+        analyzeProject(mProject);
+    else
+        reAnalyze(true);
 }
 
 void MainWindow::reAnalyzeSelected(QStringList files, bool all)
@@ -1061,8 +1063,11 @@ void MainWindow::enableCheckButtons(bool enable)
     mUI.mActionStop->setEnabled(!enable);
     mUI.mActionAnalyzeFiles->setEnabled(enable);
 
-    if (!enable || mProject || mThread->hasPreviousFiles()) {
-        mUI.mActionReanalyzeModified->setEnabled(!mProject && enable);
+    if (mProject) {
+        mUI.mActionReanalyzeModified->setEnabled(false);
+        mUI.mActionReanalyzeAll->setEnabled(enable);
+    } else if (!enable || mThread->hasPreviousFiles()) {
+        mUI.mActionReanalyzeModified->setEnabled(enable);
         mUI.mActionReanalyzeAll->setEnabled(enable);
     }
 
