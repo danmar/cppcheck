@@ -35,8 +35,8 @@ ApplicationDialog::ApplicationDialog(const QString &title,
     mUI.setupUi(this);
 
     connect(mUI.mButtonBrowse, SIGNAL(clicked()), this, SLOT(browse()));
-    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(ok()));
-    connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
+    connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &ApplicationDialog::ok);
+    connect(mUI.mButtons, &QDialogButtonBox::rejected, this, &ApplicationDialog::reject);
     mUI.mPath->setText(app.getPath());
     mUI.mName->setText(app.getName());
     mUI.mParameters->setText(app.getParameters());
