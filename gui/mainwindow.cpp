@@ -54,9 +54,9 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mSettings(settings),
     mApplications(new ApplicationList(this)),
     mTranslation(th),
-    mLogView(NULL),
-    mScratchPad(NULL),
-    mProjectFile(NULL),
+    mLogView(nullptr),
+    mScratchPad(nullptr),
+    mProjectFile(nullptr),
     mPlatformActions(new QActionGroup(this)),
     mCStandardActions(new QActionGroup(this)),
     mCppStandardActions(new QActionGroup(this)),
@@ -162,7 +162,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         connect(mRecentProjectActs[i], SIGNAL(triggered()),
                 this, SLOT(openRecentProject()));
     }
-    mRecentProjectActs[MaxRecentProjects] = NULL; // The separator
+    mRecentProjectActs[MaxRecentProjects] = nullptr; // The separator
     mUI.mActionProjectMRU->setVisible(false);
     updateMRUMenuItems();
 
@@ -659,17 +659,17 @@ Library::Error MainWindow::loadLibrary(Library *library, QString filename)
     // Try to load the library from the project folder..
     if (mProjectFile) {
         QString path = QFileInfo(mProjectFile->getFilename()).canonicalPath();
-        ret = library->load(NULL, (path+"/"+filename).toLatin1());
+        ret = library->load(nullptr, (path+"/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
 
     // Try to load the library from the application folder..
     const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
-    ret = library->load(NULL, (appPath+"/"+filename).toLatin1());
+    ret = library->load(nullptr, (appPath+"/"+filename).toLatin1());
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
-    ret = library->load(NULL, (appPath+"/cfg/"+filename).toLatin1());
+    ret = library->load(nullptr, (appPath+"/cfg/"+filename).toLatin1());
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
 
@@ -677,10 +677,10 @@ Library::Error MainWindow::loadLibrary(Library *library, QString filename)
     // Try to load the library from CFGDIR..
     const QString cfgdir = CFGDIR;
     if (!cfgdir.isEmpty()) {
-        ret = library->load(NULL, (cfgdir+"/"+filename).toLatin1());
+        ret = library->load(nullptr, (cfgdir+"/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
-        ret = library->load(NULL, (cfgdir+"/cfg/"+filename).toLatin1());
+        ret = library->load(nullptr, (cfgdir+"/cfg/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
@@ -689,10 +689,10 @@ Library::Error MainWindow::loadLibrary(Library *library, QString filename)
     // Try to load the library from the cfg subfolder..
     const QString datadir = mSettings->value("DATADIR", QString()).toString();
     if (!datadir.isEmpty()) {
-        ret = library->load(NULL, (datadir+"/"+filename).toLatin1());
+        ret = library->load(nullptr, (datadir+"/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
-        ret = library->load(NULL, (datadir+"/cfg/"+filename).toLatin1());
+        ret = library->load(nullptr, (datadir+"/cfg/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
@@ -884,7 +884,7 @@ void MainWindow::analysisDone()
     }
 
     for (int i = 0; i < MaxRecentProjects + 1; i++) {
-        if (mRecentProjectActs[i] != NULL)
+        if (mRecentProjectActs[i] != nullptr)
             mRecentProjectActs[i]->setEnabled(true);
     }
 
@@ -910,7 +910,7 @@ void MainWindow::checkLockDownUI()
         mScratchPad->setEnabled(false);
 
     for (int i = 0; i < MaxRecentProjects + 1; i++) {
-        if (mRecentProjectActs[i] != NULL)
+        if (mRecentProjectActs[i] != nullptr)
             mRecentProjectActs[i]->setEnabled(false);
     }
 }
@@ -1443,7 +1443,7 @@ void MainWindow::newProjectFile()
 void MainWindow::closeProjectFile()
 {
     delete mProjectFile;
-    mProjectFile = NULL;
+    mProjectFile = nullptr;
     enableProjectActions(false);
     enableProjectOpenActions(true);
     formatAndSetTitle();
@@ -1472,7 +1472,7 @@ void MainWindow::editProjectFile()
 
 void MainWindow::showLogView()
 {
-    if (mLogView == NULL)
+    if (mLogView == nullptr)
         mLogView = new LogView;
 
     mLogView->show();
@@ -1563,7 +1563,7 @@ void MainWindow::openRecentProject()
 void MainWindow::updateMRUMenuItems()
 {
     for (int i = 0; i < MaxRecentProjects + 1; i++) {
-        if (mRecentProjectActs[i] != NULL)
+        if (mRecentProjectActs[i] != nullptr)
             mUI.mMenuFile->removeAction(mRecentProjectActs[i]);
     }
 
