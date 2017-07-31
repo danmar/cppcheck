@@ -120,10 +120,10 @@ void ThreadHandler::setThreadCount(const int count)
     //Create new threads
     for (int i = mThreads.size(); i < count; i++) {
         mThreads << new CheckThread(mResults);
-        connect(mThreads.last(), SIGNAL(done()),
-                this, SLOT(threadDone()));
-        connect(mThreads.last(), SIGNAL(fileChecked(const QString &)),
-                &mResults, SLOT(fileChecked(const QString &)));
+        connect(mThreads.last(), &CheckThread::done,
+                this, &ThreadHandler::threadDone);
+        connect(mThreads.last(), &CheckThread::fileChecked,
+                &mResults, &ThreadResult::fileChecked);
     }
 
 }
@@ -133,11 +133,10 @@ void ThreadHandler::removeThreads()
 {
     for (int i = 0; i < mThreads.size(); i++) {
         mThreads[i]->terminate();
-        disconnect(mThreads.last(), SIGNAL(done()),
-                   this, SLOT(threadDone()));
-        disconnect(mThreads.last(), SIGNAL(fileChecked(const QString &)),
-                   &mResults, SLOT(fileChecked(const QString &)));
-
+        disconnect(mThreads[i], &CheckThread::done,
+                this, &ThreadHandler::threadDone);
+        disconnect(mThreads[i], &CheckThread::fileChecked,
+                &mResults, &ThreadResult::fileChecked);
         delete mThreads[i];
     }
 
