@@ -32,13 +32,13 @@
 #include "cppcheck.h"
 #include "errorlogger.h"
 
-ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
+ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     : QDialog(parent)
-    , mFilePath(path)
+    , mProjectFile(projectFile)
 {
     mUI.setupUi(this);
 
-    const QFileInfo inf(path);
+    const QFileInfo inf(projectFile->getFilename());
     QString filename = inf.fileName();
     QString title = tr("Project file: %1").arg(filename);
     setWindowTitle(title);
@@ -90,7 +90,7 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
         mLibraryCheckboxes << checkbox;
     }
 
-    connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &ProjectFileDialog::accept);
+    connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &ProjectFileDialog::ok);
     connect(mUI.mBtnBrowseBuildDir, &QPushButton::clicked, this, &ProjectFileDialog::browseBuildDir);
     connect(mUI.mBtnClearImportProject, &QPushButton::clicked, this, &ProjectFileDialog::clearImportProject);
     connect(mUI.mBtnBrowseImportProject, &QPushButton::clicked, this, &ProjectFileDialog::browseImportProject);
@@ -107,6 +107,8 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     connect(mUI.mBtnIncludeDown, &QPushButton::clicked, this, &ProjectFileDialog::moveIncludePathDown);
     connect(mUI.mBtnAddSuppression, &QPushButton::clicked, this, &ProjectFileDialog::addSuppression);
     connect(mUI.mBtnRemoveSuppression, &QPushButton::clicked, this, &ProjectFileDialog::removeSuppression);
+
+    loadFromProjectFile(projectFile);
 }
 
 ProjectFileDialog::~ProjectFileDialog()
@@ -155,9 +157,16 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setSuppressions(getSuppressions());
 }
 
+void ProjectFileDialog::ok()
+{
+    saveToProjectFile(mProjectFile);
+    mProjectFile->write();
+    accept();
+}
+
 QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool trailingSlash)
 {
-    const QFileInfo inf(mFilePath);
+    const QFileInfo inf(mProjectFile->getFilename());
     const QString rootpath = inf.absolutePath();
     QString selectedDir = QFileDialog::getExistingDirectory(this,
                           caption,
@@ -211,7 +220,7 @@ void ProjectFileDialog::clearImportProject()
 
 void ProjectFileDialog::browseImportProject()
 {
-    const QFileInfo inf(mFilePath);
+    const QFileInfo inf(mProjectFile->getFilename());
     const QDir &dir = inf.absoluteDir();
     QString fileName = QFileDialog::getOpenFileName(this, tr("Import Project"),
                        dir.canonicalPath(),

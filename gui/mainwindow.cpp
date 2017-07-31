@@ -1410,7 +1410,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
 
 void MainWindow::newProjectFile()
 {
-    const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
+    const QString filter = tr("Project files (*.cppcheck)");
     QString filepath = QFileDialog::getSaveFileName(this,
                        tr("Select Project Filename"),
                        getPath(SETTINGS_LAST_PROJECT_PATH),
@@ -1418,6 +1418,8 @@ void MainWindow::newProjectFile()
 
     if (filepath.isEmpty())
         return;
+    if (!filepath.endsWith(".cppcheck", Qt::CaseInsensitive))
+        filepath += ".cppcheck";
 
     setPath(SETTINGS_LAST_PROJECT_PATH, filepath);
 
@@ -1427,12 +1429,10 @@ void MainWindow::newProjectFile()
 
     delete mProjectFile;
     mProjectFile = new ProjectFile(this);
+    mProjectFile->setFilename(filepath);
 
-    ProjectFileDialog dlg(filepath, this);
-    dlg.loadFromProjectFile(mProjectFile);
+    ProjectFileDialog dlg(mProjectFile, this);
     if (dlg.exec() == QDialog::Accepted) {
-        dlg.saveToProjectFile(mProjectFile);
-        mProjectFile->write();
         addProjectMRU(filepath);
         analyzeProject(mProjectFile);
     } else {
@@ -1461,10 +1461,8 @@ void MainWindow::editProjectFile()
         return;
     }
 
-    ProjectFileDialog dlg(mProjectFile->getFilename(), this);
-    dlg.loadFromProjectFile(mProjectFile);
+    ProjectFileDialog dlg(mProjectFile, this);
     if (dlg.exec() == QDialog::Accepted) {
-        dlg.saveToProjectFile(mProjectFile);
         mProjectFile->write();
         analyzeProject(mProjectFile);
     }

@@ -40,13 +40,13 @@ class ProjectFile;
 class ProjectFileDialog : public QDialog {
     Q_OBJECT
 public:
-    ProjectFileDialog(const QString &path, QWidget *parent = 0);
+    ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = 0);
     virtual ~ProjectFileDialog();
 
+private:
     void loadFromProjectFile(const ProjectFile *projectFile);
     void saveToProjectFile(ProjectFile *projectFile) const;
 
-private:
     /** Enable and disable widgets in the 'Paths and Defines' tab */
     void updatePathsAndDefines();
 
@@ -145,6 +145,9 @@ private:
     void setSuppressions(const QStringList &suppressions);
 
 protected slots:
+
+    /** ok button pressed, save changes and accept */
+    void ok();
 
     /**
     * @brief Browse for build dir.
@@ -263,7 +266,7 @@ private:
     /**
      * @brief Projectfile path.
      */
-    QString mFilePath;
+    ProjectFile *mProjectFile;
 
     /** @brief Library checkboxes */
     QList<QCheckBox*> mLibraryCheckboxes;
