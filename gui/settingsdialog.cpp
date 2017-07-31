@@ -54,8 +54,8 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI.mShowStatistics->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
     mUI.mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
 
-    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(ok()));
-    connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
+    connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);
+    connect(mUI.mButtons, &QDialogButtonBox::rejected, this, &SettingsDialog::reject);
     connect(mUI.mBtnAddApplication, SIGNAL(clicked()),
             this, SLOT(addApplication()));
     connect(mUI.mBtnRemoveApplication, SIGNAL(clicked()),
