@@ -60,8 +60,7 @@ ResultsTree::ResultsTree(QWidget * parent) :
     setExpandsOnDoubleClick(false);
     setSortingEnabled(true);
 
-    connect(this, SIGNAL(doubleClicked(const QModelIndex &)),
-            this, SLOT(quickStartApplication(const QModelIndex &)));
+    connect(this, &ResultsTree::doubleClicked, this, &ResultsTree::quickStartApplication);
 }
 
 ResultsTree::~ResultsTree()
