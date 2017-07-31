@@ -32,7 +32,7 @@ matrix:
 before_install:
 # install needed deps
  - sudo apt-get update -qq
- - sudo apt-get install -qq python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake libxml2-utils libpcre3 gdb unzip
+ - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip
 
 script:
 # download clang git, compile cppcheck, run cppcheck on clang code to look for crashes in cppcheck. if this is done, terminate build
