@@ -70,6 +70,7 @@ private:
 class CPPCHECKLIB Timer {
 public:
     Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults = nullptr);
+    Timer(const Timer& other);
     ~Timer();
     void Stop();
 

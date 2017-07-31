@@ -82,6 +82,15 @@ Timer::Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf
         _start = std::clock();
 }
 
+Timer::Timer(const Timer& other)
+    : _str(other._str)
+    , _timerResults(other._timerResults)
+    , _start(other._start)
+    , _showtimeMode(other._showtimeMode)
+    , _stopped(other._stopped)
+{
+}
+
 Timer::~Timer()
 {
     Stop();
