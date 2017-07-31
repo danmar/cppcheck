@@ -34,8 +34,8 @@ StatsDialog::StatsDialog(QWidget *parent)
 {
     mUI.setupUi(this);
 
-    connect(mUI.mCopyToClipboard, SIGNAL(pressed()), this, SLOT(copyToClipboard()));
-    connect(mUI.mPDFexport, SIGNAL(pressed()), this, SLOT(pdfExport()));
+    connect(mUI.mCopyToClipboard, &QPushButton::pressed, this, &StatsDialog::copyToClipboard);
+    connect(mUI.mPDFexport, &QPushButton::pressed, this, &StatsDialog::pdfExport);
 }
 
 void StatsDialog::setProject(const ProjectFile* projectFile)
