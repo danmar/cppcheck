@@ -1103,7 +1103,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
 
         createAstAtTokenInner(tok1->next(), endToken, cpp);
 
-        return endToken ? endToken->previous() : nullptr;
+        return endToken->previous();
     }
 
     return tok;
