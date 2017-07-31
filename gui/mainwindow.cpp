@@ -72,69 +72,69 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mFilterTimer = new QTimer(this);
     mFilterTimer->setInterval(500);
     mFilterTimer->setSingleShot(true);
-    connect(mFilterTimer, SIGNAL(timeout()), this, SLOT(filterResults()));
+    connect(mFilterTimer, &QTimer::timeout, this, &MainWindow::filterResults);
 
     // "Filter" toolbar
     mLineEditFilter = new QLineEdit(mUI.mToolBarFilter);
     mLineEditFilter->setPlaceholderText(tr("Quick Filter:"));
     mUI.mToolBarFilter->addWidget(mLineEditFilter);
     connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
-    connect(mLineEditFilter, SIGNAL(returnPressed()), this, SLOT(filterResults()));
+    connect(mLineEditFilter, &QLineEdit::returnPressed, this, &MainWindow::filterResults);
 
     connect(mUI.mActionPrint, SIGNAL(triggered()), mUI.mResults, SLOT(print()));
     connect(mUI.mActionPrintPreview, SIGNAL(triggered()), mUI.mResults, SLOT(printPreview()));
-    connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
-    connect(mUI.mActionAnalyzeFiles, SIGNAL(triggered()), this, SLOT(analyzeFiles()));
-    connect(mUI.mActionAnalyzeDirectory, SIGNAL(triggered()), this, SLOT(analyzeDirectory()));
-    connect(mUI.mActionSettings, SIGNAL(triggered()), this, SLOT(programSettings()));
-    connect(mUI.mActionClearResults, SIGNAL(triggered()), this, SLOT(clearResults()));
-    connect(mUI.mActionOpenXML, SIGNAL(triggered()), this, SLOT(openResults()));
+    connect(mUI.mActionQuit, &QAction::triggered, this, &MainWindow::close);
+    connect(mUI.mActionAnalyzeFiles, &QAction::triggered, this, &MainWindow::analyzeFiles);
+    connect(mUI.mActionAnalyzeDirectory, &QAction::triggered, this, &MainWindow::analyzeDirectory);
+    connect(mUI.mActionSettings, &QAction::triggered, this, &MainWindow::programSettings);
+    connect(mUI.mActionClearResults, &QAction::triggered, this, &MainWindow::clearResults);
+    connect(mUI.mActionOpenXML, &QAction::triggered, this, &MainWindow::openResults);
 
-    connect(mUI.mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(showStyle(bool)));
-    connect(mUI.mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(showErrors(bool)));
-    connect(mUI.mActionShowWarnings, SIGNAL(toggled(bool)), this, SLOT(showWarnings(bool)));
-    connect(mUI.mActionShowPortability, SIGNAL(toggled(bool)), this, SLOT(showPortability(bool)));
-    connect(mUI.mActionShowPerformance, SIGNAL(toggled(bool)), this, SLOT(showPerformance(bool)));
-    connect(mUI.mActionShowInformation, SIGNAL(toggled(bool)), this, SLOT(showInformation(bool)));
-    connect(mUI.mActionCheckAll, SIGNAL(triggered()), this, SLOT(checkAll()));
-    connect(mUI.mActionUncheckAll, SIGNAL(triggered()), this, SLOT(uncheckAll()));
-    connect(mUI.mActionCollapseAll, SIGNAL(triggered()), mUI.mResults, SLOT(collapseAllResults()));
-    connect(mUI.mActionExpandAll, SIGNAL(triggered()), mUI.mResults, SLOT(expandAllResults()));
-    connect(mUI.mActionShowHidden, SIGNAL(triggered()), mUI.mResults, SLOT(showHiddenResults()));
-    connect(mUI.mActionViewLog, SIGNAL(triggered()), this, SLOT(showLogView()));
-    connect(mUI.mActionViewStats, SIGNAL(triggered()), this, SLOT(showStatistics()));
-    connect(mUI.mActionLibraryEditor, SIGNAL(triggered()), this, SLOT(showLibraryEditor()));
+    connect(mUI.mActionShowStyle, &QAction::toggled, this, &MainWindow::showStyle);
+    connect(mUI.mActionShowErrors, &QAction::toggled, this, &MainWindow::showErrors);
+    connect(mUI.mActionShowWarnings, &QAction::toggled, this, &MainWindow::showWarnings);
+    connect(mUI.mActionShowPortability, &QAction::toggled, this, &MainWindow::showPortability);
+    connect(mUI.mActionShowPerformance, &QAction::toggled, this, &MainWindow::showPerformance);
+    connect(mUI.mActionShowInformation, &QAction::toggled, this, &MainWindow::showInformation);
+    connect(mUI.mActionCheckAll, &QAction::triggered, this, &MainWindow::checkAll);
+    connect(mUI.mActionUncheckAll, &QAction::triggered, this, &MainWindow::uncheckAll);
+    connect(mUI.mActionCollapseAll, &QAction::triggered, mUI.mResults, &ResultsView::collapseAllResults);
+    connect(mUI.mActionExpandAll, &QAction::triggered, mUI.mResults, &ResultsView::expandAllResults);
+    connect(mUI.mActionShowHidden, &QAction::triggered, mUI.mResults, &ResultsView::showHiddenResults);
+    connect(mUI.mActionViewLog, &QAction::triggered, this, &MainWindow::showLogView);
+    connect(mUI.mActionViewStats, &QAction::triggered, this, &MainWindow::showStatistics);
+    connect(mUI.mActionLibraryEditor, &QAction::triggered, this, &MainWindow::showLibraryEditor);
 
-    connect(mUI.mActionReanalyzeModified, SIGNAL(triggered()), this, SLOT(reAnalyzeModified()));
-    connect(mUI.mActionReanalyzeAll, SIGNAL(triggered()), this, SLOT(reAnalyzeAll()));
+    connect(mUI.mActionReanalyzeModified, &QAction::triggered, this, &MainWindow::reAnalyzeModified);
+    connect(mUI.mActionReanalyzeAll, &QAction::triggered, this, &MainWindow::reAnalyzeAll);
 
-    connect(mUI.mActionStop, SIGNAL(triggered()), this, SLOT(stopAnalysis()));
-    connect(mUI.mActionSave, SIGNAL(triggered()), this, SLOT(save()));
+    connect(mUI.mActionStop, &QAction::triggered, this, &MainWindow::stopAnalysis);
+    connect(mUI.mActionSave, &QAction::triggered, this, &MainWindow::save);
 
     // About menu
-    connect(mUI.mActionAbout, SIGNAL(triggered()), this, SLOT(about()));
-    connect(mUI.mActionLicense, SIGNAL(triggered()), this, SLOT(showLicense()));
+    connect(mUI.mActionAbout, &QAction::triggered, this, &MainWindow::about);
+    connect(mUI.mActionLicense, &QAction::triggered, this, &MainWindow::showLicense);
 
     // View > Toolbar menu
     connect(mUI.mActionToolBarMain, SIGNAL(toggled(bool)), this, SLOT(toggleMainToolBar()));
     connect(mUI.mActionToolBarView, SIGNAL(toggled(bool)), this, SLOT(toggleViewToolBar()));
     connect(mUI.mActionToolBarFilter, SIGNAL(toggled(bool)), this, SLOT(toggleFilterToolBar()));
 
-    connect(mUI.mActionAuthors, SIGNAL(triggered()), this, SLOT(showAuthors()));
-    connect(mThread, SIGNAL(done()), this, SLOT(analysisDone()));
-    connect(mUI.mResults, SIGNAL(gotResults()), this, SLOT(resultsAdded()));
-    connect(mUI.mResults, SIGNAL(resultsHidden(bool)), mUI.mActionShowHidden, SLOT(setEnabled(bool)));
-    connect(mUI.mResults, SIGNAL(checkSelected(QStringList)), this, SLOT(performSelectedFilesCheck(QStringList)));
-    connect(mUI.mMenuView, SIGNAL(aboutToShow()), this, SLOT(aboutToShowViewMenu()));
+    connect(mUI.mActionAuthors, &QAction::triggered, this, &MainWindow::showAuthors);
+    connect(mThread, &ThreadHandler::done, this, &MainWindow::analysisDone);
+    connect(mUI.mResults, &ResultsView::gotResults, this, &MainWindow::resultsAdded);
+    connect(mUI.mResults, &ResultsView::resultsHidden, mUI.mActionShowHidden, &QAction::setEnabled);
+    connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
+    connect(mUI.mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
 
     // File menu
-    connect(mUI.mActionNewProjectFile, SIGNAL(triggered()), this, SLOT(newProjectFile()));
-    connect(mUI.mActionOpenProjectFile, SIGNAL(triggered()), this, SLOT(openProjectFile()));
-    connect(mUI.mActionShowScratchpad, SIGNAL(triggered()), this, SLOT(showScratchpad()));
-    connect(mUI.mActionCloseProjectFile, SIGNAL(triggered()), this, SLOT(closeProjectFile()));
-    connect(mUI.mActionEditProjectFile, SIGNAL(triggered()), this, SLOT(editProjectFile()));
+    connect(mUI.mActionNewProjectFile, &QAction::triggered, this, &MainWindow::newProjectFile);
+    connect(mUI.mActionOpenProjectFile, &QAction::triggered, this, &MainWindow::openProjectFile);
+    connect(mUI.mActionShowScratchpad, &QAction::triggered, this, &MainWindow::showScratchpad);
+    connect(mUI.mActionCloseProjectFile, &QAction::triggered, this, &MainWindow::closeProjectFile);
+    connect(mUI.mActionEditProjectFile, &QAction::triggered, this, &MainWindow::editProjectFile);
 
-    connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(openHelpContents()));
+    connect(mUI.mActionHelpContents, &QAction::triggered, this, &MainWindow::openHelpContents);
 
     loadSettings();
 
