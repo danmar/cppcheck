@@ -90,23 +90,23 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
         mLibraryCheckboxes << checkbox;
     }
 
-    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(mUI.mBtnBrowseBuildDir, SIGNAL(clicked()), this, SLOT(browseBuildDir()));
-    connect(mUI.mBtnClearImportProject, SIGNAL(clicked(bool)), this, SLOT(clearImportProject()));
-    connect(mUI.mBtnBrowseImportProject, SIGNAL(clicked()), this, SLOT(browseImportProject()));
+    connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &ProjectFileDialog::accept);
+    connect(mUI.mBtnBrowseBuildDir, &QPushButton::clicked, this, &ProjectFileDialog::browseBuildDir);
+    connect(mUI.mBtnClearImportProject, &QPushButton::clicked, this, &ProjectFileDialog::clearImportProject);
+    connect(mUI.mBtnBrowseImportProject, &QPushButton::clicked, this, &ProjectFileDialog::browseImportProject);
     connect(mUI.mBtnAddCheckPath, SIGNAL(clicked()), this, SLOT(addCheckPath()));
-    connect(mUI.mBtnEditCheckPath, SIGNAL(clicked()), this, SLOT(editCheckPath()));
-    connect(mUI.mBtnRemoveCheckPath, SIGNAL(clicked()), this, SLOT(removeCheckPath()));
+    connect(mUI.mBtnEditCheckPath, &QPushButton::clicked, this, &ProjectFileDialog::editCheckPath);
+    connect(mUI.mBtnRemoveCheckPath, &QPushButton::clicked, this, &ProjectFileDialog::removeCheckPath);
     connect(mUI.mBtnAddInclude, SIGNAL(clicked()), this, SLOT(addIncludeDir()));
-    connect(mUI.mBtnEditInclude, SIGNAL(clicked()), this, SLOT(editIncludeDir()));
-    connect(mUI.mBtnRemoveInclude, SIGNAL(clicked()), this, SLOT(removeIncludeDir()));
+    connect(mUI.mBtnEditInclude, &QPushButton::clicked, this, &ProjectFileDialog::editIncludeDir);
+    connect(mUI.mBtnRemoveInclude, &QPushButton::clicked, this, &ProjectFileDialog::removeIncludeDir);
     connect(mUI.mBtnAddIgnorePath, SIGNAL(clicked()), this, SLOT(addExcludePath()));
-    connect(mUI.mBtnEditIgnorePath, SIGNAL(clicked()), this, SLOT(editExcludePath()));
-    connect(mUI.mBtnRemoveIgnorePath, SIGNAL(clicked()), this, SLOT(removeExcludePath()));
-    connect(mUI.mBtnIncludeUp, SIGNAL(clicked()), this, SLOT(moveIncludePathUp()));
-    connect(mUI.mBtnIncludeDown, SIGNAL(clicked()), this, SLOT(moveIncludePathDown()));
-    connect(mUI.mBtnAddSuppression, SIGNAL(clicked()), this, SLOT(addSuppression()));
-    connect(mUI.mBtnRemoveSuppression, SIGNAL(clicked()), this, SLOT(removeSuppression()));
+    connect(mUI.mBtnEditIgnorePath, &QPushButton::clicked, this, &ProjectFileDialog::editExcludePath);
+    connect(mUI.mBtnRemoveIgnorePath, &QPushButton::clicked, this, &ProjectFileDialog::removeExcludePath);
+    connect(mUI.mBtnIncludeUp, &QPushButton::clicked, this, &ProjectFileDialog::moveIncludePathUp);
+    connect(mUI.mBtnIncludeDown, &QPushButton::clicked, this, &ProjectFileDialog::moveIncludePathDown);
+    connect(mUI.mBtnAddSuppression, &QPushButton::clicked, this, &ProjectFileDialog::addSuppression);
+    connect(mUI.mBtnRemoveSuppression, &QPushButton::clicked, this, &ProjectFileDialog::removeSuppression);
 }
 
 ProjectFileDialog::~ProjectFileDialog()
