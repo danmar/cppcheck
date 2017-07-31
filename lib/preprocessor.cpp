@@ -131,7 +131,7 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
     }
 
     for (std::vector<const simplecpp::TokenList *>::const_iterator it = list.begin(); it != list.end(); ++it) {
-        for (const simplecpp::Token *tok = (*it)->cfront(); tok; tok = tok ? tok->next : nullptr) {
+        for (const simplecpp::Token *tok = (*it)->cfront(); tok; tok = tok->next) {
             if ((tok->op != '#') || (tok->previous && tok->previous->location.line == tok->location.line))
                 continue;
             if (tok->next && tok->next->str == "endfile")
