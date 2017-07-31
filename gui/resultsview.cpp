@@ -48,9 +48,9 @@ ResultsView::ResultsView(QWidget * parent) :
 {
     mUI.setupUi(this);
 
-    connect(mUI.mTree, SIGNAL(resultsHidden(bool)), this, SIGNAL(resultsHidden(bool)));
-    connect(mUI.mTree, SIGNAL(checkSelected(QStringList)), this, SIGNAL(checkSelected(QStringList)));
-    connect(mUI.mTree, SIGNAL(selectionChanged(const QModelIndex &)), this, SLOT(updateDetails(const QModelIndex &)));
+    connect(mUI.mTree, &ResultsTree::resultsHidden, this, &ResultsView::resultsHidden);
+    connect(mUI.mTree, &ResultsTree::checkSelected, this, &ResultsView::checkSelected);
+    connect(mUI.mTree, &ResultsTree::selectionChanged, this, &ResultsView::updateDetails);
 }
 
 void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
