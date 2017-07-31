@@ -1033,15 +1033,15 @@ namespace simplecpp {
         const Token * expand(TokenList * const output,
                              const Token * rawtok,
                              const std::map<TokenString,Macro> &macros,
-                             std::vector<std::string> &files) const {
+                             std::vector<std::string> &fileList) const {
             std::set<TokenString> expandedmacros;
 
-            TokenList output2(files);
+            TokenList output2(fileList);
 
             if (functionLike() && rawtok->next && rawtok->next->op == '(') {
                 // Copy macro call to a new tokenlist with no linebreaks
                 const Token * const rawtok1 = rawtok;
-                TokenList rawtokens2(files);
+                TokenList rawtokens2(fileList);
                 rawtokens2.push_back(new Token(rawtok->str, rawtok1->location));
                 rawtok = rawtok->next;
                 rawtokens2.push_back(new Token(rawtok->str, rawtok1->location));
@@ -1084,7 +1084,7 @@ namespace simplecpp {
                 const std::map<TokenString,Macro>::const_iterator macro = macros.find(macro2tok->str);
                 if (macro == macros.end() || !macro->second.functionLike())
                     break;
-                TokenList rawtokens2(files);
+                TokenList rawtokens2(fileList);
                 const Location loc(macro2tok->location);
                 while (macro2tok) {
                     Token *next = macro2tok->next;
