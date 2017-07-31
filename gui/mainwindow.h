@@ -34,7 +34,7 @@ class ThreadHandler;
 class TranslationHandler;
 class ScratchPad;
 class LogView;
-class Project;
+class ProjectFile;
 class ErrorItem;
 class QAction;
 
@@ -237,7 +237,7 @@ private:
       * @brief Analyze the project.
       * @param project Pointer to the project to analyze.
       */
-    void analyzeProject(Project *project);
+    void analyzeProject(const ProjectFile *projectFile);
 
     /**
      * @brief Set current language
@@ -413,7 +413,7 @@ private:
     ScratchPad* mScratchPad;
 
     /** @brief Project (file). */
-    Project *mProject;
+    ProjectFile *mProjectFile;
 
     /** @brief Filter field in the Filter toolbar. */
     QLineEdit* mLineEditFilter;

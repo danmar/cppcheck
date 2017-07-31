@@ -35,7 +35,7 @@
 #include "threadhandler.h"
 #include "fileviewdialog.h"
 #include "projectfile.h"
-#include "project.h"
+#include "projectfiledialog.h"
 #include "report.h"
 #include "scratchpad.h"
 #include "statsdialog.h"
@@ -56,7 +56,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mTranslation(th),
     mLogView(NULL),
     mScratchPad(NULL),
-    mProject(NULL),
+    mProjectFile(NULL),
     mPlatformActions(new QActionGroup(this)),
     mCStandardActions(new QActionGroup(this)),
     mCppStandardActions(new QActionGroup(this)),
@@ -139,8 +139,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     loadSettings();
 
     mThread->initialize(mUI.mResults);
-    if (mProject)
-        formatAndSetTitle(tr("Project:") + ' ' + mProject->getFilename());
+    if (mProjectFile)
+        formatAndSetTitle(tr("Project:") + ' ' + mProjectFile->getFilename());
     else
         formatAndSetTitle();
 
@@ -173,8 +173,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         handleCLIParams(args);
     }
 
-    mUI.mActionCloseProjectFile->setEnabled(mProject != nullptr);
-    mUI.mActionEditProjectFile->setEnabled(mProject != nullptr);
+    mUI.mActionCloseProjectFile->setEnabled(mProjectFile != nullptr);
+    mUI.mActionEditProjectFile->setEnabled(mProjectFile != nullptr);
 
     for (int i = 0; i < mPlatforms.getCount(); i++) {
         Platform plat = mPlatforms.mPlatforms[i];
@@ -215,7 +215,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 MainWindow::~MainWindow()
 {
     delete mLogView;
-    delete mProject;
+    delete mProjectFile;
     delete mScratchPad;
 }
 
@@ -321,7 +321,8 @@ void MainWindow::loadSettings()
         QFileInfo inf(projectFile);
         if (inf.exists() && inf.isReadable()) {
             setPath(SETTINGS_LAST_PROJECT_PATH, projectFile);
-            mProject = new Project(projectFile, this);
+            mProjectFile = new ProjectFile(this);
+            mProjectFile->read(projectFile);
             loadLastResults();
         }
     }
@@ -365,7 +366,7 @@ void MainWindow::saveSettings() const
 
     mSettings->setValue(SETTINGS_LANGUAGE, mTranslation->getCurrentLanguage());
 
-    mSettings->setValue(SETTINGS_OPEN_PROJECT, mProject ? mProject->getFilename() : QString());
+    mSettings->setValue(SETTINGS_OPEN_PROJECT, mProjectFile ? mProjectFile->getFilename() : QString());
 
     mUI.mResults->saveSettings(mSettings);
 }
@@ -375,10 +376,10 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     clearResults();
 
     mIsLogfileLoaded = false;
-    if (mProject) {
+    if (mProjectFile) {
         std::vector<std::string> v;
-        foreach (const QString &s, mProject->getProjectFile()->getExcludedPaths()) {
-            v.push_back(s.toStdString());
+        foreach (const QString &i, mProjectFile->getExcludedPaths()) {
+            v.push_back(i.toStdString());
         }
         p.ignorePaths(v);
     } else {
@@ -400,8 +401,8 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     Settings checkSettings = getCppcheckSettings();
     checkSettings.force = false;
 
-    if (mProject)
-        qDebug() << "Checking project file" << mProject->getProjectFile()->getFilename();
+    if (mProjectFile)
+        qDebug() << "Checking project file" << mProjectFile->getFilename();
 
     if (!checkSettings.buildDir.empty()) {
         std::list<std::string> sourcefiles;
@@ -423,8 +424,8 @@ void MainWindow::doAnalyzeFiles(const QStringList &files)
     mIsLogfileLoaded = false;
     FileList pathList;
     pathList.addPathList(files);
-    if (mProject) {
-        pathList.addExcludeList(mProject->getProjectFile()->getExcludedPaths());
+    if (mProjectFile) {
+        pathList.addExcludeList(mProjectFile->getExcludedPaths());
     } else {
         enableProjectActions(false);
     }
@@ -455,8 +456,8 @@ void MainWindow::doAnalyzeFiles(const QStringList &files)
     mUI.mResults->setCheckDirectory(checkPath);
     Settings checkSettings = getCppcheckSettings();
 
-    if (mProject)
-        qDebug() << "Checking project file" << mProject->getProjectFile()->getFilename();
+    if (mProjectFile)
+        qDebug() << "Checking project file" << mProjectFile->getFilename();
 
     if (!checkSettings.buildDir.empty()) {
         std::list<std::string> sourcefiles;
@@ -497,7 +498,7 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
 
 QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
 {
-    if (mProject) {
+    if (mProjectFile) {
         QMessageBox msgBox(this);
         msgBox.setWindowTitle(tr("Cppcheck"));
         const QString msg(tr("You must close the project file before selecting new files or directories!"));
@@ -656,8 +657,8 @@ Library::Error MainWindow::loadLibrary(Library *library, QString filename)
     Library::Error ret;
 
     // Try to load the library from the project folder..
-    if (mProject) {
-        QString path = QFileInfo(mProject->getProjectFile()->getFilename()).canonicalPath();
+    if (mProjectFile) {
+        QString path = QFileInfo(mProjectFile->getFilename()).canonicalPath();
         ret = library->load(NULL, (path+"/"+filename).toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
@@ -755,25 +756,24 @@ Settings MainWindow::getCppcheckSettings()
     Settings result;
 
     // If project file loaded, read settings from it
-    if (mProject) {
-        ProjectFile *pfile = mProject->getProjectFile();
-        QStringList dirs = pfile->getIncludeDirs();
+    if (mProjectFile) {
+        QStringList dirs = mProjectFile->getIncludeDirs();
         addIncludeDirs(dirs, result);
 
-        const QStringList defines = pfile->getDefines();
+        const QStringList defines = mProjectFile->getDefines();
         foreach (QString define, defines) {
             if (!result.userDefines.empty())
                 result.userDefines += ";";
             result.userDefines += define.toStdString();
         }
 
-        const QStringList libraries = pfile->getLibraries();
+        const QStringList libraries = mProjectFile->getLibraries();
         foreach (QString library, libraries) {
             const QString filename = library + ".cfg";
             tryLoadLibrary(&result.library, filename);
         }
 
-        const QStringList suppressions = pfile->getSuppressions();
+        const QStringList suppressions = mProjectFile->getSuppressions();
         foreach (QString suppression, suppressions) {
             result.nomsg.addSuppressionLine(suppression.toStdString());
         }
@@ -782,9 +782,9 @@ Settings MainWindow::getCppcheckSettings()
         if (!defines.isEmpty())
             result.maxConfigs = 1;
 
-        QString buildDir = pfile->getBuildDir();
+        const QString &buildDir = mProjectFile->getBuildDir();
         if (!buildDir.isEmpty()) {
-            QString prjpath = QFileInfo(pfile->getFilename()).absolutePath();
+            QString prjpath = QFileInfo(mProjectFile->getFilename()).absolutePath();
             result.buildDir = (prjpath + '/' + buildDir).toStdString();
         }
     }
@@ -852,7 +852,7 @@ void MainWindow::analysisDone()
     enableCheckButtons(true);
     mUI.mActionSettings->setEnabled(true);
     mUI.mActionOpenXML->setEnabled(true);
-    if (mProject) {
+    if (mProjectFile) {
         enableProjectActions(true);
     } else if (mIsLogfileLoaded) {
         mUI.mActionReanalyzeModified->setEnabled(false);
@@ -867,9 +867,9 @@ void MainWindow::analysisDone()
     if (mScratchPad)
         mScratchPad->setEnabled(true);
 
-    if (mProject && !mProject->getProjectFile()->getBuildDir().isEmpty()) {
-        const QString prjpath = QFileInfo(mProject->getProjectFile()->getFilename()).absolutePath();
-        const QString buildDir = prjpath + '/' + mProject->getProjectFile()->getBuildDir();
+    if (mProjectFile && !mProjectFile->getBuildDir().isEmpty()) {
+        const QString prjpath = QFileInfo(mProjectFile->getFilename()).absolutePath();
+        const QString buildDir = prjpath + '/' + mProjectFile->getBuildDir();
         if (QDir(buildDir).exists()) {
             mUI.mResults->saveStatistics(buildDir + "/statistics.txt");
             mUI.mResults->save(buildDir + "/lastResults.xml", Report::XMLV2);
@@ -938,8 +938,8 @@ void MainWindow::reAnalyzeModified()
 
 void MainWindow::reAnalyzeAll()
 {
-    if (mProject)
-        analyzeProject(mProject);
+    if (mProjectFile)
+        analyzeProject(mProjectFile);
     else
         reAnalyze(true);
 }
@@ -959,8 +959,8 @@ void MainWindow::reAnalyzeSelected(QStringList files, bool all)
     mCurrentDirectory = mUI.mResults->getCheckDirectory();
     FileList pathList;
     pathList.addPathList(files);
-    if (mProject)
-        pathList.addExcludeList(mProject->getProjectFile()->getExcludedPaths());
+    if (mProjectFile)
+        pathList.addExcludeList(mProjectFile->getExcludedPaths());
     QStringList fileNames = pathList.getFileList();
     checkLockDownUI(); // lock UI while checking
     mUI.mResults->checkingStarted(fileNames.size());
@@ -990,8 +990,8 @@ void MainWindow::reAnalyze(bool all)
     checkLockDownUI(); // lock UI while checking
     mUI.mResults->checkingStarted(files.size());
 
-    if (mProject)
-        qDebug() << "Rechecking project file" << mProject->getProjectFile()->getFilename();
+    if (mProjectFile)
+        qDebug() << "Rechecking project file" << mProjectFile->getFilename();
 
     mThread->setCheckFiles(all);
     mThread->check(getCppcheckSettings(), all);
@@ -1041,7 +1041,7 @@ void MainWindow::openResults()
 void MainWindow::loadResults(const QString selectedFile)
 {
     if (!selectedFile.isEmpty()) {
-        if (mProject)
+        if (mProjectFile)
             closeProjectFile();
         mIsLogfileLoaded = true;
         mUI.mResults->clear(true);
@@ -1063,7 +1063,7 @@ void MainWindow::enableCheckButtons(bool enable)
     mUI.mActionStop->setEnabled(!enable);
     mUI.mActionAnalyzeFiles->setEnabled(enable);
 
-    if (mProject) {
+    if (mProjectFile) {
         mUI.mActionReanalyzeModified->setEnabled(false);
         mUI.mActionReanalyzeAll->setEnabled(enable);
     } else if (!enable || mThread->hasPreviousFiles()) {
@@ -1329,21 +1329,19 @@ void MainWindow::loadProjectFile(const QString &filePath)
     mIsLogfileLoaded = false;
     mUI.mActionCloseProjectFile->setEnabled(true);
     mUI.mActionEditProjectFile->setEnabled(true);
-    delete mProject;
-    mProject = new Project(filePath, this);
+    delete mProjectFile;
+    mProjectFile = new ProjectFile(filePath, this);
     if (!loadLastResults())
-        analyzeProject(mProject);
+        analyzeProject(mProjectFile);
 }
 
 bool MainWindow::loadLastResults()
 {
-    if (!mProject)
+    if (!mProjectFile)
         return false;
-    if (!mProject->isOpen() && !mProject->open())
+    if (mProjectFile->getBuildDir().isEmpty())
         return false;
-    if (mProject->getProjectFile()->getBuildDir().isEmpty())
-        return false;
-    const QString buildDir = QFileInfo(mProject->getFilename()).absolutePath() + '/' + mProject->getProjectFile()->getBuildDir();
+    const QString buildDir = QFileInfo(mProjectFile->getFilename()).absolutePath() + '/' + mProjectFile->getBuildDir();
     const QString lastResults = buildDir + "/lastResults.xml";
     if (!QFileInfo(lastResults).exists())
         return false;
@@ -1351,18 +1349,10 @@ bool MainWindow::loadLastResults()
     return true;
 }
 
-void MainWindow::analyzeProject(Project *project)
+void MainWindow::analyzeProject(const ProjectFile *projectFile)
 {
-    if (!project->isOpen()) {
-        if (!project->open()) {
-            delete mProject;
-            mProject = 0;
-            return;
-        }
-    }
-
-    QFileInfo inf(project->getFilename());
-    const QString rootpath = project->getProjectFile()->getRootPath();
+    QFileInfo inf(projectFile->getFilename());
+    const QString rootpath = projectFile->getRootPath();
 
     // If the root path is not given or is not "current dir", use project
     // file's location directory as root path
@@ -1373,8 +1363,8 @@ void MainWindow::analyzeProject(Project *project)
     else
         mCurrentDirectory = rootpath;
 
-    if (!project->getProjectFile()->getBuildDir().isEmpty()) {
-        QString buildDir = project->getProjectFile()->getBuildDir();
+    if (!projectFile->getBuildDir().isEmpty()) {
+        QString buildDir = projectFile->getBuildDir();
         if (!QDir::isAbsolutePath(buildDir))
             buildDir = mCurrentDirectory + '/' + buildDir;
         if (!QDir(buildDir).exists()) {
@@ -1389,15 +1379,15 @@ void MainWindow::analyzeProject(Project *project)
         }
     }
 
-    if (!project->getProjectFile()->getImportProject().isEmpty()) {
+    if (!projectFile->getImportProject().isEmpty()) {
         ImportProject p;
-        QString prjfile = inf.canonicalPath() + '/' + project->getProjectFile()->getImportProject();
+        QString prjfile = inf.canonicalPath() + '/' + projectFile->getImportProject();
         p.import(prjfile.toStdString());
         doAnalyzeProject(p);
         return;
     }
 
-    QStringList paths = project->getProjectFile()->getCheckPaths();
+    QStringList paths = projectFile->getCheckPaths();
 
     // If paths not given then check the root path (which may be the project
     // file's location, see above). This is to keep the compatibility with
@@ -1431,24 +1421,29 @@ void MainWindow::newProjectFile()
 
     setPath(SETTINGS_LAST_PROJECT_PATH, filepath);
 
-    enableProjectActions(true);
     QFileInfo inf(filepath);
     const QString filename = inf.fileName();
     formatAndSetTitle(tr("Project:") + QString(" ") + filename);
 
-    delete mProject;
-    mProject = new Project(filepath, this);
-    mProject->create();
-    if (mProject->edit()) {
+    delete mProjectFile;
+    mProjectFile = new ProjectFile(this);
+
+    ProjectFileDialog dlg(filepath, this);
+    dlg.loadFromProjectFile(mProjectFile);
+    if (dlg.exec() == QDialog::Accepted) {
+        dlg.saveToProjectFile(mProjectFile);
+        mProjectFile->write();
         addProjectMRU(filepath);
-        analyzeProject(mProject);
+        analyzeProject(mProjectFile);
+    } else {
+        closeProjectFile();
     }
 }
 
 void MainWindow::closeProjectFile()
 {
-    delete mProject;
-    mProject = NULL;
+    delete mProjectFile;
+    mProjectFile = NULL;
     enableProjectActions(false);
     enableProjectOpenActions(true);
     formatAndSetTitle();
@@ -1456,7 +1451,7 @@ void MainWindow::closeProjectFile()
 
 void MainWindow::editProjectFile()
 {
-    if (!mProject) {
+    if (!mProjectFile) {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
                         QString(tr("No project file loaded")),
@@ -1465,8 +1460,14 @@ void MainWindow::editProjectFile()
         msg.exec();
         return;
     }
-    if (mProject->edit())
-        analyzeProject(mProject);
+
+    ProjectFileDialog dlg(mProjectFile->getFilename(), this);
+    dlg.loadFromProjectFile(mProjectFile);
+    if (dlg.exec() == QDialog::Accepted) {
+        dlg.saveToProjectFile(mProjectFile);
+        mProjectFile->write();
+        analyzeProject(mProjectFile);
+    }
 }
 
 void MainWindow::showLogView()
@@ -1484,9 +1485,7 @@ void MainWindow::showStatistics()
     StatsDialog statsDialog(this);
 
     // Show a dialog with the previous scan statistics and project information
-    if (mProject) {
-        statsDialog.setProject(*mProject);
-    }
+    statsDialog.setProject(mProjectFile);
     statsDialog.setPathSelected(mCurrentDirectory);
     statsDialog.setNumberOfFilesScanned(mThread->getPreviousFilesCount());
     statsDialog.setScanDuration(mThread->getPreviousScanDuration() / 1000.0);

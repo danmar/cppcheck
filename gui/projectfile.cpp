@@ -60,6 +60,7 @@ ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
     QObject(parent),
     mFilename(filename)
 {
+    read();
 }
 
 bool ProjectFile::read(const QString &filename)

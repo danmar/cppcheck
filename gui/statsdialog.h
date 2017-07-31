@@ -22,7 +22,7 @@
 #include <QDialog>
 #include "ui_stats.h"
 
-class Project;
+class ProjectFile;
 class CheckStatistics;
 
 /// @addtogroup GUI
@@ -40,7 +40,7 @@ public:
     /**
     * @brief Sets the project to extract statistics from
     */
-    void setProject(const Project& project);
+    void setProject(const ProjectFile *projectFile);
 
     /**
     * @brief Sets the string to display beside "Path Selected:"

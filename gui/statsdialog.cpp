@@ -25,7 +25,6 @@
 #include <QString>
 #include <QClipboard>
 #include <QMimeData>
-#include "project.h"
 #include "projectfile.h"
 #include "statsdialog.h"
 #include "checkstatistics.h"
@@ -39,9 +38,8 @@ StatsDialog::StatsDialog(QWidget *parent)
     connect(mUI.mPDFexport, SIGNAL(pressed()), this, SLOT(pdfExport()));
 }
 
-void StatsDialog::setProject(const Project& project)
+void StatsDialog::setProject(const ProjectFile* projectFile)
 {
-    ProjectFile *projectFile = project.getProjectFile();
     if (projectFile) {
         mUI.mProject->setText(projectFile->getRootPath());
         mUI.mPaths->setText(projectFile->getCheckPaths().join(";"));

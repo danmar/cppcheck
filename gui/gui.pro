@@ -91,7 +91,6 @@ HEADERS += aboutdialog.h \
            mainwindow.h \
            platforms.h \
            printablereport.h \
-           project.h \
            projectfile.h \
            projectfiledialog.h \
            report.h \
@@ -128,7 +127,6 @@ SOURCES += aboutdialog.cpp \
            mainwindow.cpp\
            platforms.cpp \
            printablereport.cpp \
-           project.cpp \
            projectfile.cpp \
            projectfiledialog.cpp \
            report.cpp \
