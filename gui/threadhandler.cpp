@@ -177,11 +177,11 @@ void ThreadHandler::stop()
 
 void ThreadHandler::initialize(ResultsView *view)
 {
-    connect(&mResults, SIGNAL(progress(int, const QString&)),
-            view, SLOT(progress(int, const QString&)));
+    connect(&mResults, &ThreadResult::progress,
+            view, &ResultsView::progress);
 
-    connect(&mResults, SIGNAL(error(const ErrorItem &)),
-            view, SLOT(error(const ErrorItem &)));
+    connect(&mResults, &ThreadResult::error,
+            view, &ResultsView::error);
 
     connect(&mResults, SIGNAL(log(const QString &)),
             parent(), SLOT(log(const QString &)));
