@@ -1377,16 +1377,8 @@ void CheckBufferOverrun::checkStructVariable()
                         if (Token::Match(tok3->next(), "%var% ;"))
                             varname[0] = &tok3->strAt(1);
 
-                        else if (isArrayOfStruct(tok3,posOfSemicolon)) {
+                        else if (isArrayOfStruct(tok3,posOfSemicolon))
                             varname[0] = &tok3->strAt(1);
-
-                            int pos = 2;
-                            for (int k = 0 ; k < posOfSemicolon; k++) {
-                                for (int index = pos; index < (pos + 3); index++)
-                                    tok3->strAt(index);
-                                pos += 3;
-                            }
-                        }
 
                         // Declare pointer or reference: Fred *fred1
                         else if (Token::Match(tok3->next(), "*|& %var% [,);=]"))
