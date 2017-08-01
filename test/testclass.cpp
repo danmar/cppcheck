@@ -254,6 +254,26 @@ private:
                                    "    int x;\n"
                                    "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkCopyCtorAndEqOperator("class A {\n"
+                                   "public:\n"
+                                   "    A() : x(0) { }\n"
+                                   "    A(const A & a) { x = a.x; }\n"
+                                   "    A & operator = (const A & a) {\n"
+                                   "        x = a.x;\n"
+                                   "        return *this;\n"
+                                   "    }\n"
+                                   "private:\n"
+                                   "    int x;\n"
+                                   "};\n"
+                                   "class B : public A {\n"
+                                   "public:\n"
+                                   "    B() { }\n"
+                                   "    B(const B & b) :A(b) { }\n"
+                                   "private:\n"
+                                   "    static int i;\n"
+                                   "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkExplicitConstructors(const char code[]) {
