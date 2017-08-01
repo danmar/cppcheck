@@ -1219,8 +1219,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             } while (tok && tok->str() != ";");
             if (!tok)
                 break;
-            if (tok->str() == "{")
-                tok = tok->next();
             arrayInfos[var->declarationId()] = ArrayInfo(&*var, symbolDatabase, var->declarationId());
         }
         if (!arrayInfos.empty())
