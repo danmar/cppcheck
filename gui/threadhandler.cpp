@@ -134,9 +134,9 @@ void ThreadHandler::removeThreads()
     for (int i = 0; i < mThreads.size(); i++) {
         mThreads[i]->terminate();
         disconnect(mThreads[i], &CheckThread::done,
-                this, &ThreadHandler::threadDone);
+                   this, &ThreadHandler::threadDone);
         disconnect(mThreads[i], &CheckThread::fileChecked,
-                &mResults, &ThreadResult::fileChecked);
+                   &mResults, &ThreadResult::fileChecked);
         delete mThreads[i];
     }
 
