@@ -251,7 +251,7 @@ void ImportProject::importSln(std::istream &istr, const std::string &path)
         if (pos == std::string::npos)
             continue;
         const std::string::size_type pos1 = line.rfind('\"',pos);
-        if (pos == std::string::npos)
+        if (pos1 == std::string::npos)
             continue;
         std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
         if (!Path::isAbsolute(vcxproj))
