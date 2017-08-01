@@ -1397,7 +1397,7 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
                         break;
                     }
 
-                    typetok = typetok ? typetok->next() : 0;
+                    typetok = typetok->next();
                 } else {
                     if (typeCountInInstantiation < typesUsedInTemplateInstantiation.size())
                         typetok = typesUsedInTemplateInstantiation[typeCountInInstantiation++];
