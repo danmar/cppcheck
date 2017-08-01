@@ -1604,7 +1604,7 @@ bool Token::addValue(const ValueFlow::Value &value)
         }
 
         // Add value
-        if (it == values().end()) {
+        if (it == _values->end()) {
             ValueFlow::Value v(value);
             if (v.varId == 0)
                 v.varId = _varId;
