@@ -103,6 +103,7 @@ private:
         TEST_CASE(localvar48); // ticket #6954
         TEST_CASE(localvar49); // ticket #7594
         TEST_CASE(localvar50); // ticket #6261 : dostuff(cond ? buf1 : buf2)
+        TEST_CASE(localvar51); // ticket #8128 - FN : tok = tok->next();
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -2043,6 +2044,21 @@ private:
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void localvar51() { // #8128 FN
+        functionVariableUsage("void foo() {\n"
+                              "  const char *tok = var->nameToken();\n"
+                              "  tok = tok->next();\n"  // read+write
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'tok' is assigned a value that is never used.\n", errout.str());
+
+        // TODO: False negative
+        functionVariableUsage("void foo() {\n"
+                              "  int x = 4;\n"
+                              "  x = 15 + x;\n"  // read+write
+                              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+	}
 
     void localvaralias1() {
         functionVariableUsage("void foo()\n"

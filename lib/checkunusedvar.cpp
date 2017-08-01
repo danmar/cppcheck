@@ -1038,7 +1038,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     else
                         variables.write(varid1, tok);
                 } else if (varid1 && Token::Match(tok, "%varid% .", varid1)) {
-                    variables.use(varid1, tok);
+                    variables.read(varid1, tok);
+                    variables.write(varid1, start);
                 } else if (var &&
                            var->_type == Variables::pointer &&
                            Token::Match(tok, "%name% ;") &&
