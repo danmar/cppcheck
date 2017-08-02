@@ -1055,8 +1055,10 @@ void CheckStl::string_c_str()
                         break;
                     if (!tok2 && j == i->second-1)
                         tok2 = tok->next()->link();
-                    else
+                    else if (tok2)
                         tok2 = tok2->previous();
+                    else
+                        break;
                     if (tok2 && Token::Match(tok2->tokAt(-4), ". c_str|data ( )")) {
                         const Variable* var = tok2->tokAt(-5)->variable();
                         if (var && var->isStlStringType()) {
