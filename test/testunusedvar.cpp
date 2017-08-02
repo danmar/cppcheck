@@ -2058,7 +2058,7 @@ private:
                               "  x = 15 + x;\n"  // read+write
                               "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
-	}
+    }
 
     void localvaralias1() {
         functionVariableUsage("void foo()\n"
