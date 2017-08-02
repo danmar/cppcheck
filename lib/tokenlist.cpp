@@ -251,6 +251,7 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
             // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
             std::string suffix;
             if (isHex &&
+                _settings &&
                 str.size() == (2 + _settings->int_bit / 4) &&
                 (str[2] >= '8') &&  // includes A-F and a-f
                 MathLib::getSuffix(str).empty()
