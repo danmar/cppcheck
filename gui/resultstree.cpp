@@ -1003,7 +1003,8 @@ void ResultsTree::saveErrors(Report *report, QStandardItem *item) const
     }
 }
 
-void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) const {
+void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) const
+{
     //Get error's user data
     QVariant userdata = error->data();
     //Convert it to QVariantMap
