@@ -986,7 +986,7 @@ void ResultsTree::saveErrors(Report *report, QStandardItem *item) const
     }
 
     for (int i = 0; i < item->rowCount(); i++) {
-        QStandardItem *error = item->child(i, 0);
+        const QStandardItem *error = item->child(i, 0);
 
         if (!error) {
             continue;
