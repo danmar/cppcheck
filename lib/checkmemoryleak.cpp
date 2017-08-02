@@ -2650,28 +2650,28 @@ void CheckMemoryLeakNoVar::check()
         // parse the executable scope until tok is reached...
         for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             // allocating memory in parameter for function call..
-            if (Token::Match(tok, "[(,] %name% (") && Token::Match(tok->linkAt(2), ") [,)]")) {
-                if (getAllocationType(tok->next(), 0) != No) {
-                    // locate outer function call..
-                    const Token* tok3 = tok;
-                    while (tok3->astParent() && tok3->str() == ",")
-                        tok3 = tok3->astParent();
-                    if (tok3 && tok3->str() == "(") {
-                        // Is it a function call..
-                        if (!Token::Match(tok3->tokAt(-2), "= %name% (")) {
-                            const std::string& functionName = tok3->strAt(-1);
-                            if ((tokenizer->isCPP() && functionName == "delete") ||
-                                functionName == "free" ||
-                                functionName == "fclose" ||
-                                functionName == "realloc")
-                                break;
-                            if (CheckMemoryLeakInFunction::test_white_list(functionName, _settings, tokenizer->isCPP())) {
-                                functionCallLeak(tok, tok->strAt(1), functionName);
-                                break;
-                            }
-                        }
-                    }
-                }
+            if (!(Token::Match(tok, "[(,] %name% (") && Token::Match(tok->linkAt(2), ") [,)]")))
+                continue;
+            if (getAllocationType(tok->next(), 0) == No)
+                continue;
+            // locate outer function call..
+            const Token* tok3 = tok;
+            while (tok3 && tok3->astParent() && tok3->str() == ",")
+                tok3 = tok3->astParent();
+            if (!tok3 || tok3->str() != "(")
+                continue;
+            // Is it a function call..
+            if (!Token::Match(tok3->tokAt(-2), "!!= %name% ("))
+                continue;
+            const std::string& functionName = tok3->strAt(-1);
+            if ((tokenizer->isCPP() && functionName == "delete") ||
+                functionName == "free" ||
+                functionName == "fclose" ||
+                functionName == "realloc")
+                break;
+            if (CheckMemoryLeakInFunction::test_white_list(functionName, _settings, tokenizer->isCPP())) {
+                functionCallLeak(tok, tok->strAt(1), functionName);
+                break;
             }
         }
     }
