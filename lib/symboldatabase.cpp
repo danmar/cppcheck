@@ -4836,7 +4836,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
 
     bool ternary = parent->str() == ":" && parent->astParent() && parent->astParent()->str() == "?";
     if (ternary) {
-        if (vt1->pointer == vt2->pointer && vt1->type == vt2->type && vt1->sign == vt2->sign)
+        if (vt2 && vt1->pointer == vt2->pointer && vt1->type == vt2->type && vt1->sign == vt2->sign)
             setValueType(parent, *vt2);
         parent = const_cast<Token*>(parent->astParent());
     }
