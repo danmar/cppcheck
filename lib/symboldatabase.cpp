@@ -3690,7 +3690,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
             }
         }
 
-        while (scope && scope->nestedIn) {
+        while (scope->nestedIn) {
             if (scope->type == Scope::eFunction && scope->functionOf)
                 scope = scope->functionOf;
             else
