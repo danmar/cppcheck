@@ -30,7 +30,8 @@
 #include "checkstatistics.h"
 
 StatsDialog::StatsDialog(QWidget *parent)
-    : QDialog(parent)
+    : QDialog(parent),
+      mStatistics(nullptr)
 {
     mUI.setupUi(this);
 
@@ -281,7 +282,7 @@ void StatsDialog::copyToClipboard()
 
 void StatsDialog::setStatistics(const CheckStatistics *stats)
 {
-    mStatistics = const_cast<CheckStatistics*>(stats);
+    mStatistics = stats;
     mUI.mLblErrors->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowErrors)));
     mUI.mLblWarnings->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowWarnings)));
     mUI.mLblStyle->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowStyle)));
