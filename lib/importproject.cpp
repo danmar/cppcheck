@@ -267,18 +267,18 @@ namespace {
             if (a)
                 name = a;
             for (const tinyxml2::XMLElement *e = cfg->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                if (e->GetText()) {
-                    if (std::strcmp(e->Name(),"Configuration")==0)
-                        configuration = e->GetText();
-                    else if (std::strcmp(e->Name(),"Platform")==0) {
-                        platformStr = e->GetText();
-                        if (platformStr == "Win32")
-                            platform = Win32;
-                        else if (platformStr == "x64")
-                            platform = x64;
-                        else
-                            platform = Unknown;
-                    }
+                if (!e->GetText())
+                    continue;
+                if (std::strcmp(e->Name(),"Configuration")==0)
+                    configuration = e->GetText();
+                else if (std::strcmp(e->Name(),"Platform")==0) {
+                    platformStr = e->GetText();
+                    if (platformStr == "Win32")
+                        platform = Win32;
+                    else if (platformStr == "x64")
+                        platform = x64;
+                    else
+                        platform = Unknown;
                 }
             }
         }
