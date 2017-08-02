@@ -498,6 +498,9 @@ protected:
     bool mVisibleErrors;
 
 private:
+    /** @brief Convert GUI error item into data error item */
+    void readErrorItem(const QStandardItem *error, ErrorItem *item) const;
+
     QItemSelectionModel *mSelectionModel;
     ThreadHandler *mThread;
 };

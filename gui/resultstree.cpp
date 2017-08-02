@@ -972,9 +972,8 @@ void ResultsTree::saveResults(Report *report) const
     report->writeHeader();
 
     for (int i = 0; i < mModel.rowCount(); i++) {
-        QStandardItem *item = mModel.item(i, 0);
-        //if (!isRowHidden(i, QModelIndex()))
-        saveErrors(report, item);
+        if (mSaveAllErrors || !isRowHidden(i, QModelIndex()))
+            saveErrors(report, mModel.item(i, 0));
     }
 
     report->writeFooter();
@@ -997,42 +996,46 @@ void ResultsTree::saveErrors(Report *report, QStandardItem *item) const
             continue;
         }
 
-        //Get error's user data
-        QVariant userdata = error->data();
-        //Convert it to QVariantMap
-        QVariantMap data = userdata.toMap();
-
         ErrorItem item;
-        item.severity = ShowTypes::ShowTypeToSeverity(ShowTypes::VariantToShowType(data["severity"]));
-        item.summary = data["summary"].toString();
-        item.message = data["message"].toString();
-        item.errorId = data["id"].toString();
-        item.inconclusive = data["inconclusive"].toBool();
-        item.file0 = data["file0"].toString();
-
-        if (error->rowCount() == 0) {
-            QErrorPathItem e;
-            e.file = stripPath(data["file"].toString(), true);
-            e.line = data["line"].toUInt();
-            e.info = data["message"].toString();
-            item.errorPath << e;
-        }
-
-        for (int j = 0; j < error->rowCount(); j++) {
-            QStandardItem *child_error = error->child(j, 0);
-            //Get error's user data
-            QVariant child_userdata = child_error->data();
-            //Convert it to QVariantMap
-            QVariantMap child_data = child_userdata.toMap();
-
-            QErrorPathItem e;
-            e.file = stripPath(child_data["file"].toString(), true);
-            e.line = child_data["line"].toUInt();
-            e.info = child_data["message"].toString();
-            item.errorPath << e;
-        }
+        readErrorItem(error, &item);
 
         report->writeError(item);
+    }
+}
+
+void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) const {
+    //Get error's user data
+    QVariant userdata = error->data();
+    //Convert it to QVariantMap
+    QVariantMap data = userdata.toMap();
+
+    item->severity = ShowTypes::ShowTypeToSeverity(ShowTypes::VariantToShowType(data["severity"]));
+    item->summary = data["summary"].toString();
+    item->message = data["message"].toString();
+    item->errorId = data["id"].toString();
+    item->inconclusive = data["inconclusive"].toBool();
+    item->file0 = data["file0"].toString();
+
+    if (error->rowCount() == 0) {
+        QErrorPathItem e;
+        e.file = stripPath(data["file"].toString(), true);
+        e.line = data["line"].toUInt();
+        e.info = data["message"].toString();
+        item->errorPath << e;
+    }
+
+    for (int j = 0; j < error->rowCount(); j++) {
+        const QStandardItem *child_error = error->child(j, 0);
+        //Get error's user data
+        QVariant child_userdata = child_error->data();
+        //Convert it to QVariantMap
+        QVariantMap child_data = child_userdata.toMap();
+
+        QErrorPathItem e;
+        e.file = stripPath(child_data["file"].toString(), true);
+        e.line = child_data["line"].toUInt();
+        e.info = child_data["message"].toString();
+        item->errorPath << e;
     }
 }
 
