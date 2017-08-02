@@ -262,7 +262,7 @@ void ImportProject::importSln(std::istream &istr, const std::string &path)
 
 namespace {
     struct ProjectConfiguration {
-        explicit ProjectConfiguration(const tinyxml2::XMLElement *cfg) {
+        explicit ProjectConfiguration(const tinyxml2::XMLElement *cfg) : platform(Unknown) {
             const char *a = cfg->Attribute("Include");
             if (a)
                 name = a;
