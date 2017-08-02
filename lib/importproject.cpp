@@ -454,9 +454,9 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 }
             } else {
                 for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                    if (std::strcmp(e->Name(), "ClCompile") != 0) {
+                    if (std::strcmp(e->Name(), "ClCompile") == 0) {
                         const char *include = e->Attribute("Include");
-                        if (include)
+                        if (include && Path::acceptFile(include))
                             compileList.push_back(include);
                     }
                 }
