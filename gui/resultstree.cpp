@@ -47,6 +47,11 @@
 #include "showtypes.h"
 #include "threadhandler.h"
 #include "path.h"
+#include "xmlreportv2.h"
+
+// These must match column headers given in ResultsTree::translate()
+static const unsigned int COLUMN_SINCE_DATE = 6;
+static const unsigned int COLUMN_TAG        = 7;
 
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
@@ -154,6 +159,8 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     line.summary = item.summary;
     line.message = item.message;
     line.severity = item.severity;
+    line.sinceDate = item.sinceDate;
+    line.tag       = item.tag;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
     QStandardItem* fileItem = ensureFileItem(item.errorPath.back().file, item.file0, hide);
@@ -232,7 +239,22 @@ QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
          << createLineNumberItem(QString::number(item.line))
          << createNormalItem(childOfMessage ? QString() : item.errorId)
          << (childOfMessage ? createNormalItem(QString()) : createCheckboxItem(item.inconclusive))
-         << createNormalItem(item.summary);
+         << createNormalItem(item.summary)
+         << createNormalItem(item.sinceDate);
+    switch (item.tag) {
+    case ErrorItem::NONE:
+        list << createNormalItem("");
+        break;
+    case ErrorItem::FP:
+        list << createNormalItem("fp");
+        break;
+    case ErrorItem::IGNORE:
+        list << createNormalItem("ignore");
+        break;
+    case ErrorItem::BUG:
+        list << createNormalItem("bug");
+        break;
+    };
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
 
@@ -1003,12 +1025,86 @@ void ResultsTree::saveErrors(Report *report, QStandardItem *fileItem) const
     }
 }
 
+
+QList<ErrorItem> ResultsTree::getAllErrorItems() const
+{
+    QList<ErrorItem> ret;
+    for (int i = 0; i < mModel.rowCount(); i++) {
+        const QStandardItem *item = mModel.item(i,0);
+        for (int j = 0; j < item->rowCount(); j++) {
+            const QStandardItem *error = item->child(j,0);
+            ErrorItem errorItem;
+            readErrorItem(error, &errorItem);
+            ret << errorItem;
+        }
+    }
+    return ret;
+}
+
+static int indexOf(const QList<ErrorItem> &list, const ErrorItem &item)
+{
+    for (int i = 0; i < list.size(); i++) {
+        if (list[i].errorId == item.errorId &&
+            list[i].errorPath == item.errorPath &&
+            list[i].file0 == item.file0 &&
+            list[i].message == item.message &&
+            list[i].inconclusive == item.inconclusive &&
+            list[i].severity == item.severity) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void ResultsTree::updateFromOldReport(const QString &filename)
+{
+    QList<ErrorItem> oldErrors;
+    XmlReportV2 oldReport(filename);
+    if (oldReport.open()) {
+        oldErrors = oldReport.read();
+        oldReport.close();
+    }
+
+    // Read current results..
+    for (int i = 0; i < mModel.rowCount(); i++) {
+        QStandardItem *fileItem = mModel.item(i,0);
+        for (int j = 0; j < fileItem->rowCount(); j++) {
+            QStandardItem *error = fileItem->child(j,0);
+            ErrorItem errorItem;
+            readErrorItem(error, &errorItem);
+            int oldErrorIndex = indexOf(oldErrors, errorItem);
+            QVariantMap data = error->data().toMap();
+
+            // New error .. set the "sinceDate" property
+            if (oldErrorIndex < 0 || data["sinceDate"].toString().isEmpty()) {
+                const QString sinceDate = QDate::currentDate().toString(Qt::SystemLocaleShortDate);
+                data["sinceDate"] = sinceDate;
+                error->setData(data);
+                fileItem->child(j, COLUMN_SINCE_DATE)->setText(sinceDate);
+                if (oldErrorIndex < 0)
+                    continue;
+            }
+
+            if (errorItem.tag != ErrorItem::NONE)
+                continue;
+
+            const ErrorItem &oldErrorItem = oldErrors[oldErrorIndex];
+
+            if (oldErrorItem.tag == ErrorItem::FP)
+                data["tag"] = "fp";
+            else if (oldErrorItem.tag == ErrorItem::IGNORE)
+                data["tag"] = "ignore";
+            else if (oldErrorItem.tag == ErrorItem::BUG)
+                data["tag"] = "bug";
+            error->setData(data);
+        }
+    }
+}
+
 void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) const
 {
-    //Get error's user data
-    QVariant userdata = error->data();
-    //Convert it to QVariantMap
-    QVariantMap data = userdata.toMap();
+    // Get error's user data
+    QVariantMap data = error->data().toMap();
 
     item->severity = ShowTypes::ShowTypeToSeverity(ShowTypes::VariantToShowType(data["severity"]));
     item->summary = data["summary"].toString();
@@ -1016,6 +1112,14 @@ void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) con
     item->errorId = data["id"].toString();
     item->inconclusive = data["inconclusive"].toBool();
     item->file0 = data["file0"].toString();
+    item->sinceDate = data["sinceDate"].toString();
+    QString tag = data["tag"].toString();
+    if (tag == "fp")
+        item->tag = ErrorItem::FP;
+    else if (tag == "ignore")
+        item->tag = ErrorItem::IGNORE;
+    else if (tag == "bug")
+        item->tag = ErrorItem::BUG;
 
     if (error->rowCount() == 0) {
         QErrorPathItem e;
@@ -1161,7 +1265,7 @@ bool ResultsTree::hasResults() const
 void ResultsTree::translate()
 {
     QStringList labels;
-    labels << tr("File") << tr("Severity") << tr("Line") << tr("Id") << tr("Inconclusive") << tr("Summary");
+    labels << tr("File") << tr("Severity") << tr("Line") << tr("Id") << tr("Inconclusive") << tr("Summary") << tr("Since date") << tr("Tag");
     mModel.setHorizontalHeaderLabels(labels);
     //TODO go through all the errors in the tree and translate severity and message
 }

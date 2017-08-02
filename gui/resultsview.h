@@ -89,6 +89,11 @@ public:
     void save(const QString &filename, Report::Type type) const;
 
     /**
+     * @brief Update results from old report (tag, sinceDate)
+     */
+    void updateFromOldReport(const QString &filename) const;
+
+    /**
     * @brief Update tree settings
     *
     * @param showFullPath Show full path of files in the tree

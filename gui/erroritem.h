@@ -59,6 +59,8 @@ public:
     QString info;
 };
 
+bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2);
+
 /**
 * @brief A class containing error data for one error.
 *
@@ -86,6 +88,10 @@ public:
     QString message;
     int cwe;
     QList<QErrorPathItem> errorPath;
+
+    // Special GUI properties
+    QString sinceDate;
+    enum Tag { NONE, FP, IGNORE, BUG } tag;
 };
 
 Q_DECLARE_METATYPE(ErrorItem);
@@ -103,6 +109,8 @@ public:
     Severity::SeverityType severity;
     QString summary;
     QString message;
+    QString sinceDate;
+    ErrorItem::Tag tag;
 };
 
 /// @}

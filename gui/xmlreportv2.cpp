@@ -35,6 +35,8 @@ static const char ErrorsElementName[] = "errors";
 static const char LocationElementName[] = "location";
 static const char ColAttribute[] = "col";
 static const char CWEAttribute[] = "cwe";
+static const char SinceDateAttribute[] = "sinceDate";
+static const char TagAttribute[] = "tag";
 static const char FilenameAttribute[] = "file";
 static const char IncludedFromFilenameAttribute[] = "file0";
 static const char InconclusiveAttribute[] = "inconclusive";
@@ -120,6 +122,14 @@ void XmlReportV2::writeError(const ErrorItem &error)
         mXmlWriter->writeAttribute(InconclusiveAttribute, "true");
     if (error.cwe > 0)
         mXmlWriter->writeAttribute(CWEAttribute, QString::number(error.cwe));
+    if (!error.sinceDate.isEmpty())
+        mXmlWriter->writeAttribute(SinceDateAttribute, error.sinceDate);
+    if (error.tag == ErrorItem::FP)
+        mXmlWriter->writeAttribute(TagAttribute, "fp");
+    else if (error.tag == ErrorItem::IGNORE)
+        mXmlWriter->writeAttribute(TagAttribute, "ignore");
+    else if (error.tag == ErrorItem::BUG)
+        mXmlWriter->writeAttribute(TagAttribute, "bug");
 
     for (int i = error.errorPath.count() - 1; i >= 0; i--) {
         mXmlWriter->writeStartElement(LocationElementName);
@@ -209,6 +219,17 @@ ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
             item.inconclusive = true;
         if (attribs.hasAttribute("", CWEAttribute))
             item.cwe = attribs.value("", CWEAttribute).toString().toInt();
+        if (attribs.hasAttribute("", SinceDateAttribute))
+            item.sinceDate = attribs.value("", SinceDateAttribute).toString();
+        if (attribs.hasAttribute("", TagAttribute)) {
+            const QString tag = attribs.value("", TagAttribute).toString();
+            if (tag == "fp")
+                item.tag = ErrorItem::FP;
+            else if (tag == "ignore")
+                item.tag = ErrorItem::IGNORE;
+            else if (tag == "bug")
+                item.tag = ErrorItem::BUG;
+        }
     }
 
     bool errorRead = false;
@@ -251,5 +272,9 @@ ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
             break;
         }
     }
+
+    if (item.errorPath.size() == 1 && item.errorPath[0].info.isEmpty())
+        item.errorPath[0].info = item.message;
+
     return item;
 }

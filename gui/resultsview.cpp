@@ -149,6 +149,11 @@ void ResultsView::saveStatistics(const QString &filename) const
     ts << "portability:" << mStatistics->getCount(ShowTypes::ShowPortability) << '\n';
 }
 
+void ResultsView::updateFromOldReport(const QString &filename) const
+{
+    mUI.mTree->updateFromOldReport(filename);
+}
+
 void ResultsView::save(const QString &filename, Report::Type type) const
 {
     if (!hasResults()) {

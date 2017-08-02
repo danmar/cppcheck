@@ -26,10 +26,16 @@ QErrorPathItem::QErrorPathItem(const ErrorLogger::ErrorMessage::FileLocation &lo
 {
 }
 
+bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2)
+{
+    return i1.file == i2.file && i1.col == i2.col && i1.line == i2.line && i1.info == i2.info;
+}
+
 ErrorItem::ErrorItem()
     : severity(Severity::none)
     , inconclusive(false)
     , cwe(-1)
+    , tag(NONE)
 {
 }
 
@@ -40,6 +46,7 @@ ErrorItem::ErrorItem(const ErrorLogger::ErrorMessage &errmsg)
     , summary(QString::fromStdString(errmsg.shortMessage()))
     , message(QString::fromStdString(errmsg.verboseMessage()))
     , cwe(errmsg._cwe.id)
+    , tag(NONE)
 {
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator loc = errmsg._callStack.begin();
          loc != errmsg._callStack.end();

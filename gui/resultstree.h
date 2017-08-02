@@ -104,6 +104,16 @@ public:
     void saveResults(Report *report) const;
 
     /**
+     * @brief Get all error items
+     */
+    QList<ErrorItem> getAllErrorItems() const;
+
+    /**
+     * @brief Update items from old report (tag, sinceDate)
+     */
+    void updateFromOldReport(const QString &filename);
+
+    /**
     * @brief Update tree settings
     *
     * @param showFullPath Show full path of files in the tree
