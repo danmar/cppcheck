@@ -213,6 +213,11 @@ signals:
     */
     void checkSelected(QStringList selectedFilesList);
 
+    /**
+     * Some results have been tagged
+     */
+    void tagged();
+
 public slots:
 
     /**

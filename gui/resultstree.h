@@ -205,6 +205,11 @@ signals:
     */
     void selectionChanged(const QModelIndex &current);
 
+    /**
+     * Selected item(s) has been tagged
+     */
+    void tagged();
+
 protected slots:
     /**
     * @brief Slot to quickstart an error with default application
@@ -274,6 +279,10 @@ protected slots:
     * @param previous Model index to specify previous selected item.
     */
     virtual void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+
+    void tagFP(bool);
+    void tagIgnore(bool);
+    void tagBug(bool);
 
 protected:
 
@@ -503,6 +512,9 @@ protected:
     bool mVisibleErrors;
 
 private:
+    /** tag selected items */
+    void tagSelectedItems(int tagNumber, const QString &tag);
+
     /** @brief Convert GUI error item into data error item */
     void readErrorItem(const QStandardItem *error, ErrorItem *item) const;
 

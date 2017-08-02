@@ -184,6 +184,8 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data["id"]  = item.errorId;
     data["inconclusive"] = item.inconclusive;
     data["file0"] = stripPath(item.file0, true);
+    data["sinceDate"] = item.sinceDate;
+    data["tag"] = item.tag;
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
@@ -246,13 +248,13 @@ QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
         list << createNormalItem("");
         break;
     case ErrorItem::FP:
-        list << createNormalItem("fp");
+        list << createNormalItem(tr("False positive"));
         break;
     case ErrorItem::IGNORE:
-        list << createNormalItem("ignore");
+        list << createNormalItem(tr("Ignore"));
         break;
     case ErrorItem::BUG:
-        list << createNormalItem("bug");
+        list << createNormalItem(tr("bug"));
         break;
     };
     //TODO message has parameter names so we'll need changes to the core
@@ -629,6 +631,17 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
             connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
             connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));
+
+            menu.addSeparator();
+            QAction *fp       = new QAction(tr("False positive"), &menu);
+            QAction *ignore   = new QAction(tr("Ignore"), &menu);
+            QAction *bug      = new QAction(tr("Bug"), &menu);
+            menu.addAction(fp);
+            menu.addAction(ignore);
+            menu.addAction(bug);
+            connect(fp, &QAction::triggered, this, &ResultsTree::tagFP);
+            connect(ignore, &QAction::triggered, this, &ResultsTree::tagIgnore);
+            connect(bug, &QAction::triggered, this, &ResultsTree::tagBug);
         }
 
         //Start the menu
@@ -929,6 +942,41 @@ void ResultsTree::openContainingFolder()
     }
 }
 
+void ResultsTree::tagSelectedItems(int tagNumber, const QString &tag)
+{
+    if (!mSelectionModel)
+        return;
+    bool isTagged = false;
+    foreach (QModelIndex index, mSelectionModel->selectedRows()) {
+        QStandardItem *item = mModel.itemFromIndex(index);
+        QVariantMap data = item->data().toMap();
+        if (data.contains("tag")) {
+            data["tag"] = tagNumber;
+            item->setData(QVariant(data));
+            item->parent()->child(index.row(), COLUMN_TAG)->setText(tag);
+            isTagged = true;
+        }
+    }
+    if (isTagged)
+        emit tagged();
+}
+
+void ResultsTree::tagFP(bool)
+{
+    tagSelectedItems(ErrorItem::FP, tr("False positive"));
+}
+
+void ResultsTree::tagIgnore(bool)
+{
+    tagSelectedItems(ErrorItem::IGNORE, tr("Ignore"));
+}
+
+void ResultsTree::tagBug(bool)
+{
+    tagSelectedItems(ErrorItem::BUG, tr("Bug"));
+}
+
+
 void ResultsTree::context(int application)
 {
     startApplication(mContextItem, application);
@@ -1097,13 +1145,7 @@ void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) con
     item->inconclusive = data["inconclusive"].toBool();
     item->file0 = data["file0"].toString();
     item->sinceDate = data["sinceDate"].toString();
-    QString tag = data["tag"].toString();
-    if (tag == "fp")
-        item->tag = ErrorItem::FP;
-    else if (tag == "ignore")
-        item->tag = ErrorItem::IGNORE;
-    else if (tag == "bug")
-        item->tag = ErrorItem::BUG;
+    item->tag = (ErrorItem::Tag)data["tag"].toInt();
 
     if (error->rowCount() == 0) {
         QErrorPathItem e;

@@ -221,7 +221,13 @@ protected slots:
     /** @brief Selects the platform as analyzed platform. */
     void selectPlatform();
 
+    /** Some results were tagged */
+    void tagged();
+
 private:
+
+    /** Get filename for last results */
+    QString getLastResults() const;
 
     /** @brief Reanalyzes files */
     void reAnalyze(bool all);

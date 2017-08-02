@@ -125,6 +125,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mResults, &ResultsView::gotResults, this, &MainWindow::resultsAdded);
     connect(mUI.mResults, &ResultsView::resultsHidden, mUI.mActionShowHidden, &QAction::setEnabled);
     connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
+    connect(mUI.mResults, &ResultsView::tagged, this, &MainWindow::tagged);
     connect(mUI.mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
 
     // File menu
@@ -1279,12 +1280,9 @@ void MainWindow::stopAnalysis()
 {
     mThread->stop();
     mUI.mResults->disableProgressbar();
-    if (mProjectFile && !mProjectFile->getBuildDir().isEmpty()) {
-        const QString prjpath = QFileInfo(mProjectFile->getFilename()).absolutePath();
-        const QString buildDir = prjpath + '/' + mProjectFile->getBuildDir();
-        if (QDir(buildDir).exists()) {
-            mUI.mResults->updateFromOldReport(buildDir + "/lastResults.xml");
-        }
+    const QString &lastResults = getLastResults();
+    if (!lastResults.isEmpty()) {
+        mUI.mResults->updateFromOldReport(lastResults);
     }
 }
 
@@ -1343,14 +1341,18 @@ void MainWindow::loadProjectFile(const QString &filePath)
         analyzeProject(mProjectFile);
 }
 
+QString MainWindow::getLastResults() const
+{
+    if (!mProjectFile || mProjectFile->getBuildDir().isEmpty())
+        return QString();
+    return QFileInfo(mProjectFile->getFilename()).absolutePath() + '/' + mProjectFile->getBuildDir() + "/lastResults.xml";
+}
+
 bool MainWindow::loadLastResults()
 {
-    if (!mProjectFile)
+    const QString &lastResults = getLastResults();
+    if (lastResults.isEmpty())
         return false;
-    if (mProjectFile->getBuildDir().isEmpty())
-        return false;
-    const QString buildDir = QFileInfo(mProjectFile->getFilename()).absolutePath() + '/' + mProjectFile->getBuildDir();
-    const QString lastResults = buildDir + "/lastResults.xml";
     if (!QFileInfo(lastResults).exists())
         return false;
     mUI.mResults->readErrorsXml(lastResults);
@@ -1630,4 +1632,11 @@ void MainWindow::selectPlatform()
         const Settings::PlatformType platform = (Settings::PlatformType) action->data().toInt();
         mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
     }
+}
+
+void MainWindow::tagged()
+{
+    const QString &lastResults = getLastResults();
+    if (!lastResults.isEmpty())
+        mUI.mResults->save(lastResults, Report::XMLV2);
 }
