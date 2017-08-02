@@ -50,10 +50,16 @@
 
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
+    mSettings(nullptr),
+    mApplications(nullptr),
     mContextItem(0),
+    mShowFullPath(false),
+    mSaveFullPath(false),
+    mSaveAllErrors(true),
     mShowErrorId(false),
     mVisibleErrors(false),
-    mSelectionModel(0)
+    mSelectionModel(0),
+    mThread(nullptr)
 {
     setModel(&mModel);
     translate(); // Adds columns to grid
