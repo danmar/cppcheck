@@ -454,8 +454,11 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 }
             } else {
                 for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                    if (std::strcmp(e->Name(), "ClCompile") == 0)
-                        compileList.push_back(e->Attribute("Include"));
+                    if (std::strcmp(e->Name(), "ClCompile") != 0) {
+                        const char *include = e->Attribute("Include");
+                        if (include)
+                            compileList.push_back(include);
+                    }
                 }
             }
         } else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
