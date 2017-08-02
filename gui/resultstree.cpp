@@ -322,11 +322,11 @@ void ResultsTree::clear(const QString &filename)
     const QString stripped = stripPath(filename, false);
 
     for (int i = 0; i < mModel.rowCount(); ++i) {
-        const QStandardItem *item = mModel.item(i, 0);
-        if (!item)
+        const QStandardItem *fileItem = mModel.item(i, 0);
+        if (!fileItem)
             continue;
 
-        QVariantMap data = item->data().toMap();
+        QVariantMap data = fileItem->data().toMap();
         if (stripped == data["file"].toString() ||
             filename == data["file0"].toString()) {
             mModel.removeRow(i);
@@ -338,12 +338,12 @@ void ResultsTree::clear(const QString &filename)
 void ResultsTree::clearRecheckFile(const QString &filename)
 {
     for (int i = 0; i < mModel.rowCount(); ++i) {
-        const QStandardItem *item = mModel.item(i, 0);
-        if (!item)
+        const QStandardItem *fileItem = mModel.item(i, 0);
+        if (!fileItem)
             continue;
 
         QString actualfile((!mCheckPath.isEmpty() && filename.startsWith(mCheckPath)) ? filename.mid(mCheckPath.length() + 1) : filename);
-        QVariantMap data = item->data().toMap();
+        QVariantMap data = fileItem->data().toMap();
         QString storedfile = data["file"].toString();
         storedfile = ((!mCheckPath.isEmpty() && storedfile.startsWith(mCheckPath)) ? storedfile.mid(mCheckPath.length() + 1) : storedfile);
         if (actualfile == storedfile) {
@@ -396,17 +396,17 @@ void ResultsTree::showHiddenResults()
     //Clear the "hide" flag for each item
     int filecount = mModel.rowCount();
     for (int i = 0; i < filecount; i++) {
-        QStandardItem *file = mModel.item(i, 0);
-        if (!file)
+        QStandardItem *fileItem = mModel.item(i, 0);
+        if (!fileItem)
             continue;
 
-        QVariantMap data = file->data().toMap();
+        QVariantMap data = fileItem->data().toMap();
         data["hide"] = false;
-        file->setData(QVariant(data));
+        fileItem->setData(QVariant(data));
 
-        int errorcount = file->rowCount();
+        int errorcount = fileItem->rowCount();
         for (int j = 0; j < errorcount; j++) {
-            QStandardItem *child = file->child(j, 0);
+            QStandardItem *child = fileItem->child(j, 0);
             if (child) {
                 data = child->data().toMap();
                 data["hide"] = false;
@@ -427,20 +427,20 @@ void ResultsTree::refreshTree()
 
     for (int i = 0; i < filecount; i++) {
         //Get file i
-        QStandardItem *file = mModel.item(i, 0);
-        if (!file) {
+        QStandardItem *fileItem = mModel.item(i, 0);
+        if (!fileItem) {
             continue;
         }
 
         //Get the amount of errors this file contains
-        int errorcount = file->rowCount();
+        int errorcount = fileItem->rowCount();
 
         //By default it shouldn't be visible
         bool show = false;
 
         for (int j = 0; j < errorcount; j++) {
             //Get the error itself
-            QStandardItem *child = file->child(j, 0);
+            QStandardItem *child = fileItem->child(j, 0);
             if (!child) {
                 continue;
             }
@@ -468,7 +468,7 @@ void ResultsTree::refreshTree()
             }
 
             //Hide/show accordingly
-            setRowHidden(j, file->index(), hide);
+            setRowHidden(j, fileItem->index(), hide);
 
             //If it was shown then the file itself has to be shown as well
             if (!hide) {
@@ -477,7 +477,7 @@ void ResultsTree::refreshTree()
         }
 
         //Hide the file if its "hide" attribute is set
-        if (file->data().toMap()["hide"].toBool()) {
+        if (fileItem->data().toMap()["hide"].toBool()) {
             show = false;
         }
 
@@ -979,20 +979,20 @@ void ResultsTree::saveResults(Report *report) const
     report->writeFooter();
 }
 
-void ResultsTree::saveErrors(Report *report, QStandardItem *item) const
+void ResultsTree::saveErrors(Report *report, QStandardItem *fileItem) const
 {
-    if (!item) {
+    if (!fileItem) {
         return;
     }
 
-    for (int i = 0; i < item->rowCount(); i++) {
-        const QStandardItem *error = item->child(i, 0);
+    for (int i = 0; i < fileItem->rowCount(); i++) {
+        const QStandardItem *error = fileItem->child(i, 0);
 
         if (!error) {
             continue;
         }
 
-        if (isRowHidden(i, item->index()) && !mSaveAllErrors) {
+        if (isRowHidden(i, fileItem->index()) && !mSaveAllErrors) {
             continue;
         }
 

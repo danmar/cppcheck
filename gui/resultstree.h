@@ -298,9 +298,9 @@ protected:
     /**
     * @brief Save all errors under specified item
     * @param report Report that errors are saved to
-    * @param item Item whose errors to save
+    * @param fileItem Item whose errors to save
     */
-    void saveErrors(Report *report, QStandardItem *item) const;
+    void saveErrors(Report *report, QStandardItem *fileItem) const;
 
     /**
     * @brief Convert a severity string to a icon filename
