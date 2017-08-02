@@ -1025,22 +1025,6 @@ void ResultsTree::saveErrors(Report *report, QStandardItem *fileItem) const
     }
 }
 
-
-QList<ErrorItem> ResultsTree::getAllErrorItems() const
-{
-    QList<ErrorItem> ret;
-    for (int i = 0; i < mModel.rowCount(); i++) {
-        const QStandardItem *item = mModel.item(i,0);
-        for (int j = 0; j < item->rowCount(); j++) {
-            const QStandardItem *error = item->child(j,0);
-            ErrorItem errorItem;
-            readErrorItem(error, &errorItem);
-            ret << errorItem;
-        }
-    }
-    return ret;
-}
-
 static int indexOf(const QList<ErrorItem> &list, const ErrorItem &item)
 {
     for (int i = 0; i < list.size(); i++) {

@@ -104,11 +104,6 @@ public:
     void saveResults(Report *report) const;
 
     /**
-     * @brief Get all error items
-     */
-    QList<ErrorItem> getAllErrorItems() const;
-
-    /**
      * @brief Update items from old report (tag, sinceDate)
      */
     void updateFromOldReport(const QString &filename);
