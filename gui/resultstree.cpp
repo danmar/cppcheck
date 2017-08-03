@@ -1108,7 +1108,11 @@ void ResultsTree::updateFromOldReport(const QString &filename)
             QVariantMap data = error->data().toMap();
 
             // New error .. set the "sinceDate" property
-            if (oldErrorIndex < 0 || data["sinceDate"].toString().isEmpty()) {
+            if (oldErrorIndex >= 0 && !oldErrors[oldErrorIndex].sinceDate.isEmpty()) {
+                data["sinceDate"] = oldErrors[oldErrorIndex].sinceDate;
+                error->setData(data);
+                fileItem->child(j, COLUMN_SINCE_DATE)->setText(oldErrors[oldErrorIndex].sinceDate);
+            } else if (oldErrorIndex < 0 || data["sinceDate"].toString().isEmpty()) {
                 const QString sinceDate = QDate::currentDate().toString(Qt::SystemLocaleShortDate);
                 data["sinceDate"] = sinceDate;
                 error->setData(data);
