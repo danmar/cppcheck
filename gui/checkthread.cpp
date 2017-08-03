@@ -214,12 +214,12 @@ void CheckThread::parseClangErrors(QString err)
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QRegExp r("([^:]+):([0-9]+):[0-9]+: (warning|error): (.*)");
+        QRegExp r("([^:]+):([0-9]+):[0-9]+: (warning|error|fatal error): (.*)");
         if (!r.exactMatch(line))
             continue;
         const std::string filename = r.cap(1).toStdString();
         const int lineNumber = r.cap(2).toInt();
-        Severity::SeverityType severity = (r.cap(3) == "error") ? Severity::error : Severity::warning;
+        Severity::SeverityType severity = (r.cap(3) == "warning") ? Severity::warning : Severity::error;
         const std::string message = r.cap(4).toStdString();
         const std::string id = "clang";
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
