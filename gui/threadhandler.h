@@ -105,7 +105,7 @@ public:
     * @param settings Settings for checking
     * @param all true if all files, false if modified files
     */
-    void check(const Settings &settings, bool all);
+    void check(const Settings &settings);
 
     /**
     * @brief Set files to check

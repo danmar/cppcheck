@@ -75,7 +75,7 @@ void ThreadHandler::setCheckFiles(QStringList files)
     }
 }
 
-void ThreadHandler::check(const Settings &settings, bool all)
+void ThreadHandler::check(const Settings &settings)
 {
     if (mResults.getFileCount() == 0 || mRunningThreadCount > 0 || settings.jobs == 0) {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
