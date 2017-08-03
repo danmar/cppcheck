@@ -72,38 +72,13 @@ void CheckThread::run()
         return;
     }
 
-    QString addonPath = getAddonPath();
+    const QString addonPath = getAddonPath();
 
-    bool needDump = mAddons.contains("y2038") || mAddons.contains("threadsafety") || mAddons.contains("cert") || mAddons.contains("misra");
     QString file = mResult.getNextFile();
     while (!file.isEmpty() && mState == Running) {
         qDebug() << "Checking file" << file;
         mCppcheck.check(file.toStdString());
-        if (!mAddons.isEmpty()) {
-            if (needDump) {
-                mCppcheck.settings().dump = true;
-                mCppcheck.check(file.toStdString());
-                mCppcheck.settings().dump = false;
-            }
-            foreach (const QString addon, mAddons) {
-                if (addon == "clang")
-                    continue;
-                QProcess process;
-                QString a;
-                if (QFileInfo(addonPath + '/' + addon + ".py").exists())
-                    a = addonPath + '/' + addon + ".py";
-                else if (QFileInfo(addonPath + '/' + addon + '/' + addon + ".py").exists())
-                    a = addonPath + '/' + addon + '/' + addon + ".py";
-                else
-                    continue;
-                QString dumpFile = file + ".dump";
-                QString cmd = "python " + a + ' ' + dumpFile;
-                qDebug() << cmd;
-                process.start(cmd);
-                process.waitForFinished();
-                parseAddonErrors(process.readAllStandardError(), addon);
-            }
-        }
+        runAddons(addonPath, nullptr, file);
         emit fileChecked(file);
 
         if (mState == Running)
@@ -115,45 +90,7 @@ void CheckThread::run()
         file = QString::fromStdString(fileSettings.filename);
         qDebug() << "Checking file" << file;
         mCppcheck.check(fileSettings);
-        if (!mAddons.isEmpty()) {
-            if (needDump) {
-                mCppcheck.settings().dump = true;
-                mCppcheck.check(fileSettings);
-                mCppcheck.settings().dump = false;
-            }
-            foreach (const QString addon, mAddons) {
-                QProcess process;
-                if (addon == "clang") {
-                    QString cmd("clang --analyze");
-                    for (std::list<std::string>::const_iterator I = fileSettings.includePaths.begin(); I != fileSettings.includePaths.end(); ++I)
-                        cmd += " -I" + QString::fromStdString(*I);
-                    foreach (QString D, QString::fromStdString(fileSettings.defines).split(";"))
-                    cmd += " -D" + D;
-                    QString fileName = QString::fromStdString(fileSettings.filename);
-                    if (fileName.endsWith(".cpp"))
-                        cmd += " -std=c++11";
-                    cmd += ' ' + fileName;
-                    qDebug() << cmd;
-                    process.start(cmd);
-                    process.waitForFinished(600*1000);
-                    parseClangErrors(process.readAllStandardError());
-                } else {
-                    QString a;
-                    if (QFileInfo(addonPath + '/' + addon + ".py").exists())
-                        a = addonPath + '/' + addon + ".py";
-                    else if (QFileInfo(addonPath + '/' + addon + '/' + addon + ".py").exists())
-                        a = addonPath + '/' + addon + '/' + addon + ".py";
-                    else
-                        continue;
-                    QString dumpFile = QString::fromStdString(fileSettings.filename + ".dump");
-                    QString cmd = "python " + a + ' ' + dumpFile;
-                    qDebug() << cmd;
-                    process.start(cmd);
-                    process.waitForFinished();
-                    parseAddonErrors(process.readAllStandardError(), addon);
-                }
-            }
-        }
+        runAddons(addonPath, &fileSettings, QString::fromStdString(fileSettings.filename));
         emit fileChecked(file);
 
         if (mState == Running)
@@ -168,13 +105,72 @@ void CheckThread::run()
     emit done();
 }
 
+void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName)
+{
+    bool hasdump = false;
+
+    foreach (const QString addon, mAddons) {
+        if (addon == "clang") {
+            if (!fileSettings)
+                continue;
+            QString cmd("clang --analyze");
+            for (std::list<std::string>::const_iterator I = fileSettings->includePaths.begin(); I != fileSettings->includePaths.end(); ++I)
+                cmd += " -I" + QString::fromStdString(*I);
+            foreach (QString D, QString::fromStdString(fileSettings->defines).split(";")) {
+                cmd += " -D" + D;
+            }
+            if (fileName.endsWith(".cpp"))
+                cmd += " -std=c++11";
+            cmd += ' ' + fileName;
+            qDebug() << cmd;
+
+            QProcess process;
+            process.start(cmd);
+            process.waitForFinished(600*1000);
+            parseClangErrors(process.readAllStandardError());
+        } else {
+            QString a;
+            if (QFileInfo(addonPath + '/' + addon + ".py").exists())
+                a = addonPath + '/' + addon + ".py";
+            else if (QFileInfo(addonPath + '/' + addon + '/' + addon + ".py").exists())
+                a = addonPath + '/' + addon + '/' + addon + ".py";
+            else
+                continue;
+
+            if (!hasdump) {
+                // TODO: Generate dump file in buildDir.
+                // Otherwise a mutex might be needed
+                const std::string buildDir = mCppcheck.settings().buildDir;
+                mCppcheck.settings().buildDir.clear();
+                mCppcheck.settings().dump = true;
+                if (fileSettings)
+                    mCppcheck.check(*fileSettings);
+                else
+                    mCppcheck.check(fileName.toStdString());
+                mCppcheck.settings().dump = false;
+                mCppcheck.settings().buildDir = buildDir;
+                hasdump = true;
+            }
+
+            QString dumpFile = fileName + ".dump";
+            QString cmd = "python " + a + ' ' + dumpFile;
+            qDebug() << cmd;
+            QProcess process;
+            process.start(cmd);
+            process.waitForFinished();
+            parseAddonErrors(process.readAllStandardError(), addon);
+        }
+    }
+}
+
 void CheckThread::stop()
 {
     mState = Stopping;
     mCppcheck.terminate();
 }
 
-QString CheckThread::getAddonPath() const {
+QString CheckThread::getAddonPath() const
+{
     if (QFileInfo(mDataDir + "/threadsafety.py").exists())
         return mDataDir;
     else if (QDir(mDataDir + "/addons").exists())

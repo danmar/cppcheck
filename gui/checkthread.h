@@ -108,6 +108,8 @@ protected:
 private:
     QString getAddonPath() const;
 
+    void runAddons(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName);
+
     void parseAddonErrors(QString err, QString tool);
     void parseClangErrors(QString err);
 
