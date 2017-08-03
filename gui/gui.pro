@@ -22,6 +22,9 @@ MOC_DIR = temp
 OBJECTS_DIR = temp
 UI_DIR = temp
 
+QMAKE_CC = $$(CC)
+QMAKE_CXX = $$(CXX)
+
 win32 {
    CONFIG += windows
    contains(LINKCORE, [yY][eE][sS]) {
