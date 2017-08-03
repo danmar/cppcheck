@@ -66,7 +66,7 @@ void LogView::clearButtonClicked()
 void LogView::saveButtonClicked()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Log"),
-                       "", tr("Text files (*.txt *.log);;All files (*.*)"));
+                       QString(), tr("Text files (*.txt *.log);;All files (*.*)"));
     if (!fileName.isEmpty()) {
         QFile file(fileName);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {

@@ -554,7 +554,7 @@ void MainWindow::analyzeFiles()
 {
     QStringList selected = selectFilesToAnalyze(QFileDialog::ExistingFiles);
 
-    const QString file0 = (selected.size() ? selected[0].toLower() : "");
+    const QString file0 = (selected.size() ? selected[0].toLower() : QString());
     if (file0.endsWith(".sln") || file0.endsWith(".vcxproj") || file0.endsWith(compile_commands_json)) {
         ImportProject p;
         p.import(selected[0].toStdString());

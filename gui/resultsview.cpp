@@ -77,7 +77,7 @@ void ResultsView::clear(bool results)
         mUI.mTree->clear();
     }
 
-    mUI.mDetails->setText("");
+    mUI.mDetails->setText(QString());
 
     mStatistics->clear();
 
@@ -363,7 +363,7 @@ void ResultsView::readErrorsXml(const QString &filename)
     foreach (item, errors) {
         mUI.mTree->addErrorItem(item);
     }
-    mUI.mTree->setCheckDirectory("");
+    mUI.mTree->setCheckDirectory(QString());
 }
 
 void ResultsView::updateDetails(const QModelIndex &index)
@@ -372,7 +372,7 @@ void ResultsView::updateDetails(const QModelIndex &index)
     QStandardItem *item = model->itemFromIndex(index);
 
     if (!item) {
-        mUI.mDetails->setText("");
+        mUI.mDetails->setText(QString());
         return;
     }
 
@@ -384,7 +384,7 @@ void ResultsView::updateDetails(const QModelIndex &index)
 
     // If there is no severity data then it is a parent item without summary and message
     if (!data.contains("severity")) {
-        mUI.mDetails->setText("");
+        mUI.mDetails->setText(QString());
         return;
     }
 
@@ -395,7 +395,7 @@ void ResultsView::updateDetails(const QModelIndex &index)
                            .arg(tr("Message")).arg(message);
 
     const QString file0 = data["file0"].toString();
-    if (file0 != "" && Path::isHeader(data["file"].toString().toStdString()))
+    if (!file0.isEmpty() && Path::isHeader(data["file"].toString().toStdString()))
         formattedMsg += QString("\n\n%1: %2").arg(tr("First included by")).arg(QDir::toNativeSeparators(file0));
 
     if (mUI.mTree->showIdColumn())

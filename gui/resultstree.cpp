@@ -316,7 +316,7 @@ QString ResultsTree::severityToTranslatedString(Severity::SeverityType severity)
 
     case Severity::none:
     default:
-        return "";
+        return QString();
     }
 }
 
@@ -1033,7 +1033,7 @@ QString ResultsTree::severityToIcon(Severity::SeverityType severity) const
     case Severity::information:
         return ":images/dialog-information.png";
     default:
-        return "";
+        return QString();
     }
 }
 

@@ -104,7 +104,7 @@ void CheckThread::run()
                     a = addonPath + '/' + addon + '/' + addon + ".py";
                 else
                     continue;
-                QString dumpFile = QString::fromStdString(file + ".dump");
+                QString dumpFile = file + ".dump";
                 QString cmd = "python " + a + ' ' + dumpFile;
                 qDebug() << cmd;
                 process.start(cmd);

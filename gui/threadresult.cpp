@@ -71,7 +71,7 @@ QString ThreadResult::getNextFile()
 {
     QMutexLocker locker(&mutex);
     if (mFiles.isEmpty()) {
-        return "";
+        return QString();
     }
 
     return mFiles.takeFirst();

@@ -67,6 +67,5 @@ void FileViewDialog::loadTextFile(const QString &filename, QTextEdit *edit)
     QByteArray filedata = file.readAll();
     file.close();
 
-    QString filestringdata(filedata);
-    edit->setPlainText(filestringdata);
+    edit->setPlainText(filedata);
 }

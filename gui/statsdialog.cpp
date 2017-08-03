@@ -47,10 +47,10 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
         mUI.mIncludePaths->setText(projectFile->getIncludeDirs().join(";"));
         mUI.mDefines->setText(projectFile->getDefines().join(";"));
     } else {
-        mUI.mProject->setText("");
-        mUI.mPaths->setText("");
-        mUI.mIncludePaths->setText("");
-        mUI.mDefines->setText("");
+        mUI.mProject->setText(QString());
+        mUI.mPaths->setText(QString());
+        mUI.mIncludePaths->setText(QString());
+        mUI.mDefines->setText(QString());
     }
 }
 

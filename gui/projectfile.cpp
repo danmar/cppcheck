@@ -156,7 +156,7 @@ bool ProjectFile::read(const QString &filename)
 void ProjectFile::readRootPath(QXmlStreamReader &reader)
 {
     QXmlStreamAttributes attribs = reader.attributes();
-    QString name = attribs.value("", RootPathNameAttrib).toString();
+    QString name = attribs.value(QString(), RootPathNameAttrib).toString();
     if (!name.isEmpty())
         mRootPath = name;
 }
@@ -223,7 +223,7 @@ void ProjectFile::readIncludeDirs(QXmlStreamReader &reader)
             // Read dir-elements
             if (reader.name().toString() == DirElementName) {
                 QXmlStreamAttributes attribs = reader.attributes();
-                QString name = attribs.value("", DirNameAttrib).toString();
+                QString name = attribs.value(QString(), DirNameAttrib).toString();
                 if (!name.isEmpty())
                     mIncludeDirs << name;
             }
@@ -260,7 +260,7 @@ void ProjectFile::readDefines(QXmlStreamReader &reader)
             // Read define-elements
             if (reader.name().toString() == DefineName) {
                 QXmlStreamAttributes attribs = reader.attributes();
-                QString name = attribs.value("", DefineNameAttrib).toString();
+                QString name = attribs.value(QString(), DefineNameAttrib).toString();
                 if (!name.isEmpty())
                     mDefines << name;
             }
@@ -298,7 +298,7 @@ void ProjectFile::readCheckPaths(QXmlStreamReader &reader)
             // Read dir-elements
             if (reader.name().toString() == PathName) {
                 QXmlStreamAttributes attribs = reader.attributes();
-                QString name = attribs.value("", PathNameAttrib).toString();
+                QString name = attribs.value(QString(), PathNameAttrib).toString();
                 if (!name.isEmpty())
                     mPaths << name;
             }
@@ -335,14 +335,14 @@ void ProjectFile::readExcludes(QXmlStreamReader &reader)
             // Read exclude-elements
             if (reader.name().toString() == ExcludePathName) {
                 QXmlStreamAttributes attribs = reader.attributes();
-                QString name = attribs.value("", ExcludePathNameAttrib).toString();
+                QString name = attribs.value(QString(), ExcludePathNameAttrib).toString();
                 if (!name.isEmpty())
                     mExcludedPaths << name;
             }
             // Read ignore-elements - deprecated but support reading them
             else if (reader.name().toString() == IgnorePathName) {
                 QXmlStreamAttributes attribs = reader.attributes();
-                QString name = attribs.value("", IgnorePathNameAttrib).toString();
+                QString name = attribs.value(QString(), IgnorePathNameAttrib).toString();
                 if (!name.isEmpty())
                     mExcludedPaths << name;
             }
