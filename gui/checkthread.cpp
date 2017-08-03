@@ -72,15 +72,7 @@ void CheckThread::run()
         return;
     }
 
-    QString addonPath;
-    if (QFileInfo(mDataDir + "/threadsafety.py").exists())
-        addonPath = mDataDir;
-    else if (QDir(mDataDir + "/addons").exists())
-        addonPath = mDataDir + "/addons";
-    else if (mDataDir.endsWith("/cfg")) {
-        if (QDir(mDataDir.mid(0,mDataDir.size()-3) + "addons").exists())
-            addonPath = mDataDir.mid(0,mDataDir.size()-3) + "addons";
-    }
+    QString addonPath = getAddonPath();
 
     bool needDump = mAddons.contains("y2038") || mAddons.contains("threadsafety") || mAddons.contains("cert") || mAddons.contains("misra");
     QString file = mResult.getNextFile();
@@ -180,6 +172,18 @@ void CheckThread::stop()
 {
     mState = Stopping;
     mCppcheck.terminate();
+}
+
+QString CheckThread::getAddonPath() const {
+    if (QFileInfo(mDataDir + "/threadsafety.py").exists())
+        return mDataDir;
+    else if (QDir(mDataDir + "/addons").exists())
+        return mDataDir + "/addons";
+    else if (mDataDir.endsWith("/cfg")) {
+        if (QDir(mDataDir.mid(0,mDataDir.size()-3) + "addons").exists())
+            return mDataDir.mid(0,mDataDir.size()-3) + "addons";
+    }
+    return QString();
 }
 
 void CheckThread::parseAddonErrors(QString err, QString tool)

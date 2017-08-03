@@ -106,6 +106,8 @@ protected:
     CppCheck mCppcheck;
 
 private:
+    QString getAddonPath() const;
+
     void parseAddonErrors(QString err, QString tool);
     void parseClangErrors(QString err);
 
