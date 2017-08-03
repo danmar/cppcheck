@@ -109,8 +109,7 @@ void CheckThread::run()
                 qDebug() << cmd;
                 process.start(cmd);
                 process.waitForFinished();
-                QString err(process.readAllStandardError());
-                parseErrors(err, addon);
+                parseAddonErrors(process.readAllStandardError(), addon);
             }
         }
         emit fileChecked(file);
@@ -145,6 +144,7 @@ void CheckThread::run()
                     qDebug() << cmd;
                     process.start(cmd);
                     process.waitForFinished(600*1000);
+                    parseClangErrors(process.readAllStandardError());
                 } else {
                     QString a;
                     if (QFileInfo(addonPath + '/' + addon + ".py").exists())
@@ -158,9 +158,8 @@ void CheckThread::run()
                     qDebug() << cmd;
                     process.start(cmd);
                     process.waitForFinished();
+                    parseAddonErrors(process.readAllStandardError(), addon);
                 }
-                QString err(process.readAllStandardError());
-                parseErrors(err, addon);
             }
         }
         emit fileChecked(file);
@@ -183,45 +182,49 @@ void CheckThread::stop()
     mCppcheck.terminate();
 }
 
-void CheckThread::parseErrors(QString err, QString tool)
+void CheckThread::parseAddonErrors(QString err, QString tool)
 {
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
+        QRegExp r1("\\[([^:]+):([0-9]+)\\](.*)");
+        if (!r1.exactMatch(line))
+            continue;
+        const std::string &filename = r1.cap(1).toStdString();
+        const int lineNumber = r1.cap(2).toInt();
 
-        if (tool == "clang") {
-            QRegExp r("([^:]+):([0-9]+):[0-9]+: (warning|error): (.*)");
-            if (!r.exactMatch(line))
-                continue;
-            const std::string filename = r.cap(1).toStdString();
-            const int lineNumber = r.cap(2).toInt();
-            Severity::SeverityType severity = (r.cap(3) == "error") ? Severity::error : Severity::warning;
-            const std::string message = r.cap(4).toStdString();
-            const std::string id = tool.toStdString();
-            std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-            callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
-            ErrorLogger::ErrorMessage errmsg(callstack, filename, severity, message, id, false);
-            mResult.reportErr(errmsg);
+        std::string message, id;
+        QRegExp r2("(.*)\\[([a-zA-Z0-9\\-\\._]+)\\]");
+        if (r2.exactMatch(r1.cap(3))) {
+            message = r2.cap(1).toStdString();
+            id = tool.toStdString() + '-' + r2.cap(2).toStdString();
         } else {
-            QRegExp r1("\\[([^:]+):([0-9]+)\\](.*)");
-            if (!r1.exactMatch(line))
-                continue;
-            const std::string &filename = r1.cap(1).toStdString();
-            const int lineNumber = r1.cap(2).toInt();
-
-            std::string message, id;
-            QRegExp r2("(.*)\\[([a-zA-Z0-9\\-\\._]+)\\]");
-            if (r2.exactMatch(r1.cap(3))) {
-                message = r2.cap(1).toStdString();
-                id = tool.toStdString() + '-' + r2.cap(2).toStdString();
-            } else {
-                message = r1.cap(3).toStdString();
-                id = tool.toStdString();
-            }
-            std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-            callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
-            ErrorLogger::ErrorMessage errmsg(callstack, filename, Severity::style, message, id, false);
-            mResult.reportErr(errmsg);
+            message = r1.cap(3).toStdString();
+            id = tool.toStdString();
         }
+        std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+        callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
+        ErrorLogger::ErrorMessage errmsg(callstack, filename, Severity::style, message, id, false);
+        mResult.reportErr(errmsg);
+    }
+}
+
+void CheckThread::parseClangErrors(QString err)
+{
+    QTextStream in(&err, QIODevice::ReadOnly);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        QRegExp r("([^:]+):([0-9]+):[0-9]+: (warning|error): (.*)");
+        if (!r.exactMatch(line))
+            continue;
+        const std::string filename = r.cap(1).toStdString();
+        const int lineNumber = r.cap(2).toInt();
+        Severity::SeverityType severity = (r.cap(3) == "error") ? Severity::error : Severity::warning;
+        const std::string message = r.cap(4).toStdString();
+        const std::string id = "clang";
+        std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+        callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
+        ErrorLogger::ErrorMessage errmsg(callstack, filename, severity, message, id, false);
+        mResult.reportErr(errmsg);
     }
 }

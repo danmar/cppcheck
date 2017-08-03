@@ -106,7 +106,8 @@ protected:
     CppCheck mCppcheck;
 
 private:
-    void parseErrors(QString err, QString tool);
+    void parseAddonErrors(QString err, QString tool);
+    void parseClangErrors(QString err);
 
     QStringList mFiles;
     bool mAnalyseWholeProgram;
