@@ -46,6 +46,7 @@ void ThreadHandler::clearFiles()
     mLastFiles.clear();
     mResults.clearFiles();
     mAnalyseWholeProgram = false;
+    mAddons.clear();
 }
 
 void ThreadHandler::setFiles(const QStringList &files)
@@ -91,6 +92,8 @@ void ThreadHandler::check(const Settings &settings, bool all)
     }
 
     for (int i = 0; i < mRunningThreadCount; i++) {
+        mThreads[i]->setAddons(mAddons);
+        mThreads[i]->setDataDir(mDataDir);
         mThreads[i]->check(settings);
     }
 
@@ -125,7 +128,6 @@ void ThreadHandler::setThreadCount(const int count)
         connect(mThreads.last(), &CheckThread::fileChecked,
                 &mResults, &ThreadResult::fileChecked);
     }
-
 }
 
 

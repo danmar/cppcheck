@@ -50,6 +50,8 @@ static const char LibrariesElementName[] = "libraries";
 static const char LibraryElementName[] = "library";
 static const char SuppressionsElementName[] = "suppressions";
 static const char SuppressionElementName[] = "suppression";
+static const char AddonElementName[] = "addon";
+static const char AddonsElementName[] = "addons";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -121,6 +123,10 @@ bool ProjectFile::read(const QString &filename)
             // Find suppressions list from inside project element
             if (insideProject && xmlReader.name() == SuppressionsElementName)
                 readStringList(mSuppressions, xmlReader,SuppressionElementName);
+
+            // Addons
+            if (insideProject && xmlReader.name() == AddonsElementName)
+                readStringList(mAddons, xmlReader, AddonElementName);
 
             break;
 
@@ -433,6 +439,11 @@ void ProjectFile::setSuppressions(const QStringList &suppressions)
     mSuppressions = suppressions;
 }
 
+void ProjectFile::setAddons(const QStringList &addons)
+{
+    mAddons = addons;
+}
+
 bool ProjectFile::write(const QString &filename)
 {
     if (!filename.isEmpty())
@@ -515,6 +526,11 @@ bool ProjectFile::write(const QString &filename)
                     mSuppressions,
                     SuppressionsElementName,
                     SuppressionElementName);
+
+    writeStringList(xmlWriter,
+                    mAddons,
+                    AddonsElementName,
+                    AddonElementName);
 
     xmlWriter.writeEndDocument();
     file.close();

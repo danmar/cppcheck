@@ -52,6 +52,14 @@ public:
     */
     void analyseWholeProgram(const QStringList &files);
 
+    void setAddons(const QStringList &addons) {
+        mAddons = addons;
+    }
+
+    void setDataDir(const QString &dataDir) {
+        mDataDir = dataDir;
+    }
+
     /**
     * @brief method that is run in a thread
     *
@@ -94,13 +102,16 @@ protected:
     ThreadResult &mResult;
     /**
     * @brief Cppcheck itself
-    *
     */
     CppCheck mCppcheck;
 
 private:
+    void parseErrors(QString err, QString tool);
+
     QStringList mFiles;
     bool mAnalyseWholeProgram;
+    QStringList mAddons;
+    QString mDataDir;
 };
 /// @}
 #endif // CHECKTHREAD_H

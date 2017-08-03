@@ -71,6 +71,14 @@ public:
     */
     void saveSettings(QSettings &settings) const;
 
+    void setAddons(const QStringList &addons) {
+        mAddons = addons;
+    }
+
+    void setDataDir(const QString &dataDir) {
+        mDataDir = dataDir;
+    }
+
     /**
     * @brief Clear all files from cppcheck
     *
@@ -236,6 +244,10 @@ protected:
     int mRunningThreadCount;
 
     bool mAnalyseWholeProgram;
+
+    QStringList mAddons;
+
+    QString mDataDir;
 private:
 
     /**

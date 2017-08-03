@@ -18,6 +18,9 @@
 
 #include <QString>
 #include <QDebug>
+#include <QDir>
+#include <QFileInfo>
+#include <QProcess>
 #include "checkthread.h"
 #include "threadresult.h"
 #include "cppcheck.h"
@@ -69,10 +72,47 @@ void CheckThread::run()
         return;
     }
 
+    QString addonPath;
+    if (QFileInfo(mDataDir + "/threadsafety.py").exists())
+        addonPath = mDataDir;
+    else if (QDir(mDataDir + "/addons").exists())
+        addonPath = mDataDir + "/addons";
+    else if (mDataDir.endsWith("/cfg")) {
+        if (QDir(mDataDir.mid(0,mDataDir.size()-3) + "addons").exists())
+            addonPath = mDataDir.mid(0,mDataDir.size()-3) + "addons";
+    }
+
+    bool needDump = mAddons.contains("y2038") || mAddons.contains("threadsafety") || mAddons.contains("cert") || mAddons.contains("misra");
     QString file = mResult.getNextFile();
     while (!file.isEmpty() && mState == Running) {
         qDebug() << "Checking file" << file;
         mCppcheck.check(file.toStdString());
+        if (!mAddons.isEmpty()) {
+            if (needDump) {
+                mCppcheck.settings().dump = true;
+                mCppcheck.check(file.toStdString());
+                mCppcheck.settings().dump = false;
+            }
+            foreach (const QString addon, mAddons) {
+                if (addon == "clang")
+                    continue;
+                QProcess process;
+                QString a;
+                if (QFileInfo(addonPath + '/' + addon + ".py").exists())
+                    a = addonPath + '/' + addon + ".py";
+                else if (QFileInfo(addonPath + '/' + addon + '/' + addon + ".py").exists())
+                    a = addonPath + '/' + addon + '/' + addon + ".py";
+                else
+                    continue;
+                QString dumpFile = QString::fromStdString(file + ".dump");
+                QString cmd = "python " + a + ' ' + dumpFile;
+                qDebug() << cmd;
+                process.start(cmd);
+                process.waitForFinished();
+                QString err(process.readAllStandardError());
+                parseErrors(err, addon);
+            }
+        }
         emit fileChecked(file);
 
         if (mState == Running)
@@ -84,6 +124,45 @@ void CheckThread::run()
         file = QString::fromStdString(fileSettings.filename);
         qDebug() << "Checking file" << file;
         mCppcheck.check(fileSettings);
+        if (!mAddons.isEmpty()) {
+            if (needDump) {
+                mCppcheck.settings().dump = true;
+                mCppcheck.check(fileSettings);
+                mCppcheck.settings().dump = false;
+            }
+            foreach (const QString addon, mAddons) {
+                QProcess process;
+                if (addon == "clang") {
+                    QString cmd("clang --analyze");
+                    for (std::list<std::string>::const_iterator I = fileSettings.includePaths.begin(); I != fileSettings.includePaths.end(); ++I)
+                        cmd += " -I" + QString::fromStdString(*I);
+                    foreach (QString D, QString::fromStdString(fileSettings.defines).split(";"))
+                    cmd += " -D" + D;
+                    QString fileName = QString::fromStdString(fileSettings.filename);
+                    if (fileName.endsWith(".cpp"))
+                        cmd += " -std=c++11";
+                    cmd += ' ' + fileName;
+                    qDebug() << cmd;
+                    process.start(cmd);
+                    process.waitForFinished(600*1000);
+                } else {
+                    QString a;
+                    if (QFileInfo(addonPath + '/' + addon + ".py").exists())
+                        a = addonPath + '/' + addon + ".py";
+                    else if (QFileInfo(addonPath + '/' + addon + '/' + addon + ".py").exists())
+                        a = addonPath + '/' + addon + '/' + addon + ".py";
+                    else
+                        continue;
+                    QString dumpFile = QString::fromStdString(fileSettings.filename + ".dump");
+                    QString cmd = "python " + a + ' ' + dumpFile;
+                    qDebug() << cmd;
+                    process.start(cmd);
+                    process.waitForFinished();
+                }
+                QString err(process.readAllStandardError());
+                parseErrors(err, addon);
+            }
+        }
         emit fileChecked(file);
 
         if (mState == Running)
@@ -102,4 +181,47 @@ void CheckThread::stop()
 {
     mState = Stopping;
     mCppcheck.terminate();
+}
+
+void CheckThread::parseErrors(QString err, QString tool)
+{
+    QTextStream in(&err, QIODevice::ReadOnly);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+
+        if (tool == "clang") {
+            QRegExp r("([^:]+):([0-9]+):[0-9]+: (warning|error): (.*)");
+            if (!r.exactMatch(line))
+                continue;
+            const std::string filename = r.cap(1).toStdString();
+            const int lineNumber = r.cap(2).toInt();
+            Severity::SeverityType severity = (r.cap(3) == "error") ? Severity::error : Severity::warning;
+            const std::string message = r.cap(4).toStdString();
+            const std::string id = tool.toStdString();
+            std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+            callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
+            ErrorLogger::ErrorMessage errmsg(callstack, filename, severity, message, id, false);
+            mResult.reportErr(errmsg);
+        } else {
+            QRegExp r1("\\[([^:]+):([0-9]+)\\](.*)");
+            if (!r1.exactMatch(line))
+                continue;
+            const std::string &filename = r1.cap(1).toStdString();
+            const int lineNumber = r1.cap(2).toInt();
+
+            std::string message, id;
+            QRegExp r2("(.*)\\[([a-zA-Z0-9\\-\\._]+)\\]");
+            if (r2.exactMatch(r1.cap(3))) {
+                message = r2.cap(1).toStdString();
+                id = tool.toStdString() + '-' + r2.cap(2).toStdString();
+            } else {
+                message = r1.cap(3).toStdString();
+                id = tool.toStdString();
+            }
+            std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+            callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
+            ErrorLogger::ErrorMessage errmsg(callstack, filename, Severity::style, message, id, false);
+            mResult.reportErr(errmsg);
+        }
+    }
 }

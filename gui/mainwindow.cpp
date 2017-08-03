@@ -66,6 +66,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 {
     mUI.setupUi(this);
     mThread = new ThreadHandler(this);
+    mThread->setDataDir(mSettings->value("DATADIR", QString()).toString());
     mUI.mResults->initialize(mSettings, mApplications, mThread);
 
     // Filter timer to delay filtering results slightly while typing
@@ -411,6 +412,8 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     }
 
     //mThread->SetanalyzeProject(true);
+    if (mProjectFile)
+        mThread->setAddons(mProjectFile->getAddons());
     mThread->setProject(p);
     mThread->check(checkSettings, true);
 }
@@ -1363,6 +1366,8 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
 {
     QFileInfo inf(projectFile->getFilename());
     const QString rootpath = projectFile->getRootPath();
+
+    mThread->setAddons(projectFile->getAddons());
 
     // If the root path is not given or is not "current dir", use project
     // file's location directory as root path

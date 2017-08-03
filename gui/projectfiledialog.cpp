@@ -141,6 +141,11 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     setSuppressions(projectFile->getSuppressions());
+    mUI.mAddonThreadSafety->setChecked(projectFile->getAddons().contains("threadsafety"));
+    mUI.mAddonY2038->setChecked(projectFile->getAddons().contains("y2038"));
+    mUI.mAddonCert->setChecked(projectFile->getAddons().contains("cert"));
+    mUI.mAddonMisra->setChecked(projectFile->getAddons().contains("misra"));
+    mUI.mClang->setChecked(projectFile->getAddons().contains("clang"));
     updatePathsAndDefines();
 }
 
@@ -155,6 +160,18 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setExcludedPaths(getExcludedPaths());
     projectFile->setLibraries(getLibraries());
     projectFile->setSuppressions(getSuppressions());
+    QStringList list;
+    if (mUI.mAddonThreadSafety->isChecked())
+        list << "threadsafety";
+    if (mUI.mAddonY2038->isChecked())
+        list << "y2038";
+    if (mUI.mAddonCert->isChecked())
+        list << "cert";
+    if (mUI.mAddonMisra->isChecked())
+        list << "misra";
+    if (mUI.mClang->isChecked())
+        list << "clang";
+    projectFile->setAddons(list);
 }
 
 void ProjectFileDialog::ok()
@@ -224,7 +241,7 @@ void ProjectFileDialog::browseImportProject()
     const QDir &dir = inf.absoluteDir();
     QString fileName = QFileDialog::getOpenFileName(this, tr("Import Project"),
                        dir.canonicalPath(),
-                       tr("Visual Studio (*.sln *.vcxproj);;Compile database (compile_database.json)"));
+                       tr("Visual Studio (*.sln *.vcxproj);;Compile database (compile_commands.json)"));
     if (!fileName.isEmpty()) {
         mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
         updatePathsAndDefines();

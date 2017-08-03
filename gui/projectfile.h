@@ -111,6 +111,14 @@ public:
     }
 
     /**
+    * @brief Get list addons.
+    * @return list of addons.
+    */
+    QStringList getAddons() const {
+        return mAddons;
+    }
+
+    /**
     * @brief Get filename for the project file.
     * @return file name.
     */
@@ -170,6 +178,12 @@ public:
      * @param suppressions List of suppressions.
      */
     void setSuppressions(const QStringList &suppressions);
+
+    /**
+     * @brief Set list of addons.
+     * @param addons List of addons.
+     */
+    void setAddons(const QStringList &addons);
 
     /**
      * @brief Write project file (to disk).
@@ -297,6 +311,11 @@ private:
      * @brief List of suppressions.
      */
     QStringList mSuppressions;
+
+    /**
+     * @brief List of addons.
+     */
+    QStringList mAddons;
 };
 /// @}
 #endif  // PROJECT_FILE_H
