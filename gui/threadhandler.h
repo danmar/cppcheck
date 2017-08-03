@@ -103,7 +103,6 @@ public:
     * @brief Start the threads to check the files
     *
     * @param settings Settings for checking
-    * @param all true if all files, false if modified files
     */
     void check(const Settings &settings);
 
