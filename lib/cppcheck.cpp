@@ -360,7 +360,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
                 // dump xml if --dump
                 if (_settings.dump && fdump.is_open()) {
-                    fdump << "<dump cfg=\"" << cfg << "\">" << std::endl;
+                    fdump << "<dump cfg=\"" << ErrorLogger::toxml(cfg) << "\">" << std::endl;
                     preprocessor.dump(fdump);
                     _tokenizer.dump(fdump);
                     fdump << "</dump>" << std::endl;
