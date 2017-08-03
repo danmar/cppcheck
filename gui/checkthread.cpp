@@ -116,11 +116,13 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
             QString cmd("clang --analyze");
             for (std::list<std::string>::const_iterator I = fileSettings->includePaths.begin(); I != fileSettings->includePaths.end(); ++I)
                 cmd += " -I" + QString::fromStdString(*I);
+            for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin(); i != fileSettings->systemIncludePaths.end(); ++i)
+                cmd += " -isystem " + QString::fromStdString(*i);
             foreach (QString D, QString::fromStdString(fileSettings->defines).split(";")) {
                 cmd += " -D" + D;
             }
-            if (fileName.endsWith(".cpp"))
-                cmd += " -std=c++11";
+            if (!fileSettings->standard.empty())
+                cmd += " -std=" + QString::fromStdString(fileSettings->standard);
             cmd += ' ' + fileName;
             qDebug() << cmd;
 
