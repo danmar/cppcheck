@@ -513,7 +513,7 @@
        <item>
         <widget class="QCheckBox" name="mClang">
          <property name="text">
-          <string>clang</string>
+          <string>clang (experimental)</string>
          </property>
         </widget>
        </item>
