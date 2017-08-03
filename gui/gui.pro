@@ -22,8 +22,13 @@ MOC_DIR = temp
 OBJECTS_DIR = temp
 UI_DIR = temp
 
-QMAKE_CC = $$(CC)
-QMAKE_CXX = $$(CXX)
+isEmpty(QMAKE_CXX) {
+    isEmpty(CXX)) {
+        QMAKE_CXX = gcc
+    } else {
+        QMAKE_CXX = $$(CXX)
+    }
+}
 
 win32 {
    CONFIG += windows
