@@ -46,6 +46,8 @@ public:
         std::string defines;
         std::set<std::string> undefs;
         std::list<std::string> includePaths;
+        std::list<std::string> systemIncludePaths;
+        std::string standard;
         cppcheck::Platform::PlatformType platformType;
 
         void setDefines(std::string defs);
