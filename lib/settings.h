@@ -84,6 +84,7 @@ public:
 
     /** @brief Is --dump given? */
     bool dump;
+    std::string dumpFile;
 
     /** @brief Is --exception-handling given */
     bool exceptionHandling;

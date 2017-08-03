@@ -107,7 +107,7 @@ void CheckThread::run()
 
 void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName)
 {
-    bool hasdump = false;
+    QString dumpFile;
 
     foreach (const QString addon, mAddons) {
         if (addon == "clang") {
@@ -139,22 +139,25 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
             else
                 continue;
 
-            if (!hasdump) {
-                // TODO: Generate dump file in buildDir.
-                // Otherwise a mutex might be needed
+            if (dumpFile.isEmpty()) {
                 const std::string buildDir = mCppcheck.settings().buildDir;
                 mCppcheck.settings().buildDir.clear();
                 mCppcheck.settings().dump = true;
+                if (!buildDir.empty()) {
+                    mCppcheck.settings().dumpFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileName.toStdString(), fileSettings ? fileSettings->cfg : std::string()) + ".dump";
+                    dumpFile = QString::fromStdString(mCppcheck.settings().dumpFile);
+                } else {
+                    dumpFile = fileName + ".dump";
+                }
                 if (fileSettings)
                     mCppcheck.check(*fileSettings);
                 else
                     mCppcheck.check(fileName.toStdString());
                 mCppcheck.settings().dump = false;
+                mCppcheck.settings().dumpFile.clear();
                 mCppcheck.settings().buildDir = buildDir;
-                hasdump = true;
             }
 
-            QString dumpFile = fileName + ".dump";
             QString cmd = "python " + a + ' ' + dumpFile;
             qDebug() << cmd;
             QProcess process;

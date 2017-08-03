@@ -179,7 +179,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         // write dump file xml prolog
         std::ofstream fdump;
         if (_settings.dump) {
-            const std::string dumpfile(filename + ".dump");
+            const std::string dumpfile(_settings.dumpFile.empty() ? (filename + ".dump") : _settings.dumpFile);
             fdump.open(dumpfile.c_str());
             if (fdump.is_open()) {
                 fdump << "<?xml version=\"1.0\"?>" << std::endl;
