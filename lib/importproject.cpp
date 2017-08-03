@@ -227,6 +227,18 @@ void ImportProject::importCompileCommands(std::istream &istr)
                         fs.undefs.insert(fval);
                     else if (F=='I')
                         fs.includePaths.push_back(fval);
+                    else if (F=='s' && fval.compare(0,3,"td=") == 0)
+                        fs.standard = fval.substr(3);
+                    else if (F == 'i' && fval == "system") {
+                        ++pos;
+                        std::string isystem;
+                        while (pos < command.size() && command[pos] != ' ') {
+                            if (command[pos] != '\\')
+                                isystem += command[pos];
+                            pos++;
+                        }
+                        fs.systemIncludePaths.push_back(isystem);
+                    }
                 }
                 std::map<std::string, std::string> variables;
                 fs.setIncludePaths(directory, fs.includePaths, variables);
