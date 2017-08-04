@@ -122,6 +122,41 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                 args << "--analyze";
             else
                 args << "-checks=*,-clang*,-llvm*" << fileName << "--";
+#ifdef Q_OS_WIN
+            // To create compile_commands.json in windows see:
+            // https://bitsmaker.gitlab.io/post/clang-tidy-from-vs2015/
+
+            // TODO: How do we configure the include paths in windows
+            // Example: C:\Qt\Tools\mingw530_32\i686-w64-mingw32\include\c++
+            bool found = false;
+            if (QDir("c:/Qt/Tools").exists()) {
+                QDir dir("C:/Qt/Tools");
+                foreach (QString subdir1, dir.entryList(QDir::AllDirs)) {
+                    if (found || !subdir1.startsWith("mingw"))
+                        continue;
+                    QDir mingw1(dir.absolutePath() + '/' + subdir1);
+                    foreach (QString subdir2, mingw1.entryList(QDir::AllDirs)) {
+                        if (!QRegExp("i686-w(32|64)-mingw32").exactMatch(subdir2))
+                            continue;
+                        QString includepath = mingw1.absolutePath() + '/' + subdir2 + "/include";
+                        if (QDir(includepath).exists()) {
+                            found = true;
+                            args << "-isystem" << includepath;
+                            args << "-isystem" << (includepath+"/c++");
+                            args << "-isystem" << (includepath+"/c++/" + subdir2);
+                            args << "-fno-ms-compatibility";
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            // If there are no include files.. bailout
+            // Fixme : Tell user!
+            if (!found)
+                continue;
+#endif
             for (std::list<std::string>::const_iterator I = fileSettings->includePaths.begin(); I != fileSettings->includePaths.end(); ++I)
                 args << ("-I" + QString::fromStdString(*I));
             for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin(); i != fileSettings->systemIncludePaths.end(); ++i)
