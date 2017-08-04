@@ -117,26 +117,28 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
             if (!fileSettings)
                 continue;
 
-            QString args;
+            QStringList args;
+            if (addon == CLANG)
+                args << "--analyze";
+            else
+                args << "-checks=*,-clang*,-llvm*" << fileName << "--";
             for (std::list<std::string>::const_iterator I = fileSettings->includePaths.begin(); I != fileSettings->includePaths.end(); ++I)
-                args += " -I" + QString::fromStdString(*I);
+                args << ("-I" + QString::fromStdString(*I));
             for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin(); i != fileSettings->systemIncludePaths.end(); ++i)
-                args += " -isystem " + QString::fromStdString(*i);
+                args << "-isystem" << QString::fromStdString(*i);
             foreach (QString D, QString::fromStdString(fileSettings->defines).split(";")) {
-                args += " -D" + D;
+                args << ("-D" + D);
             }
             if (!fileSettings->standard.empty())
-                args += " -std=" + QString::fromStdString(fileSettings->standard);
-
-            QString cmd;
+                args << (" -std=" + QString::fromStdString(fileSettings->standard));
             if (addon == CLANG)
-                cmd = addon + " --analyze" + args + ' ' + fileName;
-            else
-                cmd = addon + " -checks=*,-clang*,-llvm* " + fileName + " -- " + args;
-            qDebug() << cmd;
+                args << fileName;
+
+            const QString cmd(mClangPath.isEmpty() ? addon : (mClangPath + '/' + addon + ".exe"));
+            qDebug() << cmd << args;
 
             QProcess process;
-            process.start(cmd);
+            process.start(cmd, args);
             process.waitForFinished(600*1000);
             if (addon == CLANG)
                 parseClangErrors(process.readAllStandardError());
@@ -231,7 +233,7 @@ void CheckThread::parseClangErrors(QString err)
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QRegExp r("([^:]+):([0-9]+):[0-9]+: (warning|error|fatal error): (.*)");
+        QRegExp r("(.+):([0-9]+):[0-9]+: (warning|error|fatal error): (.*)");
         if (!r.exactMatch(line))
             continue;
         const std::string filename = r.cap(1).toStdString();

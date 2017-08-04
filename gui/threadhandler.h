@@ -75,6 +75,10 @@ public:
         mAddons = addons;
     }
 
+    void setClangPath(const QString &p) {
+        mClangPath = p;
+    }
+
     void setDataDir(const QString &dataDir) {
         mDataDir = dataDir;
     }
@@ -183,9 +187,6 @@ public slots:
     */
     void stop();
 protected slots:
-
-
-
     /**
     * @brief Slot that a single thread is done
     *
@@ -245,6 +246,7 @@ protected:
     bool mAnalyseWholeProgram;
 
     QStringList mAddons;
+    QString mClangPath;
 
     QString mDataDir;
 private:

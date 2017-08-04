@@ -412,8 +412,14 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     }
 
     //mThread->SetanalyzeProject(true);
-    if (mProjectFile)
+    if (mProjectFile) {
         mThread->setAddons(mProjectFile->getAddons());
+#ifdef Q_OS_WIN
+        // Try to autodetect clang
+        if (QFileInfo("C:/Program Files/LLVM/bin/clang.exe").exists())
+            mThread->setClangPath("C:/Program Files/LLVM/bin");
+#endif
+    }
     mThread->setProject(p);
     mThread->check(checkSettings);
 }

@@ -60,6 +60,10 @@ public:
         mDataDir = dataDir;
     }
 
+    void setClangPath(const QString &p) {
+        mClangPath = p;
+    }
+
     /**
     * @brief method that is run in a thread
     *
@@ -117,6 +121,7 @@ private:
     bool mAnalyseWholeProgram;
     QStringList mAddons;
     QString mDataDir;
+    QString mClangPath;
 };
 /// @}
 #endif // CHECKTHREAD_H
