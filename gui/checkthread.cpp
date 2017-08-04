@@ -25,6 +25,9 @@
 #include "threadresult.h"
 #include "cppcheck.h"
 
+static const char CLANG[] = "clang";
+static const char CLANGTIDY[] = "clang-tidy";
+
 CheckThread::CheckThread(ThreadResult &result) :
     mState(Ready),
     mResult(result),
@@ -110,26 +113,35 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
     QString dumpFile;
 
     foreach (const QString addon, mAddons) {
-        if (addon == "clang") {
+        if (addon == CLANG || addon == CLANGTIDY) {
             if (!fileSettings)
                 continue;
-            QString cmd("clang --analyze");
+
+            QString args;
             for (std::list<std::string>::const_iterator I = fileSettings->includePaths.begin(); I != fileSettings->includePaths.end(); ++I)
-                cmd += " -I" + QString::fromStdString(*I);
+                args += " -I" + QString::fromStdString(*I);
             for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin(); i != fileSettings->systemIncludePaths.end(); ++i)
-                cmd += " -isystem " + QString::fromStdString(*i);
+                args += " -isystem " + QString::fromStdString(*i);
             foreach (QString D, QString::fromStdString(fileSettings->defines).split(";")) {
-                cmd += " -D" + D;
+                args += " -D" + D;
             }
             if (!fileSettings->standard.empty())
-                cmd += " -std=" + QString::fromStdString(fileSettings->standard);
-            cmd += ' ' + fileName;
+                args += " -std=" + QString::fromStdString(fileSettings->standard);
+
+            QString cmd;
+            if (addon == CLANG)
+                cmd = addon + " --analyze" + args + ' ' + fileName;
+            else
+                cmd = addon + " -checks=*,-clang*,-llvm* " + fileName + " -- " + args;
             qDebug() << cmd;
 
             QProcess process;
             process.start(cmd);
             process.waitForFinished(600*1000);
-            parseClangErrors(process.readAllStandardError());
+            if (addon == CLANG)
+                parseClangErrors(process.readAllStandardError());
+            else
+                parseClangErrors(process.readAllStandardOutput());
         } else {
             QString a;
             if (QFileInfo(addonPath + '/' + addon + ".py").exists())
@@ -225,8 +237,16 @@ void CheckThread::parseClangErrors(QString err)
         const std::string filename = r.cap(1).toStdString();
         const int lineNumber = r.cap(2).toInt();
         Severity::SeverityType severity = (r.cap(3) == "warning") ? Severity::warning : Severity::error;
-        const std::string message = r.cap(4).toStdString();
-        const std::string id = "clang";
+        std::string message, id;
+        QRegExp r2("(.*)\\[([a-zA-Z0-9\\-_\\.]+)\\]");
+        if (r2.exactMatch(r.cap(4))) {
+            message = r2.cap(1).toStdString();
+            id = r2.cap(2).toStdString();
+        } else {
+            message = r.cap(4).toStdString();
+            id = CLANG;
+        }
+
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
         callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
         ErrorLogger::ErrorMessage errmsg(callstack, filename, severity, message, id, false);

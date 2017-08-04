@@ -19,93 +19,48 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="mTabProject">
+     <widget class="QWidget" name="mTabTools">
       <attribute name="title">
-       <string>Project</string>
+       <string>Tools</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
+      <layout class="QVBoxLayout" name="verticalLayout_12">
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QLabel" name="mLabelProjectRoot">
-           <property name="text">
-            <string>&amp;Root:</string>
-           </property>
-           <property name="buddy">
-            <cstring>mEditProjectRoot</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="mEditProjectRoot"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QLabel" name="mLabelBuildDir">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the build dir, cppcheck stores data about each translation unit.&lt;/p&gt;&lt;p&gt;With a build dir you get whole program analysis.&lt;/p&gt;&lt;p&gt;Unchanged files will be analyzed much faster; Cppcheck skip the analysis of these files and reuse their old data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Cppcheck build dir (whole program analysis, faster analysis for unchanged files)</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="QLineEdit" name="mEditBuildDir"/>
-           </item>
-           <item>
-            <widget class="QPushButton" name="mBtnBrowseBuildDir">
-             <property name="text">
-              <string>...</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="mLayoutLibraries">
-         <item>
-          <widget class="QLabel" name="mLabelLibraries">
-           <property name="text">
-            <string>Libraries:</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QLabel" name="mLabelLibrariesNote">
+        <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</string>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
+          <string>It is common best practice to use several tools.</string>
          </property>
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_9">
+        <widget class="QCheckBox" name="mToolClang">
+         <property name="text">
+          <string>Clang</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="mToolClangTidy">
+         <property name="text">
+          <string>Clang-tidy</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_7">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>96</height>
+           <height>310</height>
           </size>
          </property>
         </spacer>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="mTabOther">
+     <widget class="QWidget" name="mTabPathsAndDefines">
       <attribute name="title">
        <string>Paths and Defines</string>
       </attribute>
@@ -356,6 +311,92 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="mTabProject">
+      <attribute name="title">
+       <string>Project</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QLabel" name="mLabelProjectRoot">
+           <property name="text">
+            <string>&amp;Root:</string>
+           </property>
+           <property name="buddy">
+            <cstring>mEditProjectRoot</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="mEditProjectRoot"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="mLabelBuildDir">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the build dir, cppcheck stores data about each translation unit.&lt;/p&gt;&lt;p&gt;With a build dir you get whole program analysis.&lt;/p&gt;&lt;p&gt;Unchanged files will be analyzed much faster; Cppcheck skip the analysis of these files and reuse their old data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Cppcheck build dir (whole program analysis, faster analysis for unchanged files)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLineEdit" name="mEditBuildDir"/>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mBtnBrowseBuildDir">
+             <property name="text">
+              <string>...</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="mLayoutLibraries">
+         <item>
+          <widget class="QLabel" name="mLabelLibraries">
+           <property name="text">
+            <string>Libraries:</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="mLabelLibrariesNote">
+         <property name="text">
+          <string>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_9">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>96</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="mTabExclude">
       <attribute name="title">
        <string>Exclude</string>
@@ -415,7 +456,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabSuppressions">
+     <widget class="QWidget" name="mTabSuppressions">
       <attribute name="title">
        <string>Suppressions</string>
       </attribute>
@@ -463,7 +504,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="mTabAddons">
       <attribute name="title">
        <string>Addons</string>
       </attribute>
@@ -500,20 +541,6 @@
         <widget class="QCheckBox" name="mAddonMisra">
          <property name="text">
           <string>Misra</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Other</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="mClang">
-         <property name="text">
-          <string>clang (experimental)</string>
          </property>
         </widget>
        </item>
