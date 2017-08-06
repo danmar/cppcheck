@@ -119,10 +119,6 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                 continue;
 
             QStringList args;
-            if (addon == CLANG)
-                args << "--analyze" << "-Xanalyzer" << "-analyzer-output=text";
-            else
-                args << "-checks=*,-clang*,-llvm*" << fileName << "--";
 #ifdef Q_OS_WIN
             // To create compile_commands.json in windows see:
             // https://bitsmaker.gitlab.io/post/clang-tidy-from-vs2015/
@@ -142,8 +138,54 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
             }
             if (!fileSettings->standard.empty())
                 args << (" -std=" + QString::fromStdString(fileSettings->standard));
-            if (addon == CLANG)
+
+            QString analyzerInfoFile;
+
+            const std::string &buildDir = mCppcheck.settings().buildDir;
+            if (!buildDir.empty()) {
+                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename, fileSettings->cfg));
+
+                const QString cmd(mClangPath.isEmpty() ? QString("clang") : (mClangPath + "/clang.exe"));
+                QStringList args2(args);
+                args2.insert(0,"-E");
+                args2 << fileName;
+                qDebug() << cmd << args2;
+                QProcess process;
+                process.start(cmd,args2);
+                process.waitForFinished();
+                const QByteArray &ba = process.readAllStandardOutput();
+
+                QFile f1(analyzerInfoFile + '.' + addon + "-E");
+                if (f1.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                    QTextStream in1(&f1);
+                    QString data = in1.readAll();
+                    if (data == ba) {
+                        QFile f2(analyzerInfoFile + '.' + addon + "-results");
+                        if (f2.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                            QTextStream in2(&f2);
+                            parseClangErrors(fileName, in2.readAll());
+                            continue;
+                        }
+                    }
+                    f1.close();
+                }
+                f1.open(QIODevice::WriteOnly | QIODevice::Text);
+                QTextStream out1(&f1);
+                out1 << ba;
+
+                QFile::remove(analyzerInfoFile + '.' + addon + "-results");
+            }
+
+            if (addon == CLANG) {
+                args.insert(0,"--analyze");
+                args.insert(1, "-Xanalyzer");
+                args.insert(2, "-analyzer-output=text");
                 args << fileName;
+            } else {
+                args.insert(0,"-checks=*,-clang*,-llvm*");
+                args.insert(1, fileName);
+                args.insert(2, "--");
+            }
 
             const QString cmd(mClangPath.isEmpty() ? addon : (mClangPath + '/' + addon + ".exe"));
             {
@@ -157,12 +199,15 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
             QProcess process;
             process.start(cmd, args);
             process.waitForFinished(600*1000);
-            if (addon == CLANG) {
-                const QString err(process.readAllStandardError());
-                parseClangErrors(QString::fromStdString(fileSettings->filename), err);
+            const QString errout(addon == CLANG ? process.readAllStandardError() : process.readAllStandardOutput());
+            if (!analyzerInfoFile.isEmpty()) {
+                QFile f(analyzerInfoFile + '.' + addon + "-results");
+                if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                    QTextStream out(&f);
+                    out << errout;
+                }
             }
-            else
-                parseClangErrors(QString::fromStdString(fileSettings->filename), process.readAllStandardOutput());
+            parseClangErrors(fileName, errout);
         } else {
             QString a;
             if (QFileInfo(addonPath + '/' + addon + ".py").exists())
