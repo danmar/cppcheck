@@ -115,7 +115,7 @@ private:
     void runAddons(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName);
 
     void parseAddonErrors(QString err, QString tool);
-    void parseClangErrors(QString err);
+    void parseClangErrors(const QString &file0, QString err);
 
     QStringList mFiles;
     bool mAnalyseWholeProgram;

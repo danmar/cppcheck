@@ -22,6 +22,7 @@
 #include <QFileInfo>
 #include <QProcess>
 #include "checkthread.h"
+#include "erroritem.h"
 #include "threadresult.h"
 #include "cppcheck.h"
 
@@ -119,43 +120,18 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
 
             QStringList args;
             if (addon == CLANG)
-                args << "--analyze";
+                args << "--analyze" << "-Xanalyzer" << "-analyzer-output=text";
             else
                 args << "-checks=*,-clang*,-llvm*" << fileName << "--";
 #ifdef Q_OS_WIN
             // To create compile_commands.json in windows see:
             // https://bitsmaker.gitlab.io/post/clang-tidy-from-vs2015/
 
-            // TODO: How do we configure the include paths in windows
-            // Example: C:\Qt\Tools\mingw530_32\i686-w64-mingw32\include\c++
-            bool found = false;
-            if (QDir("c:/Qt/Tools").exists()) {
-                QDir dir("C:/Qt/Tools");
-                foreach (QString subdir1, dir.entryList(QDir::AllDirs)) {
-                    if (found || !subdir1.startsWith("mingw"))
-                        continue;
-                    QDir mingw1(dir.absolutePath() + '/' + subdir1);
-                    foreach (QString subdir2, mingw1.entryList(QDir::AllDirs)) {
-                        if (!QRegExp("i686-w(32|64)-mingw32").exactMatch(subdir2))
-                            continue;
-                        QString includepath = mingw1.absolutePath() + '/' + subdir2 + "/include";
-                        if (QDir(includepath).exists()) {
-                            found = true;
-                            args << "-isystem" << includepath;
-                            args << "-isystem" << (includepath+"/c++");
-                            args << "-isystem" << (includepath+"/c++/" + subdir2);
-                            args << "-fno-ms-compatibility";
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-
-            // If there are no include files.. bailout
-            // Fixme : Tell user!
-            if (!found)
-                continue;
+            // TODO: Replace the "QDir::homePath()"
+            args << "-isystem" << (QDir::homePath() + "/include");
+            args << "-isystem" << (QDir::homePath() + "/include/c++");
+            args << "-isystem" << (QDir::homePath() + "/include/c++/i686-w64-mingw32");
+            args << "-fno-ms-compatibility";
 #endif
             for (std::list<std::string>::const_iterator I = fileSettings->includePaths.begin(); I != fileSettings->includePaths.end(); ++I)
                 args << ("-I" + QString::fromStdString(*I));
@@ -170,15 +146,23 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                 args << fileName;
 
             const QString cmd(mClangPath.isEmpty() ? addon : (mClangPath + '/' + addon + ".exe"));
-            qDebug() << cmd << args;
+            {
+                QString debug(cmd);
+                foreach (QString arg, args) {
+                    debug += ' ' + arg;
+                }
+                qDebug() << debug;
+            }
 
             QProcess process;
             process.start(cmd, args);
             process.waitForFinished(600*1000);
-            if (addon == CLANG)
-                parseClangErrors(process.readAllStandardError());
+            if (addon == CLANG) {
+                const QString err(process.readAllStandardError());
+                parseClangErrors(QString::fromStdString(fileSettings->filename), err);
+            }
             else
-                parseClangErrors(process.readAllStandardOutput());
+                parseClangErrors(QString::fromStdString(fileSettings->filename), process.readAllStandardOutput());
         } else {
             QString a;
             if (QFileInfo(addonPath + '/' + addon + ".py").exists())
@@ -263,30 +247,56 @@ void CheckThread::parseAddonErrors(QString err, QString tool)
     }
 }
 
-void CheckThread::parseClangErrors(QString err)
+void CheckThread::parseClangErrors(const QString &file0, QString err)
 {
+    QList<ErrorItem> errorItems;
+    ErrorItem errorItem;
+    QRegExp r1("(.+):([0-9]+):[0-9]+: (note|warning|error|fatal error): (.*)");
+    QRegExp r2("(.*)\\[([a-zA-Z0-9\\-_\\.]+)\\]");
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QRegExp r("(.+):([0-9]+):[0-9]+: (warning|error|fatal error): (.*)");
-        if (!r.exactMatch(line))
+        if (!r1.exactMatch(line))
             continue;
-        const std::string filename = r.cap(1).toStdString();
-        const int lineNumber = r.cap(2).toInt();
-        Severity::SeverityType severity = (r.cap(3) == "warning") ? Severity::warning : Severity::error;
-        std::string message, id;
-        QRegExp r2("(.*)\\[([a-zA-Z0-9\\-_\\.]+)\\]");
-        if (r2.exactMatch(r.cap(4))) {
-            message = r2.cap(1).toStdString();
-            id = r2.cap(2).toStdString();
+        if (r1.cap(3) != "note") {
+            errorItems.append(errorItem);
+            errorItem = ErrorItem();
+        }
+
+        errorItem.errorPath.append(QErrorPathItem());
+        errorItem.errorPath.last().file = r1.cap(1);
+        errorItem.errorPath.last().line = r1.cap(2).toInt();
+        if (r1.cap(3) == "warning")
+            errorItem.severity = Severity::SeverityType::warning;
+        else if (r1.cap(3) == "error" || r1.cap(3) == "fatal error")
+            errorItem.severity = Severity::SeverityType::error;
+
+        QString message,id;
+        if (r2.exactMatch(r1.cap(4))) {
+            message = r2.cap(1);
+            id = r2.cap(2);
         } else {
-            message = r.cap(4).toStdString();
+            message = r1.cap(4);
             id = CLANG;
         }
 
+        if (errorItem.errorPath.size() == 1) {
+            errorItem.message = message;
+            errorItem.errorId = id;
+        }
+
+        errorItem.errorPath.last().info = message;
+    }
+    errorItems.append(errorItem);
+
+    foreach (const ErrorItem &e, errorItems) {
+        if (e.errorPath.isEmpty())
+            continue;
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-        callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
-        ErrorLogger::ErrorMessage errmsg(callstack, filename, severity, message, id, false);
+        foreach (const QErrorPathItem &path, e.errorPath) {
+            callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line));
+        }
+        ErrorLogger::ErrorMessage errmsg(callstack, file0.toStdString(), errorItem.severity, errorItem.message.toStdString(), errorItem.errorId.toStdString(), false);
         mResult.reportErr(errmsg);
     }
 }
