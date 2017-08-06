@@ -558,6 +558,8 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
 
 void MainWindow::analyzeFiles()
 {
+    Settings::terminate(false);
+
     QStringList selected = selectFilesToAnalyze(QFileDialog::ExistingFiles);
 
     const QString file0 = (selected.size() ? selected[0].toLower() : QString());
@@ -1370,6 +1372,8 @@ bool MainWindow::loadLastResults()
 
 void MainWindow::analyzeProject(const ProjectFile *projectFile)
 {
+    Settings::terminate(false);
+
     QFileInfo inf(projectFile->getFilename());
     const QString rootpath = projectFile->getRootPath();
 
