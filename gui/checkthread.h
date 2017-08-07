@@ -56,6 +56,10 @@ public:
         mAddons = addons;
     }
 
+    void setVsIncludePaths(const QString &s) {
+        mVsIncludePaths = s;
+    }
+
     void setDataDir(const QString &dataDir) {
         mDataDir = dataDir;
     }
@@ -120,6 +124,7 @@ private:
     QStringList mFiles;
     bool mAnalyseWholeProgram;
     QStringList mAddons;
+    QString mVsIncludePaths;
     QString mDataDir;
     QString mClangPath;
 };

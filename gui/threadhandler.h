@@ -75,6 +75,10 @@ public:
         mAddons = addons;
     }
 
+    void setVsIncludePaths(const QString &s) {
+        mVsIncludePaths = s;
+    }
+
     void setClangPath(const QString &p) {
         mClangPath = p;
     }
@@ -246,6 +250,7 @@ protected:
     bool mAnalyseWholeProgram;
 
     QStringList mAddons;
+    QString mVsIncludePaths;
     QString mClangPath;
 
     QString mDataDir;

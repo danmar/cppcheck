@@ -54,6 +54,15 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI.mShowStatistics->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
     mUI.mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
 
+#ifdef Q_OS_WIN
+    mUI.mLabelVsInclude->setVisible(true);
+    mUI.mEditVsInclude->setVisible(true);
+    mUI.mEditVsInclude->setText(settings.value(SETTINGS_VS_INCLUDE_PATHS, QString()).toString());
+#else
+    mUI.mLabelVsInclude->setVisible(false);
+    mUI.mEditVsInclude->setVisible(false);
+    mUI.mEditVsInclude->setText(QString());
+#endif
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);
     connect(mUI.mButtons, &QDialogButtonBox::rejected, this, &SettingsDialog::reject);
     connect(mUI.mBtnAddApplication, SIGNAL(clicked()),
@@ -176,6 +185,13 @@ void SettingsDialog::saveSettingValues() const
     saveCheckboxValue(&settings, mUI.mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
     saveCheckboxValue(&settings, mUI.mShowStatistics, SETTINGS_SHOW_STATISTICS);
     saveCheckboxValue(&settings, mUI.mShowErrorId, SETTINGS_SHOW_ERROR_ID);
+
+#ifdef Q_OS_WIN
+    QString vsIncludePaths = mUI.mEditVsInclude->text();
+    if (vsIncludePaths.startsWith("INCLUDE="))
+        vsIncludePaths.remove(0, 8);
+    settings.setValue(SETTINGS_VS_INCLUDE_PATHS, vsIncludePaths);
+#endif
 
     const QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
     if (currentLang) {

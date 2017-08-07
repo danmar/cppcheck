@@ -414,6 +414,7 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     //mThread->SetanalyzeProject(true);
     if (mProjectFile) {
         mThread->setAddons(mProjectFile->getAddons());
+        mThread->setVsIncludePaths(mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString());
 #ifdef Q_OS_WIN
         // Try to autodetect clang
         if (QFileInfo("C:/Program Files/LLVM/bin/clang.exe").exists())

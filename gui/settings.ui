@@ -240,6 +240,16 @@
          </item>
         </layout>
        </item>
+       <item>
+        <widget class="QLabel" name="mLabelVsInclude">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Visual Studio include paths&lt;br/&gt;Open Visual Studio command prompt. Type &amp;quot;SET INCLUDE&amp;quot; and paste the outputs below:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="mEditVsInclude"/>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_2">

@@ -93,6 +93,7 @@ void ThreadHandler::check(const Settings &settings)
 
     for (int i = 0; i < mRunningThreadCount; i++) {
         mThreads[i]->setAddons(mAddons);
+        mThreads[i]->setVsIncludePaths(mVsIncludePaths);
         mThreads[i]->setClangPath(mClangPath);
         mThreads[i]->setDataDir(mDataDir);
         mThreads[i]->check(settings);
