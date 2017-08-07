@@ -1,4 +1,6 @@
-find_package(Qt4 4.6.1 COMPONENTS QtCore QtGui QtXML)
+set(GUI_QT_COMPONENTS Core Gui Widgets PrintSupport)
+find_package(Qt5 COMPONENTS ${GUI_QT_COMPONENTS})
+find_package(Qt5LinguistTools)
 if (HAVE_RULES)
     find_library(PCRE pcre)
     if (NOT PCRE)
