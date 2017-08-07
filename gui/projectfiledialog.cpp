@@ -221,6 +221,7 @@ void ProjectFileDialog::updatePathsAndDefines()
     bool importProject = !mUI.mEditImportProject->text().isEmpty();
     mUI.mBtnClearImportProject->setEnabled(importProject);
     mUI.mListCheckPaths->setEnabled(!importProject);
+    mUI.mListIncludeDirs->setEnabled(!importProject);
     mUI.mBtnAddCheckPath->setEnabled(!importProject);
     mUI.mBtnEditCheckPath->setEnabled(!importProject);
     mUI.mBtnRemoveCheckPath->setEnabled(!importProject);
