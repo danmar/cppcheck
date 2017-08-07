@@ -154,12 +154,13 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                 process.start(cmd,args2);
                 process.waitForFinished();
                 const QByteArray &ba = process.readAllStandardOutput();
+                const quint16 chksum = qChecksum(ba.data(), ba.length());
 
                 QFile f1(analyzerInfoFile + '.' + addon + "-E");
                 if (f1.open(QIODevice::ReadOnly | QIODevice::Text)) {
                     QTextStream in1(&f1);
-                    QString data = in1.readAll();
-                    if (data == ba) {
+                    const quint16 oldchksum = in1.readAll().toInt();
+                    if (oldchksum == chksum) {
                         QFile f2(analyzerInfoFile + '.' + addon + "-results");
                         if (f2.open(QIODevice::ReadOnly | QIODevice::Text)) {
                             QTextStream in2(&f2);
@@ -171,7 +172,7 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                 }
                 f1.open(QIODevice::WriteOnly | QIODevice::Text);
                 QTextStream out1(&f1);
-                out1 << ba;
+                out1 << chksum;
 
                 QFile::remove(analyzerInfoFile + '.' + addon + "-results");
             }
