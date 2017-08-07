@@ -493,7 +493,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
     for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
         for (std::list<ProjectConfiguration>::const_iterator p = projectConfigurationList.begin(); p != projectConfigurationList.end(); ++p) {
             FileSettings fs;
-            fs.filename = Path::simplifyPath(Path::getPathFromFilename(filename) + *c);
+            fs.filename = Path::simplifyPath(Path::isAbsolute(*c) ? *c : Path::getPathFromFilename(filename) + *c);
             fs.cfg = p->name;
             fs.defines = "_MSC_VER=1900;_WIN32=1";
             if (p->platform == ProjectConfiguration::Win32)
