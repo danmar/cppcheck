@@ -495,6 +495,8 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             FileSettings fs;
             fs.filename = Path::simplifyPath(Path::isAbsolute(*c) ? *c : Path::getPathFromFilename(filename) + *c);
             fs.cfg = p->name;
+            fs.msc = true;
+            fs.useMfc = useOfMfc;
             fs.defines = "_WIN32=1";
             if (p->platform == ProjectConfiguration::Win32)
                 fs.platformType = cppcheck::Platform::Win32W;
@@ -502,7 +504,6 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 fs.platformType = cppcheck::Platform::Win64;
                 fs.defines += ";_WIN64=1";
             }
-            fs.useMfc = useOfMfc;
             std::string additionalIncludePaths;
             for (std::list<ItemDefinitionGroup>::const_iterator i = itemDefinitionGroupList.begin(); i != itemDefinitionGroupList.end(); ++i) {
                 if (!i->conditionIsTrue(*p))
