@@ -40,15 +40,19 @@ class CPPCHECKLIB ImportProject {
 public:
     /** File settings. Multiple configurations for a file is allowed. */
     struct FileSettings {
-        FileSettings() : platformType(cppcheck::Platform::Unspecified) {}
+        FileSettings() : platformType(cppcheck::Platform::Unspecified), useMfc(false) {}
         std::string cfg;
         std::string filename;
         std::string defines;
+        std::string cppcheckDefines() const {
+            return useMfc ? (defines + ";_MSC_VER=1900;__AFXWIN_H__=1") : defines;
+        }
         std::set<std::string> undefs;
         std::list<std::string> includePaths;
         std::list<std::string> systemIncludePaths;
         std::string standard;
         cppcheck::Platform::PlatformType platformType;
+        bool useMfc;
 
         void setDefines(std::string defs);
         void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string> &variables);
