@@ -118,6 +118,9 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
             if (!fileSettings)
                 continue;
 
+            if (!fileSettings->cfg.empty() && fileSettings->cfg.find("Debug") != std::string::npos)
+                continue;
+
             QStringList args;
             for (std::list<std::string>::const_iterator I = fileSettings->includePaths.begin(); I != fileSettings->includePaths.end(); ++I)
                 args << ("-I" + QString::fromStdString(*I));
@@ -149,7 +152,7 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                 }
             }
 
-            args << "-fno-ms-compatibility";
+            args << "-U__STDC__" << "-fno-ms-compatibility";
 #endif
 
             if (!fileSettings->standard.empty())
