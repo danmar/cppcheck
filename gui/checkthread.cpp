@@ -207,7 +207,7 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
 
             const QString cmd(mClangPath.isEmpty() ? addon : (mClangPath + '/' + addon + ".exe"));
             {
-                QString debug(cmd);
+                QString debug(cmd.contains(" ") ? ('\"' + cmd + '\"') : cmd);
                 foreach (QString arg, args) {
                     if (arg.contains(" "))
                         debug += " \"" + arg + '\"';
@@ -215,6 +215,14 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                         debug += ' ' + arg;
                 }
                 qDebug() << debug;
+
+                if (!analyzerInfoFile.isEmpty()) {
+                    QFile f(analyzerInfoFile + '.' + addon + "-cmd");
+                    if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                        QTextStream out(&f);
+                        out << debug;
+                    }
+                }
             }
 
             QProcess process;
