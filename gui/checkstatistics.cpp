@@ -25,7 +25,8 @@ CheckStatistics::CheckStatistics(QObject *parent)
     clear();
 }
 
-static void addItem(QMap<QString,unsigned> &m, const QString &key) {
+static void addItem(QMap<QString,unsigned> &m, const QString &key)
+{
     if (m.contains(key))
         m[key]++;
     else

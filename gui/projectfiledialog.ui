@@ -110,6 +110,16 @@
            </item>
           </layout>
          </item>
+         <item>
+          <widget class="QCheckBox" name="mChkAllVsConfigs">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You have a choice:&lt;/p&gt;&lt;p&gt; * Analyze all Debug and Release configurations&lt;/p&gt;&lt;p&gt; * Only analyze the first matching Debug configuration&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Analyze all Visual Studio configurations</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

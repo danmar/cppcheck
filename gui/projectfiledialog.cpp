@@ -140,6 +140,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setDefines(projectFile->getDefines());
     setCheckPaths(projectFile->getCheckPaths());
     setImportProject(projectFile->getImportProject());
+    mUI.mChkAllVsConfigs->setChecked(projectFile->getAnalyzeAllVsConfigs());
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     setSuppressions(projectFile->getSuppressions());
@@ -155,6 +156,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setRootPath(getRootPath());
     projectFile->setBuildDir(getBuildDir());
     projectFile->setImportProject(getImportProject());
+    projectFile->setAnalyzeAllVsConfigs(mUI.mChkAllVsConfigs->isChecked());
     projectFile->setIncludes(getIncludePaths());
     projectFile->setDefines(getDefines());
     projectFile->setCheckPaths(getCheckPaths());
@@ -218,7 +220,8 @@ void ProjectFileDialog::browseBuildDir()
 
 void ProjectFileDialog::updatePathsAndDefines()
 {
-    bool importProject = !mUI.mEditImportProject->text().isEmpty();
+    const QString &fileName = mUI.mEditImportProject->text();
+    bool importProject = !fileName.isEmpty();
     mUI.mBtnClearImportProject->setEnabled(importProject);
     mUI.mListCheckPaths->setEnabled(!importProject);
     mUI.mListIncludeDirs->setEnabled(!importProject);
@@ -231,6 +234,7 @@ void ProjectFileDialog::updatePathsAndDefines()
     mUI.mBtnRemoveInclude->setEnabled(!importProject);
     mUI.mBtnIncludeUp->setEnabled(!importProject);
     mUI.mBtnIncludeDown->setEnabled(!importProject);
+    mUI.mChkAllVsConfigs->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
 }
 
 void ProjectFileDialog::clearImportProject()
