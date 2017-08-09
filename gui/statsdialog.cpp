@@ -29,6 +29,8 @@
 #include "statsdialog.h"
 #include "checkstatistics.h"
 
+static const QString CPPCHECK("cppcheck");
+
 StatsDialog::StatsDialog(QWidget *parent)
     : QDialog(parent),
       mStatistics(nullptr)
@@ -54,11 +56,11 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
             const QString buildDir = prjpath + '/' + projectFile->getBuildDir();
             if (QDir(buildDir).exists()) {
                 QChart *chart = new QChart();
-                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "error"));
-                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "warning"));
-                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "style"));
-                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "performance"));
-                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "portability"));
+                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "cppcheck-error"));
+                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "cppcheck-warning"));
+                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "cppcheck-style"));
+                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "cppcheck-performance"));
+                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "cppcheck-portability"));
 
                 QDateTimeAxis *axisX = new QDateTimeAxis;
                 axisX->setFormat("MMM yyyy");
@@ -154,17 +156,17 @@ void StatsDialog::pdfExport()
                          .arg(tr("Statistics"))
                          .arg(QDate::currentDate().toString("dd.MM.yyyy"))
                          .arg(tr("Errors"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowErrors))
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowErrors))
                          .arg(tr("Warnings"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowWarnings))
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowWarnings))
                          .arg(tr("Style warnings"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowStyle))
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowStyle))
                          .arg(tr("Portability warnings"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowPortability))
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPortability))
                          .arg(tr("Performance warnings"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowPerformance))
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPerformance))
                          .arg(tr("Information messages"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowInformation));
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowInformation));
 
     QString fileName = QFileDialog::getSaveFileName((QWidget*)0, tr("Export PDF"), QString(), "*.pdf");
     if (QFileInfo(fileName).suffix().isEmpty()) {
@@ -248,17 +250,17 @@ void StatsDialog::copyToClipboard()
                                )
                                .arg(stats)
                                .arg(errors)
-                               .arg(mStatistics->getCount(ShowTypes::ShowErrors))
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowErrors))
                                .arg(warnings)
-                               .arg(mStatistics->getCount(ShowTypes::ShowWarnings))
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowWarnings))
                                .arg(style)
-                               .arg(mStatistics->getCount(ShowTypes::ShowStyle))
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowStyle))
                                .arg(portability)
-                               .arg(mStatistics->getCount(ShowTypes::ShowPortability))
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPortability))
                                .arg(performance)
-                               .arg(mStatistics->getCount(ShowTypes::ShowPerformance))
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPerformance))
                                .arg(information)
-                               .arg(mStatistics->getCount(ShowTypes::ShowInformation));
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowInformation));
 
     const QString textSummary = settings + previous + statistics;
 
@@ -310,17 +312,17 @@ void StatsDialog::copyToClipboard()
                                    )
                                    .arg(stats)
                                    .arg(errors)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowErrors))
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowErrors))
                                    .arg(warnings)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowWarnings))
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowWarnings))
                                    .arg(style)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowStyle))
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowStyle))
                                    .arg(portability)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowPortability))
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPortability))
                                    .arg(performance)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowPerformance))
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPerformance))
                                    .arg(information)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowInformation));
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowInformation));
 
     const QString htmlSummary = htmlSettings + htmlPrevious + htmlStatistics;
 
@@ -333,12 +335,12 @@ void StatsDialog::copyToClipboard()
 void StatsDialog::setStatistics(const CheckStatistics *stats)
 {
     mStatistics = stats;
-    mUI.mLblErrors->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowErrors)));
-    mUI.mLblWarnings->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowWarnings)));
-    mUI.mLblStyle->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowStyle)));
-    mUI.mLblPortability->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowPortability)));
-    mUI.mLblPerformance->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowPerformance)));
-    mUI.mLblInformation->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowInformation)));
+    mUI.mLblErrors->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowErrors)));
+    mUI.mLblWarnings->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowWarnings)));
+    mUI.mLblStyle->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowStyle)));
+    mUI.mLblPortability->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowPortability)));
+    mUI.mLblPerformance->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowPerformance)));
+    mUI.mLblInformation->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowInformation)));
 }
 
 #ifdef HAVE_QCHART

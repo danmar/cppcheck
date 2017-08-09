@@ -79,6 +79,7 @@ public:
     * @return Error item as string.
     */
     QString ToString() const;
+    QString tool() const;
 
     QString file0;
     QString errorId;

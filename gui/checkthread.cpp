@@ -184,7 +184,7 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                         QFile f2(analyzerInfoFile + '.' + addon + "-results");
                         if (f2.open(QIODevice::ReadOnly | QIODevice::Text)) {
                             QTextStream in2(&f2);
-                            parseClangErrors(fileName, in2.readAll());
+                            parseClangErrors(addon, fileName, in2.readAll());
                             continue;
                         }
                     }
@@ -239,7 +239,7 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                     out << errout;
                 }
             }
-            parseClangErrors(fileName, errout);
+            parseClangErrors(addon, fileName, errout);
         } else {
             QString a;
             if (QFileInfo(addonPath + '/' + addon + ".py").exists())
@@ -324,7 +324,7 @@ void CheckThread::parseAddonErrors(QString err, QString tool)
     }
 }
 
-void CheckThread::parseClangErrors(const QString &file0, QString err)
+void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QString err)
 {
     QList<ErrorItem> errorItems;
     ErrorItem errorItem;
@@ -351,7 +351,7 @@ void CheckThread::parseClangErrors(const QString &file0, QString err)
         QString message,id;
         if (r2.exactMatch(r1.cap(4))) {
             message = r2.cap(1);
-            id = r2.cap(2);
+            id = tool + '-' + r2.cap(2);
         } else {
             message = r1.cap(4);
             id = CLANG;

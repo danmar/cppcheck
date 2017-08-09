@@ -25,26 +25,34 @@ CheckStatistics::CheckStatistics(QObject *parent)
     clear();
 }
 
-void CheckStatistics::addItem(ShowTypes::ShowType type)
+static void addItem(QMap<QString,unsigned> &m, const QString &key) {
+    if (m.contains(key))
+        m[key]++;
+    else
+        m[key] = 0;
+}
+
+void CheckStatistics::addItem(const QString &tool, ShowTypes::ShowType type)
 {
+    const QString lower = tool.toLower();
     switch (type) {
     case ShowTypes::ShowStyle:
-        mStyle++;
+        ::addItem(mStyle, tool);
         break;
     case ShowTypes::ShowWarnings:
-        mWarning++;
+        ::addItem(mWarning, tool);
         break;
     case ShowTypes::ShowPerformance:
-        mPerformance++;
+        ::addItem(mPerformance, tool);
         break;
     case ShowTypes::ShowPortability:
-        mPortability++;
+        ::addItem(mPortability, tool);
         break;
     case ShowTypes::ShowErrors:
-        mError++;
+        ::addItem(mError, tool);
         break;
     case ShowTypes::ShowInformation:
-        mInformation++;
+        ::addItem(mInformation, tool);
         break;
     case ShowTypes::ShowNone:
     default:
@@ -55,32 +63,44 @@ void CheckStatistics::addItem(ShowTypes::ShowType type)
 
 void CheckStatistics::clear()
 {
-    mStyle = 0;
-    mWarning = 0;
-    mPerformance = 0;
-    mPortability = 0;
-    mInformation = 0;
-    mError = 0;
+    mStyle.clear();
+    mWarning.clear();
+    mPerformance.clear();
+    mPortability.clear();
+    mInformation.clear();
+    mError.clear();
 }
 
-unsigned CheckStatistics::getCount(ShowTypes::ShowType type) const
+unsigned CheckStatistics::getCount(const QString &tool, ShowTypes::ShowType type) const
 {
+    const QString lower = tool.toLower();
     switch (type) {
     case ShowTypes::ShowStyle:
-        return mStyle;
+        return mStyle.value(lower,0);
     case ShowTypes::ShowWarnings:
-        return mWarning;
+        return mWarning.value(lower,0);
     case ShowTypes::ShowPerformance:
-        return mPerformance;
+        return mPerformance.value(lower,0);
     case ShowTypes::ShowPortability:
-        return mPortability;
+        return mPortability.value(lower,0);
     case ShowTypes::ShowErrors:
-        return mError;
+        return mError.value(lower,0);
     case ShowTypes::ShowInformation:
-        return mInformation;
+        return mInformation.value(lower,0);
     case ShowTypes::ShowNone:
     default:
         qDebug() << "Unknown error type - returning zero statistics.";
         return 0;
     }
+}
+
+QStringList CheckStatistics::getTools() const
+{
+    QSet<QString> ret;
+    foreach (QString tool, mStyle.keys()) ret.insert(tool);
+    foreach (QString tool, mWarning.keys()) ret.insert(tool);
+    foreach (QString tool, mPerformance.keys()) ret.insert(tool);
+    foreach (QString tool, mPortability.keys()) ret.insert(tool);
+    foreach (QString tool, mError.keys()) ret.insert(tool);
+    return QStringList(ret.toList());
 }
