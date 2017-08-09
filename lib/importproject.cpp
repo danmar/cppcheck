@@ -216,7 +216,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
                         break;
                     char F = command[pos++];
                     std::string fval;
-                    while (pos < command.size() && command[pos] != ' ') {
+                    while (pos < command.size() && command[pos] != ' ' && command[pos] != '=') {
                         if (command[pos] != '\\')
                             fval += command[pos];
                         pos++;
