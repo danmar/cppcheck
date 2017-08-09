@@ -46,6 +46,55 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
         mUI.mPaths->setText(projectFile->getCheckPaths().join(";"));
         mUI.mIncludePaths->setText(projectFile->getIncludeDirs().join(";"));
         mUI.mDefines->setText(projectFile->getDefines().join(";"));
+#ifndef HAVE_QCHART
+        mUI.mTabHistory->setVisible(false);
+#else
+        if (!projectFile->getBuildDir().isEmpty()) {
+            const QString prjpath = QFileInfo(projectFile->getFilename()).absolutePath();
+            const QString buildDir = prjpath + '/' + projectFile->getBuildDir();
+            if (QDir(buildDir).exists()) {
+                QChart *chart = new QChart();
+                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "error"));
+                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "warning"));
+                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "style"));
+                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "performance"));
+                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "portability"));
+
+                QDateTimeAxis *axisX = new QDateTimeAxis;
+                axisX->setFormat("MMM yyyy");
+                axisX->setTitleText("Date");
+                chart->addAxis(axisX, Qt::AlignBottom);
+
+                foreach (QAbstractSeries *s, chart->series()) {
+                    s->attachAxis(axisX);
+                }
+
+                QValueAxis *axisY = new QValueAxis;
+                axisY->setLabelFormat("%i");
+                axisY->setTitleText("Count");
+                chart->addAxis(axisY, Qt::AlignLeft);
+
+                qreal maxY = 0;
+                foreach (QAbstractSeries *s, chart->series()) {
+                    s->attachAxis(axisY);
+                    if (QLineSeries *ls = dynamic_cast<QLineSeries*>(s)) {
+                        foreach (QPointF p, ls->points()) {
+                            if (p.y() > maxY)
+                                maxY = p.y();
+                        }
+                    }
+                }
+                axisY->setMax(maxY);
+
+                //chart->createDefaultAxes();
+                chart->setTitle("Number of reports");
+
+                QChartView *chartView = new QChartView(chart);
+                chartView->setRenderHint(QPainter::Antialiasing);
+                mUI.mTabHistory->layout()->addWidget(chartView);
+            }
+        }
+#endif
     } else {
         mUI.mProject->setText(QString());
         mUI.mPaths->setText(QString());
@@ -291,3 +340,36 @@ void StatsDialog::setStatistics(const CheckStatistics *stats)
     mUI.mLblPerformance->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowPerformance)));
     mUI.mLblInformation->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowInformation)));
 }
+
+#ifdef HAVE_QCHART
+QLineSeries *StatsDialog::numberOfReports(const QString &fileName, const QString &severity) const
+{
+    QLineSeries *series = new QLineSeries();
+    series->setName(severity);
+    QFile f(fileName);
+    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        quint64 t = 0;
+        QTextStream in(&f);
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            QRegExp rxdate("\\[(\\d\\d)\\.(\\d\\d)\\.(\\d\\d\\d\\d)\\]");
+            if (rxdate.exactMatch(line)) {
+                int y = rxdate.cap(3).toInt();
+                int m = rxdate.cap(2).toInt();
+                int d = rxdate.cap(1).toInt();
+                QDateTime dt;
+                dt.setDate(QDate(y,m,d));
+                if (t == dt.toMSecsSinceEpoch())
+                    t += 1000;
+                else
+                    t = dt.toMSecsSinceEpoch();
+            }
+            if (line.startsWith(severity + ':')) {
+                int y = line.mid(1+severity.length()).toInt();
+                series->append(t, y);
+            }
+        }
+    }
+    return series;
+}
+#endif

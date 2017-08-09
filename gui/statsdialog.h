@@ -20,6 +20,9 @@
 #define STATSDIALOG_H
 
 #include <QDialog>
+#ifdef HAVE_QCHART
+#include <QtCharts>
+#endif
 #include "ui_stats.h"
 
 class ProjectFile;
@@ -65,7 +68,9 @@ public:
 private slots:
     void copyToClipboard();
     void pdfExport();
-
+#ifdef HAVE_QCHART
+    QLineSeries *numberOfReports(const QString &fileName, const QString &severity) const;
+#endif
 private:
     Ui::StatsDialog mUI;
     const CheckStatistics *mStatistics;
