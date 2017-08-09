@@ -146,28 +146,7 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
         long_bit = char_bit * sizeof_long;
         long_long_bit = char_bit * sizeof_long_long;
         return true;
-    case AVR8:
-        platformType = type;
-        sizeof_bool = 1;
-        sizeof_short = 2;
-        sizeof_int = 2;
-        sizeof_long = 4;
-        sizeof_long_long = 8;
-        sizeof_float = 4;
-        sizeof_double = 4;
-        sizeof_long_double = 4;
-        sizeof_wchar_t = 2;
-        sizeof_size_t = 2;
-        sizeof_pointer = 2;
-        defaultSign = '\0';
-        char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
-        return true;
     }
-
     // unsupported platform
     return false;
 }
