@@ -220,5 +220,7 @@ bool cppcheck::Platform::platformFile(const std::string &filename)
     long_bit = char_bit * sizeof_long;
     long_long_bit = char_bit * sizeof_long_long;
 
+    platformType = PlatformFile;
+
     return true;
 }
