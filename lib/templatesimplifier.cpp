@@ -1381,7 +1381,7 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
         // match parameters
         Token * tok2 = nameTok->tokAt(2);
         unsigned int typeCountInInstantiation = 1U; // There is always at least one type
-        const Token *typetok = (!typesUsedInTemplateInstantiation.empty()) ? typesUsedInTemplateInstantiation[0] : 0;
+        const Token *typetok = (!typesUsedInTemplateInstantiation.empty()) ? typesUsedInTemplateInstantiation[0] : nullptr;
         unsigned int indentlevel2 = 0;  // indentlevel for tokgt
         while (tok2 && (indentlevel2 > 0 || tok2->str() != ">")) {
             if (tok2->str() == "<" && templateParameters(tok2) > 0)

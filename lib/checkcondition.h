@@ -138,12 +138,12 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckCondition c(nullptr, settings, errorLogger);
 
-        c.assignIfError(nullptr, 0, emptyString, false);
+        c.assignIfError(nullptr, nullptr, emptyString, false);
         c.badBitmaskCheckError(nullptr);
         c.comparisonError(nullptr, "&", 6, "==", 1, false);
         c.multiConditionError(nullptr,1);
-        c.mismatchingBitAndError(nullptr, 0xf0, 0, 1);
-        c.oppositeInnerConditionError(nullptr, 0);
+        c.mismatchingBitAndError(nullptr, 0xf0, nullptr, 1);
+        c.oppositeInnerConditionError(nullptr, nullptr);
         c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false);
         c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
         c.moduloAlwaysTrueFalseError(nullptr, "1");

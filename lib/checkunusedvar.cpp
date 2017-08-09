@@ -62,7 +62,7 @@ public:
                                bool modified = false,
                                bool allocateMemory = false) :
             _var(var),
-            _lastAccess(var?var->nameToken():0),
+            _lastAccess(var ? var->nameToken() : nullptr),
             _type(type),
             _read(read),
             _write(write),
@@ -387,7 +387,7 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
         if (i != _varUsage.end())
             return &i->second;
     }
-    return 0;
+    return nullptr;
 }
 
 void Variables::enterScope()
