@@ -197,8 +197,8 @@ private:
         c.memsetError(nullptr, "memfunc", "classname", "class");
         c.memsetErrorReference(nullptr, "memfunc", "class");
         c.memsetErrorFloat(nullptr, "class");
-        c.mallocOnClassWarning(nullptr, "malloc", 0);
-        c.mallocOnClassError(nullptr, "malloc", 0, "std::string");
+        c.mallocOnClassWarning(nullptr, "malloc", nullptr);
+        c.mallocOnClassError(nullptr, "malloc", nullptr, "std::string");
         c.operatorEqReturnError(nullptr, "class");
         c.virtualDestructorError(nullptr, "Base", "Derived", false);
         c.thisSubtractionError(nullptr);
@@ -208,10 +208,10 @@ private:
         c.operatorEqToSelfError(nullptr);
         c.checkConstError(nullptr, "class", "function", false);
         c.checkConstError(nullptr, "class", "function", true);
-        c.initializerListError(nullptr, 0, "class", "variable");
+        c.initializerListError(nullptr, nullptr, "class", "variable");
         c.suggestInitializationList(nullptr, "variable");
         c.selfInitializationError(nullptr, "var");
-        c.duplInheritedMembersError(nullptr, 0, "class", "class", "variable", false, false);
+        c.duplInheritedMembersError(nullptr, nullptr, "class", "class", "variable", false, false);
         c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
     }
 

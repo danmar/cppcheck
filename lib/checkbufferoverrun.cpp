@@ -1299,7 +1299,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 continue;
             }
 
-            if (var == 0)
+            if (var == nullptr)
                 continue;
 
             const MathLib::bigint totalSize = size * static_cast<int>(sizeOfType(var->typeStartToken()));

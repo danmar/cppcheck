@@ -2379,7 +2379,7 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
         if (num2tok && num2tok->str() == "(" && !num2tok->astOperand2())
             num2tok = num2tok->astOperand1();
         if (!Token::Match(num2tok, "%num% ;|%oror%")) // TODO: || enlarges the scope of the condition, so it should not cause FP, but it should no lnger be part of this pattern as soon as valueFlowForLoop2 can handle an unknown RHS of || better
-            num2tok = 0;
+            num2tok = nullptr;
     }
     if (!num2tok)
         return false;

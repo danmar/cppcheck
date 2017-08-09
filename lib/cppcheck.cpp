@@ -134,7 +134,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         plistFile.close();
     }
 
-    CheckUnusedFunctions checkUnusedFunctions(0,0,0);
+    CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
 
     bool internalErrorFound(false);
     try {

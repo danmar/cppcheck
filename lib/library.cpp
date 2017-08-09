@@ -711,7 +711,7 @@ bool Library::isargvalid(const Token *ftok, int argnr, const MathLib::bigint arg
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
-    TokenList tokenList(0);
+    TokenList tokenList(nullptr);
     std::istringstream istr(ac->valid + ',');
     tokenList.createTokens(istr);
     for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
@@ -827,14 +827,14 @@ bool Library::isuninitargbad(const Token *ftok, int argnr) const
 const Library::AllocFunc* Library::alloc(const Token *tok) const
 {
     const std::string funcname = getFunctionName(tok);
-    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? 0 : getAllocDealloc(_alloc, funcname);
+    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(_alloc, funcname);
 }
 
 /** get deallocation info for function */
 const Library::AllocFunc* Library::dealloc(const Token *tok) const
 {
     const std::string funcname = getFunctionName(tok);
-    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? 0 : getAllocDealloc(_dealloc, funcname);
+    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(_dealloc, funcname);
 }
 
 /** get allocation id for function */

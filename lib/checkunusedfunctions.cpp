@@ -127,7 +127,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         }
 
         if (!doMarkup // only check source files
-            && settings->library.isexporter(tok->str()) && tok->next() != 0) {
+            && settings->library.isexporter(tok->str()) && tok->next() != nullptr) {
             const Token * propToken = tok->next();
             while (propToken && propToken->str() != ")") {
                 if (settings->library.isexportedprefix(tok->str(), propToken->str())) {

@@ -275,8 +275,8 @@ private:
 
         //performance
         c.redundantCopyError(nullptr,  "varname");
-        c.redundantCopyError(nullptr,  0, "var");
-        c.redundantAssignmentError(nullptr,  0, "var", false);
+        c.redundantCopyError(nullptr, nullptr, "var");
+        c.redundantAssignmentError(nullptr, nullptr, "var", false);
 
         // style/warning
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
@@ -288,15 +288,15 @@ private:
         c.unknownSignCharArrayIndexError(nullptr);
         c.charBitOpError(nullptr);
         c.variableScopeError(nullptr,  "varname");
-        c.redundantAssignmentInSwitchError(nullptr,  0, "var");
-        c.redundantCopyInSwitchError(nullptr,  0, "var");
+        c.redundantAssignmentInSwitchError(nullptr, nullptr, "var");
+        c.redundantCopyInSwitchError(nullptr, nullptr, "var");
         c.suspiciousCaseInSwitchError(nullptr,  "||");
         c.suspiciousEqualityComparisonError(nullptr);
         c.selfAssignmentError(nullptr,  "varname");
         c.clarifyCalculationError(nullptr,  "+");
         c.clarifyStatementError(nullptr);
-        c.duplicateBranchError(nullptr,  0);
-        c.duplicateExpressionError(nullptr,  0, "&&");
+        c.duplicateBranchError(nullptr, nullptr);
+        c.duplicateExpressionError(nullptr, nullptr, "&&");
         c.duplicateExpressionTernaryError(nullptr);
         c.duplicateBreakError(nullptr,  false);
         c.unreachableCodeError(nullptr,  false);
