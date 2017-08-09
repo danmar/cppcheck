@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 
 Check::Check(const std::string &aname)
-    : _tokenizer(0), _settings(0), _errorLogger(0), _name(aname)
+    : _tokenizer(nullptr), _settings(nullptr), _errorLogger(nullptr), _name(aname)
 {
     for (std::list<Check*>::iterator i = instances().begin(); i != instances().end(); ++i) {
         if ((*i)->name() > aname) {

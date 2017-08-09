@@ -26,6 +26,7 @@
 #include "suppressions.h"
 
 #include <algorithm>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -37,12 +38,10 @@
 #ifdef THREADING_MODEL_FORK
 #include <sys/select.h>
 #include <sys/wait.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 #endif
 #ifdef THREADING_MODEL_WIN
-#include <errno.h>
 #include <process.h>
 #include <windows.h>
 #endif
@@ -68,7 +67,6 @@ ThreadExecutor::~ThreadExecutor()
 {
     //dtor
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 ////// This code is for platforms that support fork() only ////////////////////
@@ -150,7 +148,7 @@ bool ThreadExecutor::checkLoadAverage(size_t nchildren)
 #if defined(__CYGWIN__) || defined(__QNX__)  // getloadavg() is unsupported on Cygwin, Qnx.
     return true;
 #else
-    if (!nchildren || !_settings.loadAverage) {
+    if (nchildren == 0 || _settings.loadAverage == 0) {
         return true;
     }
 
@@ -329,7 +327,7 @@ void ThreadExecutor::writeToPipe(PipeSignal type, const std::string &data)
     std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
     if (write(_wpipe, out, len + 1 + sizeof(len)) <= 0) {
         delete [] out;
-        out = 0;
+        out = nullptr;
         std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
         std::exit(0);
     }

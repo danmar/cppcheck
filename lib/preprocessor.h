@@ -81,7 +81,7 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    Preprocessor(Settings& settings, ErrorLogger *errorLogger = nullptr);
+    explicit Preprocessor(Settings& settings, ErrorLogger *errorLogger = nullptr);
     virtual ~Preprocessor();
 
     static bool missingIncludeFlag;

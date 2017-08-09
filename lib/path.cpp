@@ -142,7 +142,7 @@ const std::string Path::getCurrentPath()
     char currentPath[4096];
 
 #ifndef _WIN32
-    if (getcwd(currentPath, 4096) != 0)
+    if (getcwd(currentPath, 4096) != nullptr)
 #else
     if (_getcwd(currentPath, 4096) != 0)
 #endif

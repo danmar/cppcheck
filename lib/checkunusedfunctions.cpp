@@ -73,7 +73,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         FunctionUsage &usage = _functions[func->name()];
 
-        if (!usage.lineNumber)
+        if (usage.lineNumber == 0)
             usage.lineNumber = func->token->linenr();
 
         // No filename set yet..
@@ -101,7 +101,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             int scope = 0;
             bool start = true;
             // find all function calls in library code (starts with '(', not if or while etc)
-            while ((scope || start) && markupVarToken) {
+            while ((scope == 0 || start) && markupVarToken) {
                 if (markupVarToken->str() == settings->library.blockstart(FileName)) {
                     scope++;
                     if (start) {
@@ -127,7 +127,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         }
 
         if (!doMarkup // only check source files
-            && settings->library.isexporter(tok->str()) && tok->next() != 0) {
+            && settings->library.isexporter(tok->str()) && tok->next() != nullptr) {
             const Token * propToken = tok->next();
             while (propToken && propToken->str() != ")") {
                 if (settings->library.isexportedprefix(tok->str(), propToken->str())) {

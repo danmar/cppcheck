@@ -38,8 +38,8 @@ static const unsigned int AST_MAX_DEPTH = 50U;
 
 
 TokenList::TokenList(const Settings* settings) :
-    _front(0),
-    _back(0),
+    _front(nullptr),
+    _back(nullptr),
     _settings(settings),
     _isC(false),
     _isCPP(false)
@@ -67,8 +67,8 @@ const std::string& TokenList::getSourceFilePath() const
 void TokenList::deallocateTokens()
 {
     deleteTokens(_front);
-    _front = 0;
-    _back = 0;
+    _front = nullptr;
+    _back = nullptr;
     _files.clear();
 }
 
@@ -488,12 +488,12 @@ static void compileTerm(Token *&tok, AST_state& state)
         return;
     if (Token::Match(tok, "L %str%|%char%"))
         tok = tok->next();
-    if (state.inArrayAssignment && Token::Match(tok->previous(), "[{,] . %name%")) { // Jump over . in C style struct initialization
+    if (state.inArrayAssignment > 0 && Token::Match(tok->previous(), "[{,] . %name%")) { // Jump over . in C style struct initialization
         state.op.push(tok);
         tok->astOperand1(tok->next());
         tok = tok->tokAt(2);
     }
-    if (state.inArrayAssignment && Token::Match(tok->previous(), "[{,] [ %num%|%name% ]")) {
+    if (state.inArrayAssignment > 0 && Token::Match(tok->previous(), "[{,] [ %num%|%name% ]")) {
         state.op.push(tok);
         tok->astOperand1(tok->next());
         tok = tok->tokAt(3);
@@ -550,7 +550,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             if (Token::simpleMatch(tok, "} ,")) {
                 tok = tok->next();
             }
-        } else if (!state.inArrayAssignment && !Token::simpleMatch(prev, "=")) {
+        } else if (state.inArrayAssignment == 0 && !Token::simpleMatch(prev, "=")) {
             state.op.push(tok);
             tok = tok->link()->next();
         } else {
@@ -892,7 +892,7 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
             //       "The expression in the middle of the conditional operator (between ? and :) is parsed as if parenthesized: its precedence relative to ?: is ignored."
             // Hence, we rely on Tokenizer::prepareTernaryOpForAST() to add such parentheses where necessary.
             if (tok->strAt(1) == ":") {
-                state.op.push(0);
+                state.op.push(nullptr);
             }
             const unsigned int assign = state.assign;
             state.assign = 0U;

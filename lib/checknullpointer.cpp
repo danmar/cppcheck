@@ -387,7 +387,7 @@ void CheckNullPointer::nullConstantDereference()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        if (scope->function == 0 || !scope->function->hasBody()) // We only look for functions with a body
+        if (scope->function == nullptr || !scope->function->hasBody()) // We only look for functions with a body
             continue;
 
         const Token *tok = scope->classStart;
@@ -409,7 +409,7 @@ void CheckNullPointer::nullConstantDereference()
                 nullPointerError(tok);
 
             else if (Token::Match(tok->previous(), "!!. %name% (") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
-                if (Token::Match(tok->tokAt(2), "0|NULL|nullptr )") && tok->varId()) { // constructor call
+                if (Token::Match(tok->tokAt(2), "0|NULL|nullptr )") && tok->varId() > 0) { // constructor call
                     const Variable *var = tok->variable();
                     if (var && !var->isPointer() && !var->isArray() && var->isStlStringType())
                         nullPointerError(tok);
@@ -512,7 +512,7 @@ void CheckNullPointer::arithmetic()
             if (!tok->astOperand2() || tok->str() != "-")
                 continue;
             // pointer subtraction
-            if (!tok->valueType() || !tok->valueType()->pointer)
+            if (!tok->valueType() || tok->valueType()->pointer == 0)
                 continue;
             // Can LHS be NULL?
             const ValueFlow::Value *value = tok->astOperand1()->getValue(0);

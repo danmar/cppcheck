@@ -181,7 +181,7 @@ public:
 class CPPCHECKLIB CheckMemoryLeakInFunction : private Check, public CheckMemoryLeak {
 public:
     /** @brief This constructor is used when registering this class */
-    CheckMemoryLeakInFunction() : Check(myName()), CheckMemoryLeak(0, 0, 0), symbolDatabase(nullptr) {
+    CheckMemoryLeakInFunction() : Check(myName()), CheckMemoryLeak(nullptr, nullptr, nullptr), symbolDatabase(nullptr) {
     }
 
     /** @brief This constructor is used when running checks */
@@ -191,7 +191,7 @@ public:
         if (tokenizr)
             symbolDatabase = tokenizr->getSymbolDatabase();
         else
-            symbolDatabase = 0;
+            symbolDatabase = nullptr;
     }
 
     /** @brief run all simplified checks */
@@ -329,7 +329,7 @@ private:
 
 class CPPCHECKLIB CheckMemoryLeakInClass : private Check, private CheckMemoryLeak {
 public:
-    CheckMemoryLeakInClass() : Check(myName()), CheckMemoryLeak(0, 0, 0) {
+    CheckMemoryLeakInClass() : Check(myName()), CheckMemoryLeak(nullptr, nullptr, nullptr) {
     }
 
     CheckMemoryLeakInClass(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
@@ -356,9 +356,9 @@ private:
     void unsafeClassError(const Token *tok, const std::string &classname, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
-        CheckMemoryLeakInClass c(0, settings, e);
-        c.publicAllocationError(0, "varname");
-        c.unsafeClassError(0, "class", "class::varname");
+        CheckMemoryLeakInClass c(nullptr, settings, e);
+        c.publicAllocationError(nullptr, "varname");
+        c.unsafeClassError(nullptr, "class", "class::varname");
     }
 
     static std::string myName() {
@@ -376,7 +376,7 @@ private:
 
 class CPPCHECKLIB CheckMemoryLeakStructMember : private Check, private CheckMemoryLeak {
 public:
-    CheckMemoryLeakStructMember() : Check(myName()), CheckMemoryLeak(0, 0, 0) {
+    CheckMemoryLeakStructMember() : Check(myName()), CheckMemoryLeak(nullptr, nullptr, nullptr) {
     }
 
     CheckMemoryLeakStructMember(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
@@ -415,7 +415,7 @@ private:
 
 class CPPCHECKLIB CheckMemoryLeakNoVar : private Check, private CheckMemoryLeak {
 public:
-    CheckMemoryLeakNoVar() : Check(myName()), CheckMemoryLeak(0, 0, 0) {
+    CheckMemoryLeakNoVar() : Check(myName()), CheckMemoryLeak(nullptr, nullptr, nullptr) {
     }
 
     CheckMemoryLeakNoVar(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)

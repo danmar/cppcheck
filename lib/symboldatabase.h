@@ -100,7 +100,7 @@ public:
     std::vector<BaseInfo> derivedFrom;
     std::list<FriendInfo> friendList;
 
-    Type(const Token* classDef_ = 0, const Scope* classScope_ = 0, const Scope* enclosingScope_ = 0) :
+    Type(const Token* classDef_ = nullptr, const Scope* classScope_ = nullptr, const Scope* enclosingScope_ = nullptr) :
         classDef(classDef_),
         classScope(classScope_),
         enclosingScope(enclosingScope_),
@@ -479,7 +479,7 @@ public:
      * @return pointer to type scope if known, NULL if not known
      */
     const Scope *typeScope() const {
-        return _type ? _type->classScope : 0;
+        return _type ? _type->classScope : nullptr;
     }
 
     /**

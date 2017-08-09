@@ -130,7 +130,7 @@ void CheckIO::checkFileUsage()
     std::size_t varListSize = symbolDatabase->getVariableListSize();
     for (std::size_t i = 1; i < varListSize; ++i) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
-        if (!var || !var->declarationId() || var->isArray() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
+        if (!var || var->declarationId() == 0 || var->isArray() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
             continue;
 
         if (var->isLocal()) {
@@ -260,7 +260,7 @@ void CheckIO::checkFileUsage()
                         }
                     }
                     for (const Token* tok2 = tok->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
-                        if (tok2->varId() && filepointers.find(tok2->varId()) != filepointers.end()) {
+                        if (tok2->varId() > 0 && filepointers.find(tok2->varId()) != filepointers.end()) {
                             fileTok = tok2;
                             operation = Filepointer::UNKNOWN_OP; // Assume that repositioning was last operation and that the file is opened now
                             break;
@@ -271,7 +271,7 @@ void CheckIO::checkFileUsage()
                 while (Token::Match(fileTok, "%name% ."))
                     fileTok = fileTok->tokAt(2);
 
-                if (!fileTok || !fileTok->varId() || fileTok->strAt(1) == "[")
+                if (!fileTok || fileTok->varId() == 0 || fileTok->strAt(1) == "[")
                     continue;
 
                 if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
@@ -1413,8 +1413,8 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
             top = top->astParent();
         const ValueType *valuetype = top->argumentType();
         if (valuetype && valuetype->type >= ValueType::Type::BOOL) {
-            typeToken = tempToken = new Token(0);
-            if (valuetype->pointer && valuetype->constness & 1) {
+            typeToken = tempToken = new Token(nullptr);
+            if (valuetype->pointer > 0 && (valuetype->constness % 2 == 1)) {
                 tempToken->str("const");
                 tempToken->insertToken("a");
                 tempToken = tempToken->next();
@@ -1490,7 +1490,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                             if (function->retType->classScope->enumType)
                                 typeToken = function->retType->classScope->enumType;
                             else {
-                                tempToken = new Token(0);
+                                tempToken = new Token(nullptr);
                                 tempToken->fileIndex(tok1->fileIndex());
                                 tempToken->linenr(tok1->linenr());
                                 tempToken->str("int");
@@ -1511,7 +1511,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                         if (function->retType->classScope->enumType)
                             typeToken = function->retType->classScope->enumType;
                         else {
-                            tempToken = new Token(0);
+                            tempToken = new Token(nullptr);
                             tempToken->fileIndex(tok1->fileIndex());
                             tempToken->linenr(tok1->linenr());
                             tempToken->str("int");
@@ -1536,7 +1536,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
             // check for some common well known functions
             else if (isCPP && ((Token::Match(tok1->previous(), "%var% . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous())) ||
                                (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous()->link()->previous())))) {
-                tempToken = new Token(0);
+                tempToken = new Token(nullptr);
                 tempToken->fileIndex(tok1->fileIndex());
                 tempToken->linenr(tok1->linenr());
                 if (tok1->next()->str() == "size") {
@@ -1576,8 +1576,8 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                 variableInfo = varTok->variable();
 
                 if (!variableInfo || !isStdVectorOrString()) {
-                    variableInfo = 0;
-                    typeToken = 0;
+                    variableInfo = nullptr;
+                    typeToken = nullptr;
                 }
 
                 return;
@@ -1597,7 +1597,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                     if (variableInfo->type() && variableInfo->type()->classScope && variableInfo->type()->classScope->enumType)
                         typeToken = variableInfo->type()->classScope->enumType;
                     else {
-                        tempToken = new Token(0);
+                        tempToken = new Token(nullptr);
                         tempToken->fileIndex(tok1->fileIndex());
                         tempToken->linenr(tok1->linenr());
                         tempToken->str("int");
@@ -1636,7 +1636,7 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
         _template = true;
         return true;
     } else if (variableInfo->isStlType(stl_string)) {
-        tempToken = new Token(0);
+        tempToken = new Token(nullptr);
         tempToken->fileIndex(variableInfo->typeStartToken()->fileIndex());
         tempToken->linenr(variableInfo->typeStartToken()->linenr());
         if (variableInfo->typeStartToken()->strAt(2) == "string")
@@ -1654,7 +1654,7 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
                 _template = true;
                 return true;
             } else if (Token::Match(nameTok, "std :: string|wstring")) {
-                tempToken = new Token(0);
+                tempToken = new Token(nullptr);
                 tempToken->fileIndex(variableInfo->typeStartToken()->fileIndex());
                 tempToken->linenr(variableInfo->typeStartToken()->linenr());
                 if (nameTok->strAt(2) == "string")

@@ -235,7 +235,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     }
 
     if (elem != 5)
-        throw InternalError(0, "Internal Error: Deserialization of error message failed");
+        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed");
 
     _id = results[0];
     _severity = Severity::fromString(results[1]);
@@ -262,10 +262,10 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
 
         const std::string::size_type colonPos = temp.find(':');
         if (colonPos == std::string::npos)
-            throw InternalError(0, "Internal Error: No colon found in <filename:line> pattern");
+            throw InternalError(nullptr, "Internal Error: No colon found in <filename:line> pattern");
         const std::string::size_type tabPos = temp.find('\t');
         if (tabPos == std::string::npos)
-            throw InternalError(0, "Internal Error: No tab found in <filename:line> pattern");
+            throw InternalError(nullptr, "Internal Error: No tab found in <filename:line> pattern");
 
         const std::string tempinfo = temp.substr(tabPos + 1);
         temp.erase(tabPos);
@@ -337,13 +337,13 @@ std::string ErrorLogger::ErrorMessage::fixInvalidChars(const std::string& raw)
 
 std::string ErrorLogger::ErrorMessage::toXML() const
 {
-    tinyxml2::XMLPrinter printer(0, false, 2);
+    tinyxml2::XMLPrinter printer(nullptr, false, 2);
     printer.OpenElement("error", false);
     printer.PushAttribute("id", _id.c_str());
     printer.PushAttribute("severity", Severity::toString(_severity).c_str());
     printer.PushAttribute("msg", fixInvalidChars(_shortMessage).c_str());
     printer.PushAttribute("verbose", fixInvalidChars(_verboseMessage).c_str());
-    if (_cwe.id)
+    if (_cwe.id != 0)
         printer.PushAttribute("cwe", _cwe.id);
     if (_inconclusive)
         printer.PushAttribute("inconclusive", "true");

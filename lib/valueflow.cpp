@@ -107,9 +107,8 @@ static bool conditionIsFalse(const Token *condition, const ProgramMemory &progra
     if (!condition)
         return false;
     if (condition->str() == "&&") {
-        const bool result1 = conditionIsFalse(condition->astOperand1(), programMemory);
-        const bool result2 = result1 ? true : conditionIsFalse(condition->astOperand2(), programMemory);
-        return result2;
+        return conditionIsFalse(condition->astOperand1(), programMemory) ||
+            conditionIsFalse(condition->astOperand2(), programMemory);
     }
     ProgramMemory progmem(programMemory);
     MathLib::bigint result = 0;
@@ -128,9 +127,8 @@ static bool conditionIsTrue(const Token *condition, const ProgramMemory &program
     if (!condition)
         return false;
     if (condition->str() == "||") {
-        const bool result1 = conditionIsTrue(condition->astOperand1(), programMemory);
-        const bool result2 = result1 ? true : conditionIsTrue(condition->astOperand2(), programMemory);
-        return result2;
+        return conditionIsTrue(condition->astOperand1(), programMemory) ||
+            conditionIsTrue(condition->astOperand2(), programMemory);
     }
     ProgramMemory progmem(programMemory);
     bool error = false;
@@ -146,7 +144,7 @@ static ProgramMemory getProgramMemory(const Token *tok, unsigned int varid, cons
 {
     ProgramMemory programMemory;
     programMemory.setValue(varid, value);
-    if (value.varId)
+    if (value.varId > 0)
         programMemory.setIntValue(value.varId, value.varvalue);
     const ProgramMemory programMemory1(programMemory);
     int indentlevel = 0;
@@ -278,7 +276,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     if (parent->str() == "(" && !parent->astOperand2() && Token::Match(parent,"( %name%")) {
         const ValueType &valueType = ValueType::parseDecl(parent->next(), settings);
-        if (valueType.pointer)
+        if (valueType.pointer > 0)
             setTokenValue(parent,value,settings);
         else if (valueType.type == ValueType::Type::CHAR)
             setTokenValue(parent, castValue(value, valueType.sign, settings->char_bit), settings);
@@ -326,7 +324,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     continue;
                 tokens.push(t->astOperand1());
                 tokens.push(t->astOperand2());
-                if (t->varId()) {
+                if (t->varId() > 0) {
                     if (varId > 0 || value.varId != 0U)
                         return;
                     varId = t->varId();
@@ -338,7 +336,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             v.conditional = true;
             v.changeKnownToPossible();
 
-            if (varId)
+            if (varId > 0)
                 v.varId = varId;
 
             setTokenValue(parent, v, settings);
@@ -374,7 +372,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     (value1->varId == value2->varId && value1->varvalue == value2->varvalue && value1->isIntValue() && value2->isIntValue())) {
                     ValueFlow::Value result(0);
                     result.condition = value1->condition ? value1->condition : value2->condition;
-                    result.inconclusive = value1->inconclusive | value2->inconclusive;
+                    result.inconclusive = value1->inconclusive || value2->inconclusive;
                     result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
                     result.varvalue = (result.varId == value1->varId) ? value1->varvalue : value2->varvalue;
                     result.errorPath = (value1->errorPath.empty() ? value2 : value1)->errorPath;
@@ -442,7 +440,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                                 result.intvalue = 0;
                                 setTokenValue(parent, result, settings);
                             } else if (value1->isIntValue() && value2->isIntValue()) {
-                                result.intvalue = value1->intvalue == value2->intvalue;
+                                result.intvalue = static_cast<long long int>(value1->intvalue == value2->intvalue);
                                 setTokenValue(parent, result, settings);
                             }
                         }
@@ -454,7 +452,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                                 result.intvalue = 1;
                                 setTokenValue(parent, result, settings);
                             } else if (value1->isIntValue() && value2->isIntValue()) {
-                                result.intvalue = value1->intvalue != value2->intvalue;
+                                result.intvalue = static_cast<long long int>(value1->intvalue != value2->intvalue);
                                 setTokenValue(parent, result, settings);
                             }
                         }
@@ -464,9 +462,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (!f && !value1->isIntValue() && !value2->isIntValue())
                             break;
                         if (parent->str() == ">")
-                            result.intvalue = f ? floatValue1 > floatValue2 : value1->intvalue > value2->intvalue;
+                            result.intvalue = f ? static_cast<long long int>(floatValue1 > floatValue2) : static_cast<long long int>(value1->intvalue > value2->intvalue);
                         else if (parent->str() == ">=")
-                            result.intvalue = f ? floatValue1 >= floatValue2 : value1->intvalue >= value2->intvalue;
+                            result.intvalue = f ? static_cast<long long int>(floatValue1 >= floatValue2) : static_cast<long long int>(value1->intvalue >= value2->intvalue);
                         else if (!f && parent->str() == ">>" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
                             result.intvalue = value1->intvalue >> value2->intvalue;
                         else
@@ -479,9 +477,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (!f && !value1->isIntValue() && !value2->isIntValue())
                             break;
                         if (parent->str() == "<")
-                            result.intvalue = f ? floatValue1 < floatValue2 : value1->intvalue < value2->intvalue;
+                            result.intvalue = f ? static_cast<long long int>(floatValue1 < floatValue2) : static_cast<long long int>(value1->intvalue < value2->intvalue);
                         else if (parent->str() == "<=")
-                            result.intvalue = f ? floatValue1 <= floatValue2 : value1->intvalue <= value2->intvalue;
+                            result.intvalue = f ? static_cast<long long int>(floatValue1 <= floatValue2) : static_cast<long long int>(value1->intvalue <= value2->intvalue);
                         else if (!f && parent->str() == "<<" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
                             result.intvalue = value1->intvalue << value2->intvalue;
                         else
@@ -495,7 +493,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (parent->str() == "&")
                             result.intvalue = value1->intvalue & value2->intvalue;
                         else
-                            result.intvalue = value1->intvalue && value2->intvalue;
+                            result.intvalue = static_cast<long long int>(value1->intvalue != 0 && value2->intvalue != 0);
                         setTokenValue(parent, result, settings);
                         break;
                     case '|':
@@ -504,7 +502,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (parent->str() == "|")
                             result.intvalue = value1->intvalue | value2->intvalue;
                         else
-                            result.intvalue = value1->intvalue || value2->intvalue;
+                            result.intvalue = static_cast<long long int>(value1->intvalue != 0 || value2->intvalue != 0);
                         setTokenValue(parent, result, settings);
                         break;
                     case '^':
@@ -529,7 +527,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             if (!it->isIntValue())
                 continue;
             ValueFlow::Value v(*it);
-            v.intvalue = !v.intvalue;
+            v.intvalue = static_cast<long long int>(v.intvalue == 0);
             setTokenValue(parent, v, settings);
         }
     }
@@ -585,7 +583,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     (value1->varId == value2->varId && value1->varvalue == value2->varvalue)) {
                     ValueFlow::Value result(0);
                     result.condition = value1->condition ? value1->condition : value2->condition;
-                    result.inconclusive = value1->inconclusive | value2->inconclusive;
+                    result.inconclusive = value1->inconclusive || value2->inconclusive;
                     result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
                     result.varvalue = (result.varId == value1->varId) ? value1->intvalue : value2->intvalue;
                     if (value1->valueKind == value2->valueKind)
@@ -682,7 +680,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             const Token *sz1 = tok->tokAt(2);
             const Token *sz2 = tok->tokAt(7);
             const unsigned int varid1 = sz1->varId();
-            if (varid1 &&
+            if (varid1 > 0 &&
                 sz1->variable() &&
                 sz1->variable()->isArray() &&
                 !sz1->variable()->dimensions().empty() &&
@@ -695,7 +693,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             }
         } else if (!tok2->type()) {
             const ValueType &vt = ValueType::parseDecl(tok2,settings);
-            if (vt.pointer) {
+            if (vt.pointer > 0) {
                 ValueFlow::Value value(settings->sizeof_pointer);
                 if (settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
@@ -752,8 +750,8 @@ static void valueFlowNumber(TokenList *tokenlist)
 
     if (tokenlist->isCPP()) {
         for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-            if (tok->isName() && !tok->varId() && Token::Match(tok, "false|true")) {
-                ValueFlow::Value value(tok->str() == "true");
+            if (tok->isName() && tok->varId() == 0 && Token::Match(tok, "false|true")) {
+                ValueFlow::Value value(static_cast<long long int>(tok->str() == "true"));
                 value.setKnown();
                 setTokenValue(tok, value, tokenlist->getSettings());
             } else if (Token::Match(tok, "[(,] NULL [,)]")) {
@@ -1377,7 +1375,7 @@ static bool valueFlowForward(Token * const               startToken,
         }
 
         // conditional block of code that assigns variable..
-        else if (!tok2->varId() && Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
+        else if (tok2->varId() == 0 && Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // is variable changed in condition?
             if (isVariableChanged(tok2->next(), tok2->next()->link(), varid, var->isGlobal(), settings)) {
                 if (settings->debugwarnings)
@@ -1975,7 +1973,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 continue;
 
             // Lhs should be a variable
-            if (!tok->astOperand1() || !tok->astOperand1()->varId())
+            if (!tok->astOperand1() || tok->astOperand1()->varId() == 0)
                 continue;
             const unsigned int varid = tok->astOperand1()->varId();
             if (aliased.find(varid) != aliased.end())
@@ -2001,9 +1999,9 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 std::list<ValueFlow::Value>::iterator it;
                 for (it = values.begin(); it != values.end(); ++it) {
                     if (it->isIntValue())
-                        it->intvalue = (it->intvalue != 0);
+                        it->intvalue = static_cast<long long int>(it->intvalue != 0);
                     if (it->isTokValue())
-                        it ->intvalue = (it->tokvalue != 0);
+                        it ->intvalue = static_cast<long long int>(it->tokvalue != nullptr);
                 }
             }
 
@@ -2221,22 +2219,22 @@ static void execute(const Token *expr,
         execute(expr->astOperand1(), programMemory, &result1, error);
         execute(expr->astOperand2(), programMemory, &result2, error);
         if (expr->str() == "<")
-            *result = result1 < result2;
+            *result = static_cast<MathLib::bigint>(result1 < result2);
         else if (expr->str() == "<=")
-            *result = result1 <= result2;
+            *result = static_cast<MathLib::bigint>(result1 <= result2);
         else if (expr->str() == ">")
-            *result = result1 > result2;
+            *result = static_cast<MathLib::bigint>(result1 > result2);
         else if (expr->str() == ">=")
-            *result = result1 >= result2;
+            *result = static_cast<MathLib::bigint>(result1 >= result2);
         else if (expr->str() == "==")
-            *result = result1 == result2;
+            *result = static_cast<MathLib::bigint>(result1 == result2);
         else if (expr->str() == "!=")
-            *result = result1 != result2;
+            *result = static_cast<MathLib::bigint>(result1 != result2);
     }
 
     else if (expr->str() == "=") {
         execute(expr->astOperand2(), programMemory, result, error);
-        if (!*error && expr->astOperand1() && expr->astOperand1()->varId())
+        if (!*error && expr->astOperand1() && expr->astOperand1()->varId() > 0)
             programMemory->setIntValue(expr->astOperand1()->varId(), *result);
         else
             *error = true;
@@ -2270,7 +2268,7 @@ static void execute(const Token *expr,
         else if (expr->str() == "-")
             *result = result1 - result2;
         else if (expr->str() == "*") {
-            if (result2 && (result1 > std::numeric_limits<MathLib::bigint>::max()/result2))
+            if (result2 != 0 && (result1 > std::numeric_limits<MathLib::bigint>::max()/result2))
                 *error = true;
             else
                 *result = result1 * result2;
@@ -2308,19 +2306,19 @@ static void execute(const Token *expr,
             if (error2)
                 *result = 1;
             else
-                *result = !!*result;
+                *result = static_cast<MathLib::bigint>(*result != 0);
         }
     }
 
     else if (expr->str() == "||") {
         execute(expr->astOperand1(), programMemory, result, error);
-        if (*result == 0 && *error == false)
+        if (*result == 0 && !(*error))
             execute(expr->astOperand2(), programMemory, result, error);
     }
 
     else if (expr->str() == "!") {
         execute(expr->astOperand1(), programMemory, result, error);
-        *result = !(*result);
+        *result = static_cast<MathLib::bigint>(*result == 0);
     }
 
     else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
@@ -2379,7 +2377,7 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
         if (num2tok && num2tok->str() == "(" && !num2tok->astOperand2())
             num2tok = num2tok->astOperand1();
         if (!Token::Match(num2tok, "%num% ;|%oror%")) // TODO: || enlarges the scope of the condition, so it should not cause FP, but it should no lnger be part of this pattern as soon as valueFlowForLoop2 can handle an unknown RHS of || better
-            num2tok = 0;
+            num2tok = nullptr;
     }
     if (!num2tok)
         return false;
@@ -2434,7 +2432,7 @@ static bool valueFlowForLoop2(const Token *tok,
     ProgramMemory endMemory;
 
     unsigned int maxcount = 10000;
-    while (result != 0 && !error && --maxcount) {
+    while (result != 0 && !error && --maxcount > 0) {
         endMemory = programMemory;
         execute(thirdExpression, &programMemory, &result, &error);
         if (!error)
@@ -2625,7 +2623,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
 
     // Set value in function scope..
     const unsigned int varid2 = arg->declarationId();
-    if (!varid2)
+    if (varid2 == 0)
         return;
 
     valueFlowForward(const_cast<Token*>(functionScope->classStart->next()), functionScope->classEnd, arg, varid2, argvalues, false, true, tokenlist, errorLogger, settings);
