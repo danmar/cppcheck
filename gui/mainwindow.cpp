@@ -1470,6 +1470,7 @@ void MainWindow::closeProjectFile()
 {
     delete mProjectFile;
     mProjectFile = nullptr;
+    mUI.mResults->clear(true);
     enableProjectActions(false);
     enableProjectOpenActions(true);
     formatAndSetTitle();
