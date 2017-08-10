@@ -148,7 +148,7 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
             foreach (QString s, mVsIncludePaths.split(";")) {
                 if (!s.isEmpty()) {
                     s.replace("\\", "/");
-                    args << "-isystem" << s;
+                    args << "-isystem" << s.trimmed();
                 }
             }
 
