@@ -142,6 +142,9 @@ protected slots:
     */
     void editIncludePath();
 
+    /** @brief Slot for browsing for the clang binary */
+    void browseClangPath();
+
 protected:
 
     /**

@@ -55,13 +55,12 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI.mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
 
 #ifdef Q_OS_WIN
-    mUI.mLabelVsInclude->setVisible(true);
-    mUI.mEditVsInclude->setVisible(true);
-    mUI.mEditVsInclude->setText(settings.value(SETTINGS_VS_INCLUDE_PATHS, QString()).toString());
+    mUI.mTabClang->setVisible(true);
+    mUI.mEditClangPath->setText(settings.value(SETTINGS_CLANG_PATH, QString()).toString());
+    mUI.mEditVsIncludePaths->setText(settings.value(SETTINGS_VS_INCLUDE_PATHS, QString()).toString());
+    connect(mUI.mBtnBrowseClangPath, &QPushButton::released, this, &SettingsDialog::browseClangPath);
 #else
-    mUI.mLabelVsInclude->setVisible(false);
-    mUI.mEditVsInclude->setVisible(false);
-    mUI.mEditVsInclude->setText(QString());
+    mUI.mTabClang->setVisible(false);
 #endif
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);
     connect(mUI.mButtons, &QDialogButtonBox::rejected, this, &SettingsDialog::reject);
@@ -187,7 +186,8 @@ void SettingsDialog::saveSettingValues() const
     saveCheckboxValue(&settings, mUI.mShowErrorId, SETTINGS_SHOW_ERROR_ID);
 
 #ifdef Q_OS_WIN
-    QString vsIncludePaths = mUI.mEditVsInclude->text();
+    settings.setValue(SETTINGS_CLANG_PATH, mUI.mEditClangPath->text());
+    QString vsIncludePaths = mUI.mEditVsIncludePaths->text();
     if (vsIncludePaths.startsWith("INCLUDE="))
         vsIncludePaths.remove(0, 8);
     settings.setValue(SETTINGS_VS_INCLUDE_PATHS, vsIncludePaths);
@@ -357,4 +357,15 @@ void SettingsDialog::editIncludePath()
 {
     QListWidgetItem *item = mUI.mListIncludePaths->currentItem();
     mUI.mListIncludePaths->editItem(item);
+}
+
+void SettingsDialog::browseClangPath()
+{
+    QString selectedDir = QFileDialog::getExistingDirectory(this,
+                          tr("Select clang path"),
+                          QDir::rootPath());
+
+    if (!selectedDir.isEmpty()) {
+        mUI.mEditClangPath->setText(selectedDir);
+    }
 }
