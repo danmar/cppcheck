@@ -17,6 +17,7 @@
  */
 
 #include <QDebug>
+#include <QStringList>
 #include "checkstatistics.h"
 
 CheckStatistics::CheckStatistics(QObject *parent)
