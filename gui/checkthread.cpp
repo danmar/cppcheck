@@ -118,7 +118,7 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
             if (!fileSettings)
                 continue;
 
-            if (!fileSettings->cfg.empty() && fileSettings->cfg.find("Debug") != std::string::npos)
+            if (!fileSettings->cfg.empty() && fileSettings->cfg.compare(0,5,"Debug") != 0)
                 continue;
 
             QStringList args;
