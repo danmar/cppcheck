@@ -8785,15 +8785,14 @@ void Tokenizer::simplifyKeyword()
               Token::Match(tok, ") noexcept const|override|final")) {
                 // Insertion is done in inverse order
                 // The brackets are linked together accordingly afterwards
-                Token * tokNoEx = tok->tokAt(1);
-                tokNoEx->insertToken(")");
-                Token * br1 = tokNoEx->next();
-                tokNoEx->insertToken("true");
-                tokNoEx->insertToken("(");
-                Token * br2 = tokNoEx->next();
+                Token * tokNoExcept = tok->next();
+                tokNoExcept->insertToken(")");
+                Token * braceEnd = tokNoExcept->next();
+                tokNoExcept->insertToken("true");
+                tokNoExcept->insertToken("(");
+                Token * braceStart = tokNoExcept->next();
                 tok = tok->tokAt(3);
-                br1->link(br2);
-                br2->link(br1);
+                Token::createMutualLinks(braceStart, braceEnd);
             }
         }
     }
