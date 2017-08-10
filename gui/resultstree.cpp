@@ -128,7 +128,8 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
         return false;
     }
 
-    QString realfile = stripPath(item.errorPath.back().file, false);
+    const QErrorPathItem &loc = item.errorId.startsWith("clang") ? item.errorPath.front() : item.errorPath.back();
+    QString realfile = stripPath(loc.file, false);
 
     if (realfile.isEmpty()) {
         realfile = tr("Undefined file");
@@ -153,7 +154,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
 
     ErrorLine line;
     line.file = realfile;
-    line.line = item.errorPath.back().line;
+    line.line = loc.line;
     line.errorId = item.errorId;
     line.inconclusive = item.inconclusive;
     line.summary = item.summary;
@@ -163,7 +164,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     line.tag       = item.tag;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
-    QStandardItem* fileItem = ensureFileItem(item.errorPath.back().file, item.file0, hide);
+    QStandardItem* fileItem = ensureFileItem(loc.file, item.file0, hide);
     QStandardItem* stditem = addBacktraceFiles(fileItem,
                              line,
                              hide,
@@ -179,8 +180,9 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data["severity"]  = ShowTypes::SeverityToShowType(item.severity);
     data["summary"] = item.summary;
     data["message"]  = item.message;
-    data["file"]  = item.errorPath.back().file;
-    data["line"]  = item.errorPath.back().line;
+    data["file"]  = loc.file;
+    data["line"]  = loc.line;
+    data["col"] = loc.col;
     data["id"]  = item.errorId;
     data["inconclusive"] = item.inconclusive;
     data["file0"] = stripPath(item.file0, true);
@@ -211,6 +213,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             child_data["message"]  = line.message;
             child_data["file"]  = e.file;
             child_data["line"]  = e.line;
+            child_data["col"] = e.col;
             child_data["id"]  = line.errorId;
             child_data["inconclusive"] = line.inconclusive;
             child_item->setData(QVariant(child_data));

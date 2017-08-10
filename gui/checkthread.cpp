@@ -328,32 +328,34 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 {
     QList<ErrorItem> errorItems;
     ErrorItem errorItem;
-    QRegExp r1("(.+):([0-9]+):[0-9]+: (note|warning|error|fatal error): (.*)");
+    QRegExp r1("(.+):([0-9]+):([0-9]+): (note|warning|error|fatal error): (.*)");
     QRegExp r2("(.*)\\[([a-zA-Z0-9\\-_\\.]+)\\]");
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
         if (!r1.exactMatch(line))
             continue;
-        if (r1.cap(3) != "note") {
+        if (r1.cap(4) != "note") {
             errorItems.append(errorItem);
             errorItem = ErrorItem();
+            errorItem.file0 = r1.cap(1);
         }
 
         errorItem.errorPath.append(QErrorPathItem());
         errorItem.errorPath.last().file = r1.cap(1);
         errorItem.errorPath.last().line = r1.cap(2).toInt();
-        if (r1.cap(3) == "warning")
+        errorItem.errorPath.last().col  = r1.cap(3).toInt();
+        if (r1.cap(4) == "warning")
             errorItem.severity = Severity::SeverityType::warning;
-        else if (r1.cap(3) == "error" || r1.cap(3) == "fatal error")
+        else if (r1.cap(4) == "error" || r1.cap(4) == "fatal error")
             errorItem.severity = Severity::SeverityType::error;
 
         QString message,id;
-        if (r2.exactMatch(r1.cap(4))) {
+        if (r2.exactMatch(r1.cap(5))) {
             message = r2.cap(1);
             id = tool + '-' + r2.cap(2);
         } else {
-            message = r1.cap(4);
+            message = r1.cap(5);
             id = CLANG;
         }
 
