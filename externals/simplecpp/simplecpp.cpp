@@ -1854,8 +1854,12 @@ static void simplifySizeof(simplecpp::TokenList &expr, const std::map<std::strin
         }
         if (tok1->op == '(') {
             tok1 = tok1->next;
-            while (tok2->op != ')')
+            while (tok2->op != ')') {
                 tok2 = tok2->next;
+                if (tok2 == nullptr) {
+                    throw std::runtime_error("incorrect sizeof syntax");
+                }
+           }
         }
 
         std::string type;
