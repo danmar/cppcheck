@@ -327,6 +327,10 @@ void CheckCondition::comparison()
                     comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? true : false);
                 }
             } else if (expr1->str() == "|") {
+                if (expr1->astOperand1() == nullptr) {
+                    reportError(expr1, Severity::error, "syntax error", "Invalid '|' operator", CWE571, false);
+                    continue;
+                }
                 if ((expr1->astOperand1()->valueType()) &&
                     (expr1->astOperand1()->valueType()->sign == ValueType::Sign::UNSIGNED)) {
                     const bool or_equal = Token::Match(tok, ">=|<=");
