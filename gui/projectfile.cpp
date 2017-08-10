@@ -236,7 +236,6 @@ void ProjectFile::readImportProject(QXmlStreamReader &reader)
 
 void ProjectFile::readAnalyzeAllVsConfigs(QXmlStreamReader &reader)
 {
-    mImportProject.clear();
     do {
         const QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
