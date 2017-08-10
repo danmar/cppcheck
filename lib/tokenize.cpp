@@ -8778,6 +8778,23 @@ void Tokenizer::simplifyKeyword()
                     }
                 }
             }
+
+            // noexcept -> noexcept(true)
+            // 3) void f() noexcept; -> void f() noexcept(true);
+            if (Token::Match(tok, ") noexcept [:{;]") ||
+              Token::Match(tok, ") noexcept const|override|final")) {
+                // Insertion is done in inverse order
+                // The brackets are linked together accordingly afterwards
+                Token * tokNoEx = tok->tokAt(1);
+                tokNoEx->insertToken(")");
+                Token * br1 = tokNoEx->next();
+                tokNoEx->insertToken("true");
+                tokNoEx->insertToken("(");
+                Token * br2 = tokNoEx->next();
+                tok = tok->tokAt(3);
+                br1->link(br2);
+                br2->link(br1);
+            }
         }
     }
 }
