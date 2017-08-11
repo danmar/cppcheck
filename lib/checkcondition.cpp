@@ -328,7 +328,7 @@ void CheckCondition::comparison()
                 }
             } else if (expr1->str() == "|") {
                 if (expr1->astOperand1() == nullptr) {
-                    reportError(expr1, Severity::error, "syntax error", "Invalid '|' operator", CWE571, false);
+                    reportError(expr1, Severity::error, "syntax error", "Invalid '|' operator", CWE398, false);
                     continue;
                 }
                 if ((expr1->astOperand1()->valueType()) &&
