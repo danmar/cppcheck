@@ -132,7 +132,6 @@ void ProjectFileDialog::saveSettings() const
 
 void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
 {
-    mUI.mToolClang->setChecked(projectFile->getAddons().contains("clang"));
     mUI.mToolClangTidy->setChecked(projectFile->getAddons().contains("clang-tidy"));
     setRootPath(projectFile->getRootPath());
     setBuildDir(projectFile->getBuildDir());
@@ -147,7 +146,6 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mAddonThreadSafety->setChecked(projectFile->getAddons().contains("threadsafety"));
     mUI.mAddonY2038->setChecked(projectFile->getAddons().contains("y2038"));
     mUI.mAddonCert->setChecked(projectFile->getAddons().contains("cert"));
-    mUI.mAddonMisra->setChecked(projectFile->getAddons().contains("misra"));
     updatePathsAndDefines();
 }
 
@@ -164,8 +162,6 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setLibraries(getLibraries());
     projectFile->setSuppressions(getSuppressions());
     QStringList list;
-    if (mUI.mToolClang->isChecked())
-        list << "clang";
     if (mUI.mToolClangTidy->isChecked())
         list << "clang-tidy";
     if (mUI.mAddonThreadSafety->isChecked())
@@ -174,8 +170,6 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         list << "y2038";
     if (mUI.mAddonCert->isChecked())
         list << "cert";
-    if (mUI.mAddonMisra->isChecked())
-        list << "misra";
     projectFile->setAddons(list);
 }
 

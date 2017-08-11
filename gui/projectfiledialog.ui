@@ -32,13 +32,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="mToolClang">
-         <property name="text">
-          <string>Clang</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QCheckBox" name="mToolClangTidy">
          <property name="text">
           <string>Clang-tidy</string>
@@ -544,13 +537,6 @@
         <widget class="QCheckBox" name="mAddonCert">
          <property name="text">
           <string>Cert</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="mAddonMisra">
-         <property name="text">
-          <string>Misra</string>
          </property>
         </widget>
        </item>
