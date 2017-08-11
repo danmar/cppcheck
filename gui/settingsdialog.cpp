@@ -55,7 +55,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI.mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
 
 #ifdef Q_OS_WIN
-    mUI.mTabClang->setVisible(true);
+    //mUI.mTabClang->setVisible(true);
     mUI.mEditClangPath->setText(settings.value(SETTINGS_CLANG_PATH, QString()).toString());
     mUI.mEditVsIncludePaths->setText(settings.value(SETTINGS_VS_INCLUDE_PATHS, QString()).toString());
     connect(mUI.mBtnBrowseClangPath, &QPushButton::released, this, &SettingsDialog::browseClangPath);

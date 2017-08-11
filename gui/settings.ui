@@ -351,9 +351,9 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_8">
        <item>
-        <widget class="QLabel" name="label_5">
+        <widget class="QLabel" name="mLabelClangPath">
          <property name="text">
-          <string>Clang path</string>
+          <string>Clang path (leave empty to use system PATH)</string>
          </property>
         </widget>
        </item>
@@ -389,7 +389,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="mLabelVsIncludePaths">
          <property name="text">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Visual Studio include paths.&lt;/p&gt;&lt;p&gt;Open Visual Studio Command Prompt. Type &amp;quot;SET INSTALL&amp;quot; and then copy paste the output here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
