@@ -371,11 +371,16 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     foreach (const ErrorItem &e, errorItems) {
         if (e.errorPath.isEmpty())
             continue;
+        if (mSuppressions.contains(e.errorId))
+            continue;
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
         foreach (const QErrorPathItem &path, e.errorPath) {
             callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line));
         }
-        ErrorLogger::ErrorMessage errmsg(callstack, file0.toStdString(), errorItem.severity, errorItem.message.toStdString(), errorItem.errorId.toStdString(), false);
+        const std::string f0 = file0.toStdString();
+        const std::string msg = e.message.toStdString();
+        const std::string id = e.errorId.toStdString();
+        ErrorLogger::ErrorMessage errmsg(callstack, f0, errorItem.severity, msg, id, false);
         mResult.reportErr(errmsg);
     }
 }

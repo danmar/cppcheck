@@ -68,6 +68,10 @@ public:
         mClangPath = p;
     }
 
+    void setSuppressions(const QStringList s) {
+        mSuppressions = s;
+    }
+
     /**
     * @brief method that is run in a thread
     *
@@ -127,6 +131,7 @@ private:
     QString mVsIncludePaths;
     QString mDataDir;
     QString mClangPath;
+    QStringList mSuppressions;
 };
 /// @}
 #endif // CHECKTHREAD_H

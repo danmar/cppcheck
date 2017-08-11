@@ -602,6 +602,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             QAction *copymessageid          = new QAction(tr("Copy message id"), &menu);
             QAction *hide                   = new QAction(tr("Hide"), &menu);
             QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
+            QAction *suppress               = new QAction(tr("Suppress selected id(s)"), &menu);
             QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
             if (multipleSelection) {
@@ -624,6 +625,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(copymessageid);
             menu.addAction(hide);
             menu.addAction(hideallid);
+            menu.addAction(suppress);
             menu.addAction(opencontainingfolder);
 
             connect(recheckSelectedFiles, SIGNAL(triggered()), this, SLOT(recheckSelectedFiles()));
@@ -633,6 +635,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             connect(copymessageid, SIGNAL(triggered()), this, SLOT(copyMessageId()));
             connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
             connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
+            connect(suppress, SIGNAL(triggered()), this, SLOT(suppressSelectedIds()));
             connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));
 
             menu.addSeparator();
@@ -934,6 +937,43 @@ void ResultsTree::hideAllIdResult()
         refreshTree();
         emit resultsHidden(true);
     }
+}
+
+void ResultsTree::suppressSelectedIds()
+{
+    if (!mSelectionModel)
+        return;
+
+    QModelIndexList selectedRows = mSelectionModel->selectedRows();
+    QSet<QString> selectedIds;
+    foreach (QModelIndex index, selectedRows) {
+        QStandardItem *item = mModel.itemFromIndex(index);
+        if (!item->parent())
+            continue;
+        if (item->parent()->parent())
+            item = item->parent();
+        QVariantMap data = item->data().toMap();
+        if (!data.contains("id"))
+            continue;
+        selectedIds << data["id"].toString();
+    }
+
+    // delete all errors with selected message Ids
+    for (int i = 0; i < mModel.rowCount(); i++) {
+        QStandardItem * const file = mModel.item(i, 0);
+        for (int j = 0; j < file->rowCount(); ) {
+            QStandardItem *errorItem = file->child(j, 0);
+            QVariantMap userdata = errorItem->data().toMap();
+            if (selectedIds.contains(userdata["id"].toString())) {
+                file->removeRow(j);
+            } else {
+                j++;
+            }
+        }
+    }
+
+
+    emit suppressIds(selectedIds.toList());
 }
 
 void ResultsTree::openContainingFolder()

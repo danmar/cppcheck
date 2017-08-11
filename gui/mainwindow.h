@@ -224,6 +224,9 @@ protected slots:
     /** Some results were tagged */
     void tagged();
 
+    /** Suppress error ids */
+    void suppressIds(QStringList ids);
+
 private:
 
     /** Get filename for last results */

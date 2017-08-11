@@ -210,6 +210,9 @@ signals:
      */
     void tagged();
 
+    /** Suppress Ids */
+    void suppressIds(QStringList ids);
+
 protected slots:
     /**
     * @brief Slot to quickstart an error with default application
@@ -266,6 +269,9 @@ protected slots:
     *
     */
     void hideAllIdResult();
+
+    /** Slot for context menu item to suppress all messages with the current message id */
+    void suppressSelectedIds();
 
     /**
     * @brief Slot for context menu item to open the folder containing the current file.

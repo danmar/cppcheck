@@ -52,6 +52,7 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(mUI.mTree, &ResultsTree::checkSelected, this, &ResultsView::checkSelected);
     connect(mUI.mTree, &ResultsTree::selectionChanged, this, &ResultsView::updateDetails);
     connect(mUI.mTree, &ResultsTree::tagged, this, &ResultsView::tagged);
+    connect(mUI.mTree, &ResultsTree::suppressIds, this, &ResultsView::suppressIds);
 }
 
 void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)

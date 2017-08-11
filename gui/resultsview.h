@@ -218,6 +218,9 @@ signals:
      */
     void tagged();
 
+    /** Suppress Ids */
+    void suppressIds(QStringList ids);
+
 public slots:
 
     /**

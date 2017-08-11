@@ -75,6 +75,10 @@ public:
         mAddons = addons;
     }
 
+    void setSuppressions(const QStringList &s) {
+        mSuppressions = s;
+    }
+
     void setVsIncludePaths(const QString &s) {
         mVsIncludePaths = s;
     }
@@ -250,6 +254,7 @@ protected:
     bool mAnalyseWholeProgram;
 
     QStringList mAddons;
+    QStringList mSuppressions;
     QString mVsIncludePaths;
     QString mClangPath;
 

@@ -127,6 +127,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mResults, &ResultsView::resultsHidden, mUI.mActionShowHidden, &QAction::setEnabled);
     connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
     connect(mUI.mResults, &ResultsView::tagged, this, &MainWindow::tagged);
+    connect(mUI.mResults, &ResultsView::suppressIds, this, &MainWindow::suppressIds);
     connect(mUI.mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
 
     // File menu
@@ -452,6 +453,7 @@ void MainWindow::doAnalyzeProject(ImportProject p)
                 clangPath = "C:/Program Files/LLVM/bin";
         }
         mThread->setClangPath(clangPath);
+        mThread->setSuppressions(mProjectFile->getSuppressions());
 #endif
     }
     mThread->setProject(p);
@@ -1689,4 +1691,17 @@ void MainWindow::tagged()
     const QString &lastResults = getLastResults();
     if (!lastResults.isEmpty())
         mUI.mResults->save(lastResults, Report::XMLV2);
+}
+
+void MainWindow::suppressIds(QStringList ids)
+{
+    if (mProjectFile) {
+        QStringList suppressions = mProjectFile->getSuppressions();
+        foreach (QString s, ids) {
+            if (!suppressions.contains(s))
+                suppressions << s;
+        }
+        mProjectFile->setSuppressions(suppressions);
+        mProjectFile->write();
+    }
 }
