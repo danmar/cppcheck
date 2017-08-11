@@ -144,7 +144,7 @@ void ResultsView::saveStatistics(const QString &filename) const
         return;
     QTextStream ts(&f);
     ts <<  '[' << QDate::currentDate().toString("dd.MM.yyyy") << "]\n";
-    ts << QDateTime::currentMSecsSinceEpoch() + '\n';
+    ts << QDateTime::currentMSecsSinceEpoch() << '\n';
     foreach (QString tool, mStatistics->getTools()) {
         ts << tool << "-error:" << mStatistics->getCount(tool, ShowTypes::ShowErrors) << '\n';
         ts << tool << "-warning:" << mStatistics->getCount(tool, ShowTypes::ShowWarnings) << '\n';
