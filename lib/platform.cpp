@@ -146,6 +146,9 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
         long_bit = char_bit * sizeof_long;
         long_long_bit = char_bit * sizeof_long_long;
         return true;
+    case PlatformFile:
+        // sizes are not set.
+        return false;
     }
     // unsupported platform
     return false;
