@@ -231,7 +231,7 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
             QProcess process;
             process.start(cmd, args);
             process.waitForFinished(600*1000);
-            const QString errout(addon == CLANG ? process.readAllStandardError() : process.readAllStandardOutput());
+            const QString errout(process.readAllStandardOutput() + "\n\n\n" + process.readAllStandardError());
             if (!analyzerInfoFile.isEmpty()) {
                 QFile f(analyzerInfoFile + '.' + addon + "-results");
                 if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -333,6 +333,21 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
+
+        if (line.startsWith("Assertion failed:")) {
+            ErrorItem e;
+            e.errorPath.append(QErrorPathItem());
+            e.errorPath.last().file = file0;
+            e.errorPath.last().line = 1;
+            e.errorPath.last().col  = 1;
+            e.errorId = tool + "-internal-error";
+            e.file0 = file0;
+            e.message = line;
+            e.severity = Severity::information;
+            errorItems.append(e);
+            continue;
+        }
+
         if (!r1.exactMatch(line))
             continue;
         if (r1.cap(4) != "note") {
@@ -380,7 +395,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         const std::string f0 = file0.toStdString();
         const std::string msg = e.message.toStdString();
         const std::string id = e.errorId.toStdString();
-        ErrorLogger::ErrorMessage errmsg(callstack, f0, errorItem.severity, msg, id, false);
+        ErrorLogger::ErrorMessage errmsg(callstack, f0, e.severity, msg, id, false);
         mResult.reportErr(errmsg);
     }
 }
