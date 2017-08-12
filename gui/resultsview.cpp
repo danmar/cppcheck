@@ -212,7 +212,7 @@ void ResultsView::printPreview()
 {
     QPrinter printer;
     QPrintPreviewDialog dialog(&printer, this);
-    connect(&dialog, SIGNAL(paintRequested(QPrinter*)), SLOT(print(QPrinter*)));
+    connect(&dialog, &QPrintPreviewDialog::paintRequested, this, QOverload<QPrinter*>::of(&ResultsView::print));
     dialog.exec();
 }
 

@@ -31,7 +31,6 @@ FileViewDialog::FileViewDialog(const QString &file,
 
 
     setWindowTitle(title);
-    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
     loadTextFile(file, mUI.mText);
 }
 

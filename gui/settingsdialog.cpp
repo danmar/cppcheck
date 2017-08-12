@@ -56,22 +56,14 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);
     connect(mUI.mButtons, &QDialogButtonBox::rejected, this, &SettingsDialog::reject);
-    connect(mUI.mBtnAddApplication, SIGNAL(clicked()),
-            this, SLOT(addApplication()));
-    connect(mUI.mBtnRemoveApplication, SIGNAL(clicked()),
-            this, SLOT(removeApplication()));
-    connect(mUI.mBtnEditApplication, SIGNAL(clicked()),
-            this, SLOT(editApplication()));
-    connect(mUI.mBtnDefaultApplication, SIGNAL(clicked()),
-            this, SLOT(defaultApplication()));
-    connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
-            this, SLOT(editApplication()));
-    connect(mUI.mBtnAddIncludePath, SIGNAL(clicked()),
-            this, SLOT(addIncludePath()));
-    connect(mUI.mBtnRemoveIncludePath, SIGNAL(clicked()),
-            this, SLOT(removeIncludePath()));
-    connect(mUI.mBtnEditIncludePath, SIGNAL(clicked()),
-            this, SLOT(editIncludePath()));
+    connect(mUI.mBtnAddApplication, &QPushButton::clicked, this, &SettingsDialog::addApplication);
+    connect(mUI.mBtnRemoveApplication, &QPushButton::clicked, this, &SettingsDialog::removeApplication);
+    connect(mUI.mBtnEditApplication, &QPushButton::clicked, this, &SettingsDialog::editApplication);
+    connect(mUI.mBtnDefaultApplication, &QPushButton::clicked, this, &SettingsDialog::defaultApplication);
+    connect(mUI.mListWidget, &QListWidget::itemDoubleClicked, this, &SettingsDialog::editApplication);
+    connect(mUI.mBtnAddIncludePath, &QPushButton::clicked, this, QOverload<>::of(&SettingsDialog::addIncludePath));
+    connect(mUI.mBtnRemoveIncludePath, &QPushButton::clicked, this, &SettingsDialog::removeIncludePath);
+    connect(mUI.mBtnEditIncludePath, &QPushButton::clicked, this, &SettingsDialog::editIncludePath);
 
     mUI.mListWidget->setSortingEnabled(false);
     populateApplicationList();
@@ -333,6 +325,10 @@ void SettingsDialog::addIncludePath()
 void SettingsDialog::removeIncludePath()
 {
     const int row = mUI.mListIncludePaths->currentRow();
+
+    if (row < 0)
+	    return;
+
     QListWidgetItem *item = mUI.mListIncludePaths->takeItem(row);
     delete item;
 }
@@ -340,5 +336,9 @@ void SettingsDialog::removeIncludePath()
 void SettingsDialog::editIncludePath()
 {
     QListWidgetItem *item = mUI.mListIncludePaths->currentItem();
+
+    if (item == nullptr)
+        return;
+
     mUI.mListIncludePaths->editItem(item);
 }

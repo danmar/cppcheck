@@ -576,13 +576,12 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(start);
 
             //Connect the signal to signal mapper
-            connect(start, SIGNAL(triggered()), signalMapper, SLOT(map()));
+            connect(start, &QAction::triggered, signalMapper, QOverload<>::of(&QSignalMapper::map));
 
             //Add a new mapping
             signalMapper->setMapping(start, defaultApplicationIndex);
 
-            connect(signalMapper, SIGNAL(mapped(int)),
-                    this, SLOT(context(int)));
+            connect(signalMapper, QOverload<int>::of(&QSignalMapper::mapped), this, &ResultsTree::context);
         }
 
         // Add menuitems to copy full path/filename to clipboard
@@ -623,14 +622,14 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(hideallid);
             menu.addAction(opencontainingfolder);
 
-            connect(recheckSelectedFiles, SIGNAL(triggered()), this, SLOT(recheckSelectedFiles()));
-            connect(copyfilename, SIGNAL(triggered()), this, SLOT(copyFilename()));
-            connect(copypath, SIGNAL(triggered()), this, SLOT(copyFullPath()));
-            connect(copymessage, SIGNAL(triggered()), this, SLOT(copyMessage()));
-            connect(copymessageid, SIGNAL(triggered()), this, SLOT(copyMessageId()));
-            connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
-            connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
-            connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));
+            connect(recheckSelectedFiles, &QAction::triggered, this, &ResultsTree::recheckSelectedFiles);
+            connect(copyfilename, &QAction::triggered, this, &ResultsTree::copyFilename);
+            connect(copypath, &QAction::triggered, this, &ResultsTree::copyFullPath);
+            connect(copymessage, &QAction::triggered, this, &ResultsTree::copyMessage);
+            connect(copymessageid, &QAction::triggered, this, &ResultsTree::copyMessageId);
+            connect(hide, &QAction::triggered, this, &ResultsTree::hideResult);
+            connect(hideallid, &QAction::triggered, this, &ResultsTree::hideAllIdResult);
+            connect(opencontainingfolder, &QAction::triggered, this, &ResultsTree::openContainingFolder);
 
             menu.addSeparator();
             QAction *fp       = new QAction(tr("False positive"), &menu);
@@ -653,11 +652,10 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 //Disconnect all signals
                 for (int i = 0; i < actions.size(); i++) {
 
-                    disconnect(actions[i], SIGNAL(triggered()), signalMapper, SLOT(map()));
+                    disconnect(actions[i], &QAction::triggered, signalMapper, QOverload<>::of(&QSignalMapper::map));
                 }
 
-                disconnect(signalMapper, SIGNAL(mapped(int)),
-                           this, SLOT(context(int)));
+                disconnect(signalMapper, QOverload<int>::of(&QSignalMapper::mapped), this, &ResultsTree::context);
                 //And remove the signal mapper
                 delete signalMapper;
             }
