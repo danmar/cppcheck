@@ -21,7 +21,6 @@
 #include <QFileInfo>
 #include <QTextDocument>
 #include <QWidget>
-#include <QDialog>
 #include <QString>
 #include <QClipboard>
 #include <QMimeData>
@@ -37,6 +36,8 @@ StatsDialog::StatsDialog(QWidget *parent)
 {
     mUI.setupUi(this);
 
+    setWindowFlags(Qt::Window);
+
     connect(mUI.mCopyToClipboard, &QPushButton::pressed, this, &StatsDialog::copyToClipboard);
     connect(mUI.mPDFexport, &QPushButton::pressed, this, &StatsDialog::pdfExport);
 }
@@ -51,48 +52,21 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
 #ifndef HAVE_QCHART
         mUI.mTabHistory->setVisible(false);
 #else
+        QString statsFile;
         if (!projectFile->getBuildDir().isEmpty()) {
             const QString prjpath = QFileInfo(projectFile->getFilename()).absolutePath();
             const QString buildDir = prjpath + '/' + projectFile->getBuildDir();
             if (QDir(buildDir).exists()) {
-                QChart *chart = new QChart();
-                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "cppcheck-error"));
-                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "cppcheck-warning"));
-                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "cppcheck-style"));
-                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "cppcheck-performance"));
-                chart->addSeries(numberOfReports(buildDir + "/statistics.txt", "cppcheck-portability"));
-
-                QDateTimeAxis *axisX = new QDateTimeAxis;
-                axisX->setFormat("MMM yyyy");
-                axisX->setTitleText("Date");
-                chart->addAxis(axisX, Qt::AlignBottom);
-
-                foreach (QAbstractSeries *s, chart->series()) {
-                    s->attachAxis(axisX);
-                }
-
-                QValueAxis *axisY = new QValueAxis;
-                axisY->setLabelFormat("%i");
-                axisY->setTitleText("Count");
-                chart->addAxis(axisY, Qt::AlignLeft);
-
-                qreal maxY = 0;
-                foreach (QAbstractSeries *s, chart->series()) {
-                    s->attachAxis(axisY);
-                    if (QLineSeries *ls = dynamic_cast<QLineSeries*>(s)) {
-                        foreach (QPointF p, ls->points()) {
-                            if (p.y() > maxY)
-                                maxY = p.y();
-                        }
-                    }
-                }
-                axisY->setMax(maxY);
-
-                //chart->createDefaultAxes();
-                chart->setTitle("Number of reports");
-
-                QChartView *chartView = new QChartView(chart);
-                chartView->setRenderHint(QPainter::Antialiasing);
+                statsFile = buildDir + "/statistics.txt";
+            }
+        }
+        mUI.mLblHistoryFile->setText(tr("File: ") + (statsFile.isEmpty() ? tr("No cppcheck build dir") : statsFile));
+        if (!statsFile.isEmpty()) {
+            QChartView *chartView;
+            chartView = createChart(statsFile, "cppcheck");
+            mUI.mTabHistory->layout()->addWidget(chartView);
+            if (projectFile->getAddons().contains("clang-tidy")) {
+                chartView = createChart(statsFile, "clang-tidy");
                 mUI.mTabHistory->layout()->addWidget(chartView);
             }
         }
@@ -344,6 +318,49 @@ void StatsDialog::setStatistics(const CheckStatistics *stats)
 }
 
 #ifdef HAVE_QCHART
+QChartView *StatsDialog::createChart(const QString &statsFile, const QString &tool)
+{
+    QChart *chart = new QChart;
+    chart->addSeries(numberOfReports(statsFile, tool + "-error"));
+    chart->addSeries(numberOfReports(statsFile, tool + "-warning"));
+    chart->addSeries(numberOfReports(statsFile, tool + "-style"));
+    chart->addSeries(numberOfReports(statsFile, tool + "-performance"));
+    chart->addSeries(numberOfReports(statsFile, tool + "-portability"));
+
+    QDateTimeAxis *axisX = new QDateTimeAxis;
+    axisX->setFormat("MMM yyyy");
+    axisX->setTitleText("Date");
+    chart->addAxis(axisX, Qt::AlignBottom);
+
+    foreach (QAbstractSeries *s, chart->series()) {
+        s->attachAxis(axisX);
+    }
+
+    QValueAxis *axisY = new QValueAxis;
+    axisY->setLabelFormat("%i");
+    axisY->setTitleText("Count");
+    chart->addAxis(axisY, Qt::AlignLeft);
+
+    qreal maxY = 0;
+    foreach (QAbstractSeries *s, chart->series()) {
+        s->attachAxis(axisY);
+        if (QLineSeries *ls = dynamic_cast<QLineSeries*>(s)) {
+            foreach (QPointF p, ls->points()) {
+                if (p.y() > maxY)
+                    maxY = p.y();
+            }
+        }
+    }
+    axisY->setMax(maxY);
+
+    //chart->createDefaultAxes();
+    chart->setTitle(tool);
+
+    QChartView *chartView = new QChartView(chart);
+    chartView->setRenderHint(QPainter::Antialiasing);
+    return chartView;
+}
+
 QLineSeries *StatsDialog::numberOfReports(const QString &fileName, const QString &severity) const
 {
     QLineSeries *series = new QLineSeries();

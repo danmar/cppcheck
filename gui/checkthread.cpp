@@ -368,6 +368,12 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         if (r2.exactMatch(r1.cap(5))) {
             message = r2.cap(1);
             id = tool + '-' + r2.cap(2);
+            if (r2.cap(2) == "performance")
+                errorItem.severity = Severity::SeverityType::performance;
+            else if (r2.cap(2) == "portability")
+                errorItem.severity = Severity::SeverityType::portability;
+            else if (r2.cap(2) == "readability")
+                errorItem.severity = Severity::SeverityType::style;
         } else {
             message = r1.cap(5);
             id = CLANG;

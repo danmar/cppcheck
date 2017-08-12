@@ -344,9 +344,9 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QLabel" name="label_7">
+        <widget class="QLabel" name="mLblHistoryFile">
          <property name="text">
-          <string>Reported warnings</string>
+          <string>File:</string>
          </property>
         </widget>
        </item>
