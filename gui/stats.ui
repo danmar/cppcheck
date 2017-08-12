@@ -20,7 +20,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="mProjectTab">
       <attribute name="title">
@@ -335,6 +335,20 @@
           </widget>
          </item>
         </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="mTabHistory">
+      <attribute name="title">
+       <string>History</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLabel" name="mLblHistoryFile">
+         <property name="text">
+          <string>File:</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

@@ -64,6 +64,14 @@ public:
         mClangPath = p;
     }
 
+    void setClangIncludePaths(const QStringList &s) {
+        mClangIncludePaths = s;
+    }
+
+    void setSuppressions(const QStringList s) {
+        mSuppressions = s;
+    }
+
     /**
     * @brief method that is run in a thread
     *
@@ -115,13 +123,15 @@ private:
     void runAddons(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName);
 
     void parseAddonErrors(QString err, QString tool);
-    void parseClangErrors(QString err);
+    void parseClangErrors(const QString &tool, const QString &file0, QString err);
 
     QStringList mFiles;
     bool mAnalyseWholeProgram;
     QStringList mAddons;
     QString mDataDir;
     QString mClangPath;
+    QStringList mClangIncludePaths;
+    QStringList mSuppressions;
 };
 /// @}
 #endif // CHECKTHREAD_H

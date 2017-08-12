@@ -29,6 +29,7 @@ static const char ProjectVersionAttrib[] = "version";
 static const char ProjectFileVersion[] = "1";
 static const char BuildDirElementName[] = "builddir";
 static const char ImportProjectElementName[] = "importproject";
+static const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
 static const char IncludeDirElementName[] = "includedir";
 static const char DirElementName[] = "dir";
 static const char DirNameAttrib[] = "name";
@@ -56,13 +57,30 @@ static const char AddonsElementName[] = "addons";
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
 {
+    clear();
 }
 
 ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
     QObject(parent),
     mFilename(filename)
 {
+    clear();
     read();
+}
+
+void ProjectFile::clear()
+{
+    mRootPath.clear();
+    mBuildDir.clear();
+    mImportProject.clear();
+    mAnalyzeAllVsConfigs = true;
+    mIncludeDirs.clear();
+    mDefines.clear();
+    mPaths.clear();
+    mExcludedPaths.clear();
+    mLibraries.clear();
+    mSuppressions.clear();
+    mAddons.clear();
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -73,6 +91,8 @@ bool ProjectFile::read(const QString &filename)
     QFile file(mFilename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return false;
+
+    clear();
 
     QXmlStreamReader xmlReader(&file);
     bool insideProject = false;
@@ -98,6 +118,9 @@ bool ProjectFile::read(const QString &filename)
 
             if (insideProject && xmlReader.name() == ImportProjectElementName)
                 readImportProject(xmlReader);
+
+            if (insideProject && xmlReader.name() == AnalyzeAllVsConfigsElementName)
+                readAnalyzeAllVsConfigs(xmlReader);
 
             // Find include directory from inside project element
             if (insideProject && xmlReader.name() == IncludeDirElementName)
@@ -194,6 +217,30 @@ void ProjectFile::readImportProject(QXmlStreamReader &reader)
         switch (type) {
         case QXmlStreamReader::Characters:
             mImportProject = reader.text().toString();
+        case QXmlStreamReader::EndElement:
+            return;
+        // Not handled
+        case QXmlStreamReader::StartElement:
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (1);
+}
+
+void ProjectFile::readAnalyzeAllVsConfigs(QXmlStreamReader &reader)
+{
+    do {
+        const QXmlStreamReader::TokenType type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::Characters:
+            mAnalyzeAllVsConfigs = (reader.text().toString() == "true");
         case QXmlStreamReader::EndElement:
             return;
         // Not handled
@@ -476,6 +523,10 @@ bool ProjectFile::write(const QString &filename)
         xmlWriter.writeCharacters(mImportProject);
         xmlWriter.writeEndElement();
     }
+
+    xmlWriter.writeStartElement(AnalyzeAllVsConfigsElementName);
+    xmlWriter.writeCharacters(mAnalyzeAllVsConfigs ? "true" : "false");
+    xmlWriter.writeEndElement();
 
     if (!mIncludeDirs.isEmpty()) {
         xmlWriter.writeStartElement(IncludeDirElementName);

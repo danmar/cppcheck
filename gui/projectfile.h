@@ -62,6 +62,10 @@ public:
         return mImportProject;
     }
 
+    bool getAnalyzeAllVsConfigs() const {
+        return mAnalyzeAllVsConfigs;
+    }
+
     /**
     * @brief Get list of include directories.
     * @return list of directories.
@@ -143,6 +147,10 @@ public:
         mImportProject = importProject;
     }
 
+    void setAnalyzeAllVsConfigs(bool b) {
+        mAnalyzeAllVsConfigs = b;
+    }
+
     /**
      * @brief Set list of includes.
      * @param includes List of defines.
@@ -215,6 +223,8 @@ protected:
      */
     void readImportProject(QXmlStreamReader &reader);
 
+    void readAnalyzeAllVsConfigs(QXmlStreamReader &reader);
+
     /**
      * @brief Read list of include directories from XML.
      * @param reader XML stream reader.
@@ -258,6 +268,8 @@ protected:
 
 private:
 
+    void clear();
+
     /**
      * @brief Convert paths
      */
@@ -281,6 +293,13 @@ private:
 
     /** Visual studio project/solution , compile database */
     QString mImportProject;
+
+    /**
+     * Should all visual studio configurations be analyzed?
+     * If this is false then only the Debug configuration
+     * for the set platform is analyzed.
+     */
+    bool mAnalyzeAllVsConfigs;
 
     /**
      * @brief List of include directories used to search include files.

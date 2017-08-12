@@ -1209,7 +1209,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (Token::simpleMatch(tok, "for ("))
             forHeadEnd = tok->linkAt(1);
         if (tok == forHeadEnd)
-            forHeadEnd = 0;
+            forHeadEnd = nullptr;
 
         if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != Scope::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
             loopVariable = false;

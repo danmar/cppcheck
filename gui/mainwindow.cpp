@@ -127,6 +127,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mResults, &ResultsView::resultsHidden, mUI.mActionShowHidden, &QAction::setEnabled);
     connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
     connect(mUI.mResults, &ResultsView::tagged, this, &MainWindow::tagged);
+    connect(mUI.mResults, &ResultsView::suppressIds, this, &MainWindow::suppressIds);
     connect(mUI.mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
 
     // File menu
@@ -383,6 +384,35 @@ void MainWindow::doAnalyzeProject(ImportProject p)
             v.push_back(i.toStdString());
         }
         p.ignorePaths(v);
+
+        if (!mProjectFile->getAnalyzeAllVsConfigs()) {
+            std::set<std::string> filenames;
+            Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            for (std::list<ImportProject::FileSettings>::iterator it = p.fileSettings.begin(); it != p.fileSettings.end();) {
+                if (it->cfg.empty()) {
+                    ++it;
+                    continue;
+                }
+                const ImportProject::FileSettings &fs = *it;
+                bool remove = false;
+                if (fs.cfg.compare(0,5,"Debug") != 0)
+                    remove = true;
+                if (platform == Settings::Win64 && fs.platformType != platform)
+                    remove = true;
+                else if ((platform == Settings::Win32A || platform == Settings::Win32W) && fs.platformType == Settings::Win64)
+                    remove = true;
+                else if (fs.platformType != Settings::Win64 && platform == Settings::Win64)
+                    remove = true;
+                else if (filenames.find(fs.filename) != filenames.end())
+                    remove = true;
+                if (remove) {
+                    it = p.fileSettings.erase(it);
+                } else {
+                    filenames.insert(fs.filename);
+                    ++it;
+                }
+            }
+        }
     } else {
         enableProjectActions(false);
     }
@@ -413,10 +443,21 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     //mThread->SetanalyzeProject(true);
     if (mProjectFile) {
         mThread->setAddons(mProjectFile->getAddons());
+        QString clangHeaders = mSettings->value(SETTINGS_CLANG_HEADERS).toString();
+        QStringList includePaths;
+        if (!clangHeaders.isEmpty()) {
+            includePaths << clangHeaders << (clangHeaders+"/ATLMFC") << (clangHeaders+"/c++") << (clangHeaders+"/c++/i686-w64-mingw32");
+        }
+        mThread->setClangIncludePaths(includePaths);
 #ifdef Q_OS_WIN
-        // Try to autodetect clang
-        if (QFileInfo("C:/Program Files/LLVM/bin/clang.exe").exists())
-            mThread->setClangPath("C:/Program Files/LLVM/bin");
+        QString clangPath = mSettings->value(SETTINGS_CLANG_PATH,QString()).toString();
+        if (clangPath.isEmpty()) {
+            // Try to autodetect clang
+            if (QFileInfo("C:/Program Files/LLVM/bin/clang.exe").exists())
+                clangPath = "C:/Program Files/LLVM/bin";
+        }
+        mThread->setClangPath(clangPath);
+        mThread->setSuppressions(mProjectFile->getSuppressions());
 #endif
     }
     mThread->setProject(p);
@@ -553,6 +594,8 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
 
 void MainWindow::analyzeFiles()
 {
+    Settings::terminate(false);
+
     QStringList selected = selectFilesToAnalyze(QFileDialog::ExistingFiles);
 
     const QString file0 = (selected.size() ? selected[0].toLower() : QString());
@@ -1365,6 +1408,8 @@ bool MainWindow::loadLastResults()
 
 void MainWindow::analyzeProject(const ProjectFile *projectFile)
 {
+    Settings::terminate(false);
+
     QFileInfo inf(projectFile->getFilename());
     const QString rootpath = projectFile->getRootPath();
 
@@ -1460,6 +1505,7 @@ void MainWindow::closeProjectFile()
 {
     delete mProjectFile;
     mProjectFile = nullptr;
+    mUI.mResults->clear(true);
     enableProjectActions(false);
     enableProjectOpenActions(true);
     formatAndSetTitle();
@@ -1645,4 +1691,17 @@ void MainWindow::tagged()
     const QString &lastResults = getLastResults();
     if (!lastResults.isEmpty())
         mUI.mResults->save(lastResults, Report::XMLV2);
+}
+
+void MainWindow::suppressIds(QStringList ids)
+{
+    if (mProjectFile) {
+        QStringList suppressions = mProjectFile->getSuppressions();
+        foreach (QString s, ids) {
+            if (!suppressions.contains(s))
+                suppressions << s;
+        }
+        mProjectFile->setSuppressions(suppressions);
+        mProjectFile->write();
+    }
 }

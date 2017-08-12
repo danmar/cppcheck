@@ -65,8 +65,8 @@ private:
     void boostForeachError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckBoost c(0, settings, errorLogger);
-        c.boostForeachError(0);
+        CheckBoost c(nullptr, settings, errorLogger);
+        c.boostForeachError(nullptr);
     }
 
     static std::string myName() {

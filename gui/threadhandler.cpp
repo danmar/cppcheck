@@ -48,6 +48,7 @@ void ThreadHandler::clearFiles()
     mResults.clearFiles();
     mAnalyseWholeProgram = false;
     mAddons.clear();
+    mSuppressions.clear();
 }
 
 void ThreadHandler::setFiles(const QStringList &files)
@@ -94,7 +95,9 @@ void ThreadHandler::check(const Settings &settings)
 
     for (int i = 0; i < mRunningThreadCount; i++) {
         mThreads[i]->setAddons(mAddons);
+        mThreads[i]->setSuppressions(mSuppressions);
         mThreads[i]->setClangPath(mClangPath);
+        mThreads[i]->setClangIncludePaths(mClangIncludePaths);
         mThreads[i]->setDataDir(mDataDir);
         mThreads[i]->check(settings);
     }

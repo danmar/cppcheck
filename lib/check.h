@@ -146,7 +146,7 @@ protected:
     /** report an error */
     template<typename T, typename U>
     void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
-        const ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer?&_tokenizer->list:0, severity, id, msg, cwe, inconclusive);
+        const ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer ? &_tokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
         else

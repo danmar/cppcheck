@@ -55,6 +55,16 @@ ErrorItem::ErrorItem(const ErrorLogger::ErrorMessage &errmsg)
     }
 }
 
+QString ErrorItem::tool() const
+{
+    if (errorId == "clang")
+        return "clang";
+    if (errorId.startsWith("clang-tidy"))
+        return "clang-tidy";
+    if (errorId.startsWith("clang-"))
+        return "clang";
+    return "cppcheck";
+}
 
 QString ErrorItem::ToString() const
 {

@@ -75,8 +75,16 @@ public:
         mAddons = addons;
     }
 
+    void setSuppressions(const QStringList &s) {
+        mSuppressions = s;
+    }
+
     void setClangPath(const QString &p) {
         mClangPath = p;
+    }
+
+    void setClangIncludePaths(const QStringList &s) {
+        mClangIncludePaths = s;
     }
 
     void setDataDir(const QString &dataDir) {
@@ -246,7 +254,9 @@ protected:
     bool mAnalyseWholeProgram;
 
     QStringList mAddons;
+    QStringList mSuppressions;
     QString mClangPath;
+    QStringList mClangIncludePaths;
 
     QString mDataDir;
 private:

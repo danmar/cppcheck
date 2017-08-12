@@ -703,8 +703,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                     _settings->platform(Settings::Unix32);
                 else if (platform == "unix64")
                     _settings->platform(Settings::Unix64);
-                else if (platform == "avr8")
-                    _settings->platform(Settings::AVR8);
                 else if (platform == "native")
                     _settings->platform(Settings::Native);
                 else if (platform == "unspecified")

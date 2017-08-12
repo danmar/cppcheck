@@ -1,7 +1,6 @@
 if (BUILD_GUI)
 
     set(CMAKE_AUTOMOC ON)
-    include(${QT_USE_FILE})
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
         add_definitions(-DQT_NO_DEBUG)
         add_definitions(-DQT_NO_DEBUG_OUTPUT)
@@ -17,16 +16,15 @@ if (BUILD_GUI)
     file(GLOB srcs "*.cpp")
     file(GLOB uis  "*.ui")
     file(GLOB tss  "*.ts")
-    QT4_WRAP_UI(uis_hdrs ${uis})
-    QT4_ADD_RESOURCES(resources "gui.qrc")
-    QT4_ADD_TRANSLATION(qms ${tss})
+    QT5_WRAP_UI(uis_hdrs ${uis})
+    QT5_ADD_RESOURCES(resources "gui.qrc")
+    QT5_ADD_TRANSLATION(qms ${tss})
 
     add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:tinyxml_objs> $<TARGET_OBJECTS:simplecpp_objs>)
-    target_link_libraries(cppcheck-gui ${QT_LIBRARIES})
     if (HAVE_RULES)
         target_link_libraries(cppcheck-gui pcre)
     endif()
-
+    qt5_use_modules(cppcheck-gui ${GUI_QT_COMPONENTS})
 
     install(TARGETS cppcheck-gui RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)
     install(FILES ${qms} DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)

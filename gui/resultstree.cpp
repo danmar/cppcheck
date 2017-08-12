@@ -128,7 +128,8 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
         return false;
     }
 
-    QString realfile = stripPath(item.errorPath.back().file, false);
+    const QErrorPathItem &loc = item.errorId.startsWith("clang") ? item.errorPath.front() : item.errorPath.back();
+    QString realfile = stripPath(loc.file, false);
 
     if (realfile.isEmpty()) {
         realfile = tr("Undefined file");
@@ -153,7 +154,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
 
     ErrorLine line;
     line.file = realfile;
-    line.line = item.errorPath.back().line;
+    line.line = loc.line;
     line.errorId = item.errorId;
     line.inconclusive = item.inconclusive;
     line.summary = item.summary;
@@ -163,7 +164,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     line.tag       = item.tag;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
-    QStandardItem* fileItem = ensureFileItem(item.errorPath.back().file, item.file0, hide);
+    QStandardItem* fileItem = ensureFileItem(loc.file, item.file0, hide);
     QStandardItem* stditem = addBacktraceFiles(fileItem,
                              line,
                              hide,
@@ -179,8 +180,9 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data["severity"]  = ShowTypes::SeverityToShowType(item.severity);
     data["summary"] = item.summary;
     data["message"]  = item.message;
-    data["file"]  = item.errorPath.back().file;
-    data["line"]  = item.errorPath.back().line;
+    data["file"]  = loc.file;
+    data["line"]  = loc.line;
+    data["col"] = loc.col;
     data["id"]  = item.errorId;
     data["inconclusive"] = item.inconclusive;
     data["file0"] = stripPath(item.file0, true);
@@ -211,6 +213,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             child_data["message"]  = line.message;
             child_data["file"]  = e.file;
             child_data["line"]  = e.line;
+            child_data["col"] = e.col;
             child_data["id"]  = line.errorId;
             child_data["inconclusive"] = line.inconclusive;
             child_item->setData(QVariant(child_data));
@@ -598,6 +601,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             QAction *copymessageid          = new QAction(tr("Copy message id"), &menu);
             QAction *hide                   = new QAction(tr("Hide"), &menu);
             QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
+            QAction *suppress               = new QAction(tr("Suppress selected id(s)"), &menu);
             QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
             if (multipleSelection) {
@@ -620,8 +624,9 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(copymessageid);
             menu.addAction(hide);
             menu.addAction(hideallid);
+            menu.addAction(suppress);
             menu.addAction(opencontainingfolder);
-
+          
             connect(recheckSelectedFiles, &QAction::triggered, this, &ResultsTree::recheckSelectedFiles);
             connect(copyfilename, &QAction::triggered, this, &ResultsTree::copyFilename);
             connect(copypath, &QAction::triggered, this, &ResultsTree::copyFullPath);
@@ -629,6 +634,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             connect(copymessageid, &QAction::triggered, this, &ResultsTree::copyMessageId);
             connect(hide, &QAction::triggered, this, &ResultsTree::hideResult);
             connect(hideallid, &QAction::triggered, this, &ResultsTree::hideAllIdResult);
+            connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
             connect(opencontainingfolder, &QAction::triggered, this, &ResultsTree::openContainingFolder);
 
             menu.addSeparator();
@@ -929,6 +935,43 @@ void ResultsTree::hideAllIdResult()
         refreshTree();
         emit resultsHidden(true);
     }
+}
+
+void ResultsTree::suppressSelectedIds()
+{
+    if (!mSelectionModel)
+        return;
+
+    QModelIndexList selectedRows = mSelectionModel->selectedRows();
+    QSet<QString> selectedIds;
+    foreach (QModelIndex index, selectedRows) {
+        QStandardItem *item = mModel.itemFromIndex(index);
+        if (!item->parent())
+            continue;
+        if (item->parent()->parent())
+            item = item->parent();
+        QVariantMap data = item->data().toMap();
+        if (!data.contains("id"))
+            continue;
+        selectedIds << data["id"].toString();
+    }
+
+    // delete all errors with selected message Ids
+    for (int i = 0; i < mModel.rowCount(); i++) {
+        QStandardItem * const file = mModel.item(i, 0);
+        for (int j = 0; j < file->rowCount(); ) {
+            QStandardItem *errorItem = file->child(j, 0);
+            QVariantMap userdata = errorItem->data().toMap();
+            if (selectedIds.contains(userdata["id"].toString())) {
+                file->removeRow(j);
+            } else {
+                j++;
+            }
+        }
+    }
+
+
+    emit suppressIds(selectedIds.toList());
 }
 
 void ResultsTree::openContainingFolder()

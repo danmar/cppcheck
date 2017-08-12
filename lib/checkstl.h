@@ -212,7 +212,7 @@ private:
         c.string_c_strReturn(nullptr);
         c.string_c_strParam(nullptr, 0);
         c.sizeError(nullptr);
-        c.missingComparisonError(nullptr, 0);
+        c.missingComparisonError(nullptr, nullptr);
         c.redundantIfRemoveError(nullptr);
         c.autoPointerError(nullptr);
         c.autoPointerContainerError(nullptr);

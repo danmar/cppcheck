@@ -87,7 +87,7 @@ namespace cppcheck {
             Win64,
             Unix32,
             Unix64,
-            AVR8
+            PlatformFile
         };
 
         /** platform type */
@@ -125,8 +125,8 @@ namespace cppcheck {
                 return "unix32";
             case Unix64:
                 return "unix64";
-            case AVR8:
-                return "avr8";
+            case PlatformFile:
+                return "platformFile";
             default:
                 return "unknown";
             }

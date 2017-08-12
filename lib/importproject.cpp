@@ -216,7 +216,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
                         break;
                     char F = command[pos++];
                     std::string fval;
-                    while (pos < command.size() && command[pos] != ' ') {
+                    while (pos < command.size() && command[pos] != ' ' && command[pos] != '=') {
                         if (command[pos] != '\\')
                             fval += command[pos];
                         pos++;
@@ -493,17 +493,17 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
     for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
         for (std::list<ProjectConfiguration>::const_iterator p = projectConfigurationList.begin(); p != projectConfigurationList.end(); ++p) {
             FileSettings fs;
-            fs.filename = Path::simplifyPath(Path::getPathFromFilename(filename) + *c);
+            fs.filename = Path::simplifyPath(Path::isAbsolute(*c) ? *c : Path::getPathFromFilename(filename) + *c);
             fs.cfg = p->name;
-            fs.defines = "_MSC_VER=1900;_WIN32=1";
+            fs.msc = true;
+            fs.useMfc = useOfMfc;
+            fs.defines = "_WIN32=1";
             if (p->platform == ProjectConfiguration::Win32)
                 fs.platformType = cppcheck::Platform::Win32W;
             else if (p->platform == ProjectConfiguration::x64) {
                 fs.platformType = cppcheck::Platform::Win64;
                 fs.defines += ";_WIN64=1";
             }
-            if (useOfMfc)
-                fs.defines += ";__AFXWIN_H__";
             std::string additionalIncludePaths;
             for (std::list<ItemDefinitionGroup>::const_iterator i = itemDefinitionGroupList.begin(); i != itemDefinitionGroupList.end(); ++i) {
                 if (!i->conditionIsTrue(*p))

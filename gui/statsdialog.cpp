@@ -21,7 +21,6 @@
 #include <QFileInfo>
 #include <QTextDocument>
 #include <QWidget>
-#include <QDialog>
 #include <QString>
 #include <QClipboard>
 #include <QMimeData>
@@ -29,11 +28,15 @@
 #include "statsdialog.h"
 #include "checkstatistics.h"
 
+static const QString CPPCHECK("cppcheck");
+
 StatsDialog::StatsDialog(QWidget *parent)
     : QDialog(parent),
       mStatistics(nullptr)
 {
     mUI.setupUi(this);
+
+    setWindowFlags(Qt::Window);
 
     connect(mUI.mCopyToClipboard, &QPushButton::pressed, this, &StatsDialog::copyToClipboard);
     connect(mUI.mPDFexport, &QPushButton::pressed, this, &StatsDialog::pdfExport);
@@ -46,6 +49,28 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
         mUI.mPaths->setText(projectFile->getCheckPaths().join(";"));
         mUI.mIncludePaths->setText(projectFile->getIncludeDirs().join(";"));
         mUI.mDefines->setText(projectFile->getDefines().join(";"));
+#ifndef HAVE_QCHART
+        mUI.mTabHistory->setVisible(false);
+#else
+        QString statsFile;
+        if (!projectFile->getBuildDir().isEmpty()) {
+            const QString prjpath = QFileInfo(projectFile->getFilename()).absolutePath();
+            const QString buildDir = prjpath + '/' + projectFile->getBuildDir();
+            if (QDir(buildDir).exists()) {
+                statsFile = buildDir + "/statistics.txt";
+            }
+        }
+        mUI.mLblHistoryFile->setText(tr("File: ") + (statsFile.isEmpty() ? tr("No cppcheck build dir") : statsFile));
+        if (!statsFile.isEmpty()) {
+            QChartView *chartView;
+            chartView = createChart(statsFile, "cppcheck");
+            mUI.mTabHistory->layout()->addWidget(chartView);
+            if (projectFile->getAddons().contains("clang-tidy")) {
+                chartView = createChart(statsFile, "clang-tidy");
+                mUI.mTabHistory->layout()->addWidget(chartView);
+            }
+        }
+#endif
     } else {
         mUI.mProject->setText(QString());
         mUI.mPaths->setText(QString());
@@ -105,17 +130,17 @@ void StatsDialog::pdfExport()
                          .arg(tr("Statistics"))
                          .arg(QDate::currentDate().toString("dd.MM.yyyy"))
                          .arg(tr("Errors"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowErrors))
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowErrors))
                          .arg(tr("Warnings"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowWarnings))
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowWarnings))
                          .arg(tr("Style warnings"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowStyle))
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowStyle))
                          .arg(tr("Portability warnings"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowPortability))
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPortability))
                          .arg(tr("Performance warnings"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowPerformance))
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPerformance))
                          .arg(tr("Information messages"))
-                         .arg(mStatistics->getCount(ShowTypes::ShowInformation));
+                         .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowInformation));
 
     QString fileName = QFileDialog::getSaveFileName((QWidget*)0, tr("Export PDF"), QString(), "*.pdf");
     if (QFileInfo(fileName).suffix().isEmpty()) {
@@ -199,17 +224,17 @@ void StatsDialog::copyToClipboard()
                                )
                                .arg(stats)
                                .arg(errors)
-                               .arg(mStatistics->getCount(ShowTypes::ShowErrors))
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowErrors))
                                .arg(warnings)
-                               .arg(mStatistics->getCount(ShowTypes::ShowWarnings))
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowWarnings))
                                .arg(style)
-                               .arg(mStatistics->getCount(ShowTypes::ShowStyle))
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowStyle))
                                .arg(portability)
-                               .arg(mStatistics->getCount(ShowTypes::ShowPortability))
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPortability))
                                .arg(performance)
-                               .arg(mStatistics->getCount(ShowTypes::ShowPerformance))
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPerformance))
                                .arg(information)
-                               .arg(mStatistics->getCount(ShowTypes::ShowInformation));
+                               .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowInformation));
 
     const QString textSummary = settings + previous + statistics;
 
@@ -261,17 +286,17 @@ void StatsDialog::copyToClipboard()
                                    )
                                    .arg(stats)
                                    .arg(errors)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowErrors))
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowErrors))
                                    .arg(warnings)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowWarnings))
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowWarnings))
                                    .arg(style)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowStyle))
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowStyle))
                                    .arg(portability)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowPortability))
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPortability))
                                    .arg(performance)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowPerformance))
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowPerformance))
                                    .arg(information)
-                                   .arg(mStatistics->getCount(ShowTypes::ShowInformation));
+                                   .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowInformation));
 
     const QString htmlSummary = htmlSettings + htmlPrevious + htmlStatistics;
 
@@ -284,10 +309,86 @@ void StatsDialog::copyToClipboard()
 void StatsDialog::setStatistics(const CheckStatistics *stats)
 {
     mStatistics = stats;
-    mUI.mLblErrors->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowErrors)));
-    mUI.mLblWarnings->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowWarnings)));
-    mUI.mLblStyle->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowStyle)));
-    mUI.mLblPortability->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowPortability)));
-    mUI.mLblPerformance->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowPerformance)));
-    mUI.mLblInformation->setText(QString("%1").arg(stats->getCount(ShowTypes::ShowInformation)));
+    mUI.mLblErrors->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowErrors)));
+    mUI.mLblWarnings->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowWarnings)));
+    mUI.mLblStyle->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowStyle)));
+    mUI.mLblPortability->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowPortability)));
+    mUI.mLblPerformance->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowPerformance)));
+    mUI.mLblInformation->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowInformation)));
 }
+
+#ifdef HAVE_QCHART
+QChartView *StatsDialog::createChart(const QString &statsFile, const QString &tool)
+{
+    QChart *chart = new QChart;
+    chart->addSeries(numberOfReports(statsFile, tool + "-error"));
+    chart->addSeries(numberOfReports(statsFile, tool + "-warning"));
+    chart->addSeries(numberOfReports(statsFile, tool + "-style"));
+    chart->addSeries(numberOfReports(statsFile, tool + "-performance"));
+    chart->addSeries(numberOfReports(statsFile, tool + "-portability"));
+
+    QDateTimeAxis *axisX = new QDateTimeAxis;
+    axisX->setFormat("MMM yyyy");
+    axisX->setTitleText("Date");
+    chart->addAxis(axisX, Qt::AlignBottom);
+
+    foreach (QAbstractSeries *s, chart->series()) {
+        s->attachAxis(axisX);
+    }
+
+    QValueAxis *axisY = new QValueAxis;
+    axisY->setLabelFormat("%i");
+    axisY->setTitleText("Count");
+    chart->addAxis(axisY, Qt::AlignLeft);
+
+    qreal maxY = 0;
+    foreach (QAbstractSeries *s, chart->series()) {
+        s->attachAxis(axisY);
+        if (QLineSeries *ls = dynamic_cast<QLineSeries*>(s)) {
+            foreach (QPointF p, ls->points()) {
+                if (p.y() > maxY)
+                    maxY = p.y();
+            }
+        }
+    }
+    axisY->setMax(maxY);
+
+    //chart->createDefaultAxes();
+    chart->setTitle(tool);
+
+    QChartView *chartView = new QChartView(chart);
+    chartView->setRenderHint(QPainter::Antialiasing);
+    return chartView;
+}
+
+QLineSeries *StatsDialog::numberOfReports(const QString &fileName, const QString &severity) const
+{
+    QLineSeries *series = new QLineSeries();
+    series->setName(severity);
+    QFile f(fileName);
+    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        quint64 t = 0;
+        QTextStream in(&f);
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            QRegExp rxdate("\\[(\\d\\d)\\.(\\d\\d)\\.(\\d\\d\\d\\d)\\]");
+            if (rxdate.exactMatch(line)) {
+                int y = rxdate.cap(3).toInt();
+                int m = rxdate.cap(2).toInt();
+                int d = rxdate.cap(1).toInt();
+                QDateTime dt;
+                dt.setDate(QDate(y,m,d));
+                if (t == dt.toMSecsSinceEpoch())
+                    t += 1000;
+                else
+                    t = dt.toMSecsSinceEpoch();
+            }
+            if (line.startsWith(severity + ':')) {
+                int y = line.mid(1+severity.length()).toInt();
+                series->append(t, y);
+            }
+        }
+    }
+    return series;
+}
+#endif

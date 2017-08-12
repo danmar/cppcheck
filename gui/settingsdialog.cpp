@@ -54,6 +54,15 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI.mShowStatistics->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
     mUI.mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
 
+#ifdef Q_OS_WIN
+    //mUI.mTabClang->setVisible(true);
+    mUI.mEditClangPath->setText(settings.value(SETTINGS_CLANG_PATH, QString()).toString());
+    mUI.mEditClangHeaders->setText(settings.value(SETTINGS_CLANG_HEADERS, QString()).toString());
+    connect(mUI.mBtnBrowseClangPath, &QPushButton::released, this, &SettingsDialog::browseClangPath);
+    connect(mUI.mButtonBrowseClangHeaders, &QPushButton::released, this, &SettingsDialog::browseClangHeaders);
+#else
+    mUI.mTabClang->setVisible(false);
+#endif
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);
     connect(mUI.mButtons, &QDialogButtonBox::rejected, this, &SettingsDialog::reject);
     connect(mUI.mBtnAddApplication, &QPushButton::clicked, this, &SettingsDialog::addApplication);
@@ -168,6 +177,11 @@ void SettingsDialog::saveSettingValues() const
     saveCheckboxValue(&settings, mUI.mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
     saveCheckboxValue(&settings, mUI.mShowStatistics, SETTINGS_SHOW_STATISTICS);
     saveCheckboxValue(&settings, mUI.mShowErrorId, SETTINGS_SHOW_ERROR_ID);
+
+#ifdef Q_OS_WIN
+    settings.setValue(SETTINGS_CLANG_PATH, mUI.mEditClangPath->text());
+    settings.setValue(SETTINGS_CLANG_HEADERS, mUI.mEditClangHeaders->text());
+#endif
 
     const QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
     if (currentLang) {
@@ -342,3 +356,27 @@ void SettingsDialog::editIncludePath()
 
     mUI.mListIncludePaths->editItem(item);
 }
+
+void SettingsDialog::browseClangPath()
+{
+    QString selectedDir = QFileDialog::getExistingDirectory(this,
+                          tr("Select clang path"),
+                          QDir::rootPath());
+
+    if (!selectedDir.isEmpty()) {
+        mUI.mEditClangPath->setText(selectedDir);
+    }
+}
+
+void SettingsDialog::browseClangHeaders()
+{
+    QString selectedDir = QFileDialog::getExistingDirectory(this,
+                          tr("Select path for clang headers"),
+                          QDir::homePath());
+
+    if (!selectedDir.isEmpty()) {
+        mUI.mEditClangHeaders->setText(selectedDir);
+    }
+}
+
+

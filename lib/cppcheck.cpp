@@ -93,7 +93,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
 {
     CppCheck temp(_errorLogger, _useGlobalSuppressions);
     temp._settings = _settings;
-    temp._settings.userDefines = fs.defines;
+    temp._settings.userDefines = fs.cppcheckDefines();
     temp._settings.includePaths = fs.includePaths;
     // TODO: temp._settings.userUndefs = fs.undefs;
     if (fs.platformType != Settings::Unspecified) {
@@ -134,7 +134,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         plistFile.close();
     }
 
-    CheckUnusedFunctions checkUnusedFunctions(0,0,0);
+    CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
 
     bool internalErrorFound(false);
     try {

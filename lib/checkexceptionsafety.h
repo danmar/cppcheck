@@ -144,7 +144,7 @@ private:
         c.rethrowCopyError(nullptr, "varname");
         c.catchExceptionByValueError(nullptr);
         c.noexceptThrowError(nullptr);
-        c.unhandledExceptionSpecificationError(nullptr, 0, "funcname");
+        c.unhandledExceptionSpecificationError(nullptr, nullptr, "funcname");
     }
 
     /** Short description of class (for --doc) */

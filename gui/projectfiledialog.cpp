@@ -132,7 +132,6 @@ void ProjectFileDialog::saveSettings() const
 
 void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
 {
-    mUI.mToolClang->setChecked(projectFile->getAddons().contains("clang"));
     mUI.mToolClangTidy->setChecked(projectFile->getAddons().contains("clang-tidy"));
     setRootPath(projectFile->getRootPath());
     setBuildDir(projectFile->getBuildDir());
@@ -140,13 +139,13 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setDefines(projectFile->getDefines());
     setCheckPaths(projectFile->getCheckPaths());
     setImportProject(projectFile->getImportProject());
+    mUI.mChkAllVsConfigs->setChecked(projectFile->getAnalyzeAllVsConfigs());
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     setSuppressions(projectFile->getSuppressions());
     mUI.mAddonThreadSafety->setChecked(projectFile->getAddons().contains("threadsafety"));
     mUI.mAddonY2038->setChecked(projectFile->getAddons().contains("y2038"));
     mUI.mAddonCert->setChecked(projectFile->getAddons().contains("cert"));
-    mUI.mAddonMisra->setChecked(projectFile->getAddons().contains("misra"));
     updatePathsAndDefines();
 }
 
@@ -155,6 +154,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setRootPath(getRootPath());
     projectFile->setBuildDir(getBuildDir());
     projectFile->setImportProject(getImportProject());
+    projectFile->setAnalyzeAllVsConfigs(mUI.mChkAllVsConfigs->isChecked());
     projectFile->setIncludes(getIncludePaths());
     projectFile->setDefines(getDefines());
     projectFile->setCheckPaths(getCheckPaths());
@@ -162,8 +162,6 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setLibraries(getLibraries());
     projectFile->setSuppressions(getSuppressions());
     QStringList list;
-    if (mUI.mToolClang->isChecked())
-        list << "clang";
     if (mUI.mToolClangTidy->isChecked())
         list << "clang-tidy";
     if (mUI.mAddonThreadSafety->isChecked())
@@ -172,8 +170,6 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         list << "y2038";
     if (mUI.mAddonCert->isChecked())
         list << "cert";
-    if (mUI.mAddonMisra->isChecked())
-        list << "misra";
     projectFile->setAddons(list);
 }
 
@@ -218,9 +214,11 @@ void ProjectFileDialog::browseBuildDir()
 
 void ProjectFileDialog::updatePathsAndDefines()
 {
-    bool importProject = !mUI.mEditImportProject->text().isEmpty();
+    const QString &fileName = mUI.mEditImportProject->text();
+    bool importProject = !fileName.isEmpty();
     mUI.mBtnClearImportProject->setEnabled(importProject);
     mUI.mListCheckPaths->setEnabled(!importProject);
+    mUI.mListIncludeDirs->setEnabled(!importProject);
     mUI.mBtnAddCheckPath->setEnabled(!importProject);
     mUI.mBtnEditCheckPath->setEnabled(!importProject);
     mUI.mBtnRemoveCheckPath->setEnabled(!importProject);
@@ -230,6 +228,7 @@ void ProjectFileDialog::updatePathsAndDefines()
     mUI.mBtnRemoveInclude->setEnabled(!importProject);
     mUI.mBtnIncludeUp->setEnabled(!importProject);
     mUI.mBtnIncludeDown->setEnabled(!importProject);
+    mUI.mChkAllVsConfigs->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
 }
 
 void ProjectFileDialog::clearImportProject()

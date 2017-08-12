@@ -63,7 +63,7 @@ void CheckCondition::assignIf()
 
         if (Token::Match(tok->tokAt(-2), "[;{}] %var% =")) {
             const Variable *var = tok->previous()->variable();
-            if (var == 0)
+            if (var == nullptr)
                 continue;
 
             char bitop = '\0';
@@ -241,7 +241,7 @@ static void getnumchildren(const Token *tok, std::list<MathLib::bigint> &numchil
 /* Return whether tok is in the body for a function returning a boolean. */
 static bool inBooleanFunction(const Token *tok)
 {
-    const Scope *scope = tok ? tok->scope() : 0;
+    const Scope *scope = tok ? tok->scope() : nullptr;
     while (scope && scope->isLocal())
         scope = scope->nestedIn;
     if (scope && scope->type == Scope::eFunction) {
