@@ -32,9 +32,9 @@ LogView::LogView(QWidget *parent)
     setWindowFlags(Qt::Tool);
 
     mUI.mButtonBox->button(QDialogButtonBox::Reset)->setText(tr("Clear"));
-    connect(mUI.mButtonBox->button(QDialogButtonBox::Close), SIGNAL(clicked()), this, SLOT(closeButtonClicked()));
-    connect(mUI.mButtonBox->button(QDialogButtonBox::Reset), SIGNAL(clicked()), this, SLOT(clearButtonClicked()));
-    connect(mUI.mButtonBox->button(QDialogButtonBox::Save), SIGNAL(clicked()), this, SLOT(saveButtonClicked()));
+    connect(mUI.mButtonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &LogView::closeButtonClicked);
+    connect(mUI.mButtonBox->button(QDialogButtonBox::Reset), &QPushButton::clicked, this, &LogView::clearButtonClicked);
+    connect(mUI.mButtonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, this, &LogView::saveButtonClicked);
 
     QSettings settings;
     resize(settings.value(SETTINGS_LOG_VIEW_WIDTH, 400).toInt(),

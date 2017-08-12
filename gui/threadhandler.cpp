@@ -25,6 +25,7 @@
 #include "checkthread.h"
 #include "threadhandler.h"
 #include "resultsview.h"
+#include "mainwindow.h"
 
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent),
@@ -124,10 +125,8 @@ void ThreadHandler::setThreadCount(const int count)
     //Create new threads
     for (int i = mThreads.size(); i < count; i++) {
         mThreads << new CheckThread(mResults);
-        connect(mThreads.last(), &CheckThread::done,
-                this, &ThreadHandler::threadDone);
-        connect(mThreads.last(), &CheckThread::fileChecked,
-                &mResults, &ThreadResult::fileChecked);
+        connect(mThreads.last(), &CheckThread::done, this, &ThreadHandler::threadDone);
+        connect(mThreads.last(), &CheckThread::fileChecked, &mResults, &ThreadResult::fileChecked);
     }
 }
 
@@ -136,10 +135,8 @@ void ThreadHandler::removeThreads()
 {
     for (int i = 0; i < mThreads.size(); i++) {
         mThreads[i]->terminate();
-        disconnect(mThreads[i], &CheckThread::done,
-                   this, &ThreadHandler::threadDone);
-        disconnect(mThreads[i], &CheckThread::fileChecked,
-                   &mResults, &ThreadResult::fileChecked);
+        disconnect(mThreads[i], &CheckThread::done, this, &ThreadHandler::threadDone);
+        disconnect(mThreads[i], &CheckThread::fileChecked, &mResults, &ThreadResult::fileChecked);
         delete mThreads[i];
     }
 
@@ -180,17 +177,11 @@ void ThreadHandler::stop()
 
 void ThreadHandler::initialize(ResultsView *view)
 {
-    connect(&mResults, &ThreadResult::progress,
-            view, &ResultsView::progress);
+    connect(&mResults, &ThreadResult::progress, view, &ResultsView::progress);
+    connect(&mResults, &ThreadResult::error, view, &ResultsView::error);
 
-    connect(&mResults, &ThreadResult::error,
-            view, &ResultsView::error);
-
-    connect(&mResults, SIGNAL(log(const QString &)),
-            parent(), SLOT(log(const QString &)));
-
-    connect(&mResults, SIGNAL(debugError(const ErrorItem &)),
-            parent(), SLOT(debugError(const ErrorItem &)));
+    connect(&mResults, &ThreadResult::log, qobject_cast<MainWindow*>(parent()), &MainWindow::log);
+    connect(&mResults, &ThreadResult::debugError, qobject_cast<MainWindow*>(parent()), &MainWindow::debugError);
 }
 
 void ThreadHandler::loadSettings(QSettings &settings)
