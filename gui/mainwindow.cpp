@@ -444,7 +444,12 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     //mThread->SetanalyzeProject(true);
     if (mProjectFile) {
         mThread->setAddons(mProjectFile->getAddons());
-        mThread->setVsIncludePaths(mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString());
+        QString clangHeaders = mSettings->value(SETTINGS_CLANG_HEADERS).toString();
+        QStringList includePaths;
+        if (!clangHeaders.isEmpty()) {
+            includePaths << clangHeaders << (clangHeaders+"/ATLMFC") << (clangHeaders+"/c++") << (clangHeaders+"/c++/i686-w64-mingw32");
+        }
+        mThread->setClangIncludePaths(includePaths);
 #ifdef Q_OS_WIN
         QString clangPath = mSettings->value(SETTINGS_CLANG_PATH,QString()).toString();
         if (clangPath.isEmpty()) {

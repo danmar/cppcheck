@@ -57,8 +57,9 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 #ifdef Q_OS_WIN
     //mUI.mTabClang->setVisible(true);
     mUI.mEditClangPath->setText(settings.value(SETTINGS_CLANG_PATH, QString()).toString());
-    mUI.mEditVsIncludePaths->setText(settings.value(SETTINGS_VS_INCLUDE_PATHS, QString()).toString());
+    mUI.mEditClangHeaders->setText(settings.value(SETTINGS_CLANG_HEADERS, QString()).toString());
     connect(mUI.mBtnBrowseClangPath, &QPushButton::released, this, &SettingsDialog::browseClangPath);
+    connect(mUI.mButtonBrowseClangHeaders, &QPushButton::released, this, &SettingsDialog::browseClangHeaders);
 #else
     mUI.mTabClang->setVisible(false);
 #endif
@@ -187,10 +188,7 @@ void SettingsDialog::saveSettingValues() const
 
 #ifdef Q_OS_WIN
     settings.setValue(SETTINGS_CLANG_PATH, mUI.mEditClangPath->text());
-    QString vsIncludePaths = mUI.mEditVsIncludePaths->text();
-    if (vsIncludePaths.startsWith("INCLUDE="))
-        vsIncludePaths.remove(0, 8);
-    settings.setValue(SETTINGS_VS_INCLUDE_PATHS, vsIncludePaths);
+    settings.setValue(SETTINGS_CLANG_HEADERS, mUI.mEditClangHeaders->text());
 #endif
 
     const QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
@@ -369,3 +367,16 @@ void SettingsDialog::browseClangPath()
         mUI.mEditClangPath->setText(selectedDir);
     }
 }
+
+void SettingsDialog::browseClangHeaders()
+{
+    QString selectedDir = QFileDialog::getExistingDirectory(this,
+                          tr("Select path for clang headers"),
+                          QDir::homePath());
+
+    if (!selectedDir.isEmpty()) {
+        mUI.mEditClangHeaders->setText(selectedDir);
+    }
+}
+
+

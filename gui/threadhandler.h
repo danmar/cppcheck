@@ -79,12 +79,12 @@ public:
         mSuppressions = s;
     }
 
-    void setVsIncludePaths(const QString &s) {
-        mVsIncludePaths = s;
-    }
-
     void setClangPath(const QString &p) {
         mClangPath = p;
+    }
+
+    void setClangIncludePaths(const QStringList &s) {
+        mClangIncludePaths = s;
     }
 
     void setDataDir(const QString &dataDir) {
@@ -255,8 +255,8 @@ protected:
 
     QStringList mAddons;
     QStringList mSuppressions;
-    QString mVsIncludePaths;
     QString mClangPath;
+    QStringList mClangIncludePaths;
 
     QString mDataDir;
 private:

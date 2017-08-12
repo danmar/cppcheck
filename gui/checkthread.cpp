@@ -145,10 +145,10 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
             // To create compile_commands.json in windows see:
             // https://bitsmaker.gitlab.io/post/clang-tidy-from-vs2015/
 
-            foreach (QString s, mVsIncludePaths.split(";")) {
-                if (!s.isEmpty()) {
-                    s.replace("\\", "/");
-                    args << "-isystem" << s.trimmed();
+            foreach (QString includePath, mClangIncludePaths) {
+                if (!includePath.isEmpty()) {
+                    includePath.replace("\\", "/");
+                    args << "-isystem" << includePath.trimmed();
                 }
             }
 
@@ -157,8 +157,6 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
 
             if (!fileSettings->standard.empty())
                 args << ("-std=" + QString::fromStdString(fileSettings->standard));
-            else if (!mVsIncludePaths.isEmpty() && fileName.endsWith(".cpp"))
-                args << "-std=c++14";
 
             QString analyzerInfoFile;
 
@@ -239,6 +237,7 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                     out << errout;
                 }
             }
+
             parseClangErrors(addon, fileName, errout);
         } else {
             QString a;

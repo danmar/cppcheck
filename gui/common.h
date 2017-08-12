@@ -81,7 +81,7 @@
 #define SETTINGS_LANGUAGE               "Application language"
 #define SETTINGS_GLOBAL_INCLUDE_PATHS   "Global include paths"
 #define SETTINGS_CLANG_PATH             "Clang path"
-#define SETTINGS_VS_INCLUDE_PATHS       "Visual studio include paths"
+#define SETTINGS_CLANG_HEADERS          "Clang headers"
 #define SETTINGS_INLINE_SUPPRESSIONS    "Inline suppressions"
 #define SETTINGS_INCONCLUSIVE_ERRORS    "Inconclusive errors"
 #define SETTINGS_MRU_PROJECTS           "MRU Projects"
