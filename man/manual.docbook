@@ -5,7 +5,7 @@
   <bookinfo>
     <title>Cppcheck 1.81 dev</title>
 
-    <date>2017-03-14</date>
+    <date>2017-08-12</date>
   </bookinfo>
 
   <chapter>
@@ -47,7 +47,98 @@
   </chapter>
 
   <chapter>
-    <title>Getting started</title>
+    <title>Getting started (GUI)</title>
+
+    <para>Start the GUI.</para>
+
+    <section>
+      <title>New Project</title>
+
+      <para>It is not required but creating a new project file is a good first
+      step. You do so through <literal>File</literal> and <literal>New project
+      file.</literal></para>
+    </section>
+
+    <section>
+      <title>New Project - Paths and Defines</title>
+
+      <para>What kind of project do you have? If it is a Visual Studio project
+      or if you can generate a compile database (cmake/qbs/etc), then you can
+      import the project.</para>
+
+      <para>Otherwise you can configure the paths and defines manually. In
+      this screenshot below, a Visual Studio project file is imported:</para>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/gui-newproject-pathsanddefines.png"/>
+        </imageobject>
+      </mediaobject>
+    </section>
+
+    <section>
+      <title>New Project - Project</title>
+
+      <para>In the Project tab it is highly recommended that a
+      <literal>Cppcheck build dir</literal> is configured. This will be used
+      by Cppcheck to store various analysis information. It gives you whole
+      program analysis, incremental analysis, statistics, etc. Each project
+      should have its own unique build dir. In the screenshot below the build
+      dir is configured as <literal>cppcheck-build-dir</literal>. The path is
+      relative to the project file.</para>
+
+      <para>You should also choose all the libraries that you use. In the
+      screenshot below the microsoft_sal and windows libraries are selected.
+      You can read more about libraries in this manual.</para>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/gui-newproject-project.png"/>
+        </imageobject>
+      </mediaobject>
+    </section>
+
+    <section>
+      <title>New Project - Addons</title>
+
+      <para>We skip the <literal>Exclude</literal> and
+      <literal>Suppressions</literal> tabs now, they can be used later to
+      tweak the results.</para>
+
+      <para>In the Addons tab you can add extra analysis. The addons require
+      python.</para>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/gui-newproject-addons.png"/>
+        </imageobject>
+      </mediaobject>
+    </section>
+
+    <section>
+      <title>Analyze</title>
+
+      <para>Click the <literal>OK</literal> button in the dialog. Analysis
+      will start immediately.</para>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/gui-results.png"/>
+        </imageobject>
+      </mediaobject>
+
+      <para>All warnings are activated and therefore it is pretty noisy. There
+      are likely various warnings that you don't care about. You can fix that
+      easily, right click on messages and choose <literal>Hide</literal> or
+      <literal>Suppress</literal>. Hiding messages is not permanent, they will
+      be shown after next analysis. Suppressing messages is permanent,
+      suppressed ids are stored in the project file and those will not be
+      shown again.</para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Getting started (command line)</title>
 
     <section>
       <title>First test</title>
@@ -127,14 +218,14 @@ Checking path/file2.cpp...
       class="directory">src/c</filename> are checked:</para>
 
       <programlisting>cppcheck -isrc/c src</programlisting>
-      
-      <para>This option does not currently work with the 
-      <parameter class="command">--project</parameter> option and is only
-      valid when supplying an input directory.To ignore multiple directories
-      supply the <parameter class="command">-i</parameter> multiple times. 
-      The following command ignores both the src/b and src/c directories.</para>
-      
-      <programlisting>cppcheck -isrc/b -isrc/c</programlisting> 
+
+      <para>This option does not currently work with the <parameter
+      class="command">--project</parameter> option and is only valid when
+      supplying an input directory.To ignore multiple directories supply the
+      <parameter class="command">-i</parameter> multiple times. The following
+      command ignores both the src/b and src/c directories.</para>
+
+      <programlisting>cppcheck -isrc/b -isrc/c</programlisting>
     </section>
 
     <section>
@@ -918,10 +1009,11 @@ Checking pen1.c...
         <para>The arguments a function takes can be specified by
         <literal>&lt;arg&gt;</literal> tags. Each of them takes the number of
         the argument (starting from 1) in the <literal>nr</literal> attribute,
-        <literal>nr="any"</literal> for arbitrary arguments, or <literal>nr="variadic"</literal> for variadic arguments.
-        Optional arguments can be specified by providing a default value:
-        <literal>default="value"</literal>. The specifications for individual arguments override
-        this setting.</para>
+        <literal>nr="any"</literal> for arbitrary arguments, or
+        <literal>nr="variadic"</literal> for variadic arguments. Optional
+        arguments can be specified by providing a default value:
+        <literal>default="value"</literal>. The specifications for individual
+        arguments override this setting.</para>
 
         <section>
           <title>Not bool</title>
