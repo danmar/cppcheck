@@ -320,69 +320,56 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QLabel" name="mLabelProjectRoot">
-           <property name="text">
-            <string>&amp;Root:</string>
-           </property>
-           <property name="buddy">
-            <cstring>mEditProjectRoot</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="mEditProjectRoot"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QLabel" name="mLabelBuildDir">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the build dir, cppcheck stores data about each translation unit.&lt;/p&gt;&lt;p&gt;With a build dir you get whole program analysis.&lt;/p&gt;&lt;p&gt;Unchanged files will be analyzed much faster; Cppcheck skip the analysis of these files and reuse their old data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Cppcheck build dir (whole program analysis, faster analysis for unchanged files)</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="QLineEdit" name="mEditBuildDir"/>
-           </item>
-           <item>
-            <widget class="QPushButton" name="mBtnBrowseBuildDir">
-             <property name="text">
-              <string>...</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="mLayoutLibraries">
-         <item>
-          <widget class="QLabel" name="mLabelLibraries">
-           <property name="text">
-            <string>Libraries:</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QLabel" name="mLabelLibrariesNote">
-         <property name="text">
-          <string>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</string>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Root path:</string>
          </property>
-         <property name="wordWrap">
-          <bool>true</bool>
+         <layout class="QVBoxLayout" name="verticalLayout_13">
+          <item>
+           <widget class="QLineEdit" name="mEditProjectRoot"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Cppcheck build dir (whole program analysis, incremental analysis, statistics, etc)</string>
          </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLineEdit" name="mEditBuildDir"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="mBtnBrowseBuildDir">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Libraries</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <layout class="QHBoxLayout" name="mLayoutLibraries"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="mLabelLibrariesNote">
+            <property name="text">
+             <string>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
@@ -571,7 +558,6 @@
  </widget>
  <tabstops>
   <tabstop>mButtons</tabstop>
-  <tabstop>mEditProjectRoot</tabstop>
   <tabstop>mListExcludedPaths</tabstop>
   <tabstop>mBtnAddIgnorePath</tabstop>
   <tabstop>mBtnEditIgnorePath</tabstop>
