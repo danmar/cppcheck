@@ -160,7 +160,7 @@ void SettingsDialog::saveSettingValues() const
 
 #ifdef Q_OS_WIN
     settings.setValue(SETTINGS_CLANG_PATH, mUI.mEditClangPath->text());
-    settings.setValue(SETTINGS_CLANG_HEADERS, mUI.mEditClangHeaders->text());
+    settings.setValue(SETTINGS_VS_INCLUDE_PATHS, mUI.mEditVsIncludePaths->text());
 #endif
 
     const QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
