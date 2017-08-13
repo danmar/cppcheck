@@ -60,16 +60,6 @@ script:
 # check gui with qt settings
   - ./cppcheck --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui -igui/test |& tee --append /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
-# run gui tests
-  - cd gui/test
-  - qmake
-  - make
-  - filelist/test-filelist
-  - projectfile/test-projectfile
-  - translationhandler/test-translationhandler
-  - xmlreport/test-xmlreport
-  - xmlreportv2/test-xmlreportv2
-  - cd ../..
 # run extra tests
   - tools/generate_and_run_more_tests.sh
 # check test/cfg
