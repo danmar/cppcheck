@@ -89,6 +89,7 @@ private:
         TEST_CASE(alwaysTrue);
 
         TEST_CASE(checkInvalidTestForOverflow);
+        TEST_CASE(checkConditionIsAlwaysTrueOrFalseInsideIfWhile);
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
@@ -347,7 +348,7 @@ private:
               "        g(x);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'x' is always true\n", errout.str());
 
         check("void g(int & x);\n"
               "void f() {\n"
@@ -1675,6 +1676,7 @@ private:
               "    if (x & 3 == 2) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n"
+                      "[test.cpp:2]: (style) Condition 'x&3==2' is always false\n"
                       "[test.cpp:2]: (style) Condition '3==2' is always false\n", errout.str());
 
         check("void f() {\n"
@@ -1893,6 +1895,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition ''a'' is always true\n"
                       "[test.cpp:3]: (style) Condition 'L'b'' is always true\n"
+                      "[test.cpp:4]: (style) Condition '1&&'c'' is always true\n"
                       "[test.cpp:4]: (style) Condition ''c'' is always true\n"
                       "[test.cpp:5]: (style) Condition ''d'' is always true\n", errout.str());
     }
@@ -1927,6 +1930,33 @@ private:
               "    assert(x + 100U < x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkConditionIsAlwaysTrueOrFalseInsideIfWhile() {
+        check("void f() {\n"
+              "    enum states {A,B,C};\n"
+              "    const unsigned g_flags = B|C;\n"
+              "    if(g_flags & A) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'g_flags&A' is always false\n", errout.str());
+
+        check("void f() {\n"
+              "    int a = 5;"
+              "    if(a) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'a' is always true\n", errout.str());
+
+        check("void f() {\n"
+             "    int a = 5;"
+             "    while(a + 1) { a--; }\n"
+             "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a = 5;"
+              "    while(a + 1) { return; }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'a+1' is always true\n", errout.str());
     }
 };
 
