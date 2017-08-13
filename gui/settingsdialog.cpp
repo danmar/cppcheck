@@ -57,9 +57,8 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 #ifdef Q_OS_WIN
     //mUI.mTabClang->setVisible(true);
     mUI.mEditClangPath->setText(settings.value(SETTINGS_CLANG_PATH, QString()).toString());
-    mUI.mEditClangHeaders->setText(settings.value(SETTINGS_CLANG_HEADERS, QString()).toString());
+    mUI.mEditVsIncludePaths->setText(settings.value(SETTINGS_VS_INCLUDE_PATHS, QString()).toString());
     connect(mUI.mBtnBrowseClangPath, &QPushButton::released, this, &SettingsDialog::browseClangPath);
-    connect(mUI.mButtonBrowseClangHeaders, &QPushButton::released, this, &SettingsDialog::browseClangHeaders);
 #else
     mUI.mTabClang->setVisible(false);
 #endif
@@ -306,16 +305,3 @@ void SettingsDialog::browseClangPath()
         mUI.mEditClangPath->setText(selectedDir);
     }
 }
-
-void SettingsDialog::browseClangHeaders()
-{
-    QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select path for clang headers"),
-                          QDir::homePath());
-
-    if (!selectedDir.isEmpty()) {
-        mUI.mEditClangHeaders->setText(selectedDir);
-    }
-}
-
-

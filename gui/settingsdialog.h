@@ -126,10 +126,6 @@ protected slots:
 
     /** @brief Slot for browsing for the clang binary */
     void browseClangPath();
-
-    /** @brief Slot for browsing for the clang headers */
-    void browseClangHeaders();
-
 protected:
     /**
     * @brief Clear all applications from the list and re insert them from mTempApplications
