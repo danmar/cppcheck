@@ -79,11 +79,20 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mLineEditFilter = new QLineEdit(mUI.mToolBarFilter);
     mLineEditFilter->setPlaceholderText(tr("Quick Filter:"));
     mUI.mToolBarFilter->addWidget(mLineEditFilter);
-    connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
+#ifndef QOVERLOAD_FALLBACK
+    connect(mLineEditFilter, &QLineEdit::textChanged, mFilterTimer, QOverload<>::of(&QTimer::start));
+#else
+    connect(mLineEditFilter, &QLineEdit::textChanged, mFilterTimer, static_cast<void (QTimer::*)(void)>(&QTimer::start));
+#endif
+
     connect(mLineEditFilter, &QLineEdit::returnPressed, this, &MainWindow::filterResults);
 
-    connect(mUI.mActionPrint, SIGNAL(triggered()), mUI.mResults, SLOT(print()));
-    connect(mUI.mActionPrintPreview, SIGNAL(triggered()), mUI.mResults, SLOT(printPreview()));
+#ifndef QOVERLOAD_FALLBACK
+    connect(mUI.mActionPrint, &QAction::triggered, mUI.mResults, QOverload<>::of(&ResultsView::print));
+#else
+    connect(mUI.mActionPrint, &QAction::triggered, mUI.mResults, static_cast<void (ResultsView::*)(void)>(&ResultsView::print));
+#endif
+    connect(mUI.mActionPrintPreview, &QAction::triggered, mUI.mResults, &ResultsView::printPreview);
     connect(mUI.mActionQuit, &QAction::triggered, this, &MainWindow::close);
     connect(mUI.mActionAnalyzeFiles, &QAction::triggered, this, &MainWindow::analyzeFiles);
     connect(mUI.mActionAnalyzeDirectory, &QAction::triggered, this, &MainWindow::analyzeDirectory);
@@ -117,9 +126,9 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionLicense, &QAction::triggered, this, &MainWindow::showLicense);
 
     // View > Toolbar menu
-    connect(mUI.mActionToolBarMain, SIGNAL(toggled(bool)), this, SLOT(toggleMainToolBar()));
-    connect(mUI.mActionToolBarView, SIGNAL(toggled(bool)), this, SLOT(toggleViewToolBar()));
-    connect(mUI.mActionToolBarFilter, SIGNAL(toggled(bool)), this, SLOT(toggleFilterToolBar()));
+    connect(mUI.mActionToolBarMain, &QAction::toggled, this, &MainWindow::toggleMainToolBar);
+    connect(mUI.mActionToolBarView, &QAction::toggled, this, &MainWindow::toggleViewToolBar);
+    connect(mUI.mActionToolBarFilter, &QAction::toggled, this, &MainWindow::toggleFilterToolBar);
 
     connect(mUI.mActionAuthors, &QAction::triggered, this, &MainWindow::showAuthors);
     connect(mThread, &ThreadHandler::done, this, &MainWindow::analysisDone);
@@ -162,8 +171,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     for (int i = 0; i < MaxRecentProjects; ++i) {
         mRecentProjectActs[i] = new QAction(this);
         mRecentProjectActs[i]->setVisible(false);
-        connect(mRecentProjectActs[i], SIGNAL(triggered()),
-                this, SLOT(openRecentProject()));
+        connect(mRecentProjectActs[i], &QAction::triggered, this, &MainWindow::openRecentProject);
     }
     mRecentProjectActs[MaxRecentProjects] = nullptr; // The separator
     mUI.mActionProjectMRU->setVisible(false);
@@ -189,7 +197,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         act->setCheckable(true);
         act->setActionGroup(mPlatformActions);
         mUI.mMenuAnalyze->insertAction(mUI.mActionPlatforms, act);
-        connect(act, SIGNAL(triggered()), this, SLOT(selectPlatform()));
+        connect(act, &QAction::triggered, this, &MainWindow::selectPlatform);
     }
 
     mUI.mActionC89->setActionGroup(mCStandardActions);
@@ -526,14 +534,10 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
     result.setFiles(QStringList(filename));
-    connect(&result, SIGNAL(progress(int, const QString&)),
-            mUI.mResults, SLOT(progress(int, const QString&)));
-    connect(&result, SIGNAL(error(const ErrorItem &)),
-            mUI.mResults, SLOT(error(const ErrorItem &)));
-    connect(&result, SIGNAL(log(const QString &)),
-            this, SLOT(log(const QString &)));
-    connect(&result, SIGNAL(debugError(const ErrorItem &)),
-            this, SLOT(debugError(const ErrorItem &)));
+    connect(&result, &ThreadResult::progress, mUI.mResults, &ResultsView::progress);
+	connect(&result, &ThreadResult::error, mUI.mResults, &ResultsView::error);
+    connect(&result, &ThreadResult::log, this, &MainWindow::log);
+    connect(&result, &ThreadResult::debugError, this, &MainWindow::debugError);
 
     // Create CppCheck instance
     CppCheck cppcheck(result, true);

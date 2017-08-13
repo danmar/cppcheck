@@ -177,6 +177,12 @@ public slots:
     /** @brief Slot for showing the library editor */
     void showLibraryEditor();
 
+	/** @brief Add new line to log. */
+	void log(const QString &logline);
+
+	/** @brief Handle new debug error. */
+	void debugError(const ErrorItem &item);
+
 protected slots:
 
     /** @brief Slot for checkthread's done signal */
@@ -205,12 +211,6 @@ protected slots:
 
     /** @brief Open help file contents */
     void openHelpContents();
-
-    /** @brief Add new line to log. */
-    void log(const QString &logline);
-
-    /** @brief Handle new debug error. */
-    void debugError(const ErrorItem &item);
 
     /** @brief Filters the results in the result list. */
     void filterResults();

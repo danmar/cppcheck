@@ -579,13 +579,20 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(start);
 
             //Connect the signal to signal mapper
-            connect(start, SIGNAL(triggered()), signalMapper, SLOT(map()));
+#ifndef QOVERLOAD_FALLBACK
+            connect(start, &QAction::triggered, signalMapper, QOverload<>::of(&QSignalMapper::map));
+#else
+            connect(start, &QAction::triggered, signalMapper, static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+#endif
 
             //Add a new mapping
             signalMapper->setMapping(start, defaultApplicationIndex);
 
-            connect(signalMapper, SIGNAL(mapped(int)),
-                    this, SLOT(context(int)));
+#ifndef QOVERLOAD_FALLBACK
+            connect(signalMapper, QOverload<int>::of(&QSignalMapper::mapped), this, &ResultsTree::context);
+#else
+            connect(signalMapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), this, &ResultsTree::context);
+#endif
         }
 
         // Add menuitems to copy full path/filename to clipboard
@@ -627,16 +634,16 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(hideallid);
             menu.addAction(suppress);
             menu.addAction(opencontainingfolder);
-
-            connect(recheckSelectedFiles, SIGNAL(triggered()), this, SLOT(recheckSelectedFiles()));
-            connect(copyfilename, SIGNAL(triggered()), this, SLOT(copyFilename()));
-            connect(copypath, SIGNAL(triggered()), this, SLOT(copyFullPath()));
-            connect(copymessage, SIGNAL(triggered()), this, SLOT(copyMessage()));
-            connect(copymessageid, SIGNAL(triggered()), this, SLOT(copyMessageId()));
-            connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
-            connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
-            connect(suppress, SIGNAL(triggered()), this, SLOT(suppressSelectedIds()));
-            connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(openContainingFolder()));
+          
+            connect(recheckSelectedFiles, &QAction::triggered, this, &ResultsTree::recheckSelectedFiles);
+            connect(copyfilename, &QAction::triggered, this, &ResultsTree::copyFilename);
+            connect(copypath, &QAction::triggered, this, &ResultsTree::copyFullPath);
+            connect(copymessage, &QAction::triggered, this, &ResultsTree::copyMessage);
+            connect(copymessageid, &QAction::triggered, this, &ResultsTree::copyMessageId);
+            connect(hide, &QAction::triggered, this, &ResultsTree::hideResult);
+            connect(hideallid, &QAction::triggered, this, &ResultsTree::hideAllIdResult);
+            connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
+            connect(opencontainingfolder, &QAction::triggered, this, &ResultsTree::openContainingFolder);
 
             menu.addSeparator();
             QAction *fp       = new QAction(tr("False positive"), &menu);
@@ -659,11 +666,19 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 //Disconnect all signals
                 for (int i = 0; i < actions.size(); i++) {
 
-                    disconnect(actions[i], SIGNAL(triggered()), signalMapper, SLOT(map()));
+#ifndef QOVERLOAD_FALLBACK
+                    disconnect(actions[i], &QAction::triggered, signalMapper, QOverload<>::of(&QSignalMapper::map));
+#else
+                    disconnect(actions[i], &QAction::triggered, signalMapper, static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+#endif
                 }
 
-                disconnect(signalMapper, SIGNAL(mapped(int)),
-                           this, SLOT(context(int)));
+#ifndef QOVERLOAD_FALLBACK
+                disconnect(signalMapper, QOverload<int>::of(&QSignalMapper::mapped), this, &ResultsTree::context);
+#else
+                disconnect(signalMapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), this, &ResultsTree::context);
+#endif
+
                 //And remove the signal mapper
                 delete signalMapper;
             }

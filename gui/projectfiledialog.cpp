@@ -94,13 +94,31 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     connect(mUI.mBtnBrowseBuildDir, &QPushButton::clicked, this, &ProjectFileDialog::browseBuildDir);
     connect(mUI.mBtnClearImportProject, &QPushButton::clicked, this, &ProjectFileDialog::clearImportProject);
     connect(mUI.mBtnBrowseImportProject, &QPushButton::clicked, this, &ProjectFileDialog::browseImportProject);
-    connect(mUI.mBtnAddCheckPath, SIGNAL(clicked()), this, SLOT(addCheckPath()));
+
+#ifndef QOVERLOAD_FALLBACK
+    connect(mUI.mBtnAddCheckPath, &QPushButton::clicked, this, QOverload<>::of(&ProjectFileDialog::addCheckPath));
+#else
+    connect(mUI.mBtnAddCheckPath, &QPushButton::clicked, this, static_cast<void(ProjectFileDialog::*)(void)>(&ProjectFileDialog::addCheckPath));
+#endif
+
     connect(mUI.mBtnEditCheckPath, &QPushButton::clicked, this, &ProjectFileDialog::editCheckPath);
     connect(mUI.mBtnRemoveCheckPath, &QPushButton::clicked, this, &ProjectFileDialog::removeCheckPath);
-    connect(mUI.mBtnAddInclude, SIGNAL(clicked()), this, SLOT(addIncludeDir()));
+
+#ifndef QOVERLOAD_FALLBACK
+    connect(mUI.mBtnAddInclude, &QPushButton::clicked, this, QOverload<>::of(&ProjectFileDialog::addIncludeDir));
+#else
+    connect(mUI.mBtnAddInclude, &QPushButton::clicked, this, static_cast<void(ProjectFileDialog::*)(void)>(&ProjectFileDialog::addIncludeDir));
+#endif
+
     connect(mUI.mBtnEditInclude, &QPushButton::clicked, this, &ProjectFileDialog::editIncludeDir);
     connect(mUI.mBtnRemoveInclude, &QPushButton::clicked, this, &ProjectFileDialog::removeIncludeDir);
-    connect(mUI.mBtnAddIgnorePath, SIGNAL(clicked()), this, SLOT(addExcludePath()));
+
+#ifndef QOVERLOAD_FALLBACK
+    connect(mUI.mBtnAddIgnorePath, &QPushButton::clicked, this, QOverload<>::of(&ProjectFileDialog::addExcludePath));
+#else
+    connect(mUI.mBtnAddIgnorePath, &QPushButton::clicked, this, static_cast<void (ProjectFileDialog::*)(void)>(&ProjectFileDialog::addExcludePath));
+#endif
+
     connect(mUI.mBtnEditIgnorePath, &QPushButton::clicked, this, &ProjectFileDialog::editExcludePath);
     connect(mUI.mBtnRemoveIgnorePath, &QPushButton::clicked, this, &ProjectFileDialog::removeExcludePath);
     connect(mUI.mBtnIncludeUp, &QPushButton::clicked, this, &ProjectFileDialog::moveIncludePathUp);

@@ -1,3 +1,11 @@
+lessThan(QT_MAJOR_VERSION, 5): error(requires >= Qt 5 (You used: $$QT_VERSION))
+
+greaterThan(QT_MAJOR_VERSION, 4) {
+   lessThan(QT_MINOR_VERSION, 7) {
+      DEFINES += QOVERLOAD_FALLBACK
+   }
+}
+
 TEMPLATE = app
 TARGET = cppcheck-gui
 CONFIG += warn_on debug
@@ -5,10 +13,8 @@ DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
     ../lib
-greaterThan(QT_MAJOR_VERSION, 4) {
-    QT += widgets # In Qt 5 widgets are in separate module
-    QT += printsupport # In Qt 5 QPrinter/QPrintDialog are in separate module
-}
+QT += widgets
+QT += printsupport
 
 contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core

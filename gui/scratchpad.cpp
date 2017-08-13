@@ -26,7 +26,7 @@ ScratchPad::ScratchPad(MainWindow& mainWindow)
 {
     mUI.setupUi(this);
 
-    connect(mUI.mCheckButton, SIGNAL(clicked()), this, SLOT(checkButtonClicked()));
+    connect(mUI.mCheckButton, &QPushButton::clicked, this, &ScratchPad::checkButtonClicked);
 }
 
 void ScratchPad::checkButtonClicked()
