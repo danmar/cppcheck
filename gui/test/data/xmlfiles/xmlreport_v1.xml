@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<results>
-    <error file="test.cxx" line="11" id="unreadVariable" severity="style" msg="Variable &amp;#039;a&amp;#039; is assigned a value that is never used"/>
-    <error file="test.cxx" line="28" id="unreadVariable" severity="style" msg="Variable &amp;#039;b&amp;#039; is assigned a value that is never used"/>
-    <error file="test.cxx" line="31" id="memleak" severity="error" msg="Memory leak: b"/>
-    <error file="test.cxx" line="16" id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"/>
-    <error file="test.cxx" line="31" id="obsoleteFunctionsgets" severity="style" msg="Found obsolescent function &amp;#039;gets&amp;#039;. With gets you&amp;#039;ll get buffer overruns if the input data too big for the buffer. It is recommended to use the function &amp;#039;fgets&amp;#039; instead."/>
-    <error file="test.cxx" line="22" id="postfixOperator" severity="performance" msg="Prefix ++/-- operators should be preferred for non-primitive types. Pre-increment/decrement can be more efficient than post-increment/decrement. Post-increment/decrement usually involves keeping a copy of the previous value around and adds a little extra code."/>
-</results>
