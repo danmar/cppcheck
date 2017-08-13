@@ -75,12 +75,6 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
             this, SLOT(defaultApplication()));
     connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
             this, SLOT(editApplication()));
-    connect(mUI.mBtnAddIncludePath, SIGNAL(clicked()),
-            this, SLOT(addIncludePath()));
-    connect(mUI.mBtnRemoveIncludePath, SIGNAL(clicked()),
-            this, SLOT(removeIncludePath()));
-    connect(mUI.mBtnEditIncludePath, SIGNAL(clicked()),
-            this, SLOT(editIncludePath()));
 
     mUI.mListWidget->setSortingEnabled(false);
     populateApplicationList();
@@ -93,32 +87,11 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 
     loadSettings();
     initTranslationsList();
-    initIncludepathsList();
 }
 
 SettingsDialog::~SettingsDialog()
 {
     saveSettings();
-}
-
-void SettingsDialog::addIncludePath(const QString &path)
-{
-    if (path.isNull() || path.isEmpty())
-        return;
-
-    QListWidgetItem *item = new QListWidgetItem(path);
-    item->setFlags(item->flags() | Qt::ItemIsEditable);
-    mUI.mListIncludePaths->addItem(item);
-}
-
-void SettingsDialog::initIncludepathsList()
-{
-    QSettings settings;
-    const QString allPaths = settings.value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString();
-    const QStringList paths = allPaths.split(";", QString::SkipEmptyParts);
-    foreach (QString path, paths) {
-        addIncludePath(path);
-    }
 }
 
 void SettingsDialog::initTranslationsList()
@@ -196,15 +169,6 @@ void SettingsDialog::saveSettingValues() const
         const QString langcode = currentLang->data(LangCodeRole).toString();
         settings.setValue(SETTINGS_LANGUAGE, langcode);
     }
-
-    const int count = mUI.mListIncludePaths->count();
-    QString includePaths;
-    for (int i = 0; i < count; i++) {
-        QListWidgetItem *item = mUI.mListIncludePaths->item(i);
-        includePaths += item->text();
-        includePaths += ";";
-    }
-    settings.setValue(SETTINGS_GLOBAL_INCLUDE_PATHS, includePaths);
 }
 
 void SettingsDialog::saveCheckboxValue(QSettings *settings, QCheckBox *box,
@@ -330,31 +294,6 @@ bool SettingsDialog::showErrorId() const
 bool SettingsDialog::showInconclusive() const
 {
     return checkStateToBool(mUI.mEnableInconclusive->checkState());
-}
-
-void SettingsDialog::addIncludePath()
-{
-    QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select include directory"),
-                          getPath(SETTINGS_LAST_INCLUDE_PATH));
-
-    if (!selectedDir.isEmpty()) {
-        addIncludePath(selectedDir);
-        setPath(SETTINGS_LAST_INCLUDE_PATH, selectedDir);
-    }
-}
-
-void SettingsDialog::removeIncludePath()
-{
-    const int row = mUI.mListIncludePaths->currentRow();
-    QListWidgetItem *item = mUI.mListIncludePaths->takeItem(row);
-    delete item;
-}
-
-void SettingsDialog::editIncludePath()
-{
-    QListWidgetItem *item = mUI.mListIncludePaths->currentItem();
-    mUI.mListIncludePaths->editItem(item);
 }
 
 void SettingsDialog::browseClangPath()

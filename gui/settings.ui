@@ -179,69 +179,6 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_5">
-      <attribute name="title">
-       <string>Paths</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Include paths:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QListWidget" name="mListIncludePaths">
-           <property name="selectionBehavior">
-            <enum>QAbstractItemView::SelectRows</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_6">
-           <item>
-            <widget class="QPushButton" name="mBtnAddIncludePath">
-             <property name="text">
-              <string>Add...</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="mBtnEditIncludePath">
-             <property name="text">
-              <string>Edit</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="mBtnRemoveIncludePath">
-             <property name="text">
-              <string>Remove</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_3">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
        <string>Applications</string>
@@ -447,10 +384,6 @@
   <tabstop>mShowFullPath</tabstop>
   <tabstop>mShowNoErrorsMessage</tabstop>
   <tabstop>mInlineSuppressions</tabstop>
-  <tabstop>mListIncludePaths</tabstop>
-  <tabstop>mBtnAddIncludePath</tabstop>
-  <tabstop>mBtnEditIncludePath</tabstop>
-  <tabstop>mBtnRemoveIncludePath</tabstop>
   <tabstop>mListWidget</tabstop>
   <tabstop>mBtnAddApplication</tabstop>
   <tabstop>mBtnEditApplication</tabstop>
