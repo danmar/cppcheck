@@ -49,7 +49,7 @@ static void AddFilesToList(const std::string& FileList, std::vector<std::string>
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
     std::istream *Files;
     std::ifstream Infile;
-    if (FileList.compare("-") == 0) { // read from stdin
+    if (FileList == "-") { // read from stdin
         Files = &std::cin;
     } else {
         Infile.open(FileList.c_str());
