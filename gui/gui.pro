@@ -1,5 +1,11 @@
 lessThan(QT_MAJOR_VERSION, 5): error(requires >= Qt 5 (You used: $$QT_VERSION))
 
+greaterThan(QT_MAJOR_VERSION, 4) {
+   lessThan(QT_MINOR_VERSION, 7) {
+      DEFINES += QOVERLOAD_FALLBACK
+   }
+}
+
 TEMPLATE = app
 TARGET = cppcheck-gui
 CONFIG += warn_on debug

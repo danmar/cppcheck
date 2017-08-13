@@ -216,7 +216,12 @@ void ResultsView::printPreview()
 {
     QPrinter printer;
     QPrintPreviewDialog dialog(&printer, this);
+#ifndef QOVERLOAD_FALLBACK
     connect(&dialog, &QPrintPreviewDialog::paintRequested, this, QOverload<QPrinter*>::of(&ResultsView::print));
+#else
+    connect(&dialog, &QPrintPreviewDialog::paintRequested, this, static_cast<void (ResultsView::*)(QPrinter*)>(&ResultsView::print));
+#endif
+
     dialog.exec();
 }
 

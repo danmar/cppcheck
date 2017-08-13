@@ -579,12 +579,20 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(start);
 
             //Connect the signal to signal mapper
+#ifndef QOVERLOAD_FALLBACK
             connect(start, &QAction::triggered, signalMapper, QOverload<>::of(&QSignalMapper::map));
+#else
+            connect(start, &QAction::triggered, signalMapper, static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+#endif
 
             //Add a new mapping
             signalMapper->setMapping(start, defaultApplicationIndex);
 
+#ifndef QOVERLOAD_FALLBACK
             connect(signalMapper, QOverload<int>::of(&QSignalMapper::mapped), this, &ResultsTree::context);
+#else
+            connect(signalMapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), this, &ResultsTree::context);
+#endif
         }
 
         // Add menuitems to copy full path/filename to clipboard
@@ -658,10 +666,19 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 //Disconnect all signals
                 for (int i = 0; i < actions.size(); i++) {
 
+#ifndef QOVERLOAD_FALLBACK
                     disconnect(actions[i], &QAction::triggered, signalMapper, QOverload<>::of(&QSignalMapper::map));
+#else
+                    disconnect(actions[i], &QAction::triggered, signalMapper, static_cast<void (QSignalMapper::*)(void)>(&QSignalMapper::map));
+#endif
                 }
 
+#ifndef QOVERLOAD_FALLBACK
                 disconnect(signalMapper, QOverload<int>::of(&QSignalMapper::mapped), this, &ResultsTree::context);
+#else
+                disconnect(signalMapper, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), this, &ResultsTree::context);
+#endif
+
                 //And remove the signal mapper
                 delete signalMapper;
             }

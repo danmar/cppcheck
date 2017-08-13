@@ -70,7 +70,13 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     connect(mUI.mBtnEditApplication, &QPushButton::clicked, this, &SettingsDialog::editApplication);
     connect(mUI.mBtnDefaultApplication, &QPushButton::clicked, this, &SettingsDialog::defaultApplication);
     connect(mUI.mListWidget, &QListWidget::itemDoubleClicked, this, &SettingsDialog::editApplication);
+
+#ifndef QOVERLOAD_FALLBACK
     connect(mUI.mBtnAddIncludePath, &QPushButton::clicked, this, QOverload<>::of(&SettingsDialog::addIncludePath));
+#else
+    connect(mUI.mBtnAddIncludePath, &QPushButton::clicked, this, static_cast<void (SettingsDialog::*)(void)>(&SettingsDialog::addIncludePath));
+#endif
+
     connect(mUI.mBtnRemoveIncludePath, &QPushButton::clicked, this, &SettingsDialog::removeIncludePath);
     connect(mUI.mBtnEditIncludePath, &QPushButton::clicked, this, &SettingsDialog::editIncludePath);
 

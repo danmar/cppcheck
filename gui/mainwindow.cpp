@@ -79,10 +79,19 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mLineEditFilter = new QLineEdit(mUI.mToolBarFilter);
     mLineEditFilter->setPlaceholderText(tr("Quick Filter:"));
     mUI.mToolBarFilter->addWidget(mLineEditFilter);
+#ifndef QOVERLOAD_FALLBACK
     connect(mLineEditFilter, &QLineEdit::textChanged, mFilterTimer, QOverload<>::of(&QTimer::start));
+#else
+    connect(mLineEditFilter, &QLineEdit::textChanged, mFilterTimer, static_cast<void (QTimer::*)(void)>(&QTimer::start));
+#endif
+
     connect(mLineEditFilter, &QLineEdit::returnPressed, this, &MainWindow::filterResults);
 
+#ifndef QOVERLOAD_FALLBACK
     connect(mUI.mActionPrint, &QAction::triggered, mUI.mResults, QOverload<>::of(&ResultsView::print));
+#else
+    connect(mUI.mActionPrint, &QAction::triggered, mUI.mResults, static_cast<void (ResultsView::*)(void)>(&ResultsView::print));
+#endif
     connect(mUI.mActionPrintPreview, &QAction::triggered, mUI.mResults, &ResultsView::printPreview);
     connect(mUI.mActionQuit, &QAction::triggered, this, &MainWindow::close);
     connect(mUI.mActionAnalyzeFiles, &QAction::triggered, this, &MainWindow::analyzeFiles);
