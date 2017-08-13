@@ -202,14 +202,15 @@ simplecpp::TokenList::~TokenList()
     clear();
 }
 
-void simplecpp::TokenList::operator=(const TokenList &other)
+simplecpp::TokenList &simplecpp::TokenList::operator=(const TokenList &other)
 {
-    if (this == &other)
-        return;
-    clear();
-    for (const Token *tok = other.cfront(); tok; tok = tok->next)
-        push_back(new Token(*tok));
-    sizeOfType = other.sizeOfType;
+    if (this != &other) {
+        clear();
+        for (const Token *tok = other.cfront(); tok; tok = tok->next)
+            push_back(new Token(*tok));
+        sizeOfType = other.sizeOfType;
+    }
+    return *this;
 }
 
 void simplecpp::TokenList::clear()
@@ -1023,25 +1024,25 @@ namespace simplecpp {
 
         /**
          * Expand macro. This will recursively expand inner macros.
-         * @param output   destination tokenlist
-         * @param rawtok   macro token
-         * @param macros   list of macros
-         * @param files    the files
+         * @param output     destination tokenlist
+         * @param rawtok     macro token
+         * @param macros     list of macros
+         * @param inputFiles the input files
          * @return token after macro
          * @throw Can throw wrongNumberOfParameters or invalidHashHash
          */
         const Token * expand(TokenList * const output,
                              const Token * rawtok,
                              const std::map<TokenString,Macro> &macros,
-                             std::vector<std::string> &files) const {
+                             std::vector<std::string> &inputFiles) const {
             std::set<TokenString> expandedmacros;
 
-            TokenList output2(files);
+            TokenList output2(inputFiles);
 
             if (functionLike() && rawtok->next && rawtok->next->op == '(') {
                 // Copy macro call to a new tokenlist with no linebreaks
                 const Token * const rawtok1 = rawtok;
-                TokenList rawtokens2(files);
+                TokenList rawtokens2(inputFiles);
                 rawtokens2.push_back(new Token(rawtok->str, rawtok1->location));
                 rawtok = rawtok->next;
                 rawtokens2.push_back(new Token(rawtok->str, rawtok1->location));
@@ -1084,7 +1085,7 @@ namespace simplecpp {
                 const std::map<TokenString,Macro>::const_iterator macro = macros.find(macro2tok->str);
                 if (macro == macros.end() || !macro->second.functionLike())
                     break;
-                TokenList rawtokens2(files);
+                TokenList rawtokens2(inputFiles);
                 const Location loc(macro2tok->location);
                 while (macro2tok) {
                     Token *next = macro2tok->next;
@@ -1640,7 +1641,7 @@ namespace simplecpp {
             return nextTok;
         }
 
-        bool isReplaced(const std::set<std::string> &expandedmacros) const {
+        static bool isReplaced(const std::set<std::string> &expandedmacros) {
             // return true if size > 1
             std::set<std::string>::const_iterator it = expandedmacros.begin();
             if (it == expandedmacros.end())
@@ -1760,7 +1761,7 @@ static bool isAbsolutePath(const std::string &path)
 {
     if (path.length() >= 3 && path[0] > 0 && std::isalpha(path[0]) && path[1] == ':' && (path[2] == '\\' || path[2] == '/'))
         return true;
-    return path.length() > 1U && (path[0] == '/' || path[0] == '/');
+    return path.length() > 1U && (path[0] == '/' || path[0] == '\\');
 }
 #else
 #define realFilename(f)  f

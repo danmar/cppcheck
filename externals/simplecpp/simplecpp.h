@@ -52,6 +52,8 @@ namespace simplecpp {
     public:
         explicit Location(const std::vector<std::string> &f) : files(f), fileIndex(0), line(1U), col(0U) {}
 
+        Location(const Location &loc) : files(loc.files), fileIndex(loc.fileIndex), line(loc.line), col(loc.col) {}
+
         Location &operator=(const Location &other) {
             if (this != &other) {
                 fileIndex = other.fileIndex;
@@ -77,14 +79,15 @@ namespace simplecpp {
         }
 
         const std::string& file() const {
-            static const std::string temp;
-            return fileIndex < files.size() ? files[fileIndex] : temp;
+            return fileIndex < files.size() ? files[fileIndex] : emptyFileName;
         }
 
         const std::vector<std::string> &files;
         unsigned int fileIndex;
         unsigned int line;
         unsigned int col;
+    private:
+        const std::string emptyFileName;
     };
 
     /**
@@ -147,6 +150,9 @@ namespace simplecpp {
         void printOut() const;
     private:
         TokenString string;
+
+        // Not implemented - prevent assignment
+        Token &operator=(const Token &tok);
     };
 
     /** Output from preprocessor */
@@ -173,13 +179,13 @@ namespace simplecpp {
         TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = 0);
         TokenList(const TokenList &other);
         ~TokenList();
-        void operator=(const TokenList &other);
+        TokenList &operator=(const TokenList &other);
 
         void clear();
         bool empty() const {
             return !frontToken;
         }
-        void push_back(Token *token);
+        void push_back(Token *tok);
 
         void dump() const;
         std::string stringify() const;
@@ -246,7 +252,7 @@ namespace simplecpp {
         void constFoldComparison(Token *tok);
         void constFoldBitwise(Token *tok);
         void constFoldLogicalOp(Token *tok);
-        void constFoldQuestionOp(Token **tok);
+        void constFoldQuestionOp(Token **tok1);
 
         std::string readUntil(std::istream &istr, const Location &location, const char start, const char end, OutputList *outputList);
 
