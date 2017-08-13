@@ -444,6 +444,7 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     //mThread->SetanalyzeProject(true);
     if (mProjectFile) {
         mThread->setAddons(mProjectFile->getAddons());
+        mThread->setPythonPath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         QString clangHeaders = mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString();
         mThread->setClangIncludePaths(clangHeaders.split(";"));
 #ifdef Q_OS_WIN

@@ -56,6 +56,10 @@ public:
         mAddons = addons;
     }
 
+    void setPythonPath(const QString &p) {
+        mPythonPath = p;
+    }
+
     void setDataDir(const QString &dataDir) {
         mDataDir = dataDir;
     }
@@ -128,6 +132,7 @@ private:
     QStringList mFiles;
     bool mAnalyseWholeProgram;
     QStringList mAddons;
+    QString mPythonPath;
     QString mDataDir;
     QString mClangPath;
     QStringList mClangIncludePaths;

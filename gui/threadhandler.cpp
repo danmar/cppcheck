@@ -94,6 +94,7 @@ void ThreadHandler::check(const Settings &settings)
 
     for (int i = 0; i < mRunningThreadCount; i++) {
         mThreads[i]->setAddons(mAddons);
+        mThreads[i]->setPythonPath(mPythonPath);
         mThreads[i]->setSuppressions(mSuppressions);
         mThreads[i]->setClangPath(mClangPath);
         mThreads[i]->setClangIncludePaths(mClangIncludePaths);

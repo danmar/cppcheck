@@ -267,12 +267,32 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                 mCppcheck.settings().buildDir = buildDir;
             }
 
-            QString cmd = "python " + a + ' ' + dumpFile;
-            qDebug() << cmd;
+            const QString python = mPythonPath.isEmpty() ? QString("python") : mPythonPath;
+            QStringList args;
+            args << a << dumpFile;
+            qDebug() << python << args;
+
             QProcess process;
-            process.start(cmd);
+            if (!mPythonPath.isEmpty()) {
+                QStringList env(QProcess::systemEnvironment());
+                for (int i = 0; i < env.size(); ++i) {
+                    if (env[i].startsWith("PYTHONHOME=")) {
+                        env.removeAt(i);
+                        process.setEnvironment(env);
+                        break;
+                    }
+                }
+            }
+            process.start(python, args);
             process.waitForFinished();
-            parseAddonErrors(process.readAllStandardError(), addon);
+            const QString errout(process.readAllStandardError());
+            QFile f(dumpFile + '-' + addon + "-results");
+            if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                QTextStream out(&f);
+                out << errout;
+                f.close();
+            }
+            parseAddonErrors(errout, addon);
         }
     }
 }
@@ -289,6 +309,8 @@ QString CheckThread::getAddonPath() const
         return mDataDir;
     else if (QDir(mDataDir + "/addons").exists())
         return mDataDir + "/addons";
+    else if (QDir(mDataDir + "/../addons").exists())
+        return mDataDir + "/../addons";
     else if (mDataDir.endsWith("/cfg")) {
         if (QDir(mDataDir.mid(0,mDataDir.size()-3) + "addons").exists())
             return mDataDir.mid(0,mDataDir.size()-3) + "addons";

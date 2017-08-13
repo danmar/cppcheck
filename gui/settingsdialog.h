@@ -124,6 +124,9 @@ protected slots:
     */
     void defaultApplication();
 
+    /** @brief Slot for browsing for the python binary */
+    void browsePythonPath();
+
     /** @brief Slot for browsing for the clang binary */
     void browseClangPath();
 protected:

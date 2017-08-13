@@ -53,6 +53,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI.mEnableInconclusive->setCheckState(boolToCheckState(settings.value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool()));
     mUI.mShowStatistics->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
     mUI.mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
+    mUI.mEditPythonPath->setText(settings.value(SETTINGS_PYTHON_PATH, QString()).toString());
 
 #ifdef Q_OS_WIN
     //mUI.mTabClang->setVisible(true);
@@ -74,6 +75,8 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
             this, SLOT(defaultApplication()));
     connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
             this, SLOT(editApplication()));
+
+    connect(mUI.mBtnBrowsePythonPath, &QPushButton::clicked, this, &SettingsDialog::browsePythonPath);
 
     mUI.mListWidget->setSortingEnabled(false);
     populateApplicationList();
@@ -157,6 +160,7 @@ void SettingsDialog::saveSettingValues() const
     saveCheckboxValue(&settings, mUI.mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
     saveCheckboxValue(&settings, mUI.mShowStatistics, SETTINGS_SHOW_STATISTICS);
     saveCheckboxValue(&settings, mUI.mShowErrorId, SETTINGS_SHOW_ERROR_ID);
+    settings.setValue(SETTINGS_PYTHON_PATH, mUI.mEditPythonPath->text());
 
 #ifdef Q_OS_WIN
     settings.setValue(SETTINGS_CLANG_PATH, mUI.mEditClangPath->text());
@@ -293,6 +297,13 @@ bool SettingsDialog::showErrorId() const
 bool SettingsDialog::showInconclusive() const
 {
     return checkStateToBool(mUI.mEnableInconclusive->checkState());
+}
+
+void SettingsDialog::browsePythonPath()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Select python binary"), QDir::rootPath());
+    if (fileName.contains("python", Qt::CaseInsensitive))
+        mUI.mEditPythonPath->setText(fileName);
 }
 
 void SettingsDialog::browseClangPath()

@@ -79,6 +79,10 @@ public:
         mSuppressions = s;
     }
 
+    void setPythonPath(const QString &p) {
+        mPythonPath = p;
+    }
+
     void setClangPath(const QString &p) {
         mClangPath = p;
     }
@@ -255,6 +259,7 @@ protected:
 
     QStringList mAddons;
     QStringList mSuppressions;
+    QString mPythonPath;
     QString mClangPath;
     QStringList mClangIncludePaths;
 
