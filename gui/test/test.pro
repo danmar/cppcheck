@@ -6,5 +6,4 @@ SUBDIRS = benchmark \
     projectfile \
     translationhandler \
     xmlreport \
-    xmlreportv1 \
     xmlreportv2

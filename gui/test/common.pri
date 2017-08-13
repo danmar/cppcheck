@@ -17,7 +17,6 @@ SOURCES += $${PWD}/../erroritem.cpp \
     $${PWD}/../report.cpp \
     $${PWD}/../translationhandler.cpp \
     $${PWD}/../xmlreport.cpp \
-    $${PWD}/../xmlreportv1.cpp \
     $${PWD}/../xmlreportv2.cpp
 
 HEADERS += $${PWD}/../erroritem.h \
@@ -26,7 +25,6 @@ HEADERS += $${PWD}/../erroritem.h \
     $${PWD}/../report.h \
     $${PWD}/../translationhandler.h \
     $${PWD}/../xmlreport.h \
-    $${PWD}/../xmlreportv1.h \
     $${PWD}/../xmlreportv2.h
 
 contains(QMAKE_CC, gcc) {

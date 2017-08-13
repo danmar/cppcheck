@@ -25,27 +25,27 @@ void TestProjectFile::loadInexisting()
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/foo.cppcheck");
     ProjectFile pfile(filepath);
-    QCOMPARE(pfile.Read(), false);
+    QCOMPARE(pfile.read(), false);
 }
 
 void TestProjectFile::loadSimple()
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple.cppcheck");
     ProjectFile pfile(filepath);
-    QVERIFY(pfile.Read());
-    QCOMPARE(pfile.GetRootPath(), QString("../.."));
-    QStringList includes = pfile.GetIncludeDirs();
+    QVERIFY(pfile.read());
+    QCOMPARE(pfile.getRootPath(), QString("../.."));
+    QStringList includes = pfile.getIncludeDirs();
     QCOMPARE(includes.size(), 2);
     QCOMPARE(includes[0], QString("lib/"));
     QCOMPARE(includes[1], QString("cli/"));
-    QStringList paths = pfile.GetCheckPaths();
+    QStringList paths = pfile.getCheckPaths();
     QCOMPARE(paths.size(), 2);
     QCOMPARE(paths[0], QString("gui/"));
     QCOMPARE(paths[1], QString("test/"));
-    QStringList excludes = pfile.GetExcludedPaths();
+    QStringList excludes = pfile.getExcludedPaths();
     QCOMPARE(excludes.size(), 1);
     QCOMPARE(excludes[0], QString("gui/temp/"));
-    QStringList defines = pfile.GetDefines();
+    QStringList defines = pfile.getDefines();
     QCOMPARE(defines.size(), 1);
     QCOMPARE(defines[0], QString("FOO"));
 }
@@ -55,20 +55,20 @@ void TestProjectFile::loadSimpleWithIgnore()
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple_ignore.cppcheck");
     ProjectFile pfile(filepath);
-    QVERIFY(pfile.Read());
-    QCOMPARE(pfile.GetRootPath(), QString("../.."));
-    QStringList includes = pfile.GetIncludeDirs();
+    QVERIFY(pfile.read());
+    QCOMPARE(pfile.getRootPath(), QString("../.."));
+    QStringList includes = pfile.getIncludeDirs();
     QCOMPARE(includes.size(), 2);
     QCOMPARE(includes[0], QString("lib/"));
     QCOMPARE(includes[1], QString("cli/"));
-    QStringList paths = pfile.GetCheckPaths();
+    QStringList paths = pfile.getCheckPaths();
     QCOMPARE(paths.size(), 2);
     QCOMPARE(paths[0], QString("gui/"));
     QCOMPARE(paths[1], QString("test/"));
-    QStringList excludes = pfile.GetExcludedPaths();
+    QStringList excludes = pfile.getExcludedPaths();
     QCOMPARE(excludes.size(), 1);
     QCOMPARE(excludes[0], QString("gui/temp/"));
-    QStringList defines = pfile.GetDefines();
+    QStringList defines = pfile.getDefines();
     QCOMPARE(defines.size(), 1);
     QCOMPARE(defines[0], QString("FOO"));
 }
@@ -77,20 +77,20 @@ void TestProjectFile::loadSimpleNoroot()
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple_noroot.cppcheck");
     ProjectFile pfile(filepath);
-    QVERIFY(pfile.Read());
-    QCOMPARE(pfile.GetRootPath(), QString());
-    QStringList includes = pfile.GetIncludeDirs();
+    QVERIFY(pfile.read());
+    QCOMPARE(pfile.getRootPath(), QString());
+    QStringList includes = pfile.getIncludeDirs();
     QCOMPARE(includes.size(), 2);
     QCOMPARE(includes[0], QString("lib/"));
     QCOMPARE(includes[1], QString("cli/"));
-    QStringList paths = pfile.GetCheckPaths();
+    QStringList paths = pfile.getCheckPaths();
     QCOMPARE(paths.size(), 2);
     QCOMPARE(paths[0], QString("gui/"));
     QCOMPARE(paths[1], QString("test/"));
-    QStringList excludes = pfile.GetExcludedPaths();
+    QStringList excludes = pfile.getExcludedPaths();
     QCOMPARE(excludes.size(), 1);
     QCOMPARE(excludes[0], QString("gui/temp/"));
-    QStringList defines = pfile.GetDefines();
+    QStringList defines = pfile.getDefines();
     QCOMPARE(defines.size(), 1);
     QCOMPARE(defines[0], QString("FOO"));
 }

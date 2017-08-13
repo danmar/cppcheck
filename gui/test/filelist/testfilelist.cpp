@@ -27,14 +27,14 @@ void TestFileList::addFile()
 {
     // Accepted extensions: *.cpp, *.cxx, *.cc, *.c, *.c++, *.txx, *.tpp"
     FileList list;
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo1.cpp");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo2.cxx");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo3.cc");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo4.c");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo5.c++");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo6.txx");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo7.tpp");
-    QStringList files = list.GetFileList();
+    list.addFile(QString(SRCDIR) + "/../data/files/foo1.cpp");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo2.cxx");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo3.cc");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo4.c");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo5.c++");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo6.txx");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo7.tpp");
+    QStringList files = list.getFileList();
     QCOMPARE(files.size(), 7);
 }
 
@@ -50,41 +50,41 @@ void TestFileList::addPathList()
     paths << QString(SRCDIR) + "/../data/files/foo6.txx";
     paths << QString(SRCDIR) + "/../data/files/foo7.tpp";
     FileList list;
-    list.AddPathList(paths);
-    QStringList files = list.GetFileList();
+    list.addPathList(paths);
+    QStringList files = list.getFileList();
     QCOMPARE(files.size(), 7);
 }
 
 void TestFileList::addFile_notexist()
 {
     FileList list;
-    list.AddFile(QString(SRCDIR) + "/../data/files/bar1.cpp");
-    QStringList files = list.GetFileList();
+    list.addFile(QString(SRCDIR) + "/../data/files/bar1.cpp");
+    QStringList files = list.getFileList();
     QCOMPARE(files.size(), 0);
 }
 
 void TestFileList::addFile_unknown()
 {
     FileList list;
-    list.AddFile(QString(SRCDIR) + "/../data/files/bar1");
-    list.AddFile(QString(SRCDIR) + "/../data/files/bar1.foo");
-    QStringList files = list.GetFileList();
+    list.addFile(QString(SRCDIR) + "/../data/files/bar1");
+    list.addFile(QString(SRCDIR) + "/../data/files/bar1.foo");
+    QStringList files = list.getFileList();
     QCOMPARE(files.size(), 0);
 }
 
 void TestFileList::addDirectory()
 {
     FileList list;
-    list.AddDirectory(QString(SRCDIR) + "/../data/files");
-    QStringList files = list.GetFileList();
+    list.addDirectory(QString(SRCDIR) + "/../data/files");
+    QStringList files = list.getFileList();
     QCOMPARE(files.size(), 7);
 }
 
 void TestFileList::addDirectory_recursive()
 {
     FileList list;
-    list.AddDirectory(QString(SRCDIR) + "/../data/files", true);
-    QStringList files = list.GetFileList();
+    list.addDirectory(QString(SRCDIR) + "/../data/files", true);
+    QStringList files = list.getFileList();
     QCOMPARE(files.size(), 10);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
@@ -98,15 +98,15 @@ void TestFileList::filterFiles()
     FileList list;
     QStringList filters;
     filters << "foo1.cpp" << "foo3.cc";
-    list.AddExcludeList(filters);
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo1.cpp");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo2.cxx");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo3.cc");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo4.c");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo5.c++");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo6.txx");
-    list.AddFile(QString(SRCDIR) + "/../data/files/foo7.tpp");
-    QStringList files = list.GetFileList();
+    list.addExcludeList(filters);
+    list.addFile(QString(SRCDIR) + "/../data/files/foo1.cpp");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo2.cxx");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo3.cc");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo4.c");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo5.c++");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo6.txx");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo7.tpp");
+    QStringList files = list.getFileList();
     QCOMPARE(files.size(), 5);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
@@ -119,9 +119,9 @@ void TestFileList::filterFiles2()
     FileList list;
     QStringList filters;
     filters << "foo1.cpp" << "foo3.cc";
-    list.AddExcludeList(filters);
-    list.AddDirectory(QString(SRCDIR) + "/../data/files");
-    QStringList files = list.GetFileList();
+    list.addExcludeList(filters);
+    list.addDirectory(QString(SRCDIR) + "/../data/files");
+    QStringList files = list.getFileList();
     QCOMPARE(files.size(), 5);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
@@ -134,9 +134,9 @@ void TestFileList::filterFiles3()
     FileList list;
     QStringList filters;
     filters << "foo1.cpp" << "foo3.cc";
-    list.AddExcludeList(filters);
-    list.AddDirectory(QString(SRCDIR) + "/../data/files", true);
-    QStringList files = list.GetFileList();
+    list.addExcludeList(filters);
+    list.addDirectory(QString(SRCDIR) + "/../data/files", true);
+    QStringList files = list.getFileList();
     QCOMPARE(files.size(), 6);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
@@ -151,9 +151,9 @@ void TestFileList::filterFiles4()
     FileList list;
     QStringList filters;
     filters << "dir1/";
-    list.AddExcludeList(filters);
-    list.AddDirectory(QString(SRCDIR) + "/../data/files", true);
-    QStringList files = list.GetFileList();
+    list.addExcludeList(filters);
+    list.addDirectory(QString(SRCDIR) + "/../data/files", true);
+    QStringList files = list.getFileList();
     QCOMPARE(files.size(), 8);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
@@ -166,9 +166,9 @@ void TestFileList::filterFiles5()
     FileList list;
     QStringList filters;
     filters << QDir(QString(SRCDIR) + "/../data/files/dir1/").absolutePath() + "/";
-    list.AddExcludeList(filters);
-    list.AddDirectory(QString(SRCDIR) + "/../data/files", true);
-    QStringList files = list.GetFileList();
+    list.addExcludeList(filters);
+    list.addDirectory(QString(SRCDIR) + "/../data/files", true);
+    QStringList files = list.getFileList();
     QCOMPARE(files.size(), 8);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
