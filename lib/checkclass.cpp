@@ -2383,13 +2383,14 @@ void CheckClass::checkCopyCtorAndEqOperator()
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
-        // count the number of non-static variables
-        int vars = 0;
+        bool hasNonStaticVars = false;
         for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-            if (!var->isStatic())
-                vars++;
+            if (!var->isStatic()) {
+                hasNonStaticVars = true;
+                break;
+            }
         }
-        if (vars == 0)
+        if (!hasNonStaticVars)
             continue;
 
         int hasCopyCtor = 0;
