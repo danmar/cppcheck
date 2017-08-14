@@ -290,9 +290,14 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             setTokenValue(parent, castValue(value, valueType.sign, settings->long_bit), settings);
         else if (valueType.type == ValueType::Type::LONGLONG)
             setTokenValue(parent, castValue(value, valueType.sign, settings->long_long_bit), settings);
-        else if (value.isIntValue() && value.intvalue < (1 << (settings->char_bit - 1)) && value.intvalue > -(1 << (settings->char_bit - 1)))
-            // unknown type, but value is small so there should be no truncation etc
-            setTokenValue(parent,value,settings);
+        else if (value.isIntValue()) {
+            const int charMax = (1 << (settings->char_bit - 1)) - 1;
+            const int charMin = -charMax - 1;
+            if (charMin <= value.intvalue && value.intvalue <= charMax) {
+                // unknown type, but value is small so there should be no truncation etc
+                setTokenValue(parent,value,settings);
+            }
+        }
     }
 
     else if (parent->str() == ":") {
