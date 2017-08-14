@@ -238,9 +238,8 @@ private:
     /**
      * @brief Reanalyze selected files
      * @param files list of selected files
-     * @param all true if all files of list, false if modified files of list
      */
-    void reAnalyzeSelected(QStringList files, bool all);
+    void reAnalyzeSelected(QStringList files);
 
     /**
       * @brief Analyze the project.

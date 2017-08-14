@@ -995,7 +995,7 @@ void MainWindow::reAnalyzeAll()
         reAnalyze(true);
 }
 
-void MainWindow::reAnalyzeSelected(QStringList files, bool all)
+void MainWindow::reAnalyzeSelected(QStringList files)
 {
     if (files.empty())
         return;
@@ -1232,7 +1232,7 @@ void MainWindow::showAuthors()
 
 void MainWindow::performSelectedFilesCheck(QStringList selectedFilesList)
 {
-    reAnalyzeSelected(selectedFilesList, true);
+    reAnalyzeSelected(selectedFilesList);
 }
 
 void MainWindow::save()
