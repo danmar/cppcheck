@@ -2824,8 +2824,8 @@ private:
                 if (classA->name() == "A" && classB->name() == "B" && classC->name() == "C") {
                     ASSERT(classA->derivedFrom.size() == 1U);
                     if (classA->derivedFrom.size() == 1) {
-                        ASSERT(classA->derivedFrom[0].type);
-                        if (classA->derivedFrom[0].type) {
+                        ASSERT(classA->derivedFrom[0].type != nullptr);
+                        if (classA->derivedFrom[0].type != nullptr) {
                             ASSERT(classA->derivedFrom[0].type == classB);
                         }
                     }
@@ -4635,8 +4635,8 @@ private:
 
         ASSERT(db && db->functionScopes.size() == 1);
         if (db && db->functionScopes.size() == 1) {
-            ASSERT(db->functionScopes[0]->function);
-            if (db->functionScopes[0]->function) {
+            ASSERT(db->functionScopes[0]->function != nullptr);
+            if (db->functionScopes[0]->function != nullptr) {
                 const Token *retDef = db->functionScopes[0]->function->retDef;
                 ASSERT_EQUALS("func", retDef ? retDef->str() : "");
             }

@@ -2410,7 +2410,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
         }
 
         if (std::abs(hasCopyCtor - hasAssignmentOperator) == 2)
-            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, hasCopyCtor);
+            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, hasCopyCtor != 0);
     }
 }
 
