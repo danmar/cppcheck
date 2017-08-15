@@ -313,24 +313,18 @@ void CheckThread::parseAddonErrors(QString err, QString tool)
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QRegExp r1("\\[([^:]+):([0-9]+)\\](.*)");
+        QRegExp r1("\\[([a-zA-Z]?:?[^:]+):([0-9]+)\\][ ][(]([a-z]+)[)]: (.+) \\[([a-zA-Z0-9_\\-\\.]+)\\]");
         if (!r1.exactMatch(line))
             continue;
         const std::string &filename = r1.cap(1).toStdString();
         const int lineNumber = r1.cap(2).toInt();
+        const std::string severity = r1.cap(3).toStdString();
+        const std::string message = r1.cap(4).toStdString();
+        const std::string id = r1.cap(5).toStdString();
 
-        std::string message, id;
-        QRegExp r2("(.*)\\[([a-zA-Z0-9\\-\\._]+)\\]");
-        if (r2.exactMatch(r1.cap(3))) {
-            message = r2.cap(1).toStdString();
-            id = tool.toStdString() + '-' + r2.cap(2).toStdString();
-        } else {
-            message = r1.cap(3).toStdString();
-            id = tool.toStdString();
-        }
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
         callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
-        ErrorLogger::ErrorMessage errmsg(callstack, filename, Severity::style, message, id, false);
+        ErrorLogger::ErrorMessage errmsg(callstack, filename, Severity::fromString(severity), message, id, false);
         mResult.reportErr(errmsg);
     }
 }
