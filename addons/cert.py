@@ -13,9 +13,9 @@ import sys
 import re
 
 
-def reportError(token, severity, msg):
+def reportError(token, severity, msg, id):
     sys.stderr.write(
-        '[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') cert.py: ' + msg + '\n')
+        '[' + token.file + ':' + str(token.linenr) + '] (' + severity + '): ' + msg + ' [' + id + ']\n')
 
 
 def isUnpackedStruct(var):
@@ -66,8 +66,8 @@ def exp42(data):
 
         if token.astOperand1.str == 'memcmp' and (isLocalUnpackedStruct(arg1) or isLocalUnpackedStruct(arg2)):
             reportError(
-                token, 'style', "EXP42-C Comparison of struct padding data " +
-                "(fix either by packing the struct using '#pragma pack' or by rewriting the comparison)")
+                token, 'style', "Comparison of struct padding data " +
+                "(fix either by packing the struct using '#pragma pack' or by rewriting the comparison)", 'EXP42-C')
 
 
 # EXP46-C
@@ -77,7 +77,7 @@ def exp46(data):
     for token in data.tokenlist:
         if isBitwiseOp(token) and (isComparisonOp(token.astOperand1) or isComparisonOp(token.astOperand2)):
             reportError(
-                token, 'style', 'EXP46-C Bitwise operator is used with a Boolean-like operand')
+                token, 'style', 'Bitwise operator is used with a Boolean-like operand', 'EXP46-C')
 
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
