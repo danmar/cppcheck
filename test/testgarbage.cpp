@@ -216,6 +216,7 @@ private:
         TEST_CASE(garbageCode183); // #7505
         TEST_CASE(garbageCode184); // #7699
         TEST_CASE(garbageCode185); // #6011
+        TEST_CASE(garbageCode187); // #8152
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1417,6 +1418,12 @@ private:
             "               return bStatus;\n"
             "       };\n"
             "}\n");
+    }
+
+    // # 8152 - segfault in handling
+    void garbageCode187() {
+        const std::string inp("0|\0|0>;\n", 8);
+        checkCode(inp);
     }
 
     void syntaxErrorFirstToken() {
