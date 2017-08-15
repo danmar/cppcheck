@@ -8,15 +8,15 @@ import cppcheckdata
 import sys
 
 
-def reportError(token, severity, msg):
+def reportError(token, severity, msg, id):
     sys.stderr.write(
-        '[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') threadsafety.py: ' + msg + '\n')
+        '[' + token.file + ':' + str(token.linenr) + '] (' + severity + '): ' + msg + ' [' + id + ']\n')
 
 
 def checkstatic(data):
     for var in data.variables:
         if var.isStatic and var.isLocal and var.isClass:
-            reportError(var.typeStartToken, 'warning', ('Local static object: ' + var.nameToken.str))
+            reportError(var.typeStartToken, 'warning', ('Local static object: ' + var.nameToken.str), 'threadsafety')
 
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
