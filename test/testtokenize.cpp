@@ -5937,7 +5937,7 @@ private:
 
     void simplifyOperatorName8() { // ticket #5706
         const char code1[] = "value_type * operator += (int) noexcept ;";
-        const char result1[] = "value_type * operator+= ( int ) noexcept ;";
+        const char result1[] = "value_type * operator+= ( int ) noexcept ( true ) ;";
         ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
 
         const char code2[] = "value_type * operator += (int) noexcept ( true ) ;";
@@ -5959,6 +5959,11 @@ private:
         const char code6[] = "value_type * operator += (int) const throw ( ) ;";
         const char result6[] = "value_type * operator+= ( int ) const throw ( ) ;";
         ASSERT_EQUALS(result6, tokenizeAndStringify(code6,false));
+
+        const char code7[] = "value_type * operator += (int) const noexcept ( false ) ;";
+        const char result7[] = "value_type * operator+= ( int ) const noexcept ( false ) ;";
+        ASSERT_EQUALS(result7, tokenizeAndStringify(code7,false));
+
     }
 
     void simplifyOperatorName9() { // Ticket #5709
