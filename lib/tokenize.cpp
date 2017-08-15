@@ -2341,7 +2341,11 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             }
         } else if (!c && ((TemplateSimplifier::templateParameters(tok2) > 0) ||
                           Token::simpleMatch(tok2, "< >") /* Ticket #4764 */)) {
-            tok2 = tok2->findClosingBracket();
+            const Token * tok3 = tok2->findClosingBracket();
+            if (tok3 == nullptr) { /* Ticket #8151 */
+                throw tok2;
+            }
+            tok2 = tok3;
             if (tok2->str() != ">")
                 break;
             singleNameCount = 1;
@@ -2694,7 +2698,12 @@ void Tokenizer::setVarIdPass1()
             if (!isC() && Token::simpleMatch(tok2, "const new"))
                 continue;
 
-            bool decl = setVarIdParseDeclaration(&tok2, variableId, scopeStack.top().isExecutable, isCPP(), isC());
+            bool decl;
+            try { /* Ticket #8151 */
+                decl = setVarIdParseDeclaration(&tok2, variableId, scopeStack.top().isExecutable, isCPP(), isC());
+            } catch (const Token * errTok) {
+                syntaxError(errTok);
+            }
             if (decl) {
                 const Token* prev2 = tok2->previous();
                 if (Token::Match(prev2, "%type% [;[=,)]") && tok2->previous()->str() != "const")
