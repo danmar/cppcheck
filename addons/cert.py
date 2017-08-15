@@ -67,7 +67,7 @@ def exp42(data):
         if token.astOperand1.str == 'memcmp' and (isLocalUnpackedStruct(arg1) or isLocalUnpackedStruct(arg2)):
             reportError(
                 token, 'style', "Comparison of struct padding data " +
-                "(fix either by packing the struct using '#pragma pack' or by rewriting the comparison)", 'EXP42-C')
+                "(fix either by packing the struct using '#pragma pack' or by rewriting the comparison)", 'cert-EXP42-C')
 
 
 # EXP46-C
@@ -77,7 +77,7 @@ def exp46(data):
     for token in data.tokenlist:
         if isBitwiseOp(token) and (isComparisonOp(token.astOperand1) or isComparisonOp(token.astOperand2)):
             reportError(
-                token, 'style', 'Bitwise operator is used with a Boolean-like operand', 'EXP46-C')
+                token, 'style', 'Bitwise operator is used with a Boolean-like operand', 'cert-EXP46-c')
 
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
