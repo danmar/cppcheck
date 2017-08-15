@@ -8215,6 +8215,12 @@ const Token * Tokenizer::findGarbageCode() const
         }
     }
 
+    // Operators without operands..
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%cop% %or%|%oror%|/|%"))
+            return tok;
+    }
+
     // Code must not start with an arithmetical operand
     if (Token::Match(list.front(), "%cop%"))
         return list.front();
