@@ -8781,8 +8781,7 @@ void Tokenizer::simplifyKeyword()
 
             // noexcept -> noexcept(true)
             // 3) void f() noexcept; -> void f() noexcept(true);
-            if (Token::Match(tok, ") noexcept [:{;]") ||
-              Token::Match(tok, ") noexcept const|override|final")) {
+            if (Token::Match(tok, ") noexcept [:{;]|const|override|final")) {
                 // Insertion is done in inverse order
                 // The brackets are linked together accordingly afterwards
                 Token * tokNoExcept = tok->next();
