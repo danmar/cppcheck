@@ -216,6 +216,7 @@ private:
         TEST_CASE(garbageCode183); // #7505
         TEST_CASE(garbageCode184); // #7699
         TEST_CASE(garbageCode185); // #6011
+        TEST_CASE(garbageCode187); // #8152
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -225,7 +226,7 @@ private:
         TEST_CASE(enumTrailingComma);
     }
 
-    std::string checkCode(const char code[], bool cpp = true) {
+    std::string checkCode(const std::string & code, bool cpp = true) {
         // double the tests - run each example as C as well as C++
         const char* const filename = cpp ? "test.cpp" : "test.c";
         const char* const alternatefilename = cpp ? "test.c" : "test.cpp";
@@ -239,7 +240,7 @@ private:
         return checkCodeInternal(code, filename);
     }
 
-    std::string checkCodeInternal(const char code[], const char* filename) {
+    std::string checkCodeInternal(const std::string & code, const char* filename) {
         errout.str("");
 
         // tokenize..
@@ -1417,6 +1418,12 @@ private:
             "               return bStatus;\n"
             "       };\n"
             "}\n");
+    }
+
+    // # 8152 - segfault in handling
+    void garbageCode187() {
+        const std::string inp("0|\0|0>;\n", 8);
+        checkCode(inp);
     }
 
     void syntaxErrorFirstToken() {
