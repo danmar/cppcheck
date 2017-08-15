@@ -216,6 +216,7 @@ private:
         TEST_CASE(garbageCode183); // #7505
         TEST_CASE(garbageCode184); // #7699
         TEST_CASE(garbageCode185); // #6011
+        TEST_CASE(garbageCode186); // #8151
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1418,6 +1419,12 @@ private:
             "       };\n"
             "}\n");
     }
+
+    // #8151 - segfault due to incorrect template syntax
+    void garbageCode186() {
+        ASSERT_THROW(checkCode("A<B<><>C"), InternalError);
+    }
+
 
     void syntaxErrorFirstToken() {
         ASSERT_THROW(checkCode("&operator(){[]};"), InternalError); // #7818
