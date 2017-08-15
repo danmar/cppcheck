@@ -225,7 +225,7 @@ private:
         TEST_CASE(enumTrailingComma);
     }
 
-    std::string checkCode(const char code[], bool cpp = true) {
+    std::string checkCode(const std::string & code, bool cpp = true) {
         // double the tests - run each example as C as well as C++
         const char* const filename = cpp ? "test.cpp" : "test.c";
         const char* const alternatefilename = cpp ? "test.c" : "test.cpp";
@@ -239,7 +239,7 @@ private:
         return checkCodeInternal(code, filename);
     }
 
-    std::string checkCodeInternal(const char code[], const char* filename) {
+    std::string checkCodeInternal(const std::string & code, const char* filename) {
         errout.str("");
 
         // tokenize..
