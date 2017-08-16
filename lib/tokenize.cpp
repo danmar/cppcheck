@@ -4473,11 +4473,11 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
         tokEnd=simplifyAddBracesPair(tok,true);
     } else if (tok->str()=="while") {
         Token *tokPossibleDo=tok->previous();
-        if (tokPossibleDo &&
-            tokPossibleDo->str()=="}")
-            tokPossibleDo=tokPossibleDo->link();
-        if (!tokPossibleDo ||
-            tokPossibleDo->strAt(-1) != "do")
+        if (Token::simpleMatch(tok->previous(), "{"))
+            tokPossibleDo = nullptr;
+        else if (Token::simpleMatch(tokPossibleDo,"}"))
+            tokPossibleDo = tokPossibleDo->link();
+        if (!tokPossibleDo || tokPossibleDo->strAt(-1) != "do")
             tokEnd=simplifyAddBracesPair(tok,true);
     } else if (tok->str()=="do") {
         tokEnd=simplifyAddBracesPair(tok,false);

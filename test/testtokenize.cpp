@@ -1343,6 +1343,17 @@ private:
                                     "}";
             ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
         }
+
+        {
+            // #8148 - while inside the do-while body
+            const char code[] = "void foo() {\n"
+                                "    do { while (x) f(); } while (y);\n"
+                                "}";
+            const char result[] = "void foo ( ) {\n"
+                                  "do { while ( x ) { f ( ) ; } } while ( y ) ;\n"
+                                  "}";
+            ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
+        }
     }
 
     void forAddBraces1() {
