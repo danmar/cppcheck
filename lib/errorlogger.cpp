@@ -134,23 +134,40 @@ ErrorLogger::ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenL
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
-    : _id(errmsg->Attribute("id")),
-      _severity(Severity::fromString(errmsg->Attribute("severity"))),
+    : _severity(Severity::none),
       _cwe(0U),
-      _inconclusive(false),
-      _shortMessage(errmsg->Attribute("msg")),
-      _verboseMessage(errmsg->Attribute("verbose"))
+      _inconclusive(false)
 {
-    const char *attr = errmsg->Attribute("cwe");
+    const char * const unknown = "<UNKNOWN>";
+
+    const char *attr = errmsg->Attribute("id");
+    _id = attr ? attr : unknown;
+
+    attr = errmsg->Attribute("severity");
+    _severity = attr ? Severity::fromString(attr) : Severity::none;
+
+    attr = errmsg->Attribute("cwe");
     std::istringstream(attr ? attr : "0") >> _cwe.id;
+
     attr = errmsg->Attribute("inconclusive");
     _inconclusive = attr && (std::strcmp(attr, "true") == 0);
+
+    attr = errmsg->Attribute("msg");
+    _shortMessage = attr ? attr : "";
+
+    attr = errmsg->Attribute("verbose");
+    _verboseMessage = attr ? attr : "";
+
     for (const tinyxml2::XMLElement *e = errmsg->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(),"location")==0) {
             const char *strfile = e->Attribute("file");
             const char *strinfo = e->Attribute("info");
             const char *strline = e->Attribute("line");
-            _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(strfile, strinfo ? strinfo : "", std::atoi(strline)));
+
+            const char *file = strfile ? strfile : unknown;
+            const char *info = strinfo ? strinfo : "";
+            const int line = strline ? std::atoi(strline) : 0;
+            _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(file, info, line));
         }
     }
 }
