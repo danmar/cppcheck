@@ -968,9 +968,16 @@ private:
         const char code5[] = "void fred(int x) noexcept {}"
                              "void wilma() { x++; }";
         const char expected5[] = "1: "
-                                 "void fred ( int x@1 ) noexcept { } "
+                                 "void fred ( int x@1 ) noexcept ( true ) { } "
                                  "void wilma ( ) { x ++ ; }\n";
         ASSERT_EQUALS(expected5, tokenize(code5, false, "test.cpp"));
+
+        const char code6[] = "void fred(int x) noexcept ( false ) {}"
+                             "void wilma() { x++; }";
+        const char expected6[] = "1: "
+                                 "void fred ( int x@1 ) noexcept ( false ) { } "
+                                 "void wilma ( ) { x ++ ; }\n";
+        ASSERT_EQUALS(expected6, tokenize(code6, false, "test.cpp"));
     }
 
     void varid57() { // #6636: new scope by {}
@@ -1802,7 +1809,7 @@ private:
                              "  int x;\n"
                              "};";
         ASSERT_EQUALS("1: class A {\n"
-                      "2: A ( int x@1 ) noexcept : x@2 ( x@1 ) { }\n"
+                      "2: A ( int x@1 ) noexcept ( true ) : x@2 ( x@1 ) { }\n"
                       "3: int x@2 ;\n"
                       "4: } ;\n",
                       tokenize(code5));
@@ -1817,7 +1824,17 @@ private:
                       "4: } ;\n",
                       tokenize(code6));
 
-        const char code7[] = "class Foo : public Bar {\n"
+        const char code7[] = "class A {\n"
+                             "  A(int x) noexcept(false) : x(x) {}\n"
+                             "  int x;\n"
+                             "};";
+        ASSERT_EQUALS("1: class A {\n"
+                      "2: A ( int x@1 ) noexcept ( false ) : x@2 ( x@1 ) { }\n"
+                      "3: int x@2 ;\n"
+                      "4: } ;\n",
+                      tokenize(code7));
+
+        const char code8[] = "class Foo : public Bar {\n"
                              "  explicit Foo(int i) : Bar(mi = i) { }\n"
                              "  int mi;\n"
                              "};";
@@ -1825,10 +1842,10 @@ private:
                       "2: explicit Foo ( int i@1 ) : Bar ( mi@2 = i@1 ) { }\n"
                       "3: int mi@2 ;\n"
                       "4: } ;\n",
-                      tokenize(code7));
+                      tokenize(code8));
 
         // #6520
-        const char code8[] = "class A {\n"
+        const char code9[] = "class A {\n"
                              "  A(int x) : y(a?0:1), x(x) {}\n"
                              "  int x, y;\n"
                              "};";
@@ -1836,10 +1853,10 @@ private:
                       "2: A ( int x@1 ) : y@3 ( a ? 0 : 1 ) , x@2 ( x@1 ) { }\n"
                       "3: int x@2 ; int y@3 ;\n"
                       "4: } ;\n",
-                      tokenize(code8));
+                      tokenize(code9));
 
         // #7123
-        const char code9[] = "class A {\n"
+        const char code10[] = "class A {\n"
                              "  double *work;\n"
                              "  A(const Matrix &m) throw (e);\n"
                              "};\n"
@@ -1851,7 +1868,7 @@ private:
                       "4: } ;\n"
                       "5: A :: A ( const Matrix & m@3 ) throw ( e ) : work@1 ( 0 )\n"
                       "6: { }\n",
-                      tokenize(code9));
+                      tokenize(code10));
     }
 
     void varid_initListWithBaseTemplate() {
