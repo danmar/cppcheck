@@ -1857,11 +1857,11 @@ private:
 
         // #7123
         const char code10[] = "class A {\n"
-                             "  double *work;\n"
-                             "  A(const Matrix &m) throw (e);\n"
-                             "};\n"
-                             "A::A(const Matrix &m) throw (e) : work(0)\n"
-                             "{}";
+                              "  double *work;\n"
+                              "  A(const Matrix &m) throw (e);\n"
+                              "};\n"
+                              "A::A(const Matrix &m) throw (e) : work(0)\n"
+                              "{}";
         ASSERT_EQUALS("1: class A {\n"
                       "2: double * work@1 ;\n"
                       "3: A ( const Matrix & m@2 ) throw ( e ) ;\n"
