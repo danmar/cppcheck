@@ -36,7 +36,7 @@ static const QString LocationElementName = "location";
 static const QString ColAttribute = "col";
 static const QString CWEAttribute = "cwe";
 static const QString SinceDateAttribute = "sinceDate";
-static const QString TagAttribute = "tag";
+static const QString TagsAttribute = "tag";
 static const QString FilenameAttribute = "file";
 static const QString IncludedFromFilenameAttribute = "file0";
 static const QString InconclusiveAttribute = "inconclusive";
@@ -124,12 +124,8 @@ void XmlReportV2::writeError(const ErrorItem &error)
         mXmlWriter->writeAttribute(CWEAttribute, QString::number(error.cwe));
     if (!error.sinceDate.isEmpty())
         mXmlWriter->writeAttribute(SinceDateAttribute, error.sinceDate);
-    if (error.tag == ErrorItem::FP)
-        mXmlWriter->writeAttribute(TagAttribute, "fp");
-    else if (error.tag == ErrorItem::IGNORE)
-        mXmlWriter->writeAttribute(TagAttribute, "ignore");
-    else if (error.tag == ErrorItem::BUG)
-        mXmlWriter->writeAttribute(TagAttribute, "bug");
+    if (!error.tags.isEmpty())
+        mXmlWriter->writeAttribute(TagsAttribute, error.tags);
 
     for (int i = error.errorPath.count() - 1; i >= 0; i--) {
         mXmlWriter->writeStartElement(LocationElementName);
@@ -221,15 +217,8 @@ ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
             item.cwe = attribs.value(QString(), CWEAttribute).toString().toInt();
         if (attribs.hasAttribute(QString(), SinceDateAttribute))
             item.sinceDate = attribs.value(QString(), SinceDateAttribute).toString();
-        if (attribs.hasAttribute(QString(), TagAttribute)) {
-            const QString tag = attribs.value(QString(), TagAttribute).toString();
-            if (tag == "fp")
-                item.tag = ErrorItem::FP;
-            else if (tag == "ignore")
-                item.tag = ErrorItem::IGNORE;
-            else if (tag == "bug")
-                item.tag = ErrorItem::BUG;
-        }
+        if (attribs.hasAttribute(QString(), TagsAttribute))
+            item.tags = attribs.value(QString(), TagsAttribute).toString();
     }
 
     bool errorRead = false;

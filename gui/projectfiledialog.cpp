@@ -90,6 +90,8 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
         mLibraryCheckboxes << checkbox;
     }
 
+    mUI.mEditTags->setValidator(new QRegExpValidator(QRegExp("[a-zA-Z0-9 ;]*"),this));
+
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &ProjectFileDialog::ok);
     connect(mUI.mBtnBrowseBuildDir, &QPushButton::clicked, this, &ProjectFileDialog::browseBuildDir);
     connect(mUI.mBtnClearImportProject, &QPushButton::clicked, this, &ProjectFileDialog::clearImportProject);
@@ -146,6 +148,14 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mAddonThreadSafety->setChecked(projectFile->getAddons().contains("threadsafety"));
     mUI.mAddonY2038->setChecked(projectFile->getAddons().contains("y2038"));
     mUI.mAddonCert->setChecked(projectFile->getAddons().contains("cert"));
+    QString tags;
+    foreach (const QString tag, projectFile->getTags()) {
+        if (tags.isEmpty())
+            tags = tag;
+        else
+            tags += ';' + tag;
+    }
+    mUI.mEditTags->setText(tags);
     updatePathsAndDefines();
 }
 
@@ -171,6 +181,9 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     if (mUI.mAddonCert->isChecked())
         list << "cert";
     projectFile->setAddons(list);
+    QStringList tags(mUI.mEditTags->text().split(";"));
+    tags.removeAll(QString());
+    projectFile->setTags(tags);
 }
 
 void ProjectFileDialog::ok()

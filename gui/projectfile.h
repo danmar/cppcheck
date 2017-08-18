@@ -122,6 +122,10 @@ public:
         return mAddons;
     }
 
+    QStringList getTags() const {
+        return mTags;
+    }
+
     /**
     * @brief Get filename for the project file.
     * @return file name.
@@ -137,7 +141,6 @@ public:
     void setRootPath(const QString &rootpath) {
         mRootPath = rootpath;
     }
-
 
     void setBuildDir(const QString &buildDir) {
         mBuildDir = buildDir;
@@ -192,6 +195,14 @@ public:
      * @param addons List of addons.
      */
     void setAddons(const QStringList &addons);
+
+    /**
+     * @brief Set tags.
+     * @param tags tag list
+     */
+    void setTags(const QStringList &tags) {
+        mTags = tags;
+    }
 
     /**
      * @brief Write project file (to disk).
@@ -335,6 +346,11 @@ private:
      * @brief List of addons.
      */
     QStringList mAddons;
+
+    /**
+     * @brief Warning tags
+     */
+    QStringList mTags;
 };
 /// @}
 #endif  // PROJECT_FILE_H

@@ -92,7 +92,7 @@ public:
 
     // Special GUI properties
     QString sinceDate;
-    enum Tag { NONE, FP, IGNORE, BUG } tag;
+    QString tags;
 };
 
 Q_DECLARE_METATYPE(ErrorItem);
@@ -111,7 +111,7 @@ public:
     QString summary;
     QString message;
     QString sinceDate;
-    ErrorItem::Tag tag;
+    QString tags;
 };
 
 /// @}

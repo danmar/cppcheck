@@ -48,6 +48,10 @@ public:
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
     virtual ~ResultsView();
 
+    void setTags(const QStringList &tags) {
+        mUI.mTree->setTags(tags);
+    }
+
     /**
     * @brief Function to show/hide certain type of errors
     * Refreshes the tree.

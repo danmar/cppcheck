@@ -53,6 +53,8 @@ static const char SuppressionsElementName[] = "suppressions";
 static const char SuppressionElementName[] = "suppression";
 static const char AddonElementName[] = "addon";
 static const char AddonsElementName[] = "addons";
+static const char TagsElementName[] = "tags";
+static const char TagElementName[] = "tag";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -150,6 +152,9 @@ bool ProjectFile::read(const QString &filename)
             // Addons
             if (insideProject && xmlReader.name() == AddonsElementName)
                 readStringList(mAddons, xmlReader, AddonElementName);
+
+            if (insideProject && xmlReader.name() == TagsElementName)
+                readStringList(mTags, xmlReader, TagElementName);
 
             break;
 
@@ -582,6 +587,8 @@ bool ProjectFile::write(const QString &filename)
                     mAddons,
                     AddonsElementName,
                     AddonElementName);
+
+    writeStringList(xmlWriter, mTags, TagsElementName, TagElementName);
 
     xmlWriter.writeEndDocument();
     file.close();

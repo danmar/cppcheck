@@ -1399,6 +1399,8 @@ QString MainWindow::getLastResults() const
 
 bool MainWindow::loadLastResults()
 {
+    if (mProjectFile)
+        mUI.mResults->setTags(mProjectFile->getTags());
     const QString &lastResults = getLastResults();
     if (lastResults.isEmpty())
         return false;
@@ -1416,6 +1418,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
     const QString rootpath = projectFile->getRootPath();
 
     mThread->setAddons(projectFile->getAddons());
+    mUI.mResults->setTags(projectFile->getTags());
 
     // If the root path is not given or is not "current dir", use project
     // file's location directory as root path
@@ -1508,6 +1511,7 @@ void MainWindow::closeProjectFile()
     delete mProjectFile;
     mProjectFile = nullptr;
     mUI.mResults->clear(true);
+    mUI.mResults->setTags(QStringList());
     enableProjectActions(false);
     enableProjectOpenActions(true);
     formatAndSetTitle();
