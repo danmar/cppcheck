@@ -191,6 +191,10 @@ signals:
     */
     void done();
 
+    void log(const QString &msg);
+
+    void debugError(const ErrorItem &item);
+
 public slots:
 
     /**

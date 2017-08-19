@@ -51,7 +51,6 @@ RESOURCES = gui.qrc
 FORMS = about.ui \
         application.ui \
         file.ui \
-        logview.ui \
         mainwindow.ui \
         projectfiledialog.ui \
         resultsview.ui \
@@ -95,7 +94,6 @@ HEADERS += aboutdialog.h \
            erroritem.h \
            filelist.h \
            fileviewdialog.h \
-           logview.h \
            mainwindow.h \
            platforms.h \
            printablereport.h \
@@ -130,7 +128,6 @@ SOURCES += aboutdialog.cpp \
            erroritem.cpp \
            filelist.cpp \
            fileviewdialog.cpp \
-           logview.cpp \
            main.cpp \
            mainwindow.cpp\
            platforms.cpp \

@@ -633,15 +633,19 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 menu.addSeparator();
                 QMenu *tagMenu = menu.addMenu(tr("Tag"));
                 {
-                QAction *action = new QAction(tr("No tag"), tagMenu);
-                tagMenu->addAction(action);
-                connect(action, &QAction::triggered, [=](){ tagSelectedItems(QString()); });
+                    QAction *action = new QAction(tr("No tag"), tagMenu);
+                    tagMenu->addAction(action);
+                    connect(action, &QAction::triggered, [=]() {
+                        tagSelectedItems(QString());
+                    });
                 }
 
                 foreach (const QString tagstr, mTags) {
                     QAction *action = new QAction(tagstr, tagMenu);
                     tagMenu->addAction(action);
-                    connect(action, &QAction::triggered, [=](){ tagSelectedItems(tagstr); });
+                    connect(action, &QAction::triggered, [=]() {
+                        tagSelectedItems(tagstr);
+                    });
                 }
             }
         }

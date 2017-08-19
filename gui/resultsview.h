@@ -285,6 +285,16 @@ public slots:
     */
     void printPreview();
 
+    /**
+     * \brief Log message
+     */
+    void log(const QString &str);
+
+    /**
+     * \brief debug message
+     */
+    void debugError(const ErrorItem &item);
+
 protected:
     /**
     * @brief Should we show a "No errors found dialog" every time no errors were found?

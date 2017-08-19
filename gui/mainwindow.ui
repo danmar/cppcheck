@@ -113,7 +113,6 @@
     <addaction name="mActionShowHidden"/>
     <addaction name="separator"/>
     <addaction name="mActionShowScratchpad"/>
-    <addaction name="mActionViewLog"/>
     <addaction name="mActionViewStats"/>
     <addaction name="mActionLibraryEditor"/>
    </widget>

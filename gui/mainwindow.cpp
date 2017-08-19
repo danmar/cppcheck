@@ -42,7 +42,6 @@
 #include "settingsdialog.h"
 #include "threadresult.h"
 #include "translationhandler.h"
-#include "logview.h"
 #include "filelist.h"
 #include "showtypes.h"
 #include "librarydialog.h"
@@ -54,7 +53,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mSettings(settings),
     mApplications(new ApplicationList(this)),
     mTranslation(th),
-    mLogView(nullptr),
     mScratchPad(nullptr),
     mProjectFile(nullptr),
     mPlatformActions(new QActionGroup(this)),
@@ -102,7 +100,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionCollapseAll, &QAction::triggered, mUI.mResults, &ResultsView::collapseAllResults);
     connect(mUI.mActionExpandAll, &QAction::triggered, mUI.mResults, &ResultsView::expandAllResults);
     connect(mUI.mActionShowHidden, &QAction::triggered, mUI.mResults, &ResultsView::showHiddenResults);
-    connect(mUI.mActionViewLog, &QAction::triggered, this, &MainWindow::showLogView);
     connect(mUI.mActionViewStats, &QAction::triggered, this, &MainWindow::showStatistics);
     connect(mUI.mActionLibraryEditor, &QAction::triggered, this, &MainWindow::showLibraryEditor);
 
@@ -123,6 +120,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     connect(mUI.mActionAuthors, &QAction::triggered, this, &MainWindow::showAuthors);
     connect(mThread, &ThreadHandler::done, this, &MainWindow::analysisDone);
+    connect(mThread, &ThreadHandler::log, mUI.mResults, &ResultsView::log);
+    connect(mThread, &ThreadHandler::debugError, mUI.mResults, &ResultsView::debugError);
     connect(mUI.mResults, &ResultsView::gotResults, this, &MainWindow::resultsAdded);
     connect(mUI.mResults, &ResultsView::resultsHidden, mUI.mActionShowHidden, &QAction::setEnabled);
     connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
@@ -217,7 +216,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
 MainWindow::~MainWindow()
 {
-    delete mLogView;
     delete mProjectFile;
     delete mScratchPad;
 }
@@ -1313,8 +1311,6 @@ void MainWindow::setLanguage(const QString &code)
         //Translate everything that is visible here
         mUI.retranslateUi(this);
         mUI.mResults->translate();
-        delete mLogView;
-        mLogView = 0;
     }
 }
 
@@ -1536,16 +1532,6 @@ void MainWindow::editProjectFile()
     }
 }
 
-void MainWindow::showLogView()
-{
-    if (mLogView == nullptr)
-        mLogView = new LogView;
-
-    mLogView->show();
-    if (!mLogView->isActiveWindow())
-        mLogView->activateWindow();
-}
-
 void MainWindow::showStatistics()
 {
     StatsDialog statsDialog(this);
@@ -1564,20 +1550,6 @@ void MainWindow::showLibraryEditor()
 {
     LibraryDialog libraryDialog(this);
     libraryDialog.exec();
-}
-
-void MainWindow::log(const QString &logline)
-{
-    if (mLogView) {
-        mLogView->appendLine(logline);
-    }
-}
-
-void MainWindow::debugError(const ErrorItem &item)
-{
-    if (mLogView) {
-        mLogView->appendLine(item.ToString());
-    }
 }
 
 void MainWindow::filterResults()

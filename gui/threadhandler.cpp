@@ -190,11 +190,11 @@ void ThreadHandler::initialize(ResultsView *view)
     connect(&mResults, &ThreadResult::error,
             view, &ResultsView::error);
 
-    connect(&mResults, SIGNAL(log(const QString &)),
-            parent(), SLOT(log(const QString &)));
+    connect(&mResults, &ThreadResult::log,
+            this, &ThreadHandler::log);
 
-    connect(&mResults, SIGNAL(debugError(const ErrorItem &)),
-            parent(), SLOT(debugError(const ErrorItem &)));
+    connect(&mResults, &ThreadResult::debugError,
+            this, &ThreadHandler::debugError);
 }
 
 void ThreadHandler::loadSettings(QSettings &settings)

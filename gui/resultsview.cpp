@@ -406,3 +406,13 @@ void ResultsView::updateDetails(const QModelIndex &index)
         formattedMsg.prepend(tr("Id") + ": " + data["id"].toString() + "\n");
     mUI.mDetails->setText(formattedMsg);
 }
+
+void ResultsView::log(const QString &str)
+{
+    mUI.mListLog->addItem(str);
+}
+
+void ResultsView::debugError(const ErrorItem &item)
+{
+    mUI.mListLog->addItem(item.ToString());
+}
