@@ -328,7 +328,6 @@ QChartView *StatsDialog::createChart(const QString &statsFile, const QString &to
     chart->addSeries(numberOfReports(statsFile, tool + "-portability"));
 
     QDateTimeAxis *axisX = new QDateTimeAxis;
-    axisX->setFormat("MMM yyyy");
     axisX->setTitleText("Date");
     chart->addAxis(axisX, Qt::AlignBottom);
 
