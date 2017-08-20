@@ -80,15 +80,6 @@ public:
     void clearRecheckFile(const QString &filename);
 
     /**
-    * @brief Function to show/hide certain type of errors
-    * Refreshes the tree.
-    *
-    * @param type Type of error to show/hide
-    * @param show Should specified errors be shown (true) or hidden (false)
-    */
-    void showResults(ShowTypes::ShowType type, bool show);
-
-    /**
     * @brief Function to filter the displayed list of errors.
     * Refreshes the tree.
     *
@@ -216,6 +207,34 @@ signals:
 
     /** Suppress Ids */
     void suppressIds(QStringList ids);
+
+public slots:
+
+    /**
+    * @brief Function to show/hide certain type of errors
+    * Refreshes the tree.
+    *
+    * @param type Type of error to show/hide
+    * @param show Should specified errors be shown (true) or hidden (false)
+    */
+    void showResults(ShowTypes::ShowType type, bool show);
+
+
+    /**
+    * @brief Show/hide cppcheck errors.
+    * Refreshes the tree.
+    *
+    * @param show Should specified errors be shown (true) or hidden (false)
+    */
+    void showCppcheckResults(bool show);
+
+    /**
+    * @brief Show/hide clang-tidy/clang-analyzer errors.
+    * Refreshes the tree.
+    *
+    * @param show Should specified errors be shown (true) or hidden (false)
+    */
+    void showClangResults(bool show);
 
 protected slots:
     /**
@@ -528,6 +547,9 @@ private:
 
     QItemSelectionModel *mSelectionModel;
     ThreadHandler *mThread;
+
+    bool mShowCppcheck;
+    bool mShowClang;
 };
 /// @}
 #endif // RESULTSTREE_H

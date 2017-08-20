@@ -62,7 +62,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -128,7 +128,7 @@
    </widget>
    <widget class="QMenu" name="mMenuAnalyze">
     <property name="title">
-     <string>Analyze</string>
+     <string>A&amp;nalyze</string>
     </property>
     <widget class="QMenu" name="menuCpp_standard">
      <property name="title">
@@ -139,7 +139,7 @@
     </widget>
     <widget class="QMenu" name="menuC_standard">
      <property name="title">
-      <string>C standard</string>
+      <string>&amp;C standard</string>
      </property>
      <addaction name="mActionC89"/>
      <addaction name="mActionC99"/>
@@ -184,11 +184,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="mActionAnalyzeDirectory"/>
    <addaction name="mActionOpenProjectFile"/>
-   <addaction name="mActionShowScratchpad"/>
    <addaction name="mActionSave"/>
-   <addaction name="mActionReanalyzeModified"/>
    <addaction name="mActionReanalyzeAll"/>
    <addaction name="mActionStop"/>
    <addaction name="mActionClearResults"/>
@@ -211,6 +208,8 @@
    <addaction name="mActionShowPortability"/>
    <addaction name="mActionShowPerformance"/>
    <addaction name="mActionShowInformation"/>
+   <addaction name="mActionShowCppcheck"/>
+   <addaction name="mActionShowClang"/>
   </widget>
   <widget class="QToolBar" name="mToolBarFilter">
    <property name="windowTitle">
@@ -292,7 +291,7 @@
      <normaloff>:/images/view-recheck.png</normaloff>:/images/view-recheck.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Reanalyze all files</string>
+    <string>Reanal&amp;yze all files</string>
    </property>
   </action>
   <action name="mActionStop">
@@ -357,7 +356,7 @@
      <normaloff>:/images/applications-development.png</normaloff>:/images/applications-development.png</iconset>
    </property>
    <property name="text">
-    <string>Style warnings</string>
+    <string>Style war&amp;nings</string>
    </property>
    <property name="iconText">
     <string>Show style warnings</string>
@@ -375,7 +374,7 @@
      <normaloff>:/images/showerrors.png</normaloff>:/images/showerrors.png</iconset>
    </property>
    <property name="text">
-    <string>Errors</string>
+    <string>E&amp;rrors</string>
    </property>
    <property name="iconText">
     <string>Show errors</string>
@@ -462,7 +461,7 @@
      <normaloff>:/images/scratchpad.png</normaloff>:/images/scratchpad.png</iconset>
    </property>
    <property name="text">
-    <string>Show S&amp;cratchpad...</string>
+    <string>Sh&amp;ow Scratchpad...</string>
    </property>
   </action>
   <action name="mActionNewProjectFile">
@@ -512,7 +511,7 @@
      <normaloff>:/images/showwarnings.png</normaloff>:/images/showwarnings.png</iconset>
    </property>
    <property name="text">
-    <string>Warnings</string>
+    <string>&amp;Warnings</string>
    </property>
    <property name="iconText">
     <string>Show warnings</string>
@@ -530,7 +529,7 @@
      <normaloff>:/images/showperformance.png</normaloff>:/images/showperformance.png</iconset>
    </property>
    <property name="text">
-    <string>Performance warnings</string>
+    <string>Per&amp;formance warnings</string>
    </property>
    <property name="iconText">
     <string>Show performance warnings</string>
@@ -556,7 +555,7 @@
      <normaloff>:/images/dialog-information.png</normaloff>:/images/dialog-information.png</iconset>
    </property>
    <property name="text">
-    <string>Information</string>
+    <string>&amp;Information</string>
    </property>
    <property name="toolTip">
     <string>Show information messages</string>
@@ -571,10 +570,40 @@
      <normaloff>:/images/applications-system.png</normaloff>:/images/applications-system.png</iconset>
    </property>
    <property name="text">
-    <string>Portability</string>
+    <string>&amp;Portability</string>
    </property>
    <property name="toolTip">
     <string>Show portability warnings</string>
+   </property>
+  </action>
+  <action name="mActionShowCppcheck">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/cppcheck-gui.png</normaloff>:/cppcheck-gui.png</iconset>
+   </property>
+   <property name="text">
+    <string>Cppcheck</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Cppcheck results</string>
+   </property>
+  </action>
+  <action name="mActionShowClang">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/llvm-dragon.svg</normaloff>:/images/llvm-dragon.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Clang</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Clang results</string>
    </property>
   </action>
   <action name="mActionToolBarFilter">
@@ -590,7 +619,7 @@
   </action>
   <action name="mActionProjectMRU">
    <property name="text">
-    <string notr="true">Project MRU placeholder</string>
+    <string notr="true">Project &amp;MRU placeholder</string>
    </property>
    <property name="visible">
     <bool>true</bool>
@@ -641,7 +670,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Platforms</string>
+    <string>P&amp;latforms</string>
    </property>
    <property name="visible">
     <bool>false</bool>
@@ -655,7 +684,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>C++11</string>
+    <string>C++&amp;11</string>
    </property>
   </action>
   <action name="mActionC99">
@@ -666,7 +695,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>C99</string>
+    <string>C&amp;99</string>
    </property>
   </action>
   <action name="mActionPosix">
@@ -674,7 +703,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Posix</string>
+    <string>&amp;Posix</string>
    </property>
   </action>
   <action name="mActionC11">
@@ -682,7 +711,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>C11</string>
+    <string>C&amp;11</string>
    </property>
   </action>
   <action name="mActionC89">
@@ -690,7 +719,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>C89</string>
+    <string>&amp;C89</string>
    </property>
   </action>
   <action name="mActionCpp03">
@@ -698,7 +727,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>C++03</string>
+    <string>&amp;C++03</string>
    </property>
   </action>
   <action name="mActionPrint">
@@ -719,7 +748,7 @@
   </action>
   <action name="mActionLibraryEditor">
    <property name="text">
-    <string>Library Editor...</string>
+    <string>&amp;Library Editor...</string>
    </property>
    <property name="toolTip">
     <string>Open library editor</string>
@@ -730,7 +759,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Auto-detect language</string>
+    <string>&amp;Auto-detect language</string>
    </property>
   </action>
   <action name="mActionEnforceCpp">
@@ -738,7 +767,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Enforce C++</string>
+    <string>&amp;Enforce C++</string>
    </property>
   </action>
   <action name="mActionEnforceC">
@@ -746,7 +775,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Enforce C</string>
+    <string>E&amp;nforce C</string>
    </property>
   </action>
  </widget>

@@ -95,6 +95,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionShowPortability, &QAction::toggled, this, &MainWindow::showPortability);
     connect(mUI.mActionShowPerformance, &QAction::toggled, this, &MainWindow::showPerformance);
     connect(mUI.mActionShowInformation, &QAction::toggled, this, &MainWindow::showInformation);
+    connect(mUI.mActionShowCppcheck, &QAction::toggled, mUI.mResults, &ResultsView::showCppcheckResults);
+    connect(mUI.mActionShowClang, &QAction::toggled, mUI.mResults, &ResultsView::showClangResults);
     connect(mUI.mActionCheckAll, &QAction::triggered, this, &MainWindow::checkAll);
     connect(mUI.mActionUncheckAll, &QAction::triggered, this, &MainWindow::uncheckAll);
     connect(mUI.mActionCollapseAll, &QAction::triggered, mUI.mResults, &ResultsView::collapseAllResults);
@@ -268,6 +270,8 @@ void MainWindow::loadSettings()
     mUI.mActionShowPortability->setChecked(types->isShown(ShowTypes::ShowPortability));
     mUI.mActionShowPerformance->setChecked(types->isShown(ShowTypes::ShowPerformance));
     mUI.mActionShowInformation->setChecked(types->isShown(ShowTypes::ShowInformation));
+    mUI.mActionShowCppcheck->setChecked(true);
+    mUI.mActionShowClang->setChecked(true);
 
     const bool stdCpp03 = mSettings->value(SETTINGS_STD_CPP03, false).toBool();
     mUI.mActionCpp03->setChecked(stdCpp03);

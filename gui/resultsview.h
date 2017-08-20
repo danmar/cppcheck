@@ -53,15 +53,6 @@ public:
     }
 
     /**
-    * @brief Function to show/hide certain type of errors
-    * Refreshes the tree.
-    *
-    * @param type Type of error to show/hide
-    * @param show Should specified errors be shown (true) or hidden (false)
-    */
-    void showResults(ShowTypes::ShowType type, bool show);
-
-    /**
      * @brief Clear results and statistics and reset progressinfo.
      * @param results Remove all the results from view?
      */
@@ -225,6 +216,30 @@ signals:
     /** Suppress Ids */
     void suppressIds(QStringList ids);
 
+    /**
+    * @brief Show/hide certain type of errors
+    * Refreshes the tree.
+    *
+    * @param type Type of error to show/hide
+    * @param show Should specified errors be shown (true) or hidden (false)
+    */
+    void showResults(ShowTypes::ShowType type, bool show);
+
+    /**
+    * @brief Show/hide cppcheck errors.
+    * Refreshes the tree.
+    *
+    * @param show Should specified errors be shown (true) or hidden (false)
+    */
+    void showCppcheckResults(bool show);
+
+    /**
+    * @brief Show/hide clang-tidy/clang-analyzer errors.
+    * Refreshes the tree.
+    *
+    * @param show Should specified errors be shown (true) or hidden (false)
+    */
+    void showClangResults(bool show);
 public slots:
 
     /**

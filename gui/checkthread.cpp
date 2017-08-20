@@ -310,6 +310,7 @@ QString CheckThread::getAddonPath() const
 
 void CheckThread::parseAddonErrors(QString err, QString tool)
 {
+    Q_UNUSED(tool);
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();

@@ -64,7 +64,9 @@ ResultsTree::ResultsTree(QWidget * parent) :
     mShowErrorId(false),
     mVisibleErrors(false),
     mSelectionModel(0),
-    mThread(nullptr)
+    mThread(nullptr),
+    mShowCppcheck(true),
+    mShowClang(true)
 {
     setModel(&mModel);
     translate(); // Adds columns to grid
@@ -400,6 +402,18 @@ void ResultsTree::showResults(ShowTypes::ShowType type, bool show)
     }
 }
 
+void ResultsTree::showCppcheckResults(bool show)
+{
+    mShowCppcheck = show;
+    refreshTree();
+}
+
+void ResultsTree::showClangResults(bool show)
+{
+    mShowClang = show;
+    refreshTree();
+}
+
 void ResultsTree::filterResults(const QString& filter)
 {
     mFilter = filter;
@@ -476,6 +490,14 @@ void ResultsTree::refreshTree()
                     !data["id"].toString().contains(mFilter, Qt::CaseInsensitive)) {
                     hide = true;
                 }
+            }
+
+            // Tool filter
+            if (!hide) {
+                if (data["id"].toString().startsWith("clang"))
+                    hide = !mShowClang;
+                else
+                    hide = !mShowCppcheck;
             }
 
             if (!hide) {

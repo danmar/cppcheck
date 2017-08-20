@@ -122,6 +122,14 @@ public:
         return mAddons;
     }
 
+    bool getClangAnalyzer() const {
+        return mAddons.contains("clang-analyzer");
+    }
+
+    bool getClangTidy() const {
+        return mAddons.contains("clang-tidy");
+    }
+
     QStringList getTags() const {
         return mTags;
     }
