@@ -2530,6 +2530,13 @@ private:
                "    x = dostuff(sizeof(*x)*y);\n"
                "}";
         ASSERT_EQUALS(0U, tokenValues(code, "x )").size());
+
+        // #8036
+        code = "void foo() {\n"
+               "    int x;\n"
+               "    f(x=3), return x+3;\n"
+               "}";
+        ASSERT_EQUALS(0U, tokenValues(code, "x +").size());
     }
 };
 

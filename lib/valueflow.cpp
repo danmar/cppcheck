@@ -1680,7 +1680,7 @@ static bool valueFlowForward(Token * const               startToken,
                         std::list<ValueFlow::Value>::const_iterator it;
                         for (it = values.begin(); it != values.end(); ++it)
                             setTokenValue(tok3, *it, settings);
-                    } else if (Token::Match(tok3, "++|--|?|:|;"))
+                    } else if (Token::Match(tok3, "++|--|?|:|;|,"))
                         break;
                     // Skip sizeof etc
                     else if (Token::Match(tok3, "sizeof|typeof|typeid ("))
