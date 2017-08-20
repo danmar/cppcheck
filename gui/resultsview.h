@@ -240,6 +240,22 @@ signals:
     * @param show Should specified errors be shown (true) or hidden (false)
     */
     void showClangResults(bool show);
+
+    /**
+    * @brief Collapse all results in the result list.
+    */
+    void collapseAllResults();
+
+    /**
+    * @brief Expand all results in the result list.
+    */
+    void expandAllResults();
+
+    /**
+    * @brief Show hidden results in the result list.
+    */
+    void showHiddenResults();
+
 public slots:
 
     /**
@@ -258,24 +274,9 @@ public slots:
     void error(const ErrorItem &item);
 
     /**
-    * @brief Collapse all results in the result list.
-    */
-    void collapseAllResults();
-
-    /**
-    * @brief Expand all results in the result list.
-    */
-    void expandAllResults();
-
-    /**
     * @brief Filters the results in the result list.
     */
     void filterResults(const QString& filter);
-
-    /**
-    * @brief Show hidden results in the result list.
-    */
-    void showHiddenResults();
 
     /**
     * @brief Update detailed message when selected item is changed.

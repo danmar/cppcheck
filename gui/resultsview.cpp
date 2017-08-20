@@ -56,6 +56,9 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(this, &ResultsView::showResults, mUI.mTree, &ResultsTree::showResults);
     connect(this, &ResultsView::showCppcheckResults, mUI.mTree, &ResultsTree::showCppcheckResults);
     connect(this, &ResultsView::showClangResults, mUI.mTree, &ResultsTree::showClangResults);
+    connect(this, &ResultsView::collapseAllResults, mUI.mTree, &ResultsTree::collapseAll);
+    connect(this, &ResultsView::expandAllResults, mUI.mTree, &ResultsTree::expandAll);
+    connect(this, &ResultsView::showHiddenResults, mUI.mTree, &ResultsTree::showHiddenResults);
 }
 
 void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
@@ -113,21 +116,6 @@ void ResultsView::error(const ErrorItem &item)
         emit gotResults();
         mStatistics->addItem(item.tool(), ShowTypes::SeverityToShowType(item.severity));
     }
-}
-
-void ResultsView::collapseAllResults()
-{
-    mUI.mTree->collapseAll();
-}
-
-void ResultsView::expandAllResults()
-{
-    mUI.mTree->expandAll();
-}
-
-void ResultsView::showHiddenResults()
-{
-    mUI.mTree->showHiddenResults();
 }
 
 void ResultsView::filterResults(const QString& filter)
