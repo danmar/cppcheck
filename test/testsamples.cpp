@@ -1,4 +1,4 @@
-/*
+﻿/*
 * Cppcheck - A tool for static C/C++ code analysis
 * Copyright (C) 2007-2016 Cppcheck team.
 *
@@ -17,6 +17,8 @@
 */
 
 #include "cppcheckexecutor.h"
+#include "errorlogger.h"
+#include "cppcheck.h"
 #include "filelister.h"
 #include "path.h"
 #include "pathmatch.h"
@@ -44,6 +46,7 @@ private:
 
     void run() {
         TEST_CASE(runSamples);
+        TEST_CASE(runConsoleCodePageTranslationOnWindows);
     }
 
     void runSamples() const {
@@ -88,6 +91,91 @@ private:
                 ASSERT_EQUALS_MSG(expected, actual, i->first);
             }
             delete[] path;
+        }
+    }
+
+    class CppCheckExecutor2 : public CppCheckExecutor {
+    public:
+        void settings(const Settings &set) {
+            setSettings(set);
+        }
+
+    };
+
+    void runConsoleCodePageTranslationOnWindows() const {
+        REDIRECT;
+
+        std::vector<std::string> msgs;
+        msgs.push_back("ASCII");     // first entry should be using only ASCII
+        msgs.push_back("kääk");
+        msgs.push_back("Português");
+//      msgs.push_back("日本語");
+//      msgs.push_back("한국어");
+//      msgs.push_back("Русский");
+//      msgs.push_back("中文");
+
+        Settings set1;
+        Settings setXML;
+        setXML.xml = true;
+        setXML.xml_version = 2;
+        CppCheckExecutor2 exec;
+        exec.settings(set1);
+        CppCheckExecutor2 execXML;
+        execXML.settings(setXML);
+
+        for (std::vector<std::string>::const_iterator i = msgs.begin(); i != msgs.end(); ++i) {
+            CLEAR_REDIRECT_OUTPUT;
+            CLEAR_REDIRECT_ERROUT;
+
+            exec.reportOut(*i);
+
+            ErrorLogger::ErrorMessage errMessage;
+            errMessage.setmsg(*i);
+
+            // no xml option
+            exec.reportInfo(errMessage);
+
+#ifdef _WIN32
+            // expect changes through code page translation except for the 'ASCII' case
+            if (i == msgs.begin()) {
+                ASSERT_EQUALS(*i + "\n", GET_REDIRECT_OUTPUT);
+                ASSERT_EQUALS(*i + "\n", GET_REDIRECT_ERROUT);
+            } else {
+                ASSERT(*i + "\n" != GET_REDIRECT_OUTPUT);
+                ASSERT(*i + "\n" != GET_REDIRECT_ERROUT);
+            }
+#else
+            // do not expect any code page translation
+            ASSERT_EQUALS(*i + "\n", GET_REDIRECT_OUTPUT);
+            ASSERT_EQUALS(*i + "\n", GET_REDIRECT_ERROUT);
+#endif
+
+            CLEAR_REDIRECT_ERROUT;
+            // possible change of msg for xml option
+            // with ErrorLogger::ErrorMessage::fixInvalidChars(), plus additional XML formatting
+            execXML.reportInfo(errMessage);
+            // undo the effects of "ErrorLogger::ErrorMessage::fixInvalidChars()"
+            // replacing octal constants with characters
+            std::string myErr;
+            std::string myErrOrg = GET_REDIRECT_ERROUT;
+            std::string::const_iterator from = myErrOrg.begin();
+            while (from != myErrOrg.end()) {
+                if (*from == '\\') {
+                    ++from;
+                    unsigned c;
+                    // expect three digits
+                    std::istringstream es(std::string(from, from + 3));
+                    es >> std::oct >> c;
+                    ++from;
+                    ++from;
+                    myErr.push_back(c);
+                } else {
+                    myErr.push_back(*from);
+                }
+                ++from;
+            }
+
+            ASSERT(std::string::npos != myErr.find(*i));
         }
     }
 };

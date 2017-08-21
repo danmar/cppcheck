@@ -197,6 +197,11 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     }
 }
 
+void CppCheckExecutor::setSettings(const Settings &settings)
+{
+    _settings = &settings;
+}
+
 /**
  *  Simple helper function:
  * \return size of array
@@ -937,6 +942,29 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         return 0;
 }
 
+#ifdef _WIN32
+// fix trac ticket #439 'Cppcheck reports wrong filename for filenames containing 8-bit ASCII'
+static const std::string ansiToOEM(std::string msg, bool doConvert)
+{
+    if (doConvert) {
+        // convert ANSI strings to OEM strings in two steps
+        std::vector<WCHAR> wcContainer(msg.length());
+        std::vector<char> cContainer(msg.begin(), msg.end());
+
+        // ansi code page characters to wide characters
+        MultiByteToWideChar(CP_ACP, 0, cContainer.data(), msg.length(), wcContainer.data(), msg.length());
+        // wide characters to oem codepage characters
+        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msg.length(), cContainer.data(), msg.length(), NULL, NULL);
+
+        msg.assign(cContainer.begin(), cContainer.end());
+    }
+    return msg;
+}
+#else
+// no performance regression on non-windows systems
+#define ansiToOEM(msg, doConvert) msg
+#endif
+
 void CppCheckExecutor::reportErr(const std::string &errmsg)
 {
     // Alert only about unique errors
@@ -947,12 +975,12 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
     if (errorOutput)
         *errorOutput << errmsg << std::endl;
     else
-        std::cerr << errmsg << std::endl;
+        std::cerr << ansiToOEM(errmsg, _settings ? !_settings->xml : true) << std::endl;
 }
 
 void CppCheckExecutor::reportOut(const std::string &outmsg)
 {
-    std::cout << outmsg << std::endl;
+    std::cout << ansiToOEM(outmsg, true) << std::endl;
 }
 
 void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
