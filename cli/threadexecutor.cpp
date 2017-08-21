@@ -102,11 +102,15 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
         std::exit(0);
     }
 
-    char *buf = new char[len];
-    if (read(rpipe, buf, len) <= 0) {
+    // Don't rely on incoming data being null-terminated.
+    // Allocate +1 element and null-terminate the buffer.
+    char *buf = new char[len + 1];
+    const ssize_t readIntoBuf = read(rpipe, buf, len);
+    if (readIntoBuf <= 0) {
         std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
         std::exit(0);
     }
+    buf[readIntoBuf] = 0;
 
     if (type == REPORT_OUT) {
         _errorLogger.reportOut(buf);
