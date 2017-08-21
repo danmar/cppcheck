@@ -69,10 +69,10 @@ Compiling
     g++ (for experts)
     =================
         If you just want to build Cppcheck without dependencies then you can use this command:
-            g++ -o cppcheck -std=c++0x -include lib/cxx11emu.h -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
+            g++ -o cppcheck -std=c++0x -include lib/cxx11emu.h -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
 
         If you want to use --rule and --rule-file then dependencies are needed:
-            g++ -o cppcheck -std=c++0x -include lib/cxx11emu.h -lpcre -DHAVE_RULES -Ilib -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
+            g++ -o cppcheck -std=c++0x -include lib/cxx11emu.h -lpcre -DHAVE_RULES -Ilib -Iexternals/simplecpp -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
 
     mingw
     =====
@@ -84,7 +84,8 @@ Compiling
 
         1. Create a empty project file / makefile.
         2. Add all cpp files in the cppcheck cli and lib folders to the project file / makefile.
-        3. Compile.
+        3. Add all cpp files in the externals folders to the project file / makefile.
+        4. Compile.
 
 Cross compiling Win32 (CLI) version of Cppcheck in Linux
 
