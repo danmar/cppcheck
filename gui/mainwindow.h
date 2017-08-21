@@ -233,7 +233,7 @@ private:
 
     /**
       * @brief Analyze the project.
-      * @param project Pointer to the project to analyze.
+      * @param projectFile Pointer to the project to analyze.
       */
     void analyzeProject(const ProjectFile *projectFile);
 

@@ -129,7 +129,7 @@ protected:
      * Helper function to supply settings. This can be used for testing.
      * @param settings Reference to an Settings instance
      */
-    void setSettings(const Settings &);
+    void setSettings(const Settings &settings);
 
 private:
 

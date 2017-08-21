@@ -158,19 +158,19 @@ private:
 
     /**
      * @brief Check raw tokens
-     * @param tokenizer
+     * @param tokenizer tokenizer instance
      */
     void checkRawTokens(const Tokenizer &tokenizer);
 
     /**
      * @brief Check normal tokens
-     * @param tokenizer
+     * @param tokenizer tokenizer instance
      */
     void checkNormalTokens(const Tokenizer &tokenizer);
 
     /**
      * @brief Check simplified tokens
-     * @param tokenizer
+     * @param tokenizer tokenizer instance
      */
     void checkSimplifiedTokens(const Tokenizer &tokenizer);
 
