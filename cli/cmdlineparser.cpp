@@ -496,8 +496,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
                 _settings->project.import(argv[i]+10);
-                if (std::strstr(argv[i], ".sln") || std::strstr(argv[i], ".vcxproj"))
-                    CppCheckExecutor::tryLoadLibrary(_settings->library, argv[0], "windows");
+                if (std::strstr(argv[i], ".sln") || std::strstr(argv[i], ".vcxproj")) {
+                    if (!CppCheckExecutor::tryLoadLibrary(_settings->library, argv[0], "windows.cfg")) {
+                        // This shouldn't happen normally.
+                        PrintMessage("cppcheck: Failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
+                        return false;
+                    }
+                }
             }
 
             // Report progress
