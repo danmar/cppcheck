@@ -60,6 +60,7 @@ private:
 
         TEST_CASE(STLSize);
         TEST_CASE(STLSizeNoErr);
+        TEST_CASE(negativeIndex);
         TEST_CASE(erase1);
         TEST_CASE(erase2);
         TEST_CASE(erase3);
@@ -720,7 +721,12 @@ private:
         }
     }
 
-
+    void negativeIndex() {
+        check("void f(const std::vector<int> &v) {\n"
+              "  v[-11] = 123;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Array index -11 is out of bounds.\n", errout.str());
+    }
 
 
 

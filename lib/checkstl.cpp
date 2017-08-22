@@ -44,6 +44,7 @@ static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specif
 static const struct CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
 static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
 static const struct CWE CWE762(762U);   // Mismatched Memory Management Routines
+static const struct CWE CWE786(786U);   // Access of Memory Location Before Start of Buffer
 static const struct CWE CWE788(788U);   // Access of Memory Location After End of Buffer
 static const struct CWE CWE825(825U);   // Expired Pointer Dereference
 static const struct CWE CWE834(834U);   // Excessive Iteration
@@ -435,6 +436,42 @@ void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, con
         reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + ".at(" + num + ") is out of bounds.", CWE788, false);
     else
         reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + "[" + num + "] is out of bounds.", CWE788, false);
+}
+
+void CheckStl::negativeIndex()
+{
+    // Negative index is out of bounds..
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t ii = 0; ii < functions; ++ii) {
+        const Scope * scope = symbolDatabase->functionScopes[ii];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "%var% ["))
+                continue;
+            const Variable * const var = tok->variable();
+            if (!var || tok == var->nameToken())
+                continue;
+            const Library::Container * const container = _settings->library.detectContainer(var->typeStartToken());
+            if (!container || !container->arrayLike_indexOp)
+                continue;
+            const ValueFlow::Value *index = tok->next()->astOperand2()->getValueLE(-1, _settings);
+            if (!index)
+                continue;
+            negativeIndexError(tok, *index);
+        }
+    }
+}
+
+void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &index)
+{
+    const ErrorPath errorPath = getErrorPath(tok, &index, "Negative array index");
+    std::ostringstream errmsg;
+    if (index.condition)
+        errmsg << ValueFlow::eitherTheConditionIsRedundant(index.condition)
+               << ", otherwise there is negative array index " << index.intvalue << ".";
+    else
+        errmsg << "Array index " << index.intvalue << " is out of bounds.";
+    reportError(errorPath, index.errorSeverity() ? Severity::error : Severity::warning, "negativeContainerIndex", errmsg.str(), CWE786, index.inconclusive);
 }
 
 void CheckStl::erase()
