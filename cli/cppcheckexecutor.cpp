@@ -944,19 +944,20 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
 #ifdef _WIN32
 // fix trac ticket #439 'Cppcheck reports wrong filename for filenames containing 8-bit ASCII'
-static const std::string ansiToOEM(std::string msg, bool doConvert)
+static inline const std::string ansiToOEM(const std::string &msg, bool doConvert)
 {
     if (doConvert) {
+        const unsigned msglength = msg.length();
         // convert ANSI strings to OEM strings in two steps
-        std::vector<WCHAR> wcContainer(msg.length());
-        std::vector<char> cContainer(msg.begin(), msg.end());
+        std::vector<WCHAR> wcContainer(msglength);
+        std::string result(msglength, '\0');
 
         // ansi code page characters to wide characters
-        MultiByteToWideChar(CP_ACP, 0, cContainer.data(), msg.length(), wcContainer.data(), msg.length());
+        MultiByteToWideChar(CP_ACP, 0, msg.data(), msglength, wcContainer.data(), msglength);
         // wide characters to oem codepage characters
-        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msg.length(), cContainer.data(), msg.length(), NULL, NULL);
+        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, const_cast<char *>(result.data()), msglength, NULL, NULL);
 
-        msg.assign(cContainer.begin(), cContainer.end());
+        return result; // hope for return value optimization
     }
     return msg;
 }
