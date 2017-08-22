@@ -446,7 +446,7 @@ void CheckStl::negativeIndex()
     for (std::size_t ii = 0; ii < functions; ++ii) {
         const Scope * scope = symbolDatabase->functionScopes[ii];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%var% ["))
+            if (!Token::Match(tok, "%var% [") || WRONG_DATA(!tok->next()->astOperand2(), tok))
                 continue;
             const Variable * const var = tok->variable();
             if (!var || tok == var->nameToken())
