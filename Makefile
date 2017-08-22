@@ -249,12 +249,12 @@ TESTOBJ =     test/options.o \
 ###### Targets
 
 cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
 
 all:	cppcheck testrunner
 
 testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
 
 test:	all
 	./testrunner
@@ -266,13 +266,13 @@ checkcfg:	cppcheck validateCFG
 	./test/cfg/runtests.sh
 
 dmake:	tools/dmake.o cli/filelister.o $(SRCDIR)/pathmatch.o $(SRCDIR)/path.o externals/simplecpp/simplecpp.o
-	$(CXX) $(CXXFLAGS) -o $@ tools/dmake.o cli/filelister.o $(SRCDIR)/pathmatch.o $(SRCDIR)/path.o externals/simplecpp/simplecpp.o -Ilib $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 run-dmake: dmake
 	./dmake
 
 reduce:	tools/reduce.o $(LIBOBJ) $(EXTOBJ)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -g -o $@ tools/reduce.o $(INCLUDE_FOR_LIB) $(LIBOBJ) $(LIBS) $(EXTOBJ) $(LDFLAGS) $(RDYNAMIC)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
 
 clean:
 	rm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner reduce dmake cppcheck cppcheck.1
