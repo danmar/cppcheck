@@ -70,11 +70,11 @@ private:
 class CPPCHECKLIB Timer {
 public:
     Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults = nullptr);
-    Timer(const Timer& other);
     ~Timer();
     void Stop();
 
 private:
+    Timer(const Timer& other); // disallow copying
     Timer& operator=(const Timer&); // disallow assignments
 
     const std::string _str;
