@@ -1235,6 +1235,10 @@ void CheckUninitVar::valueFlowUninit()
         if (!scope->isExecutable())
             continue;
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "sizeof (")) {
+                tok = tok->linkAt(1);
+                continue;
+            }
             if (!tok->variable() || tok->values().size() != 1U)
                 continue;
             const ValueFlow::Value &v = tok->values().front();

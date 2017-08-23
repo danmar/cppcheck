@@ -91,7 +91,6 @@ private:
         errout.str("");
 
         // Tokenize..
-        settings.experimental = true;
         settings.debugwarnings = debugwarnings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -3823,18 +3822,44 @@ private:
         check.deadPointer();
     }
 
+    void valueFlowUninit(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        settings.debugwarnings = false;
+        settings.experimental = false;
+
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyTokenList2();
+
+        // Check for redundant code..
+        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
+        checkuninitvar.valueFlowUninit();
+    }
+
+
     void valueFlowUninit() {
-        checkUninitVar("void f() {\n"
-                       "  int x;\n"
-                       "  switch (x) {}\n"
-                       "}");
+        valueFlowUninit("void f() {\n"
+                        "  int x;\n"
+                        "  switch (x) {}\n"
+                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
-        checkUninitVar("int f() {\n"
-                       "  int x;\n"
-                       "  init(x);\n"
-                       "  return x;\n" // TODO: inconclusive ?
-                       "}");
+        valueFlowUninit("int f() {\n"
+                        "  int x;\n"
+                        "  init(x);\n"
+                        "  return x;\n" // TODO: inconclusive ?
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f() {\n" // #8172
+                        "  char **x;\n"
+                        "  if (2 < sizeof(*x)) {}\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
     }
 
