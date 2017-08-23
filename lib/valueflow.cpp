@@ -1672,8 +1672,66 @@ static bool valueFlowForward(Token * const               startToken,
         }
 
         else if (tok2->varId() == varid) {
+            // compound assignment, known value in rhs
+            if (Token::Match(tok2->previous(), "!!* %name% %assign%") &&
+                tok2->next()->str() != "=" &&
+                tok2->next()->astOperand2() &&
+                tok2->next()->astOperand2()->hasKnownIntValue()) {
+
+                const ValueFlow::Value &rhsValue = tok2->next()->astOperand2()->values().front();
+                const std::string &assign = tok2->next()->str();
+                std::list<ValueFlow::Value>::iterator it;
+                // Erase values that are not int values..
+                for (it = values.begin(); it != values.end();) {
+                    if (it->isIntValue()) {
+                        if (assign == "+=")
+                            it->intvalue += rhsValue.intvalue;
+                        else if (assign == "-=")
+                            it->intvalue -= rhsValue.intvalue;
+                        else if (assign == "*=")
+                            it->intvalue *= rhsValue.intvalue;
+                        else if (assign == "/=")
+                            it->intvalue /= rhsValue.intvalue;
+                        else if (assign == "%=")
+                            it->intvalue %= rhsValue.intvalue;
+                        else if (assign == "&=")
+                            it->intvalue &= rhsValue.intvalue;
+                        else if (assign == "|=")
+                            it->intvalue |= rhsValue.intvalue;
+                        else if (assign == "^=")
+                            it->intvalue ^= rhsValue.intvalue;
+                        else {
+                            values.clear();
+                            break;
+                        }
+                        ++it;
+                    } else if (it->isFloatValue()) {
+                        if (assign == "+=")
+                            it->floatValue += rhsValue.intvalue;
+                        else if (assign == "-=")
+                            it->floatValue -= rhsValue.intvalue;
+                        else if (assign == "*=")
+                            it->floatValue *= rhsValue.intvalue;
+                        else if (assign == "/=")
+                            it->floatValue /= rhsValue.intvalue;
+                        else {
+                            values.clear();
+                            break;
+                        }
+                        ++it;
+                    } else {
+                        it = values.erase(it);
+                    }
+                }
+                if (values.empty()) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "coumpound assignment of " + tok2->str());
+                    return false;
+                }
+            }
+
             // bailout: assignment
-            if (Token::Match(tok2->previous(), "!!* %name% %assign%")) {
+            else if (Token::Match(tok2->previous(), "!!* %name% %assign%")) {
                 // simplify rhs
                 for (Token *tok3 = tok2->tokAt(2); tok3; tok3 = tok3->next()) {
                     if (tok3->varId() == varid) {

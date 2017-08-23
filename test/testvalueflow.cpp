@@ -75,8 +75,8 @@ private:
         TEST_CASE(valueFlowBeforeConditionTernaryOp);
 
         TEST_CASE(valueFlowAfterAssign);
-
         TEST_CASE(valueFlowAfterCondition);
+        TEST_CASE(valueFlowForwardCompoundAssign);
 
         TEST_CASE(valueFlowSwitchVariable);
 
@@ -108,6 +108,25 @@ private:
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = tok->values().begin(); it != tok->values().end(); ++it) {
                     if (it->isIntValue() && it->intvalue == value)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool testValueOfX(const char code[], unsigned int linenr, float value, float diff) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                std::list<ValueFlow::Value>::const_iterator it;
+                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
+                    if (it->isFloatValue() && it->floatValue >= value - diff && it->floatValue <= value + diff)
                         return true;
                 }
             }
@@ -1715,6 +1734,24 @@ private:
                "  a = x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+    }
+
+    void valueFlowForwardCompoundAssign() {
+        const char *code;
+
+        code = "void f() {\n"
+               "    int x = 123;\n"
+               "    x += 43;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 166));
+
+        code = "void f() {\n"
+               "    float x = 123.45;\n"
+               "    x += 67;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123.45 + 67, 0.01));
     }
 
     void valueFlowBitAnd() {
