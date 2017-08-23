@@ -252,6 +252,11 @@ private:
               "  return (unsigned char)255.5;\n"
               "}\n");
         ASSERT_EQUALS("", removeFloat(errout.str()));
+
+        check("void f(void) {\n"
+              "  char c = 1234.5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
     }
 };
 

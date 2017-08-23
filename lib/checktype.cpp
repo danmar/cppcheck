@@ -325,24 +325,35 @@ void CheckType::checkFloatToIntegerOverflow()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->str() != "(")
+            const ValueType *vtint, *vtfloat;
+            const std::list<ValueFlow::Value> *floatValues;
+
+            // Explicit cast
+            if (Token::Match(tok, "( %name%") && tok->astOperand1() && !tok->astOperand2()) {
+                vtint = tok->valueType();
+                vtfloat = tok->astOperand1()->valueType();
+                floatValues = &tok->astOperand1()->values();
+            }
+
+            // Assignment
+            else if (tok->str() == "=" && tok->astOperand1() && tok->astOperand2()) {
+                vtint = tok->astOperand1()->valueType();
+                vtfloat = tok->astOperand2()->valueType();
+                floatValues = &tok->astOperand2()->values();
+            }
+
+            // TODO: function call
+
+            else
                 continue;
 
-            if (!tok->astOperand1() || tok->astOperand2())
+            // Conversion of float to integer?
+            if (!vtint || !vtint->isIntegral())
+                continue;
+            if (!vtfloat || !vtfloat->isFloat())
                 continue;
 
-            // is result integer?
-            const ValueType *vt = tok->valueType();
-            if (!vt || !vt->isIntegral())
-                continue;
-
-            // is value float?
-            const ValueType *vt1 = tok->astOperand1()->valueType();
-            if (!vt1 || !vt1->isFloat())
-                continue;
-
-            const Token *op1 = tok->astOperand1();
-            for (std::list<ValueFlow::Value>::const_iterator it = op1->values().begin(); it != op1->values().end(); ++it) {
+            for (std::list<ValueFlow::Value>::const_iterator it = floatValues->begin(); it != floatValues->end(); ++it) {
                 if (it->valueType != ValueFlow::Value::FLOAT)
                     continue;
                 if (!_settings->isEnabled(&(*it), false))
@@ -353,15 +364,15 @@ void CheckType::checkFloatToIntegerOverflow()
                     floatToIntegerOverflowError(tok, *it);
                 else if (_settings->platformType != Settings::Unspecified) {
                     int bits = 0;
-                    if (vt->type == ValueType::Type::CHAR)
+                    if (vtint->type == ValueType::Type::CHAR)
                         bits = _settings->char_bit;
-                    else if (vt->type == ValueType::Type::SHORT)
+                    else if (vtint->type == ValueType::Type::SHORT)
                         bits = _settings->short_bit;
-                    else if (vt->type == ValueType::Type::INT)
+                    else if (vtint->type == ValueType::Type::INT)
                         bits = _settings->int_bit;
-                    else if (vt->type == ValueType::Type::LONG)
+                    else if (vtint->type == ValueType::Type::LONG)
                         bits = _settings->long_bit;
-                    else if (vt->type == ValueType::Type::LONGLONG)
+                    else if (vtint->type == ValueType::Type::LONGLONG)
                         bits = _settings->long_long_bit;
                     else
                         continue;
