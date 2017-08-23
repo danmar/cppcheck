@@ -1684,17 +1684,24 @@ static bool valueFlowForward(Token * const               startToken,
                 // Erase values that are not int values..
                 for (it = values.begin(); it != values.end();) {
                     if (it->isIntValue()) {
+                        bool ub = false;
                         if (assign == "+=")
                             it->intvalue += rhsValue.intvalue;
                         else if (assign == "-=")
                             it->intvalue -= rhsValue.intvalue;
                         else if (assign == "*=")
                             it->intvalue *= rhsValue.intvalue;
-                        else if (assign == "/=")
-                            it->intvalue /= rhsValue.intvalue;
-                        else if (assign == "%=")
-                            it->intvalue %= rhsValue.intvalue;
-                        else if (assign == "&=")
+                        else if (assign == "/=") {
+                            if (rhsValue.intvalue == 0)
+                                ub = true;
+                            else
+                                it->intvalue /= rhsValue.intvalue;
+                        } else if (assign == "%=") {
+                            if (rhsValue.intvalue == 0)
+                                ub = true;
+                            else
+                                it->intvalue %= rhsValue.intvalue;
+                        } else if (assign == "&=")
                             it->intvalue &= rhsValue.intvalue;
                         else if (assign == "|=")
                             it->intvalue |= rhsValue.intvalue;
@@ -1704,7 +1711,10 @@ static bool valueFlowForward(Token * const               startToken,
                             values.clear();
                             break;
                         }
-                        ++it;
+                        if (ub)
+                            it = values.erase(it);
+                        else
+                            ++it;
                     } else if (it->isFloatValue()) {
                         if (assign == "+=")
                             it->floatValue += rhsValue.intvalue;

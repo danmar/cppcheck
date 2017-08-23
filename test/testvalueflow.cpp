@@ -1747,6 +1747,13 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 166));
 
         code = "void f() {\n"
+               "    int x = 123;\n"
+               "    x /= 0;\n" // don't crash when evaluating x/=0
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+
+        code = "void f() {\n"
                "    float x = 123.45;\n"
                "    x += 67;\n"
                "    return x;\n"
