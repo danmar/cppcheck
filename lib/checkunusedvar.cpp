@@ -979,8 +979,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             {
                 const Token *parent = tok->astParent();
                 while (parent) {
-                    if (Token::simpleMatch(parent->previous(), "while ("))
+                    if (Token::simpleMatch(parent->previous(), "while (")) {
                         inwhile = true;
+                        break;
+                    }
                     parent = parent->astParent();
                 }
             }
