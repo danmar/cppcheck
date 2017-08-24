@@ -4052,7 +4052,7 @@ void Tokenizer::removeMacroInClassDef()
 void Tokenizer::removeMacroInVarDecl()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] %name% (") && tok->next() && tok->next()->isUpperCaseName()) {
+        if (Token::Match(tok, "[;{}] %name% (") && tok->next()->isUpperCaseName()) {
             // goto ')' parentheses
             const Token *tok2 = tok;
             int parlevel = 0;
