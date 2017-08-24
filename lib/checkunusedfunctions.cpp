@@ -353,18 +353,22 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
             continue;
 
         for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
-            if (std::strcmp(e->Name(), "FileInfo") == 0) {
-                const char *checkattr = e->Attribute("check");
-                if (checkattr && std::strcmp(checkattr,"CheckUnusedFunctions")==0) {
-                    for (const tinyxml2::XMLElement *e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
-                        if (!e2->Attribute("functionName"))
-                            continue;
-                        if (std::strcmp(e2->Name(),"functiondecl")==0 && e2->Attribute("lineNumber")) {
-                            decls[e2->Attribute("functionName")] = Location(sourcefile, std::atoi(e2->Attribute("lineNumber")));
-                        } else if (std::strcmp(e2->Name(),"functioncall")==0) {
-                            calls.insert(e2->Attribute("functionName"));
-                        }
-                    }
+            if (std::strcmp(e->Name(), "FileInfo") != 0)
+                continue;
+            const char *checkattr = e->Attribute("check");
+            if (checkattr == nullptr || std::strcmp(checkattr,"CheckUnusedFunctions") != 0)
+                continue;
+            for (const tinyxml2::XMLElement *e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
+                const char* functionName = e2->Attribute("functionName");
+                if (functionName == nullptr)
+                    continue;
+                if (std::strcmp(e2->Name(),"functioncall") == 0) {
+                    calls.insert(functionName);
+                    continue;
+                } else if (std::strcmp(e2->Name(),"functiondecl") == 0) {
+                    const char* lineNumber = e2->Attribute("lineNumber");
+                    if (lineNumber)
+                        decls[functionName] = Location(sourcefile, std::atoi(lineNumber));
                 }
             }
         }
