@@ -990,6 +990,9 @@ static void valueFlowReverse(TokenList *tokenlist,
                         bailout(tokenlist, errorLogger, tok2, "compound assignment " + tok2->str());
                     break;
                 }
+
+                const std::string info("Compound assignment '" + assignToken->str() + "', before assignment value is " + val.infoString());
+                val.errorPath.push_back(ErrorPathItem(tok2, info));
             }
 
             // bailout: variable is used in rhs in assignment to itself
@@ -1713,8 +1716,12 @@ static bool valueFlowForward(Token * const               startToken,
                         }
                         if (ub)
                             it = values.erase(it);
-                        else
+                        else {
+                            const std::string info("Compound assignment '" + assign + "', assigned value is " + it->infoString());
+                            it->errorPath.push_back(ErrorPathItem(tok2, info));
+
                             ++it;
+                        }
                     } else if (it->isFloatValue()) {
                         if (assign == "+=")
                             it->floatValue += rhsValue.intvalue;
@@ -1728,6 +1735,9 @@ static bool valueFlowForward(Token * const               startToken,
                             values.clear();
                             break;
                         }
+
+                        const std::string info("Compound assignment '" + assign + "', assigned value is " + it->infoString());
+                        it->errorPath.push_back(ErrorPathItem(tok2, info));
                         ++it;
                     } else {
                         it = values.erase(it);

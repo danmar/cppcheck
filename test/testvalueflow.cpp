@@ -631,6 +631,7 @@ private:
                "  if (y == 32) {}"
                "}\n";
         ASSERT_EQUALS("5,Assuming that condition 'y==32' is not redundant\n"
+                      "4,Compound assignment '+=', before assignment value is 20\n"
                       "2,Assignment 'x=y', assigned value is 20\n",
                       getErrorPathForX(code, 3U));
 
@@ -1745,6 +1746,9 @@ private:
                "    return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 166));
+        ASSERT_EQUALS("2,Assignment 'x=123', assigned value is 123\n"
+                      "3,Compound assignment '+=', assigned value is 166\n",
+                      getErrorPathForX(code, 4U));
 
         code = "void f() {\n"
                "    int x = 123;\n"
