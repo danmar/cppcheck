@@ -385,25 +385,26 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
         }
     }
 
-    if (node->Attribute("Label") && std::strcmp(node->Attribute("Label"),"UserMacros")==0) {
+    const char* labelAttribute = node->Attribute("Label");
+    if (labelAttribute && std::strcmp(labelAttribute, "UserMacros") == 0) {
         for (const tinyxml2::XMLElement *propertyGroup = node->FirstChildElement(); propertyGroup; propertyGroup = propertyGroup->NextSiblingElement()) {
             const std::string name(propertyGroup->Name());
             const char *text = propertyGroup->GetText();
             (*variables)[name] = std::string(text ? text : "");
         }
 
-    } else if (!node->Attribute("Label")) {
+    } else if (!labelAttribute) {
         for (const tinyxml2::XMLElement *propertyGroup = node->FirstChildElement(); propertyGroup; propertyGroup = propertyGroup->NextSiblingElement()) {
             if (std::strcmp(propertyGroup->Name(), "IncludePath") != 0)
                 continue;
             const char *text = propertyGroup->GetText();
             if (!text)
                 continue;
-            std::string s(text);
-            std::string::size_type pos = s.find("$(IncludePath)");
+            std::string path(text);
+            std::string::size_type pos = path.find("$(IncludePath)");
             if (pos != std::string::npos)
-                s = s.substr(0,pos) + *includePath + s.substr(pos+14U);
-            *includePath = s;
+                path = path.substr(0,pos) + *includePath + path.substr(pos+14U);
+            *includePath = path;
         }
     }
 }
