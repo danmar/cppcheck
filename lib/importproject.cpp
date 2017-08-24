@@ -378,8 +378,10 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
 {
     if (useOfMfc) {
         for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
-            if (std::strcmp(e->Name(), "UseOfMfc") == 0)
+            if (std::strcmp(e->Name(), "UseOfMfc") == 0) {
                 *useOfMfc = true;
+                break;
+            }
         }
     }
 
