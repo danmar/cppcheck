@@ -310,7 +310,7 @@ private:
         } catch (InternalError& e) {
             ASSERT_EQUALS("Analysis failed. If the code is valid then please report this failure.", e.errorMessage);
             ASSERT_EQUALS("cppcheckError", e.id);
-            ASSERT_EQUALS(5, e.token->linenr());
+            ASSERT_EQUALS(4, e.token->linenr());
         }
     }
 

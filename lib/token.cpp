@@ -190,6 +190,11 @@ void Token::deleteNext(unsigned long index)
 {
     while (_next && index) {
         Token *n = _next;
+
+        // #8154 we are about to be unknown -> destroy the link to us
+        if (n->_link && n->_link->_link == n)
+            n->_link->link(nullptr);
+
         _next = n->next();
         delete n;
         --index;
@@ -253,6 +258,8 @@ void Token::deleteThis()
         }
         if (_link)
             _link->link(this);
+
+        _next->link(nullptr); // mark as unlinked
 
         deleteNext();
     } else if (_previous && _previous->_previous) { // Copy previous to this and delete previous
