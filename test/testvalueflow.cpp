@@ -1067,6 +1067,9 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 9));
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 8));
+        ASSERT_EQUALS("2,Assignment 'x=9', assigned value is 9\n"
+                      "3,x is decremented', new value is 8\n",
+                      getErrorPathForX(code, 4U));
 
         code = "void x() {\n"
                "    int x = value ? 6 : 0;\n"

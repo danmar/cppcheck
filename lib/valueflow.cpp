@@ -1837,6 +1837,8 @@ static bool valueFlowForward(Token * const               startToken,
                     it->intvalue += (inc ? 1 : -1);
                     if (pre)
                         setTokenValue(op, *it, settings);
+                    const std::string info(tok2->str() + " is " + std::string(inc ? "incremented" : "decremented") + "', new value is " + it->infoString());
+                    it->errorPath.push_back(ErrorPathItem(tok2, info));
                 }
             }
 
