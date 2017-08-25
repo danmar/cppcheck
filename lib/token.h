@@ -820,6 +820,9 @@ private:
         _previous = previousToken;
     }
 
+    /** used by deleteThis() to take data from token to delete */
+    void takeData(Token *fromToken);
+
     /**
      * Works almost like strcmp() except returns only true or false and
      * if str has empty space &apos; &apos; character, that character is handled

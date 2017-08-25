@@ -229,66 +229,44 @@ void Token::swapWithNext()
     }
 }
 
+void Token::takeData(Token *fromToken)
+{
+    _str = fromToken->_str;
+    _tokType = fromToken->_tokType;
+    _flags = fromToken->_flags;
+    _varId = fromToken->_varId;
+    _fileIndex = fromToken->_fileIndex;
+    _linenr = fromToken->_linenr;
+    _link = fromToken->_link;
+    _scope = fromToken->_scope;
+    _function = fromToken->_function;
+    if (fromToken->_originalName) {
+        delete _originalName;
+        _originalName = fromToken->_originalName;
+        fromToken->_originalName = nullptr;
+    }
+    if (fromToken->_values) {
+        delete _values;
+        _values = fromToken->_values;
+        fromToken->_values = nullptr;
+    }
+    if (fromToken->valuetype) {
+        delete valuetype;
+        valuetype = fromToken->valuetype;
+        fromToken->valuetype = nullptr;
+    }
+    if (_link)
+        _link->link(this);
+}
+
 void Token::deleteThis()
 {
     if (_next) { // Copy next to this and delete next
-        _str = _next->_str;
-        _tokType = _next->_tokType;
-        _flags = _next->_flags;
-        _varId = _next->_varId;
-        _fileIndex = _next->_fileIndex;
-        _linenr = _next->_linenr;
-        _link = _next->_link;
-        _scope = _next->_scope;
-        _function = _next->_function;
-        if (_next->_originalName) {
-            delete _originalName;
-            _originalName = _next->_originalName;
-            _next->_originalName = nullptr;
-        }
-        if (_next->_values) {
-            delete _values;
-            _values = _next->_values;
-            _next->_values = nullptr;
-        }
-        if (_next->valuetype) {
-            delete valuetype;
-            valuetype = _next->valuetype;
-            _next->valuetype = nullptr;
-        }
-        if (_link)
-            _link->link(this);
-
+        takeData(_next);
         _next->link(nullptr); // mark as unlinked
-
         deleteNext();
     } else if (_previous && _previous->_previous) { // Copy previous to this and delete previous
-        _str = _previous->_str;
-        _tokType = _previous->_tokType;
-        _flags = _previous->_flags;
-        _varId = _previous->_varId;
-        _fileIndex = _previous->_fileIndex;
-        _linenr = _previous->_linenr;
-        _link = _previous->_link;
-        _scope = _previous->_scope;
-        _function = _previous->_function;
-        if (_previous->_originalName) {
-            delete _originalName;
-            _originalName = _previous->_originalName;
-            _previous->_originalName = nullptr;
-        }
-        if (_previous->_values) {
-            delete _values;
-            _values = _previous->_values;
-            _previous->_values = nullptr;
-        }
-        if (_previous->valuetype) {
-            delete valuetype;
-            valuetype = _previous->valuetype;
-            _previous->valuetype = nullptr;
-        }
-        if (_link)
-            _link->link(this);
+        takeData(_previous);
 
         Token* toDelete = _previous;
         _previous = _previous->_previous;
