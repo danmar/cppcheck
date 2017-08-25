@@ -959,14 +959,20 @@ static void valueFlowReverse(TokenList *tokenlist,
             }
 
             // increment/decrement
+            int inc = 0;
             if (Token::Match(tok2->previous(), "[;{}] %name% ++|-- ;"))
-                val.intvalue += (tok2->strAt(1)=="++") ? -1 : 1;
+                inc = (tok2->strAt(1)=="++") ? -1 : 1;
             else if (Token::Match(tok2->tokAt(-2), "[;{}] ++|-- %name% ;"))
-                val.intvalue += (tok2->strAt(-1)=="++") ? -1 : 1;
+                inc = (tok2->strAt(-1)=="++") ? -1 : 1;
             else if (Token::Match(tok2->previous(), "++|-- %name%") || Token::Match(tok2, "%name% ++|--")) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "increment/decrement of " + tok2->str());
                 break;
+            }
+            if (inc != 0) {
+                val.intvalue += inc;
+                const std::string info(tok2->str() + " is " + std::string(inc==1 ? "decremented" : "incremented") + ", before this " + (inc==1?"decrement":"increment") + " the value is " + val.infoString());
+                val.errorPath.push_back(ErrorPathItem(tok2, info));
             }
 
             // compound assignment

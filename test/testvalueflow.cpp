@@ -730,6 +730,9 @@ private:
                "   if (x == 4);\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 3));
+        ASSERT_EQUALS("4,Assuming that condition 'x==4' is not redundant\n"
+                      "3,x is incremented, before this increment the value is 3\n",
+                      getErrorPathForX(code, 2U));
 
         // compound assignment += , -= , ...
         code = "void f(int x) {\n"
