@@ -245,16 +245,12 @@ void Token::takeData(Token *fromToken)
         _originalName = fromToken->_originalName;
         fromToken->_originalName = nullptr;
     }
-    if (fromToken->_values) {
-        delete _values;
-        _values = fromToken->_values;
-        fromToken->_values = nullptr;
-    }
-    if (fromToken->valuetype) {
-        delete valuetype;
-        valuetype = fromToken->valuetype;
-        fromToken->valuetype = nullptr;
-    }
+    delete _values;
+    _values = fromToken->_values;
+    fromToken->_values = nullptr;
+    delete valuetype;
+    valuetype = fromToken->valuetype;
+    fromToken->valuetype = nullptr;
     if (_link)
         _link->link(this);
 }
