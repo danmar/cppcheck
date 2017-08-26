@@ -388,14 +388,18 @@ static Token * findCppTypeInitPar(Token *tok)
 {
     if (!tok || !Token::Match(tok->previous(), "[,()] %name%"))
         return nullptr;
+    bool istype = false;
     while (Token::Match(tok, "%name%|::|<")) {
         if (tok->str() == "<") {
             tok = tok->link();
             if (!tok)
                 return nullptr;
         }
+        istype |= tok->isStandardType();
         tok = tok->next();
     }
+    if (!istype)
+        return nullptr;
     if (!Token::Match(tok, "[*&]"))
         return nullptr;
     while (Token::Match(tok, "[*&]"))

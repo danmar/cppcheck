@@ -8039,6 +8039,7 @@ private:
         ASSERT_EQUALS("fint(0,(", testAst("f(int(),0);"));
         ASSERT_EQUALS("f(0,(", testAst("f(int *(),0);"));  // typedef int* X; f(X(),0);
         ASSERT_EQUALS("f((0,(", testAst("f((intp)int *(),0);"));
+        ASSERT_EQUALS("zx1(&y2(&|=", testAst("z = (x & (unsigned)1) | (y & (unsigned)2);")); // not type()
 
         // for
         ASSERT_EQUALS("for;;(", testAst("for(;;)"));
