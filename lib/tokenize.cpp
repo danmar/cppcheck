@@ -4358,8 +4358,7 @@ bool Tokenizer::removeRedundantConditions()
 void Tokenizer::removeRedundantFor()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] for ( %name% = %num% ; %name% < %num% ; ++| %name% ++| ) {") ||
-            Token::Match(tok, "[;{}] for ( %type% %name% = %num% ; %name% < %num% ; ++| %name% ++| ) {")) {
+        if (Token::Match(tok, "[;{}] for ( %type%| %name% = %num% ; %name% < %num% ; ++| %name% ++| ) {")) {
             // Same variable name..
             const Token* varTok = tok->tokAt(3);
             bool type = varTok->next()->isName();
