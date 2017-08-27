@@ -77,6 +77,7 @@ private:
         TEST_CASE(valueFlowAfterAssign);
         TEST_CASE(valueFlowAfterCondition);
         TEST_CASE(valueFlowForwardCompoundAssign);
+        TEST_CASE(valueFlowForwardCorrelatedVariables);
 
         TEST_CASE(valueFlowSwitchVariable);
 
@@ -1769,6 +1770,18 @@ private:
                "    return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 123.45 + 67, 0.01));
+    }
+
+    void valueFlowForwardCorrelatedVariables() {
+        const char *code;
+
+        code = "void f(int x = 0) {\n"
+               "  bool zero(x==0);\n"
+               "  if (zero) a = x;\n"  // <- x is 0
+               "  else b = x;\n"  // <- x is not 0
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
     }
 
     void valueFlowBitAnd() {

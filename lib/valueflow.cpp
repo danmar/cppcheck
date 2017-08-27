@@ -154,17 +154,20 @@ static ProgramMemory getProgramMemory(const Token *tok, unsigned int varid, cons
         if (Token::Match(tok2, "[;{}] %varid% = %var% ;", varid)) {
             const Token *vartok = tok2->tokAt(3);
             programMemory.setValue(vartok->varId(), value);
-        }
-        if (Token::Match(tok2, "[;{}] %var% =")) {
+        } else if (Token::Match(tok2, "[;{}] %var% =") ||
+                   Token::Match(tok2, "[;{}] const| %type% %var% (")) {
             const Token *vartok = tok2->next();
+            while (vartok->next()->isName())
+                vartok = vartok->next();
             if (!programMemory.hasValue(vartok->varId())) {
                 MathLib::bigint result = 0;
                 bool error = false;
-                execute(tok2->tokAt(2)->astOperand2(), &programMemory, &result, &error);
+                execute(vartok->next()->astOperand2(), &programMemory, &result, &error);
                 if (!error)
                     programMemory.setIntValue(vartok->varId(), result);
             }
         }
+
         if (tok2->str() == "{") {
             if (indentlevel <= 0)
                 break;
@@ -1296,6 +1299,9 @@ static bool valueFlowForward(Token * const               startToken,
     bool returnStatement = false;  // current statement is a return, stop analysis at the ";"
     bool read = false;  // is variable value read?
 
+    if (values.empty())
+        return true;
+
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
         if (indentlevel >= 0 && tok2->str() == "{")
             ++indentlevel;
@@ -1414,17 +1420,32 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             const Token * const condTok = tok2->next()->astOperand2();
-            const bool condAlwaysTrue = (condTok && condTok->values().size() == 1U && condTok->values().front().isKnown() && condTok->values().front().intvalue != 0);
+            const bool condAlwaysTrue = (condTok && condTok->hasKnownIntValue() && condTok->values().front().intvalue != 0);
+            const bool condAlwaysFalse = (condTok && condTok->hasKnownIntValue() && condTok->values().front().intvalue == 0);
 
             // Should scope be skipped because variable value is checked?
             std::list<ValueFlow::Value> truevalues;
+            std::list<ValueFlow::Value> falsevalues;
             for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
-                if (condAlwaysTrue)
+                if (condAlwaysTrue) {
                     truevalues.push_back(*it);
-                else if (subFunction && conditionIsTrue(condTok, getProgramMemory(tok2, varid, *it)))
+                    continue;
+                }
+                if (condAlwaysFalse) {
+                    falsevalues.push_back(*it);
+                    continue;
+                }
+                const ProgramMemory &programMemory = getProgramMemory(tok2, varid, *it);
+                if (subFunction && conditionIsTrue(condTok, programMemory))
                     truevalues.push_back(*it);
-                else if (!subFunction && !conditionIsFalse(condTok, getProgramMemory(tok2, varid, *it)))
+                else if (!subFunction && !conditionIsFalse(condTok, programMemory))
                     truevalues.push_back(*it);
+                if (condAlwaysFalse)
+                    falsevalues.push_back(*it);
+                else if (conditionIsFalse(condTok, programMemory))
+                    falsevalues.push_back(*it);
+                else if (!subFunction && !conditionIsTrue(condTok, programMemory))
+                    falsevalues.push_back(*it);
             }
             if (truevalues.size() != values.size() || condAlwaysTrue) {
                 // '{'
@@ -1456,6 +1477,30 @@ static bool valueFlowForward(Token * const               startToken,
                     if (condAlwaysTrue)
                         return false;
                     removeValues(values, truevalues);
+                }
+
+                if (Token::simpleMatch(tok2, "} else {")) {
+                    Token * const startTokenElse = tok2->tokAt(2);
+
+                    valueFlowForward(startTokenElse->next(),
+                                     startTokenElse->link(),
+                                     var,
+                                     varid,
+                                     falsevalues,
+                                     constValue,
+                                     subFunction,
+                                     tokenlist,
+                                     errorLogger,
+                                     settings);
+
+                    // goto '}'
+                    tok2 = startTokenElse->link();
+
+                    if (isReturnScope(tok2)) {
+                        if (condAlwaysFalse)
+                            return false;
+                        removeValues(values, falsevalues);
+                    }
                 }
 
                 continue;
