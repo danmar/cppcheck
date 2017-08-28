@@ -1348,6 +1348,15 @@ static bool valueFlowForward(Token * const               startToken,
             }
         }
 
+        // jump over lambda function
+        if (Token::simpleMatch(tok2, "= [") && Token::simpleMatch(tok2->linkAt(1), "] (") && Token::simpleMatch(tok2->linkAt(1)->linkAt(1), ") {")) {
+            // TODO: handle lambda functions
+            tok2 = tok2->linkAt(1); // Goto ]
+            tok2 = tok2->linkAt(1); // Goto )
+            tok2 = tok2->linkAt(1); // Goto }
+            continue;
+        }
+
         if (Token::Match(tok2, "[;{}] %name% :") || tok2->str() == "case") {
             for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it)
                 it->changeKnownToPossible();

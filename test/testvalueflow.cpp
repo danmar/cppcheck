@@ -78,6 +78,7 @@ private:
         TEST_CASE(valueFlowAfterCondition);
         TEST_CASE(valueFlowForwardCompoundAssign);
         TEST_CASE(valueFlowForwardCorrelatedVariables);
+        TEST_CASE(valueFlowForwardLambda);
 
         TEST_CASE(valueFlowSwitchVariable);
 
@@ -1782,6 +1783,26 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+    }
+
+    void valueFlowForwardLambda() {
+        const char *code;
+
+        code = "void f() {\n"
+               "  int x=1;\n"
+               "  auto f = [&](){ a=x; }\n"  // x is not 1
+               "  x = 2;\n"
+               "  f();\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 1));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 2));
+
+        code = "void f() {\n"
+               "  int x=3;\n"
+               "  auto f = [&](){ a=x; }\n"  // todo: x is 3
+               "  f();\n"
+               "}";
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 3));
     }
 
     void valueFlowBitAnd() {
