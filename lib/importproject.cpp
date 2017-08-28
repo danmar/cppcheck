@@ -421,10 +421,16 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
     if (rootnode == nullptr)
         return;
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
-        if (std::strcmp(node->Name(), "ImportGroup") == 0 && node->Attribute("Label") && std::strcmp(node->Attribute("Label"),"PropertySheets")==0) {
+        if (std::strcmp(node->Name(), "ImportGroup") == 0) {
+            const char *labelAttribute = node->Attribute("Label");
+            if (labelAttribute == nullptr || std::strcmp(labelAttribute, "PropertySheets") != 0)
+                continue;
             for (const tinyxml2::XMLElement *importGroup = node->FirstChildElement(); importGroup; importGroup = importGroup->NextSiblingElement()) {
-                if (std::strcmp(importGroup->Name(), "Import") == 0 && importGroup->Attribute("Project")) {
-                    std::string loadprj = importGroup->Attribute("Project");
+                if (std::strcmp(importGroup->Name(), "Import") == 0) {
+                    const char *projectAttribute = importGroup->Attribute("Project");
+                    if (projectAttribute == nullptr)
+                        continue;
+                    std::string loadprj(projectAttribute);
                     if (loadprj.find('$') == std::string::npos) {
                         loadprj = Path::getPathFromFilename(filename) + loadprj;
                     }
@@ -459,7 +465,8 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         return;
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (std::strcmp(node->Name(), "ItemGroup") == 0) {
-            if (node->Attribute("Label") && std::strcmp(node->Attribute("Label"), "ProjectConfigurations") == 0) {
+            const char *labelAttribute = node->Attribute("Label");
+            if (labelAttribute && std::strcmp(labelAttribute, "ProjectConfigurations") == 0) {
                 for (const tinyxml2::XMLElement *cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
                     if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0) {
                         ProjectConfiguration p(cfg);
@@ -481,12 +488,13 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         } else if (std::strcmp(node->Name(), "PropertyGroup") == 0) {
             importPropertyGroup(node, &variables, &includePath, &useOfMfc);
         } else if (std::strcmp(node->Name(), "ImportGroup") == 0) {
-            if (node->Attribute("Label") && std::strcmp(node->Attribute("Label"), "PropertySheets") == 0) {
+            const char *labelAttribute = node->Attribute("Label");
+            if (labelAttribute && std::strcmp(labelAttribute, "PropertySheets") == 0) {
                 for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
                     if (std::strcmp(e->Name(), "Import") == 0) {
-                        const char *Project = e->Attribute("Project");
-                        if (Project)
-                            loadVisualStudioProperties(Project, &variables, &includePath, additionalIncludeDirectories, itemDefinitionGroupList);
+                        const char *projectAttribute = e->Attribute("Project");
+                        if (projectAttribute)
+                            loadVisualStudioProperties(projectAttribute, &variables, &includePath, additionalIncludeDirectories, itemDefinitionGroupList);
                     }
                 }
             }
