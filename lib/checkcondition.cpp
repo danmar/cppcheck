@@ -1052,8 +1052,13 @@ void CheckCondition::alwaysTrueFalse()
                     break;
                 }
             }
+            if (isExpandedMacro)
+                continue;
             for (const Token *parent = tok; parent; parent = parent->astParent()) {
-                isExpandedMacro |= parent->isExpandedMacro();
+                if (parent->isExpandedMacro()) {
+                    isExpandedMacro = true;
+                    break;
+                }
             }
             if (isExpandedMacro)
                 continue;
