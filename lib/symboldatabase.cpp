@@ -1680,8 +1680,8 @@ namespace {
 void SymbolDatabase::validateVariables() const
 {
     for (std::vector<const Variable *>::const_iterator iter = _variableList.begin(); iter!=_variableList.end(); ++iter) {
-        if (*iter) {
-            const Variable * const var = *iter;
+        const Variable * const var = *iter;
+        if (var) {
             if (!var->scope()) {
                 const Function* function = getFunctionForArgumentvariable(var, functionScopes);
                 if (!var->isArgument() || (function && function->hasBody())) {
