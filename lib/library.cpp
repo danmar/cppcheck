@@ -743,8 +743,9 @@ std::string Library::getFunctionName(const Token *ftok, bool *error) const
         for (const Scope *scope = ftok->scope(); scope; scope = scope->nestedIn) {
             if (!scope->isClassOrStruct())
                 continue;
-            for (unsigned int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
-                const Type::BaseInfo &baseInfo = scope->definedType->derivedFrom[i];
+            const std::vector<Type::BaseInfo> &derivedFrom = scope->definedType->derivedFrom;
+            for (unsigned int i = 0; i < derivedFrom.size(); ++i) {
+                const Type::BaseInfo &baseInfo = derivedFrom[i];
                 const std::string name(baseInfo.name + "::" + ftok->str());
                 if (functions.find(name) != functions.end() && matchArguments(ftok, name))
                     return name;

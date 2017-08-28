@@ -3680,9 +3680,11 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
         }
 
         if (scope->definedType) {
-            for (size_t i = 0, end = scope->definedType->derivedFrom.size(); i < end; ++i) {
-                if (scope->definedType->derivedFrom[i].type && scope->definedType->derivedFrom[i].type->classScope) {
-                    enumerator = scope->definedType->derivedFrom[i].type->classScope->findEnumerator(tok->str());
+            const std::vector<Type::BaseInfo> & derivedFrom = scope->definedType->derivedFrom;
+            for (size_t i = 0, end = derivedFrom.size(); i < end; ++i) {
+                const Type *derivedFromType = derivedFrom[i].type;
+                if (derivedFromType && derivedFromType ->classScope) {
+                    enumerator = derivedFromType->classScope->findEnumerator(tok->str());
 
                     if (enumerator)
                         return enumerator;
