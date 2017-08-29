@@ -487,3 +487,22 @@ std::vector<const Token *> getArguments(const Token *ftok)
     getArgumentsRecursive(ftok->next()->astOperand2(), &arguments);
     return arguments;
 }
+
+const Token *findLambdaEndToken(const Token *first)
+{
+    if (!first || first->str() != "[")
+        return nullptr;
+    const Token* tok = first->link();
+    if (Token::simpleMatch(tok, "] {"))
+        return tok->linkAt(1);
+    if (!Token::simpleMatch(tok, "] ("))
+        return nullptr;
+    tok = tok->linkAt(1)->next();
+    if (tok && tok->str() == "constexpr")
+        tok = tok->next();
+    if (tok && tok->str() == "mutable")
+        tok = tok->next();
+    if (tok && tok->str() == "{")
+        return tok->link();
+    return nullptr;
+}
