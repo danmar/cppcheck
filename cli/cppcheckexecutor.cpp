@@ -963,7 +963,7 @@ static inline const std::string ansiToOEM(const std::string &msg, bool doConvert
 }
 #else
 // no performance regression on non-windows systems
-#define ansiToOEM(msg, doConvert) msg
+#define ansiToOEM(msg, doConvert) (msg)
 #endif
 
 void CppCheckExecutor::reportErr(const std::string &errmsg)
