@@ -975,8 +975,10 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
     _errorList.insert(errmsg);
     if (errorOutput)
         *errorOutput << errmsg << std::endl;
-    else
-        std::cerr << ansiToOEM(errmsg, _settings ? !_settings->xml : true) << std::endl;
+    else {
+        const bool doConvert = (_settings == nullptr) ? true : !_settings->xml;
+        std::cerr << ansiToOEM(errmsg, doConvert) << std::endl;
+    }
 }
 
 void CppCheckExecutor::reportOut(const std::string &outmsg)
@@ -1016,9 +1018,9 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
 {
     if (filecount > 1) {
         std::ostringstream oss;
+        const long percentDone = (sizetotal > 0) ? static_cast<long>(static_cast<long double>(sizedone) / sizetotal * 100) : 0;
         oss << fileindex << '/' << filecount
-            << " files checked " <<
-            (sizetotal > 0 ? static_cast<long>(static_cast<long double>(sizedone) / sizetotal*100) : 0)
+            << " files checked " << percentDone
             << "% done";
         std::cout << oss.str() << std::endl;
     }
