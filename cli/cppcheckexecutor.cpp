@@ -975,7 +975,7 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
     _errorList.insert(errmsg);
     if (errorOutput)
         *errorOutput << errmsg << std::endl;
-    else {        
+    else {
         std::cerr << ansiToOEM(errmsg, (_settings == nullptr) ? true : !_settings->xml) << std::endl;
     }
 }
