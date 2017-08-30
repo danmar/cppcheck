@@ -2329,6 +2329,11 @@ private:
         const char expected5[] = "A c ;";
         ASSERT_EQUALS(expected5, tok(code5));
 
+        // #5614
+        const char code5614[]     = "typedef typename T::U V;\n"
+                                    "typedef typename T::W (V::*Fn)();\n";
+        const char expected5614[] = ";";
+        ASSERT_EQUALS(expected5614, tok(code5614));
     }
 
     void simplifyTypedef112() {     // ticket #6048

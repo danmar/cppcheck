@@ -798,6 +798,15 @@ void Tokenizer::simplifyTypedef()
 
             // or a function typedef
             else if (tokOffset && tokOffset->str() == "(") {
+                Token *tokOffset2 = nullptr;
+                if (Token::Match(tokOffset, "( *|%name%")) {
+                    tokOffset2 = tokOffset->next();
+                    if (tokOffset2->str() == "typename")
+                        tokOffset2 = tokOffset2->next();
+                    while (Token::Match(tokOffset2, "%type% ::"))
+                        tokOffset2 = tokOffset2->tokAt(2);
+                }
+
                 // unhandled typedef, skip it and continue
                 if (typeName->str() == "void") {
                     unsupportedTypedef(typeDef);
@@ -809,14 +818,12 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // function pointer
-                else if (Token::Match(tokOffset, "( * %name% ) (")) {
+                else if (Token::Match(tokOffset2, "* %name% ) (")) {
                     // name token wasn't a name, it was part of the type
                     typeEnd = typeEnd->next();
                     functionPtr = true;
-                    tokOffset = tokOffset->next();
-                    funcStart = tokOffset;
-                    funcEnd = tokOffset;
-                    tokOffset = tokOffset->tokAt(3);
+                    funcStart = funcEnd = tokOffset2; // *
+                    tokOffset = tokOffset2->tokAt(3); // (
                     typeName = tokOffset->tokAt(-2);
                     argStart = tokOffset;
                     argEnd = tokOffset->link();
