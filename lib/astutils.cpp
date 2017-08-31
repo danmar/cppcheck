@@ -281,8 +281,15 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             cond2->astOperand2() && cond2->astOperand2()->hasKnownIntValue()) {
             const ValueFlow::Value &rhsValue1 = cond1->astOperand2()->values().front();
             const ValueFlow::Value &rhsValue2 = cond2->astOperand2()->values().front();
-            if (comp1 == "<" && cond2->str() == "==")
-                return (rhsValue1.intvalue < rhsValue2.intvalue);
+            bool secondAlwaysFalse = false;
+
+            if (comp1 == "<" || comp1 == "<=")
+                secondAlwaysFalse = Token::Match(cond2, "==|>|>=") && (rhsValue1.intvalue < rhsValue2.intvalue);
+            else if (comp1 == ">=" || comp1 == ">")
+                secondAlwaysFalse = Token::Match(cond2, "==|<|<=") && (rhsValue1.intvalue > rhsValue2.intvalue);
+
+            if (secondAlwaysFalse)
+                return true;
         }
     }
 

@@ -76,6 +76,7 @@ private:
         TEST_CASE(modulo);
 
         TEST_CASE(oppositeInnerCondition);
+        TEST_CASE(oppositeInnerCondition2);
 
         TEST_CASE(clarifyCondition1);     // if (a = b() < 0)
         TEST_CASE(clarifyCondition2);     // if (a & b == c)
@@ -1582,6 +1583,120 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+    }
+
+    void oppositeInnerCondition2() {
+        // first comparison: <
+        check("void f(int x) {\n"
+              "\n"
+              "  if (x<4) {\n"
+              "    if (x==5) {}\n" // <- Warning
+              "  }\n"
+              "\n"
+              "  if (x<4) {\n"
+              "    if (x!=5) {}\n" // <- TODO
+              "  }\n"
+              "\n"
+              "  if (x<4) {\n"
+              "    if (x>5) {}\n" // <- Warning
+              "  }\n"
+              "\n"
+              "  if (x<4) {\n"
+              "    if (x>=5) {}\n" // <- Warning
+              "  }\n"
+              "\n"
+              "  if (x<4) {\n"
+              "    if (x<5) {}\n"
+              "  }\n"
+              "\n"
+              "  if (x<4) {\n"
+              "    if (x<=5) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
+                      "[test.cpp:11] -> [test.cpp:12]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
+                      "[test.cpp:15] -> [test.cpp:16]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
+                      , errout.str());
+
+        check("void f(int x) {\n"
+              "\n"
+              "  if (x<5) {\n"
+              "    if (x==4) {}\n"
+              "  }\n"
+              "\n"
+              "  if (x<5) {\n"
+              "    if (x!=4) {}\n"
+              "  }\n"
+              "\n"
+              "  if (x<5) {\n"
+              "    if (x>4) {}\n" // <- TODO
+              "  }\n"
+              "\n"
+              "  if (x<5) {\n"
+              "    if (x>=4) {}\n"
+              "  }\n"
+              "\n"
+              "  if (x<5) {\n"
+              "    if (x<4) {}\n"
+              "  }\n"
+              "\n"
+              "  if (x<5) {\n"
+              "    if (x<=4) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // first comparison: >
+        check("void f(int x) {\n"
+              "\n"
+              "  if (x>4) {\n"
+              "    if (x==5) {}\n"
+              "  }\n"
+              "\n"
+              "  if (x>4) {\n"
+              "    if (x>5) {}\n"
+              "  }\n"
+              "\n"
+              "  if (x>4) {\n"
+              "    if (x>=5) {}\n" // <- TODO
+              "  }\n"
+              "\n"
+              "  if (x>4) {\n"
+              "    if (x<5) {}\n" // <- TODO
+              "  }\n"
+              "\n"
+              "  if (x>4) {\n"
+              "    if (x<=5) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "\n"
+              "  if (x>5) {\n"
+              "    if (x==4) {}\n" // <- Warning
+              "  }\n"
+              "\n"
+              "  if (x>5) {\n"
+              "    if (x>4) {}\n" // <- TODO
+              "  }\n"
+              "\n"
+              "  if (x>5) {\n"
+              "    if (x>=4) {}\n" // <- TODO
+              "  }\n"
+              "\n"
+              "  if (x>5) {\n"
+              "    if (x<4) {}\n" // <- Warning
+              "  }\n"
+              "\n"
+              "  if (x>5) {\n"
+              "    if (x<=4) {}\n" // <- Warning
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
+                      "[test.cpp:15] -> [test.cpp:16]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
+                      "[test.cpp:19] -> [test.cpp:20]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
+                      , errout.str());
     }
 
     // clarify conditions with = and comparison
