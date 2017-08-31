@@ -1574,6 +1574,14 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #8186
+        check("void f() {\n"
+              "  for (int i=0;i<4;i++) {\n"
+              "    if (i==5) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
     }
 
     // clarify conditions with = and comparison

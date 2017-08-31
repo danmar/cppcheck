@@ -452,15 +452,35 @@ void CheckCondition::oppositeInnerCondition()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type != Scope::eIf)
+        const Token *condTok = nullptr;
+        if (scope->type == Scope::eIf || scope->type == Scope::eWhile)
+            condTok = scope->classDef->next()->astOperand2();
+        else if (scope->type == Scope::eFor) {
+            condTok = scope->classDef->next()->astOperand2();
+            if (!condTok || condTok->str() != ";")
+                continue;
+            condTok = condTok->astOperand2();
+            if (!condTok || condTok->str() != ";")
+                continue;
+            condTok = condTok->astOperand1();
+        }
+        if (!condTok)
             continue;
+        const Token * const cond1 = condTok;
 
         if (!Token::simpleMatch(scope->classDef->linkAt(1), ") {"))
             continue;
 
         bool nonlocal = false; // nonlocal variable used in condition
         std::set<unsigned int> vars; // variables used in condition
-        for (const Token *cond = scope->classDef->linkAt(1); cond != scope->classDef; cond = cond->previous()) {
+        std::stack<const Token *> tokens;
+        tokens.push(condTok);
+        while (!tokens.empty()) {
+            const Token *cond = tokens.top();
+            tokens.pop();
+            if (!cond)
+                continue;
+
             if (cond->varId()) {
                 vars.insert(cond->varId());
                 const Variable *var = cond->variable();
@@ -470,6 +490,9 @@ void CheckCondition::oppositeInnerCondition()
             } else if (!nonlocal && cond->isName()) {
                 // varid is 0. this is possibly a nonlocal variable..
                 nonlocal = Token::Match(cond->astParent(), "%cop%|(");
+            } else {
+                tokens.push(cond->astOperand1());
+                tokens.push(cond->astOperand2());
             }
         }
 
@@ -514,7 +537,6 @@ void CheckCondition::oppositeInnerCondition()
             continue;
 
         // Condition..
-        const Token *cond1 = scope->classDef->next()->astOperand2();
         const Token *cond2 = ifToken->next()->astOperand2();
 
         if (isOppositeCond(false, _tokenizer->isCPP(), cond1, cond2, _settings->library, true))

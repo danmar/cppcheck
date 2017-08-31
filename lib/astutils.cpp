@@ -275,6 +275,17 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             comp2[0] = '>';
     }
 
+    if (!isNot && comp2.empty()) {
+        if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure) &&
+            cond1->astOperand2() && cond1->astOperand2()->hasKnownIntValue() &&
+            cond2->astOperand2() && cond2->astOperand2()->hasKnownIntValue()) {
+            const ValueFlow::Value &rhsValue1 = cond1->astOperand2()->values().front();
+            const ValueFlow::Value &rhsValue2 = cond2->astOperand2()->values().front();
+            if (comp1 == "<" && cond2->str() == "==")
+                return (rhsValue1.intvalue < rhsValue2.intvalue);
+        }
+    }
+
     // is condition opposite?
     return ((comp1 == "==" && comp2 == "!=") ||
             (comp1 == "!=" && comp2 == "==") ||
