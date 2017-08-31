@@ -1176,9 +1176,18 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         for (std::list<Function>::const_iterator func = it->functionList.begin(); func != it->functionList.end(); ++func) {
             // look for initializer list
-            if (func->type == Function::eConstructor && func->functionScope &&
-                func->functionScope->functionOf && func->arg && func->arg->link()->strAt(1) == ":") {
-                const Token * tok = func->arg->link()->tokAt(2);
+            if (func->type == Function::eConstructor && func->functionScope && func->functionScope->functionOf && func->arg) {
+                const Token * tok = func->arg->link()->next();
+                if (tok->str() == "noexcept") {
+                    if (!tok->linkAt(1) || !tok->linkAt(1)->next()) {
+                        continue;
+                    }
+                    tok = tok->linkAt(1)->next();
+                }
+                if (tok->str() != ":") {
+                    continue;
+                }
+                tok = tok->next();
                 while (tok && tok != func->functionScope->classStart) {
                     if (Token::Match(tok, "%name% {|(")) {
                         if (tok->str() == func->tokenDef->str()) {
