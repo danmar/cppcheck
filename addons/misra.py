@@ -587,7 +587,7 @@ def misra_12_2(data):
             continue
         maxval = 0
         for val in token.astOperand2.values:
-            if val.intvalue > maxval:
+            if val.intvalue and val.intvalue > maxval:
                 maxval = val.intvalue
         if maxval == 0:
             continue
