@@ -1995,8 +1995,9 @@ static bool isStdMoveOrStdForwarded(Token * tok, ValueFlow::Value::MoveKind * mo
 
 static bool isOpenParenthesisMemberFunctionCallOfVarId(const Token * openParenthesisToken, unsigned int varId)
 {
-    return Token::Match(openParenthesisToken->tokAt(-3),"%varid% . %name% (", varId) &&
-           openParenthesisToken->tokAt(-2)->originalName() == emptyString;
+    const Token * varTok = openParenthesisToken->tokAt(-3);
+    return Token::Match(varTok, "%varid% . %name% (", varId) &&
+           varTok->next()->originalName() == emptyString;
 }
 
 static const Token * nextAfterAstRightmostLeaf(Token const * tok)
