@@ -540,7 +540,7 @@ void CheckCondition::oppositeInnerCondition()
         const Token *cond2 = ifToken->next()->astOperand2();
 
         if (isOppositeCond(false, _tokenizer->isCPP(), cond1, cond2, _settings->library, true))
-            oppositeInnerConditionError(scope->classDef, cond2);
+            oppositeInnerConditionError(cond1, cond2);
     }
 }
 
@@ -548,7 +548,7 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
 {
     ErrorPath errorPath;
     errorPath.push_back(ErrorPathItem(tok1, "outer condition"));
-    errorPath.push_back(ErrorPathItem(tok2, "opposite inner condition => always false when outer condition is true"));
+    errorPath.push_back(ErrorPathItem(tok2, "opposite inner condition"));
     reportError(errorPath, Severity::warning, "oppositeInnerCondition", "Opposite inner 'if' condition leads to a dead code block.", CWE398, false);
 }
 
