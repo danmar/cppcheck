@@ -546,10 +546,10 @@ void CheckCondition::oppositeInnerCondition()
 
 void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2)
 {
-    std::list<const Token*> callstack;
-    callstack.push_back(tok1);
-    callstack.push_back(tok2);
-    reportError(callstack, Severity::warning, "oppositeInnerCondition", "Opposite conditions in nested 'if' blocks lead to a dead code block.", CWE398, false);
+    ErrorPath errorPath;
+    errorPath.push_back(ErrorPathItem(tok1, "outer condition"));
+    errorPath.push_back(ErrorPathItem(tok2, "opposite inner condition => always false when outer condition is true"));
+    reportError(errorPath, Severity::warning, "oppositeInnerCondition", "Opposite inner 'if' condition leads to a dead code block.", CWE398, false);
 }
 
 //---------------------------------------------------------------------------

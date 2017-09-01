@@ -1311,14 +1311,14 @@ private:
               "        if(a!=b)\n"
               "            cout << a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void foo(int a, int b) {\n"
               "    if(a==b)\n"
               "        if(b!=a)\n"
               "            cout << a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void foo(int a) {\n"
               "    if(a >= 50) {\n"
@@ -1328,7 +1328,7 @@ private:
               "            cout << 100;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         // #4186
         check("void foo(int a) {\n"
@@ -1402,7 +1402,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void foo(const int &i);\n"
               "void bar(int i) {\n"
@@ -1412,7 +1412,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void foo(int i);\n"
               "void bar() {\n"
@@ -1423,7 +1423,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("class C { void f(int &i) const; };\n" // #7028 - variable is changed by const method
               "void foo(C c, int i) {\n"
@@ -1446,7 +1446,7 @@ private:
               "       }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f(struct ABC *abc) {\n"
               "   struct AB *ab = abc->ab;\n"
@@ -1468,7 +1468,7 @@ private:
                   "    if (!fred.isValid()) {}\n"
                   "  }\n"
                   "}");
-            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
             check("class Fred { public: void dostuff() const; };\n"
                   "void f() {\n"
@@ -1478,7 +1478,7 @@ private:
                   "    if (!fred.isValid()) {}\n"
                   "  }\n"
                   "}");
-            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
             check("void f() {\n"
                   "  Fred fred;\n"
@@ -1582,7 +1582,7 @@ private:
               "    if (i==5) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
     }
 
     void oppositeInnerCondition2() {
@@ -1613,9 +1613,9 @@ private:
               "    if (x<=5) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
-                      "[test.cpp:11] -> [test.cpp:12]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
-                      "[test.cpp:15] -> [test.cpp:16]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
+                      "[test.cpp:11] -> [test.cpp:12]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
+                      "[test.cpp:15] -> [test.cpp:16]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
                       , errout.str());
 
         check("void f(int x) {\n"
@@ -1693,9 +1693,9 @@ private:
               "    if (x<=4) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
-                      "[test.cpp:15] -> [test.cpp:16]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
-                      "[test.cpp:19] -> [test.cpp:20]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n"
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
+                      "[test.cpp:15] -> [test.cpp:16]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
+                      "[test.cpp:19] -> [test.cpp:20]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
                       , errout.str());
     }
 
