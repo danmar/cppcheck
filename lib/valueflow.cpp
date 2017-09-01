@@ -1965,23 +1965,20 @@ static bool isStdMoveOrStdForwarded(Token * tok, ValueFlow::Value::MoveKind * mo
 {
     if (tok->str() != "std")
         return false;
-    bool isMovedOrForwarded = false;
     ValueFlow::Value::MoveKind kind = ValueFlow::Value::NonMovedVariable;
     Token * variableToken = nullptr;
     if (Token::Match(tok, "std :: move ( %var% )")) {
         variableToken = tok->tokAt(4);
-        isMovedOrForwarded = true;
         kind = ValueFlow::Value::MovedVariable;
     } else if (Token::simpleMatch(tok, "std :: forward <")) {
         Token * leftAngle = tok->tokAt(3);
         Token * rightAngle = leftAngle->link();
         if (Token::Match(rightAngle, "> ( %var% )")) {
             variableToken = rightAngle->tokAt(2);
-            isMovedOrForwarded = true;
             kind = ValueFlow::Value::ForwardedVariable;
         }
     }
-    if (!isMovedOrForwarded)
+    if (!variableToken)
         return false;
     if (variableToken->strAt(2) == ".") // Only partially moved
         return false;
