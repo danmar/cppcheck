@@ -200,6 +200,8 @@ private:
         TEST_CASE(funcArgNamesDifferent);
         TEST_CASE(funcArgOrderDifferent);
         TEST_CASE(cpp11FunctionArgInit); // #7846 - "void foo(int declaration = {}) {"
+
+        TEST_CASE(funcDefArgNoName);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -6457,6 +6459,13 @@ private:
                         ));
         ASSERT_EQUALS("", errout.str());
     }
+
+    void funcDefArgNoName() {
+        check("static const std::string DS = \"abcd\";\n"
+              "static void dsth(const std::string & = DS);\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestOther)
