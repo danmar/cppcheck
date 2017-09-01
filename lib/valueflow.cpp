@@ -1966,7 +1966,7 @@ static bool isStdMoveOrStdForwarded(Token * tok, ValueFlow::Value::MoveKind * mo
     if (tok->str() != "std")
         return false;
     bool isMovedOrForwarded = false;
-    ValueFlow::Value::MoveKind kind = ValueFlow::Value::MovedVariable;
+    ValueFlow::Value::MoveKind kind = ValueFlow::Value::NonMovedVariable;
     Token * variableToken = nullptr;
     if (Token::Match(tok, "std :: move ( %var% )")) {
         variableToken = tok->tokAt(4);
