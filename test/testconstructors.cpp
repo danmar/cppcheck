@@ -1074,6 +1074,18 @@ private:
               "Foo::Foo() : Foo(0) {}\n"
               "Foo::Foo(int foo) : foo_(foo) {}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Noexcept ctors
+        check("class A {\n"
+              "private:\n"
+              "    int _a;\n"
+              "public:\n"
+              "    A(const int a) noexcept : _a{a} {}\n"
+              "    A() noexcept;\n"
+              "};\n"
+              "\n"
+              "A::A() noexcept: A(0) {}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
