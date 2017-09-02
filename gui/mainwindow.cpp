@@ -1448,7 +1448,17 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
     if (!projectFile->getImportProject().isEmpty()) {
         ImportProject p;
         QString prjfile = inf.canonicalPath() + '/' + projectFile->getImportProject();
-        p.import(prjfile.toStdString());
+        try {
+            p.import(prjfile.toStdString());
+        } catch (InternalError &e) {
+            QMessageBox msg(QMessageBox::Critical,
+                            tr("Cppcheck"),
+                            tr("Failed to import '%1', analysis is stopped").arg(prjfile),
+                            QMessageBox::Ok,
+                            this);
+            msg.exec();
+            return;
+        }
         doAnalyzeProject(p);
         return;
     }
