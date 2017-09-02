@@ -3059,6 +3059,13 @@ private:
               "    l();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::vector<std::string> &v) {\n"
+              "  for (const std::string& s : v) {\n"
+              "    if (s.find(x) != string::npos) {}\n"
+              "  }\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
