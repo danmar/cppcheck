@@ -2625,6 +2625,16 @@ private:
                "    f(x=3), return x+3;\n"
                "}";
         ASSERT_EQUALS(0U, tokenValues(code, "x +").size());
+
+        // #8195
+        code = "void foo(std::istream &is) {\n"
+               "  int x;\n"
+               "  if (is >> x) {\n"
+               "    a = x;\n"
+               "  }\n"
+               "}";
+        values = tokenValues(code, "x ; }");
+        ASSERT_EQUALS(true, values.empty());
     }
 };
 

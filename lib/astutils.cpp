@@ -458,6 +458,15 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         if (Token::Match(tok->previous(), "++|-- %name%"))
             return true;
 
+        if (Token::simpleMatch(tok->previous(), ">>")) {
+            const Token *shr = tok->previous();
+            if (Token::simpleMatch(shr->astParent(), ">>"))
+                return true;
+            const Token *lhs = shr->astOperand1();
+            if (!lhs->valueType() || !lhs->valueType()->isIntegral())
+                return true;
+        }
+
         const Token *ftok = tok;
         while (ftok && !Token::Match(ftok, "[({[]"))
             ftok = ftok->astParent();
