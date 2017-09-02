@@ -98,9 +98,6 @@ Library::Error Library::load(const char exename[], const char path[])
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
                 absolute_path = Path::getAbsoluteFilePath(filename);
         }
-
-        if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
-            return Error(FILE_NOT_FOUND);
     } else
         absolute_path = Path::getAbsoluteFilePath(path);
 
