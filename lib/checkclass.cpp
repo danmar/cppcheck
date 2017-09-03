@@ -2383,6 +2383,12 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
 // Check that copy constructor and operator defined together
 //---------------------------------------------------------------------------
 
+enum CtorType {
+    NO,
+    WITHOUT_BODY,
+    WITH_BODY
+};
+
 void CheckClass::checkCopyCtorAndEqOperator()
 {
     if (!_settings->isEnabled(Settings::WARNING))
@@ -2402,24 +2408,25 @@ void CheckClass::checkCopyCtorAndEqOperator()
         if (!hasNonStaticVars)
             continue;
 
-        int hasCopyCtor = 0;
-        int hasAssignmentOperator = 0;
+        CtorType copyCtors = CtorType::NO;
+        CtorType assignmentOperators = CtorType::NO;
 
         std::list<Function>::const_iterator func;
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (!hasCopyCtor && func->type == Function::eCopyConstructor) {
-                hasCopyCtor = func->hasBody() ? 2 : 1;
+            if (copyCtors == CtorType::NO && func->type == Function::eCopyConstructor) {
+                copyCtors = func->hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
             }
-            if (!hasAssignmentOperator && func->type == Function::eOperatorEqual) {
+            if (assignmentOperators == CtorType::NO && func->type == Function::eOperatorEqual) {
                 const Variable * variable = func->getArgumentVar(0);
                 if (variable && variable->type() && variable->type()->classScope == scope) {
-                    hasAssignmentOperator = func->hasBody() ? 2 : 1;
+                    assignmentOperators = func->hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
                 }
             }
         }
 
-        if (std::abs(hasCopyCtor - hasAssignmentOperator) == 2)
-            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, hasCopyCtor != 0);
+        if ((copyCtors == CtorType::WITH_BODY && assignmentOperators == CtorType::NO) ||
+            (copyCtors == CtorType::NO && assignmentOperators == CtorType::WITH_BODY))
+            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, copyCtors == CtorType::WITH_BODY);
     }
 }
 

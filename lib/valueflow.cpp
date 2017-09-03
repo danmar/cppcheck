@@ -118,9 +118,8 @@ static bool conditionIsFalse(const Token *condition, const ProgramMemory &progra
     if (!condition)
         return false;
     if (condition->str() == "&&") {
-        const bool result1 = conditionIsFalse(condition->astOperand1(), programMemory);
-        const bool result2 = result1 ? true : conditionIsFalse(condition->astOperand2(), programMemory);
-        return result2;
+        return conditionIsFalse(condition->astOperand1(), programMemory) ||
+            conditionIsFalse(condition->astOperand2(), programMemory);
     }
     ProgramMemory progmem(programMemory);
     MathLib::bigint result = 0;
@@ -139,9 +138,8 @@ static bool conditionIsTrue(const Token *condition, const ProgramMemory &program
     if (!condition)
         return false;
     if (condition->str() == "||") {
-        const bool result1 = conditionIsTrue(condition->astOperand1(), programMemory);
-        const bool result2 = result1 ? true : conditionIsTrue(condition->astOperand2(), programMemory);
-        return result2;
+        return conditionIsTrue(condition->astOperand1(), programMemory) ||
+            conditionIsTrue(condition->astOperand2(), programMemory);
     }
     ProgramMemory progmem(programMemory);
     bool error = false;

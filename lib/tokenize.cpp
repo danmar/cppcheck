@@ -4313,7 +4313,7 @@ bool Tokenizer::removeRedundantConditions()
         // Handle if with else
         if (Token::simpleMatch(elseTag, "else {")) {
             // Handle else
-            if (boolValue == false) {
+            if (!boolValue) {
                 // Convert "if( false ) {aaa;} else {bbb;}" => "{bbb;}"
 
                 //remove '(false)'
@@ -4342,7 +4342,7 @@ bool Tokenizer::removeRedundantConditions()
 
         // Handle if without else
         else {
-            if (boolValue == false) {
+            if (!boolValue) {
                 //remove '(false)'
                 tok->deleteNext(3);
                 //delete dead code inside scope
