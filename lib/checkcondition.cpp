@@ -526,6 +526,8 @@ void CheckCondition::multiCondition2()
             }
             if (Token::Match(tok, "%type% (") && nonlocal) // function call -> bailout if there are nonlocal variables
                 break;
+            if (Token::Match(tok, "break|continue|return|throw") && tok->scope() == endToken->scope())
+                break;
             // bailout if loop is seen.
             // TODO: handle loops better.
             if (Token::Match(tok, "for|while|do")) {
