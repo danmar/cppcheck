@@ -1532,6 +1532,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // undeclared array
+        check("void f(int x) {\n"
+              "  if (a[x] > 0) {\n"
+              "    a[x] -= dt;\n"
+              "    if (a[x] < 0) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #6313 - false positive: opposite conditions in nested if blocks when condition changed
         check("void Foo::Bar() {\n"
               "   if(var){\n"

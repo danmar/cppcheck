@@ -491,7 +491,7 @@ void CheckCondition::multiCondition2()
                 nonlocal |= (var && (var->isPointer() || var->isReference()));
             } else if (!nonlocal && cond->isName()) {
                 // varid is 0. this is possibly a nonlocal variable..
-                nonlocal = Token::Match(cond->astParent(), "%cop%|(");
+                nonlocal = Token::Match(cond->astParent(), "%cop%|(|[");
             } else {
                 tokens.push(cond->astOperand1());
                 tokens.push(cond->astOperand2());
