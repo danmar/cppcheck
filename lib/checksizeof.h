@@ -64,7 +64,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer*, const Settings*, ErrorLogger*) {
+    void runSimplifiedChecks(const Tokenizer* /*tokenizer*/, const Settings* /*settings*/, ErrorLogger* /*errorLogger*/) {
     }
 
     /** @brief %Check for 'sizeof sizeof ..' */
