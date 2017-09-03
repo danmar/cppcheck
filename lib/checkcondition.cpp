@@ -509,11 +509,20 @@ void CheckCondition::multiCondition2()
             type = MULTICONDITIONTYPE::INNER;
         }
         const Token * const endToken = tok->scope()->classEnd;
-        const Token *ifToken = nullptr;
+
         for (; tok && tok != endToken; tok = tok->next()) {
             if (Token::simpleMatch(tok, "if (")) {
-                ifToken = tok;
-                break;
+                // Condition..
+                const Token *cond2 = tok->next()->astOperand2();
+
+                if (type == MULTICONDITIONTYPE::INNER) {
+                    if (isOppositeCond(false, _tokenizer->isCPP(), cond1, cond2, _settings->library, true))
+                        oppositeInnerConditionError(cond1, cond2);
+                } else {
+                    if (isSameExpression(_tokenizer->isCPP(), true, cond1, cond2, _settings->library, true))
+                        sameConditionAfterEarlyExitError(cond1, cond2);
+                }
+
             }
             if (Token::Match(tok, "%type% (") && nonlocal) // function call -> bailout if there are nonlocal variables
                 break;
@@ -544,19 +553,6 @@ void CheckCondition::multiCondition2()
                 if (Token::Match(tok->previous(), "[(,] %name% [,)]") && isParameterChanged(tok))
                     break;
             }
-        }
-        if (!ifToken)
-            continue;
-
-        // Condition..
-        const Token *cond2 = ifToken->next()->astOperand2();
-
-        if (type == MULTICONDITIONTYPE::INNER) {
-            if (isOppositeCond(false, _tokenizer->isCPP(), cond1, cond2, _settings->library, true))
-                oppositeInnerConditionError(cond1, cond2);
-        } else {
-            if (isSameExpression(_tokenizer->isCPP(), true, cond1, cond2, _settings->library, true))
-                sameConditionAfterEarlyExitError(cond1, cond2);
         }
     }
 }
