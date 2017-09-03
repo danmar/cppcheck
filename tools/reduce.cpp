@@ -46,7 +46,7 @@ private:
 public:
     explicit CppcheckExecutor(const ReduceSettings & settings)
         : ErrorLogger()
-        , cppcheck(*this,false)
+        , cppcheck(*this, false)
         , foundLine(false)
         , stopTime(0) {
 
