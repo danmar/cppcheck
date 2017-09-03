@@ -527,9 +527,29 @@ void CheckCondition::multiCondition2()
             if (Token::Match(tok, "%type% (") && nonlocal) // function call -> bailout if there are nonlocal variables
                 break;
             // bailout if loop is seen.
-            // TODO: handle loops.
-            if (Token::Match(tok, "for|while|do"))
-                break;
+            // TODO: handle loops better.
+            if (Token::Match(tok, "for|while|do")) {
+                const Token *tok1 = tok->next();
+                const Token *tok2;
+                if (Token::simpleMatch(tok, "do {")) {
+                    if (!Token::simpleMatch(tok->linkAt(1), "} while ("))
+                        break;
+                    tok2 = tok->linkAt(1)->linkAt(2);
+                } else {
+                    tok2 = tok->linkAt(1);
+                    if (Token::simpleMatch(tok2, ") {"))
+                        tok2 = tok2->linkAt(1);
+                    if (!tok2)
+                        break;
+                }
+                bool changed = false;
+                for (std::set<unsigned int>::const_iterator it = vars.begin(); it != vars.end(); ++it) {
+                    if (isVariableChanged(tok1, tok2, *it, nonlocal, _settings))
+                        changed = true;
+                }
+                if (changed)
+                    break;
+            }
             if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
                 (!tok->varId() && nonlocal)) {
                 if (Token::Match(tok, "%name% %assign%|++|--"))

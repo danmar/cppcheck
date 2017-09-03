@@ -1724,6 +1724,13 @@ private:
               "  if (x > 100) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition, second condition is always false\n", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x > 100) { return; }\n"
+              "  while (abc) { y = x; }\n"
+              "  if (x > 100) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition, second condition is always false\n", errout.str());
     }
 
     // clarify conditions with = and comparison
