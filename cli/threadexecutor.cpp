@@ -26,6 +26,7 @@
 #include "suppressions.h"
 
 #include <algorithm>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -37,12 +38,10 @@
 #ifdef THREADING_MODEL_FORK
 #include <sys/select.h>
 #include <sys/wait.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 #endif
 #ifdef THREADING_MODEL_WIN
-#include <errno.h>
 #include <process.h>
 #include <windows.h>
 #endif

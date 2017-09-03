@@ -34,6 +34,8 @@
 #include "threadexecutor.h"
 #include "utils.h"
 
+#include <csignal>
+#include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
 #include <iostream>
@@ -43,9 +45,7 @@
 
 #if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__OS2__)
 #define USE_UNIX_SIGNAL_HANDLING
-#include <signal.h>
 #include <unistd.h>
-#include <cstdio>
 #if defined(__APPLE__)
 #   define _XOPEN_SOURCE // ucontext.h APIs can only be used on Mac OSX >= 10.7 if _XOPEN_SOURCE is defined
 #   include <ucontext.h>
