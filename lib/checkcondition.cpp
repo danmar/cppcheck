@@ -441,10 +441,12 @@ void CheckCondition::multiConditionError(const Token *tok, unsigned int line1)
 }
 
 //---------------------------------------------------------------------------
-// Detect oppositing inner and outer conditions
+// - Opposite inner conditions => always false
+// - (TODO) Same/Overlapping inner condition => always true
+// - same condition after early exit => always false
 //---------------------------------------------------------------------------
 
-void CheckCondition::oppositeInnerCondition()
+void CheckCondition::multiCondition2()
 {
     if (!_settings->isEnabled(Settings::WARNING))
         return;
@@ -496,9 +498,19 @@ void CheckCondition::oppositeInnerCondition()
             }
         }
 
-        // parse until inner condition is reached..
+        // parse until second condition is reached..
+        enum MULTICONDITIONTYPE { INNER, AFTER } type;
+        const Token *tok;
+        if (Token::Match(scope->classStart, "{ return|throw|continue|break")) {
+            tok = scope->classEnd->next();
+            type = MULTICONDITIONTYPE::AFTER;
+        } else {
+            tok = scope->classStart;
+            type = MULTICONDITIONTYPE::INNER;
+        }
+        const Token * const endToken = tok->scope()->classEnd;
         const Token *ifToken = nullptr;
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (; tok && tok != endToken; tok = tok->next()) {
             if (Token::simpleMatch(tok, "if (")) {
                 ifToken = tok;
                 break;
@@ -539,8 +551,13 @@ void CheckCondition::oppositeInnerCondition()
         // Condition..
         const Token *cond2 = ifToken->next()->astOperand2();
 
-        if (isOppositeCond(false, _tokenizer->isCPP(), cond1, cond2, _settings->library, true))
-            oppositeInnerConditionError(cond1, cond2);
+        if (type == MULTICONDITIONTYPE::INNER) {
+            if (isOppositeCond(false, _tokenizer->isCPP(), cond1, cond2, _settings->library, true))
+                oppositeInnerConditionError(cond1, cond2);
+        } else {
+            if (isSameExpression(_tokenizer->isCPP(), true, cond1, cond2, _settings->library, true))
+                sameConditionAfterEarlyExitError(cond1, cond2);
+        }
     }
 }
 
@@ -550,6 +567,14 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
     errorPath.push_back(ErrorPathItem(tok1, "outer condition"));
     errorPath.push_back(ErrorPathItem(tok2, "opposite inner condition"));
     reportError(errorPath, Severity::warning, "oppositeInnerCondition", "Opposite inner 'if' condition leads to a dead code block.", CWE398, false);
+}
+
+void CheckCondition::sameConditionAfterEarlyExitError(const Token *cond1, const Token* cond2)
+{
+    ErrorPath errorPath;
+    errorPath.push_back(ErrorPathItem(cond1, "first condition"));
+    errorPath.push_back(ErrorPathItem(cond2, "second condition"));
+    reportError(errorPath, Severity::warning, "sameConditionAfterEarlyExit", "Same condition, second condition is always false", CWE398, false);
 }
 
 //---------------------------------------------------------------------------

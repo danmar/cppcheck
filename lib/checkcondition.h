@@ -55,7 +55,7 @@ public:
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
         checkCondition.multiCondition();
         checkCondition.clarifyCondition();   // not simplified because ifAssign
-        checkCondition.oppositeInnerCondition();
+        checkCondition.multiCondition2();
         checkCondition.checkIncorrectLogicOperator();
         checkCondition.checkInvalidTestForOverflow();
         checkCondition.alwaysTrueFalse();
@@ -90,8 +90,13 @@ public:
     /** match 'if' and 'else if' conditions */
     void multiCondition();
 
-    /** To check the dead code in a program, which is inaccessible due to the counter-conditions check in nested-if statements **/
-    void oppositeInnerCondition();
+    /**
+     * multiconditions #2
+     * - Opposite inner conditions => always false
+     * - (TODO) Same/Overlapping inner condition => always true
+     * - same condition after early exit => always false
+     **/
+    void multiCondition2();
 
     /** @brief %Check for testing for mutual exclusion over ||*/
     void checkIncorrectLogicOperator();
@@ -124,6 +129,8 @@ private:
 
     void oppositeInnerConditionError(const Token *tok1, const Token* tok2);
 
+    void sameConditionAfterEarlyExitError(const Token *cond1, const Token *cond2);
+
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive);
     void redundantConditionError(const Token *tok, const std::string &text, bool inconclusive);
 
@@ -144,6 +151,7 @@ private:
         c.multiConditionError(nullptr,1);
         c.mismatchingBitAndError(nullptr, 0xf0, nullptr, 1);
         c.oppositeInnerConditionError(nullptr, nullptr);
+        c.sameConditionAfterEarlyExitError(nullptr, nullptr);
         c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false);
         c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
         c.moduloAlwaysTrueFalseError(nullptr, "1");
@@ -163,7 +171,8 @@ private:
                "- Detect usage of | where & should be used\n"
                "- Detect matching 'if' and 'else if' conditions\n"
                "- Mismatching bitand (a &= 0xf0; a &= 1; => a = 0)\n"
-               "- Find dead code which is inaccessible due to the counter-conditions check in nested if statements\n"
+               "- Opposite inner condition is always false\n"
+               "- Same condition after early exit is always false\n"
                "- Condition that is always true/false\n"
                "- Mutual exclusion over || always evaluating to true\n"
                "- Comparisons of modulo results that are always true/false.\n"

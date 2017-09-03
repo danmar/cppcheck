@@ -79,6 +79,8 @@ private:
         TEST_CASE(oppositeInnerCondition2);
         TEST_CASE(oppositeInnerConditionAnd);
 
+        TEST_CASE(sameConditionAfterEarlyExit);
+
         TEST_CASE(clarifyCondition1);     // if (a = b() < 0)
         TEST_CASE(clarifyCondition2);     // if (a & b == c)
         TEST_CASE(clarifyCondition3);     // if (! a & b)
@@ -1707,6 +1709,14 @@ private:
               "  }"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+    }
+
+    void sameConditionAfterEarlyExit() {
+        check("void f(int x) {\n"
+              "  if (x > 100) { return; }\n"
+              "  if (x > 100) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Same condition, second condition is always false\n", errout.str());
     }
 
     // clarify conditions with = and comparison
