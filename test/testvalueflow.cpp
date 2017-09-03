@@ -1743,6 +1743,17 @@ private:
                "  a = x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        // aliased variable
+        code = "void f() {\n"
+               "  int x = 1;\n"
+               "  int *data = &x;\n"
+               "  if (!x) {\n"
+               "    calc(data);\n"
+               "    a = x;\n"  // <- x might be changed by calc
+               "  }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
     }
 
     void valueFlowForwardCompoundAssign() {

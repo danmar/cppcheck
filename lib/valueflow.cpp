@@ -2171,8 +2171,12 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
     const std::size_t functions = symboldatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symboldatabase->functionScopes[i];
+        std::set<unsigned> aliased;
         for (Token* tok = const_cast<Token*>(scope->classStart); tok != scope->classEnd; tok = tok->next()) {
             const Token *vartok, *numtok;
+
+            if (Token::Match(tok, "= & %var% ;"))
+                aliased.insert(tok->tokAt(2)->varId());
 
             // Comparison
             if (Token::Match(tok, "==|!=|>=|<=")) {
@@ -2211,6 +2215,11 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
             const Variable *var = vartok->variable();
             if (!var || !(var->isLocal() || var->isGlobal() || var->isArgument()))
                 continue;
+            if (aliased.find(varid) != aliased.end()) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, vartok, "variable is aliased so we just skip all valueflow after condition");
+                continue;
+            }
             std::list<ValueFlow::Value> values;
             values.push_back(ValueFlow::Value(tok, numtok ? numtok->values().front().intvalue : 0LL));
 
