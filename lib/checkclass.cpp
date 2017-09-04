@@ -2109,7 +2109,7 @@ void CheckClass::initializerListOrder()
 
         // iterate through all member functions looking for constructors
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if ((func->isConstructor()) && func->hasBody()) {
+            if (func->isConstructor() && func->hasBody()) {
                 // check for initializer list
                 const Token *tok = func->arg->link()->next();
 
