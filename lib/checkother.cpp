@@ -1668,10 +1668,11 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
     const ErrorPath errorPath = getErrorPath(tok, value, "Division by zero");
 
     std::ostringstream errmsg;
-    if (value->condition)
+    if (value->condition) {
+        unsigned int line = tok ? tok->linenr() : 0;
         errmsg << ValueFlow::eitherTheConditionIsRedundant(value->condition)
-               << " or there is division by zero at line " << tok->linenr() << ".";
-    else
+               << " or there is division by zero at line " << line << ".";
+    } else
         errmsg << "Division by zero.";
 
     reportError(errorPath,
