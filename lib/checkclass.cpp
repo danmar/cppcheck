@@ -423,13 +423,13 @@ bool CheckClass::canNotMove(const Scope *scope)
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         if (func->isConstructor())
             constructor = true;
-        if ((func->type == Function::eCopyConstructor) &&
-            func->access == Public)
+        if (func->access != Public)
+            continue;
+        if (func->type == Function::eCopyConstructor)
             publicCopy = true;
-        else if ((func->type == Function::eMoveConstructor) &&
-                 func->access == Public)
+        else if (func->type == Function::eMoveConstructor)
             publicMove = true;
-        else if (func->type == Function::eOperatorEqual && func->access == Public)
+        else if (func->type == Function::eOperatorEqual)
             publicAssign = true;
     }
 
