@@ -528,9 +528,20 @@ void CheckCondition::multiCondition2()
                 const Token *cond2 = tok->next()->astOperand2();
 
                 if (type == MULTICONDITIONTYPE::INNER) {
-                    if (isOppositeCond(false, _tokenizer->isCPP(), cond1, cond2, _settings->library, true)) {
-                        if (!isAliased(vars))
-                            oppositeInnerConditionError(cond1, cond2);
+                    std::stack<const Token *> tokens1;
+                    tokens1.push(cond1);
+                    while (!tokens1.empty()) {
+                        const Token *firstCondition = tokens1.top();
+                        tokens1.pop();
+                        if (!firstCondition)
+                            continue;
+                        if (firstCondition->str() == "&&") {
+                            tokens1.push(firstCondition->astOperand1());
+                            tokens1.push(firstCondition->astOperand2());
+                        } else if (isOppositeCond(false, _tokenizer->isCPP(), firstCondition, cond2, _settings->library, true)) {
+                            if (!isAliased(vars))
+                                oppositeInnerConditionError(firstCondition, cond2);
+                        }
                     }
                 } else {
                     std::stack<const Token *> tokens2;
@@ -609,10 +620,14 @@ void CheckCondition::multiCondition2()
 
 void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2)
 {
+    const std::string s1(tok1 ? tok1->expressionString() : "x");
+    const std::string s2(tok2 ? tok2->expressionString() : "!x");
     ErrorPath errorPath;
-    errorPath.push_back(ErrorPathItem(tok1, "outer condition"));
-    errorPath.push_back(ErrorPathItem(tok2, "opposite inner condition"));
-    reportError(errorPath, Severity::warning, "oppositeInnerCondition", "Opposite inner 'if' condition leads to a dead code block.", CWE398, false);
+    errorPath.push_back(ErrorPathItem(tok1, "outer condition: " + s1));
+    errorPath.push_back(ErrorPathItem(tok2, "opposite inner condition: " + s2));
+    const std::string msg("Opposite inner 'if' condition leads to a dead code block.\n"
+                          "Opposite inner 'if' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
+    reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, false);
 }
 
 void CheckCondition::sameConditionAfterEarlyExitError(const Token *cond1, const Token* cond2)

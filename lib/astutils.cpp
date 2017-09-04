@@ -256,14 +256,8 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     if (cond2->str() == "!")
         return isOppositeCond(isNot, cpp, cond2, cond1, library, pure);
 
-    if (!cond1->isComparisonOp() || !cond2->isComparisonOp()) {
-        if (!isNot && cond1->str() == "&&" && cond2->isComparisonOp()) {
-            return isOppositeCond(isNot, cpp, cond1->astOperand1(), cond2, library, pure) ||
-                   isOppositeCond(isNot, cpp, cond1->astOperand2(), cond2, library, pure);
-        }
-
+    if (!cond1->isComparisonOp() || !cond2->isComparisonOp())
         return false;
-    }
 
     const std::string &comp1 = cond1->str();
 
