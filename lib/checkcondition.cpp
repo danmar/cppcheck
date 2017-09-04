@@ -494,9 +494,13 @@ void CheckCondition::multiCondition2()
             if (cond->varId()) {
                 vars.insert(cond->varId());
                 const Variable *var = cond->variable();
-                nonlocal |= (var && (!var->isLocal() || var->isStatic()) && !var->isArgument());
-                // TODO: if var is pointer check what it points at
-                nonlocal |= (var && (var->isPointer() || var->isReference()));
+                if (!nonlocal && var) {
+                    if (!(var->isLocal() || var->isStatic() || var->isArgument()))
+                        nonlocal = true;
+                    else if ((var->isPointer() || var->isReference()) && !Token::simpleMatch(cond->astParent(), "!"))
+                        // TODO: if var is pointer check what it points at
+                        nonlocal = true;
+                }
             } else if (!nonlocal && cond->isName()) {
                 // varid is 0. this is possibly a nonlocal variable..
                 nonlocal = Token::Match(cond->astParent(), "%cop%|(|[");
@@ -534,7 +538,6 @@ void CheckCondition::multiCondition2()
                             sameConditionAfterEarlyExitError(cond1, cond2);
                     }
                 }
-
             }
             if (Token::Match(tok, "%type% (") && nonlocal) // function call -> bailout if there are nonlocal variables
                 break;

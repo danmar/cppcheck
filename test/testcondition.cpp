@@ -1452,6 +1452,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
+        // pointers...
         check("void f(struct ABC *abc) {\n"
               "   struct AB *ab = abc->ab;\n"
               "   if (ab->a == 123){\n"
@@ -1462,6 +1463,13 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const int *i) {\n"
+              "  if (!i) return;\n"
+              "  if (!num1tok) { *num1 = *num2; }\n"
+              "  if (!i) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition, second condition is always false\n", errout.str());
 
         {
             // #6095 - calling member function that might change the state
