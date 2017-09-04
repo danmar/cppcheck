@@ -1100,7 +1100,7 @@ void CheckClass::checkMemset()
                 std::set<const Scope *> parsedTypes;
                 checkMemsetType(scope, tok->tokAt(2), tok->variable()->typeScope(), true, parsedTypes);
 
-                if (tok->variable()->typeScope()->numConstructors > 0 && printWarnings)
+                if (printWarnings && tok->variable()->typeScope()->numConstructors > 0)
                     mallocOnClassWarning(tok, tok->strAt(2), tok->variable()->typeScope()->classDef);
             }
         }
@@ -1160,7 +1160,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
                 checkMemsetType(start, tok, typeScope, allocation, parsedTypes);
 
             // check for float
-            else if (tok->str() == "memset" && var->isFloatingType() && printPortability)
+            else if (printPortability && var->isFloatingType() && tok->str() == "memset")
                 memsetErrorFloat(tok, type->classDef->str());
         }
     }
