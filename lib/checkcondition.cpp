@@ -533,9 +533,20 @@ void CheckCondition::multiCondition2()
                             oppositeInnerConditionError(cond1, cond2);
                     }
                 } else {
-                    if (isSameExpression(_tokenizer->isCPP(), true, cond1, cond2, _settings->library, true)) {
-                        if (!isAliased(vars))
-                            sameConditionAfterEarlyExitError(cond1, cond2);
+                    std::stack<const Token *> tokens2;
+                    tokens2.push(cond2);
+                    while (!tokens2.empty()) {
+                        const Token *secondCondition = tokens2.top();
+                        tokens2.pop();
+                        if (!secondCondition)
+                            continue;
+                        if (secondCondition->str() == "||") {
+                            tokens2.push(secondCondition->astOperand1());
+                            tokens2.push(secondCondition->astOperand2());
+                        } else if (isSameExpression(_tokenizer->isCPP(), true, cond1, secondCondition, _settings->library, true)) {
+                            if (!isAliased(vars))
+                                sameConditionAfterEarlyExitError(cond1, secondCondition);
+                        }
                     }
                 }
             }
@@ -606,10 +617,11 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
 
 void CheckCondition::sameConditionAfterEarlyExitError(const Token *cond1, const Token* cond2)
 {
+    const std::string cond(cond1 ? cond1->expressionString() : "x");
     ErrorPath errorPath;
     errorPath.push_back(ErrorPathItem(cond1, "first condition"));
     errorPath.push_back(ErrorPathItem(cond2, "second condition"));
-    reportError(errorPath, Severity::warning, "sameConditionAfterEarlyExit", "Same condition, second condition is always false", CWE398, false);
+    reportError(errorPath, Severity::warning, "sameConditionAfterEarlyExit", "Same condition '" + cond + "', second condition is always false", CWE398, false);
 }
 
 //---------------------------------------------------------------------------

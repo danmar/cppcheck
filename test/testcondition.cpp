@@ -1513,13 +1513,6 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
-        check("void f(const int *i) {\n"
-              "  if (!i) return;\n"
-              "  if (!num1tok) { *num1 = *num2; }\n"
-              "  if (!i) {}\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition, second condition is always false\n", errout.str());
     }
 
     void oppositeInnerConditionClass() {
@@ -1761,21 +1754,34 @@ private:
               "  if (x > 100) { return; }\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Same condition, second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Same condition 'x>100', second condition is always false\n", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x > 100) { return; }\n"
+              "  if (x > 100 || y > 100) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Same condition 'x>100', second condition is always false\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  if (abc) {}\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition, second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition 'x>100', second condition is always false\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  while (abc) { y = x; }\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition, second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition 'x>100', second condition is always false\n", errout.str());
+
+        check("void f(const int *i) {\n"
+              "  if (!i) return;\n"
+              "  if (!num1tok) { *num1 = *num2; }\n"
+              "  if (!i) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition '!i', second condition is always false\n", errout.str());
     }
 
     // clarify conditions with = and comparison
