@@ -425,12 +425,16 @@ bool CheckClass::canNotMove(const Scope *scope)
             constructor = true;
         if (func->access != Public)
             continue;
-        if (func->type == Function::eCopyConstructor)
+        if (func->type == Function::eCopyConstructor) {
             publicCopy = true;
-        else if (func->type == Function::eMoveConstructor)
+            break;
+        } else if (func->type == Function::eMoveConstructor) {
             publicMove = true;
-        else if (func->type == Function::eOperatorEqual)
+            break;
+        } else if (func->type == Function::eOperatorEqual) {
             publicAssign = true;
+            break;
+        }
     }
 
     return constructor && !(publicAssign || publicCopy || publicMove);
