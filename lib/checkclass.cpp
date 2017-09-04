@@ -1245,11 +1245,12 @@ void CheckClass::operatorEq()
                 }
                 if (!returnSelfRef) {
                     // make sure we really have a copy assignment operator
-                    if (Token::Match(func->tokenDef->tokAt(2), "const| %name% &")) {
-                        if (func->tokenDef->strAt(2) == "const" &&
-                            func->tokenDef->strAt(3) == scope->className)
+                    const Token *paramTok = func->tokenDef->tokAt(2);
+                    if (Token::Match(paramTok, "const| %name% &")) {
+                        if (paramTok->str() == "const" &&
+                            paramTok->strAt(1) == scope->className)
                             operatorEqReturnError(func->retDef, scope->className);
-                        else if (func->tokenDef->strAt(2) == scope->className)
+                        else if (paramTok->str() == scope->className)
                             operatorEqReturnError(func->retDef, scope->className);
                     }
                 }
