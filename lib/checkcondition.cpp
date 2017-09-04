@@ -51,6 +51,13 @@ namespace {
     CheckCondition instance;
 }
 
+bool CheckCondition::isAliased(const std::set<unsigned int> &vars) const {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+		if (Token::Match(tok, "= & %var% ;") && vars.find(tok->tokAt(2)->varId()) != vars.end())
+			return true;
+	}
+	return false;
+}
 
 void CheckCondition::assignIf()
 {
@@ -516,11 +523,15 @@ void CheckCondition::multiCondition2()
                 const Token *cond2 = tok->next()->astOperand2();
 
                 if (type == MULTICONDITIONTYPE::INNER) {
-                    if (isOppositeCond(false, _tokenizer->isCPP(), cond1, cond2, _settings->library, true))
-                        oppositeInnerConditionError(cond1, cond2);
+                    if (isOppositeCond(false, _tokenizer->isCPP(), cond1, cond2, _settings->library, true)) {
+						if (!isAliased(vars))
+							oppositeInnerConditionError(cond1, cond2);
+                    }
                 } else {
-                    if (isSameExpression(_tokenizer->isCPP(), true, cond1, cond2, _settings->library, true))
-                        sameConditionAfterEarlyExitError(cond1, cond2);
+                    if (isSameExpression(_tokenizer->isCPP(), true, cond1, cond2, _settings->library, true)) {
+                        if (!isAliased(vars))
+							sameConditionAfterEarlyExitError(cond1, cond2);
+					}
                 }
 
             }

@@ -76,6 +76,7 @@ private:
         TEST_CASE(modulo);
 
         TEST_CASE(oppositeInnerCondition);
+        TEST_CASE(oppositeInnerConditionAlias);
         TEST_CASE(oppositeInnerCondition2);
         TEST_CASE(oppositeInnerConditionAnd);
 
@@ -1595,6 +1596,20 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+    }
+
+    void oppositeInnerConditionAlias() {
+        check("void f() {\n"
+              "  struct S s;\n"
+              "  bool hasFailed = false;\n"
+              "  s.status = &hasFailed;\n"
+              "\n"
+              "  if (! hasFailed) {\n"
+              "    doStuff(&s);\n"
+              "    if (hasFailed) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeInnerCondition2() {
