@@ -3729,8 +3729,9 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
 const Type* SymbolDatabase::findVariableTypeInBase(const Scope* scope, const Token* typeTok) const
 {
     if (scope && scope->definedType && !scope->definedType->derivedFrom.empty()) {
-        for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
-            const Type *base = scope->definedType->derivedFrom[i].type;
+        const std::vector<Type::BaseInfo> &derivedFrom = scope->definedType->derivedFrom;
+        for (std::size_t i = 0; i < derivedFrom.size(); ++i) {
+            const Type *base = derivedFrom[i].type;
             if (base && base->classScope) {
                 const Type * type = base->classScope->findType(typeTok->str());
                 if (type)
@@ -3862,8 +3863,9 @@ bool Scope::hasInlineOrLambdaFunction() const
 void Scope::findFunctionInBase(const std::string & name, size_t args, std::vector<const Function *> & matches) const
 {
     if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
-        for (std::size_t i = 0; i < definedType->derivedFrom.size(); ++i) {
-            const Type *base = definedType->derivedFrom[i].type;
+        const std::vector<Type::BaseInfo> &derivedFrom = definedType->derivedFrom;
+        for (std::size_t i = 0; i < derivedFrom.size(); ++i) {
+            const Type *base = derivedFrom[i].type;
             if (base && base->classScope) {
                 if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
                     continue;
