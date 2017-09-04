@@ -2399,16 +2399,16 @@ static void execute(const Token *expr,
         if (!expr->astOperand1() || expr->astOperand1()->varId() == 0U)
             *error = true;
         else {
-            long long i;
-            if (!programMemory->getIntValue(expr->astOperand1()->varId(), &i))
+            long long intValue;
+            if (!programMemory->getIntValue(expr->astOperand1()->varId(), &intValue))
                 *error = true;
             else {
-                if (i == 0 &&
+                if (intValue == 0 &&
                     expr->str() == "--" &&
                     expr->astOperand1()->variable() &&
                     expr->astOperand1()->variable()->typeStartToken()->isUnsigned())
                     *error = true; // overflow
-                *result = i + (expr->str() == "++" ? 1 : -1);
+                *result = intValue + (expr->str() == "++" ? 1 : -1);
                 programMemory->setIntValue(expr->astOperand1()->varId(), *result);
             }
         }
