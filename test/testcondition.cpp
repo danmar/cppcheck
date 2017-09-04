@@ -1562,6 +1562,13 @@ private:
               "   }\n"
               "};");
         ASSERT_EQUALS("", errout.str()); // just don't crash...
+
+        check("bool f(std::ofstream &CFileStream) {\n" // #8198
+              "  if(!CFileStream.good()) { return; }\n"
+              "  CFileStream << \"abc\";\n"
+              "  if (!CFileStream.good()) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeInnerConditionUndeclaredVariable() {

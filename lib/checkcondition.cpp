@@ -497,7 +497,7 @@ void CheckCondition::multiCondition2()
                 if (!nonlocal && var) {
                     if (!(var->isLocal() || var->isStatic() || var->isArgument()))
                         nonlocal = true;
-                    else if ((var->isPointer() || var->isReference()) && !Token::simpleMatch(cond->astParent(), "!"))
+                    else if ((var->isPointer() || var->isReference()) && !Token::Match(cond->astParent(), "%oror%|&&|!"))
                         // TODO: if var is pointer check what it points at
                         nonlocal = true;
                 }
@@ -570,6 +570,8 @@ void CheckCondition::multiCondition2()
             if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
                 (!tok->varId() && nonlocal)) {
                 if (Token::Match(tok, "%name% %assign%|++|--"))
+                    break;
+                if (Token::Match(tok, "%name% <<|>>") && (!tok->valueType() || !tok->valueType()->isIntegral()))
                     break;
                 if (Token::Match(tok, "%name% [")) {
                     const Token *tok2 = tok->linkAt(1);
