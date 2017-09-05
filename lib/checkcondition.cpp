@@ -593,6 +593,13 @@ void CheckCondition::multiCondition2()
                 (!tok->varId() && nonlocal)) {
                 if (Token::Match(tok, "%name% %assign%|++|--"))
                     break;
+                if (Token::Match(tok->astParent(), "*|.|[")) {
+                    const Token *parent = tok;
+                    while (Token::Match(parent->astParent(), ".|[") || (Token::simpleMatch(parent->astParent(), "*") && !parent->astParent()->astOperand2()))
+                        parent = parent->astParent();
+                    if (Token::Match(parent->astParent(), "%assign%"))
+                        break;
+                }
                 if (Token::Match(tok, "%name% <<|>>") && (!tok->valueType() || !tok->valueType()->isIntegral()))
                     break;
                 if (Token::Match(tok, "%name% [")) {

@@ -1522,6 +1522,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void test(float *f) {\n" // #7405
+              "  if(*f>10) {\n"
+              "    (*f) += 0.1f;\n"
+              "    if(*f<10) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeInnerConditionClass() {
