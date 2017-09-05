@@ -1192,6 +1192,7 @@ namespace simplecpp {
                     argtok = argtok->next;
                 }
                 if (!sameline(nametoken, argtok)) {
+                    endToken = argtok ? argtok->previous : argtok;
                     return false;
                 }
                 valueToken = argtok ? argtok->next : NULL;
