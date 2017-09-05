@@ -1780,6 +1780,12 @@ private:
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
+              "  if (x > 100 && y > 100) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Same condition 'x>100', second condition is always false\n", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x > 100) { return; }\n"
               "  if (abc) {}\n"
               "  if (x > 100) {}\n"
               "}");

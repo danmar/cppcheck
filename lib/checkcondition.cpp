@@ -551,7 +551,7 @@ void CheckCondition::multiCondition2()
                         tokens2.pop();
                         if (!secondCondition)
                             continue;
-                        if (secondCondition->str() == "||") {
+                        if (secondCondition->str() == "||" || secondCondition->str() == "&&") {
                             tokens2.push(secondCondition->astOperand1());
                             tokens2.push(secondCondition->astOperand2());
                         } else if (isSameExpression(_tokenizer->isCPP(), true, cond1, secondCondition, _settings->library, true)) {
