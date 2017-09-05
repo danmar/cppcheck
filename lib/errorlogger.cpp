@@ -37,6 +37,9 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type
     token(tok), errorMessage(errorMsg)
 {
     switch (type) {
+    case AST:
+        id = "internalAstError";
+        break;
     case SYNTAX:
         id = "syntaxError";
         break;
