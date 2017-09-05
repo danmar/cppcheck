@@ -1513,6 +1513,15 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void Fred::f() {\n" // daca: ace
+              "  if (this->next_ == map_man_->table_) {\n"
+              "    this->next_ = n;\n"
+              "    if (this->next_ != map_man_->table_) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void oppositeInnerConditionClass() {
