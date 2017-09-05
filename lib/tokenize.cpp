@@ -3883,7 +3883,7 @@ void Tokenizer::printDebugOutput(unsigned int simplification) const
             std::cout << "</debug>" << std::endl;
     }
 
-    if (simplification == 2U && _settings->debugwarnings) {
+    if (_symbolDatabase && simplification == 2U && _settings->debugwarnings) {
         printUnknownTypes();
 
         // the typeStartToken() should come before typeEndToken()
