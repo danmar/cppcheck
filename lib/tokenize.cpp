@@ -4048,13 +4048,15 @@ void Tokenizer::removeMacrosInGlobalScope()
 void Tokenizer::removeMacroInClassDef()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "class|struct %name% %name% {|:") &&
-            (tok->next()->isUpperCaseName() || tok->tokAt(2)->isUpperCaseName())) {
-            if (tok->next()->isUpperCaseName() && !tok->tokAt(2)->isUpperCaseName())
-                tok->deleteNext();
-            else if (!tok->next()->isUpperCaseName() && tok->tokAt(2)->isUpperCaseName())
-                tok->next()->deleteNext();
-        }
+        if (!Token::Match(tok, "class|struct %name% %name% {|:"))
+            continue;
+
+        const bool nextIsUppercase = tok->next()->isUpperCaseName();
+        const bool afterNextIsUppercase = tok->tokAt(2)->isUpperCaseName();
+        if (nextIsUppercase && !afterNextIsUppercase)
+            tok->deleteNext();
+        else if (!nextIsUppercase && afterNextIsUppercase)
+            tok->next()->deleteNext();
     }
 }
 
