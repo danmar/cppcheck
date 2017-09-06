@@ -1813,13 +1813,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void C::f(const Tree &coreTree) {\n"
+        check("struct C { void f(const Tree &coreTree); };\n"
+              "void C::f(const Tree &coreTree) {\n"
               "  if(!coreTree.build())\n"
               "    return;\n"
               "  coreTree.dostuff();\n"
               "  if(!coreTree.build()) {}\n"
               "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Same condition '!coreTree.build()', second condition is always false\n", errout.str());
     }
 
     // clarify conditions with = and comparison
