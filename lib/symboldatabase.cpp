@@ -1237,9 +1237,9 @@ void SymbolDatabase::fixVarId(VarIdMap & varIds, const Token * vartok, Token * m
         if (membertok->varId() == 0) {
             varId->second.insert(std::make_pair(membervar->nameToken()->varId(), const_cast<Tokenizer *>(_tokenizer)->newVarId()));
             _variableList.push_back(membervar);
+            memberId = varId->second.find(membervar->nameToken()->varId());
         } else
             _variableList[membertok->varId()] = membervar;
-        memberId = varId->second.find(membervar->nameToken()->varId());
     }
     if (membertok->varId() == 0)
         membertok->varId(memberId->second);
