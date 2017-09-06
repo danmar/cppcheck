@@ -1179,10 +1179,11 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
             if (func->type == Function::eConstructor && func->functionScope && func->functionScope->functionOf && func->arg) {
                 const Token * tok = func->arg->link()->next();
                 if (tok->str() == "noexcept") {
-                    if (!tok->linkAt(1) || !tok->linkAt(1)->next()) {
+                    const Token * closingParenTok = tok->linkAt(1);
+                    if (!closingParenTok || !closingParenTok->next()) {
                         continue;
                     }
-                    tok = tok->linkAt(1)->next();
+                    tok = closingParenTok->next();
                 }
                 if (tok->str() != ":") {
                     continue;
