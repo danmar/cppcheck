@@ -1542,7 +1542,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
-        check("class Fred { public: void dostuff() const; };\n"
+        check("class Fred { public: bool isValid() const; void dostuff() const; };\n"
               "void f() {\n"
               "  Fred fred;\n"
               "  if (fred.isValid()) {\n"
@@ -1804,6 +1804,22 @@ private:
               "  if (!i) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition '!i', second condition is always false\n", errout.str());
+
+        check("void C::f(Tree &coreTree) {\n"
+              "  if(!coreTree.build())\n"
+              "    return;\n"
+              "  coreTree.dostuff();\n"
+              "  if(!coreTree.build()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void C::f(const Tree &coreTree) {\n"
+              "  if(!coreTree.build())\n"
+              "    return;\n"
+              "  coreTree.dostuff();\n"
+              "  if(!coreTree.build()) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     // clarify conditions with = and comparison

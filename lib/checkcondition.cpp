@@ -481,6 +481,7 @@ void CheckCondition::multiCondition2()
         if (!Token::simpleMatch(scope->classDef->linkAt(1), ") {"))
             continue;
 
+        bool nonConstFunctionCall = false;
         bool nonlocal = false; // nonlocal variable used in condition
         std::set<unsigned int> vars; // variables used in condition
         std::stack<const Token *> tokens;
@@ -490,6 +491,22 @@ void CheckCondition::multiCondition2()
             tokens.pop();
             if (!cond)
                 continue;
+
+            if (Token::Match(cond, "%name% (")) {
+                const Token *obj = cond->next()->astOperand1();
+                while (obj && obj->str() == ".")
+                    obj = obj->astOperand1();
+                if (!obj)
+                    nonConstFunctionCall = true;
+                else if (obj->variable() && obj->variable()->isConst())
+                    ;
+                else if (cond->function() && cond->function()->isConst())
+                    ;
+                else
+                    nonConstFunctionCall = true;
+                if (nonConstFunctionCall)
+                    break;
+            }
 
             if (cond->varId()) {
                 vars.insert(cond->varId());
@@ -509,6 +526,9 @@ void CheckCondition::multiCondition2()
                 tokens.push(cond->astOperand2());
             }
         }
+
+        if (nonConstFunctionCall)
+            continue;
 
         // parse until second condition is reached..
         enum MULTICONDITIONTYPE { INNER, AFTER } type;
