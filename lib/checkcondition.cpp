@@ -454,6 +454,20 @@ void CheckCondition::multiConditionError(const Token *tok, unsigned int line1)
 // - same condition after early exit => always false
 //---------------------------------------------------------------------------
 
+static bool isNonConstFunctionCall(const Token *ftok)
+{
+    const Token *obj = ftok->next()->astOperand1();
+    while (obj && obj->str() == ".")
+        obj = obj->astOperand1();
+    if (!obj)
+        return true;
+    else if (obj->variable() && obj->variable()->isConst())
+        return false;
+    else if (ftok->function() && ftok->function()->isConst())
+        return false;
+    return true;
+}
+
 void CheckCondition::multiCondition2()
 {
     if (!_settings->isEnabled(Settings::WARNING))
@@ -493,17 +507,7 @@ void CheckCondition::multiCondition2()
                 continue;
 
             if (Token::Match(cond, "%name% (")) {
-                const Token *obj = cond->next()->astOperand1();
-                while (obj && obj->str() == ".")
-                    obj = obj->astOperand1();
-                if (!obj)
-                    nonConstFunctionCall = true;
-                else if (obj->variable() && obj->variable()->isConst())
-                    ;
-                else if (cond->function() && cond->function()->isConst())
-                    ;
-                else
-                    nonConstFunctionCall = true;
+                nonConstFunctionCall = isNonConstFunctionCall(cond);
                 if (nonConstFunctionCall)
                     break;
             }
@@ -581,7 +585,7 @@ void CheckCondition::multiCondition2()
                     }
                 }
             }
-            if (Token::Match(tok, "%type% (") && nonlocal) // function call -> bailout if there are nonlocal variables
+            if (Token::Match(tok, "%type% (") && nonlocal && isNonConstFunctionCall(tok)) // non const function call -> bailout if there are nonlocal variables
                 break;
             if (Token::Match(tok, "break|continue|return|throw") && tok->scope() == endToken->scope())
                 break;
