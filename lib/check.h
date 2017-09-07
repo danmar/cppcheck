@@ -188,7 +188,7 @@ private:
 
     /** disabled assignment operator and copy constructor */
     void operator=(const Check &);
-    explicit Check(const Check &);
+    Check(const Check &);
 };
 
 /// @}
