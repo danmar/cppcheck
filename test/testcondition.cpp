@@ -1805,7 +1805,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition '!i', second condition is always false\n", errout.str());
 
-        check("void C::f(Tree &coreTree) {\n"
+        check("void C::f(Tree &coreTree) {\n" // daca
               "  if(!coreTree.build())\n"
               "    return;\n"
               "  coreTree.dostuff();\n"
@@ -1821,6 +1821,19 @@ private:
               "  if(!coreTree.build()) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Same condition '!coreTree.build()', second condition is always false\n", errout.str());
+
+        check("void f(int x) {\n" // daca: labplot
+              "  switch(type) {\n"
+              "  case 1:\n"
+              "    if (x == 0) return 1;\n"
+              "    else return 2;\n"
+              "  case 2:\n"
+              "    if (x == 0) return 3;\n"
+              "    else return 4;\n"
+              "  }\n"
+              "  return 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // clarify conditions with = and comparison

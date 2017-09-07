@@ -587,7 +587,9 @@ void CheckCondition::multiCondition2()
             }
             if (Token::Match(tok, "%type% (") && nonlocal && isNonConstFunctionCall(tok)) // non const function call -> bailout if there are nonlocal variables
                 break;
-            if (Token::Match(tok, "break|continue|return|throw") && tok->scope() == endToken->scope())
+            if (Token::Match(tok, "case|break|continue|return|throw") && tok->scope() == endToken->scope())
+                break;
+            if (Token::Match(tok, "[;{}] %name% :"))
                 break;
             // bailout if loop is seen.
             // TODO: handle loops better.
