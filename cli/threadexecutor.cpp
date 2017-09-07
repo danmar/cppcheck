@@ -333,7 +333,7 @@ void ThreadExecutor::writeToPipe(PipeSignal type, const std::string &data)
     std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
     if (write(_wpipe, out, len + 1 + sizeof(len)) <= 0) {
         delete [] out;
-        out = 0;
+        out = nullptr;
         std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
         std::exit(0);
     }
