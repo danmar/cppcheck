@@ -101,7 +101,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
                     continue;
                 std::string nr;
                 if (index.size() > 1U)
-                    nr = "(" + MathLib::toString(i + 1) + getOrdinalText(i+1) + " array index) ";
+                    nr = "(" + MathLib::toString(i + 1) + getOrdinalText(i + 1) + " array index) ";
                 errorPath.push_back(ErrorPathItem(it->first, nr + info));
             }
         }

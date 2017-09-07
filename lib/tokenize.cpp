@@ -1671,11 +1671,11 @@ void Tokenizer::simplifyMulAndParens()
         if (!tok->isName())
             continue;
         //fix ticket #2784 - improved by ticket #3184
-        unsigned int closedpars = 0;
+        unsigned int closedPars = 0;
         Token *tokend = tok->next();
         Token *tokbegin = tok->previous();
         while (tokend && tokend->str() == ")") {
-            ++closedpars;
+            ++closedPars;
             tokend = tokend->next();
         }
         if (!tokend || !(tokend->isAssignmentOp()))
@@ -1687,9 +1687,9 @@ void Tokenizer::simplifyMulAndParens()
                     tokbegin = tokbegin->tokAt(-2);
                     tokbegin->deleteNext(2);
                 } else if (Token::Match(tokbegin->tokAt(-3), "[;{}&(] * (")) {
-                    if (!closedpars)
+                    if (closedPars == 0)
                         break;
-                    --closedpars;
+                    --closedPars;
                     //remove ')'
                     tok->deleteNext();
                     //remove '* ( &'
@@ -1698,27 +1698,27 @@ void Tokenizer::simplifyMulAndParens()
                 } else
                     break;
             } else if (tokbegin->str() == "(") {
-                if (!closedpars)
+                if (closedPars == 0)
                     break;
 
                 //find consecutive opening parentheses
-                unsigned int openpars = 0;
-                while (tokbegin && tokbegin->str() == "(" && openpars <= closedpars) {
-                    ++openpars;
+                unsigned int openPars = 0;
+                while (tokbegin && tokbegin->str() == "(" && openPars <= closedPars) {
+                    ++openPars;
                     tokbegin = tokbegin->previous();
                 }
-                if (!tokbegin || openpars > closedpars)
+                if (!tokbegin || openPars > closedPars)
                     break;
 
-                if ((openpars == closedpars && Token::Match(tokbegin, "[;{}]")) ||
+                if ((openPars == closedPars && Token::Match(tokbegin, "[;{}]")) ||
                     Token::Match(tokbegin->tokAt(-2), "[;{}&(] * &") ||
                     Token::Match(tokbegin->tokAt(-3), "[;{}&(] * ( &")) {
                     //remove the excessive parentheses around the variable
-                    while (openpars) {
+                    while (openPars > 0) {
                         tok->deleteNext();
                         tokbegin->deleteNext();
-                        --closedpars;
-                        --openpars;
+                        --closedPars;
+                        --openPars;
                     }
                 } else
                     break;
@@ -2136,13 +2136,13 @@ void Tokenizer::arraySize()
 
 static Token *skipTernaryOp(Token *tok)
 {
-    unsigned int colonlevel = 1;
+    unsigned int colonLevel = 1;
     while (nullptr != (tok = tok->next())) {
         if (tok->str() == "?") {
-            ++colonlevel;
+            ++colonLevel;
         } else if (tok->str() == ":") {
-            --colonlevel;
-            if (colonlevel == 0) {
+            --colonLevel;
+            if (colonLevel == 0) {
                 tok = tok->next();
                 break;
             }
@@ -2152,7 +2152,7 @@ static Token *skipTernaryOp(Token *tok)
         else if (Token::Match(tok->next(), "[{};)]"))
             break;
     }
-    if (colonlevel) // Ticket #5214: Make sure the ':' matches the proper '?'
+    if (colonLevel > 0) // Ticket #5214: Make sure the ':' matches the proper '?'
         return nullptr;
     return tok;
 }
@@ -2178,7 +2178,7 @@ const Token * Tokenizer::startOfExecutableScope(const Token * tok)
 void Tokenizer::simplifyLabelsCaseDefault()
 {
     bool executablescope = false;
-    unsigned int indentlevel = 0;
+    unsigned int indentLevel = 0;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // Simplify labels in the executable scope..
         Token *start = const_cast<Token *>(startOfExecutableScope(tok));
@@ -2194,10 +2194,10 @@ void Tokenizer::simplifyLabelsCaseDefault()
             if (tok->previous()->str() == "=")
                 tok = tok->link();
             else
-                ++indentlevel;
+                ++indentLevel;
         } else if (tok->str() == "}") {
-            --indentlevel;
-            if (!indentlevel) {
+            --indentLevel;
+            if (indentLevel == 0) {
                 executablescope = false;
                 continue;
             }
@@ -4235,7 +4235,7 @@ void Tokenizer::simplifyFlowControl()
             continue;
 
         Token* end = begin->linkAt(1+(begin->next()->str() == "{" ? 0 : 1));
-        unsigned int indentlevel = 0;
+        unsigned int indentLevel = 0;
         bool stilldead = false;
 
         for (Token *tok = begin; tok && tok != end; tok = tok->next()) {
@@ -4249,20 +4249,20 @@ void Tokenizer::simplifyFlowControl()
                     tok = tok->link();
                     continue;
                 }
-                ++indentlevel;
+                ++indentLevel;
             } else if (tok->str() == "}") {
-                if (!indentlevel)
+                if (indentLevel == 0)
                     break;
-                --indentlevel;
+                --indentLevel;
                 if (stilldead) {
                     eraseDeadCode(tok, nullptr);
-                    if (indentlevel == 1 || tok->next()->str() != "}" || !Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
+                    if (indentLevel == 1 || tok->next()->str() != "}" || !Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
                         stilldead = false;
                     continue;
                 }
             }
 
-            if (!indentlevel)
+            if (indentLevel == 0)
                 continue;
 
             if (Token::Match(tok,"continue|break ;")) {
@@ -4289,7 +4289,7 @@ void Tokenizer::simplifyFlowControl()
                 }
                 //if everything is removed, then remove also the code after an inferior scope
                 //only if the actual scope is not special
-                if (indentlevel > 1 && tok->next()->str() == "}" && Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
+                if (indentLevel > 1 && tok->next()->str() == "}" && Token::Match(tok->next()->link()->previous(), ";|{|}|do {"))
                     stilldead = true;
             }
         }
