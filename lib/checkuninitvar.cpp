@@ -124,12 +124,14 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
 
         if (i->isArray()) {
             Alloc alloc = ARRAY;
-            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString);
+            std::map<unsigned int, VariableValue> variableValue;
+            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString, variableValue);
             continue;
         }
         if (stdtype || i->isPointer()) {
             Alloc alloc = NO_ALLOC;
-            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString);
+            std::map<unsigned int, VariableValue> variableValue;
+            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString, variableValue);
         }
         if (i->type())
             checkStruct(tok, *i);
@@ -147,7 +149,8 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
                             checkStruct(tok, *arg);
                         else if (arg->typeStartToken()->isStandardType() || arg->typeStartToken()->isEnumType()) {
                             Alloc alloc = NO_ALLOC;
-                            checkScopeForVariable(tok->next(), *arg, nullptr, nullptr, &alloc, emptyString);
+                            std::map<unsigned int, VariableValue> variableValue;
+                            checkScopeForVariable(tok->next(), *arg, nullptr, nullptr, &alloc, emptyString, variableValue);
                         }
                     }
                 }
@@ -188,18 +191,14 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
                     const Token *tok2 = tok;
                     if (tok->str() == "}")
                         tok2 = tok2->next();
-                    checkScopeForVariable(tok2, structvar, nullptr, nullptr, &alloc, var.name());
+                    std::map<unsigned int, VariableValue> variableValue;
+                    checkScopeForVariable(tok2, structvar, nullptr, nullptr, &alloc, var.name(), variableValue);
                 }
             }
         }
     }
 }
 
-struct VariableValue {
-    explicit VariableValue(MathLib::bigint val = 0) : value(val), notEqual(false) {}
-    MathLib::bigint value;
-    bool notEqual;
-};
 static VariableValue operator!(VariableValue v)
 {
     v.notEqual = !v.notEqual;
@@ -319,7 +318,7 @@ static bool isVariableUsed(const Token *tok, const Variable& var)
     return !parent2 || parent2->isConstOp() || (parent2->str() == "=" && parent2->astOperand2() == parent);
 }
 
-bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, Alloc* const alloc, const std::string &membervar)
+bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, Alloc* const alloc, const std::string &membervar, std::map<unsigned int, VariableValue> variableValue)
 {
     const bool suppressErrors(possibleInit && *possibleInit);
     const bool printDebug = _settings->debugwarnings;
@@ -331,9 +330,6 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
     if (var.declarationId() == 0U)
         return true;
-
-    // variable values
-    std::map<unsigned int, VariableValue> variableValue;
 
     for (; tok; tok = tok->next()) {
         // End of scope..
@@ -353,7 +349,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
         // Unconditional inner scope or try..
         if (tok->str() == "{" && Token::Match(tok->previous(), ",|;|{|}|try")) {
-            if (checkScopeForVariable(tok->next(), var, possibleInit, noreturn, alloc, membervar))
+            if (checkScopeForVariable(tok->next(), var, possibleInit, noreturn, alloc, membervar, variableValue))
                 return true;
             tok = tok->link();
             continue;
@@ -418,7 +414,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             if (tok->str() == "{") {
                 bool possibleInitIf((!alwaysTrue && number_of_if > 0) || suppressErrors);
                 bool noreturnIf = false;
-                const bool initif = !alwaysFalse && checkScopeForVariable(tok->next(), var, &possibleInitIf, &noreturnIf, alloc, membervar);
+                const bool initif = !alwaysFalse && checkScopeForVariable(tok->next(), var, &possibleInitIf, &noreturnIf, alloc, membervar, variableValue);
 
                 // bail out for such code:
                 //    if (a) x=0;    // conditional initialization
@@ -468,7 +464,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
                     bool possibleInitElse((!alwaysFalse && number_of_if > 0) || suppressErrors);
                     bool noreturnElse = false;
-                    const bool initelse = !alwaysTrue && checkScopeForVariable(tok->next(), var, &possibleInitElse, &noreturnElse, alloc, membervar);
+                    const bool initelse = !alwaysTrue && checkScopeForVariable(tok->next(), var, &possibleInitElse, &noreturnElse, alloc, membervar, variableValue);
 
                     std::map<unsigned int, VariableValue> varValueElse;
                     if (!alwaysTrue && !initelse && !noreturnElse) {

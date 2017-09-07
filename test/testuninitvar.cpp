@@ -2489,6 +2489,16 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void f(int a) {\n"
+                       "  int x;\n"
+                       "  if (a) x=123;\n"
+                       "  if (!a) {\n"
+                       "    if (!a) {}\n"
+                       "    else if (x) {}\n"
+                       "  }\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // asm
         checkUninitVar("void f() {\n"
                        "    int x;\n"
