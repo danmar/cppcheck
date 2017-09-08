@@ -449,9 +449,12 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
         // number or name
         if (isNameChar(ch)) {
+            const bool num = std::isdigit(ch);
             while (istr.good() && isNameChar(ch)) {
                 currentToken += ch;
                 ch = readChar(istr,bom);
+                if (num && ch=='\'' && isNameChar(peekChar(istr,bom)))
+                    ch = readChar(istr,bom);
             }
 
             ungetChar(istr,bom);
@@ -586,6 +589,7 @@ void simplecpp::TokenList::constFold()
         constFoldUnaryNotPosNeg(tok);
         constFoldMulDivRem(tok);
         constFoldAddSub(tok);
+        constFoldShift(tok);
         constFoldComparison(tok);
         constFoldBitwise(tok);
         constFoldLogicalOp(tok);
@@ -756,6 +760,29 @@ void simplecpp::TokenList::constFoldAddSub(Token *tok)
             result = stringToLL(tok->previous->str) + stringToLL(tok->next->str);
         else if (tok->op == '-')
             result = stringToLL(tok->previous->str) - stringToLL(tok->next->str);
+        else
+            continue;
+
+        tok = tok->previous;
+        tok->setstr(toString(result));
+        deleteToken(tok->next);
+        deleteToken(tok->next);
+    }
+}
+
+void simplecpp::TokenList::constFoldShift(Token *tok)
+{
+    for (; tok && tok->op != ')'; tok = tok->next) {
+        if (!tok->previous || !tok->previous->number)
+            continue;
+        if (!tok->next || !tok->next->number)
+            continue;
+
+        long long result;
+        if (tok->str == "<<")
+            result = stringToLL(tok->previous->str) << stringToLL(tok->next->str);
+        else if (tok->str == ">>")
+            result = stringToLL(tok->previous->str) >> stringToLL(tok->next->str);
         else
             continue;
 
@@ -1193,6 +1220,7 @@ namespace simplecpp {
                 }
                 if (!sameline(nametoken, argtok)) {
                     endToken = argtok ? argtok->previous : argtok;
+                    valueToken = NULL;
                     return false;
                 }
                 valueToken = argtok ? argtok->next : NULL;
@@ -1259,8 +1287,8 @@ namespace simplecpp {
                 } else {
                     if (!expandArg(tokens, tok, tok->location, macros, expandedmacros, parametertokens)) {
                         bool expanded = false;
-                        if (macros.find(tok->str) != macros.end() && expandedmacros.find(tok->str) == expandedmacros.end()) {
-                            const std::map<TokenString, Macro>::const_iterator it = macros.find(tok->str);
+                        const std::map<TokenString, Macro>::const_iterator it = macros.find(tok->str);
+                        if (it != macros.end() && expandedmacros.find(tok->str) == expandedmacros.end()) {                            
                             const Macro &m = it->second;
                             if (!m.functionLike()) {
                                 m.expand(tokens, tok, macros, files);
