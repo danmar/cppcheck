@@ -2207,9 +2207,9 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'a' is always true\n", errout.str());
 
         check("void f() {\n"
-             "    int a = 5;"
-             "    while(a + 1) { a--; }\n"
-             "}");
+              "    int a = 5;"
+              "    while(a + 1) { a--; }\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
