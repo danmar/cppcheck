@@ -1151,17 +1151,21 @@ void CheckCondition::alwaysTrueFalse()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
 
-            const bool constValCond = Token::Match(tok->tokAt(-2), "if|while ( %num%|%char% )") && !Token::Match(tok,"0|1"); // just one number or char inside if|while
-            const bool constValExpr = Token::Match(tok, "%num%|%char%") && tok->astParent() && Token::Match(tok->astParent(),"&&|%oror%|?"); // just one number or char in boolean expression
-            const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
-
-            if (!(constValCond || constValExpr || compExpr))
-                continue;
             if (tok->link()) // don't write false positives when templates are used
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
             if (Token::Match(tok, "[01]"))
+                continue;
+
+            const bool constIfWhileExpression =
+                tok->astParent()
+                && Token::Match(tok->astParent()->astOperand1(), "if|while")
+                && !tok->isBoolean();
+            const bool constValExpr = Token::Match(tok, "%num%|%char%") && tok->astParent() && Token::Match(tok->astParent(),"&&|%oror%|?"); // just one number or char in boolean expression
+            const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
+            
+            if (!(constIfWhileExpression || constValExpr || compExpr))
                 continue;
 
             // Don't warn in assertions. Condition is often 'always true' by intention.
