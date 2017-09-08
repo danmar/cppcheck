@@ -516,7 +516,7 @@ void CheckCondition::multiCondition2()
                 vars.insert(cond->varId());
                 const Variable *var = cond->variable();
                 if (!nonlocal && var) {
-                    if (!(var->isLocal() || var->isStatic() || var->isArgument()))
+                    if (!(var->isLocal() || var->isArgument()))
                         nonlocal = true;
                     else if ((var->isPointer() || var->isReference()) && !Token::Match(cond->astParent(), "%oror%|&&|!"))
                         // TODO: if var is pointer check what it points at

@@ -1835,6 +1835,14 @@ private:
               "  return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("static int failed = 0;\n"
+              "void f() {\n"
+              "  if (failed) return;\n"
+              "  checkBuffer();\n"
+              "  if (failed) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // clarify conditions with = and comparison
