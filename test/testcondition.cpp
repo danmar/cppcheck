@@ -1770,40 +1770,40 @@ private:
               "  if (x > 100) { return; }\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Same condition 'x>100', second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  if (x > 100 || y > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Same condition 'x>100', second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  if (x > 100 && y > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Same condition 'x>100', second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  if (abc) {}\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition 'x>100', second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  while (abc) { y = x; }\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition 'x>100', second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
 
         check("void f(const int *i) {\n"
               "  if (!i) return;\n"
               "  if (!num1tok) { *num1 = *num2; }\n"
               "  if (!i) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Same condition '!i', second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition '!i', second condition is always false\n", errout.str());
 
         check("void C::f(Tree &coreTree) {\n" // daca
               "  if(!coreTree.build())\n"
@@ -1820,7 +1820,7 @@ private:
               "  coreTree.dostuff();\n"
               "  if(!coreTree.build()) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Same condition '!coreTree.build()', second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Identical condition '!coreTree.build()', second condition is always false\n", errout.str());
 
         check("void f(int x) {\n" // daca: labplot
               "  switch(type) {\n"
