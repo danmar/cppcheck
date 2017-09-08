@@ -915,6 +915,19 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::map<uint32, uint32> my_map) {\n" // #7365
+              "  std::map<uint32, uint32>::iterator itr = my_map.begin();\n"
+              "  switch (itr->first) {\n"
+              "  case 0:\n"
+              "    my_map.erase(itr);\n"
+              "    continue;\n"
+              "  case 1:\n"
+              "    itr->second = 1;\n"
+              "    break;\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void eraseReturn1() {

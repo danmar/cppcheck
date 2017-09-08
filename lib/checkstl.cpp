@@ -137,8 +137,11 @@ void CheckStl::iterators()
             if (containerAssignScope && tok2 == containerAssignScope->classEnd)
                 container = nullptr; // We don't know which containers might be used with the iterator
 
-            if (tok2 == validatingToken)
+            if (tok2 == validatingToken) {
                 validIterator = true;
+                eraseToken = nullptr;
+                invalidationScope = nullptr;
+            }
 
             // Is iterator compared against different container?
             if (tok2->isComparisonOp() && container && tok2->astOperand1() && tok2->astOperand2()) {
@@ -256,7 +259,7 @@ void CheckStl::iterators()
 
             // bailout handling. Assume that the iterator becomes valid if we see return/break.
             // TODO: better handling
-            else if (Token::Match(tok2, "return|break")) {
+            else if (tok2->scope() == invalidationScope && Token::Match(tok2, "return|break|continue")) {
                 validatingToken = Token::findsimplematch(tok2->next(), ";");
             }
 
