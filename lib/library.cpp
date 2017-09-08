@@ -1070,7 +1070,15 @@ bool Library::isFunctionConst(const std::string& functionName, bool pure) const
         return pure ? it->second.ispure : it->second.isconst;
     return false;
 }
-
+bool Library::isFunctionConst(const Token *ftok) const
+{
+    if (ftok->function() && ftok->function()->isAttributeConst())
+        return true;
+    if (isNotLibraryFunction(ftok))
+        return false;
+    std::map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
+    return (it != functions.end() && it->second.isconst);
+}
 bool Library::isnoreturn(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isAttributeNoreturn())

@@ -280,6 +280,7 @@ public:
     bool isUse(const std::string& functionName) const;
     bool isLeakIgnore(const std::string& functionName) const;
     bool isFunctionConst(const std::string& functionName, bool pure) const;
+    bool isFunctionConst(const Token *ftok) const;
 
     bool isboolargbad(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);

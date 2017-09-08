@@ -454,8 +454,10 @@ void CheckCondition::multiConditionError(const Token *tok, unsigned int line1)
 // - same condition after early exit => always false
 //---------------------------------------------------------------------------
 
-static bool isNonConstFunctionCall(const Token *ftok)
+static bool isNonConstFunctionCall(const Token *ftok, const Library &library)
 {
+    if (library.isFunctionConst(ftok))
+        return false;
     const Token *obj = ftok->next()->astOperand1();
     while (obj && obj->str() == ".")
         obj = obj->astOperand1();
@@ -507,7 +509,7 @@ void CheckCondition::multiCondition2()
                 continue;
 
             if (Token::Match(cond, "%name% (")) {
-                nonConstFunctionCall = isNonConstFunctionCall(cond);
+                nonConstFunctionCall = isNonConstFunctionCall(cond, _settings->library);
                 if (nonConstFunctionCall)
                     break;
             }
@@ -585,7 +587,7 @@ void CheckCondition::multiCondition2()
                     }
                 }
             }
-            if (Token::Match(tok, "%type% (") && nonlocal && isNonConstFunctionCall(tok)) // non const function call -> bailout if there are nonlocal variables
+            if (Token::Match(tok, "%type% (") && nonlocal && isNonConstFunctionCall(tok, _settings->library)) // non const function call -> bailout if there are nonlocal variables
                 break;
             if (Token::Match(tok, "case|break|continue|return|throw") && tok->scope() == endToken->scope())
                 break;
