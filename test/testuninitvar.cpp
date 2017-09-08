@@ -2553,7 +2553,7 @@ private:
 
         checkUninitVar("void f() {\n"  // #4439 - cast address of uninitialized variable
                        "    int a;\n"
-                       "    x((A)(B)&a);\n"
+                       "    x((LPARAM)(RECT*)&a);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
 

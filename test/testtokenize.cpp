@@ -8334,6 +8334,7 @@ private:
 
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
+        ASSERT_EQUALS("abc[1&=", testAst("a = (b[c]) & 1;"));
     }
 
     void astlambda() {
