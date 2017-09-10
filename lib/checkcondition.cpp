@@ -526,7 +526,7 @@ void CheckCondition::multiCondition2()
                 }
             } else if (!nonlocal && cond->isName()) {
                 // varid is 0. this is possibly a nonlocal variable..
-                nonlocal = Token::Match(cond->astParent(), "%cop%|(|[") || (_tokenizer->isCPP() && cond->str() == "this");
+                nonlocal = Token::Match(cond->astParent(), "%cop%|(|[") || Token::Match(cond, "%name% .") || (_tokenizer->isCPP() && cond->str() == "this");
             } else {
                 tokens.push(cond->astOperand1());
                 tokens.push(cond->astOperand2());

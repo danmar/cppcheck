@@ -1627,6 +1627,15 @@ private:
               "   }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // daca hyphy
+        check("bool f() {\n"
+              "  if (rec.lLength==0) {\n"
+              "    rec.Delete(i);\n"
+              "    if (rec.lLength!=0) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeInnerConditionAlias() {
