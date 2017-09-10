@@ -1852,6 +1852,13 @@ private:
               "  if (failed) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // daca icu
+        check("void f(const uint32_t *section, int32_t  start) {\n"
+              "  if(10<=section[start]) { return; }\n"
+              "  if(++start<100 && 10<=section[start]) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // clarify conditions with = and comparison

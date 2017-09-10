@@ -550,6 +550,24 @@ void CheckCondition::multiCondition2()
 
         for (; tok && tok != endToken; tok = tok->next()) {
             if (Token::simpleMatch(tok, "if (")) {
+                // Does condition modify tracked variables?
+                if (const Token *op = Token::findmatch(tok, "++|--", tok->linkAt(1))) {
+                    bool bailout = false;
+                    while (op) {
+                        if (vars.find(op->astOperand1()->varId()) != vars.end()) {
+                            bailout = true;
+                            break;
+                        }
+                        if (nonlocal && op->astOperand1()->varId() == 0) {
+                            bailout = true;
+                            break;
+                        }
+                        op = Token::findmatch(op->next(), "++|--", tok->linkAt(1));
+                    }
+                    if (bailout)
+                        break;
+                }
+
                 // Condition..
                 const Token *cond2 = tok->next()->astOperand2();
 
