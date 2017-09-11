@@ -457,7 +457,7 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
             if (Token::simpleMatch(shr->astParent(), ">>"))
                 return true;
             const Token *lhs = shr->astOperand1();
-            if (!lhs->valueType() || !lhs->valueType()->isIntegral())
+            if (!lhs || !lhs->valueType() || !lhs->valueType()->isIntegral())
                 return true;
         }
 
