@@ -29,6 +29,7 @@
 #include "valueflow.h"
 
 #include <algorithm>
+#include <cassert>
 #include <climits>
 #include <iomanip>
 #include <iostream>
@@ -1407,8 +1408,12 @@ void SymbolDatabase::createSymbolDatabaseUnknownArrayDimensions()
                 Dimension &dimension = const_cast<Dimension &>(dimensions[j]);
                 if (dimension.num == 0) {
                     dimension.known = false;
+                    if (dimension.start == nullptr) {
+                        continue;
+                    }
+
                     // check for a single token dimension
-                    if (dimension.start && (dimension.start == dimension.end)) {
+                    if (dimension.start == dimension.end) {
                         // check for an enumerator
                         if (dimension.start->enumerator()) {
                             if (dimension.start->enumerator()->value_known) {
@@ -1465,7 +1470,7 @@ void SymbolDatabase::createSymbolDatabaseUnknownArrayDimensions()
                         }
                     }
                     // check for qualified enumerator
-                    else if (dimension.end) {
+                    else {
                         // rhs of [
                         const Token *rhs = dimension.start->previous()->astOperand2();
 
@@ -2458,6 +2463,7 @@ bool Variable::arrayDimensions(const Library* lib)
                     dimension_.known = true;
                 }
             }
+            assert((dimension_.start == nullptr) == (dimension_.end == nullptr));
             _dimensions.push_back(dimension_);
             return true;
         }
@@ -2488,6 +2494,7 @@ bool Variable::arrayDimensions(const Library* lib)
                 dimension_.known = true;
             }
         }
+        assert((dimension_.start == nullptr) == (dimension_.end == nullptr));
         _dimensions.push_back(dimension_);
         dim = dim->link()->next();
         arr = true;
