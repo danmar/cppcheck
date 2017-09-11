@@ -917,7 +917,8 @@ static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Set
             tok2 = tok2->linkAt(1);
             if (!Token::simpleMatch(tok2, "} else { if ("))
                 break;
-            const Token *cond2 = tok2->tokAt(4)->astOperand2();
+            const Token *ifOpenBraceTok = tok2->tokAt(4);
+            const Token *cond2 = ifOpenBraceTok->astOperand2();
             if (!cond2 || !cond2->isComparisonOp())
                 continue;
             if (isOppositeCond(true, cpp, cond1, cond2, settings->library, true)) {
@@ -925,7 +926,7 @@ static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Set
                 value.setKnown();
                 setTokenValue(const_cast<Token*>(cond2), value, settings);
             }
-            tok2 = tok2->linkAt(4);
+            tok2 = ifOpenBraceTok->link();
         }
     }
 }
