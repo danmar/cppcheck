@@ -526,9 +526,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                         }
 
                         if (Token::Match(tok, "= %any% ;")) {
-                            function.isPure(tok->strAt(1) == "0");
-                            function.isDefault(tok->strAt(1) == "default");
-                            function.isDelete(tok->strAt(1) == "delete");
+                            const std::string& modifier = tok->strAt(1);
+                            function.isPure(modifier == "0");
+                            function.isDefault(modifier == "default");
+                            function.isDelete(modifier == "delete");
                             tok = tok->tokAt(2);
                         }
 
