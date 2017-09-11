@@ -6463,6 +6463,14 @@ private:
               "   dsth();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("static const std::string DS = \"abcd\";\n"
+              "void dsth ( const std :: string = DS ) { }\n"
+              "int main(void) {\n"
+              "    dsth(\"123\");\n"
+              "    dsth();\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2] (performance) Function parameter '<anonymous>' should be passed by reference.", "", errout.str());
     }
 
 };
