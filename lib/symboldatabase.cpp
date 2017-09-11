@@ -1465,7 +1465,7 @@ void SymbolDatabase::createSymbolDatabaseUnknownArrayDimensions()
                         }
                     }
                     // check for qualified enumerator
-                    else if (dimension.end) {
+                    else if (dimension.start) {
                         // rhs of [
                         const Token *rhs = dimension.start->previous()->astOperand2();
 
