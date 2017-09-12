@@ -1447,7 +1447,6 @@ private:
         ASSERT_THROW(checkCode("( ) &"), InternalError);
         ASSERT_THROW(checkCode("|| #if #define <="), InternalError); // #2601
         ASSERT_THROW(checkCode("f::y:y : <x::"), InternalError); // #6613
-        ASSERT_THROW(checkCode("\xe2u."), InternalError); // #6613
         ASSERT_THROW(checkCode("a \"b\" not_eq \"c\""), InternalError); // #6720
         ASSERT_THROW(checkCode("(int arg2) { } { } typedef void (func_type) (int, int); typedef func_type&"), InternalError); // #6738
         ASSERT_THROW(checkCode("&g[0]; { (g[0] 0) } =", false), InternalError); // #6744
