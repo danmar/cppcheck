@@ -1250,7 +1250,10 @@ static void valueFlowAST(Token *tok, unsigned int varid, const ValueFlow::Value 
         const std::list<ValueFlow::Value> &values = tok->astOperand1()->values();
         bool nonzero = false;
         for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
-            nonzero |= (it->intvalue != 0);
+            if (it->intvalue != 0) {
+                nonzero = true;
+                break;
+            }
         }
         if (!nonzero)
             return;
