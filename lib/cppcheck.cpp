@@ -147,20 +147,35 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
         // If there is a syntax error, report it and stop
         for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
-            if (it->type != simplecpp::Output::SYNTAX_ERROR)
-                continue;
-            const ErrorLogger::ErrorMessage::FileLocation loc1(it->location.file(), it->location.line);
-            std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-            callstack.push_back(loc1);
+            bool err;
+            switch (it->type) {
+            case simplecpp::Output::ERROR:
+            case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
+            case simplecpp::Output::SYNTAX_ERROR:
+            case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+                err = true;
+                break;
+            case simplecpp::Output::WARNING:
+            case simplecpp::Output::MISSING_HEADER:
+            case simplecpp::Output::PORTABILITY_BACKSLASH:
+                err = false;
+                break;
+            };
 
-            ErrorLogger::ErrorMessage errmsg(callstack,
-                                             "",
-                                             Severity::error,
-                                             it->msg,
-                                             "syntaxError",
-                                             false);
-            _errorLogger.reportErr(errmsg);
-            return 1;
+            if (err) {
+                const ErrorLogger::ErrorMessage::FileLocation loc1(it->location.file(), it->location.line);
+                std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+                callstack.push_back(loc1);
+
+                ErrorLogger::ErrorMessage errmsg(callstack,
+                                                 "",
+                                                 Severity::error,
+                                                 it->msg,
+                                                 "syntaxError",
+                                                 false);
+                _errorLogger.reportErr(errmsg);
+                return 1;
+            }
         }
 
         preprocessor.loadFiles(tokens1, files);

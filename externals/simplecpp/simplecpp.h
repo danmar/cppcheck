@@ -164,7 +164,8 @@ namespace simplecpp {
             MISSING_HEADER,
             INCLUDE_NESTED_TOO_DEEPLY,
             SYNTAX_ERROR,
-            PORTABILITY_BACKSLASH
+            PORTABILITY_BACKSLASH,
+            UNHANDLED_CHAR_ERROR
         } type;
         Location location;
         std::string msg;

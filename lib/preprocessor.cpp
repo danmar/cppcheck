@@ -550,6 +550,7 @@ static bool hasErrors(const simplecpp::OutputList &outputList)
         case simplecpp::Output::ERROR:
         case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
         case simplecpp::Output::SYNTAX_ERROR:
+        case simplecpp::Output::UNHANDLED_CHAR_ERROR:
             return true;
         case simplecpp::Output::WARNING:
         case simplecpp::Output::MISSING_HEADER:
@@ -688,6 +689,7 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
         break;
         case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
         case simplecpp::Output::SYNTAX_ERROR:
+        case simplecpp::Output::UNHANDLED_CHAR_ERROR:
             error(it->location.file(), it->location.line, it->msg);
             break;
         };

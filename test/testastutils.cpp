@@ -67,7 +67,7 @@ private:
     }
 
     void isVariableChanged() {
-		// #8211 - no lhs for >> , do not crash
+        // #8211 - no lhs for >> , do not crash
         ASSERT_EQUALS(true,
                       isVariableChanged("void f() {\n"
                                         "  int b;\n"
