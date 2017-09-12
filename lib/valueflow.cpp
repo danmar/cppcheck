@@ -1247,8 +1247,9 @@ static void valueFlowAST(Token *tok, unsigned int varid, const ValueFlow::Value 
         if (conditionIsFalse(tok->astOperand1(), pm))
             return;
     } else if (tok->str() == "||" && tok->astOperand1()) {
+        const std::list<ValueFlow::Value> &values = tok->astOperand1()->values();
         bool nonzero = false;
-        for (std::list<ValueFlow::Value>::const_iterator it = tok->astOperand1()->values().begin(); it != tok->astOperand1()->values().end(); ++it) {
+        for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
             nonzero |= (it->intvalue != 0);
         }
         if (!nonzero)
