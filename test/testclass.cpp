@@ -774,6 +774,14 @@ private:
 
         checkOpertorEq("class A\n"
                        "{\n"
+                       "public:\n"
+                       "    void goo() {}"
+                       "    void operator=(A&);\n"
+                       "};");
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'A::operator=' should return 'A &'.\n", errout.str());
+
+        checkOpertorEq("class A\n"
+                       "{\n"
                        "private:\n"
                        "    void operator=(const A&);\n"
                        "};");
