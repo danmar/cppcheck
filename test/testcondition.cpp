@@ -1859,6 +1859,16 @@ private:
               "  if(++start<100 && 10<=section[start]) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // daca iqtree
+        check("void readNCBITree(std::istream &in) {\n"
+              "  char ch;\n"
+              "  in >> ch;\n"
+              "  if (ch != '|') return;\n"
+              "  in >> ch;\n"
+              "  if (ch != '|') {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // clarify conditions with = and comparison

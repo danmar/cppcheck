@@ -646,8 +646,13 @@ void CheckCondition::multiCondition2()
                     if (Token::Match(parent->astParent(), "%assign%"))
                         break;
                 }
-                if (Token::Match(tok, "%name% <<|>>") && (!tok->valueType() || !tok->valueType()->isIntegral()))
+                if (_tokenizer->isCPP() && Token::Match(tok, "%name% <<|>>") && (!tok->valueType() || !tok->valueType()->isIntegral()))
                     break;
+                if (_tokenizer->isCPP() && Token::simpleMatch(tok->previous(), ">>")) {
+                    const Token *rhs = tok->previous()->astOperand1();
+                    if (!rhs || !rhs->valueType() || !rhs->valueType()->isIntegral())
+                        break;
+                }
                 if (Token::Match(tok, "%name% [")) {
                     const Token *tok2 = tok->linkAt(1);
                     while (Token::simpleMatch(tok2, "] ["))
