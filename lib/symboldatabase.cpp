@@ -4986,9 +4986,9 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         } else if (ValueType::Type::UNKNOWN_TYPE != ValueType::typeFromString(type->str(), type->isLong()))
             valuetype->type = ValueType::typeFromString(type->str(), type->isLong());
         else if (type->str() == "auto") {
-            if (!type->valueType())
-                return nullptr;
             const ValueType *vt = type->valueType();
+            if (!vt)
+                return nullptr;
             valuetype->type = vt->type;
             valuetype->pointer = vt->pointer;
             if (vt->sign != ValueType::Sign::UNKNOWN_SIGN)
