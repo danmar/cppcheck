@@ -620,12 +620,15 @@ void CheckCondition::multiCondition2()
                     if (!Token::simpleMatch(tok->linkAt(1), "} while ("))
                         break;
                     tok2 = tok->linkAt(1)->linkAt(2);
-                } else {
+                } else if (Token::Match(tok, "if|while (")) {
                     tok2 = tok->linkAt(1);
                     if (Token::simpleMatch(tok2, ") {"))
                         tok2 = tok2->linkAt(1);
                     if (!tok2)
                         break;
+                } else {
+                    // Incomplete code
+                    break;
                 }
                 bool changed = false;
                 for (std::set<unsigned int>::const_iterator it = vars.begin(); it != vars.end(); ++it) {

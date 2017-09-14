@@ -1808,6 +1808,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
 
+        check("void f(int x) {\n"  // #8217 - crash for incomplete code
+              "  if (x > 100) { return; }\n"
+              "  X(do);\n"
+              "  if (x > 100) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(const int *i) {\n"
               "  if (!i) return;\n"
               "  if (!num1tok) { *num1 = *num2; }\n"
