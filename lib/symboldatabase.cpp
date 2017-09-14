@@ -29,6 +29,7 @@
 #include "valueflow.h"
 
 #include <algorithm>
+#include <cassert>
 #include <climits>
 #include <iomanip>
 #include <iostream>
@@ -2459,6 +2460,7 @@ bool Variable::arrayDimensions(const Library* lib)
                     dimension_.known = true;
                 }
             }
+            assert((dimension_.start == nullptr) == (dimension_.end == nullptr));
             _dimensions.push_back(dimension_);
             return true;
         }
@@ -2489,6 +2491,7 @@ bool Variable::arrayDimensions(const Library* lib)
                 dimension_.known = true;
             }
         }
+        assert((dimension_.start == nullptr) == (dimension_.end == nullptr));
         _dimensions.push_back(dimension_);
         dim = dim->link()->next();
         arr = true;
@@ -5183,6 +5186,7 @@ void SymbolDatabase::setValueTypeInTokenList()
                 std::istringstream istr(typestr+";");
                 if (tokenList.createTokens(istr)) {
                     ValueType vt;
+                    assert(tokenList.front());
                     if (parsedecl(tokenList.front(), &vt, defaultSignedness, _settings)) {
                         setValueType(tok, vt);
                     }
