@@ -2646,6 +2646,14 @@ private:
                "}";
         values = tokenValues(code, "x ; }");
         ASSERT_EQUALS(true, values.empty());
+
+        // return (#8173)
+        code = "int repeat() {\n"
+               "  const char *n;\n"
+               "  return((n=42) && *n == 'A');\n"
+               "}";
+        values = tokenValues(code, "n ==");
+        ASSERT_EQUALS(true, values.size() != 1U || !values.front().isUninitValue());
     }
 };
 

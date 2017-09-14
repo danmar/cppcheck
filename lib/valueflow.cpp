@@ -1819,16 +1819,24 @@ static bool valueFlowForward(Token * const               startToken,
             // bailout: assignment
             else if (Token::Match(tok2->previous(), "!!* %name% %assign%")) {
                 // simplify rhs
-                for (Token *tok3 = tok2->tokAt(2); tok3; tok3 = tok3->next()) {
-                    if (tok3->varId() == varid) {
+                std::stack<Token *> rhs;
+                rhs.push(const_cast<Token *>(tok2->next()->astOperand2()));
+                while (!rhs.empty()) {
+                    Token *rtok = rhs.top();
+                    rhs.pop();
+                    if (!rtok)
+                        continue;
+                    if (rtok->str() == "(" && Token::Match(rtok->astOperand1(), "sizeof|typeof|typeid"))
+                        continue;
+                    if (Token::Match(rtok, "++|--|?|:|;|,"))
+                        continue;
+                    if (rtok->varId() == varid) {
                         std::list<ValueFlow::Value>::const_iterator it;
                         for (it = values.begin(); it != values.end(); ++it)
-                            setTokenValue(tok3, *it, settings);
-                    } else if (Token::Match(tok3, "++|--|?|:|;|,"))
-                        break;
-                    // Skip sizeof etc
-                    else if (Token::Match(tok3, "sizeof|typeof|typeid ("))
-                        tok3 = tok3->linkAt(1);
+                            setTokenValue(rtok, *it, settings);
+                    }
+                    rhs.push(const_cast<Token *>(rtok->astOperand1()));
+                    rhs.push(const_cast<Token *>(rtok->astOperand2()));
                 }
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
