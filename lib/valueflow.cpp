@@ -931,6 +931,59 @@ static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Set
     }
 }
 
+static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *settings)
+{
+    // Get variable values...
+    std::map<const Variable *, ValueFlow::Value> vars;
+    for (const Token *tok = tokenList->front(); tok; tok = tok->next()) {
+        if (!tok->variable())
+            continue;
+        // Initialization...
+        if (tok == tok->variable()->nameToken() &&
+            tok->variable()->isStatic() &&
+            !tok->variable()->isConst() &&
+            tok->valueType() &&
+            tok->valueType()->isIntegral() &&
+            tok->valueType()->pointer == 0 &&
+            tok->valueType()->constness == 0 &&
+            Token::Match(tok, "%name% =") &&
+            tok->next()->astOperand2() &&
+            tok->next()->astOperand2()->hasKnownIntValue()) {
+            vars[tok->variable()] = tok->next()->astOperand2()->values().front();
+        } else {
+            // If variable is written anywhere in TU then remove it from vars
+            if (!tok->astParent())
+                continue;
+            if (Token::Match(tok->astParent(), "++|--|&") && !tok->astParent()->astOperand2())
+                vars.erase(tok->variable());
+            else if (tok->astParent()->str() == "=") {
+                if (tok == tok->astParent()->astOperand1())
+                    vars.erase(tok->variable());
+                else if (tokenList->isCPP() && Token::Match(tok->astParent()->tokAt(-2), "& %name% ="))
+                    vars.erase(tok->variable());
+            } else if (tokenList->isCPP() && tok->astParent()->str() == ">>") {
+                const Token *lhs = tok->astParent();
+                while (Token::simpleMatch(lhs->astParent(), ">>"))
+                    lhs = lhs->astParent();
+                lhs = lhs->astOperand1();
+                if (!lhs || !lhs->valueType() || !lhs->valueType()->isIntegral())
+                    vars.erase(tok->variable());
+            } else if (Token::Match(tok->astParent(), "[(,]"))
+                vars.erase(tok->variable());
+        }
+    }
+
+    // Set values..
+    for (Token *tok = tokenList->front(); tok; tok = tok->next()) {
+        if (!tok->variable())
+            continue;
+        std::map<const Variable *, ValueFlow::Value>::const_iterator var = vars.find(tok->variable());
+        if (var == vars.end())
+            continue;
+        setTokenValue(tok, var->second, settings);
+    }
+}
+
 static void valueFlowReverse(TokenList *tokenlist,
                              Token *tok,
                              const Token * const varToken,
@@ -3169,6 +3222,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowNumber(tokenlist);
     valueFlowString(tokenlist);
     valueFlowArray(tokenlist);
+    valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);
     valueFlowFunctionReturn(tokenlist, errorLogger);
     valueFlowBitAnd(tokenlist);

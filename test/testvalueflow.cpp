@@ -94,6 +94,8 @@ private:
 
         TEST_CASE(valueFlowGlobalVar);
 
+        TEST_CASE(valueFlowGlobalStaticVar);
+
         TEST_CASE(valueFlowInlineAssembly);
 
         TEST_CASE(valueFlowUninit);
@@ -2472,11 +2474,11 @@ private:
 
         code = "void f() {\n"
                "  static int x = 0;\n"
-               "  return x + 1;\n" // <- possible value
+               "  return x + 1;\n" // <- known value
                "}\n";
         value = valueOfTok(code, "+");
         ASSERT_EQUALS(1, value.intvalue);
-        ASSERT(value.isPossible());
+        ASSERT(value.isKnown());
 
         code = "void f() {\n"
                "  int x = 0;\n"
@@ -2594,6 +2596,44 @@ private:
                "    a = x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 42));
+    }
+
+    void valueFlowGlobalStaticVar() {
+        const char *code;
+
+        code = "static int x = 321;\n"
+               "void f() {\n"
+               "  a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 321));
+
+        code = "static int x = 321;\n"
+               "void f() {\n"
+               "  a = x;\n"
+               "}"
+               "void other() { x=a; }\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 321));
+
+        code = "static int x = 321;\n"
+               "void f() {\n"
+               "  a = x;\n"
+               "}"
+               "void other() { p = &x; }\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 321));
+
+        code = "static int x = 321;\n"
+               "void f() {\n"
+               "  a = x;\n"
+               "}"
+               "void other() { x++; }\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 321));
+
+        code = "static int x = 321;\n"
+               "void f() {\n"
+               "  a = x;\n"
+               "}"
+               "void other() { foo(x); }\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 321));
     }
 
     void valueFlowInlineAssembly() {
