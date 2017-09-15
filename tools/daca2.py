@@ -108,6 +108,9 @@ def removeLargeFiles(path):
             # Remove test code
             if g.endswith('/testsuite') or g.endswith('/clang/INPUTS'):
                 shutil.rmtree(g, onerror=handleRemoveReadonly)
+            # Remove docs and examples ... that might be garbage
+            elif g.endswith('/doc') or g.endswith('/examples'):
+                shutil.rmtree(g, onerror=handleRemoveReadonly)
             else:
                 removeLargeFiles(g + '/')
         elif os.path.isfile(g) and g[-4:] != '.txt':
