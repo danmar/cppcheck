@@ -224,6 +224,7 @@ private:
         TEST_CASE(templateSimplifierCrashes);
         TEST_CASE(syntaxErrorFirstToken); // Make sure syntax errors are detected and reported
         TEST_CASE(syntaxErrorLastToken); // Make sure syntax errors are detected and reported
+        TEST_CASE(syntaxErrorCase);
         TEST_CASE(enumTrailingComma);
     }
 
@@ -1480,6 +1481,11 @@ private:
         ASSERT_THROW(checkCode("{} const const\n"), InternalError); // #2637
 
         // ASSERT_THROW(  , InternalError)
+    }
+
+    void syntaxErrorCase() {
+        // case must be inside switch block
+        ASSERT_THROW(checkCode("void f() { switch (a) {}; case 1: }"), InternalError);
     }
 
     void enumTrailingComma() {

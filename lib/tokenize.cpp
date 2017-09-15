@@ -8207,6 +8207,16 @@ const Token * Tokenizer::findGarbageCode() const
         }
     }
 
+    // case keyword must be inside switch
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "switch (") && Token::simpleMatch(tok->linkAt(1), ") {"))
+            tok = tok->linkAt(1)->linkAt(1);
+        else if (tok->str() == "(")
+            tok = tok->link();
+        else if (tok->str() == "case")
+            return tok;
+    }
+
     for (const Token *tok = tokens(); tok ; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "for (")) // find for loops
             continue;
