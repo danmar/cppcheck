@@ -2998,6 +2998,22 @@ private:
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
 
+        // #7449 - nonlocal vector
+        check("std::vector<int> v;\n"
+              "void f() {\n"
+              "  v.clear();\n"
+              "  dostuff()\n"
+              "  if (v.empty()) { }\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int> v;\n"
+              "void f() {\n"
+              "  v.clear();\n"
+              "  if (v.empty()) { }\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
+
         // #6663
         check("void foo() {\n"
               "    std::set<int> container;\n"

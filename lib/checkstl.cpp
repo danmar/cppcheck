@@ -1596,6 +1596,17 @@ void CheckStl::readingEmptyStlContainer()
             } else if (tok->str() == "{" && tok->next()->scope()->type == Scope::eLambda)
                 tok = tok->link();
 
+            // function call
+            if (Token::Match(tok, "!!. %name% (") && !Token::simpleMatch(tok->linkAt(2), ") {")) {
+                for (std::map<unsigned int, const Library::Container*>::const_iterator it = emptyContainer.begin(); it != emptyContainer.end();) {
+                    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(it->first);
+                    if (var && (var->isLocal() || var->isArgument()))
+                        ++it;
+                    else
+                        it = emptyContainer.erase(it);
+                }
+            }
+
             if (!tok->varId())
                 continue;
 
