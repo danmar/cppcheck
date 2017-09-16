@@ -251,7 +251,6 @@ private:
         TEST_CASE(symboldatabase36); // ticket #4892 (segmentation fault)
         TEST_CASE(symboldatabase37);
         TEST_CASE(symboldatabase38); // ticket #5125 (infinite recursion)
-        TEST_CASE(symboldatabase39); // ticket #5120 (infinite recursion)
         TEST_CASE(symboldatabase40); // ticket #5153
         TEST_CASE(symboldatabase41); // ticket #5197 (unknown macro)
         TEST_CASE(symboldatabase42); // only put variables in variable list
@@ -2498,10 +2497,6 @@ private:
               "  scoped_service( T* ptr ) : scoped_service<service>(ptr), m_ptr(ptr) {}\n"
               "  T* const m_ptr;\n"
               "};");
-    }
-
-    void symboldatabase39() { // ticket #5120
-        check("struct V : { public case {} ; struct U : U  void { V *f (int x) (x) } }");
     }
 
     void symboldatabase40() { // ticket #5153

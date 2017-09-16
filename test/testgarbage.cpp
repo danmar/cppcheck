@@ -1485,7 +1485,8 @@ private:
 
     void syntaxErrorCase() {
         // case must be inside switch block
-        ASSERT_THROW(checkCode("void f() { switch (a) {}; case 1: }"), InternalError);
+        ASSERT_THROW(checkCode("void f() { switch (a) {}; case 1: }"), InternalError); // #8184
+        ASSERT_THROW(checkCode("struct V : { public case {} ; struct U : U  void { V *f (int x) (x) } }"), InternalError); // #5120
     }
 
     void enumTrailingComma() {
