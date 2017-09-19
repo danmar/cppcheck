@@ -142,27 +142,40 @@ void CheckType::checkIntegerOverflow()
     if (_settings->platformType == Settings::Unspecified || _settings->int_bit >= 64)
         return;
 
-    // max int value according to platform settings.
-    const MathLib::bigint maxint = (1LL << (_settings->int_bit - 1)) - 1;
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->isArithmeticalOp())
             continue;
 
         // is result signed integer?
         const ValueType *vt = tok->valueType();
-        if (!vt || vt->type != ValueType::Type::INT || vt->sign != ValueType::Sign::SIGNED)
+        if (!vt || !vt->isIntegral() || vt->sign != ValueType::Sign::SIGNED)
             continue;
 
+        unsigned int bits;
+        if (vt->type == ValueType::Type::INT)
+            bits = _settings->int_bit;
+        else if (vt->type == ValueType::Type::LONG)
+            bits = _settings->long_bit;
+        else if (vt->type == ValueType::Type::LONGLONG)
+            bits = _settings->long_long_bit;
+        else
+            continue;
+
+        if (bits >= 64)
+            continue;
+
+        // max value according to platform settings.
+        const MathLib::bigint maxvalue = (1LL << (bits - 1)) - 1;
+
         // is there a overflow result value
-        const ValueFlow::Value *value = tok->getValueGE(maxint + 1, _settings);
+        const ValueFlow::Value *value = tok->getValueGE(maxvalue + 1, _settings);
         if (!value)
-            value = tok->getValueLE(-maxint - 2, _settings);
+            value = tok->getValueLE(-maxvalue - 2, _settings);
         if (!value || !_settings->isEnabled(value,false))
             continue;
 
         // For left shift, it's common practice to shift into the sign bit
-        if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (1LL << _settings->int_bit))
+        if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (1LL << bits))
             continue;
 
         integerOverflowError(tok, *value);
