@@ -145,32 +145,27 @@ void CheckType::checkIntegerOverflow()
     // max int value according to platform settings.
     const MathLib::bigint maxint = (1LL << (_settings->int_bit - 1)) - 1;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!tok->isArithmeticalOp())
-                continue;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->isArithmeticalOp())
+            continue;
 
-            // is result signed integer?
-            const ValueType *vt = tok->valueType();
-            if (!vt || vt->type != ValueType::Type::INT || vt->sign != ValueType::Sign::SIGNED)
-                continue;
+        // is result signed integer?
+        const ValueType *vt = tok->valueType();
+        if (!vt || vt->type != ValueType::Type::INT || vt->sign != ValueType::Sign::SIGNED)
+            continue;
 
-            // is there a overflow result value
-            const ValueFlow::Value *value = tok->getValueGE(maxint + 1, _settings);
-            if (!value)
-                value = tok->getValueLE(-maxint - 2, _settings);
-            if (!value || !_settings->isEnabled(value,false))
-                continue;
+        // is there a overflow result value
+        const ValueFlow::Value *value = tok->getValueGE(maxint + 1, _settings);
+        if (!value)
+            value = tok->getValueLE(-maxint - 2, _settings);
+        if (!value || !_settings->isEnabled(value,false))
+            continue;
 
-            // For left shift, it's common practice to shift into the sign bit
-            if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (1LL << _settings->int_bit))
-                continue;
+        // For left shift, it's common practice to shift into the sign bit
+        if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (1LL << _settings->int_bit))
+            continue;
 
-            integerOverflowError(tok, *value);
-        }
+        integerOverflowError(tok, *value);
     }
 }
 

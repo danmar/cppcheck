@@ -110,6 +110,9 @@ private:
         settings.platform(Settings::Unix32);
         settings.addEnabled("warning");
 
+        check("x = (int)0x10000 * (int)0x10000;", &settings);
+        ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(int)65536*(int)65536'.\n", errout.str());
+
         check("void foo() {\n"
               "    int intmax = 0x7fffffff;\n"
               "    return intmax + 1;\n"
