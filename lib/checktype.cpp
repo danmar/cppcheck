@@ -344,65 +344,60 @@ void CheckType::longCastReturnError(const Token *tok)
 
 void CheckType::checkFloatToIntegerOverflow()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            const ValueType *vtint, *vtfloat;
-            const std::list<ValueFlow::Value> *floatValues;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        const ValueType *vtint, *vtfloat;
+        const std::list<ValueFlow::Value> *floatValues;
 
-            // Explicit cast
-            if (Token::Match(tok, "( %name%") && tok->astOperand1() && !tok->astOperand2()) {
-                vtint = tok->valueType();
-                vtfloat = tok->astOperand1()->valueType();
-                floatValues = &tok->astOperand1()->values();
-            }
+        // Explicit cast
+        if (Token::Match(tok, "( %name%") && tok->astOperand1() && !tok->astOperand2()) {
+            vtint = tok->valueType();
+            vtfloat = tok->astOperand1()->valueType();
+            floatValues = &tok->astOperand1()->values();
+        }
 
-            // Assignment
-            else if (tok->str() == "=" && tok->astOperand1() && tok->astOperand2()) {
-                vtint = tok->astOperand1()->valueType();
-                vtfloat = tok->astOperand2()->valueType();
-                floatValues = &tok->astOperand2()->values();
-            }
+        // Assignment
+        else if (tok->str() == "=" && tok->astOperand1() && tok->astOperand2()) {
+            vtint = tok->astOperand1()->valueType();
+            vtfloat = tok->astOperand2()->valueType();
+            floatValues = &tok->astOperand2()->values();
+        }
 
-            // TODO: function call
+        // TODO: function call
 
-            else
+        else
+            continue;
+
+        // Conversion of float to integer?
+        if (!vtint || !vtint->isIntegral())
+            continue;
+        if (!vtfloat || !vtfloat->isFloat())
+            continue;
+
+        for (std::list<ValueFlow::Value>::const_iterator it = floatValues->begin(); it != floatValues->end(); ++it) {
+            if (it->valueType != ValueFlow::Value::FLOAT)
                 continue;
-
-            // Conversion of float to integer?
-            if (!vtint || !vtint->isIntegral())
+            if (!_settings->isEnabled(&(*it), false))
                 continue;
-            if (!vtfloat || !vtfloat->isFloat())
-                continue;
-
-            for (std::list<ValueFlow::Value>::const_iterator it = floatValues->begin(); it != floatValues->end(); ++it) {
-                if (it->valueType != ValueFlow::Value::FLOAT)
+            if (it->floatValue > ~0ULL)
+                floatToIntegerOverflowError(tok, *it);
+            else if ((-it->floatValue) > (1ULL<<62))
+                floatToIntegerOverflowError(tok, *it);
+            else if (_settings->platformType != Settings::Unspecified) {
+                int bits = 0;
+                if (vtint->type == ValueType::Type::CHAR)
+                    bits = _settings->char_bit;
+                else if (vtint->type == ValueType::Type::SHORT)
+                    bits = _settings->short_bit;
+                else if (vtint->type == ValueType::Type::INT)
+                    bits = _settings->int_bit;
+                else if (vtint->type == ValueType::Type::LONG)
+                    bits = _settings->long_bit;
+                else if (vtint->type == ValueType::Type::LONGLONG)
+                    bits = _settings->long_long_bit;
+                else
                     continue;
-                if (!_settings->isEnabled(&(*it), false))
-                    continue;
-                if (it->floatValue > ~0ULL)
+                if (bits < 64 && it->floatValue >= (1ULL << bits))
                     floatToIntegerOverflowError(tok, *it);
-                else if ((-it->floatValue) > (1ULL<<62))
-                    floatToIntegerOverflowError(tok, *it);
-                else if (_settings->platformType != Settings::Unspecified) {
-                    int bits = 0;
-                    if (vtint->type == ValueType::Type::CHAR)
-                        bits = _settings->char_bit;
-                    else if (vtint->type == ValueType::Type::SHORT)
-                        bits = _settings->short_bit;
-                    else if (vtint->type == ValueType::Type::INT)
-                        bits = _settings->int_bit;
-                    else if (vtint->type == ValueType::Type::LONG)
-                        bits = _settings->long_bit;
-                    else if (vtint->type == ValueType::Type::LONGLONG)
-                        bits = _settings->long_long_bit;
-                    else
-                        continue;
-                    if (bits < 64 && it->floatValue >= (1ULL << bits))
-                        floatToIntegerOverflowError(tok, *it);
-                }
             }
         }
     }
