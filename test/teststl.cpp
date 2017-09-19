@@ -2227,7 +2227,7 @@ private:
 
         check("const char* foo() {\n"
               "    static std::string text;\n"
-              "    text = \"hello world\\n\";\n"
+              "    text = \"hello world\n\";\n"
               "    return text.c_str();\n"
               "}");
         ASSERT_EQUALS("", errout.str()); // #3427
