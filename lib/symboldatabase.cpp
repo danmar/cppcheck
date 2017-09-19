@@ -1127,10 +1127,13 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
             start = const_cast<Token*>(_tokenizer->list.front());
             end = const_cast<Token*>(_tokenizer->list.back());
         }
-        if (start && end) {
-            start->scope(&*it);
-            end->scope(&*it);
-        }
+        assert((start == nullptr) == (end == nullptr));
+        if (start == nullptr)
+            continue;
+
+        start->scope(&*it);
+        end->scope(&*it);
+
         if (start != end && start->next() != end) {
             for (Token* tok = start->next(); tok != end; tok = tok->next()) {
                 if (tok->str() == "{") {
