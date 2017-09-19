@@ -82,6 +82,9 @@ void CheckType::checkTooBigBitwiseShift()
         else
             continue;
 
+        if (lhstype->sign == ValueType::Sign::SIGNED)
+            --lhsbits;
+
         // Get biggest rhs value. preferably a value which doesn't have 'condition'.
         const ValueFlow::Value *value = tok->astOperand2()->getValueGE(lhsbits, _settings);
         if (value && _settings->isEnabled(value, false))

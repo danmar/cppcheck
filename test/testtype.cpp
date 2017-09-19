@@ -65,10 +65,13 @@ private:
         Settings settings;
         settings.platform(Settings::Unix32);
 
-        check("int foo(int x) {\n"
+        check("int foo(unsigned int x) {\n"
               "   return x << 32;\n"
               "}",&settings);
         ASSERT_EQUALS("[test.cpp:2]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+
+        check("x = (short)x << 31;",&settings);
+        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 31-bit value by 31 bits is undefined behaviour\n", errout.str());
 
         check("int foo(int x) {\n"
               "   return x << 2;\n"
@@ -87,16 +90,16 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // Ticket #6793
-        check("template<int I> int foo(int x) { return x << I; }\n"
-              "const int f = foo<31>(0);\n"
-              "const int g = foo<100>(0);\n"
-              "template<int I> int hoo(int x) { return x << 32; }\n"
-              "const int h = hoo<100>(0);", &settings);
+        check("template<unsigned int I> int foo(unsigned int x) { return x << I; }\n"
+              "const unsigned int f = foo<31>(0);\n"
+              "const unsigned int g = foo<100>(0);\n"
+              "template<unsigned int I> int hoo(unsigned int x) { return x << 32; }\n"
+              "const unsigned int h = hoo<100>(0);", &settings);
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n"
                       "[test.cpp:1]: (error) Shifting 32-bit value by 100 bits is undefined behaviour\n", errout.str());
 
         // #7266: C++, shift in macro
-        check("void f(int x) {\n"
+        check("void f(unsigned int x) {\n"
               "    UINFO(x << 1234);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -135,11 +138,6 @@ private:
               "   if (x==123456) {}\n"
               "   return 123456U * x;\n"
               "}",&settings);
-        ASSERT_EQUALS("", errout.str());
-
-        check("int foo() {\n"
-              "  x = 1 << 31;\n" // this is technically integer overflow but it's common code
-              "}", &settings, "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 
