@@ -84,6 +84,7 @@ private:
 
     // Error messages..
     void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
+    void tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
     void integerOverflowError(const Token *tok, const ValueFlow::Value &value);
     void signConversionError(const Token *tok, const bool constvalue);
     void longCastAssignError(const Token *tok);
@@ -93,6 +94,7 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckType c(nullptr, settings, errorLogger);
         c.tooBigBitwiseShiftError(nullptr, 32, ValueFlow::Value(64));
+        c.tooBigSignedBitwiseShiftError(nullptr, 31, ValueFlow::Value(31));
         c.integerOverflowError(nullptr, ValueFlow::Value(1LL<<32));
         c.signConversionError(nullptr, false);
         c.longCastAssignError(nullptr);

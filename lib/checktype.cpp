@@ -82,20 +82,24 @@ void CheckType::checkTooBigBitwiseShift()
         else
             continue;
 
-        if (lhstype->sign == ValueType::Sign::SIGNED)
-            --lhsbits;
-
         // Get biggest rhs value. preferably a value which doesn't have 'condition'.
         const ValueFlow::Value *value = tok->astOperand2()->getValueGE(lhsbits, _settings);
         if (value && _settings->isEnabled(value, false))
             tooBigBitwiseShiftError(tok, lhsbits, *value);
+        else if (lhstype->sign == ValueType::Sign::SIGNED) {
+            value = tok->astOperand2()->getValueGE(lhsbits-1, _settings);
+            if (value && _settings->isEnabled(value, false))
+                tooBigSignedBitwiseShiftError(tok, lhsbits, *value);
+        }
     }
 }
 
 void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
 {
+    const char id[] = "shiftTooManyBits";
+
     if (!tok) {
-        reportError(tok, Severity::error, "shiftTooManyBits", "Shifting 32-bit value by 40 bits is undefined behaviour", CWE758, false);
+        reportError(tok, Severity::error, id, "Shifting 32-bit value by 40 bits is undefined behaviour", CWE758, false);
         return;
     }
 
@@ -106,7 +110,26 @@ void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Val
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
 
-    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, "shiftTooManyBits", errmsg.str(), CWE758, rhsbits.inconclusive);
+    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, id, errmsg.str(), CWE758, rhsbits.inconclusive);
+}
+
+void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
+{
+    const char id[] = "shiftTooManyBitsSigned";
+
+    if (!tok) {
+        reportError(tok, Severity::error, id, "Shifting signed 32-bit value by 31 bits is undefined behaviour", CWE758, false);
+        return;
+    }
+
+    const ErrorPath errorPath = getErrorPath(tok, &rhsbits, "Shift");
+
+    std::ostringstream errmsg;
+    errmsg << "Shifting signed " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is undefined behaviour";
+    if (rhsbits.condition)
+        errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
+
+    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, id, errmsg.str(), CWE758, rhsbits.inconclusive);
 }
 
 //---------------------------------------------------------------------------

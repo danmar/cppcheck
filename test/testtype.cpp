@@ -71,7 +71,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
 
         check("x = (short)x << 31;",&settings);
-        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 31-bit value by 31 bits is undefined behaviour\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 32-bit value by 31 bits is undefined behaviour\n", errout.str());
 
         check("int foo(int x) {\n"
               "   return x << 2;\n"
