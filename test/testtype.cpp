@@ -148,6 +148,9 @@ private:
     }
 
     void signConversion() {
+		check("x = -4 * (unsigned)y;");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Suspicious code: sign conversion of -4 in calculation because '-4' has a negative value\n", errout.str());
+		
         check("unsigned int f1(signed int x, unsigned int y) {" // x is signed
               "  return x * y;\n"
               "}\n"

@@ -210,32 +210,27 @@ void CheckType::checkSignConversion()
     if (!_settings->isEnabled(Settings::WARNING))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!tok->isArithmeticalOp() || Token::Match(tok,"+|-"))
-                continue;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->isArithmeticalOp() || Token::Match(tok,"+|-"))
+            continue;
 
-            // Is result unsigned?
-            if (!(tok->valueType() && tok->valueType()->sign == ValueType::Sign::UNSIGNED))
-                continue;
+        // Is result unsigned?
+        if (!(tok->valueType() && tok->valueType()->sign == ValueType::Sign::UNSIGNED))
+            continue;
 
-            // Check if an operand can be negative..
-            std::stack<const Token *> tokens;
-            tokens.push(tok->astOperand1());
-            tokens.push(tok->astOperand2());
-            while (!tokens.empty()) {
-                const Token *tok1 = tokens.top();
-                tokens.pop();
-                if (!tok1)
-                    continue;
-                if (!tok1->getValueLE(-1,_settings))
-                    continue;
-                if (tok1->valueType() && tok1->valueType()->sign != ValueType::Sign::UNSIGNED)
-                    signConversionError(tok1, tok1->isNumber());
-            }
+        // Check if an operand can be negative..
+        std::stack<const Token *> tokens;
+        tokens.push(tok->astOperand1());
+        tokens.push(tok->astOperand2());
+        while (!tokens.empty()) {
+            const Token *tok1 = tokens.top();
+            tokens.pop();
+            if (!tok1)
+                continue;
+            if (!tok1->getValueLE(-1,_settings))
+                continue;
+            if (tok1->valueType() && tok1->valueType()->sign != ValueType::Sign::UNSIGNED)
+                signConversionError(tok1, tok1->isNumber());
         }
     }
 }
