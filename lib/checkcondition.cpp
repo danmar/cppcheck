@@ -178,15 +178,15 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                 if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid)) {
                     return true;
                 }
-                if (Token::Match(tok2,"&&|%oror%|( %varid% %any% %num% &&|%oror%|)", varid)) {
+                if (Token::Match(tok2,"&&|%oror%|( %varid% ==|!= %num% &&|%oror%|)", varid)) {
                     const Token *vartok = tok2->next();
                     const std::string& op(vartok->strAt(1));
                     const MathLib::bigint num2 = MathLib::toLongNumber(vartok->strAt(2));
-                    const std::string condition(vartok->str() + op + vartok->strAt(2));
-                    if (op == "==" && (num & num2) != ((bitop=='&') ? num2 : num))
-                        assignIfError(assignTok, tok2, condition, false);
-                    else if (op == "!=" && (num & num2) != ((bitop=='&') ? num2 : num))
-                        assignIfError(assignTok, tok2, condition, true);
+                    if ((num & num2) != ((bitop=='&') ? num2 : num)) {
+                        const bool alwaysTrue = op == "!=";
+                        const std::string condition(vartok->str() + op + vartok->strAt(2));
+                        assignIfError(assignTok, tok2, condition, alwaysTrue);
+                    }
                 }
                 if (Token::Match(tok2, "%varid% %op%", varid) && tok2->next()->isAssignmentOp()) {
                     return true;

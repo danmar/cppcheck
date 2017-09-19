@@ -57,47 +57,49 @@ void CheckType::checkTooBigBitwiseShift()
     if (_settings->platformType == Settings::Unspecified)
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            // C++ and macro: OUT(x<<y)
-            if (_tokenizer->isCPP() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
-                tok = tok->linkAt(2);
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        // C++ and macro: OUT(x<<y)
+        if (_tokenizer->isCPP() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
+            tok = tok->linkAt(2);
 
-            if (!tok->astOperand1() || !tok->astOperand2())
-                continue;
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
 
-            if (!Token::Match(tok, "<<|>>|<<=|>>="))
-                continue;
+        if (!Token::Match(tok, "<<|>>|<<=|>>="))
+            continue;
 
-            // get number of bits of lhs
-            const ValueType *lhstype = tok->astOperand1()->valueType();
-            if (!lhstype || !lhstype->isIntegral() || lhstype->pointer >= 1U)
-                continue;
-            int lhsbits = 0;
-            if (lhstype->type <= ValueType::Type::INT)
-                lhsbits = _settings->int_bit;
-            else if (lhstype->type == ValueType::Type::LONG)
-                lhsbits = _settings->long_bit;
-            else if (lhstype->type == ValueType::Type::LONGLONG)
-                lhsbits = _settings->long_long_bit;
-            else
-                continue;
+        // get number of bits of lhs
+        const ValueType *lhstype = tok->astOperand1()->valueType();
+        if (!lhstype || !lhstype->isIntegral() || lhstype->pointer >= 1U)
+            continue;
+        int lhsbits = 0;
+        if (lhstype->type <= ValueType::Type::INT)
+            lhsbits = _settings->int_bit;
+        else if (lhstype->type == ValueType::Type::LONG)
+            lhsbits = _settings->long_bit;
+        else if (lhstype->type == ValueType::Type::LONGLONG)
+            lhsbits = _settings->long_long_bit;
+        else
+            continue;
 
-            // Get biggest rhs value. preferably a value which doesn't have 'condition'.
-            const ValueFlow::Value *value = tok->astOperand2()->getValueGE(lhsbits, _settings);
+        // Get biggest rhs value. preferably a value which doesn't have 'condition'.
+        const ValueFlow::Value *value = tok->astOperand2()->getValueGE(lhsbits, _settings);
+        if (value && _settings->isEnabled(value, false))
+            tooBigBitwiseShiftError(tok, lhsbits, *value);
+        else if (lhstype->sign == ValueType::Sign::SIGNED) {
+            value = tok->astOperand2()->getValueGE(lhsbits-1, _settings);
             if (value && _settings->isEnabled(value, false))
-                tooBigBitwiseShiftError(tok, lhsbits, *value);
+                tooBigSignedBitwiseShiftError(tok, lhsbits, *value);
         }
     }
 }
 
 void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
 {
+    const char id[] = "shiftTooManyBits";
+
     if (!tok) {
-        reportError(tok, Severity::error, "shiftTooManyBits", "Shifting 32-bit value by 40 bits is undefined behaviour", CWE758, false);
+        reportError(tok, Severity::error, id, "Shifting 32-bit value by 40 bits is undefined behaviour", CWE758, false);
         return;
     }
 
@@ -108,7 +110,26 @@ void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Val
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
 
-    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, "shiftTooManyBits", errmsg.str(), CWE758, rhsbits.inconclusive);
+    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, id, errmsg.str(), CWE758, rhsbits.inconclusive);
+}
+
+void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
+{
+    const char id[] = "shiftTooManyBitsSigned";
+
+    if (!tok) {
+        reportError(tok, Severity::error, id, "Shifting signed 32-bit value by 31 bits is undefined behaviour", CWE758, false);
+        return;
+    }
+
+    const ErrorPath errorPath = getErrorPath(tok, &rhsbits, "Shift");
+
+    std::ostringstream errmsg;
+    errmsg << "Shifting signed " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is undefined behaviour";
+    if (rhsbits.condition)
+        errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
+
+    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, id, errmsg.str(), CWE758, rhsbits.inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -121,35 +142,43 @@ void CheckType::checkIntegerOverflow()
     if (_settings->platformType == Settings::Unspecified || _settings->int_bit >= 64)
         return;
 
-    // max int value according to platform settings.
-    const MathLib::bigint maxint = (1LL << (_settings->int_bit - 1)) - 1;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->isArithmeticalOp())
+            continue;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!tok->isArithmeticalOp())
-                continue;
+        // is result signed integer?
+        const ValueType *vt = tok->valueType();
+        if (!vt || !vt->isIntegral() || vt->sign != ValueType::Sign::SIGNED)
+            continue;
 
-            // is result signed integer?
-            const ValueType *vt = tok->valueType();
-            if (!vt || vt->type != ValueType::Type::INT || vt->sign != ValueType::Sign::SIGNED)
-                continue;
+        unsigned int bits;
+        if (vt->type == ValueType::Type::INT)
+            bits = _settings->int_bit;
+        else if (vt->type == ValueType::Type::LONG)
+            bits = _settings->long_bit;
+        else if (vt->type == ValueType::Type::LONGLONG)
+            bits = _settings->long_long_bit;
+        else
+            continue;
 
-            // is there a overflow result value
-            const ValueFlow::Value *value = tok->getValueGE(maxint + 1, _settings);
-            if (!value)
-                value = tok->getValueLE(-maxint - 2, _settings);
-            if (!value || !_settings->isEnabled(value,false))
-                continue;
+        if (bits >= 64)
+            continue;
 
-            // For left shift, it's common practice to shift into the sign bit
-            if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (1LL << _settings->int_bit))
-                continue;
+        // max value according to platform settings.
+        const MathLib::bigint maxvalue = (1LL << (bits - 1)) - 1;
 
-            integerOverflowError(tok, *value);
-        }
+        // is there a overflow result value
+        const ValueFlow::Value *value = tok->getValueGE(maxvalue + 1, _settings);
+        if (!value)
+            value = tok->getValueLE(-maxvalue - 2, _settings);
+        if (!value || !_settings->isEnabled(value,false))
+            continue;
+
+        // For left shift, it's common practice to shift into the sign bit
+        if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (1LL << bits))
+            continue;
+
+        integerOverflowError(tok, *value);
     }
 }
 
@@ -181,32 +210,27 @@ void CheckType::checkSignConversion()
     if (!_settings->isEnabled(Settings::WARNING))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!tok->isArithmeticalOp() || Token::Match(tok,"+|-"))
-                continue;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->isArithmeticalOp() || Token::Match(tok,"+|-"))
+            continue;
 
-            // Is result unsigned?
-            if (!(tok->valueType() && tok->valueType()->sign == ValueType::Sign::UNSIGNED))
-                continue;
+        // Is result unsigned?
+        if (!(tok->valueType() && tok->valueType()->sign == ValueType::Sign::UNSIGNED))
+            continue;
 
-            // Check if an operand can be negative..
-            std::stack<const Token *> tokens;
-            tokens.push(tok->astOperand1());
-            tokens.push(tok->astOperand2());
-            while (!tokens.empty()) {
-                const Token *tok1 = tokens.top();
-                tokens.pop();
-                if (!tok1)
-                    continue;
-                if (!tok1->getValueLE(-1,_settings))
-                    continue;
-                if (tok1->valueType() && tok1->valueType()->sign != ValueType::Sign::UNSIGNED)
-                    signConversionError(tok1, tok1->isNumber());
-            }
+        // Check if an operand can be negative..
+        std::stack<const Token *> tokens;
+        tokens.push(tok->astOperand1());
+        tokens.push(tok->astOperand2());
+        while (!tokens.empty()) {
+            const Token *tok1 = tokens.top();
+            tokens.pop();
+            if (!tok1)
+                continue;
+            if (!tok1->getValueLE(-1,_settings))
+                continue;
+            if (tok1->valueType() && tok1->valueType()->sign != ValueType::Sign::UNSIGNED)
+                signConversionError(tok1, tok1->isNumber());
         }
     }
 }
@@ -320,65 +344,60 @@ void CheckType::longCastReturnError(const Token *tok)
 
 void CheckType::checkFloatToIntegerOverflow()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            const ValueType *vtint, *vtfloat;
-            const std::list<ValueFlow::Value> *floatValues;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        const ValueType *vtint, *vtfloat;
+        const std::list<ValueFlow::Value> *floatValues;
 
-            // Explicit cast
-            if (Token::Match(tok, "( %name%") && tok->astOperand1() && !tok->astOperand2()) {
-                vtint = tok->valueType();
-                vtfloat = tok->astOperand1()->valueType();
-                floatValues = &tok->astOperand1()->values();
-            }
+        // Explicit cast
+        if (Token::Match(tok, "( %name%") && tok->astOperand1() && !tok->astOperand2()) {
+            vtint = tok->valueType();
+            vtfloat = tok->astOperand1()->valueType();
+            floatValues = &tok->astOperand1()->values();
+        }
 
-            // Assignment
-            else if (tok->str() == "=" && tok->astOperand1() && tok->astOperand2()) {
-                vtint = tok->astOperand1()->valueType();
-                vtfloat = tok->astOperand2()->valueType();
-                floatValues = &tok->astOperand2()->values();
-            }
+        // Assignment
+        else if (tok->str() == "=" && tok->astOperand1() && tok->astOperand2()) {
+            vtint = tok->astOperand1()->valueType();
+            vtfloat = tok->astOperand2()->valueType();
+            floatValues = &tok->astOperand2()->values();
+        }
 
-            // TODO: function call
+        // TODO: function call
 
-            else
+        else
+            continue;
+
+        // Conversion of float to integer?
+        if (!vtint || !vtint->isIntegral())
+            continue;
+        if (!vtfloat || !vtfloat->isFloat())
+            continue;
+
+        for (std::list<ValueFlow::Value>::const_iterator it = floatValues->begin(); it != floatValues->end(); ++it) {
+            if (it->valueType != ValueFlow::Value::FLOAT)
                 continue;
-
-            // Conversion of float to integer?
-            if (!vtint || !vtint->isIntegral())
+            if (!_settings->isEnabled(&(*it), false))
                 continue;
-            if (!vtfloat || !vtfloat->isFloat())
-                continue;
-
-            for (std::list<ValueFlow::Value>::const_iterator it = floatValues->begin(); it != floatValues->end(); ++it) {
-                if (it->valueType != ValueFlow::Value::FLOAT)
+            if (it->floatValue > ~0ULL)
+                floatToIntegerOverflowError(tok, *it);
+            else if ((-it->floatValue) > (1ULL<<62))
+                floatToIntegerOverflowError(tok, *it);
+            else if (_settings->platformType != Settings::Unspecified) {
+                int bits = 0;
+                if (vtint->type == ValueType::Type::CHAR)
+                    bits = _settings->char_bit;
+                else if (vtint->type == ValueType::Type::SHORT)
+                    bits = _settings->short_bit;
+                else if (vtint->type == ValueType::Type::INT)
+                    bits = _settings->int_bit;
+                else if (vtint->type == ValueType::Type::LONG)
+                    bits = _settings->long_bit;
+                else if (vtint->type == ValueType::Type::LONGLONG)
+                    bits = _settings->long_long_bit;
+                else
                     continue;
-                if (!_settings->isEnabled(&(*it), false))
-                    continue;
-                if (it->floatValue > ~0ULL)
+                if (bits < 64 && it->floatValue >= (1ULL << bits))
                     floatToIntegerOverflowError(tok, *it);
-                else if ((-it->floatValue) > (1ULL<<62))
-                    floatToIntegerOverflowError(tok, *it);
-                else if (_settings->platformType != Settings::Unspecified) {
-                    int bits = 0;
-                    if (vtint->type == ValueType::Type::CHAR)
-                        bits = _settings->char_bit;
-                    else if (vtint->type == ValueType::Type::SHORT)
-                        bits = _settings->short_bit;
-                    else if (vtint->type == ValueType::Type::INT)
-                        bits = _settings->int_bit;
-                    else if (vtint->type == ValueType::Type::LONG)
-                        bits = _settings->long_bit;
-                    else if (vtint->type == ValueType::Type::LONGLONG)
-                        bits = _settings->long_long_bit;
-                    else
-                        continue;
-                    if (bits < 64 && it->floatValue >= (1ULL << bits))
-                        floatToIntegerOverflowError(tok, *it);
-                }
             }
         }
     }
