@@ -150,6 +150,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 new_scope->classDef = tok;
                 new_scope->classStart = tok2;
                 new_scope->classEnd = tok2->link();
+                // make sure we have valid code
+                if (!new_scope->classEnd) {
+                    _tokenizer->syntaxError(tok);
+                }
                 scope = new_scope;
                 tok = tok2;
             } else {
