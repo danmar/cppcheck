@@ -57,40 +57,35 @@ void CheckType::checkTooBigBitwiseShift()
     if (_settings->platformType == Settings::Unspecified)
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            // C++ and macro: OUT(x<<y)
-            if (_tokenizer->isCPP() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
-                tok = tok->linkAt(2);
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        // C++ and macro: OUT(x<<y)
+        if (_tokenizer->isCPP() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
+            tok = tok->linkAt(2);
 
-            if (!tok->astOperand1() || !tok->astOperand2())
-                continue;
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
 
-            if (!Token::Match(tok, "<<|>>|<<=|>>="))
-                continue;
+        if (!Token::Match(tok, "<<|>>|<<=|>>="))
+            continue;
 
-            // get number of bits of lhs
-            const ValueType *lhstype = tok->astOperand1()->valueType();
-            if (!lhstype || !lhstype->isIntegral() || lhstype->pointer >= 1U)
-                continue;
-            int lhsbits = 0;
-            if (lhstype->type <= ValueType::Type::INT)
-                lhsbits = _settings->int_bit;
-            else if (lhstype->type == ValueType::Type::LONG)
-                lhsbits = _settings->long_bit;
-            else if (lhstype->type == ValueType::Type::LONGLONG)
-                lhsbits = _settings->long_long_bit;
-            else
-                continue;
+        // get number of bits of lhs
+        const ValueType *lhstype = tok->astOperand1()->valueType();
+        if (!lhstype || !lhstype->isIntegral() || lhstype->pointer >= 1U)
+            continue;
+        int lhsbits = 0;
+        if (lhstype->type <= ValueType::Type::INT)
+            lhsbits = _settings->int_bit;
+        else if (lhstype->type == ValueType::Type::LONG)
+            lhsbits = _settings->long_bit;
+        else if (lhstype->type == ValueType::Type::LONGLONG)
+            lhsbits = _settings->long_long_bit;
+        else
+            continue;
 
-            // Get biggest rhs value. preferably a value which doesn't have 'condition'.
-            const ValueFlow::Value *value = tok->astOperand2()->getValueGE(lhsbits, _settings);
-            if (value && _settings->isEnabled(value, false))
-                tooBigBitwiseShiftError(tok, lhsbits, *value);
-        }
+        // Get biggest rhs value. preferably a value which doesn't have 'condition'.
+        const ValueFlow::Value *value = tok->astOperand2()->getValueGE(lhsbits, _settings);
+        if (value && _settings->isEnabled(value, false))
+            tooBigBitwiseShiftError(tok, lhsbits, *value);
     }
 }
 
