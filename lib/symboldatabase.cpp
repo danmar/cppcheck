@@ -1127,30 +1127,28 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
             start = const_cast<Token*>(_tokenizer->list.front());
             end = const_cast<Token*>(_tokenizer->list.back());
         }
-        if (start && end) {
-            start->scope(&*it);
-            end->scope(&*it);
-        }
-        if (start != end && start->next() != end) {
-            for (Token* tok = start->next(); tok != end; tok = tok->next()) {
-                if (tok->str() == "{") {
-                    bool isEndOfScope = false;
-                    for (std::list<Scope*>::const_iterator innerScope = it->nestedList.begin(); innerScope != it->nestedList.end(); ++innerScope) {
-                        if (tok == (*innerScope)->classStart) { // Is begin of inner scope
-                            tok = tok->link();
-                            if (!tok || tok->next() == end || !tok->next()) {
-                                isEndOfScope = true;
-                                break;
-                            }
-                            tok = tok->next();
+        assert(start && end);
+
+        end->scope(&*it);
+
+        for (Token* tok = start; tok != end; tok = tok->next()) {
+            if (start != end && tok->str() == "{") {
+                bool isEndOfScope = false;
+                for (std::list<Scope*>::const_iterator innerScope = it->nestedList.begin(); innerScope != it->nestedList.end(); ++innerScope) {
+                    if (tok == (*innerScope)->classStart) { // Is begin of inner scope
+                        tok = tok->link();
+                        if (tok->next() == end || !tok->next()) {
+                            isEndOfScope = true;
                             break;
                         }
-                    }
-                    if (isEndOfScope)
+                        tok = tok->next();
                         break;
+                    }
                 }
-                tok->scope(&*it);
+                if (isEndOfScope)
+                    break;
             }
+            tok->scope(&*it);
         }
     }
 }
