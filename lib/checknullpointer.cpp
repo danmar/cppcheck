@@ -334,7 +334,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         if (!value)
             continue;
 
-        if (!printInconclusive && value->inconclusive)
+        if (!printInconclusive && value->isInconclusive())
             continue;
 
         // Is pointer used as function parameter?
@@ -350,7 +350,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             std::list<const Token *> varlist;
             parseFunctionCall(*ftok->previous(), varlist, &_settings->library);
             if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
-                nullPointerError(tok, tok->str(), value, value->inconclusive);
+                nullPointerError(tok, tok->str(), value, value->isInconclusive());
             }
             continue;
         }
@@ -363,7 +363,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             continue;
         }
 
-        nullPointerError(tok, tok->str(), value, value->inconclusive);
+        nullPointerError(tok, tok->str(), value, value->isInconclusive());
     }
 }
 
@@ -485,9 +485,9 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");
 
     if (value->condition) {
-        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE476, inconclusive || value->inconclusive);
+        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE476, inconclusive || value->isInconclusive());
     } else if (value->defaultArg) {
-        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE476, inconclusive || value->inconclusive);
+        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE476, inconclusive || value->isInconclusive());
     } else {
         std::string errmsg;
         errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
@@ -498,7 +498,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
                     value->isKnown() ? Severity::error : Severity::warning,
                     "nullPointer",
                     errmsg,
-                    CWE476, inconclusive || value->inconclusive);
+                    CWE476, inconclusive || value->isInconclusive());
     }
 }
 
@@ -518,7 +518,7 @@ void CheckNullPointer::arithmetic()
             const ValueFlow::Value *value = tok->astOperand1()->getValue(0);
             if (!value)
                 continue;
-            if (!_settings->inconclusive && value->inconclusive)
+            if (!_settings->inconclusive && value->isInconclusive())
                 continue;
             if (value->condition && !_settings->isEnabled(Settings::WARNING))
                 continue;
@@ -545,6 +545,6 @@ void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value 
                 (value && value->condition) ? "nullPointerArithmeticRedundantCheck" : "nullPointerArithmetic",
                 errmsg,
                 CWE682, // unknown - pointer overflow
-                value && value->inconclusive);
+                value && value->isInconclusive());
 }
 

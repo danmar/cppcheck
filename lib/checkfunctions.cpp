@@ -149,7 +149,7 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
                     "invalidFunctionArg",
                     errmsg.str(),
                     CWE628,
-                    invalidValue->inconclusive);
+                    invalidValue->isInconclusive());
     else
         reportError(tok,
                     Severity::error,

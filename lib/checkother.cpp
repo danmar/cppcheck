@@ -1678,7 +1678,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
     reportError(errorPath,
                 value->errorSeverity() ? Severity::error : Severity::warning,
                 value->condition ? "zerodivcond" : "zerodiv",
-                errmsg.str(), CWE369, value->inconclusive);
+                errmsg.str(), CWE369, value->isInconclusive());
 }
 
 //---------------------------------------------------------------------------
@@ -2644,7 +2644,7 @@ void CheckOther::checkAccessOfMovedVariable()
             const ValueFlow::Value * movedValue = tok->getMovedValue();
             if (!movedValue || movedValue->moveKind == ValueFlow::Value::NonMovedVariable)
                 continue;
-            if (movedValue->inconclusive && !reportInconclusive)
+            if (movedValue->isInconclusive() && !reportInconclusive)
                 continue;
 
             bool inconclusive = false;
@@ -2664,7 +2664,7 @@ void CheckOther::checkAccessOfMovedVariable()
                 }
             }
             if (accessOfMoved || (inconclusive && reportInconclusive))
-                accessMovedError(tok, tok->str(), movedValue->moveKind, inconclusive || movedValue->inconclusive);
+                accessMovedError(tok, tok->str(), movedValue->moveKind, inconclusive || movedValue->isInconclusive());
         }
     }
 }

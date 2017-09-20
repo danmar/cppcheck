@@ -86,7 +86,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
     bool inconclusive = false;
     const Token *condition = nullptr;
     for (std::size_t i = 0; i < index.size(); ++i) {
-        inconclusive |= index[i].inconclusive;
+        inconclusive |= index[i].isInconclusive();
         if (condition == nullptr)
             condition = index[i].condition;
     }
@@ -1805,7 +1805,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::V
                << ", otherwise there is negative array index " << index.intvalue << ".";
     else
         errmsg << "Array index " << index.intvalue << " is out of bounds.";
-    reportError(errorPath, index.errorSeverity() ? Severity::error : Severity::warning, "negativeIndex", errmsg.str(), CWE786, index.inconclusive);
+    reportError(errorPath, index.errorSeverity() ? Severity::error : Severity::warning, "negativeIndex", errmsg.str(), CWE786, index.isInconclusive());
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo()
