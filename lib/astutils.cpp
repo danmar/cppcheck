@@ -408,7 +408,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     tok = tok ? tok->previous() : nullptr;
     if (tok && tok->link() && tok->str() == ">")
         tok = tok->link()->previous();
-    if (!Token::Match(tok, "%name% ("))
+    if (!Token::Match(tok, "%name% [(<]"))
         return false; // not a function => variable not changed
 
     // Constructor call

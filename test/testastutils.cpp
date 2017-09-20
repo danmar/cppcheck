@@ -35,6 +35,7 @@ private:
     void run() {
         TEST_CASE(isReturnScope);
         TEST_CASE(isVariableChanged);
+        TEST_CASE(isVariableChangedByFunctionCall);
     }
 
     bool isReturnScope(const char code[], int offset) {
@@ -73,6 +74,28 @@ private:
                                         "  int b;\n"
                                         "  if (b) { (int)((INTOF(8))result >> b); }\n"
                                         "}", "if", "}"));
+    }
+
+    bool isVariableChangedByFunctionCall(const char code[], const char pattern[], bool *inconclusive) {
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
+        return ::isVariableChangedByFunctionCall(argtok, &settings, inconclusive);
+    }
+
+    void isVariableChangedByFunctionCall() {
+        const char *code;
+        bool inconclusive;
+
+        // #8271 - template method
+        code = "void f(int x) {\n"
+               "  a<int>(x);\n"
+               "}";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
+        ASSERT_EQUALS(true, inconclusive);
     }
 };
 
