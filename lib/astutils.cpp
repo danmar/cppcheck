@@ -414,19 +414,11 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     // Constructor call
     if (tok->variable() && tok->variable()->nameToken() == tok) {
         // Find constructor..
-        unsigned int numberOfArguments = Token::simpleMatch(tok->next(), "( )") ? 0 : 1;
-        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "(")
-                tok2 = tok2->link();
-            else if (tok2->str() == ",")
-                ++numberOfArguments;
-            else if (tok2->str() == ")")
-                break;
-        }
+        const unsigned int argCount = numberOfArguments(tok);
         const ::Scope *typeScope = tok->variable()->typeScope();
         if (typeScope) {
             for (std::list<Function>::const_iterator it = typeScope->functionList.begin(); it != typeScope->functionList.end(); ++it) {
-                if (!it->isConstructor() || it->argCount() != numberOfArguments)
+                if (!it->isConstructor() || it->argCount() != argCount)
                     continue;
                 const Variable *arg = it->getArgumentVar(argnr);
                 if (arg && arg->isReference())
