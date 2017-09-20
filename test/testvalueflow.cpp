@@ -78,6 +78,7 @@ private:
         TEST_CASE(valueFlowAfterCondition);
         TEST_CASE(valueFlowForwardCompoundAssign);
         TEST_CASE(valueFlowForwardCorrelatedVariables);
+        TEST_CASE(valueFlowForwardFunction);
         TEST_CASE(valueFlowForwardLambda);
 
         TEST_CASE(valueFlowSwitchVariable);
@@ -1796,6 +1797,21 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+    }
+
+    void valueFlowForwardFunction() {
+        const char *code;
+
+        code = "class C {\n"
+               "public:\n"
+               "  C(int &i);\n"
+               "};\n"
+               "int f() {\n"
+               "  int x=1;\n"
+               "  C c(x);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, 1));
     }
 
     void valueFlowForwardLambda() {
