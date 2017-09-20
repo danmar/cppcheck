@@ -420,6 +420,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
                 tok2 = tok2->link();
             else if (tok2->str() == ",")
                 ++numberOfArguments;
+            else if (tok2->str() == ")")
+                break;
         }
         const ::Scope *typeScope = tok->variable()->typeScope();
         if (typeScope) {
