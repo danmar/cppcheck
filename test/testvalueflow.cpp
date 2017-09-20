@@ -1804,7 +1804,7 @@ private:
 
         code = "class C {\n"
                "public:\n"
-               "  C(int &i);\n"
+               "  C(int &i);\n" // non-const argument => might be changed
                "};\n"
                "int f() {\n"
                "  int x=1;\n"
@@ -1812,6 +1812,17 @@ private:
                "  return x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 8U, 1));
+
+        code = "class C {\n"
+               "public:\n"
+               "  C(const int &i);\n" // const argument => is not changed
+               "};\n"
+               "int f() {\n"
+               "  int x=1;\n"
+               "  C c(x);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 1));
     }
 
     void valueFlowForwardLambda() {
