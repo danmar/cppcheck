@@ -1,8 +1,7 @@
-CONFIG += qtestlib
-greaterThan(QT_MAJOR_VERSION, 4) {
-    QT += widgets # In Qt 5 widgets are in separate module
-    QT += printsupport # In Qt 5 QPrinter/QPrintDialog are in separate module
-}
+Qt += testlib
+QT += widgets
+QT += printsupport
+
 INCLUDEPATH += $${PWD}/..
 
 LIBS += -L$$PWD/../../externals

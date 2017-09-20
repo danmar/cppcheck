@@ -5,11 +5,12 @@ with cppcheck and shows list of found errors.
 
 Running
 -------
-You need Qt4 or Qt5 libraries installed in your system. Packages/files to install
+You need Qt5 libraries installed in your system. Packages/files to install
 depends on your operating system:
 - Windows: download Qt from http://www.qt.io/download/
 - Linux: install Qt using your package manager, look for packages having Qt
-  in their name, e.g. for Ubuntu install libqt4-core and libqt4-gui.
+  in their name, e.g. for Ubuntu install libqt5core5a, libqt5gui5, libqt5widgets5 
+  and libqt5printsupport5.
 
 Compiling
 ---------
@@ -26,11 +27,7 @@ Windows:
 Linux:
 - Install Qt development packages (make sure qmake -tool gets installed!). The
   names depend on distribution, but e.g. for Ubuntu the needed packages are:
-  * libqt4-core
-  * libqt4-gui
-  * libqt4-dev
-  * qt4-dev-tools
-  * qt4-qmake
+  * qt5-default 
 
 After you have needed libraries and tools installed, open command
 prompt/console, go to gui directory and run command:
