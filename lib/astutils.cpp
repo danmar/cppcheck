@@ -411,8 +411,25 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     if (!Token::Match(tok, "%name% ("))
         return false; // not a function => variable not changed
 
-    if (tok->varId())
-        return false; // Constructor call of tok => variable probably not changed by constructor call
+    // Constructor call
+    if (tok->variable() && tok->variable()->nameToken() == tok) {
+        // Find constructor..
+        const unsigned int argCount = numberOfArguments(tok);
+        const ::Scope *typeScope = tok->variable()->typeScope();
+        if (typeScope) {
+            for (std::list<Function>::const_iterator it = typeScope->functionList.begin(); it != typeScope->functionList.end(); ++it) {
+                if (!it->isConstructor() || it->argCount() < argCount)
+                    continue;
+                const Variable *arg = it->getArgumentVar(argnr);
+                if (arg && arg->isReference() && !arg->isConst())
+                    return true;
+            }
+            return false;
+        }
+        if (inconclusive)
+            *inconclusive = true;
+        return false;
+    }
 
     if (!tok->function()) {
         // if the library says 0 is invalid

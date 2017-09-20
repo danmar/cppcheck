@@ -1340,6 +1340,50 @@ static void handleKnownValuesInLoop(const Token                 *startToken,
     }
 }
 
+static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign, const ValueFlow::Value &rhsValue)
+{
+    if (lhsValue.isIntValue()) {
+        if (assign == "+=")
+            lhsValue.intvalue += rhsValue.intvalue;
+        else if (assign == "-=")
+            lhsValue.intvalue -= rhsValue.intvalue;
+        else if (assign == "*=")
+            lhsValue.intvalue *= rhsValue.intvalue;
+        else if (assign == "/=") {
+            if (rhsValue.intvalue == 0)
+                return false;
+            else
+                lhsValue.intvalue /= rhsValue.intvalue;
+        } else if (assign == "%=") {
+            if (rhsValue.intvalue == 0)
+                return false;
+            else
+                lhsValue.intvalue %= rhsValue.intvalue;
+        } else if (assign == "&=")
+            lhsValue.intvalue &= rhsValue.intvalue;
+        else if (assign == "|=")
+            lhsValue.intvalue |= rhsValue.intvalue;
+        else if (assign == "^=")
+            lhsValue.intvalue ^= rhsValue.intvalue;
+        else
+            return false;
+    } else if (lhsValue.isFloatValue()) {
+        if (assign == "+=")
+            lhsValue.floatValue += rhsValue.intvalue;
+        else if (assign == "-=")
+            lhsValue.floatValue -= rhsValue.intvalue;
+        else if (assign == "*=")
+            lhsValue.floatValue *= rhsValue.intvalue;
+        else if (assign == "/=")
+            lhsValue.floatValue /= rhsValue.intvalue;
+        else
+            return false;
+    } else {
+        return false;
+    }
+    return true;
+}
+
 static bool valueFlowForward(Token * const               startToken,
                              const Token * const         endToken,
                              const Variable * const      var,
@@ -1805,62 +1849,15 @@ static bool valueFlowForward(Token * const               startToken,
                 std::list<ValueFlow::Value>::iterator it;
                 // Erase values that are not int values..
                 for (it = values.begin(); it != values.end();) {
-                    if (it->isIntValue()) {
-                        bool ub = false;
-                        if (assign == "+=")
-                            it->intvalue += rhsValue.intvalue;
-                        else if (assign == "-=")
-                            it->intvalue -= rhsValue.intvalue;
-                        else if (assign == "*=")
-                            it->intvalue *= rhsValue.intvalue;
-                        else if (assign == "/=") {
-                            if (rhsValue.intvalue == 0)
-                                ub = true;
-                            else
-                                it->intvalue /= rhsValue.intvalue;
-                        } else if (assign == "%=") {
-                            if (rhsValue.intvalue == 0)
-                                ub = true;
-                            else
-                                it->intvalue %= rhsValue.intvalue;
-                        } else if (assign == "&=")
-                            it->intvalue &= rhsValue.intvalue;
-                        else if (assign == "|=")
-                            it->intvalue |= rhsValue.intvalue;
-                        else if (assign == "^=")
-                            it->intvalue ^= rhsValue.intvalue;
-                        else {
-                            values.clear();
-                            break;
-                        }
-                        if (ub)
-                            it = values.erase(it);
-                        else {
-                            const std::string info("Compound assignment '" + assign + "', assigned value is " + it->infoString());
-                            it->errorPath.push_back(ErrorPathItem(tok2, info));
-
-                            ++it;
-                        }
-                    } else if (it->isFloatValue()) {
-                        if (assign == "+=")
-                            it->floatValue += rhsValue.intvalue;
-                        else if (assign == "-=")
-                            it->floatValue -= rhsValue.intvalue;
-                        else if (assign == "*=")
-                            it->floatValue *= rhsValue.intvalue;
-                        else if (assign == "/=")
-                            it->floatValue /= rhsValue.intvalue;
-                        else {
-                            values.clear();
-                            break;
-                        }
-
+                    if (!evalAssignment(*it, assign, rhsValue)) {
+                        it = values.erase(it);
+                    } else {
                         const std::string info("Compound assignment '" + assign + "', assigned value is " + it->infoString());
                         it->errorPath.push_back(ErrorPathItem(tok2, info));
+
                         ++it;
-                    } else {
-                        it = values.erase(it);
                     }
+
                 }
                 if (values.empty()) {
                     if (settings->debugwarnings)
