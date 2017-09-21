@@ -114,6 +114,7 @@ private:
         TEST_CASE(test_4881); // similar to doWhileAssign (#4911), taken from #4881 with full code
 
         TEST_CASE(combine_wstrings);
+        TEST_CASE(combine_ustrings);
 
         // Simplify "not" to "!" (#345)
         TEST_CASE(not1);
@@ -488,29 +489,29 @@ private:
     }
 
     void combine_wstrings() {
-        const char code1[] =  "void foo()\n"
-                              "{\n"
-                              "const wchar_t *a =\n"
-                              "{\n"
-                              "L\"hello \"\n"
-                              "L\"world\"\n"
-                              "};\n"
-                              "}\n";
+        const char code[] =  "a = L\"hello \"  L\"world\" ;\n";
 
-        const char code2[] =  "void foo()\n"
-                              "{\n"
-                              "const wchar_t *a =\n"
-                              "{\n"
-                              "\"hello world\"\n"
-                              "};\n"
-                              "}\n";
+        const char expected[] =  "a = \"hello world\" ;";
 
         Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr(code1);
+        std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        ASSERT_EQUALS(tok(code2), tokenizer.tokens()->stringifyList(0, false));
-        ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(13) && tokenizer.tokens()->tokAt(13)->isLong());
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(2)->isLong());
+    }
+
+    void combine_ustrings() {
+        const char code[] =  "abc = u\"abc\";";
+
+        const char expected[] =  "abc = \"abc\" ;";
+
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(2)->isLong());
     }
 
     void double_plus() {
