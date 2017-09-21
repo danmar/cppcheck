@@ -1579,41 +1579,42 @@ void CheckOther::checkIncompleteStatement()
             tok = tok->link();
 
 
-        else if (Token::Match(tok, "[;{}] %str%|%num%")) {
-            // No warning if numeric constant is followed by a "." or ","
-            if (Token::Match(tok->next(), "%num% [,.]"))
-                continue;
+        if (!Token::Match(tok, "[;{}] %str%|%num%"))
+            continue;
 
-            // No warning for [;{}] (void *) 0 ;
-            if (Token::Match(tok, "[;{}] 0 ;") && (tok->next()->isCast() || tok->next()->isExpandedMacro()))
-                continue;
+        // No warning if numeric constant is followed by a "." or ","
+        if (Token::Match(tok->next(), "%num% [,.]"))
+            continue;
 
-            // bailout if there is a "? :" in this statement
-            bool bailout = false;
-            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "?") {
-                    bailout = true;
-                    break;
-                } else if (tok2->str() == ";")
-                    break;
-            }
-            if (bailout)
-                continue;
+        // No warning for [;{}] (void *) 0 ;
+        if (Token::Match(tok, "[;{}] 0 ;") && (tok->next()->isCast() || tok->next()->isExpandedMacro()))
+            continue;
 
-            // no warning if this is the last statement in a ({})
-            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(")
-                    tok2 = tok2->link();
-                else if (Token::Match(tok2, "[;{}]")) {
-                    bailout = Token::simpleMatch(tok2, "; } )");
-                    break;
-                }
-            }
-            if (bailout)
-                continue;
-
-            constStatementError(tok->next(), tok->next()->isNumber() ? "numeric" : "string");
+        // bailout if there is a "? :" in this statement
+        bool bailout = false;
+        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
+            if (tok2->str() == "?") {
+                bailout = true;
+                break;
+            } else if (tok2->str() == ";")
+                break;
         }
+        if (bailout)
+            continue;
+
+        // no warning if this is the last statement in a ({})
+        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+            if (tok2->str() == "(")
+                tok2 = tok2->link();
+            else if (Token::Match(tok2, "[;{}]")) {
+                bailout = Token::simpleMatch(tok2, "; } )");
+                break;
+            }
+        }
+        if (bailout)
+            continue;
+
+        constStatementError(tok->next(), tok->next()->isNumber() ? "numeric" : "string");
     }
 }
 
