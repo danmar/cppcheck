@@ -244,6 +244,11 @@ private:
               "    };\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct s foo() {\n"
+              "  return (struct s){0};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void cast() {

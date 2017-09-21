@@ -1571,20 +1571,13 @@ void CheckOther::checkIncompleteStatement()
         if (Token::Match(tok, "(|["))
             tok = tok->link();
 
-        else if (Token::simpleMatch(tok, "= {"))
-            tok = tok->next()->link();
+        else if (tok->str() == "{" && tok->astParent())
+            tok = tok->link();
 
         // C++11 struct/array/etc initialization in initializer list
         else if (Token::Match(tok->previous(), "%name%|] {") && !Token::findsimplematch(tok,";",tok->link()))
             tok = tok->link();
 
-        // C++11 vector initialization / return { .. }
-        else if (Token::Match(tok,"> %name% {") || Token::Match(tok, "[;{}] return {"))
-            tok = tok->linkAt(2);
-
-        // C++11 initialize set in initializer list : [,:] std::set<int>{1} [{,]
-        else if (Token::simpleMatch(tok,"> {") && tok->link())
-            tok = tok->next()->link();
 
         else if (Token::Match(tok, "[;{}] %str%|%num%")) {
             // No warning if numeric constant is followed by a "." or ","
