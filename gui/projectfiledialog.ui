@@ -521,6 +521,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="mToolClangAnalyzer">
+         <property name="text">
+          <string>Clang analyzer</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="mToolClangTidy">
          <property name="text">
           <string>Clang-tidy</string>

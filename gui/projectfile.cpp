@@ -639,11 +639,12 @@ QStringList ProjectFile::fromNativeSeparators(const QStringList &paths)
     return ret;
 }
 
-QStringList ProjectFile::getAddonsAndTools() const {
-       QStringList ret(mAddons);
-       if (mClangAnalyzer)
-           ret << CLANG_ANALYZER;
-       if (mClangTidy)
-           ret << CLANG_TIDY;
-       return ret;
-   }
+QStringList ProjectFile::getAddonsAndTools() const
+{
+    QStringList ret(mAddons);
+    if (mClangAnalyzer)
+        ret << CLANG_ANALYZER;
+    if (mClangTidy)
+        ret << CLANG_TIDY;
+    return ret;
+}
