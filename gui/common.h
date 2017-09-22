@@ -24,6 +24,8 @@
 /// @addtogroup GUI
 /// @{
 
+#define CLANG_ANALYZER   "clang-analyzer"
+#define CLANG_TIDY       "clang-tidy"
 
 /**
 * QSetting value names

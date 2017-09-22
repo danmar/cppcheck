@@ -71,8 +71,8 @@ public:
     */
     void saveSettings(QSettings &settings) const;
 
-    void setAddons(const QStringList &addons) {
-        mAddons = addons;
+    void setAddonsAndTools(const QStringList &addonsAndTools) {
+        mAddonsAndTools = addonsAndTools;
     }
 
     void setSuppressions(const QStringList &s) {
@@ -261,7 +261,7 @@ protected:
 
     bool mAnalyseWholeProgram;
 
-    QStringList mAddons;
+    QStringList mAddonsAndTools;
     QStringList mSuppressions;
     QString mPythonPath;
     QString mClangPath;

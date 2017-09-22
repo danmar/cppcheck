@@ -134,7 +134,6 @@ void ProjectFileDialog::saveSettings() const
 
 void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
 {
-    mUI.mToolClangTidy->setChecked(projectFile->getAddons().contains("clang-tidy"));
     setRootPath(projectFile->getRootPath());
     setBuildDir(projectFile->getBuildDir());
     setIncludepaths(projectFile->getIncludeDirs());
@@ -148,6 +147,8 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mAddonThreadSafety->setChecked(projectFile->getAddons().contains("threadsafety"));
     mUI.mAddonY2038->setChecked(projectFile->getAddons().contains("y2038"));
     mUI.mAddonCert->setChecked(projectFile->getAddons().contains("cert"));
+    //mUI.mToolClangAnalyzer->setChecked(projectFile->getClangAnalyzer());
+    mUI.mToolClangTidy->setChecked(projectFile->getClangTidy());
     QString tags;
     foreach (const QString tag, projectFile->getTags()) {
         if (tags.isEmpty())
@@ -172,8 +173,6 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setLibraries(getLibraries());
     projectFile->setSuppressions(getSuppressions());
     QStringList list;
-    if (mUI.mToolClangTidy->isChecked())
-        list << "clang-tidy";
     if (mUI.mAddonThreadSafety->isChecked())
         list << "threadsafety";
     if (mUI.mAddonY2038->isChecked())
@@ -181,6 +180,8 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     if (mUI.mAddonCert->isChecked())
         list << "cert";
     projectFile->setAddons(list);
+    //projectFile->setClangAnalyzer(mUI.mToolClangAnalyzer->isChecked());
+    projectFile->setClangTidy(mUI.mToolClangTidy->isChecked());
     QStringList tags(mUI.mEditTags->text().split(";"));
     tags.removeAll(QString());
     projectFile->setTags(tags);

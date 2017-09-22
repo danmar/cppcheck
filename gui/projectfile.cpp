@@ -23,6 +23,7 @@
 #include <QFile>
 #include <QDir>
 #include "projectfile.h"
+#include "common.h"
 
 static const char ProjectElementName[] = "project";
 static const char ProjectVersionAttrib[] = "version";
@@ -53,6 +54,8 @@ static const char SuppressionsElementName[] = "suppressions";
 static const char SuppressionElementName[] = "suppression";
 static const char AddonElementName[] = "addon";
 static const char AddonsElementName[] = "addons";
+static const char ToolElementName[] = "tool";
+static const char ToolsElementName[] = "tools";
 static const char TagsElementName[] = "tags";
 static const char TagElementName[] = "tag";
 
@@ -83,6 +86,7 @@ void ProjectFile::clear()
     mLibraries.clear();
     mSuppressions.clear();
     mAddons.clear();
+    mClangAnalyzer = mClangTidy = false;
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -152,6 +156,14 @@ bool ProjectFile::read(const QString &filename)
             // Addons
             if (insideProject && xmlReader.name() == AddonsElementName)
                 readStringList(mAddons, xmlReader, AddonElementName);
+
+            // Tools
+            if (insideProject && xmlReader.name() == ToolsElementName) {
+                QStringList tools;
+                readStringList(tools, xmlReader, ToolElementName);
+                mClangAnalyzer = tools.contains(CLANG_ANALYZER);
+                mClangTidy = tools.contains(CLANG_TIDY);
+            }
 
             if (insideProject && xmlReader.name() == TagsElementName)
                 readStringList(mTags, xmlReader, TagElementName);
@@ -588,6 +600,16 @@ bool ProjectFile::write(const QString &filename)
                     AddonsElementName,
                     AddonElementName);
 
+    QStringList tools;
+    if (mClangAnalyzer)
+        tools << CLANG_ANALYZER;
+    if (mClangTidy)
+        tools << CLANG_TIDY;
+    writeStringList(xmlWriter,
+                    tools,
+                    ToolsElementName,
+                    ToolElementName);
+
     writeStringList(xmlWriter, mTags, TagsElementName, TagElementName);
 
     xmlWriter.writeEndDocument();
@@ -616,3 +638,12 @@ QStringList ProjectFile::fromNativeSeparators(const QStringList &paths)
         ret << QDir::fromNativeSeparators(path);
     return ret;
 }
+
+QStringList ProjectFile::getAddonsAndTools() const {
+       QStringList ret(mAddons);
+       if (mClangAnalyzer)
+           ret << CLANG_ANALYZER;
+       if (mClangTidy)
+           ret << CLANG_TIDY;
+       return ret;
+   }

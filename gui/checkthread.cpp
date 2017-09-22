@@ -25,9 +25,7 @@
 #include "erroritem.h"
 #include "threadresult.h"
 #include "cppcheck.h"
-
-static const char CLANG[] = "clang";
-static const char CLANGTIDY[] = "clang-tidy";
+#include "common.h"
 
 CheckThread::CheckThread(ThreadResult &result) :
     mState(Ready),
@@ -82,7 +80,7 @@ void CheckThread::run()
     while (!file.isEmpty() && mState == Running) {
         qDebug() << "Checking file" << file;
         mCppcheck.check(file.toStdString());
-        runAddons(addonPath, nullptr, file);
+        runAddonsAndTools(addonPath, nullptr, file);
         emit fileChecked(file);
 
         if (mState == Running)
@@ -94,7 +92,7 @@ void CheckThread::run()
         file = QString::fromStdString(fileSettings.filename);
         qDebug() << "Checking file" << file;
         mCppcheck.check(fileSettings);
-        runAddons(addonPath, &fileSettings, QString::fromStdString(fileSettings.filename));
+        runAddonsAndTools(addonPath, &fileSettings, QString::fromStdString(fileSettings.filename));
         emit fileChecked(file);
 
         if (mState == Running)
@@ -109,12 +107,12 @@ void CheckThread::run()
     emit done();
 }
 
-void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName)
+void CheckThread::runAddonsAndTools(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName)
 {
     QString dumpFile;
 
-    foreach (const QString addon, mAddons) {
-        if (addon == CLANG || addon == CLANGTIDY) {
+    foreach (const QString addon, mAddonsAndTools) {
+        if (addon == CLANG_ANALYZER || addon == CLANG_TIDY) {
             if (!fileSettings)
                 continue;
 
@@ -195,7 +193,7 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                 QFile::remove(analyzerInfoFile + '.' + addon + "-results");
             }
 
-            if (addon == CLANG) {
+            if (addon == CLANG_ANALYZER) {
                 args.insert(0,"--analyze");
                 args.insert(1, "-Xanalyzer");
                 args.insert(2, "-analyzer-output=text");
@@ -206,7 +204,13 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                 args.insert(2, "--");
             }
 
-            const QString cmd(mClangPath.isEmpty() ? addon : (mClangPath + '/' + addon + ".exe"));
+#ifdef Q_OS_WIN
+            const QString ext = ".exe";
+#else
+            const QString ext = "";
+#endif
+            const QString exename(addon == CLANG_ANALYZER ? ("clang" + ext) : ("clang-tidy" + ext));
+            const QString cmd(mClangPath.isEmpty() ? exename : (mClangPath + '/' + exename));
             {
                 QString debug(cmd.contains(" ") ? ('\"' + cmd + '\"') : cmd);
                 foreach (QString arg, args) {
@@ -383,7 +387,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
                 errorItem.severity = Severity::SeverityType::style;
         } else {
             message = r1.cap(5);
-            id = CLANG;
+            id = CLANG_ANALYZER;
         }
 
         if (errorItem.errorPath.size() == 1) {

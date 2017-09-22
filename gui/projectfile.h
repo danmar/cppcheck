@@ -122,12 +122,26 @@ public:
         return mAddons;
     }
 
+    /**
+    * @brief Get list of addons and tools.
+    * @return list of addons and tools.
+    */
+    QStringList getAddonsAndTools() const;
+
     bool getClangAnalyzer() const {
-        return mAddons.contains("clang-analyzer");
+        return mClangAnalyzer;
+    }
+
+    void setClangAnalyzer(bool c) {
+        mClangAnalyzer = c;
     }
 
     bool getClangTidy() const {
-        return mAddons.contains("clang-tidy");
+        return mClangTidy;
+    }
+
+    void setClangTidy(bool c) {
+        mClangTidy = c;
     }
 
     QStringList getTags() const {
@@ -354,6 +368,12 @@ private:
      * @brief List of addons.
      */
     QStringList mAddons;
+
+    /** @brief Execute clang analyzer? */
+    bool mClangAnalyzer;
+
+    /** @brief Execute clang-tidy? */
+    bool mClangTidy;
 
     /**
      * @brief Warning tags

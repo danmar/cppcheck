@@ -445,7 +445,7 @@ void MainWindow::doAnalyzeProject(ImportProject p)
 
     //mThread->SetanalyzeProject(true);
     if (mProjectFile) {
-        mThread->setAddons(mProjectFile->getAddons());
+        mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools());
         mThread->setPythonPath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         QString clangHeaders = mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString();
         mThread->setClangIncludePaths(clangHeaders.split(";"));
@@ -1417,7 +1417,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
     QFileInfo inf(projectFile->getFilename());
     const QString rootpath = projectFile->getRootPath();
 
-    mThread->setAddons(projectFile->getAddons());
+    mThread->setAddonsAndTools(projectFile->getAddonsAndTools());
     mUI.mResults->setTags(projectFile->getTags());
 
     // If the root path is not given or is not "current dir", use project
