@@ -155,8 +155,19 @@ void CheckThread::runAddonsAndTools(const QString &addonPath, const ImportProjec
 
             if (!fileSettings->standard.empty())
                 args << ("-std=" + QString::fromStdString(fileSettings->standard));
-            else
-                args << "-std=c++14";
+            else {
+                switch (mCppcheck.settings().standards.cpp) {
+                case Standards::CPP03:
+                    args << "-std=c++03";
+                    break;
+                case Standards::CPP11:
+                    args << "-std=c++11";
+                    break;
+                case Standards::CPP14:
+                    args << "-std=c++14";
+                    break;
+                };
+            }
 
             QString analyzerInfoFile;
 

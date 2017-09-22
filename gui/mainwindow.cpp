@@ -199,6 +199,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     mUI.mActionCpp03->setActionGroup(mCppStandardActions);
     mUI.mActionCpp11->setActionGroup(mCppStandardActions);
+    mUI.mActionCpp14->setActionGroup(mCppStandardActions);
 
     mUI.mActionEnforceC->setActionGroup(mSelectLanguageActions);
     mUI.mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
@@ -276,7 +277,9 @@ void MainWindow::loadSettings()
     const bool stdCpp03 = mSettings->value(SETTINGS_STD_CPP03, false).toBool();
     mUI.mActionCpp03->setChecked(stdCpp03);
     const bool stdCpp11 = mSettings->value(SETTINGS_STD_CPP11, true).toBool();
-    mUI.mActionCpp11->setChecked(stdCpp11 || !stdCpp03);
+    mUI.mActionCpp11->setChecked(stdCpp11 && !stdCpp03);
+    const bool stdCpp14 = mSettings->value(SETTINGS_STD_CPP14, true).toBool();
+    mUI.mActionCpp14->setChecked(stdCpp14 && !stdCpp03 && !stdCpp11);
     const bool stdC89 = mSettings->value(SETTINGS_STD_C89, false).toBool();
     mUI.mActionC89->setChecked(stdC89);
     const bool stdC11 = mSettings->value(SETTINGS_STD_C11, false).toBool();
@@ -350,6 +353,7 @@ void MainWindow::saveSettings() const
 
     mSettings->setValue(SETTINGS_STD_CPP03, mUI.mActionCpp03->isChecked());
     mSettings->setValue(SETTINGS_STD_CPP11, mUI.mActionCpp11->isChecked());
+    mSettings->setValue(SETTINGS_STD_CPP14, mUI.mActionCpp14->isChecked());
     mSettings->setValue(SETTINGS_STD_C89, mUI.mActionC89->isChecked());
     mSettings->setValue(SETTINGS_STD_C99, mUI.mActionC99->isChecked());
     mSettings->setValue(SETTINGS_STD_C11, mUI.mActionC11->isChecked());
@@ -449,16 +453,16 @@ void MainWindow::doAnalyzeProject(ImportProject p)
         mThread->setPythonPath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         QString clangHeaders = mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString();
         mThread->setClangIncludePaths(clangHeaders.split(";"));
-#ifdef Q_OS_WIN
         QString clangPath = mSettings->value(SETTINGS_CLANG_PATH,QString()).toString();
+#ifdef Q_OS_WIN
         if (clangPath.isEmpty()) {
             // Try to autodetect clang
             if (QFileInfo("C:/Program Files/LLVM/bin/clang.exe").exists())
                 clangPath = "C:/Program Files/LLVM/bin";
         }
+#endif
         mThread->setClangPath(clangPath);
         mThread->setSuppressions(mProjectFile->getSuppressions());
-#endif
     }
     mThread->setProject(p);
     mThread->check(checkSettings);
@@ -868,7 +872,12 @@ Settings MainWindow::getCppcheckSettings()
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
     result.platformType = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
-    result.standards.cpp = mSettings->value(SETTINGS_STD_CPP11, true).toBool() ? Standards::CPP11 : Standards::CPP03;
+    if (mSettings->value(SETTINGS_STD_CPP03, false).toBool())
+        result.standards.cpp = Standards::CPP03;
+    else if (mSettings->value(SETTINGS_STD_CPP11, false).toBool())
+        result.standards.cpp = Standards::CPP11;
+    else if (mSettings->value(SETTINGS_STD_CPP14, true).toBool())
+        result.standards.cpp = Standards::CPP14;
     result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
     result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
