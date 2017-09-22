@@ -397,13 +397,21 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         QString message,id;
         if (r2.exactMatch(r1.cap(5))) {
             message = r2.cap(1);
-            id = tool + '-' + r2.cap(2);
-            if (r2.cap(2) == "performance")
-                errorItem.severity = Severity::SeverityType::performance;
-            else if (r2.cap(2) == "portability")
-                errorItem.severity = Severity::SeverityType::portability;
-            else if (r2.cap(2) == "readability")
-                errorItem.severity = Severity::SeverityType::style;
+            const QString id1(r2.cap(2));
+            if (id1.startsWith("clang"))
+                id = id1;
+            else
+                id = tool + '-' + r2.cap(2);
+            if (tool == CLANG_TIDY) {
+                if (id1.startsWith("performance"))
+                    errorItem.severity = Severity::SeverityType::performance;
+                else if (id1.startsWith("portability"))
+                    errorItem.severity = Severity::SeverityType::portability;
+                else if (id1.startsWith("cert") || (id1.startsWith("misc") && !id1.contains("unused")))
+                    errorItem.severity = Severity::SeverityType::warning;
+                else
+                    errorItem.severity = Severity::SeverityType::style;
+            }
         } else {
             message = r1.cap(5);
             id = CLANG_ANALYZER;
