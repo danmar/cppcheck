@@ -165,7 +165,7 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
 if len(sys.argv) <= 1 or '--help' in sys.argv:
     print('Extract test cases from test file')
     print(
-        'Syntax: extracttests.py [--html=folder] [--xml] [--code=folder] path/testfile.cpp')
+        'Syntax: extracttests.py [--html=folder] [--xml] [--code=folder] [--onlyTP] path/testfile.cpp')
     sys.exit(0)
 
 # parse command line
@@ -173,9 +173,12 @@ xml = False
 filename = None
 htmldir = None
 codedir = None
+onlyTP = None
 for arg in sys.argv[1:]:
     if arg == '--xml':
         xml = True
+    elif arg == '--onlyTP':
+        onlyTP = True
     elif arg.startswith('--html='):
         htmldir = arg[7:]
     elif arg.startswith('--code='):
@@ -284,6 +287,9 @@ if filename is not None:
         errors = open(codedir + 'errors.txt', 'w')
 
         for node in e.nodes:
+            if onlyTP and node['expected'] == '':
+                continue
+
             testnum = testnum + 1
 
             functionName = node['functionName']
