@@ -27,6 +27,7 @@
 #include "projectfile.h"
 #include "statsdialog.h"
 #include "checkstatistics.h"
+#include "common.h"
 
 static const QString CPPCHECK("cppcheck");
 
