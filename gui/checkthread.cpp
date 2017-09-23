@@ -25,9 +25,7 @@
 #include "erroritem.h"
 #include "threadresult.h"
 #include "cppcheck.h"
-
-static const char CLANG[] = "clang";
-static const char CLANGTIDY[] = "clang-tidy";
+#include "common.h"
 
 CheckThread::CheckThread(ThreadResult &result) :
     mState(Ready),
@@ -82,7 +80,7 @@ void CheckThread::run()
     while (!file.isEmpty() && mState == Running) {
         qDebug() << "Checking file" << file;
         mCppcheck.check(file.toStdString());
-        runAddons(addonPath, nullptr, file);
+        runAddonsAndTools(addonPath, nullptr, file);
         emit fileChecked(file);
 
         if (mState == Running)
@@ -94,7 +92,7 @@ void CheckThread::run()
         file = QString::fromStdString(fileSettings.filename);
         qDebug() << "Checking file" << file;
         mCppcheck.check(fileSettings);
-        runAddons(addonPath, &fileSettings, QString::fromStdString(fileSettings.filename));
+        runAddonsAndTools(addonPath, &fileSettings, QString::fromStdString(fileSettings.filename));
         emit fileChecked(file);
 
         if (mState == Running)
@@ -109,12 +107,12 @@ void CheckThread::run()
     emit done();
 }
 
-void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName)
+void CheckThread::runAddonsAndTools(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName)
 {
     QString dumpFile;
 
-    foreach (const QString addon, mAddons) {
-        if (addon == CLANG || addon == CLANGTIDY) {
+    foreach (const QString addon, mAddonsAndTools) {
+        if (addon == CLANG_ANALYZER || addon == CLANG_TIDY) {
             if (!fileSettings)
                 continue;
 
@@ -157,6 +155,19 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
 
             if (!fileSettings->standard.empty())
                 args << ("-std=" + QString::fromStdString(fileSettings->standard));
+            else {
+                switch (mCppcheck.settings().standards.cpp) {
+                case Standards::CPP03:
+                    args << "-std=c++03";
+                    break;
+                case Standards::CPP11:
+                    args << "-std=c++11";
+                    break;
+                case Standards::CPP14:
+                    args << "-std=c++14";
+                    break;
+                };
+            }
 
             QString analyzerInfoFile;
 
@@ -195,18 +206,30 @@ void CheckThread::runAddons(const QString &addonPath, const ImportProject::FileS
                 QFile::remove(analyzerInfoFile + '.' + addon + "-results");
             }
 
-            if (addon == CLANG) {
+            if (addon == CLANG_ANALYZER) {
+                /*
+                // Using clang
                 args.insert(0,"--analyze");
                 args.insert(1, "-Xanalyzer");
                 args.insert(2, "-analyzer-output=text");
                 args << fileName;
+                */
+                // Using clang-tidy
+                args.insert(0,"-checks=-*,clang-analyzer-*");
+                args.insert(1, fileName);
+                args.insert(2, "--");
             } else {
-                args.insert(0,"-checks=*,-clang*,-llvm*");
+                args.insert(0,"-checks=*,-clang-analyzer-*,-llvm*");
                 args.insert(1, fileName);
                 args.insert(2, "--");
             }
 
-            const QString cmd(mClangPath.isEmpty() ? addon : (mClangPath + '/' + addon + ".exe"));
+#ifdef Q_OS_WIN
+            const QString ext = ".exe";
+#else
+            const QString ext = "";
+#endif
+            const QString cmd(mClangPath.isEmpty() ? ("clang-tidy" + ext) : (mClangPath + "/clang-tidy" + ext));
             {
                 QString debug(cmd.contains(" ") ? ('\"' + cmd + '\"') : cmd);
                 foreach (QString arg, args) {
@@ -374,16 +397,24 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         QString message,id;
         if (r2.exactMatch(r1.cap(5))) {
             message = r2.cap(1);
-            id = tool + '-' + r2.cap(2);
-            if (r2.cap(2) == "performance")
-                errorItem.severity = Severity::SeverityType::performance;
-            else if (r2.cap(2) == "portability")
-                errorItem.severity = Severity::SeverityType::portability;
-            else if (r2.cap(2) == "readability")
-                errorItem.severity = Severity::SeverityType::style;
+            const QString id1(r2.cap(2));
+            if (id1.startsWith("clang"))
+                id = id1;
+            else
+                id = tool + '-' + r2.cap(2);
+            if (tool == CLANG_TIDY) {
+                if (id1.startsWith("performance"))
+                    errorItem.severity = Severity::SeverityType::performance;
+                else if (id1.startsWith("portability"))
+                    errorItem.severity = Severity::SeverityType::portability;
+                else if (id1.startsWith("cert") || (id1.startsWith("misc") && !id1.contains("unused")))
+                    errorItem.severity = Severity::SeverityType::warning;
+                else
+                    errorItem.severity = Severity::SeverityType::style;
+            }
         } else {
             message = r1.cap(5);
-            id = CLANG;
+            id = CLANG_ANALYZER;
         }
 
         if (errorItem.errorPath.size() == 1) {

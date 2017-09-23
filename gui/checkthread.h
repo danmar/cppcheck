@@ -52,8 +52,8 @@ public:
     */
     void analyseWholeProgram(const QStringList &files);
 
-    void setAddons(const QStringList &addons) {
-        mAddons = addons;
+    void setAddonsAndTools(const QStringList &addonsAndTools) {
+        mAddonsAndTools = addonsAndTools;
     }
 
     void setPythonPath(const QString &p) {
@@ -124,14 +124,14 @@ protected:
 private:
     QString getAddonPath() const;
 
-    void runAddons(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName);
+    void runAddonsAndTools(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName);
 
     void parseAddonErrors(QString err, QString tool);
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
 
     QStringList mFiles;
     bool mAnalyseWholeProgram;
-    QStringList mAddons;
+    QStringList mAddonsAndTools;
     QString mPythonPath;
     QString mDataDir;
     QString mClangPath;

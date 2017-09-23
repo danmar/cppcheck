@@ -136,6 +136,7 @@
      </property>
      <addaction name="mActionCpp03"/>
      <addaction name="mActionCpp11"/>
+     <addaction name="mActionCpp14"/>
     </widget>
     <widget class="QMenu" name="menuC_standard">
      <property name="title">
@@ -681,7 +682,7 @@
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>C++&amp;11</string>
@@ -776,6 +777,17 @@
    </property>
    <property name="text">
     <string>E&amp;nforce C</string>
+   </property>
+  </action>
+  <action name="mActionCpp14">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C++14</string>
    </property>
   </action>
  </widget>

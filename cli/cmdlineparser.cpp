@@ -523,6 +523,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->standards.cpp = Standards::CPP03;
             } else if (std::strcmp(argv[i], "--std=c++11") == 0) {
                 _settings->standards.cpp = Standards::CPP11;
+            } else if (std::strcmp(argv[i], "--std=c++14") == 0) {
+                _settings->standards.cpp = Standards::CPP14;
             }
 
             // Output formatter
@@ -985,7 +987,9 @@ void CmdLineParser::PrintHelp()
               "                          * c++03\n"
               "                                 C++ code is C++03 compatible\n"
               "                          * c++11\n"
-              "                                 C++ code is C++11 compatible (default)\n"
+              "                                 C++ code is C++11 compatible\n"
+              "                          * c++14\n"
+              "                                 C++ code is C++14 compatible (default)\n"
               "                         More than one --std can be used:\n"
               "                           'cppcheck --std=c99 --std=posix file.c'\n"
               "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"

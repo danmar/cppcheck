@@ -39,7 +39,7 @@ namespace ValueFlow {
         typedef std::pair<const Token *, std::string> ErrorPathItem;
         typedef std::list<ErrorPathItem> ErrorPath;
 
-        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(nullptr), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(nullptr), varId(0U), conditional(false), defaultArg(false), valueKind(ValueKind::Possible) {}
         Value(const Token *c, long long val);
 
         bool operator==(const Value &rhs) const {
@@ -71,7 +71,6 @@ namespace ValueFlow {
                    condition == rhs.condition &&
                    varId == rhs.varId &&
                    conditional == rhs.conditional &&
-                   inconclusive == rhs.inconclusive &&
                    defaultArg == rhs.defaultArg &&
                    valueKind == rhs.valueKind;
         }
@@ -121,9 +120,6 @@ namespace ValueFlow {
         /** Conditional value */
         bool conditional;
 
-        /** Is this value inconclusive? */
-        bool inconclusive;
-
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
 
@@ -144,7 +140,9 @@ namespace ValueFlow {
             /** This value is possible, other unlisted values may also be possible */
             Possible,
             /** Only listed values are possible */
-            Known
+            Known,
+            /** Inconclusive */
+            Inconclusive
         } valueKind;
 
         void setKnown() {
@@ -161,6 +159,15 @@ namespace ValueFlow {
 
         bool isPossible() const {
             return valueKind == ValueKind::Possible;
+        }
+
+        void setInconclusive(bool inconclusive = true) {
+            if (inconclusive)
+                valueKind = ValueKind::Inconclusive;
+        }
+
+        bool isInconclusive() const {
+            return valueKind == ValueKind::Inconclusive;
         }
 
         void changeKnownToPossible() {

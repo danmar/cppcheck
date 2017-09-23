@@ -382,7 +382,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     (value1->varId == value2->varId && value1->varvalue == value2->varvalue && value1->isIntValue() && value2->isIntValue())) {
                     ValueFlow::Value result(0);
                     result.condition = value1->condition ? value1->condition : value2->condition;
-                    result.inconclusive = value1->inconclusive | value2->inconclusive;
+                    result.setInconclusive(value1->isInconclusive() | value2->isInconclusive());
                     result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
                     result.varvalue = (result.varId == value1->varId) ? value1->varvalue : value2->varvalue;
                     result.errorPath = (value1->errorPath.empty() ? value2 : value1)->errorPath;
@@ -593,7 +593,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     (value1->varId == value2->varId && value1->varvalue == value2->varvalue)) {
                     ValueFlow::Value result(0);
                     result.condition = value1->condition ? value1->condition : value2->condition;
-                    result.inconclusive = value1->inconclusive | value2->inconclusive;
+                    result.setInconclusive(value1->isInconclusive() | value2->isInconclusive());
                     result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
                     result.varvalue = (result.varId == value1->varId) ? value1->intvalue : value2->intvalue;
                     if (value1->valueKind == value2->valueKind)
@@ -1080,8 +1080,8 @@ static void valueFlowReverse(TokenList *tokenlist,
                     bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                 break;
             }
-            val.inconclusive |= inconclusive;
-            val2.inconclusive |= inconclusive;
+            val.setInconclusive(inconclusive);
+            val2.setInconclusive(inconclusive);
 
             // skip if variable is conditionally used in ?: expression
             if (const Token *parent = skipValueInConditionalExpression(tok2)) {
@@ -1989,18 +1989,14 @@ static bool valueFlowForward(Token * const               startToken,
             }
             if (inconclusive) {
                 std::list<ValueFlow::Value>::iterator it;
-                for (it = values.begin(); it != values.end(); ++it) {
-                    it->inconclusive = true;
-                    it->changeKnownToPossible();
-                }
+                for (it = values.begin(); it != values.end(); ++it)
+                    it->setInconclusive();
             }
             if (tok2->strAt(1) == "." && tok2->next()->originalName() != "->") {
                 if (settings->inconclusive) {
                     std::list<ValueFlow::Value>::iterator it;
-                    for (it = values.begin(); it != values.end(); ++it) {
-                        it->inconclusive = true;
-                        it->changeKnownToPossible();
-                    }
+                    for (it = values.begin(); it != values.end(); ++it)
+                        it->setInconclusive();
                 } else {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by member function");
@@ -3176,7 +3172,6 @@ ValueFlow::Value::Value(const Token *c, long long val)
       condition(c),
       varId(0U),
       conditional(false),
-      inconclusive(false),
       defaultArg(false),
       valueKind(ValueKind::Possible)
 {

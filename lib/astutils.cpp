@@ -276,21 +276,45 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     }
 
     if (!isNot && comp2.empty()) {
-        if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure) &&
-            cond1->astOperand2() && cond1->astOperand2()->hasKnownIntValue() &&
-            cond2->astOperand2() && cond2->astOperand2()->hasKnownIntValue()) {
-            const ValueFlow::Value &rhsValue1 = cond1->astOperand2()->values().front();
-            const ValueFlow::Value &rhsValue2 = cond2->astOperand2()->values().front();
-            bool secondAlwaysFalse = false;
-
-            if (comp1 == "<" || comp1 == "<=")
-                secondAlwaysFalse = Token::Match(cond2, "==|>|>=") && (rhsValue1.intvalue < rhsValue2.intvalue);
-            else if (comp1 == ">=" || comp1 == ">")
-                secondAlwaysFalse = Token::Match(cond2, "==|<|<=") && (rhsValue1.intvalue > rhsValue2.intvalue);
-
-            if (secondAlwaysFalse)
-                return true;
+        const Token *expr1 = nullptr, *value1 = nullptr, *expr2 = nullptr, *value2 = nullptr;
+        std::string op1 = cond1->str(), op2 = cond2->str();
+        if (cond1->astOperand2()->hasKnownIntValue()) {
+            expr1 = cond1->astOperand1();
+            value1 = cond1->astOperand2();
+        } else if (cond1->astOperand1()->hasKnownIntValue()) {
+            expr1 = cond1->astOperand2();
+            value1 = cond1->astOperand1();
+            if (op1[0] == '>')
+                op1[0] = '<';
+            else if (op1[0] == '<')
+                op1[0] = '>';
         }
+        if (cond2->astOperand2()->hasKnownIntValue()) {
+            expr2 = cond2->astOperand1();
+            value2 = cond2->astOperand2();
+        } else if (cond2->astOperand1()->hasKnownIntValue()) {
+            expr2 = cond2->astOperand2();
+            value2 = cond2->astOperand1();
+            if (op2[0] == '>')
+                op2[0] = '<';
+            else if (op2[0] == '<')
+                op2[0] = '>';
+        }
+        if (!expr1 || !value1 || !expr2 || !value2) {
+            return false;
+        }
+        if (!isSameExpression(cpp, true, expr1, expr2, library, pure))
+            return false;
+
+        const ValueFlow::Value &rhsValue1 = value1->values().front();
+        const ValueFlow::Value &rhsValue2 = value2->values().front();
+
+        if (op1 == "<" || op1 == "<=")
+            return (op2 == "==" || op2 == ">" || op2 == ">=") && (rhsValue1.intvalue < rhsValue2.intvalue);
+        else if (op1 == ">=" || op1 == ">")
+            return (op2 == "==" || op2 == "<" || op2 == "<=") && (rhsValue1.intvalue > rhsValue2.intvalue);
+
+        return false;
     }
 
     // is condition opposite?
@@ -408,7 +432,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     tok = tok ? tok->previous() : nullptr;
     if (tok && tok->link() && tok->str() == ">")
         tok = tok->link()->previous();
-    if (!Token::Match(tok, "%name% ("))
+    if (!Token::Match(tok, "%name% [(<]"))
         return false; // not a function => variable not changed
 
     // Constructor call

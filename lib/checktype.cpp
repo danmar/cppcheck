@@ -110,7 +110,7 @@ void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Val
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
 
-    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, id, errmsg.str(), CWE758, rhsbits.inconclusive);
+    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, id, errmsg.str(), CWE758, rhsbits.isInconclusive());
 }
 
 void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
@@ -129,7 +129,7 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
 
-    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, id, errmsg.str(), CWE758, rhsbits.inconclusive);
+    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, id, errmsg.str(), CWE758, rhsbits.isInconclusive());
 }
 
 //---------------------------------------------------------------------------
@@ -198,7 +198,7 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
                 "integerOverflow",
                 msg,
                 CWE190,
-                value.inconclusive);
+                value.isInconclusive());
 }
 
 //---------------------------------------------------------------------------
@@ -410,5 +410,5 @@ void CheckType::floatToIntegerOverflowError(const Token *tok, const ValueFlow::V
     reportError(getErrorPath(tok, &value, "float to integer conversion"),
                 value.errorSeverity() ? Severity::error : Severity::warning,
                 "floatConversionOverflow",
-                errmsg.str(), CWE190, value.inconclusive);
+                errmsg.str(), CWE190, value.isInconclusive());
 }

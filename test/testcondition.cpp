@@ -1764,6 +1764,13 @@ private:
                       "[test.cpp:15] -> [test.cpp:16]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
                       "[test.cpp:19] -> [test.cpp:20]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
                       , errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x < 4) {\n"
+              "    if (10 < x) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
     }
 
     void oppositeInnerConditionAnd() {

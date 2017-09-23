@@ -1362,6 +1362,8 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << " known=\"true\"";
                 else if (it->isPossible())
                     out << " possible=\"true\"";
+                else if (it->isInconclusive())
+                    out << " inconclusive=\"true\"";
                 out << "/>" << std::endl;
             }
 
@@ -1409,14 +1411,14 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = _values->begin(); it != _values->end(); ++it) {
         if (it->isIntValue() && it->intvalue <= val) {
-            if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
+            if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
-            if (!ret->inconclusive && !ret->condition)
+            if (!ret->isInconclusive() && !ret->condition)
                 break;
         }
     }
     if (settings && ret) {
-        if (ret->inconclusive && !settings->inconclusive)
+        if (ret->isInconclusive() && !settings->inconclusive)
             return nullptr;
         if (ret->condition && !settings->isEnabled(Settings::WARNING))
             return nullptr;
@@ -1432,14 +1434,14 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = _values->begin(); it != _values->end(); ++it) {
         if (it->isIntValue() && it->intvalue >= val) {
-            if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
+            if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
-            if (!ret->inconclusive && !ret->condition)
+            if (!ret->isInconclusive() && !ret->condition)
                 break;
         }
     }
     if (settings && ret) {
-        if (ret->inconclusive && !settings->inconclusive)
+        if (ret->isInconclusive() && !settings->inconclusive)
             return nullptr;
         if (ret->condition && !settings->isEnabled(Settings::WARNING))
             return nullptr;
@@ -1455,14 +1457,14 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, unsigned int 
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = _values->begin(); it != _values->end(); ++it) {
         if (it->isIntValue() && !settings->library.isargvalid(ftok, argnr, it->intvalue)) {
-            if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
+            if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
-            if (!ret->inconclusive && !ret->condition)
+            if (!ret->isInconclusive() && !ret->condition)
                 break;
         }
     }
     if (settings && ret) {
-        if (ret->inconclusive && !settings->inconclusive)
+        if (ret->isInconclusive() && !settings->inconclusive)
             return nullptr;
         if (ret->condition && !settings->isEnabled(Settings::WARNING))
             return nullptr;
@@ -1575,7 +1577,7 @@ bool Token::addValue(const ValueFlow::Value &value)
                 continue;
 
             // same value, but old value is inconclusive so replace it
-            if (it->inconclusive && !value.inconclusive) {
+            if (it->isInconclusive() && !value.isInconclusive()) {
                 *it = value;
                 if (it->varId == 0)
                     it->varId = _varId;

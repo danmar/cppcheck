@@ -131,7 +131,7 @@ bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) 
 {
     if (!isEnabled(Settings::WARNING) && (value->condition || value->defaultArg))
         return false;
-    if (!inconclusive && (inconclusiveCheck || value->inconclusive))
+    if (!inconclusive && (inconclusiveCheck || value->isInconclusive()))
         return false;
     return true;
 }
