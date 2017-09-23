@@ -1416,6 +1416,7 @@ bool MainWindow::loadLastResults()
     if (!QFileInfo(lastResults).exists())
         return false;
     mUI.mResults->readErrorsXml(lastResults);
+    mUI.mResults->setCheckDirectory(mSettings->value(SETTINGS_LAST_CHECK_PATH,QString()).toString());
     return true;
 }
 
