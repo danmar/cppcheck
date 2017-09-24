@@ -29,9 +29,26 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <cctype>
 
 /// @addtogroup Core
 /// @{
+
+namespace cppcheck {
+struct stricmp {
+    bool operator()(const std::string &lhs, const std::string &rhs) const {
+        if (lhs.size() != rhs.size())
+            return lhs.size() < rhs.size();
+        for (unsigned int i = 0; i < lhs.size(); ++i) {
+            char c1 = std::toupper((unsigned char)lhs[i]);
+            char c2 = std::toupper((unsigned char)rhs[i]);
+            if (c1 != c2)
+                return c1 < c2;
+        }
+        return false;
+    }
+};
+}
 
 /**
  * @brief Importing project settings.
@@ -56,7 +73,7 @@ public:
         bool useMfc;
 
         void setDefines(std::string defs);
-        void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string> &variables);
+        void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
     };
     std::list<FileSettings> fileSettings;
 
@@ -68,7 +85,7 @@ public:
 private:
     void importCompileCommands(std::istream &istr);
     void importSln(std::istream &istr, const std::string &path);
-    void importVcxproj(const std::string &filename, std::map<std::string, std::string> &variables, const std::string &additionalIncludeDirectories);
+    void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories);
 };
 
 /// @}

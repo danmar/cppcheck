@@ -30,6 +30,7 @@
 #include <fstream>
 #include <utility>
 
+
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
@@ -96,9 +97,9 @@ void ImportProject::FileSettings::setDefines(std::string defs)
     defines.swap(defs);
 }
 
-static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std::string> &variables)
+static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
-    std::set<std::string> expanded;
+    std::set<std::string, cppcheck::stricmp> expanded;
     std::string::size_type start = 0;
     while ((start = s.find("$(")) != std::string::npos) {
         std::string::size_type end = s.find(')',start);
@@ -108,7 +109,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
         if (expanded.find(var) != expanded.end())
             break;
         expanded.insert(var);
-        std::map<std::string, std::string>::const_iterator it1 = variables.find(var);
+        std::map<std::string, std::string, cppcheck::stricmp>::const_iterator it1 = variables.find(var);
         // variable was not found within defined variables
         if (it1 == variables.end()) {
             const char *envValue = std::getenv(var.c_str());
@@ -127,7 +128,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
     return true;
 }
 
-void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string> &variables)
+void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
     std::list<std::string> I;
     // only parse each includePath once - so remove duplicates
@@ -177,7 +178,7 @@ void ImportProject::import(const std::string &filename)
             path += '/';
         importSln(fin,path);
     } else if (filename.find(".vcxproj") != std::string::npos) {
-        std::map<std::string, std::string> variables;
+        std::map<std::string, std::string, cppcheck::stricmp> variables;
         importVcxproj(filename, variables, emptyString);
     }
 }
@@ -240,7 +241,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
                         fs.systemIncludePaths.push_back(isystem);
                     }
                 }
-                std::map<std::string, std::string> variables;
+                std::map<std::string, std::string, cppcheck::stricmp> variables;
                 fs.setIncludePaths(directory, fs.includePaths, variables);
                 fs.setDefines(fs.defines);
                 fileSettings.push_back(fs);
@@ -252,7 +253,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
 
 void ImportProject::importSln(std::istream &istr, const std::string &path)
 {
-    std::map<std::string,std::string> variables;
+    std::map<std::string,std::string,cppcheck::stricmp> variables;
     variables["SolutionDir"] = path;
 
     std::string line;
@@ -374,7 +375,7 @@ static std::list<std::string> toStringList(const std::string &s)
     return ret;
 }
 
-static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string,std::string> *variables, std::string *includePath, bool *useOfMfc)
+static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string,std::string,cppcheck::stricmp> *variables, std::string *includePath, bool *useOfMfc)
 {
     if (useOfMfc) {
         for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
@@ -409,7 +410,7 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
     }
 }
 
-static void loadVisualStudioProperties(const std::string &props, std::map<std::string,std::string> *variables, std::string *includePath, const std::string &additionalIncludeDirectories, std::list<ItemDefinitionGroup> &itemDefinitionGroupList)
+static void loadVisualStudioProperties(const std::string &props, std::map<std::string,std::string,cppcheck::stricmp> *variables, std::string *includePath, const std::string &additionalIncludeDirectories, std::list<ItemDefinitionGroup> &itemDefinitionGroupList)
 {
     std::string filename(props);
     if (!simplifyPathWithVariables(filename, *variables))
@@ -445,7 +446,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
     }
 }
 
-void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string> &variables, const std::string &additionalIncludeDirectories)
+void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories)
 {
     variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
 
