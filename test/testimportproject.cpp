@@ -34,6 +34,7 @@ private:
         TEST_CASE(setDefines);
         TEST_CASE(setIncludePaths1);
         TEST_CASE(setIncludePaths2);
+        TEST_CASE(setIncludePaths3); // macro names are case insensitive
     }
 
     void setDefines() const {
@@ -56,7 +57,7 @@ private:
         ImportProject::FileSettings fs;
         std::list<std::string> in;
         in.push_back("../include");
-        std::map<std::string, std::string> variables;
+        std::map<std::string, std::string, cppcheck::stricmp> variables;
         fs.setIncludePaths("abc/def/", in, variables);
         ASSERT_EQUALS(1U, fs.includePaths.size());
         ASSERT_EQUALS("abc/include/", fs.includePaths.front());
@@ -66,7 +67,18 @@ private:
         ImportProject::FileSettings fs;
         std::list<std::string> in;
         in.push_back("$(SolutionDir)other");
-        std::map<std::string, std::string> variables;
+        std::map<std::string, std::string, cppcheck::stricmp> variables;
+        variables["SolutionDir"] = "c:/abc/";
+        fs.setIncludePaths("/home/fred", in, variables);
+        ASSERT_EQUALS(1U, fs.includePaths.size());
+        ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
+    }
+
+    void setIncludePaths3() const { // macro names are case insensitive
+        ImportProject::FileSettings fs;
+        std::list<std::string> in;
+        in.push_back("$(SOLUTIONDIR)other");
+        std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
         fs.setIncludePaths("/home/fred", in, variables);
         ASSERT_EQUALS(1U, fs.includePaths.size());

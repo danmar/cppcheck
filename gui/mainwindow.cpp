@@ -1516,6 +1516,7 @@ void MainWindow::newProjectFile()
     delete mProjectFile;
     mProjectFile = new ProjectFile(this);
     mProjectFile->setFilename(filepath);
+    mProjectFile->setBuildDir(filename.left(filename.indexOf(".")) + "-cppcheck-build-dir");
 
     ProjectFileDialog dlg(mProjectFile, this);
     if (dlg.exec() == QDialog::Accepted) {
