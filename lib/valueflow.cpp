@@ -93,7 +93,7 @@ static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, cons
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
     callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(tok, tokenlist));
-    ErrorLogger::ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug, std::string(file) + ":" + std::to_string(line) + ":" + std::string(function) + " bailout: " + what, "valueFlowBailout", false);
+    ErrorLogger::ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug, std::string(file) + ":" + std::to_string(static_cast<unsigned long long>(line)) + ":" + std::string(function) + " bailout: " + what, "valueFlowBailout", false);
     errorLogger->reportErr(errmsg);
 }
 
