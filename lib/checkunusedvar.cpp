@@ -431,8 +431,11 @@ void Variables::leaveScope(bool insideLoop)
 static const Token* doAssignment(Variables &variables, const Token *tok, bool dereference, const Scope *scope)
 {
     // a = a + b;
-    if (Token::Match(tok, "%var% = %var% !!;") && tok->varId() == tok->tokAt(2)->varId()) {
-        return tok->tokAt(2);
+    if (Token::Match(tok, "%var% = %var% !!;")) {
+        const Token* rhsVarTok = tok->tokAt(2);
+        if (tok->varId() == rhsVarTok->varId()) {
+            return rhsVarTok;
+        }
     }
 
     if (Token::Match(tok, "%var% %assign%") && tok->strAt(1) != "=")
@@ -629,8 +632,9 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
     // check for alias to struct member
     // char c[10]; a.b = c;
     else if (Token::Match(tok->tokAt(-2), "%name% .")) {
-        if (tok->tokAt(2) && tok->tokAt(2)->varId()) {
-            const unsigned int varid2 = tok->tokAt(2)->varId();
+        const Token *rhsVarTok = tok->tokAt(2);
+        if (rhsVarTok && rhsVarTok->varId()) {
+            const unsigned int varid2 = rhsVarTok->varId();
             const Variables::VariableUsage *var2 = variables.find(varid2);
 
             // struct member aliased to local variable
@@ -920,11 +924,13 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             (_tokenizer->isCPP() && (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")))) {
             unsigned int varid = 0;
             if (tok->str() != "delete") {
-                varid = tok->tokAt(2)->varId();
-                tok = tok->tokAt(3);
+                const Token *varTok = tok->tokAt(2);
+                varid = varTok->varId();
+                tok = varTok->next();
             } else if (tok->strAt(1) == "[") {
-                varid = tok->tokAt(3)->varId();
-                tok = tok->tokAt(3);
+                const Token *varTok = tok->tokAt(3);
+                varid = varTok->varId();
+                tok = varTok;
             } else {
                 varid = tok->next()->varId();
                 tok = tok->next();
