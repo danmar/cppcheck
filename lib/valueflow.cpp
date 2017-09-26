@@ -93,7 +93,20 @@ static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, cons
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
     callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(tok, tokenlist));
-    ErrorLogger::ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug, std::string(file) + ":" + std::to_string(static_cast<unsigned long long>(line)) + ":" + std::string(function) + " bailout: " + what, "valueFlowBailout", false);
+    // strip any directory path from the file path
+    std::string fileName(file);
+    std::string::size_type p = fileName.rfind(
+#ifdef _WIN32
+    '\\'
+#else
+    '/'
+#endif
+    );
+    if (p != std::string::npos) {
+        fileName = fileName.substr(p + 1);
+    }
+    ErrorLogger::ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug,
+        std::string(fileName) + ":" + std::to_string(static_cast<unsigned long long>(line)) + ":" + std::string(function) + " bailout: " + what, "valueFlowBailout", false);
     errorLogger->reportErr(errmsg);
 }
 
