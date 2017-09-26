@@ -1143,7 +1143,7 @@ private:
                                 "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS("[test.cpp:28]: (debug) lib/valueflow.cpp:3096:valueFlowFunctionReturn bailout: function return; nontrivial function body\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:28]: (debug) valueflow.cpp:3109:valueFlowFunctionReturn bailout: function return; nontrivial function body\n", errout.str());
     }
 
     void simplifyTypedef36() {
@@ -2165,7 +2165,7 @@ private:
                             "    return fred;\n"
                             "}";
         tok(code);
-        ASSERT_EQUALS("[test.cpp:2]: (debug) lib/valueflow.cpp:3096:valueFlowFunctionReturn bailout: function return; nontrivial function body\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (debug) valueflow.cpp:3109:valueFlowFunctionReturn bailout: function return; nontrivial function body\n", errout.str());
     }
 
     void simplifyTypedef101() { // ticket #3003 (segmentation fault)
