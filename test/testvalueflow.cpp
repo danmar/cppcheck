@@ -773,7 +773,7 @@ private:
                 "    x = y;\n"
                 "    if (x == 123) {}\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of x\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of x\n", errout.str());
     }
 
     void valueFlowBeforeConditionAndAndOrOrGuard() { // guarding by &&
@@ -888,13 +888,13 @@ private:
         bailout("void f(int x) {\n"
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (debug) valueflow.cpp:1113:valueFlowReverse bailout: no simplification of x within ?: expression\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:1113:valueFlowReverse bailout: no simplification of x within ?: expression\n", errout.str());
 
         bailout("int f(int x) {\n"
                 "  int r = x ? 1 / x : 0;\n"
                 "  if (x == 0) {}\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (debug) valueflow.cpp:1113:valueFlowReverse bailout: no simplification of x within ?: expression\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:1113:valueFlowReverse bailout: no simplification of x within ?: expression\n", errout.str());
 
         code = "void f(int x) {\n"
                "    int a =v x;\n"
@@ -952,7 +952,7 @@ private:
                 "    if (x != 123) { b = x; }\n"
                 "    if (x == 123) {}\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (debug) valueflow.cpp:1144:valueFlowReverse bailout: variable x stopping on }\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:1144:valueFlowReverse bailout: variable x stopping on }\n", errout.str());
 
         code = "void f(int x) {\n"
                "  a = x;\n"
@@ -969,7 +969,7 @@ private:
                 "    int a = x;\n"
                 "    if (x == 123) {}\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (debug) valueflow.cpp:1226:valueFlowBeforeCondition bailout: global variable x\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:4]: (debug) valueflow.cpp:1226:valueFlowBeforeCondition bailout: global variable x\n", errout.str());
 
         // class variable
         const char *code;
@@ -991,7 +991,7 @@ private:
                 "    case 2: if (x==5) {} break;\n"
                 "    };\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (debug) valueflow.cpp:1180:valueFlowReverse bailout: variable x stopping on break\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp:1180:valueFlowReverse bailout: variable x stopping on break\n", errout.str());
 
         bailout("void f(int x, int y) {\n"
                 "    switch (y) {\n"
@@ -999,7 +999,7 @@ private:
                 "    case 2: if (x==5) {} break;\n"
                 "    };\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (debug) valueflow.cpp:1180:valueFlowReverse bailout: variable x stopping on return\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp:1180:valueFlowReverse bailout: variable x stopping on return\n", errout.str());
     }
 
     void valueFlowBeforeConditionMacro() {
@@ -1009,7 +1009,7 @@ private:
                 "    a = x;\n"
                 "    M;\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
     }
 
     void valueFlowBeforeConditionGoto() {
@@ -1020,7 +1020,7 @@ private:
                 "out:"
                 "    if (x==123){}\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable x stopping on goto label\n"
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:4]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable x stopping on goto label\n"
                       "[test.cpp:2]: (debug) valueflow.cpp:1813:valueFlowForward bailout: variable x. noreturn conditional scope.\n"
                       , errout.str());
 
@@ -1035,7 +1035,7 @@ private:
                 "out:\n"
                 "    if (abc) {}\n"
                 "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of abc\n"
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:1035:valueFlowReverse bailout: assignment of abc\n"
                       "[test.cpp:8]: (debug) valueflow.cpp:1131:valueFlowReverse bailout: variable abc stopping on goto label\n"
                       "[test.cpp:3]: (debug) valueflow.cpp:1813:valueFlowForward bailout: variable abc. noreturn conditional scope.\n",
                       errout.str());
