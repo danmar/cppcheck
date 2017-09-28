@@ -39,15 +39,20 @@ def daca2report(reportfolder):
 def upload(localfolder, webfolder):
     if len(PASSWORD) < 3:
         return
-    try:
-        child = pexpect.spawn(
-            'scp -r ' + localfolder + ' danielmarjamaki,cppcheck@web.sf.net:htdocs/' + webfolder)
-        # child.expect('upload@trac.cppcheck.net\'s password:')
-        child.expect('Password:')
-        child.sendline(PASSWORD)
-        child.interact()
-    except (IOError, OSError, pexpect.TIMEOUT):
-        pass
+    tries = 1
+    while tries <= 5:
+        try:
+            child = pexpect.spawn(
+                'scp -r ' + localfolder + ' danielmarjamaki,cppcheck@web.sf.net:htdocs/' + webfolder)
+            # child.expect('upload@trac.cppcheck.net\'s password:')
+            child.expect('Password:')
+            child.sendline(PASSWORD)
+            child.interact()
+            return
+        except (IOError, OSError, pexpect.TIMEOUT, pexpect.EOF):
+            print('Sleep for 10 seconds..')
+            time.sleep(10)
+            tries = tries + 1
 
 
 def daca2(foldernum):
