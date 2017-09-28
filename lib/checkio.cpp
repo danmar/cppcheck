@@ -525,14 +525,16 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 // formatstring found in library. Find format string and first argument belonging to format string.
                 if (!findFormat(static_cast<unsigned int>(formatStringArgNo), tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
-            } else if (Token::simpleMatch(tok, "swprintf (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) {
-                // Find third parameter and format string
-                if (!findFormat(1, tok->tokAt(2), &formatStringTok, &argListTok))
-                    continue;
-            } else if (Token::simpleMatch(tok, "swprintf (") && !Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) {
-                // Find fourth parameter and format string
-                if (!findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok))
-                    continue;
+            } else if (Token::simpleMatch(tok, "swprintf (")) {
+                if (Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) {
+                    // Find third parameter and format string
+                    if (!findFormat(1, tok->tokAt(2), &formatStringTok, &argListTok))
+                        continue;
+                } else {
+                    // Find fourth parameter and format string
+                    if (!findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok))
+                        continue;
+                }
             } else if (isWindows && Token::Match(tok, "sprintf_s|swprintf_s (")) {
                 // template <size_t size> int sprintf_s(char (&buffer)[size], const char *format, ...);
                 if (findFormat(1, tok->tokAt(2), &formatStringTok, &argListTok)) {
