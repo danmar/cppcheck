@@ -202,20 +202,16 @@ void CheckIO::checkFileUsage()
                     operation = Filepointer::OPEN;
                 } else if ((tok->str() == "rewind" || tok->str() == "fseek" || tok->str() == "fsetpos" || tok->str() == "fflush") ||
                            (windows && tok->str() == "_fseeki64")) {
-                    if (printPortability && tok->str() == "fflush") {
-                        fileTok = tok->tokAt(2);
-                        if (fileTok) {
-                            if (fileTok->str() == "stdin")
+                    fileTok = tok->tokAt(2);
+                    if (printPortability && fileTok && tok->str() == "fflush") {
+                        if (fileTok->str() == "stdin")
+                            fflushOnInputStreamError(tok, fileTok->str());
+                        else {
+                            Filepointer& f = filepointers[fileTok->varId()];
+                            if (f.mode == READ_MODE)
                                 fflushOnInputStreamError(tok, fileTok->str());
-                            else {
-                                Filepointer& f = filepointers[fileTok->varId()];
-                                if (f.mode == READ_MODE)
-                                    fflushOnInputStreamError(tok, fileTok->str());
-                            }
                         }
                     }
-
-                    fileTok = tok->tokAt(2);
                     operation = Filepointer::POSITIONING;
                 } else if (tok->str() == "fgetc" || tok->str() == "fgetwc" ||
                            tok->str() == "fgets" || tok->str() == "fgetws" || tok->str() == "fread" ||
