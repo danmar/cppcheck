@@ -386,12 +386,14 @@ private:
               "    fread(buffer, 5, 6, f);\n"
               "    ungetc('a', f);\n"
               "    ungetwc(L'a', f);\n"
+              "    rewind(f);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Used file that is not opened.\n"
                       "[test.cpp:4]: (error) Used file that is not opened.\n"
                       "[test.cpp:5]: (error) Used file that is not opened.\n"
                       "[test.cpp:6]: (error) Used file that is not opened.\n"
-                      "[test.cpp:7]: (error) Used file that is not opened.\n", errout.str());
+                      "[test.cpp:7]: (error) Used file that is not opened.\n"
+                      "[test.cpp:8]: (error) Used file that is not opened.\n", errout.str());
 
         check("void foo(FILE*& f) {\n"
               "    if(!ferror(f)) {\n"
