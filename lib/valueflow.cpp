@@ -89,7 +89,7 @@ static void execute(const Token *expr,
                     MathLib::bigint *result,
                     bool *error);
 
-static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const char *file, size_t line, const char *function)
+static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, const std::string &function)
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
     callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(tok, tokenlist));
@@ -106,16 +106,16 @@ static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, cons
         fileName = fileName.substr(p + 1);
     }
     ErrorLogger::ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug,
-        std::string(fileName) + ":" + std::to_string(static_cast<unsigned long long>(line)) + ":" + std::string(function) + " bailout: " + what, "valueFlowBailout", false);
+        std::string(fileName) + ":" + MathLib::toString(static_cast<unsigned long long>(line)) + ":" + std::string(function) + " bailout: " + what, "valueFlowBailout", false);
     errorLogger->reportErr(errmsg);
 }
 
 #if (defined __cplusplus) && __cplusplus >= 201103L
-#define bailout(tokenlist, errorLogger, tok, what)	bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __func__)
+#define bailout(tokenlist, errorLogger, tok, what)	bailoutInternal(tokenlist, errorLogger, tok, what, std::string(__FILE__), __LINE__, std::string(__func__))
 #elif (defined __GNUC__) || (defined __clang__) || (defined _MSC_VER)
-#define bailout(tokenlist, errorLogger, tok, what)	bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __FUNCTION__)
+#define bailout(tokenlist, errorLogger, tok, what)	bailoutInternal(tokenlist, errorLogger, tok, what, std::string(__FILE__), __LINE__, std::string(__FUNCTION__))
 #else
-#define bailout(tokenlist, errorLogger, tok, what)	bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, "(valueFlow)")
+#define bailout(tokenlist, errorLogger, tok, what)	bailoutInternal(tokenlist, errorLogger, tok, what, std::string(__FILE__), __LINE__, std::string("(valueFlow)"))
 #endif
 
 /**
