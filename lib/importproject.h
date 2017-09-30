@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "platform.h"
+#include "utils.h"
 
 #include <list>
 #include <map>
@@ -37,15 +38,7 @@
 namespace cppcheck {
     struct stricmp {
         bool operator()(const std::string &lhs, const std::string &rhs) const {
-            if (lhs.size() != rhs.size())
-                return lhs.size() < rhs.size();
-            for (unsigned int i = 0; i < lhs.size(); ++i) {
-                char c1 = std::toupper((unsigned char)lhs[i]);
-                char c2 = std::toupper((unsigned char)rhs[i]);
-                if (c1 != c2)
-                    return c1 < c2;
-            }
-            return false;
+            return caseInsensitiveStringCompare(lhs,rhs) < 0;
         }
     };
 }

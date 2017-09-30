@@ -86,20 +86,9 @@ std::string Path::getPathFromFilename(const std::string &filename)
     return "";
 }
 
-
 bool Path::sameFileName(const std::string &fname1, const std::string &fname2)
 {
-#if defined(__linux__) || defined(__sun) || defined(__hpux)
-    return (fname1 == fname2);
-#elif defined(_MSC_VER) || (defined(__GNUC__) && defined(_WIN32))
-    return (_stricmp(fname1.c_str(), fname2.c_str()) == 0);
-#elif defined(__GNUC__)
-    return (strcasecmp(fname1.c_str(), fname2.c_str()) == 0);
-#elif defined(__BORLANDC__)
-    return (stricmp(fname1.c_str(), fname2.c_str()) == 0);
-#else
-#error Platform filename compare function needed
-#endif
+    return caseInsensitiveFilesystem() ? (caseInsensitiveStringCompare(fname1, fname2) == 0) : (fname1 == fname2);
 }
 
 // This wrapper exists because Sun's CC does not allow a static_cast
