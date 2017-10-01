@@ -84,8 +84,8 @@ inline static int caseInsensitiveStringCompare(const std::string &lhs, const std
     if (lhs.size() != rhs.size())
         return (lhs.size() < rhs.size()) ? -1 : 1;
     for (unsigned int i = 0; i < lhs.size(); ++i) {
-        int c1 = std::toupper(lhs[i]);
-        int c2 = std::toupper(rhs[i]);
+        const int c1 = std::toupper(lhs[i]);
+        const int c2 = std::toupper(rhs[i]);
         if (c1 != c2)
             return (c1 < c2) ? -1 : 1;
     }
