@@ -5189,6 +5189,7 @@ void SymbolDatabase::setValueTypeInTokenList()
                 if (tokenList.createTokens(istr)) {
                     ValueType vt;
                     assert(tokenList.front());
+                    tokenList.simplifyStdType();
                     if (parsedecl(tokenList.front(), &vt, defaultSignedness, _settings)) {
                         setValueType(tok, vt);
                     }

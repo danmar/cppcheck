@@ -68,6 +68,7 @@ private:
 
         TEST_CASE(testAstType); // #7014
         TEST_CASE(testPrintf0WithSuffix); // ticket #7069
+        TEST_CASE(testReturnValueTypeStdLib);
     }
 
     void check(const char* code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
@@ -2975,6 +2976,14 @@ private:
               "    printf(\"%u %lu %llu\", 0u, 0ul, 0ull);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testReturnValueTypeStdLib() {
+       check("void f() {\n"
+             "   const char *s = \"0\";\n"
+             "   printf(\"%ld%lld\", atol(s), atoll(s));\n"
+             "}");
+       ASSERT_EQUALS("", errout.str());
     }
 
 };
