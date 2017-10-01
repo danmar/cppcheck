@@ -126,7 +126,7 @@ std::string Path::getFilenameExtensionInLowerCase(const std::string &path)
     return extension;
 }
 
-const std::string Path::getCurrentPath()
+std::string Path::getCurrentPath()
 {
     char currentPath[4096];
 
