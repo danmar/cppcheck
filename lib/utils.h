@@ -82,12 +82,12 @@ inline static const char *getOrdinalText(int i)
 inline static int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)
 {
     if (lhs.size() != rhs.size())
-        return (lhs.size() < rhs.size()) ? -1 : ((lhs.size() == rhs.size()) ? 0 : 1);
+        return (lhs.size() < rhs.size()) ? -1 : 1;
     for (unsigned int i = 0; i < lhs.size(); ++i) {
-        int c1 = std::toupper(lhs[i]);
-        int c2 = std::toupper(rhs[i]);
+        const int c1 = std::toupper(lhs[i]);
+        const int c2 = std::toupper(rhs[i]);
         if (c1 != c2)
-            return (c1 < c2) ? -1 : ((c1 == c2) ? 0 : 1);
+            return (c1 < c2) ? -1 : 1;
     }
     return 0;
 }
