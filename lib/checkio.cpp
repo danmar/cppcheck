@@ -480,8 +480,12 @@ static bool findFormat(unsigned int arg, const Token *firstArg,
                  argTok->variable()->dimensionKnown(0) &&
                  argTok->variable()->dimension(0) != 0))) {
         *formatArgTok = argTok->nextArgument();
-        if (!argTok->values().empty() && argTok->values().front().isTokValue() && argTok->values().front().tokvalue && argTok->values().front().tokvalue->tokType() == Token::eString)
-            *formatStringTok = argTok->values().front().tokvalue;
+        if (!argTok->values().empty()) {
+            const ValueFlow::Value &value = argTok->values().front();
+            if (value.isTokValue() && value.tokvalue && value.tokvalue->tokType() == Token::eString) {
+                *formatStringTok = value.tokvalue;
+            }
+        }
         return true;
     }
     return false;
