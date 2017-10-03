@@ -251,6 +251,12 @@ private:
               "}", false, false, Settings::Win32W);
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo(FILE*& f) {\n"
+              "    f = tmpfile();\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
+        ASSERT_EQUALS("", errout.str());
+
         // Write mode
         check("void foo(FILE*& f) {\n"
               "    f = fopen(name, \"w\");\n"
@@ -262,6 +268,12 @@ private:
 
         check("void foo(FILE*& f) {\n"
               "    f = fopen(name, \"w+\");\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = tmpfile();\n"
               "    fread(buffer, 5, 6, f);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
