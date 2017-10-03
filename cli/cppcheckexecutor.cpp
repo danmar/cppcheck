@@ -944,7 +944,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
 #ifdef _WIN32
 // fix trac ticket #439 'Cppcheck reports wrong filename for filenames containing 8-bit ASCII'
-static inline const std::string ansiToOEM(const std::string &msg, bool doConvert)
+static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
 {
     if (doConvert) {
         const unsigned msglength = msg.length();

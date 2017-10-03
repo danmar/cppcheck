@@ -101,7 +101,7 @@ public:
      * @brief Returns the absolute path of current working directory
      * @return absolute path of current working directory
      */
-    static const std::string getCurrentPath();
+    static std::string getCurrentPath();
 
     /**
      * @brief Check if given path is absolute
