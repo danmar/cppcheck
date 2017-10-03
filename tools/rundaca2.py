@@ -4,6 +4,7 @@ import subprocess
 import pexpect
 import os
 import sys
+import time
 
 START = 0
 PASSWORD = ''
