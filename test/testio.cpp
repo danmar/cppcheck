@@ -68,6 +68,7 @@ private:
 
         TEST_CASE(testAstType); // #7014
         TEST_CASE(testPrintf0WithSuffix); // ticket #7069
+        TEST_CASE(testReturnValueTypeStdLib);
     }
 
     void check(const char* code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
@@ -1450,6 +1451,21 @@ private:
                       "[test.cpp:4]: (warning) %s in format string (no. 2) requires 'char *' but the argument type is 'signed int'.\n"
                       "[test.cpp:5]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'std::string'.\n"
                       "[test.cpp:7]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'char *'.\n", errout.str());
+
+        check("void foo(char* s, const char* s2, std::string s3, int i) {\n"
+              "    printf(\"%jd\", s);\n"
+              "    printf(\"%ji\", s);\n"
+              "    printf(\"%ju\", s2);\n"
+              "    printf(\"%jo\", s3);\n"
+              "    printf(\"%jx\", i);\n"
+              "    printf(\"%jX\", i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %jd in format string (no. 1) requires 'intmax_t' but the argument type is 'char *'.\n"
+                      "[test.cpp:3]: (warning) %ji in format string (no. 1) requires 'intmax_t' but the argument type is 'char *'.\n"
+                      "[test.cpp:4]: (warning) %ju in format string (no. 1) requires 'uintmax_t' but the argument type is 'const char *'.\n"
+                      "[test.cpp:5]: (warning) %jo in format string (no. 1) requires 'uintmax_t' but the argument type is 'std::string'.\n"
+                      "[test.cpp:6]: (warning) %jx in format string (no. 1) requires 'uintmax_t' but the argument type is 'signed int'.\n"
+                      "[test.cpp:7]: (warning) %jX in format string (no. 1) requires 'uintmax_t' but the argument type is 'signed int'.\n", errout.str());
 
         check("void foo(const int* cpi, const int ci, int i, int* pi, std::string s) {\n"
               "    printf(\"%n\", cpi);\n"
@@ -2987,6 +3003,14 @@ private:
               "    printf(\"%u %lu %llu\", 0u, 0ul, 0ull);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testReturnValueTypeStdLib() {
+       check("void f() {\n"
+             "   const char *s = \"0\";\n"
+             "   printf(\"%ld%lld\", atol(s), atoll(s));\n"
+             "}");
+       ASSERT_EQUALS("", errout.str());
     }
 
 };

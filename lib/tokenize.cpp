@@ -3592,7 +3592,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // collapse compound standard types into a single token
     // unsigned long long int => long (with _isUnsigned=true,_isLong=true)
-    simplifyStdType();
+    list.simplifyStdType();
 
     if (_settings->terminated())
         return false;
@@ -5776,67 +5776,6 @@ void Tokenizer::simplifyPlatformTypes()
                 typeToken->isUnsigned(true);
             if (platformtype->_long)
                 typeToken->isLong(true);
-        }
-    }
-}
-
-void Tokenizer::simplifyStdType()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (_settings->standards.c >= Standards::C99 && Token::Match(tok, "complex|_Complex"))) {
-            bool isFloat= false;
-            bool isSigned = false;
-            bool isUnsigned = false;
-            bool isComplex = false;
-            unsigned int countLong = 0;
-            Token* typeSpec = nullptr;
-
-            Token* tok2 = tok;
-            for (; tok2->next(); tok2 = tok2->next()) {
-                if (tok2->str() == "long") {
-                    countLong++;
-                    if (!isFloat)
-                        typeSpec = tok2;
-                } else if (tok2->str() == "short") {
-                    typeSpec = tok2;
-                } else if (tok2->str() == "unsigned")
-                    isUnsigned = true;
-                else if (tok2->str() == "signed")
-                    isSigned = true;
-                else if (Token::Match(tok2, "float|double")) {
-                    isFloat = true;
-                    typeSpec = tok2;
-                } else if (_settings->standards.c >= Standards::C99 && Token::Match(tok2, "complex|_Complex"))
-                    isComplex = !isFloat || tok2->str() == "_Complex" || Token::Match(tok2->next(), "*|&|%name%"); // Ensure that "complex" is not the variables name
-                else if (Token::Match(tok2, "char|int")) {
-                    if (!typeSpec)
-                        typeSpec = tok2;
-                } else
-                    break;
-            }
-
-            if (!typeSpec) { // unsigned i; or similar declaration
-                if (!isComplex) { // Ensure that "complex" is not the variables name
-                    tok->str("int");
-                    tok->isSigned(isSigned);
-                    tok->isUnsigned(isUnsigned);
-                }
-            } else {
-                typeSpec->isLong(typeSpec->isLong() || (isFloat && countLong == 1) || countLong > 1);
-                typeSpec->isComplex(typeSpec->isComplex() || (isFloat && isComplex));
-                typeSpec->isSigned(typeSpec->isSigned() || isSigned);
-                typeSpec->isUnsigned(typeSpec->isUnsigned() || isUnsigned);
-
-                // Remove specifiers
-                const Token* tok3 = tok->previous();
-                tok2 = tok2->previous();
-                while (tok3 != tok2) {
-                    if (tok2 != typeSpec &&
-                        (isComplex || !Token::Match(tok2, "complex|_Complex")))  // Ensure that "complex" is not the variables name
-                        tok2->deleteThis();
-                    tok2 = tok2->previous();
-                }
-            }
         }
     }
 }

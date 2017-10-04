@@ -156,6 +156,12 @@ public:
      */
     bool validateToken(const Token* tok) const;
 
+    /**
+     * Collapse compound standard types into a single token.
+     * unsigned long long int => long _isUnsigned=true,_isLong=true
+     */
+    void simplifyStdType();
+
 private:
 
     /** Disable copy constructor, no implementation */
