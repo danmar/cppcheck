@@ -1480,6 +1480,11 @@ private:
                       "[test.cpp:6]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'std::string'.\n"
                       "[test.cpp:7]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const char *'.\n", errout.str());
 
+        check("void foo() {\n"
+              "    printf(\"%n\", L\"s5W\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const wchar_t *'.\n", errout.str());
+
         check("class foo {};\n"
               "void foo(const int* cpi, foo f, bar b, bar* bp, double d, int i, unsigned int u) {\n"
               "    printf(\"%X\", f);\n"
@@ -1496,6 +1501,18 @@ private:
                       "[test.cpp:5]: (warning) %o in format string (no. 1) requires 'unsigned int' but the argument type is 'double'.\n"
                       "[test.cpp:6]: (warning) %x in format string (no. 1) requires 'unsigned int' but the argument type is 'const signed int *'.\n"
                       "[test.cpp:8]: (warning) %X in format string (no. 1) requires 'unsigned int' but the argument type is 'bar *'.\n", errout.str());
+
+        check("class foo {};\n"
+              "void foo() {\n"
+              "    printf(\"%x\", L\"s5W\");\n"
+              "    printf(\"%X\", L\"s5W\");\n"
+              "    printf(\"%c\", L\"s5W\");\n"
+              "    printf(\"%o\", L\"s5W\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %x in format string (no. 1) requires 'unsigned int' but the argument type is 'const wchar_t *'.\n"
+                      "[test.cpp:4]: (warning) %X in format string (no. 1) requires 'unsigned int' but the argument type is 'const wchar_t *'.\n"
+                      "[test.cpp:5]: (warning) %c in format string (no. 1) requires 'unsigned int' but the argument type is 'const wchar_t *'.\n"
+                      "[test.cpp:6]: (warning) %o in format string (no. 1) requires 'unsigned int' but the argument type is 'const wchar_t *'.\n", errout.str());
 
         check("class foo {};\n"
               "void foo(const int* cpi, foo f, bar b, bar* bp, double d, unsigned int u, unsigned char uc) {\n"
@@ -1516,6 +1533,14 @@ private:
                       "[test.cpp:9]: (warning) %i in format string (no. 1) requires 'int' but the argument type is 'bar *'.\n", errout.str());
 
         check("class foo {};\n"
+              "void foo() {\n"
+              "    printf(\"%i\", L\"s5W\");\n"
+              "    printf(\"%d\", L\"s5W\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %i in format string (no. 1) requires 'int' but the argument type is 'const wchar_t *'.\n"
+                      "[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'const wchar_t *'.\n", errout.str());
+
+        check("class foo {};\n"
               "void foo(const int* cpi, foo f, bar b, bar* bp, double d, int i, bool bo) {\n"
               "    printf(\"%u\", f);\n"
               "    printf(\"%u\", \"s4\");\n"
@@ -1532,6 +1557,12 @@ private:
                       "[test.cpp:6]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'signed int'.\n"
                       "[test.cpp:7]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'const signed int *'.\n"
                       "[test.cpp:9]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'bar *'.\n", errout.str());
+
+        check("class foo {};\n"
+              "void foo(const int* cpi, foo f, bar b, bar* bp, double d, int i, bool bo) {\n"
+              "    printf(\"%u\", L\"s5W\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'const wchar_t *'.\n", errout.str());
 
         check("class foo {};\n"
               "void foo(const int* cpi, foo f, bar b, bar* bp, char c) {\n"
@@ -1558,6 +1589,18 @@ private:
                       "[test.cpp:4]: (warning) %E in format string (no. 1) requires 'double' but the argument type is 'const char *'.\n"
                       "[test.cpp:5]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'const signed int *'.\n"
                       "[test.cpp:6]: (warning) %G in format string (no. 1) requires 'double' but the argument type is 'bar *'.\n", errout.str());
+
+        check("class foo {};\n"
+              "void foo() {\n"
+              "    printf(\"%e\", L\"s5W\");\n"
+              "    printf(\"%E\", L\"s5W\");\n"
+              "    printf(\"%f\", L\"s5W\");\n"
+              "    printf(\"%G\", L\"s5W\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %e in format string (no. 1) requires 'double' but the argument type is 'const wchar_t *'.\n"
+                      "[test.cpp:4]: (warning) %E in format string (no. 1) requires 'double' but the argument type is 'const wchar_t *'.\n"
+                      "[test.cpp:5]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'const wchar_t *'.\n"
+                      "[test.cpp:6]: (warning) %G in format string (no. 1) requires 'double' but the argument type is 'const wchar_t *'.\n", errout.str());
 
         check("class foo;\n"
               "void foo(foo f) {\n"
@@ -3006,11 +3049,11 @@ private:
     }
 
     void testReturnValueTypeStdLib() {
-       check("void f() {\n"
-             "   const char *s = \"0\";\n"
-             "   printf(\"%ld%lld\", atol(s), atoll(s));\n"
-             "}");
-       ASSERT_EQUALS("", errout.str());
+        check("void f() {\n"
+              "   const char *s = \"0\";\n"
+              "   printf(\"%ld%lld\", atol(s), atoll(s));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

@@ -129,7 +129,7 @@ public:
     QStringList getAddonsAndTools() const;
 
     bool getClangAnalyzer() const {
-        return mClangAnalyzer;
+        return false; //mClangAnalyzer;
     }
 
     void setClangAnalyzer(bool c) {
