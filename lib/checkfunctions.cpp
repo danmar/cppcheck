@@ -427,7 +427,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
             reportError(tok,
                         Severity::information,
                         "checkLibraryFunction",
-                        "--check-library: There is no matching configuration for function " + tok->str() + "()");
+                        "--check-library: There is no matching configuration for function " + _settings->library.getFunctionName(tok) + "()");
         }
     }
 }
