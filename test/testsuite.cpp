@@ -149,7 +149,7 @@ std::string TestFixture::deleteLineNumber(const std::string &message) const
         // get number
         if (pos + 1 == result.find_first_of("0123456789", pos + 1)) {
             if ((after = result.find_first_not_of("0123456789", pos + 1)) != std::string::npos
-                 && result.at(after) == ':') {
+                && result.at(after) == ':') {
                 // erase NUMBER
                 result.erase(pos + 1, after - pos - 1);
                 pos = after;
