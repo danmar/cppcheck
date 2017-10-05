@@ -3006,11 +3006,11 @@ private:
     }
 
     void testReturnValueTypeStdLib() {
-       check("void f() {\n"
-             "   const char *s = \"0\";\n"
-             "   printf(\"%ld%lld\", atol(s), atoll(s));\n"
-             "}");
-       ASSERT_EQUALS("", errout.str());
+        check("void f() {\n"
+              "   const char *s = \"0\";\n"
+              "   printf(\"%ld%lld\", atol(s), atoll(s));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };
