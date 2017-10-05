@@ -1,3 +1,4 @@
+#line 2
 /*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2016 Cppcheck team.
@@ -29,6 +30,7 @@
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "path.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -89,13 +91,22 @@ static void execute(const Token *expr,
                     MathLib::bigint *result,
                     bool *error);
 
-static void bailout(TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what)
+static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, const std::string &function)
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
     callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(tok, tokenlist));
-    ErrorLogger::ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug, "ValueFlow bailout: " + what, "valueFlowBailout", false);
+    ErrorLogger::ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug,
+        Path::stripDirectoryPart(file) + ":" + MathLib::toString(line) + ":" + function + " bailout: " + what, "valueFlowBailout", false);
     errorLogger->reportErr(errmsg);
 }
+
+#if (defined __cplusplus) && __cplusplus >= 201103L
+#define bailout(tokenlist, errorLogger, tok, what) bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __func__)
+#elif (defined __GNUC__) || (defined __clang__) || (defined _MSC_VER)
+#define bailout(tokenlist, errorLogger, tok, what) bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __FUNCTION__)
+#else
+#define bailout(tokenlist, errorLogger, tok, what) bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, "(valueFlow)")
+#endif
 
 /**
  * Is condition always false when variable has given value?

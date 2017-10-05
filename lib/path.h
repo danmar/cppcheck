@@ -165,6 +165,13 @@ public:
      * @return true if filename extension is meant for headers
      */
     static bool isHeader(const std::string &path);
+
+    /**
+     * @brief Get filename without a directory path part.
+     * @param file filename to be stripped. path info is optional
+     * @return filename without directory path part.
+     */
+    static std::string stripDirectoryPart(const std::string &file);
 };
 
 /// @}

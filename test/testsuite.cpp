@@ -138,7 +138,38 @@ void TestFixture::assertEquals(const char *filename, unsigned int linenr, const 
         errmsg << "_____" << std::endl;
     }
 }
+
+std::string TestFixture::deleteLineNumber(const std::string &message) const
+{
+    std::string result(message);
+    // delete line number in "...:NUMBER:..."
+    std::string::size_type pos = 0;
+    std::string::size_type after = 0;
+    while ((pos = result.find(':', pos)) != std::string::npos) {
+        // get number
+        if (pos + 1 == result.find_first_of("0123456789", pos + 1)) {
+            if ((after = result.find_first_not_of("0123456789", pos + 1)) != std::string::npos
+                 && result.at(after) == ':') {
+                // erase NUMBER
+                result.erase(pos + 1, after - pos - 1);
+                pos = after;
+            } else {
+                ++pos;
+            }
+        } else {
+            ++pos;
+        }
+    }
+    return result;
+}
+
+void TestFixture::assertEqualsWithoutLineNumbers(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
+{
+    assertEquals(filename, linenr, deleteLineNumber(expected), deleteLineNumber(actual));
+}
+
 void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
+
 {
     assertEquals(filename, linenr, std::string(expected), actual, msg);
 }

@@ -491,7 +491,7 @@ private:
         std::istringstream istr2(debugwarnings.c_str());
         std::string line;
         while (std::getline(istr2,line)) {
-            if (line.find("ValueFlow") == std::string::npos)
+            if (line.find("valueflow.cpp") == std::string::npos)
                 errout << line << "\n";
         }
 
@@ -521,7 +521,7 @@ private:
         std::istringstream istr2(debugwarnings.c_str());
         std::string line;
         while (std::getline(istr2,line)) {
-            if (line.find("ValueFlow") == std::string::npos)
+            if (line.find("valueflow.cpp") == std::string::npos)
                 errout << line << "\n";
         }
 
