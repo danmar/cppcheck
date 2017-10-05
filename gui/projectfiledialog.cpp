@@ -38,6 +38,8 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
 {
     mUI.setupUi(this);
 
+    mUI.mToolClangAnalyzer->hide();
+
     const QFileInfo inf(projectFile->getFilename());
     QString filename = inf.fileName();
     QString title = tr("Project file: %1").arg(filename);
