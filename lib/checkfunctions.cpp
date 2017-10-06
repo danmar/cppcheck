@@ -413,21 +413,33 @@ void CheckFunctions::checkLibraryMatchFunctions()
     if (!_settings->checkLibrary || !_settings->isEnabled(Settings::INFORMATION))
         return;
 
+    bool New = false;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%name% (") &&
-            !Token::Match(tok, "for|if|while|switch|sizeof|catch|asm|return") &&
-            !tok->function() &&
-            !tok->varId() &&
-            !tok->type() &&
-            !tok->isStandardType() &&
-            tok->linkAt(1)->strAt(1) != "(" &&
-            !Token::simpleMatch(tok->astParent(), "new") &&
-            tok->astParent() == tok->next() &&
-            _settings->library.isNotLibraryFunction(tok)) {
-            reportError(tok,
-                        Severity::information,
-                        "checkLibraryFunction",
-                        "--check-library: There is no matching configuration for function " + tok->str() + "()");
-        }
+        if (!tok->scope() || !tok->scope()->isExecutable())
+            continue;
+
+        if (tok->str() == "new")
+            New = true;
+        else if (tok->str() == ";")
+            New = false;
+        else if (New)
+            continue;
+
+        if (!Token::Match(tok, "%name% (") || Token::Match(tok, "for|if|while|switch|sizeof|catch|asm|return"))
+            continue;
+
+        if (tok->varId() != 0 || tok->type() || tok->isStandardType())
+            continue;
+
+        if (tok->linkAt(1)->strAt(1) == "(")
+            continue;
+
+        if (!_settings->library.isNotLibraryFunction(tok))
+            continue;
+
+        reportError(tok,
+                    Severity::information,
+                    "checkLibraryFunction",
+                    "--check-library: There is no matching configuration for function " + _settings->library.getFunctionName(tok) + "()");
     }
 }
