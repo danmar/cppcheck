@@ -234,11 +234,9 @@ std::string Path::stripDirectoryPart(const std::string &file)
     const char native = '/';
 #endif
 
-    std::string::size_type p = file.rfind(native);
-
+    const std::string::size_type p = file.rfind(native);
     if (p != std::string::npos) {
         return file.substr(p + 1);
-    } else {
-        return file;
     }
+    return file;
 }
