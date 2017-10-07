@@ -27,7 +27,6 @@
         <file>images/go-previous.png</file>
         <file>images/applications-development.png</file>
         <file>images/applications-system.png</file>
-        <file>images/llvm-dragon.svg</file>
         <file>images/llvm-dragon.png</file>
     </qresource>
 </RCC>
