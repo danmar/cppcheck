@@ -49,6 +49,12 @@
 static const QString OnlineHelpURL("http://cppcheck.net/manual.html");
 static const QString compile_commands_json("compile_commands.json");
 
+static QString getDataDir(const QSettings *settings) {
+    const QString dataDir = settings->value("DATADIR", QString()).toString();
+    const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
+    return dataDir.isEmpty() ? appPath : dataDir;
+}
+
 MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mSettings(settings),
     mApplications(new ApplicationList(this)),
@@ -64,7 +70,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 {
     mUI.setupUi(this);
     mThread = new ThreadHandler(this);
-    mThread->setDataDir(mSettings->value("DATADIR", QString()).toString());
+    mThread->setDataDir(getDataDir(settings));
     mUI.mResults->initialize(mSettings, mApplications, mThread);
 
     // Filter timer to delay filtering results slightly while typing
