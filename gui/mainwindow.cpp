@@ -49,7 +49,8 @@
 static const QString OnlineHelpURL("http://cppcheck.net/manual.html");
 static const QString compile_commands_json("compile_commands.json");
 
-static QString getDataDir(const QSettings *settings) {
+static QString getDataDir(const QSettings *settings)
+{
     const QString dataDir = settings->value("DATADIR", QString()).toString();
     const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
     return dataDir.isEmpty() ? appPath : dataDir;
