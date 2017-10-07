@@ -598,7 +598,7 @@
    </property>
    <property name="icon">
     <iconset resource="gui.qrc">
-     <normaloff>:/images/llvm-dragon.svg</normaloff>:/images/llvm-dragon.svg</iconset>
+     <normaloff>:/images/llvm-dragon.png</normaloff>:/images/llvm-dragon.png</iconset>
    </property>
    <property name="text">
     <string>Clang</string>
