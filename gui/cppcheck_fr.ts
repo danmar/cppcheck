@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="fr_FR" sourcelanguage="en_GB">
+<TS version="2.1" language="fr_FR" sourcelanguage="en_GB">
 <context>
     <name>About</name>
     <message>
@@ -25,7 +25,7 @@ General Public License version 3</translation>
         <source>Visit Cppcheck homepage at %1</source>
         <translation>Visitez le site Cppcheck : %1</translation>
     </message>
-    <message utf8="true">
+    <message>
         <source>Copyright © 2007-2017 Cppcheck team.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -298,33 +298,6 @@ Parameters: -l(line) (file)</source>
     </message>
 </context>
 <context>
-    <name>LogView</name>
-    <message>
-        <source>Checking Log</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Clear</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Save Log</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Text files (*.txt *.log);;All files (*.*)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Could not open file for writing: &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MainWindow</name>
     <message>
         <source>Cppcheck</source>
@@ -504,7 +477,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Style warnings</source>
-        <translation>Avertissement de style</translation>
+        <translation type="vanished">Avertissement de style</translation>
     </message>
     <message>
         <source>Show style warnings</source>
@@ -512,7 +485,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Errors</source>
-        <translation>Erreurs</translation>
+        <translation type="vanished">Erreurs</translation>
     </message>
     <message>
         <source>Show errors</source>
@@ -572,7 +545,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Warnings</source>
-        <translation>Avertissements</translation>
+        <translation type="vanished">Avertissements</translation>
     </message>
     <message>
         <source>Show warnings</source>
@@ -580,7 +553,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Performance warnings</source>
-        <translation>Avertissements de performance</translation>
+        <translation type="vanished">Avertissements de performance</translation>
     </message>
     <message>
         <source>Show performance warnings</source>
@@ -600,7 +573,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Portability</source>
-        <translation>Portabilité</translation>
+        <translation type="vanished">Portabilité</translation>
     </message>
     <message>
         <source>Show portability warnings</source>
@@ -701,32 +674,12 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Platforms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>C++11</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>C99</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Posix</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
         <translation>Les résultats courant seront effacés.
 		
 L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vous confirmar l&apos;opération ?</translation>
-    </message>
-    <message>
-        <source>Show S&amp;cratchpad...</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Select files to check</source>
@@ -738,22 +691,6 @@ L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vo
     </message>
     <message>
         <source>C++ standard</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>C standard</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>C11</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>C89</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>C++03</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -817,24 +754,12 @@ L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vo
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Library Editor...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Open library editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Auto-detect language</source>
-        <translation>Auto-detection du langage</translation>
-    </message>
-    <message>
-        <source>Enforce C++</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enforce C</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">Auto-detection du langage</translation>
     </message>
     <message>
         <source>&amp;Recheck modified files</source>
@@ -886,10 +811,6 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Analyze</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Analyze files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -899,10 +820,6 @@ Options:
     </message>
     <message>
         <source>&amp;Reanalyze modified files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Reanalyze all files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -941,6 +858,114 @@ Do you want to proceed analysis without using any of these project files?</sourc
 Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>A&amp;nalyze</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;C standard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reanal&amp;yze all files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Style war&amp;nings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>E&amp;rrors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sh&amp;ow Scratchpad...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Per&amp;formance warnings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Portability</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Cppcheck results</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clang</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Clang results</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>P&amp;latforms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C++&amp;11</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C&amp;99</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Posix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C&amp;11</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;C89</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;C++03</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Library Editor...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Auto-detect language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Enforce C++</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>E&amp;nforce C</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C++14</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to import &apos;%1&apos;, analysis is stopped</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project files (*.cppcheck)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -972,16 +997,12 @@ Do you want to stop the analysis and exit Cppcheck?</source>
 <context>
     <name>Project</name>
     <message>
-        <source>Cppcheck</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Could not read the project file.</source>
-        <translation>Impossible de lire le fichier projet.</translation>
+        <translation type="vanished">Impossible de lire le fichier projet.</translation>
     </message>
     <message>
         <source>Could not write the project file.</source>
-        <translation>Impossible d&apos;écrire dans le fichier projet.</translation>
+        <translation type="vanished">Impossible d&apos;écrire dans le fichier projet.</translation>
     </message>
 </context>
 <context>
@@ -1040,7 +1061,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Libraries:</source>
-        <translation>Bibliothèques</translation>
+        <translation type="vanished">Bibliothèques</translation>
     </message>
     <message>
         <source>Suppressions</source>
@@ -1071,27 +1092,71 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Root:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the build dir, cppcheck stores data about each translation unit.&lt;/p&gt;&lt;p&gt;With a build dir you get whole program analysis.&lt;/p&gt;&lt;p&gt;Unchanged files will be analyzed much faster; Cppcheck skip the analysis of these files and reuse their old data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cppcheck build dir (whole program analysis, faster analysis for unchanged files)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Paths and Defines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Cppcheck can import Visual studio solutions (*.sln), Visual studio projects (*.vcxproj) or compile databases.&lt;/p&gt;&lt;p&gt;Files to check, defines, include paths are imported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <source>Import Project (Visual studio / compile database)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Import Project (Visual studio / compile database)</source>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You have a choice:&lt;/p&gt;&lt;p&gt; * Analyze all Debug and Release configurations&lt;/p&gt;&lt;p&gt; * Only analyze the first matching Debug configuration&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analyze all Visual Studio configurations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Root path:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warning tags (separated by semicolon)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cppcheck build dir (whole program analysis, incremental analysis, statistics, etc)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Libraries</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Addons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y2038</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Thread safety</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coding standards</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Extra Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>It is common best practice to use several tools.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clang analyzer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clang-tidy</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1130,7 +1195,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Visual Studio (*.sln *.vcxproj);;Compile database (compile_database.json)</source>
+        <source>Visual Studio (*.sln *.vcxproj);;Compile database (compile_commands.json)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1325,6 +1390,22 @@ Please select the default editor application in preferences/Applications.</sourc
         <source>note</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Suppress selected id(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Since date</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>
@@ -1390,6 +1471,14 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <source>XML format version 1 is no longer supported.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Analysis Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warning Details</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ScratchPad</name>
@@ -1446,7 +1535,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Include paths:</source>
-        <translation>Inclure les chemins</translation>
+        <translation type="vanished">Inclure les chemins</translation>
     </message>
     <message>
         <source>Add...</source>
@@ -1470,11 +1559,11 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Paths</source>
-        <translation>Chemins</translation>
+        <translation type="vanished">Chemins</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation>Editer</translation>
+        <translation type="vanished">Editer</translation>
     </message>
     <message>
         <source>Remove</source>
@@ -1504,6 +1593,34 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <source>Show statistics on check completion</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Addons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python binary (leave this empty to use python in the PATH)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clang</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clang path (leave empty to use system PATH)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Visual Studio headers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Paths to Visual Studio headers, separated by semicolon &apos;;&apos;.&lt;/p&gt;&lt;p&gt;You can open a Visual Studio command prompt, write &amp;quot;SET INCLUDE&amp;quot;. Then copy/paste the paths.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsDialog</name>
@@ -1521,7 +1638,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Select include directory</source>
-        <translation type="unfinished">Selectionner un répertoire à inclure</translation>
+        <translation type="obsolete">Selectionner un répertoire à inclure</translation>
     </message>
     <message>
         <source>[Default]</source>
@@ -1529,6 +1646,14 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source> [Default]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select python binary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select clang path</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1700,6 +1825,22 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Export PDF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>History</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No cppcheck build dir</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
