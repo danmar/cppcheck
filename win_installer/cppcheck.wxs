@@ -38,7 +38,6 @@
             <File Id='Qt5Guidll' Name='Qt5Gui.dll' Source='$(var.QtDllDir)\Qt5Gui.dll' />
             <File Id='Qt5Widgetsdll' Name='Qt5Widgets.dll' Source='$(var.QtDllDir)\Qt5Widgets.dll' />
             <File Id='Qt5PrintSupportdll' Name='Qt5PrintSupport.dll' Source='$(var.QtDllDir)\Qt5PrintSupport.dll' />
-            <File Id='Qt5Svgdll' Name='Qt5Svg.dll' Source='$(var.QtDllDir)\Qt5Svg.dll' />
           </Component>
           <Directory Id='QtPlatformsFolder' Name='platforms'>
             <Component Id='QtPlatforms' DiskId='1' Guid='$(var.qtplatformsGUID)'>
