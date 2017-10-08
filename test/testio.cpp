@@ -1576,6 +1576,17 @@ private:
                       "[test.cpp:4]: (warning) %p in format string (no. 1) requires an address but the argument type is 'char'.\n", errout.str());
 
         check("class foo {};\n"
+              "void foo(char* pc, const char* cpc, wchar_t* pwc, const wchar_t* cpwc) {\n"
+              "    printf(\"%p\", pc);\n"
+              "    printf(\"%p\", cpc);\n"
+              "    printf(\"%p\", pwc);\n"
+              "    printf(\"%p\", cpwc);\n"
+              "    printf(\"%p\", \"s4\");\n"
+              "    printf(\"%p\", L\"s5W\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class foo {};\n"
               "void foo(const int* cpi, foo f, bar b, bar* bp, double d) {\n"
               "    printf(\"%e\", f);\n"
               "    printf(\"%E\", \"s4\");\n"
