@@ -24,7 +24,7 @@ A manual is available [online](http://cppcheck.sourceforge.net/manual.pdf).
 
 Any C++11 compiler should work. For compilers with partial C++11 support it may work. If your compiler has the C++11 features that are available in Visual Studio 2010 then it will work. If nullptr is not supported by your compiler then this can be emulated using the header lib/cxx11emu.h.
 
-To build the GUI, you need Qt.
+To build the GUI, you need Qt 5.
 
 When building the command line tool, [PCRE](http://www.pcre.org/) is optional. It is used if you build with rules.
 

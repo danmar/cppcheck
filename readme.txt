@@ -19,7 +19,7 @@ Compiling
     will work. If nullptr is not supported by your compiler then this can be emulated using
     the header lib/cxx11emu.h.
 
-    To build the GUI, you need Qt.
+    To build the GUI, you need Qt 5.
 
     When building the command line tool, PCRE is optional. It is used if you build with rules.
 
