@@ -432,11 +432,11 @@ const char *CheckMemoryLeak::functionArgAlloc(const Function *func, unsigned int
         return "";
 
     // Check if pointer is allocated.
-    int realloc = 0;
+    bool realloc = false;
     for (tok = func->functionScope->classStart; tok && tok != func->functionScope->classEnd; tok = tok->next()) {
         if (tok->varId() == arg->declarationId()) {
             if (Token::Match(tok->tokAt(-3), "free ( * %name% )")) {
-                realloc = 1;
+                realloc = true;
                 allocType = No;
             } else if (Token::Match(tok->previous(), "* %name% =")) {
                 allocType = getAllocationType(tok->tokAt(2), arg->declarationId());
@@ -1172,7 +1172,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             ;
                         } else if (functions.empty() ||
                                    !test_white_list(functions.top()->str(), _settings, tokenizer->isCPP()) ||
-                                   getDeallocationType(functions.top(),varid)) {
+                                   getDeallocationType(functions.top(),varid) != AllocType::No) {
                             use = true;
                         }
                     }

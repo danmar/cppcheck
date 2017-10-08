@@ -989,9 +989,9 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 
         // Logical operations
         else if (Token::Match(op, "%oror%|&&")) {
-            int op1 = !MathLib::isNullValue(tok->str());
-            int op2 = !MathLib::isNullValue(tok->strAt(2));
-            int result = (op->str() == "||") ? (op1 || op2) : (op1 && op2);
+            bool op1 = !MathLib::isNullValue(tok->str());
+            bool op2 = !MathLib::isNullValue(tok->strAt(2));
+            bool result = (op->str() == "||") ? (op1 || op2) : (op1 && op2);
             tok->str(result ? "1" : "0");
         }
 
