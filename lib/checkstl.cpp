@@ -1598,12 +1598,12 @@ void CheckStl::readingEmptyStlContainer()
 
             // function call
             if (Token::Match(tok, "!!. %name% (") && !Token::simpleMatch(tok->linkAt(2), ") {")) {
-                for (std::map<unsigned int, const Library::Container*>::const_iterator it = emptyContainer.begin(); it != emptyContainer.end();) {
+                for (std::map<unsigned int, const Library::Container*>::iterator it = emptyContainer.begin(); it != emptyContainer.end();) {
                     const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(it->first);
                     if (var && (var->isLocal() || var->isArgument()))
                         ++it;
                     else
-                        it = emptyContainer.erase(it);
+                        emptyContainer.erase(it++);
                 }
             }
 
