@@ -847,8 +847,12 @@ Settings MainWindow::getCppcheckSettings()
 
         const QString &buildDir = mProjectFile->getBuildDir();
         if (!buildDir.isEmpty()) {
-            QString prjpath = QFileInfo(mProjectFile->getFilename()).absolutePath();
-            result.buildDir = (prjpath + '/' + buildDir).toStdString();
+            if (QDir(buildDir).isAbsolute()) {
+                result.buildDir = buildDir.toStdString();
+            } else {
+                QString prjpath = QFileInfo(mProjectFile->getFilename()).absolutePath();
+                result.buildDir = (prjpath + '/' + buildDir).toStdString();
+            }
         }
     }
 
