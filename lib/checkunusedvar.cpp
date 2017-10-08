@@ -79,7 +79,7 @@ public:
 
         /** is variable unused? */
         bool unused() const {
-            return (_read == false && _write == false);
+            return (!_read && !_write);
         }
 
         std::set<unsigned int> _aliases;

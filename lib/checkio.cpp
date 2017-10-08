@@ -1275,7 +1275,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 break;
                             case 'p':
                                 if (argInfo.typeToken->tokType() == Token::eString)
-                                    invalidPrintfArgTypeError_p(tok, numFormat, &argInfo);
+                                    ;// string literals are passed as pointers to literal start, okay
                                 else if (argInfo.isKnownType() && !argInfo.isArrayOrPointer())
                                     invalidPrintfArgTypeError_p(tok, numFormat, &argInfo);
                                 done = true;

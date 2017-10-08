@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="de_DE">
+<TS version="2.1" language="de_DE">
 <context>
     <name>About</name>
     <message>
@@ -18,7 +18,7 @@
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation>Cppcheck - Ein Werkzeug zur statischen C/C++-Code-Analyse.</translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2017 Cppcheck team.</source>
         <translation>Copyright © 2007-2017 Cppcheck-Team.</translation>

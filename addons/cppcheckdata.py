@@ -499,7 +499,7 @@ class Configuration:
                 for values in element:
                     self.valueflow.append(ValueFlow(values))
 
-        IdMap = {None: None, '0': None}
+        IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
         for token in self.tokenlist:
             IdMap[token.Id] = token
         for scope in self.scopes:

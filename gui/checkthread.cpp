@@ -296,6 +296,11 @@ void CheckThread::runAddonsAndTools(const QString &addonPath, const ImportProjec
             qDebug() << python << args;
 
             QProcess process;
+            QProcessEnvironment env = process.processEnvironment();
+            if (!env.contains("PYTHONHOME") && !mPythonPath.isEmpty()) {
+                env.insert("PYTHONHOME", QFileInfo(mPythonPath).canonicalPath());
+                process.setProcessEnvironment(env);
+            }
             process.start(python, args);
             process.waitForFinished();
             const QString errout(process.readAllStandardError());

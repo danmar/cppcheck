@@ -1,32 +1,32 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file>cppcheck-gui.png</file>
-    <file>images/dialog-error.png</file>
-    <file>images/dialog-information.png</file>
-    <file>images/dialog-warning.png</file>
-    <file>images/edit-clear.png</file>
-    <file>images/go-down.png</file>
-    <file>images/help-browser.png</file>
-    <file>images/media-floppy.png</file>
-    <file>images/preferences-system.png</file>
-    <file>images/process-stop.png</file>
-    <file>images/text-x-generic.png</file>
-    <file>images/view-recheck.png</file>
-    <file>images/view-refresh.png</file>
-    <file>images/showerrors.png</file>
-    <file>images/showstylewarnings.png</file>
-    <file>images/openproject.png</file>
-    <file>images/scratchpad.png</file>
-    <file>images/showwarnings.png</file>
-    <file>images/showperformance.png</file>
-    <file>images/utilities-system-monitor.png</file>
-    <file alias="COPYING">../COPYING</file>
-    <file alias="AUTHORS">../AUTHORS</file>
-    <file>images/go-home.png</file>
-    <file>images/go-next.png</file>
-    <file>images/go-previous.png</file>
-    <file>images/applications-development.png</file>
-    <file>images/applications-system.png</file>
-    <file>images/llvm-dragon.svg</file>
-</qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>cppcheck-gui.png</file>
+        <file>images/dialog-error.png</file>
+        <file>images/dialog-information.png</file>
+        <file>images/dialog-warning.png</file>
+        <file>images/edit-clear.png</file>
+        <file>images/go-down.png</file>
+        <file>images/help-browser.png</file>
+        <file>images/media-floppy.png</file>
+        <file>images/preferences-system.png</file>
+        <file>images/process-stop.png</file>
+        <file>images/text-x-generic.png</file>
+        <file>images/view-recheck.png</file>
+        <file>images/view-refresh.png</file>
+        <file>images/showerrors.png</file>
+        <file>images/showstylewarnings.png</file>
+        <file>images/openproject.png</file>
+        <file>images/scratchpad.png</file>
+        <file>images/showwarnings.png</file>
+        <file>images/showperformance.png</file>
+        <file>images/utilities-system-monitor.png</file>
+        <file alias="COPYING">../COPYING</file>
+        <file alias="AUTHORS">../AUTHORS</file>
+        <file>images/go-home.png</file>
+        <file>images/go-next.png</file>
+        <file>images/go-previous.png</file>
+        <file>images/applications-development.png</file>
+        <file>images/applications-system.png</file>
+        <file>images/llvm-dragon.png</file>
+    </qresource>
 </RCC>
