@@ -934,6 +934,13 @@ private:
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::uintptr_t", "unsigned long", "unsigned long long");
 
+        check("void foo() {\n"
+              "    scanf(\"%u\", \"s3\");\n"
+              "    scanf(\"%u\", L\"s5W\");\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 1) requires 'unsigned int *' but the argument type is 'const char *'.\n"
+                      "[test.cpp:3]: (warning) %u in format string (no. 1) requires 'unsigned int *' but the argument type is 'const wchar_t *'.\n", errout.str());
+
         TEST_SCANF_WARN("%lu","unsigned long","bool");
         TEST_SCANF_WARN("%lu","unsigned long","char");
         TEST_SCANF_WARN("%lu","unsigned long","signed char");
@@ -1203,6 +1210,13 @@ private:
         TEST_SCANF_WARN_AKA("%d", "int", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%d", "int", "std::uintptr_t", "unsigned long", "unsigned long long");
 
+        check("void foo() {\n"
+              "    scanf(\"%d\", \"s3\");\n"
+              "    scanf(\"%d\", L\"s5W\");\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int *' but the argument type is 'const char *'.\n"
+                      "[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int *' but the argument type is 'const wchar_t *'.\n", errout.str());
+
         TEST_SCANF_WARN("%x", "unsigned int", "bool");
         TEST_SCANF_WARN("%x", "unsigned int", "char");
         TEST_SCANF_WARN("%x", "unsigned int", "signed char");
@@ -1230,6 +1244,13 @@ private:
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::uintptr_t", "unsigned long", "unsigned long long");
 
+        check("void foo() {\n"
+              "    scanf(\"%x\", \"s3\");\n"
+              "    scanf(\"%x\", L\"s5W\");\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %x in format string (no. 1) requires 'unsigned int *' but the argument type is 'const char *'.\n"
+                      "[test.cpp:3]: (warning) %x in format string (no. 1) requires 'unsigned int *' but the argument type is 'const wchar_t *'.\n", errout.str());
+
         TEST_SCANF_WARN("%f", "float", "bool");
         TEST_SCANF_WARN("%f", "float", "char");
         TEST_SCANF_WARN("%f", "float", "signed char");
@@ -1256,6 +1277,13 @@ private:
         TEST_SCANF_WARN_AKA("%f", "float", "std::ptrdiff_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%f", "float", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%f", "float", "std::uintptr_t", "unsigned long", "unsigned long long");
+
+        check("void foo() {\n"
+              "    scanf(\"%f\", \"s3\");\n"
+              "    scanf(\"%f\", L\"s5W\");\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'float *' but the argument type is 'const char *'.\n"
+                      "[test.cpp:3]: (warning) %f in format string (no. 1) requires 'float *' but the argument type is 'const wchar_t *'.\n", errout.str());
 
         TEST_SCANF_WARN("%lf", "double", "bool");
         TEST_SCANF_WARN("%lf", "double", "char");
@@ -1337,6 +1365,13 @@ private:
         TEST_SCANF_WARN_AKA("%n", "int", "std::ptrdiff_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%n", "int", "std::intptr_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%n", "int", "std::uintptr_t", "unsigned long", "unsigned long long");
+
+        check("void foo() {\n"
+              "    scanf(\"%n\", \"s3\");\n"
+              "    scanf(\"%n\", L\"s5W\");\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const char *'.\n"
+                      "[test.cpp:3]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const wchar_t *'.\n", errout.str());
 
         check("void g() {\n" // #5104
               "    myvector<int> v1(1);\n"
