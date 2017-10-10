@@ -25,12 +25,37 @@
 #include <QInputDialog>
 #include <QDir>
 #include <QSettings>
+#include <QProcess>
 #include "common.h"
 #include "projectfiledialog.h"
 #include "projectfile.h"
 #include "library.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
+
+static QString clangTidyCmd() {
+    QString path = QSettings().value(SETTINGS_CLANG_PATH,QString()).toString();
+    if (!path.isEmpty())
+        path += '/';
+    path += "clang-tidy";
+#ifdef Q_OS_WIN
+    path += ".exe";
+#endif
+
+    QProcess process;
+    process.start(path, QStringList() << "--version");
+    process.waitForFinished();
+    if (process.exitCode() == 0)
+        return path;
+
+#ifdef Q_OS_WIN
+    // Try to autodetect clang-tidy
+    if (QFileInfo("C:/Program Files/LLVM/bin/clang-tidy.exe").exists())
+        return "C:/Program Files/LLVM/bin/clang-tidy.exe";
+#endif
+
+    return QString();
+}
 
 ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     : QDialog(parent)
@@ -151,6 +176,10 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mAddonCert->setChecked(projectFile->getAddons().contains("cert"));
     mUI.mToolClangAnalyzer->setChecked(projectFile->getClangAnalyzer());
     mUI.mToolClangTidy->setChecked(projectFile->getClangTidy());
+    if (clangTidyCmd().isEmpty()) {
+        mUI.mToolClangTidy->setText(tr("Clang-tidy (not found)"));
+        mUI.mToolClangTidy->setEnabled(false);
+    }
     QString tags;
     foreach (const QString tag, projectFile->getTags()) {
         if (tags.isEmpty())
