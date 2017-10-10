@@ -257,7 +257,7 @@ private:
     void unusedLabelError(const Token* tok, bool inSwitch);
     void unknownEvaluationOrder(const Token* tok);
     static bool isMovedParameterAllowedForInconclusiveFunction(const Token * tok);
-    void accessMovedError(const Token *tok, const std::string &varname, ValueFlow::Value::MoveKind moveKind, bool inconclusive);
+    void accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive);
     void funcArgNamesDifferent(const std::string & functionName, size_t index, const Token* declaration, const Token* definition);
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
 
@@ -313,8 +313,7 @@ private:
         c.unusedLabelError(nullptr,  true);
         c.unusedLabelError(nullptr,  false);
         c.unknownEvaluationOrder(nullptr);
-        c.accessMovedError(nullptr, "v", ValueFlow::Value::MovedVariable, false);
-        c.accessMovedError(nullptr, "v", ValueFlow::Value::ForwardedVariable, false);
+        c.accessMovedError(nullptr, "v", nullptr, false);
         c.funcArgNamesDifferent("function", 1, nullptr, nullptr);
 
         std::vector<const Token *> nullvec;
