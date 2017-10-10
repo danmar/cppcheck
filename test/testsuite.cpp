@@ -169,7 +169,6 @@ void TestFixture::assertEqualsWithoutLineNumbers(const char *filename, unsigned 
 }
 
 void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
-
 {
     assertEquals(filename, linenr, std::string(expected), actual, msg);
 }
