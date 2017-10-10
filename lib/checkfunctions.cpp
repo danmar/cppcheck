@@ -437,9 +437,13 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (!_settings->library.isNotLibraryFunction(tok))
             continue;
 
+        const std::string &functionName = _settings->library.getFunctionName(tok);
+        if (functionName.empty() || _settings->library.functions.find(functionName) != _settings->library.functions.end())
+            continue;
+
         reportError(tok,
                     Severity::information,
                     "checkLibraryFunction",
-                    "--check-library: There is no matching configuration for function " + _settings->library.getFunctionName(tok) + "()");
+                    "--check-library: There is no matching configuration for function " + functionName + "()");
     }
 }
