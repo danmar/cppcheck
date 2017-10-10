@@ -345,31 +345,31 @@ private:
     }
 
     void toDoubleNumber() const {
-        ASSERT_EQUALS_DOUBLE(10.0  , MathLib::toDoubleNumber("10"));
-        ASSERT_EQUALS_DOUBLE(1000.0, MathLib::toDoubleNumber("10E+2"));
-        ASSERT_EQUALS_DOUBLE(100.0 , MathLib::toDoubleNumber("1.0E+2"));
-        ASSERT_EQUALS_DOUBLE(-100.0, MathLib::toDoubleNumber("-1.0E+2"));
-        ASSERT_EQUALS_DOUBLE(-1e+10, MathLib::toDoubleNumber("-1.0E+10"));
-        ASSERT_EQUALS_DOUBLE(100.0 , MathLib::toDoubleNumber("+1.0E+2"));
-        ASSERT_EQUALS_DOUBLE(1e+10 , MathLib::toDoubleNumber("+1.0E+10"));
-        ASSERT_EQUALS_DOUBLE(100.0 , MathLib::toDoubleNumber("1.0E+2"));
-        ASSERT_EQUALS_DOUBLE(1e+10 , MathLib::toDoubleNumber("1.0E+10"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0E+0"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0E-0"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0E+00"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0E-00"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("-0E+00"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0E-00"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0."));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0.0"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("-0"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("-0."));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0."));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("-0.0"));
-        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0.0"));
-        ASSERT_EQUALS_DOUBLE('0'   , MathLib::toDoubleNumber("'0'"));
+        ASSERT_EQUALS_DOUBLE(10.0  , MathLib::toDoubleNumber("10"),       0.001);
+        ASSERT_EQUALS_DOUBLE(1000.0, MathLib::toDoubleNumber("10E+2"),    0.001);
+        ASSERT_EQUALS_DOUBLE(100.0 , MathLib::toDoubleNumber("1.0E+2"),   0.001);
+        ASSERT_EQUALS_DOUBLE(-100.0, MathLib::toDoubleNumber("-1.0E+2"),  0.001);
+        ASSERT_EQUALS_DOUBLE(-1e+10, MathLib::toDoubleNumber("-1.0E+10"), 1);
+        ASSERT_EQUALS_DOUBLE(100.0 , MathLib::toDoubleNumber("+1.0E+2"),  0.001);
+        ASSERT_EQUALS_DOUBLE(1e+10 , MathLib::toDoubleNumber("+1.0E+10"), 1);
+        ASSERT_EQUALS_DOUBLE(100.0 , MathLib::toDoubleNumber("1.0E+2"),   0.001);
+        ASSERT_EQUALS_DOUBLE(1e+10 , MathLib::toDoubleNumber("1.0E+10"),  1);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0E+0"),     0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0E-0"),     0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0E+00"),    0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0E-00"),    0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("-0E+00"),   0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0E-00"),   0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0"),        0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0."),       0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("0.0"),      0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("-0"),       0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0"),       0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("-0."),      0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0."),      0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("-0.0"),     0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0.0"),     0.000001);
+        ASSERT_EQUALS_DOUBLE('0'   , MathLib::toDoubleNumber("'0'"),      0.000001);
 
         // verify: string --> double --> string conversion
         ASSERT_EQUALS("1.0" , MathLib::toString(MathLib::toDoubleNumber("1.0f")));

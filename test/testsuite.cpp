@@ -192,9 +192,9 @@ void TestFixture::assertEquals(const char *filename, unsigned int linenr, long l
     }
 }
 
-void TestFixture::assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, const std::string &msg) const
+void TestFixture::assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, double tolerance, const std::string &msg) const
 {
-    if (expected != actual) {
+    if (expected < (actual - tolerance) || expected > (actual + tolerance)) {
         std::ostringstream ostr1;
         ostr1 << expected;
         std::ostringstream ostr2;
