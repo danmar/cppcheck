@@ -165,7 +165,7 @@ std::string TestFixture::deleteLineNumber(const std::string &message) const
 
 void TestFixture::assertEqualsWithoutLineNumbers(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
 {
-    assertEquals(filename, linenr, deleteLineNumber(expected), deleteLineNumber(actual));
+    assertEquals(filename, linenr, deleteLineNumber(expected), deleteLineNumber(actual), msg);
 }
 
 void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
