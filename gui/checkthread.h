@@ -84,6 +84,7 @@ public:
 
     void stop();
 
+    static QString getAddonFilePath(const QString &dataDir, const QString &addonFile);
 
 signals:
 
@@ -122,9 +123,7 @@ protected:
     CppCheck mCppcheck;
 
 private:
-    QString getAddonPath() const;
-
-    void runAddonsAndTools(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName);
+    void runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName);
 
     void parseAddonErrors(QString err, QString tool);
     void parseClangErrors(const QString &tool, const QString &file0, QString err);

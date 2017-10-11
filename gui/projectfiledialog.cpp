@@ -28,6 +28,7 @@
 #include <QProcess>
 #include "common.h"
 #include "projectfiledialog.h"
+#include "checkthread.h"
 #include "projectfile.h"
 #include "library.h"
 #include "cppcheck.h"
@@ -160,6 +161,16 @@ void ProjectFileDialog::saveSettings() const
     settings.setValue(SETTINGS_PROJECT_DIALOG_HEIGHT, size().height());
 }
 
+static void updateAddonCheckBox(QCheckBox *cb, const ProjectFile *projectFile, const QString &dataDir, const QString &addon)
+{
+    cb->setChecked(projectFile->getAddons().contains(addon));
+    const QString appPath = QApplication::applicationDirPath();
+    if (CheckThread::getAddonFilePath(dataDir, addon + ".py").isEmpty() && CheckThread::getAddonFilePath(appPath, addon + ".py").isEmpty()) {
+        cb->setEnabled(false);
+        cb->setText(cb->text() + QObject::tr(" (Not found)"));
+    }
+}
+
 void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
 {
     setRootPath(projectFile->getRootPath());
@@ -172,7 +183,13 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     setSuppressions(projectFile->getSuppressions());
-    mUI.mAddonThreadSafety->setChecked(projectFile->getAddons().contains("threadsafety"));
+
+    QSettings settings;
+    const QString dataDir = settings.value("DATADIR", QString()).toString();
+    updateAddonCheckBox(mUI.mAddonThreadSafety, projectFile, dataDir, "threadsafety");
+    updateAddonCheckBox(mUI.mAddonY2038, projectFile, dataDir, "y2038");
+    updateAddonCheckBox(mUI.mAddonCert, projectFile, dataDir, "cert");
+
     mUI.mAddonY2038->setChecked(projectFile->getAddons().contains("y2038"));
     mUI.mAddonCert->setChecked(projectFile->getAddons().contains("cert"));
     mUI.mToolClangAnalyzer->setChecked(projectFile->getClangAnalyzer());

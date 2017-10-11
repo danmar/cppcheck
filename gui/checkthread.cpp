@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QApplication>
 #include <QString>
 #include <QDebug>
 #include <QDir>
@@ -74,13 +75,11 @@ void CheckThread::run()
         return;
     }
 
-    const QString addonPath = getAddonPath();
-
     QString file = mResult.getNextFile();
     while (!file.isEmpty() && mState == Running) {
         qDebug() << "Checking file" << file;
         mCppcheck.check(file.toStdString());
-        runAddonsAndTools(addonPath, nullptr, file);
+        runAddonsAndTools(nullptr, file);
         emit fileChecked(file);
 
         if (mState == Running)
@@ -92,7 +91,7 @@ void CheckThread::run()
         file = QString::fromStdString(fileSettings.filename);
         qDebug() << "Checking file" << file;
         mCppcheck.check(fileSettings);
-        runAddonsAndTools(addonPath, &fileSettings, QString::fromStdString(fileSettings.filename));
+        runAddonsAndTools(&fileSettings, QString::fromStdString(fileSettings.filename));
         emit fileChecked(file);
 
         if (mState == Running)
@@ -107,7 +106,7 @@ void CheckThread::run()
     emit done();
 }
 
-void CheckThread::runAddonsAndTools(const QString &addonPath, const ImportProject::FileSettings *fileSettings, const QString &fileName)
+void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName)
 {
     QString dumpFile;
 
@@ -263,13 +262,12 @@ void CheckThread::runAddonsAndTools(const QString &addonPath, const ImportProjec
 
             parseClangErrors(addon, fileName, errout);
         } else {
-            QString a;
-            if (QFileInfo(addonPath + '/' + addon + ".py").exists())
-                a = addonPath + '/' + addon + ".py";
-            else if (QFileInfo(addonPath + '/' + addon + '/' + addon + ".py").exists())
-                a = addonPath + '/' + addon + '/' + addon + ".py";
-            else
-                continue;
+            QString a = CheckThread::getAddonFilePath(mDataDir, addon + ".py");
+            if (a.isEmpty()) {
+                a = CheckThread::getAddonFilePath(QApplication::applicationDirPath(), addon + ".py");
+                if (a.isEmpty())
+                    continue;
+            }
 
             if (dumpFile.isEmpty()) {
                 const std::string buildDir = mCppcheck.settings().buildDir;
@@ -319,21 +317,6 @@ void CheckThread::stop()
 {
     mState = Stopping;
     mCppcheck.terminate();
-}
-
-QString CheckThread::getAddonPath() const
-{
-    if (QFileInfo(mDataDir + "/threadsafety.py").exists())
-        return mDataDir;
-    else if (QDir(mDataDir + "/addons").exists())
-        return mDataDir + "/addons";
-    else if (QDir(mDataDir + "/../addons").exists())
-        return mDataDir + "/../addons";
-    else if (mDataDir.endsWith("/cfg")) {
-        if (QDir(mDataDir.mid(0,mDataDir.size()-3) + "addons").exists())
-            return mDataDir.mid(0,mDataDir.size()-3) + "addons";
-    }
-    return QString();
 }
 
 void CheckThread::parseAddonErrors(QString err, QString tool)
@@ -446,4 +429,17 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         ErrorLogger::ErrorMessage errmsg(callstack, f0, e.severity, msg, id, false);
         mResult.reportErr(errmsg);
     }
+}
+
+QString CheckThread::getAddonFilePath(const QString &dataDir, const QString &addonFile)
+{
+    if (dataDir.isEmpty())
+        return QString();
+    if (QFileInfo(dataDir + '/' + addonFile).exists())
+        return dataDir + '/' + addonFile;
+    if (QFileInfo(dataDir + "/addons/" + addonFile).exists())
+        return dataDir + "/addons/" + addonFile;
+    if (QFileInfo(dataDir + "/../addons/" + addonFile).exists())
+        return dataDir + "/../addons/" + addonFile;
+    return QString();
 }
