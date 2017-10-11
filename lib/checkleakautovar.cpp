@@ -299,14 +299,16 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             if (varTok->next()->astOperand2() && Token::Match(varTok->next()->astOperand2()->previous(), "%type% (")) {
                 const Library::AllocFunc* f = _settings->library.alloc(varTok->next()->astOperand2()->previous());
                 if (f && f->arg == -1) {
-                    alloctype[varTok->varId()].type = f->groupId;
-                    alloctype[varTok->varId()].status = VarInfo::ALLOC;
+                    VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
+                    varAlloc.type = f->groupId;
+                    varAlloc.status = VarInfo::ALLOC;
                 }
             } else if (_tokenizer->isCPP() && Token::Match(varTok->tokAt(2), "new !!(")) {
                 const Token* tok2 = varTok->tokAt(2)->astOperand1();
                 bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
-                alloctype[varTok->varId()].type = arrayNew ? -2 : -1;
-                alloctype[varTok->varId()].status = VarInfo::ALLOC;
+                VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
+                varAlloc.type = arrayNew ? -2 : -1;
+                varAlloc.status = VarInfo::ALLOC;
             }
 
             // Assigning non-zero value variable. It might be used to
