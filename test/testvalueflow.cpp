@@ -1784,7 +1784,7 @@ private:
                "    x += 67;\n"
                "    return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123.45 + 67, 0.01));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123.45F + 67, 0.01F));
     }
 
     void valueFlowForwardCorrelatedVariables() {
