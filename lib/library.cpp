@@ -924,9 +924,10 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
 // returns true if ftok is not a library function
 bool Library::isNotLibraryFunction(const Token *ftok) const
 {
+/*
     if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != Scope::eGlobal)
         return true;
-
+*/
     // variables are not library functions.
     if (ftok->varId())
         return true;

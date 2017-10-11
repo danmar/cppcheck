@@ -8,6 +8,7 @@ passedByValue:lib/library.h
 knownConditionTrueFalse:lib/platform.cpp
 knownConditionTrueFalse:build/*
 nullPointer:lib/checkother.cpp
+nullPointer:build/checkother.cpp
 
 *:gui/test*
 *:test/test.cxx
