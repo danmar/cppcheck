@@ -7,6 +7,7 @@ passedByValue:lib/symboldatabase.h
 passedByValue:lib/library.h
 knownConditionTrueFalse:lib/platform.cpp
 knownConditionTrueFalse:build/*
+nullPointer:lib/checkother.cpp
 
 *:gui/test*
 *:test/test.cxx
