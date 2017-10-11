@@ -228,7 +228,7 @@ std::string Path::getAbsoluteFilePath(const std::string& filePath)
 
 std::string Path::stripDirectoryPart(const std::string &file)
 {
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MINGW32__)
     const char native = '\\';
 #else
     const char native = '/';
