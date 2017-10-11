@@ -33,7 +33,8 @@
 #include "cppcheck.h"
 #include "errorlogger.h"
 
-static QString clangTidyCmd() {
+static QString clangTidyCmd()
+{
     QString path = QSettings().value(SETTINGS_CLANG_PATH,QString()).toString();
     if (!path.isEmpty())
         path += '/';
