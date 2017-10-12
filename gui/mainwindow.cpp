@@ -457,7 +457,6 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     //mThread->SetanalyzeProject(true);
     if (mProjectFile) {
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools());
-        mThread->setPythonPath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         QString clangHeaders = mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString();
         mThread->setClangIncludePaths(clangHeaders.split(";"));
         mThread->setSuppressions(mProjectFile->getSuppressions());

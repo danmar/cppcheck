@@ -56,10 +56,6 @@ public:
         mAddonsAndTools = addonsAndTools;
     }
 
-    void setPythonPath(const QString &p) {
-        mPythonPath = p;
-    }
-
     void setDataDir(const QString &dataDir) {
         mDataDir = dataDir;
     }
@@ -81,16 +77,22 @@ public:
     void stop();
 
     /**
-     * Loop for clang and return path
-     * \return path to clang if found, empty if it is not found
+     * Determine command to run clang
+     * \return Command to run clang, empty if it is not found
      */
     static QString clangCmd();
 
     /**
-     * Loop for clang-tidy and return path
-     * \return path to clang-tidy if found, empty if it is not found
+     * Determine command to run clang-tidy
+     * \return Command to run clang-tidy, empty if it is not found
      */
     static QString clangTidyCmd();
+
+    /**
+     * Determine command to run python
+     * \return Command to run python, empty if it is not found
+     */
+    static QString pythonCmd();
 
     /**
      * Look for addon and return path
@@ -143,7 +145,6 @@ private:
     QStringList mFiles;
     bool mAnalyseWholeProgram;
     QStringList mAddonsAndTools;
-    QString mPythonPath;
     QString mDataDir;
     QStringList mClangIncludePaths;
     QStringList mSuppressions;

@@ -258,8 +258,12 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 
             parseClangErrors(addon, fileName, errout);
         } else {
-            const QString a = CheckThread::getAddonFilePath(mDataDir, addon + ".py");
-            if (a.isEmpty())
+            const QString python = CheckThread::pythonCmd();
+            if (python.isEmpty())
+                continue;
+
+            const QString addonFilePath = CheckThread::getAddonFilePath(mDataDir, addon + ".py");
+            if (addonFilePath.isEmpty())
                 continue;
 
             if (dumpFile.isEmpty()) {
@@ -281,15 +285,14 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 mCppcheck.settings().buildDir = buildDir;
             }
 
-            const QString python = mPythonPath.isEmpty() ? QString("python") : mPythonPath;
             QStringList args;
-            args << a << dumpFile;
+            args << addonFilePath << dumpFile;
             qDebug() << python << args;
 
             QProcess process;
             QProcessEnvironment env = process.processEnvironment();
-            if (!env.contains("PYTHONHOME") && !mPythonPath.isEmpty()) {
-                env.insert("PYTHONHOME", QFileInfo(mPythonPath).canonicalPath());
+            if (!env.contains("PYTHONHOME") && !python.startsWith("python")) {
+                env.insert("PYTHONHOME", QFileInfo(python).canonicalPath());
                 process.setProcessEnvironment(env);
             }
             process.start(python, args);
@@ -470,6 +473,26 @@ QString CheckThread::clangTidyCmd()
     if (QFileInfo("C:/Program Files/LLVM/bin/clang-tidy.exe").exists())
         return "C:/Program Files/LLVM/bin/clang-tidy.exe";
 #endif
+
+    return QString();
+}
+
+QString CheckThread::pythonCmd()
+{
+    QString path = QSettings().value(SETTINGS_PYTHON_PATH).toString();
+    if (!path.isEmpty())
+        return path;
+
+    path = "python";
+#ifdef Q_OS_WIN
+    path += ".exe";
+#endif
+
+    QProcess process;
+    process.start(path, QStringList() << "--version");
+    process.waitForFinished();
+    if (process.exitCode() == 0)
+        return path;
 
     return QString();
 }
