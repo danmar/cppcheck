@@ -460,15 +460,6 @@ void MainWindow::doAnalyzeProject(ImportProject p)
         mThread->setPythonPath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         QString clangHeaders = mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString();
         mThread->setClangIncludePaths(clangHeaders.split(";"));
-        QString clangPath = mSettings->value(SETTINGS_CLANG_PATH,QString()).toString();
-#ifdef Q_OS_WIN
-        if (clangPath.isEmpty()) {
-            // Try to autodetect clang
-            if (QFileInfo("C:/Program Files/LLVM/bin/clang.exe").exists())
-                clangPath = "C:/Program Files/LLVM/bin";
-        }
-#endif
-        mThread->setClangPath(clangPath);
         mThread->setSuppressions(mProjectFile->getSuppressions());
     }
     mThread->setProject(p);

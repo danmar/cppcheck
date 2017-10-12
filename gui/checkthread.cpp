@@ -22,6 +22,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QProcess>
+#include <QSettings>
 #include "checkthread.h"
 #include "erroritem.h"
 #include "threadresult.h"
@@ -127,8 +128,9 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 args << ("-D" + D);
             }
 
-            if (!mClangPath.isEmpty()) {
-                QDir dir(mClangPath + "/../lib/clang");
+            const QString clangPath = CheckThread::clangTidyCmd();
+            if (!clangPath.isEmpty()) {
+                QDir dir(clangPath + "/../lib/clang");
                 foreach (QString ver, dir.entryList()) {
                     QString includePath = dir.absolutePath() + '/' + ver + "/include";
                     if (ver[0] != '.' && QDir(includePath).exists()) {
@@ -174,12 +176,11 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             if (!buildDir.empty()) {
                 analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename, fileSettings->cfg));
 
-                const QString cmd(mClangPath.isEmpty() ? QString("clang") : (mClangPath + "/clang.exe"));
                 QStringList args2(args);
                 args2.insert(0,"-E");
                 args2 << fileName;
                 QProcess process;
-                process.start(cmd,args2);
+                process.start(clangCmd(),args2);
                 process.waitForFinished();
                 const QByteArray &ba = process.readAllStandardOutput();
                 const quint16 chksum = qChecksum(ba.data(), ba.length());
@@ -223,13 +224,8 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 args.insert(2, "--");
             }
 
-#ifdef Q_OS_WIN
-            const QString ext = ".exe";
-#else
-            const QString ext = "";
-#endif
-            const QString cmd(mClangPath.isEmpty() ? ("clang-tidy" + ext) : (mClangPath + "/clang-tidy" + ext));
             {
+                const QString cmd(clangTidyCmd());
                 QString debug(cmd.contains(" ") ? ('\"' + cmd + '\"') : cmd);
                 foreach (QString arg, args) {
                     if (arg.contains(" "))
@@ -249,7 +245,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             }
 
             QProcess process;
-            process.start(cmd, args);
+            process.start(clangTidyCmd(), args);
             process.waitForFinished(600*1000);
             const QString errout(process.readAllStandardOutput() + "\n\n\n" + process.readAllStandardError());
             if (!analyzerInfoFile.isEmpty()) {
@@ -262,12 +258,9 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 
             parseClangErrors(addon, fileName, errout);
         } else {
-            QString a = CheckThread::getAddonFilePath(mDataDir, addon + ".py");
-            if (a.isEmpty()) {
-                a = CheckThread::getAddonFilePath(QApplication::applicationDirPath(), addon + ".py");
-                if (a.isEmpty())
-                    continue;
-            }
+            const QString a = CheckThread::getAddonFilePath(mDataDir, addon + ".py");
+            if (a.isEmpty())
+                continue;
 
             if (dumpFile.isEmpty()) {
                 const std::string buildDir = mCppcheck.settings().buildDir;
@@ -431,15 +424,72 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     }
 }
 
+QString CheckThread::clangCmd()
+{
+    QString path = QSettings().value(SETTINGS_CLANG_PATH,QString()).toString();
+    if (!path.isEmpty())
+        path += '/';
+    path += "clang";
+#ifdef Q_OS_WIN
+    path += ".exe";
+#endif
+
+    QProcess process;
+    process.start(path, QStringList() << "--version");
+    process.waitForFinished();
+    if (process.exitCode() == 0)
+        return path;
+
+#ifdef Q_OS_WIN
+    // Try to autodetect clang
+    if (QFileInfo("C:/Program Files/LLVM/bin/clang.exe").exists())
+        return "C:/Program Files/LLVM/bin/clang.exe";
+#endif
+
+    return QString();
+}
+
+QString CheckThread::clangTidyCmd()
+{
+    QString path = QSettings().value(SETTINGS_CLANG_PATH,QString()).toString();
+    if (!path.isEmpty())
+        path += '/';
+    path += "clang-tidy";
+#ifdef Q_OS_WIN
+    path += ".exe";
+#endif
+
+    QProcess process;
+    process.start(path, QStringList() << "--version");
+    process.waitForFinished();
+    if (process.exitCode() == 0)
+        return path;
+
+#ifdef Q_OS_WIN
+    // Try to autodetect clang-tidy
+    if (QFileInfo("C:/Program Files/LLVM/bin/clang-tidy.exe").exists())
+        return "C:/Program Files/LLVM/bin/clang-tidy.exe";
+#endif
+
+    return QString();
+}
+
 QString CheckThread::getAddonFilePath(const QString &dataDir, const QString &addonFile)
 {
-    if (dataDir.isEmpty())
-        return QString();
-    if (QFileInfo(dataDir + '/' + addonFile).exists())
-        return dataDir + '/' + addonFile;
-    if (QFileInfo(dataDir + "/addons/" + addonFile).exists())
-        return dataDir + "/addons/" + addonFile;
-    if (QFileInfo(dataDir + "/../addons/" + addonFile).exists())
-        return dataDir + "/../addons/" + addonFile;
+    const QStringList paths = QStringList() << "/" << "/addons/" << "/../addons/";
+
+    if (!dataDir.isEmpty()) {
+        foreach (const QString p, paths) {
+            if (QFileInfo(dataDir + p + addonFile).exists())
+                return dataDir + p + addonFile;
+        }
+    }
+
+    const QString appPath = QApplication::applicationDirPath();
+    foreach (const QString p, paths) {
+        if (QFileInfo(dataDir + p + addonFile).exists())
+            return appPath + p + addonFile;
+    }
+
     return QString();
 }

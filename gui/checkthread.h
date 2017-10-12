@@ -64,10 +64,6 @@ public:
         mDataDir = dataDir;
     }
 
-    void setClangPath(const QString &p) {
-        mClangPath = p;
-    }
-
     void setClangIncludePaths(const QStringList &s) {
         mClangIncludePaths = s;
     }
@@ -84,6 +80,22 @@ public:
 
     void stop();
 
+    /**
+     * Loop for clang and return path
+     * \return path to clang if found, empty if it is not found
+     */
+    static QString clangCmd();
+
+    /**
+     * Loop for clang-tidy and return path
+     * \return path to clang-tidy if found, empty if it is not found
+     */
+    static QString clangTidyCmd();
+
+    /**
+     * Look for addon and return path
+     * \return path to addon if found, empty if it is not found
+     */
     static QString getAddonFilePath(const QString &dataDir, const QString &addonFile);
 
 signals:
@@ -133,7 +145,6 @@ private:
     QStringList mAddonsAndTools;
     QString mPythonPath;
     QString mDataDir;
-    QString mClangPath;
     QStringList mClangIncludePaths;
     QStringList mSuppressions;
 };
