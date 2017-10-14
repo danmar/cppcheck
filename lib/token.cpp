@@ -69,32 +69,32 @@ void Token::update_property_info()
 {
     if (!_str.empty()) {
         if (_str == "true" || _str == "false")
-            _tokType = eBoolean;
+            tokType(eBoolean);
         else if (std::isalpha((unsigned char)_str[0]) || _str[0] == '_' || _str[0] == '$') { // Name
             if (_varId)
-                _tokType = eVariable;
+                tokType(eVariable);
             else if (_tokType != eVariable && _tokType != eFunction && _tokType != eType && _tokType != eKeyword)
-                _tokType = eName;
+                tokType(eName);
         } else if (std::isdigit((unsigned char)_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit((unsigned char)_str[1])))
-            _tokType = eNumber;
+            tokType(eNumber);
         else if (_str.length() > 1 && _str[0] == '"' && endsWith(_str,'"'))
-            _tokType = eString;
+            tokType(eString);
         else if (_str.length() > 1 && _str[0] == '\'' && endsWith(_str,'\''))
-            _tokType = eChar;
+            tokType(eChar);
         else if (_str == "=" || _str == "<<=" || _str == ">>=" ||
                  (_str.size() == 2U && _str[1] == '=' && std::strchr("+-*/%&^|", _str[0])))
-            _tokType = eAssignmentOp;
+            tokType(eAssignmentOp);
         else if (_str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos)
-            _tokType = eExtendedOp;
+            tokType(eExtendedOp);
         else if (_str=="<<" || _str==">>" || (_str.size()==1 && _str.find_first_of("+-*/%") != std::string::npos))
-            _tokType = eArithmeticalOp;
+            tokType(eArithmeticalOp);
         else if (_str.size() == 1 && _str.find_first_of("&|^~") != std::string::npos)
-            _tokType = eBitOp;
+            tokType(eBitOp);
         else if (_str.size() <= 2 &&
                  (_str == "&&" ||
                   _str == "||" ||
                   _str == "!"))
-            _tokType = eLogicalOp;
+            tokType(eLogicalOp);
         else if (_str.size() <= 2 && !_link &&
                  (_str == "==" ||
                   _str == "!=" ||
@@ -102,17 +102,17 @@ void Token::update_property_info()
                   _str == "<=" ||
                   _str == ">"  ||
                   _str == ">="))
-            _tokType = eComparisonOp;
+            tokType(eComparisonOp);
         else if (_str.size() == 2 &&
                  (_str == "++" ||
                   _str == "--"))
-            _tokType = eIncDecOp;
+            tokType(eIncDecOp);
         else if (_str.size() == 1 && (_str.find_first_of("{}") != std::string::npos || (_link && _str.find_first_of("<>") != std::string::npos)))
-            _tokType = eBracket;
+            tokType(eBracket);
         else
-            _tokType = eOther;
+            tokType(eOther);
     } else {
-        _tokType = eNone;
+        tokType(eNone);
     }
 
     update_property_isStandardType();
@@ -140,7 +140,7 @@ void Token::update_property_isStandardType()
 
     if (stdTypes.find(_str)!=stdTypes.end()) {
         isStandardType(true);
-        _tokType = eType;
+        tokType(eType);
     }
 }
 
@@ -232,7 +232,7 @@ void Token::swapWithNext()
 void Token::takeData(Token *fromToken)
 {
     _str = fromToken->_str;
-    _tokType = fromToken->_tokType;
+    tokType(fromToken->_tokType);
     _flags = fromToken->_flags;
     _varId = fromToken->_varId;
     _fileIndex = fromToken->_fileIndex;
@@ -1627,9 +1627,9 @@ void Token::type(const ::Type *t)
 {
     _type = t;
     if (t) {
-        _tokType = eType;
+        tokType(eType);
         isEnumType(_type->isEnumType());
     } else if (_tokType == eType)
-        _tokType = eName;
+        tokType(eName);
 }
 
