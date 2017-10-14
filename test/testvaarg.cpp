@@ -186,6 +186,13 @@ private:
 
         check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
               "    va_list arg_ptr;\n"
+              "    va_end(arg_ptr);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) va_list 'arg_ptr' used before va_start() was called.\n", errout.str());
+
+
+        check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
+              "    va_list arg_ptr;\n"
               "    va_start(arg_ptr, szBuffer);\n"
               "    va_end(arg_ptr);\n"
               "    va_start(arg_ptr, szBuffer);\n"
