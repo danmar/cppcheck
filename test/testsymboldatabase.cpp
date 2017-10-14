@@ -2514,9 +2514,9 @@ private:
 
     void symboldatabase42() { // only put variables in variable list
         GET_SYMBOL_DB("void f() { extern int x(); }\n");
-        ASSERT(db);
+        ASSERT(db != nullptr);
         const Scope * const fscope = db ? db->findScopeByName("f") : nullptr;
-        ASSERT(fscope);
+        ASSERT(fscope != nullptr);
         ASSERT_EQUALS(0U, fscope ? fscope->varlist.size() : ~0U);  // "x" is not a variable
     }
 
