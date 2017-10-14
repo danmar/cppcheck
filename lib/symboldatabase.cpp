@@ -162,11 +162,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
                 if (tok->str() == "class")
                     access[new_scope] = Private;
-                else if (tok->str() == "struct")
+                else if (tok->str() == "struct" || tok->str() == "union")
                     access[new_scope] = Public;
 
                 // fill typeList...
-                if (new_scope->isClassOrStruct() || new_scope->type == Scope::eUnion || new_scope->type == Scope::eEnum) {
+                if (new_scope->isClassOrStructOrUnion() || new_scope->type == Scope::eEnum) {
                     Type* new_type = findType(tok->next(), scope);
                     if (!new_type) {
                         typeList.push_back(Type(new_scope->classDef, new_scope, scope));
@@ -358,8 +358,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             continue;
         }
 
-        // check if in class or structure
-        else if (scope->type == Scope::eClass || scope->type == Scope::eStruct) {
+        // check if in class or structure or union
+        else if (scope->isClassOrStructOrUnion()) {
             const Token *funcStart = nullptr;
             const Token *argStart = nullptr;
             const Token *declEnd = nullptr;
@@ -1522,7 +1522,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     // regular function?
     else if (Token::Match(tok, "%name% (") && !isReservedName(tok->str()) && tok->previous() &&
              (Token::Match(tok->previous(), "%name%|>|&|*|::|~") || // Either a return type or scope qualifier in front of tok
-              outerScope->isClassOrStruct())) { // or a ctor/dtor
+              outerScope->isClassOrStructOrUnion())) { // or a ctor/dtor
         const Token* tok1 = tok->previous();
         const Token* tok2 = tok->next()->link()->next();
 

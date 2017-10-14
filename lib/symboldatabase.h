@@ -927,6 +927,10 @@ public:
         return (type == eClass || type == eStruct);
     }
 
+    bool isClassOrStructOrUnion() const {
+        return (type == eClass || type == eStruct || type == eUnion);
+    }
+
     bool isExecutable() const {
         return type != eClass && type != eStruct && type != eUnion && type != eGlobal && type != eNamespace && type != eEnum;
     }
