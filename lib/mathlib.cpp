@@ -17,10 +17,9 @@
  */
 
 
+#include "mathlib.h"
 #include "errorlogger.h"
 #include "utils.h"
-
-#include "mathlib.h"
 
 #include <cctype>
 #include <cmath>
