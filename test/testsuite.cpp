@@ -70,6 +70,7 @@ std::set<std::string> TestFixture::missingLibs;
 TestFixture::TestFixture(const char* _name)
     :classname(_name)
     ,quiet_tests(false)
+    ,mute_tests(false)
 {
     TestRegistry::theInstance().addTest(this);
 }
@@ -81,7 +82,9 @@ bool TestFixture::prepareTest(const char testname[])
     if (testToRun.empty() || testToRun == testname) {
         // Tests will be executed - prepare them
         ++countTests;
-        if (quiet_tests) {
+        if (mute_tests) {
+            // suppress test names on stdout
+        } else if (quiet_tests) {
             std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
             std::fflush(stdout);
         } else {
@@ -260,7 +263,7 @@ void TestFixture::complainMissingLib(const char* libname) const
 void TestFixture::run(const std::string &str)
 {
     testToRun = str;
-    if (quiet_tests) {
+    if (quiet_tests && !mute_tests) {
         std::cout << '\n' << classname << ':';
     }
     if (quiet_tests) {
@@ -272,7 +275,8 @@ void TestFixture::run(const std::string &str)
 
 void TestFixture::processOptions(const options& args)
 {
-    quiet_tests = args.quiet();
+    mute_tests  = args.mute();
+    quiet_tests = mute_tests || args.quiet();
 }
 
 std::size_t TestFixture::runTests(const options& args)

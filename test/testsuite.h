@@ -42,6 +42,7 @@ protected:
     std::string classname;
     std::string testToRun;
     bool quiet_tests;
+    bool mute_tests;
 
     virtual void run() = 0;
 
