@@ -5259,7 +5259,7 @@ private:
                       "    Fred(int x) : i(x) { }\n"
                       "    Fred(float x) : f(x) { }\n"
                       "    int i;\n"
-                      "    int f;\n"
+                      "    float f;\n"
                       "};");
 
         ASSERT_EQUALS("", errout.str());
