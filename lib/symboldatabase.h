@@ -903,7 +903,7 @@ public:
     std::list<UsingInfo> usingList;
     ScopeType type;
     Type* definedType;
-    std::list<Type*> definedTypes;
+    std::map<std::string, Type*> definedTypesMap;
 
     // function specific fields
     const Scope *functionOf; // scope this function belongs to

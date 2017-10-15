@@ -171,7 +171,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     if (!new_type) {
                         typeList.push_back(Type(new_scope->classDef, new_scope, scope));
                         new_type = &typeList.back();
-                        scope->definedTypes.push_back(new_type);
+                        scope->definedTypesMap[new_type->name()] = new_type;
                     } else
                         new_type->classScope = new_scope;
                     new_scope->definedType = new_type;
@@ -249,7 +249,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             if (!findType(tok->next(), scope)) {
                 // fill typeList..
                 typeList.push_back(Type(tok, nullptr, scope));
-                scope->definedTypes.push_back(&typeList.back());
+                Type* new_type = &typeList.back();
+                scope->definedTypesMap[new_type->name()] = new_type;
             }
             tok = tok->tokAt(2);
         }
@@ -290,8 +291,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             }
 
             typeList.push_back(Type(tok, new_scope, scope));
-            new_scope->definedType = &typeList.back();
-            scope->definedTypes.push_back(&typeList.back());
+            {
+               Type* new_type = &typeList.back();
+               new_scope->definedType = new_type;
+               scope->definedTypesMap[new_type->name()] = new_type;
+            }
 
             scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope, &_settings->library);
 
@@ -328,8 +332,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             new_scope->classEnd = tok2->link();
 
             typeList.push_back(Type(tok, new_scope, scope));
-            new_scope->definedType = &typeList.back();
-            scope->definedTypes.push_back(&typeList.back());
+            {
+               Type* new_type = &typeList.back();
+               new_scope->definedType = new_type;
+               scope->definedTypesMap[new_type->name()] = new_type;
+            }
 
             // make sure we have valid code
             if (!new_scope->classEnd) {
@@ -347,7 +354,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         // forward declared enum
         else if (Token::Match(tok, "enum class| %name% ;") || Token::Match(tok, "enum class| %name% : %name% ;")) {
             typeList.push_back(Type(tok, nullptr, scope));
-            scope->definedTypes.push_back(&typeList.back());
+            Type* new_type = &typeList.back();
+            scope->definedTypesMap[new_type->name()] = new_type;
             tok = tok->tokAt(2);
         }
 
@@ -4340,13 +4348,16 @@ const Scope *Scope::findRecordInNestedList(const std::string & name) const
 
 const Type* Scope::findType(const std::string & name) const
 {
-    std::list<Type*>::const_iterator it;
+    auto it = definedTypesMap.find(name);
 
-    for (it = definedTypes.begin(); it != definedTypes.end(); ++it) {
-        if ((*it)->name() == name)
-            return (*it);
+    if (definedTypesMap.end() == it)
+    {
+       return nullptr;
     }
-    return nullptr;
+    else
+    {
+       return (*it).second;
+    }
 }
 
 //---------------------------------------------------------------------------
