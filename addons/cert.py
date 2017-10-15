@@ -12,10 +12,16 @@ import cppcheckdata
 import sys
 import re
 
+VERIFY = ('-verify' in sys.argv)
+VERIFY_EXPECTED = []
+VERIFY_ACTUAL = []
 
 def reportError(token, severity, msg, id):
-    sys.stderr.write(
-        '[' + token.file + ':' + str(token.linenr) + '] (' + severity + '): ' + msg + ' [' + id + ']\n')
+    if VERIFY:
+        VERIFY_ACTUAL.append(str(token.linenr) + ':' + id)
+    else:
+        sys.stderr.write(
+            '[' + token.file + ':' + str(token.linenr) + '] (' + severity + '): ' + msg + ' [' + id + ']\n')
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
@@ -124,11 +130,34 @@ def int31(data, platform):
                     'cert-INT31-c')
 
 for arg in sys.argv[1:]:
+    if arg == '-verify':
+        VERIFY = True
+        continue
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
+
+    if VERIFY:
+        VERIFY_ACTUAL = []
+        VERIFY_EXPECTED = []
+        for tok in data.rawTokens:
+            if tok.str.startswith('//') and 'TODO' not in tok.str:
+                for word in tok.str[2:].split(' '):
+                    if word.startswith('cert-'):
+                        VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
+
     for cfg in data.configurations:
         if len(data.configurations) > 1:
             print('Checking ' + arg + ', config "' + cfg.name + '"...')
         exp42(cfg)
         exp46(cfg)
         int31(cfg, data.platform)
+
+    if VERIFY:
+        for expected in VERIFY_EXPECTED:
+            if expected not in VERIFY_ACTUAL:
+                print('Expected but not seen: ' + expected)
+                sys.exit(1)
+        for actual in VERIFY_ACTUAL:
+            if actual not in VERIFY_EXPECTED:
+                print('Not expected: ' + actual)
+                sys.exit(1)
