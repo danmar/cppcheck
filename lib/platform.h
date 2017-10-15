@@ -131,6 +131,18 @@ namespace cppcheck {
                 return "unknown";
             }
         }
+
+        long long unsignedCharMax() const {
+            return max_value(char_bit + 1); 
+        }
+
+        long long signedCharMax() const {
+            return max_value(char_bit);
+        }
+
+        long long signedCharMin() const {
+            return min_value(char_bit);
+        }
     };
 
 }
