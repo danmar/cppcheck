@@ -941,8 +941,9 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
             return true;
     }
 
-    for (std::list<Type*>::const_iterator i = scope->definedTypes.begin(); i != scope->definedTypes.end(); ++i) {
-        const Type *type = *i;
+    const std::map<std::string, Type*>::const_iterator end = scope->definedTypesMap.end();
+    for (std::map<std::string, Type*>::const_iterator iter = scope->definedTypesMap.begin(); iter != end; ++ iter) {
+        const Type *type = (*iter).second;
         if (type->enclosingScope == scope && checkFunctionUsage(privfunc, type->classScope))
             return true;
     }
