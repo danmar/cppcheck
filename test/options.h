@@ -31,9 +31,12 @@ public:
     options(int argc, const char* argv[]);
     /** Don't print the name of each method being tested. */
     bool quiet() const;
+    /** Don't print anything for each method being tested on stdout. */
+    bool mute() const;
     /** Which test should be run. Empty string means 'all tests' */
     const std::string& which_test() const;
 
+    enum verbosity_t { Verbose, Quiet, Mute };
 private:
     options();
     options(const options& non_copy);
@@ -42,7 +45,7 @@ private:
 private:
     std::set<std::string> _options;
     std::string _which_test;
-    const bool _quiet;
+    const verbosity_t _verbosity;
 };
 
 #endif

@@ -21,9 +21,13 @@
 options::options(int argc, const char* argv[])
     :_options(argv + 1, argv + argc)
     ,_which_test("")
-    ,_quiet(_options.count("-q") != 0)
+    ,_verbosity(
+          _options.count("-Q") != 0 ? verbosity_t::Mute
+        : _options.count("-q") != 0 ? verbosity_t::Quiet
+        :                             verbosity_t::Verbose)
 {
     _options.erase("-q");
+    _options.erase("-Q");
     if (! _options.empty()) {
         _which_test = *_options.rbegin();
     }
@@ -31,7 +35,12 @@ options::options(int argc, const char* argv[])
 
 bool options::quiet() const
 {
-    return _quiet;
+    return _verbosity == verbosity_t::Quiet;
+}
+
+bool options::mute() const
+{
+    return _verbosity == verbosity_t::Mute;
 }
 
 const std::string& options::which_test() const
