@@ -2885,12 +2885,18 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                 std::list<ValueFlow::Value> values;
                 values.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
                 values.back().condition = tok;
+                const std::string info("case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
+                values.back().errorPath.push_back(ErrorPathItem(tok, info));
+                if ((Token::simpleMatch(tok->previous(), "{") || Token::simpleMatch(tok->tokAt(-2), "break ;")) && !Token::Match(tok->tokAt(3), ";| case"))
+                    values.back().setKnown();
                 while (Token::Match(tok->tokAt(3), ";| case %num% :")) {
                     tok = tok->tokAt(3);
                     if (!tok->isName())
                         tok = tok->next();
                     values.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
                     values.back().condition = tok;
+                    const std::string info2("case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
+                    values.back().errorPath.push_back(ErrorPathItem(tok, info2));
                 }
                 for (std::list<ValueFlow::Value>::const_iterator val = values.begin(); val != values.end(); ++val) {
                     valueFlowReverse(tokenlist,
@@ -2902,7 +2908,7 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                                      settings);
                 }
                 if (vartok->variable()->scope()) // #7257
-                    valueFlowForward(tok, vartok->variable()->scope()->classEnd, vartok->variable(), vartok->varId(), values, false, false, tokenlist, errorLogger, settings);
+                    valueFlowForward(tok->tokAt(3), vartok->variable()->scope()->classEnd, vartok->variable(), vartok->varId(), values, values.back().isKnown(), false, tokenlist, errorLogger, settings);
             }
         }
     }

@@ -1875,13 +1875,18 @@ private:
         code = "void f(int x) {\n"
                "    a = x;\n"  // <- x can be 14
                "    switch (x) {\n"
-               "    case 14: a=x; break;\n"  // <- x is 14
+               "    case 14: a=x+2; break;\n"  // <- x is 14
                "    };\n"
                "    a = x;\n"  // <- x can be 14
                "}";
         ASSERT_EQUALS(true, testConditionalValueOfX(code, 2U, 14));
         ASSERT_EQUALS(true, testConditionalValueOfX(code, 4U, 14));
         ASSERT_EQUALS(true, testConditionalValueOfX(code, 6U, 14));
+
+        ValueFlow::Value value = valueOfTok(code, "+");
+        ASSERT_EQUALS(16, value.intvalue);
+        ASSERT(value.isKnown());
+
     }
 
     void valueFlowForLoop() {
