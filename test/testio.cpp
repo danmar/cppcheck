@@ -1363,9 +1363,9 @@ private:
         TEST_SCANF_WARN("%I64d", "__int64", "unsigned char");
         TEST_SCANF_WARN("%I64d", "__int64", "void *");
         // TODO TEST_SCANF_WARN("%I64d", "__int64", "size_t");
-        TEST_SCANF_WARN_AKA_WIN32("%I64d", "__int64", "intmax_t", "signed long", "signed long long");
-        TEST_SCANF_WARN_AKA_WIN32("%I64d", "__int64", "ssize_t", "signed long", "signed long long");
-        TEST_SCANF_WARN_AKA_WIN32("%I64d", "__int64", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA_WIN32("%I64d", "__int64", "intmax_t", "signed long");
+        TEST_SCANF_WARN_AKA_WIN32("%I64d", "__int64", "ssize_t", "signed long");
+        TEST_SCANF_WARN_AKA_WIN32("%I64d", "__int64", "ptrdiff_t", "signed long");
         TEST_SCANF_NOWARN("%I64d", "__int64", "__int64");
 
         TEST_SCANF_WARN("%I32u", "unsigned __int32", "bool");
