@@ -1260,20 +1260,22 @@ void CheckCondition::alwaysTrueFalse()
             if (tokens.empty() && hasSizeof)
                 continue;
 
-            alwaysTrueFalseError(tok, tok->values().front().intvalue != 0);
+            alwaysTrueFalseError(tok, &tok->values().front());
         }
     }
 }
 
-void CheckCondition::alwaysTrueFalseError(const Token *tok, bool knownResult)
+void CheckCondition::alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value)
 {
+    const bool condvalue = value && (value->intvalue != 0);
     const std::string expr = tok ? tok->expressionString() : std::string("x");
-
-    reportError(tok,
+    const std::string errmsg = "Condition '" + expr + "' is always " + (condvalue ? "true" : "false");
+    const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
+    reportError(errorPath,
                 Severity::style,
                 "knownConditionTrueFalse",
-                "Condition '" + expr + "' is always " + (knownResult ? "true" : "false"),
-                (knownResult ? CWE571 : CWE570), false);
+                errmsg,
+                (condvalue ? CWE571 : CWE570), false);
 }
 
 void CheckCondition::checkInvalidTestForOverflow()

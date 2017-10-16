@@ -138,7 +138,7 @@ private:
 
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
 
-    void alwaysTrueFalseError(const Token *tok, bool knownResult);
+    void alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value);
 
     void invalidTestForOverflow(const Token* tok, bool result);
 
@@ -156,7 +156,7 @@ private:
         c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
         c.moduloAlwaysTrueFalseError(nullptr, "1");
         c.clarifyConditionError(nullptr, true, false);
-        c.alwaysTrueFalseError(nullptr, true);
+        c.alwaysTrueFalseError(nullptr, nullptr);
         c.invalidTestForOverflow(nullptr, false);
     }
 
