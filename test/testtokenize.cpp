@@ -4712,6 +4712,10 @@ private:
                       tokenizeAndStringify("char buf[100] ; readlink(path, &buf[0], 99);",
                                            false, true, Settings::Native, "test.c"));
 
+        ASSERT_EQUALS("void foo ( char * c ) { if ( 1 == ( 1 & c [ 0 ] ) ) { } }",
+                      tokenizeAndStringify("void foo(char *c) { if (1==(1 & c[0])) {} }",
+                                           false, true, Settings::Native, "test.c"));
+
         // Simplification of unknown type - C only
         ASSERT_EQUALS("foo data [ 100 ] ; something ( foo ) ;",
                       tokenizeAndStringify("foo data[100]; something(&foo[0]);", false, true, Settings::Native, "test.c"));

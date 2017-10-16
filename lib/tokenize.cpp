@@ -5248,6 +5248,9 @@ void Tokenizer::simplifyPointerToStandardType()
         if (!Token::Match(tok, "& %name% [ 0 ] !!["))
             continue;
 
+        if (!Token::Match(tok->previous(), "[,(=]"))
+            continue;
+
         // Remove '[ 0 ]' suffix
         tok->next()->eraseTokens(tok->next(), tok->tokAt(5));
         // Remove '&' prefix
