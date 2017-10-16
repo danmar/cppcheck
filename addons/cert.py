@@ -116,18 +116,46 @@ def int31(data, platform):
             bits = platform.int_bit
         elif token.valueType.type == 'long':
             bits = platform.long_bit
+        elif token.valueType.type == 'long long':
+            bits = platform.long_long_bit
         else:
             continue
+        if token.valueType.sign == 'unsigned':
+            found = False
+            for value in token.astOperand1.values:
+                if value.intvalue < 0:
+                    found = True
+                    reportError(
+                        token,
+                        'style',
+                        'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to unsigned ' + token.valueType.type + ')',
+                        'cert-INT31-c')
+                break
+            if found:
+                continue
         if bits >= 64:
             continue
-        maxval = (1 << (bits - 1) - 1)
+        minval = 0
+        maxval = 1
+        if token.valueType.sign == 'signed':
+            minval = -(1 << (bits - 1))
+            maxval = ((1 << (bits - 1)) - 1)
+        else:
+            minval = 0
+            maxval = ((1 << bits) - 1)
         for value in token.astOperand1.values:
-            if value.intvalue > maxval:
+            if value.intvalue < minval or value.intvalue > maxval:
+                destType = ''
+                if token.valueType.sign:
+                    destType = token.valueType.sign + ' ' + token.valueType.type
+                else:
+                    destType = token.valueType.type
                 reportError(
                     token,
                     'style',
-                    'Loss of information when casting ' + str(value.intvalue) + ' to ' + token.valueType.type,
+                    'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to ' + destType + ')',
                     'cert-INT31-c')
+                break
 
 for arg in sys.argv[1:]:
     if arg == '-verify':
@@ -142,7 +170,7 @@ for arg in sys.argv[1:]:
         for tok in data.rawTokens:
             if tok.str.startswith('//') and 'TODO' not in tok.str:
                 for word in tok.str[2:].split(' '):
-                    if word.startswith('cert-'):
+                    if re.match(r'cert-[A-Z][A-Z][A-Z][0-9][0-9].*',word):
                         VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
 
     for cfg in data.configurations:
