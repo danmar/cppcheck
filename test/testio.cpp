@@ -907,6 +907,27 @@ private:
               "}", true);
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo(unsigned int i) {\n"
+              "  scanf(\"%h\", &i);\n"
+              "  scanf(\"%hh\", &i);\n"
+              "  scanf(\"%l\", &i);\n"
+              "  scanf(\"%ll\", &i);\n"
+              "  scanf(\"%j\", &i);\n"
+              "  scanf(\"%z\", &i);\n"
+              "  scanf(\"%t\", &i);\n"
+              "  scanf(\"%L\", &i);\n"
+              "  scanf(\"%I\", &i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) 'h' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:3]: (warning) 'hh' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:4]: (warning) 'l' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:5]: (warning) 'll' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:6]: (warning) 'j' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:7]: (warning) 'z' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:8]: (warning) 't' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:9]: (warning) 'L' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
+                      "[test.cpp:10]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
+
         TEST_SCANF_WARN("%u", "unsigned int", "bool");
         TEST_SCANF_WARN("%u", "unsigned int", "char");
         TEST_SCANF_WARN("%u", "unsigned int", "signed char");
