@@ -12,6 +12,9 @@ add_executable(cppcheck ${hdrs} ${mainfile} $<TARGET_OBJECTS:cli_objs> $<TARGET_
 if (HAVE_RULES)
     target_link_libraries(cppcheck pcre)
 endif()
+if (MSVC)
+    target_link_libraries(cppcheck Shlwapi.lib)
+endif()
 
 install(TARGETS cppcheck
     RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
