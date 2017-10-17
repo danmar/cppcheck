@@ -292,9 +292,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             typeList.push_back(Type(tok, new_scope, scope));
             {
-               Type* new_type = &typeList.back();
-               new_scope->definedType = new_type;
-               scope->definedTypesMap[new_type->name()] = new_type;
+                Type* new_type = &typeList.back();
+                new_scope->definedType = new_type;
+                scope->definedTypesMap[new_type->name()] = new_type;
             }
 
             scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope, &_settings->library);
@@ -333,9 +333,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             typeList.push_back(Type(tok, new_scope, scope));
             {
-               Type* new_type = &typeList.back();
-               new_scope->definedType = new_type;
-               scope->definedTypesMap[new_type->name()] = new_type;
+                Type* new_type = &typeList.back();
+                new_scope->definedType = new_type;
+                scope->definedTypesMap[new_type->name()] = new_type;
             }
 
             // make sure we have valid code
@@ -4350,13 +4350,10 @@ const Type* Scope::findType(const std::string & name) const
 {
     auto it = definedTypesMap.find(name);
 
-    if (definedTypesMap.end() == it)
-    {
-       return nullptr;
-    }
-    else
-    {
-       return (*it).second;
+    if (definedTypesMap.end() == it) {
+        return nullptr;
+    } else {
+        return (*it).second;
     }
 }
 

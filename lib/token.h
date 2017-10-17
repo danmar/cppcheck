@@ -240,12 +240,12 @@ public:
         _tokType = t;
 
         bool memoizedIsName = (_tokType == eName || _tokType == eType || _tokType == eVariable ||
-              _tokType == eFunction || _tokType == eKeyword || _tokType == eBoolean ||
-              _tokType == eEnumerator); // TODO: "true"/"false" aren't really a name...
+                               _tokType == eFunction || _tokType == eKeyword || _tokType == eBoolean ||
+                               _tokType == eEnumerator); // TODO: "true"/"false" aren't really a name...
         setFlag(fIsName, memoizedIsName);
 
         bool memoizedIsLiteral = (_tokType == eNumber || _tokType == eString || _tokType == eChar ||
-               _tokType == eBoolean || _tokType == eLiteral || _tokType == eEnumerator);
+                                  _tokType == eBoolean || _tokType == eLiteral || _tokType == eEnumerator);
         setFlag(fIsLiteral, memoizedIsLiteral);
     }
     void isKeyword(bool kwd) {
