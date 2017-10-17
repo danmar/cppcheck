@@ -1309,6 +1309,13 @@ private:
         TEST_SCANF_WARN_AKA("%tx", "unsigned ptrdiff_t", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_NOWARN("%tx", "unsigned ptrdiff_t", "unsigned ptrdiff_t");
 
+        TEST_SCANF_WARN("%td", "ptrdiff_t", "long double");
+        TEST_SCANF_WARN("%td", "ptrdiff_t", "void *");
+        TEST_SCANF_NOWARN("%td", "ptrdiff_t", "ptrdiff_t");
+        TEST_SCANF_WARN_AKA("%td", "ptrdiff_t", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%td", "ptrdiff_t", "uintmax_t", "unsigned long", "unsigned long long");
+        //TODO (fix "actual type")TEST_SCANF_WARN_AKA("%td", "ptrdiff_t", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
+
         TEST_SCANF_WARN("%Id", "ptrdiff_t", "bool");
         TEST_SCANF_WARN("%Id", "ptrdiff_t", "char");
         TEST_SCANF_WARN("%Id", "ptrdiff_t", "signed char");
