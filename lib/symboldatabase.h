@@ -1211,6 +1211,9 @@ private:
 
     bool cpp;
     ValueType::Sign defaultSignedness;
+
+    /** "negative cache" list of tokens that we find are not enumeration values */
+    mutable std::set<std::string> tokensThatAreNotEnumeratorValues;
 };
 
 
