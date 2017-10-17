@@ -1046,7 +1046,7 @@ private:
         TEST_SCANF_WARN("%lld","long long","void *");
         TEST_SCANF_WARN_AKA("%lld","long long","size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%lld","long long","std::ptrdiff_t", "signed long", "signed long long");
-        TEST_SCANF_WARN_AKA_WIN32("%lld","long long","std::intptr_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA_WIN32("%lld","long long","std::intptr_t", "signed long");
 
         TEST_SCANF_WARN("%hu", "unsigned short", "bool");
         TEST_SCANF_WARN("%hu", "unsigned short", "char");
