@@ -963,16 +963,17 @@ private:
     }
 
     void valueFlowBeforeConditionGlobalVariables() {
-        // bailout: global variables
-        bailout("int x;\n"
-                "void f() {\n"
-                "    int a = x;\n"
-                "    if (x == 123) {}\n"
-                "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:4]: (debug) valueflow.cpp:1226:valueFlowBeforeCondition bailout: global variable x\n", errout.str());
-
-        // class variable
         const char *code;
+
+        // handle global variables
+        code = "int x;\n"
+               "void f() {\n"
+               "    int a = x;\n"
+               "    if (x == 123) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code,3,123));
+
+        // bailout when there is function call
         code = "class Fred { int x; void clear(); void f(); };\n"
                "void Fred::f() {\n"
                "    int a = x;\n"

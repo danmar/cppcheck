@@ -1169,8 +1169,16 @@ static void valueFlowReverse(TokenList *tokenlist,
                 break;
             }
         }
-    }
 
+        if (Token::Match(tok2, "%name% (") && !Token::simpleMatch(tok2->linkAt(1), ") {")) {
+            // bailout: global non-const variables
+            if (!(var->isLocal() || var->isArgument()) && !var->isConst()) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok, "global variable " + var->name());
+                return;
+            }
+        }
+    }
 }
 
 static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
@@ -1207,13 +1215,6 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
 
             if (varid == 0U || !var)
                 continue;
-
-            // bailout: global non-const variables
-            if (!(var->isLocal() || var->isArgument()) && !var->isConst()) {
-                if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok, "global variable " + var->name());
-                continue;
-            }
 
             // bailout: for/while-condition, variable is changed in while loop
             for (const Token *tok2 = tok; tok2; tok2 = tok2->astParent()) {
