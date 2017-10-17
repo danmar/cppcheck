@@ -32,6 +32,10 @@ if (USE_ANALYZE)
     set (CMAKE_CXX_FLAGS_RELEASE        "-O2")
 endif()
 
+set(CMAKE_CXX_FLAGS_ASAN "-g -fsanitize=address,undefined -fno-sanitize-recover=all"
+    CACHE STRING "Compiler flags in asan build"
+    FORCE)
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
     if (NOT (GCC_VERSION VERSION_GREATER 4.6 OR GCC_VERSION VERSION_EQUAL 4.6))
