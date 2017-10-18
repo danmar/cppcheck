@@ -3645,6 +3645,13 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
 {
     const Scope * scope = tok->scope();
 
+    const std::string tokStr = tok->str();
+
+    if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end())
+    {
+       return nullptr;
+    }
+
     // check for qualified name
     if (tok->strAt(-1) == "::") {
         // find first scope
@@ -3676,14 +3683,14 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
             }
 
             if (scope) {
-                const Enumerator * enumerator = scope->findEnumerator(tok->str());
+                const Enumerator * enumerator = scope->findEnumerator(tokStr);
 
                 if (enumerator) // enum class
                     return enumerator;
                 // enum
                 else {
                     for (std::list<Scope *>::const_iterator it = scope->nestedList.begin(), end = scope->nestedList.end(); it != end; ++it) {
-                        enumerator = (*it)->findEnumerator(tok->str());
+                        enumerator = (*it)->findEnumerator(tokStr);
 
                         if (enumerator)
                             return enumerator;
@@ -3692,13 +3699,13 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
             }
         }
     } else {
-        const Enumerator * enumerator = scope->findEnumerator(tok->str());
+        const Enumerator * enumerator = scope->findEnumerator(tokStr);
 
         if (enumerator)
             return enumerator;
 
         for (std::list<Scope *>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
-            enumerator = (*s)->findEnumerator(tok->str());
+            enumerator = (*s)->findEnumerator(tokStr);
 
             if (enumerator)
                 return enumerator;
@@ -3709,7 +3716,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
             for (size_t i = 0, end = derivedFrom.size(); i < end; ++i) {
                 const Type *derivedFromType = derivedFrom[i].type;
                 if (derivedFromType && derivedFromType ->classScope) {
-                    enumerator = derivedFromType->classScope->findEnumerator(tok->str());
+                    enumerator = derivedFromType->classScope->findEnumerator(tokStr);
 
                     if (enumerator)
                         return enumerator;
@@ -3723,19 +3730,21 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
             else
                 scope = scope->nestedIn;
 
-            enumerator = scope->findEnumerator(tok->str());
+            enumerator = scope->findEnumerator(tokStr);
 
             if (enumerator)
                 return enumerator;
 
             for (std::list<Scope*>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
-                enumerator = (*s)->findEnumerator(tok->str());
+                enumerator = (*s)->findEnumerator(tokStr);
 
                 if (enumerator)
                     return enumerator;
             }
         }
     }
+
+    tokensThatAreNotEnumeratorValues.insert(tokStr);
 
     return nullptr;
 }
@@ -3758,6 +3767,7 @@ const Type* SymbolDatabase::findVariableTypeInBase(const Scope* scope, const Tok
             }
         }
     }
+
     return nullptr;
 }
 
