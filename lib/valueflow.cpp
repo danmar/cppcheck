@@ -643,7 +643,7 @@ unsigned int getSizeOfType(const Token *typeTok, const Settings *settings)
     const std::string &typeStr = typeTok->str();
     if (typeStr == "char")
         return 1;
-    else if (typeStr == "short)
+    else if (typeStr == "short")
         return settings->sizeof_short;
     else if (typeStr == "int")
         return settings->sizeof_int;
