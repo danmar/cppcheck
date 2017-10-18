@@ -481,9 +481,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (!f && !value1->isIntValue() && !value2->isIntValue())
                             break;
                         if (parent->str() == ">")
-                            result.intvalue = f ? floatValue1 > floatValue2 : value1->intvalue > value2->intvalue;
+                            result.intvalue = f ? (floatValue1 > floatValue2) : (value1->intvalue > value2->intvalue);
                         else if (parent->str() == ">=")
-                            result.intvalue = f ? floatValue1 >= floatValue2 : value1->intvalue >= value2->intvalue;
+                            result.intvalue = f ? (floatValue1 >= floatValue2) : (value1->intvalue >= value2->intvalue);
                         else if (!f && parent->str() == ">>" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
                             result.intvalue = value1->intvalue >> value2->intvalue;
                         else
@@ -496,9 +496,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (!f && !value1->isIntValue() && !value2->isIntValue())
                             break;
                         if (parent->str() == "<")
-                            result.intvalue = f ? floatValue1 < floatValue2 : value1->intvalue < value2->intvalue;
+                            result.intvalue = f ? (floatValue1 < floatValue2) : (value1->intvalue < value2->intvalue);
                         else if (parent->str() == "<=")
-                            result.intvalue = f ? floatValue1 <= floatValue2 : value1->intvalue <= value2->intvalue;
+                            result.intvalue = f ? (floatValue1 <= floatValue2) : (value1->intvalue <= value2->intvalue);
                         else if (!f && parent->str() == "<<" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
                             result.intvalue = value1->intvalue << value2->intvalue;
                         else
