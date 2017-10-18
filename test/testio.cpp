@@ -1960,6 +1960,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo(long long l, ptrdiff_t p, std::ptrdiff_t sp) {\n"
+              "  printf(\"%td\", p);\n"
+              "  printf(\"%td\", sp);\n"
+              "  printf(\"%td\", l);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %td in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'signed long long'.\n", errout.str());
+
         check("void foo(int i, long double ld) {\n"
               "  printf(\"%zx %zu\", i, ld);\n"
               "}");
