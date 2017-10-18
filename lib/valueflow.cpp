@@ -638,6 +638,20 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     }
 }
 
+unsigned int getSizeOfType(const Token *typeTok, const Settings *settings)
+{
+    const std::string &typeStr = typeTok->str();
+    if (typeStr == "char")
+        return 1;
+    else if (typeStr == "short)
+        return settings->sizeof_short;
+    else if (typeStr == "int")
+        return settings->sizeof_int;
+    else if (typeStr == "long")
+        return typeTok->isLong() ? settings->sizeof_long_long : settings->sizeof_long;
+    else
+        return 0;
+}
 
 // Handle various constants..
 static Token * valueFlowSetConstantValue(const Token *tok, const Settings *settings, bool cpp)
@@ -666,11 +680,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             long long size = settings->sizeof_int;
             const Token * type = tok2->enumerator()->scope->enumType;
             if (type) {
-                size = type->str() == "char" ? 1 :
-                       type->str() == "short" ? settings->sizeof_short :
-                       type->str() == "int" ? settings->sizeof_int :
-                       (type->str() == "long" && type->isLong()) ? settings->sizeof_long_long :
-                       type->str() == "long" ? settings->sizeof_long : 0;
+                size = getSizeOfType(type, settings);
             }
             ValueFlow::Value value(size);
             if (settings->platformType != cppcheck::Platform::Unspecified)
@@ -682,11 +692,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             if (tok2->type()->classScope) {
                 const Token * type = tok2->type()->classScope->enumType;
                 if (type) {
-                    size = type->str() == "char" ? 1 :
-                           type->str() == "short" ? settings->sizeof_short :
-                           type->str() == "int" ? settings->sizeof_int :
-                           (type->str() == "long" && type->isLong()) ? settings->sizeof_long_long :
-                           type->str() == "long" ? settings->sizeof_long : 0;
+                    size = getSizeOfType(type, settings);
                 }
             }
             ValueFlow::Value value(size);
