@@ -481,9 +481,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (!f && !value1->isIntValue() && !value2->isIntValue())
                             break;
                         if (parent->str() == ">")
-                            result.intvalue = f ? floatValue1 > floatValue2 : value1->intvalue > value2->intvalue;
+                            result.intvalue = f ? (floatValue1 > floatValue2) : (value1->intvalue > value2->intvalue);
                         else if (parent->str() == ">=")
-                            result.intvalue = f ? floatValue1 >= floatValue2 : value1->intvalue >= value2->intvalue;
+                            result.intvalue = f ? (floatValue1 >= floatValue2) : (value1->intvalue >= value2->intvalue);
                         else if (!f && parent->str() == ">>" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
                             result.intvalue = value1->intvalue >> value2->intvalue;
                         else
@@ -496,9 +496,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (!f && !value1->isIntValue() && !value2->isIntValue())
                             break;
                         if (parent->str() == "<")
-                            result.intvalue = f ? floatValue1 < floatValue2 : value1->intvalue < value2->intvalue;
+                            result.intvalue = f ? (floatValue1 < floatValue2) : (value1->intvalue < value2->intvalue);
                         else if (parent->str() == "<=")
-                            result.intvalue = f ? floatValue1 <= floatValue2 : value1->intvalue <= value2->intvalue;
+                            result.intvalue = f ? (floatValue1 <= floatValue2) : (value1->intvalue <= value2->intvalue);
                         else if (!f && parent->str() == "<<" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
                             result.intvalue = value1->intvalue << value2->intvalue;
                         else
@@ -1169,16 +1169,8 @@ static void valueFlowReverse(TokenList *tokenlist,
                 break;
             }
         }
-
-        if (Token::Match(tok2, "%name% (") && !Token::simpleMatch(tok2->linkAt(1), ") {")) {
-            // bailout: global non-const variables
-            if (!(var->isLocal() || var->isArgument()) && !var->isConst()) {
-                if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok, "global variable " + var->name());
-                return;
-            }
-        }
     }
+
 }
 
 static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
@@ -1215,6 +1207,13 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
 
             if (varid == 0U || !var)
                 continue;
+
+            // bailout: global non-const variables
+            if (!(var->isLocal() || var->isArgument()) && !var->isConst()) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok, "global variable " + var->name());
+                continue;
+            }
 
             // bailout: for/while-condition, variable is changed in while loop
             for (const Token *tok2 = tok; tok2; tok2 = tok2->astParent()) {
@@ -2886,18 +2885,12 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                 std::list<ValueFlow::Value> values;
                 values.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
                 values.back().condition = tok;
-                const std::string info("case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
-                values.back().errorPath.push_back(ErrorPathItem(tok, info));
-                if ((Token::simpleMatch(tok->previous(), "{") || Token::simpleMatch(tok->tokAt(-2), "break ;")) && !Token::Match(tok->tokAt(3), ";| case"))
-                    values.back().setKnown();
                 while (Token::Match(tok->tokAt(3), ";| case %num% :")) {
                     tok = tok->tokAt(3);
                     if (!tok->isName())
                         tok = tok->next();
                     values.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
                     values.back().condition = tok;
-                    const std::string info2("case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
-                    values.back().errorPath.push_back(ErrorPathItem(tok, info2));
                 }
                 for (std::list<ValueFlow::Value>::const_iterator val = values.begin(); val != values.end(); ++val) {
                     valueFlowReverse(tokenlist,
@@ -2909,7 +2902,7 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                                      settings);
                 }
                 if (vartok->variable()->scope()) // #7257
-                    valueFlowForward(tok->tokAt(3), vartok->variable()->scope()->classEnd, vartok->variable(), vartok->varId(), values, values.back().isKnown(), false, tokenlist, errorLogger, settings);
+                    valueFlowForward(tok, vartok->variable()->scope()->classEnd, vartok->variable(), vartok->varId(), values, false, false, tokenlist, errorLogger, settings);
             }
         }
     }
