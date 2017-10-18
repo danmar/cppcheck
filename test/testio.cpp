@@ -1768,6 +1768,18 @@ private:
                       "[test.cpp:6]: (warning) %jx in format string (no. 1) requires 'uintmax_t' but the argument type is 'signed int'.\n"
                       "[test.cpp:7]: (warning) %jX in format string (no. 1) requires 'uintmax_t' but the argument type is 'signed int'.\n", errout.str());
 
+        check("void foo(uintmax_t uim, std::string s3, unsigned int ui, int i) {\n"
+              "    printf(\"%ju\", uim);\n"
+              "    printf(\"%ju\", ui);\n"
+              "    printf(\"%jd\", ui);\n"
+              "    printf(\"%jd\", s3);\n"
+              "    printf(\"%jd\", i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %ju in format string (no. 1) requires 'uintmax_t' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:4]: (warning) %jd in format string (no. 1) requires 'intmax_t' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:5]: (warning) %jd in format string (no. 1) requires 'intmax_t' but the argument type is 'std::string'.\n"
+                      "[test.cpp:6]: (warning) %jd in format string (no. 1) requires 'intmax_t' but the argument type is 'signed int'.\n", errout.str());
+
         check("void foo(const int* cpi, const int ci, int i, int* pi, std::string s) {\n"
               "    printf(\"%n\", cpi);\n"
               "    printf(\"%n\", ci);\n"
