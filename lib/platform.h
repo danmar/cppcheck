@@ -133,7 +133,7 @@ namespace cppcheck {
         }
 
         long long unsignedCharMax() const {
-            return max_value(char_bit + 1); 
+            return max_value(char_bit + 1);
         }
 
         long long signedCharMax() const {

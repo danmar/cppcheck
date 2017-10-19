@@ -3647,9 +3647,8 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
 
     const std::string tokStr = tok->str();
 
-    if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end())
-    {
-       return nullptr;
+    if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end()) {
+        return nullptr;
     }
 
     // check for qualified name
