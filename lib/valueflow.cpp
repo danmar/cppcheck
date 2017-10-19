@@ -638,7 +638,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     }
 }
 
-unsigned int getSizeOfType(const Token *typeTok, const Settings *settings)
+static unsigned int getSizeOfType(const Token *typeTok, const Settings *settings)
 {
     const std::string &typeStr = typeTok->str();
     if (typeStr == "char")
