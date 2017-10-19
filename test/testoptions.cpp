@@ -32,6 +32,7 @@ private:
         TEST_CASE(no_test_method);
         TEST_CASE(not_quiet);
         TEST_CASE(quiet);
+        TEST_CASE(mute);
         TEST_CASE(multiple_testcases);
         TEST_CASE(invalid_switches);
     }
@@ -70,6 +71,13 @@ private:
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS(true, args.quiet());
     }
+
+    void mute() const {
+        const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-Q"};
+        options args(sizeof argv / sizeof argv[0], argv);
+        ASSERT_EQUALS(true, args.mute());
+    }
+
 
 
 
