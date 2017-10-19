@@ -1995,6 +1995,12 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) %zx in format string (no. 1) requires 'size_t' but the argument type is 'signed int'.\n"
                       "[test.cpp:2]: (warning) %zu in format string (no. 2) requires 'size_t' but the argument type is 'long double'.\n", errout.str());
 
+        check("void foo(int i, long double ld) {\n"
+              "  printf(\"%tx %tu\", i, ld);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %tx in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'signed int'.\n"
+                      "[test.cpp:2]: (warning) %tu in format string (no. 2) requires 'unsigned ptrdiff_t' but the argument type is 'long double'.\n", errout.str());
+
         // False negative test
         check("void foo(unsigned int i) {\n"
               "  printf(\"%h\", i);\n"
