@@ -1816,6 +1816,14 @@ private:
                       "[test.cpp:8]: (warning) %X in format string (no. 1) requires 'unsigned int' but the argument type is 'bar *'.\n", errout.str());
 
         check("class foo {};\n"
+              "void foo(const char* cpc, char* pc) {\n"
+              "    printf(\"%x\", cpc);\n"
+              "    printf(\"%x\", pc);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %x in format string (no. 1) requires 'unsigned int' but the argument type is 'const char *'.\n"
+                      "[test.cpp:4]: (warning) %x in format string (no. 1) requires 'unsigned int' but the argument type is 'char *'.\n", errout.str());
+
+        check("class foo {};\n"
               "void foo() {\n"
               "    printf(\"%x\", L\"s5W\");\n"
               "    printf(\"%X\", L\"s5W\");\n"
@@ -1913,6 +1921,20 @@ private:
                       "[test.cpp:4]: (warning) %E in format string (no. 1) requires 'double' but the argument type is 'const char *'.\n"
                       "[test.cpp:5]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'const signed int *'.\n"
                       "[test.cpp:6]: (warning) %G in format string (no. 1) requires 'double' but the argument type is 'bar *'.\n", errout.str());
+
+        check("class foo {};\n"
+              "void foo(const char* cpc, char* pc) {\n"
+              "    printf(\"%e\", cpc);\n"
+              "    printf(\"%E\", pc);\n"
+              "    printf(\"%f\", cpc);\n"
+              "    printf(\"%G\", pc);\n"
+              "    printf(\"%f\", pc);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %e in format string (no. 1) requires 'double' but the argument type is 'const char *'.\n"
+                      "[test.cpp:4]: (warning) %E in format string (no. 1) requires 'double' but the argument type is 'char *'.\n"
+                      "[test.cpp:5]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'const char *'.\n"
+                      "[test.cpp:6]: (warning) %G in format string (no. 1) requires 'double' but the argument type is 'char *'.\n"
+                      "[test.cpp:7]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'char *'.\n", errout.str());
 
         check("class foo {};\n"
               "void foo() {\n"
