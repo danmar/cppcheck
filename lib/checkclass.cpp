@@ -2440,3 +2440,41 @@ void CheckClass::copyCtorAndEqOperatorError(const Token *tok, const std::string 
 
     reportError(tok, Severity::warning, "copyCtorAndEqOperator", message);
 }
+
+void CheckClass::checkPublicInterfaceDivZero(bool test)
+{
+    if (!_settings->isEnabled(Settings::WARNING))
+        return;
+
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+        if (!test && scope->classDef->fileIndex() != 1)
+            continue;
+        std::list<Function>::const_iterator func;
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            if (func->access != AccessControl::Public)
+                continue;
+            if (!func->hasBody())
+                continue;
+            for (const Token *tok = func->functionScope->classStart; tok; tok = tok->next()) {
+                if (tok->str() == "if")
+                    break;
+                if (tok->str() != "/")
+                    continue;
+                if (!tok->valueType() || !tok->valueType()->isIntegral())
+                    continue;
+                if (!tok->astOperand2())
+                    continue;
+                const Variable *var = tok->astOperand2()->variable();
+                if (var && var->isArgument())
+                    publicInterfaceDivZeroError(tok, scope->className + "::" + func->name());
+            }
+        }
+    }
+}
+
+void CheckClass::publicInterfaceDivZeroError(const Token *tok, const std::string &functionName)
+{
+    reportError(tok, Severity::warning, "classPublicInterfaceDivZero", "Arbitrary usage of public method " + functionName + "() could result in division by zero.");
+}

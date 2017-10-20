@@ -188,6 +188,8 @@ private:
         TEST_CASE(duplInheritedMembers);
         TEST_CASE(explicitConstructors);
         TEST_CASE(copyCtorAndEqOperator);
+
+        TEST_CASE(publicInterfaceDivZero);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -6491,6 +6493,31 @@ private:
                                      "A::A()\n"
                                      "{nonpure(false);}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkPublicInterfaceDivZero(const char code[]) {
+        // Clear the error log
+        errout.str("");
+        Settings settings;
+        settings.addEnabled("warning");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.checkPublicInterfaceDivZero(true);
+    }
+
+    void publicInterfaceDivZero() {
+        checkPublicInterfaceDivZero("class A {\n"
+                                    "public:\n"
+                                    "  void dostuff(int x);\n"
+                                    "}\n"
+                                    "void A::dostuff(int x) { int a = 1000 / x; }");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Arbitrary usage of public method A::dostuff() could result in division by zero.\n", errout.str());
     }
 };
 
