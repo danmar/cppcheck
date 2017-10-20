@@ -68,6 +68,7 @@ public:
 
     typedef long long bigint;
     typedef unsigned long long biguint;
+    static const int bigint_bits;
 
     static bigint toLongNumber(const std::string & str);
     static biguint toULongNumber(const std::string & str);

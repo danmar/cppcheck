@@ -38,6 +38,8 @@
 #define ISNAN(x)      (std::isnan(x))
 #endif
 
+const int MathLib::bigint_bits = 64;
+
 MathLib::value::value(const std::string &s) :
     intValue(0), doubleValue(0), isUnsigned(false)
 {
