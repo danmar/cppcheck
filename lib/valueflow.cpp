@@ -3159,8 +3159,8 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
         bool stdtype = false;
         bool pointer = false;
         while (Token::Match(vardecl, "%name%|::|*") && vardecl->varId() == 0) {
-            stdtype |= vardecl->isStandardType();
-            pointer |= vardecl->str() == "*";
+            stdtype = stdtype || vardecl->isStandardType();
+            pointer = pointer || vardecl->str() == "*";
             vardecl = vardecl->next();
         }
         if (!stdtype && !pointer)
