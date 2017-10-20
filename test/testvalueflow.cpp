@@ -1874,7 +1874,7 @@ private:
     void valueFlowSwitchVariable() {
         const char *code;
         code = "void f(int x) {\n"
-               "    a = x;\n"  // <- x can be 14
+               "    a = x - 1;\n"  // <- x can be 14
                "    switch (x) {\n"
                "    case 14: a=x+2; break;\n"  // <- x is 14
                "    };\n"
@@ -1884,10 +1884,13 @@ private:
         ASSERT_EQUALS(true, testConditionalValueOfX(code, 4U, 14));
         ASSERT_EQUALS(true, testConditionalValueOfX(code, 6U, 14));
 
-        ValueFlow::Value value = valueOfTok(code, "+");
-        ASSERT_EQUALS(16, value.intvalue);
-        ASSERT(value.isKnown());
+        ValueFlow::Value value1 = valueOfTok(code, "-");
+        ASSERT_EQUALS(13, value1.intvalue);
+        ASSERT(!value1.isKnown());
 
+        ValueFlow::Value value2 = valueOfTok(code, "+");
+        ASSERT_EQUALS(16, value2.intvalue);
+        ASSERT(value2.isKnown());
     }
 
     void valueFlowForLoop() {

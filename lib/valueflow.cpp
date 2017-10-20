@@ -265,7 +265,7 @@ static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign 
         value.valueType = ValueFlow::Value::INT;
         value.intvalue = value.floatValue;
     }
-    if (bit < 64) {
+    if (bit < MathLib::bigint_bits) {
         value.intvalue &= (1ULL << bit) - 1ULL;
         if (sign == ValueType::Sign::SIGNED && value.intvalue & (1ULL << (bit - 1ULL))) {
             value.intvalue |= ~((1ULL << bit) - 1ULL);
@@ -484,7 +484,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                             result.intvalue = f ? (floatValue1 > floatValue2) : (value1->intvalue > value2->intvalue);
                         else if (parent->str() == ">=")
                             result.intvalue = f ? (floatValue1 >= floatValue2) : (value1->intvalue >= value2->intvalue);
-                        else if (!f && parent->str() == ">>" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
+                        else if (!f && parent->str() == ">>" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < MathLib::bigint_bits)
                             result.intvalue = value1->intvalue >> value2->intvalue;
                         else
                             break;
@@ -499,7 +499,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                             result.intvalue = f ? (floatValue1 < floatValue2) : (value1->intvalue < value2->intvalue);
                         else if (parent->str() == "<=")
                             result.intvalue = f ? (floatValue1 <= floatValue2) : (value1->intvalue <= value2->intvalue);
-                        else if (!f && parent->str() == "<<" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < 64)
+                        else if (!f && parent->str() == "<<" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < MathLib::bigint_bits)
                             result.intvalue = value1->intvalue << value2->intvalue;
                         else
                             break;
@@ -569,8 +569,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                 else if (tok->valueType()->type == ValueType::Type::LONG)
                     bits = settings->long_bit;
             }
-            if (bits > 0 && bits < 64)
-                v.intvalue &= (1ULL<<bits) - 1ULL;
+            if (bits > 0 && bits < MathLib::bigint_bits)
+                v.intvalue &= (((MathLib::biguint)1)<<bits) - 1;
             setTokenValue(parent, v, settings);
         }
     }
@@ -2894,9 +2894,11 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                 values.back().condition = tok;
                 const std::string info("case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
                 values.back().errorPath.push_back(ErrorPathItem(tok, info));
+                bool known = false;
                 if ((Token::simpleMatch(tok->previous(), "{") || Token::simpleMatch(tok->tokAt(-2), "break ;")) && !Token::Match(tok->tokAt(3), ";| case"))
-                    values.back().setKnown();
+                    known = true;
                 while (Token::Match(tok->tokAt(3), ";| case %num% :")) {
+					known = false;
                     tok = tok->tokAt(3);
                     if (!tok->isName())
                         tok = tok->next();
@@ -2914,8 +2916,11 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                                      errorLogger,
                                      settings);
                 }
-                if (vartok->variable()->scope()) // #7257
+                if (vartok->variable()->scope()) {
+					if (known)
+						values.back().setKnown();
                     valueFlowForward(tok->tokAt(3), vartok->variable()->scope()->classEnd, vartok->variable(), vartok->varId(), values, values.back().isKnown(), false, tokenlist, errorLogger, settings);
+				}
             }
         }
     }
