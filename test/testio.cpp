@@ -928,6 +928,16 @@ private:
                       "[test.cpp:9]: (warning) 'L' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:10]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
 
+        // Unrecognized (and non-existent in standard library) specifiers.
+        // Perhaps should emit warnings
+        TEST_SCANF_NOWARN("%jb", "intmax_t", "intmax_t");
+        TEST_SCANF_NOWARN("%jw", "uintmax_t", "uintmax_t");
+        TEST_SCANF_NOWARN("%zr", "size_t", "size_t");
+        TEST_SCANF_NOWARN("%tm", "ptrdiff_t", "ptrdiff_t");
+        TEST_SCANF_NOWARN("%La", "long double", "long double");
+        TEST_SCANF_NOWARN("%zv", "std::size_t", "std::size_t");
+        TEST_SCANF_NOWARN("%tp", "std::ptrdiff_t", "std::ptrdiff_t");
+
         TEST_SCANF_WARN("%u", "unsigned int", "bool");
         TEST_SCANF_WARN("%u", "unsigned int", "char");
         TEST_SCANF_WARN("%u", "unsigned int", "signed char");
@@ -1976,9 +1986,21 @@ private:
               "  printf(\"%jd %jo\", im, uim);\n"
               "  printf(\"%zx\", s);\n"
               "  printf(\"%ti\", p);\n"
-              "  printf(\"%La\", ld);\n"
+              "  printf(\"%Lf\", ld);\n"
               "  printf(\"%zx\", ss);\n"
               "  printf(\"%ti\", sp);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Unrecognized (and non-existent in standard library) specifiers.
+        // Perhaps should emit warnings
+        check("void foo(intmax_t im, uintmax_t uim, size_t s, ptrdiff_t p, long double ld, std::size_t ss, std::ptrdiff_t sp) {\n"
+              "  printf(\"%jb %jw\", im, uim);\n"
+              "  printf(\"%zr\", s);\n"
+              "  printf(\"%tm\", p);\n"
+              "  printf(\"%La\", ld);\n"
+              "  printf(\"%zv\", ss);\n"
+              "  printf(\"%tp\", sp);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
