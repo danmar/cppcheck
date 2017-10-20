@@ -6518,6 +6518,15 @@ private:
                                     "}\n"
                                     "void A::dostuff(int x) { int a = 1000 / x; }");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Arbitrary usage of public method A::dostuff() could result in division by zero.\n", errout.str());
+
+        checkPublicInterfaceDivZero("class A {\n"
+                                    "public:\n"
+                                    "  void f1();\n"
+                                    "  void f2(int x);\n"
+                                    "}\n"
+                                    "void A::f1() {}\n"
+                                    "void A::f2(int x) { int a = 1000 / x; }");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Arbitrary usage of public method A::f2() could result in division by zero.\n", errout.str());
     }
 };
 

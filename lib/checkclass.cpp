@@ -2448,17 +2448,17 @@ void CheckClass::checkPublicInterfaceDivZero(bool test)
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
-        if (!test && scope->classDef->fileIndex() != 1)
+        const Scope * classScope = symbolDatabase->classAndStructScopes[i];
+        if (!test && classScope->classDef->fileIndex() != 1)
             continue;
         std::list<Function>::const_iterator func;
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (func = classScope->functionList.begin(); func != classScope->functionList.end(); ++func) {
             if (func->access != AccessControl::Public)
                 continue;
             if (!func->hasBody())
                 continue;
             for (const Token *tok = func->functionScope->classStart; tok; tok = tok->next()) {
-                if (tok->str() == "if")
+                if (Token::Match(tok, "if|}"))
                     break;
                 if (tok->str() != "/")
                     continue;
@@ -2468,7 +2468,7 @@ void CheckClass::checkPublicInterfaceDivZero(bool test)
                     continue;
                 const Variable *var = tok->astOperand2()->variable();
                 if (var && var->isArgument())
-                    publicInterfaceDivZeroError(tok, scope->className + "::" + func->name());
+                    publicInterfaceDivZeroError(tok, classScope->className + "::" + func->name());
             }
         }
     }
