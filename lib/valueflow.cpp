@@ -2898,7 +2898,7 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                 if ((Token::simpleMatch(tok->previous(), "{") || Token::simpleMatch(tok->tokAt(-2), "break ;")) && !Token::Match(tok->tokAt(3), ";| case"))
                     known = true;
                 while (Token::Match(tok->tokAt(3), ";| case %num% :")) {
-					known = false;
+                    known = false;
                     tok = tok->tokAt(3);
                     if (!tok->isName())
                         tok = tok->next();
@@ -2917,10 +2917,10 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                                      settings);
                 }
                 if (vartok->variable()->scope()) {
-					if (known)
-						values.back().setKnown();
+                    if (known)
+                        values.back().setKnown();
                     valueFlowForward(tok->tokAt(3), vartok->variable()->scope()->classEnd, vartok->variable(), vartok->varId(), values, values.back().isKnown(), false, tokenlist, errorLogger, settings);
-				}
+                }
             }
         }
     }
