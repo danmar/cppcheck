@@ -2457,6 +2457,8 @@ void CheckClass::checkPublicInterfaceDivZero(bool test)
                 continue;
             if (!func->hasBody())
                 continue;
+            if (func->name().compare(0,8,"operator")==0)
+                continue;
             for (const Token *tok = func->functionScope->classStart; tok; tok = tok->next()) {
                 if (Token::Match(tok, "if|}"))
                     break;

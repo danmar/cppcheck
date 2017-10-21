@@ -6527,6 +6527,13 @@ private:
                                     "void A::f1() {}\n"
                                     "void A::f2(int x) { int a = 1000 / x; }");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Arbitrary usage of public method A::f2() could result in division by zero.\n", errout.str());
+
+        checkPublicInterfaceDivZero("class A {\n"
+                                    "public:\n"
+                                    "  void operator/(int x);\n"
+                                    "}\n"
+                                    "void A::operator/(int x) { int a = 1000 / x; }");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
