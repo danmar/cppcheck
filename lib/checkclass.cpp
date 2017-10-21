@@ -2469,14 +2469,17 @@ void CheckClass::checkPublicInterfaceDivZero(bool test)
                 if (!tok->astOperand2())
                     continue;
                 const Variable *var = tok->astOperand2()->variable();
-                if (var && var->isArgument())
-                    publicInterfaceDivZeroError(tok, classScope->className + "::" + func->name());
+                if (!var || !var->isArgument())
+                    continue;
+                publicInterfaceDivZeroError(tok, classScope->className, func->name(), var->name());
+                break;
             }
         }
     }
 }
 
-void CheckClass::publicInterfaceDivZeroError(const Token *tok, const std::string &functionName)
+void CheckClass::publicInterfaceDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName)
 {
-    reportError(tok, Severity::warning, "classPublicInterfaceDivZero", "Arbitrary usage of public method " + functionName + "() could result in division by zero.");
+    const std::string s = className + "::" + methodName + "()";
+    reportError(tok, Severity::warning, "classPublicInterfaceDivZero", "Public interface of " + className + " is not safe. When calling " + s + ", if parameter " + varName + " is 0 that leads to division by zero.");
 }
