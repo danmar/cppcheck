@@ -2443,7 +2443,10 @@ void CheckClass::copyCtorAndEqOperatorError(const Token *tok, const std::string 
 
 void CheckClass::checkUnsafeClassDivZero(bool test)
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    // style severity: it is a style decision if classes should be safe or
+    // if users should be required to be careful. I expect that many users
+    // will disagree about these reports.
+    if (!_settings->isEnabled(Settings::STYLE))
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
@@ -2481,5 +2484,5 @@ void CheckClass::checkUnsafeClassDivZero(bool test)
 void CheckClass::unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName)
 {
     const std::string s = className + "::" + methodName + "()";
-    reportError(tok, Severity::warning, "unsafeClassDivZero", "Public interface of " + className + " is not safe. When calling " + s + ", if parameter " + varName + " is 0 that leads to division by zero.");
+    reportError(tok, Severity::style, "unsafeClassDivZero", "Public interface of " + className + " is not safe. When calling " + s + ", if parameter " + varName + " is 0 that leads to division by zero.");
 }

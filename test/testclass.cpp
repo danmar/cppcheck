@@ -6499,7 +6499,7 @@ private:
         // Clear the error log
         errout.str("");
         Settings settings;
-        settings.addEnabled("warning");
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -6517,7 +6517,7 @@ private:
                                 "  void dostuff(int x);\n"
                                 "}\n"
                                 "void A::dostuff(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Public interface of A is not safe. When calling A::dostuff(), if parameter x is 0 that leads to division by zero.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Public interface of A is not safe. When calling A::dostuff(), if parameter x is 0 that leads to division by zero.\n", errout.str());
 
         checkUnsafeClassDivZero("class A {\n"
                                 "public:\n"
@@ -6526,7 +6526,7 @@ private:
                                 "}\n"
                                 "void A::f1() {}\n"
                                 "void A::f2(int x) { int a = 1000 / x; }");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Public interface of A is not safe. When calling A::f2(), if parameter x is 0 that leads to division by zero.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Public interface of A is not safe. When calling A::f2(), if parameter x is 0 that leads to division by zero.\n", errout.str());
 
         checkUnsafeClassDivZero("class A {\n"
                                 "public:\n"
