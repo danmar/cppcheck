@@ -2460,7 +2460,7 @@ void CheckClass::checkPublicInterfaceDivZero(bool test)
             if (func->name().compare(0,8,"operator")==0)
                 continue;
             for (const Token *tok = func->functionScope->classStart; tok; tok = tok->next()) {
-                if (Token::Match(tok, "if|}"))
+                if (Token::Match(tok, "if|switch|while|for|do|}"))
                     break;
                 if (tok->str() != "/")
                     continue;
