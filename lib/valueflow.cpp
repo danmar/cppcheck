@@ -909,7 +909,7 @@ static void valueFlowBitAnd(TokenList *tokenlist)
         while (bit <= (MathLib::bigint_bits - 2) && ((((MathLib::bigint)1) << bit) < number))
             ++bit;
 
-        if (((MathLib::bigint)1) << bit) == number) {
+        if ((((MathLib::bigint)1) << bit) == number) {
             setTokenValue(tok, ValueFlow::Value(0), tokenlist->getSettings());
             setTokenValue(tok, ValueFlow::Value(number), tokenlist->getSettings());
         }
