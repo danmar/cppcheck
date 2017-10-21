@@ -266,9 +266,10 @@ static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign 
         value.intvalue = value.floatValue;
     }
     if (bit < MathLib::bigint_bits) {
-        value.intvalue &= (1ULL << bit) - 1ULL;
-        if (sign == ValueType::Sign::SIGNED && value.intvalue & (1ULL << (bit - 1ULL))) {
-            value.intvalue |= ~((1ULL << bit) - 1ULL);
+        const MathLib::biguint one = 1;
+        value.intvalue &= (one << bit) - 1;
+        if (sign == ValueType::Sign::SIGNED && value.intvalue & (one << (bit - 1))) {
+            value.intvalue |= ~((one << bit) - 1ULL);
         }
     }
     return value;
@@ -905,10 +906,10 @@ static void valueFlowBitAnd(TokenList *tokenlist)
             continue;
 
         int bit = 0;
-        while (bit <= 60 && ((1LL<<bit) < number))
+        while (bit <= (MathLib::bigint_bits - 2) && ((((MathLib::bigint)1) << bit) < number))
             ++bit;
 
-        if ((1LL<<bit) == number) {
+        if (((MathLib::bigint)1) << bit) == number) {
             setTokenValue(tok, ValueFlow::Value(0), tokenlist->getSettings());
             setTokenValue(tok, ValueFlow::Value(number), tokenlist->getSettings());
         }
