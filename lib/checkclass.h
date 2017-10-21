@@ -61,7 +61,7 @@ public:
 
         // can't be a simplified check .. the 'sizeof' is used.
         checkClass.checkMemset();
-        checkClass.checkPublicInterfaceDivZero();
+        checkClass.checkUnsafeClassDivZero();
     }
 
     /** @brief Run checks on the simplified token list */
@@ -153,7 +153,7 @@ public:
     void checkCopyCtorAndEqOperator();
 
     /** @brief Check that arbitrary usage of the public interface does not result in division by zero */
-    void checkPublicInterfaceDivZero(bool test=false);
+    void checkUnsafeClassDivZero(bool test=false);
 
 private:
     const SymbolDatabase *symbolDatabase;
@@ -187,7 +187,7 @@ private:
     void callsPureVirtualFunctionError(const Function & scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
-    void publicInterfaceDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName);
+    void unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckClass c(nullptr, settings, errorLogger);
@@ -218,7 +218,7 @@ private:
         c.selfInitializationError(nullptr, "var");
         c.duplInheritedMembersError(nullptr, nullptr, "class", "class", "variable", false, false);
         c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
-        c.publicInterfaceDivZeroError(nullptr, "Class", "dostuff", "x");
+        c.unsafeClassDivZeroError(nullptr, "Class", "dostuff", "x");
     }
 
     static std::string myName() {

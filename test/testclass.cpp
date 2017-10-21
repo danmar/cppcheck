@@ -189,7 +189,7 @@ private:
         TEST_CASE(explicitConstructors);
         TEST_CASE(copyCtorAndEqOperator);
 
-        TEST_CASE(publicInterfaceDivZero);
+        TEST_CASE(unsafeClassDivZero);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -6495,7 +6495,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkPublicInterfaceDivZero(const char code[]) {
+    void checkUnsafeClassDivZero(const char code[]) {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -6508,31 +6508,31 @@ private:
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkPublicInterfaceDivZero(true);
+        checkClass.checkUnsafeClassDivZero(true);
     }
 
-    void publicInterfaceDivZero() {
-        checkPublicInterfaceDivZero("class A {\n"
-                                    "public:\n"
-                                    "  void dostuff(int x);\n"
-                                    "}\n"
-                                    "void A::dostuff(int x) { int a = 1000 / x; }");
+    void unsafeClassDivZero() {
+        checkUnsafeClassDivZero("class A {\n"
+                                "public:\n"
+                                "  void dostuff(int x);\n"
+                                "}\n"
+                                "void A::dostuff(int x) { int a = 1000 / x; }");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Public interface of A is not safe. When calling A::dostuff(), if parameter x is 0 that leads to division by zero.\n", errout.str());
 
-        checkPublicInterfaceDivZero("class A {\n"
-                                    "public:\n"
-                                    "  void f1();\n"
-                                    "  void f2(int x);\n"
-                                    "}\n"
-                                    "void A::f1() {}\n"
-                                    "void A::f2(int x) { int a = 1000 / x; }");
+        checkUnsafeClassDivZero("class A {\n"
+                                "public:\n"
+                                "  void f1();\n"
+                                "  void f2(int x);\n"
+                                "}\n"
+                                "void A::f1() {}\n"
+                                "void A::f2(int x) { int a = 1000 / x; }");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Public interface of A is not safe. When calling A::f2(), if parameter x is 0 that leads to division by zero.\n", errout.str());
 
-        checkPublicInterfaceDivZero("class A {\n"
-                                    "public:\n"
-                                    "  void operator/(int x);\n"
-                                    "}\n"
-                                    "void A::operator/(int x) { int a = 1000 / x; }");
+        checkUnsafeClassDivZero("class A {\n"
+                                "public:\n"
+                                "  void operator/(int x);\n"
+                                "}\n"
+                                "void A::operator/(int x) { int a = 1000 / x; }");
         ASSERT_EQUALS("", errout.str());
     }
 };
