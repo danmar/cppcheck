@@ -1357,6 +1357,10 @@ void CheckCondition::checkPointerAdditionResultNotNull()
             if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
                 continue;
 
+            // Macros might have pointless safety checks
+            if (tok->isExpandedMacro())
+                continue;
+
             const Token *calcToken, *exprToken;
             if (tok->astOperand1()->str() == "+") {
                 calcToken = tok->astOperand1();
