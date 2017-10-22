@@ -1154,7 +1154,7 @@ void Tokenizer::simplifyTypedef()
                         bool good = true;
                         // check for extra qualification
                         while (back >= 0) {
-                            const Token *qualificationTok = start->tokAt(-2);
+                            Token *qualificationTok = start->tokAt(-2);
                             if (!Token::Match(qualificationTok, "%type% ::"))
                                 break;
                             if (qualificationTok->str() == spaceInfo[back].className) {
