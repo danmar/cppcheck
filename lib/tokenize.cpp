@@ -1153,9 +1153,12 @@ void Tokenizer::simplifyTypedef()
                         int back = int(classLevel) - 1;
                         bool good = true;
                         // check for extra qualification
-                        while (back >= 0 && Token::Match(start->tokAt(-2), "%type% ::")) {
-                            if (start->strAt(-2) == spaceInfo[back].className) {
-                                start = start->tokAt(-2);
+                        while (back >= 0) {
+                            const Token *qualificationTok = start->tokAt(-2);
+                            if (!Token::Match(qualificationTok, "%type% ::")
+                                break;
+                            if (qualificationTok->str() == spaceInfo[back].className) {
+                                start = qualificationTok;
                                 back--;
                                 count++;
                             } else {
