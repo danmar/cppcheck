@@ -98,6 +98,7 @@ private:
 
         TEST_CASE(checkInvalidTestForOverflow);
         TEST_CASE(checkConditionIsAlwaysTrueOrFalseInsideIfWhile);
+        TEST_CASE(pointerAdditionResultNotNull);
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
@@ -2212,27 +2213,27 @@ private:
         check("void f(char *p, unsigned int x) {\n"
               "    assert((p + x) < p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)<p'. Condition is always false unless there is overflow, and overflow is UB.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)<p'. Condition is always false unless there is overflow, and overflow is undefined behaviour.\n", errout.str());
 
         check("void f(char *p, unsigned int x) {\n"
               "    assert((p + x) >= p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)>=p'. Condition is always true unless there is overflow, and overflow is UB.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)>=p'. Condition is always true unless there is overflow, and overflow is undefined behaviour.\n", errout.str());
 
         check("void f(char *p, unsigned int x) {\n"
               "    assert(p > (p + x));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p>(p+x)'. Condition is always false unless there is overflow, and overflow is UB.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p>(p+x)'. Condition is always false unless there is overflow, and overflow is undefined behaviour.\n", errout.str());
 
         check("void f(char *p, unsigned int x) {\n"
               "    assert(p <= (p + x));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p<=(p+x)'. Condition is always true unless there is overflow, and overflow is UB.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p<=(p+x)'. Condition is always true unless there is overflow, and overflow is undefined behaviour.\n", errout.str());
 
         check("void f(signed int x) {\n"
               "    assert(x + 100 < x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'x+100<x'. Condition is always false unless there is overflow, and overflow is UB.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'x+100<x'. Condition is always false unless there is overflow, and overflow is undefined behaviour.\n", errout.str());
 
         check("void f(signed int x) {\n" // unsigned overflow => don't warn
               "    assert(x + 100U < x);\n"
@@ -2265,6 +2266,13 @@ private:
               "    while(a + 1) { return; }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'a+1' is always true\n", errout.str());
+    }
+
+    void pointerAdditionResultNotNull() {
+        check("void f(char *ptr) {\n"
+              "  if (ptr + 1 != 0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison is wrong. Result of 'ptr+1' can't be 0 unless there is pointer overflow, and pointer overflow is undefined behaviour.\n", errout.str());
     }
 };
 

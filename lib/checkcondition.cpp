@@ -1338,6 +1338,50 @@ void CheckCondition::invalidTestForOverflow(const Token* tok, bool result)
              (tok ? tok->expressionString() : std::string("x + u < x")) +
              "'. Condition is always " +
              std::string(result ? "true" : "false") +
-             " unless there is overflow, and overflow is UB.";
+             " unless there is overflow, and overflow is undefined behaviour.";
     reportError(tok, Severity::warning, "invalidTestForOverflow", errmsg, (result ? CWE571 : CWE570), false);
+}
+
+
+void CheckCondition::checkPointerAdditionResultNotNull()
+{
+    if (!_settings->isEnabled(Settings::WARNING))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
+                continue;
+
+            const Token *calcToken, *exprToken;
+            if (tok->astOperand1()->str() == "+") {
+                calcToken = tok->astOperand1();
+                exprToken = tok->astOperand2();
+            } else if (tok->astOperand2()->str() == "+") {
+                calcToken = tok->astOperand2();
+                exprToken = tok->astOperand1();
+            } else
+                continue;
+
+            // pointer comparison against NULL (ptr+12==0)
+            if (calcToken->hasKnownIntValue())
+                continue;
+            if (!calcToken->valueType() || calcToken->valueType()->pointer==0)
+                continue;
+            if (!exprToken->hasKnownIntValue() || !exprToken->getValue(0))
+                continue;
+
+            pointerAdditionResultNotNullError(tok, calcToken);
+        }
+    }
+}
+
+void CheckCondition::pointerAdditionResultNotNullError(const Token *tok, const Token *calc)
+{
+    const std::string s = calc ? calc->expressionString() : "ptr+1";
+    reportError(tok, Severity::warning, "pointerAdditionResultNotNull", "Comparison is wrong. Result of '" + s + "' can't be 0 unless there is pointer overflow, and pointer overflow is undefined behaviour.");
 }
