@@ -263,7 +263,11 @@ static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign 
 {
     if (value.isFloatValue()) {
         value.valueType = ValueFlow::Value::INT;
-        value.intvalue = value.floatValue;
+        if (value.floatValue >= std::numeric_limits<int>::min() && value.floatValue <= std::numeric_limits<int>::max()) {
+            value.intvalue = value.floatValue;
+        } else { // don't perform UB
+            value.intvalue = 0;
+        }
     }
     if (bit < MathLib::bigint_bits) {
         const MathLib::biguint one = 1;
