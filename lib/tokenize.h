@@ -718,6 +718,9 @@ private:
      */
     void printUnknownTypes() const;
 
+    /** Find end of SQL (or PL/SQL) block */
+    const Token *findSQLBlockEnd(const Token *tokSQLStart) const;
+
 public:
 
     /** Was there templates in the code? */

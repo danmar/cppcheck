@@ -5785,6 +5785,12 @@ private:
         ASSERT_EQUALS("asm ( \"\"EXEC SQL SELECT A FROM B\"\" ) ;", tokenizeAndStringify("EXEC SQL SELECT A FROM B;",false));
         ASSERT_EQUALS("asm ( \"\"EXEC SQL\"\" ) ;", tokenizeAndStringify("EXEC SQL",false));
 
+        ASSERT_EQUALS("asm ( \"\"EXEC SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - EXEC\"\" ) ; asm ( \"\"EXEC SQL COMMIT\"\" ) ;",
+              tokenizeAndStringify("EXEC SQL EXECUTE BEGIN Proc1(A); END; END-EXEC; EXEC SQL COMMIT;",false));
+        ASSERT_EQUALS("asm ( \"\"EXEC SQL UPDATE A SET B = C\"\" ) ; asm ( \"\"EXEC SQL COMMIT\"\" ) ;",
+              tokenizeAndStringify("EXEC SQL UPDATE A SET B = C; EXEC SQL COMMIT;",false));
+        ASSERT_EQUALS("asm ( \"\"EXEC SQL COMMIT\"\" ) ; asm ( \"\"EXEC SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - EXEC\"\" ) ;",
+              tokenizeAndStringify("EXEC SQL COMMIT; EXEC SQL EXECUTE BEGIN Proc1(A); END; END-EXEC;",false));
     }
 
     void simplifyCAlternativeTokens() {

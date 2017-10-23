@@ -1981,12 +1981,10 @@ void Tokenizer::simplifySQL()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "EXEC SQL")) {
-            const Token *end = tok->tokAt(2);
-            while (end && end->str() != ";")
-                end = end->next();
+            const Token *end = findSQLBlockEnd(tok);
 
             std::string instruction = tok->stringifyList(end);
-            // delete all tokens until ';'
+            // delete all tokens until the embedded SQL block end
             Token::eraseTokens(tok, end);
 
             // insert "asm ( "instruction" ) ;"
@@ -9886,3 +9884,24 @@ void Tokenizer::SimplifyNamelessRValueReferences()
         }
     }
 }
+
+const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart) const
+{
+    const Token *tokSQLEnd = nullptr;
+    const Token *tokLastEnd = nullptr;
+    for (const Token *tok = tokSQLStart->tokAt(2); tok != nullptr && tokSQLEnd == nullptr; tok = tok->next()) {
+        if (tokLastEnd == nullptr && tok->str() == ";")
+            tokLastEnd = tok;
+        else if (tok->str() == "EXEC") {
+            const Token *tokPrev = tok->previous();
+            const Token *tokBeforePrev = tokPrev->previous();
+            if (tokBeforePrev->str() == "END" && tokPrev->str() == "-")
+                tokSQLEnd = tok->next();
+            else
+                tokSQLEnd = tokLastEnd;
+        }
+    }
+
+    return tokSQLEnd ? tokSQLEnd : tokLastEnd;
+}
+
