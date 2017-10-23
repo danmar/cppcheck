@@ -972,6 +972,11 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 1) requires 'unsigned int *' but the argument type is 'const char *'.\n"
                       "[test.cpp:3]: (warning) %u in format string (no. 1) requires 'unsigned int *' but the argument type is 'const wchar_t *'.\n", errout.str());
 
+        check("void foo(long l) {\n"
+              "    scanf(\"%u\", l);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %u in format string (no. 1) requires 'unsigned int *' but the argument type is 'signed long'.\n", errout.str());
+
         TEST_SCANF_WARN("%lu","unsigned long","bool");
         TEST_SCANF_WARN("%lu","unsigned long","char");
         TEST_SCANF_WARN("%lu","unsigned long","signed char");
@@ -1212,6 +1217,11 @@ private:
               "}", true);
         ASSERT_EQUALS("[test.cpp:2]: (warning) %Ld in format string (no. 1) requires 'long long *' but the argument type is 'const char *'.\n"
                       "[test.cpp:3]: (warning) %Ld in format string (no. 1) requires 'long long *' but the argument type is 'const wchar_t *'.\n", errout.str());
+
+        check("void foo(int i) {\n"
+              "    scanf(\"%Ld\", i);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %Ld in format string (no. 1) requires 'long long *' but the argument type is 'signed int'.\n", errout.str());
 
         TEST_SCANF_WARN("%ju", "uintmax_t", "bool");
         TEST_SCANF_WARN("%ju", "uintmax_t", "char");
@@ -1493,6 +1503,11 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int *' but the argument type is 'const char *'.\n"
                       "[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int *' but the argument type is 'const wchar_t *'.\n", errout.str());
 
+        check("void foo(long l) {\n"
+              "    scanf(\"%d\", l);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int *' but the argument type is 'signed long'.\n", errout.str());
+
         TEST_SCANF_WARN("%x", "unsigned int", "bool");
         TEST_SCANF_WARN("%x", "unsigned int", "char");
         TEST_SCANF_WARN("%x", "unsigned int", "signed char");
@@ -1527,6 +1542,11 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) %x in format string (no. 1) requires 'unsigned int *' but the argument type is 'const char *'.\n"
                       "[test.cpp:3]: (warning) %x in format string (no. 1) requires 'unsigned int *' but the argument type is 'const wchar_t *'.\n", errout.str());
 
+        check("void foo(long l) {\n"
+              "    scanf(\"%x\", l);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %x in format string (no. 1) requires 'unsigned int *' but the argument type is 'signed long'.\n", errout.str());
+
         TEST_SCANF_WARN("%f", "float", "bool");
         TEST_SCANF_WARN("%f", "float", "char");
         TEST_SCANF_WARN("%f", "float", "signed char");
@@ -1560,6 +1580,11 @@ private:
               "}", true);
         ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'float *' but the argument type is 'const char *'.\n"
                       "[test.cpp:3]: (warning) %f in format string (no. 1) requires 'float *' but the argument type is 'const wchar_t *'.\n", errout.str());
+
+        check("void foo(float f) {\n"
+              "    scanf(\"%f\", f);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'float *' but the argument type is 'float'.\n", errout.str());
 
         TEST_SCANF_WARN("%lf", "double", "bool");
         TEST_SCANF_WARN("%lf", "double", "char");
@@ -1648,6 +1673,11 @@ private:
               "}", true);
         ASSERT_EQUALS("[test.cpp:2]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const char *'.\n"
                       "[test.cpp:3]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'const wchar_t *'.\n", errout.str());
+
+        check("void foo(long l) {\n"
+              "    scanf(\"%n\", l);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %n in format string (no. 1) requires 'int *' but the argument type is 'signed long'.\n", errout.str());
 
         check("void g() {\n" // #5104
               "    myvector<int> v1(1);\n"
