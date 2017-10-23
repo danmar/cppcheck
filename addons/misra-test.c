@@ -193,7 +193,9 @@ void misra_15_6() {
 }
 
 void misra_15_7() {
-  if (x!=0){} // 15.7
+  if (x!=0){} // no-warning
+  if (x!=0){} else if(x==1){} // 15.7
+  if (x!=0){} else if(x==1){}else{;} // no-warning
 }
 
 void misra_16_2() {
