@@ -1702,8 +1702,8 @@ private:
                                 "    scanf(\"%zd\", &s2);\n"
                                 "    scanf(\"%zd\", &s3);\n"
                                 "}\n";
-            const char* result("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n");
-            const char* result_win64("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n");
+            const char* result("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ssize_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n");
+            const char* result_win64("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ssize_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n");
 
             check(code, false, true, Settings::Unix32);
             ASSERT_EQUALS(result, errout.str());

@@ -1852,7 +1852,7 @@ void CheckIO::invalidScanfArgTypeError_int(const Token* tok, unsigned int numFor
             errmsg << "intmax_t";
     } else if (specifier[0] == 'z') {
         if (specifier[1] == 'd')
-            errmsg << "ptrdiff_t";
+            errmsg << "ssize_t";
         else
             errmsg << "size_t";
     } else if (specifier[0] == 't') {
