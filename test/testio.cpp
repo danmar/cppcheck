@@ -1006,6 +1006,7 @@ private:
 
         TEST_SCANF_WARN("%lx","unsigned long","bool");
         TEST_SCANF_WARN("%lx","unsigned long","char");
+        TEST_SCANF_WARN("%lx","unsigned long","signed long");
         TEST_SCANF_NOWARN("%lx","unsigned long","unsigned long");
         TEST_SCANF_WARN("%lx","unsigned long","void *");
         TEST_SCANF_WARN_AKA("%lx","unsigned long","size_t","unsigned long","unsigned long long");
@@ -1049,7 +1050,7 @@ private:
 
         TEST_SCANF_WARN("%llx","unsigned long long","bool");
         TEST_SCANF_WARN("%llx","unsigned long long","char");
-        //TODO TEST_SCANF_WARN("%llx","unsigned long long","signed long long");
+        TEST_SCANF_WARN("%llx","unsigned long long","signed long long");
         TEST_SCANF_NOWARN("%llx","unsigned long long","unsigned long long");
         TEST_SCANF_WARN("%llx","unsigned long long","void *");
         TEST_SCANF_WARN_AKA("%llx","unsigned long long","size_t", "unsigned long", "unsigned long long");
@@ -1092,7 +1093,7 @@ private:
 
         TEST_SCANF_WARN("%hx", "unsigned short", "bool");
         TEST_SCANF_WARN("%hx", "unsigned short", "char");
-        // TODO TEST_SCANF_WARN("%hx", "unsigned short", "signed short");
+        TEST_SCANF_WARN("%hx", "unsigned short", "signed short");
         TEST_SCANF_NOWARN("%hx", "unsigned short", "unsigned short");
         TEST_SCANF_WARN("%hx", "unsigned short", "void *");
         TEST_SCANF_WARN_AKA("%hx", "unsigned short", "std::intptr_t", "signed long", "signed long long");
@@ -1138,6 +1139,8 @@ private:
         TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%hhx", "unsigned char", "bool");
+        TEST_SCANF_WARN("%hhx", "unsigned char", "char");
+        TEST_SCANF_WARN("%hhx", "unsigned char", "signed char");
         TEST_SCANF_NOWARN("%hhx", "unsigned char", "unsigned char");
         TEST_SCANF_WARN("%hhx", "unsigned char", "void *");
         TEST_SCANF_WARN_AKA("%hhx", "unsigned char", "std::intptr_t", "signed long", "signed long long");
@@ -1179,6 +1182,7 @@ private:
         // TODO TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%Lx", "unsigned long long", "bool");
+        TEST_SCANF_WARN("%Lx", "unsigned long long", "signed long long");
         TEST_SCANF_NOWARN("%Lx", "unsigned long long", "unsigned long long");
         TEST_SCANF_WARN("%Lx", "unsigned long long", "void *");
         TEST_SCANF_WARN_AKA_WIN32("%Lx", "unsigned long long", "size_t", "unsigned long");
@@ -1332,7 +1336,7 @@ private:
 
         TEST_SCANF_WARN("%tx", "unsigned ptrdiff_t", "long double");
         TEST_SCANF_WARN("%tx", "unsigned ptrdiff_t", "void *");
-        // TODO TEST_SCANF_WARN_AKA("%tx", "unsigned ptrdiff_t", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%tx", "unsigned ptrdiff_t", "ptrdiff_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%tx", "unsigned ptrdiff_t", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_NOWARN("%tx", "unsigned ptrdiff_t", "unsigned ptrdiff_t");
 
@@ -1402,10 +1406,11 @@ private:
         TEST_SCANF_WARN("%I64x", "unsigned __int64", "unsigned char");
         TEST_SCANF_WARN("%I64x", "unsigned __int64", "void *");
         //TODO TEST_SCANF_WARN("%I64x", "unsigned __int64", "size_t");
-        TEST_SCANF_WARN_AKA_WIN32("%I64x", "unsigned __int64", "intmax_t", "signed long");
-        TEST_SCANF_WARN_AKA_WIN32("%I64x", "unsigned __int64", "ssize_t", "signed long");
-        TEST_SCANF_WARN_AKA_WIN32("%I64x", "unsigned __int64", "ptrdiff_t", "signed long");
+        TEST_SCANF_WARN_AKA("%I64x", "unsigned __int64", "intmax_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I64x", "unsigned __int64", "ssize_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I64x", "unsigned __int64", "ptrdiff_t", "signed long", "signed long long");
         TEST_SCANF_NOWARN("%I64x", "unsigned __int64", "unsigned __int64");
+        // TODO TEST_SCANF_WARN("%I64x", "unsigned __int64", "__int64");
 
         TEST_SCANF_WARN("%I64d", "__int64", "bool");
         TEST_SCANF_WARN("%I64d", "__int64", "signed char");
@@ -1449,7 +1454,7 @@ private:
         TEST_SCANF_WARN("%I32x", "unsigned __int32", "unsigned char");
         TEST_SCANF_WARN("%I32x", "unsigned __int32", "signed short");
         TEST_SCANF_WARN("%I32x", "unsigned __int32", "unsigned short");
-        //TODO TEST_SCANF_WARN("%I32x", "unsigned __int32", "signed int");
+        TEST_SCANF_WARN("%I32x", "unsigned __int32", "signed int");
         TEST_SCANF_NOWARN("%I32x", "unsigned __int32", "unsigned int");
         TEST_SCANF_WARN("%I32x", "unsigned __int32", "signed long");
         TEST_SCANF_WARN("%I32x", "unsigned __int32", "unsigned long");
@@ -3023,9 +3028,12 @@ private:
               "}", false, true, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
                       "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long *}'.\n"
+                      "[test.cpp:9]: (portability) %Ix in format string (no. 3) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long *}'.\n"
                       "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
+                      "[test.cpp:10]: (portability) %I32x in format string (no. 3) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
                       "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
                       "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
+                      "[test.cpp:12]: (portability) %I64x in format string (no. 3) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
                       "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout.str());
 
         check("void foo() {\n"
@@ -3044,9 +3052,12 @@ private:
               "}", false, true, Settings::Win64);
         ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
                       "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long long *}'.\n"
+                      "[test.cpp:9]: (portability) %Ix in format string (no. 3) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long long *}'.\n"
                       "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
+                      "[test.cpp:10]: (portability) %I32x in format string (no. 3) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
                       "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
                       "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
+                      "[test.cpp:12]: (portability) %I64x in format string (no. 3) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
                       "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout.str());
 
         check("void foo() {\n"

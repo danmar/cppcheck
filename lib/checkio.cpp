@@ -728,7 +728,8 @@ void CheckIO::checkFormatString(const Token * const tok,
                                     if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
                                         if (argInfo.typeToken->isStandardType() || !argInfo.element)
                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                    } else if (!argInfo.isArrayOrPointer() ||
+                                    } else if (!argInfo.typeToken->isUnsigned() ||
+                                               !argInfo.isArrayOrPointer() ||
                                                argInfo.typeToken->strAt(-1) == "const") {
                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                     } else {
