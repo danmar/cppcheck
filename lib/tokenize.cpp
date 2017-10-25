@@ -9892,6 +9892,8 @@ const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart) const
     for (const Token *tok = tokSQLStart->tokAt(2); tok != nullptr && tokSQLEnd == nullptr; tok = tok->next()) {
         if (tokLastEnd == nullptr && tok->str() == ";")
             tokLastEnd = tok;
+        else if (tok->str() == "}")
+            tokSQLEnd = tok; // Explicit syntax error, enforce stop here
         else if (tok->str() == "EXEC") {
             const Token *tokPrev = tok->previous();
             const Token *tokBeforePrev = tokPrev->previous();

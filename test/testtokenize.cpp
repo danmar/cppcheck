@@ -5791,6 +5791,8 @@ private:
               tokenizeAndStringify("EXEC SQL UPDATE A SET B = C; EXEC SQL COMMIT;",false));
         ASSERT_EQUALS("asm ( \"\"EXEC SQL COMMIT\"\" ) ; asm ( \"\"EXEC SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - EXEC\"\" ) ;",
               tokenizeAndStringify("EXEC SQL COMMIT; EXEC SQL EXECUTE BEGIN Proc1(A); END; END-EXEC;",false));
+        // Syntax error, but need to enforce SQL block end at least at the end of nearest outer C block
+        ASSERT_EQUALS("int f ( ) { asm ( \"\"EXEC SQL\"\" ) ; } int a ;", tokenizeAndStringify("int f(){ EXEC SQL } int a;",false));
     }
 
     void simplifyCAlternativeTokens() {
