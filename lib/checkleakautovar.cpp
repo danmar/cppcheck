@@ -325,6 +325,24 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         else if (Token::simpleMatch(tok, "if (")) {
             // Parse function calls inside the condition
             for (const Token *innerTok = tok->tokAt(2); innerTok; innerTok = innerTok->next()) {
+                if (Token::Match(innerTok, "%var% =")) {
+                    // allocation?
+                    if (Token::Match(innerTok->tokAt(2), "%type% (")) {
+                        const Library::AllocFunc* f = _settings->library.alloc(innerTok->tokAt(2));
+                        if (f && f->arg == -1) {
+                            VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
+                            varAlloc.type = f->groupId;
+                            varAlloc.status = VarInfo::ALLOC;
+                        }
+                    } else if (_tokenizer->isCPP() && Token::Match(innerTok->tokAt(2), "new !!(")) {
+                        const Token* tok2 = innerTok->tokAt(2)->astOperand1();
+                        bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
+                        VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
+                        varAlloc.type = arrayNew ? -2 : -1;
+                        varAlloc.status = VarInfo::ALLOC;
+                    }
+                }
+
                 if (innerTok->str() == ")")
                     break;
                 if (innerTok->str() == "(" && innerTok->previous()->isName()) {

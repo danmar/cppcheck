@@ -55,6 +55,7 @@ private:
         TEST_CASE(assign11); // #3942: x = a(b(p));
         TEST_CASE(assign12); // #4236: FP. bar(&x);
         TEST_CASE(assign13); // #4237: FP. char*&ref=p; p=malloc(10); free(ref);
+        TEST_CASE(assign14);
 
         TEST_CASE(deallocuse1);
         TEST_CASE(deallocuse2);
@@ -70,6 +71,7 @@ private:
         TEST_CASE(doublefree4); // #5451 - FP when exit is called
         TEST_CASE(doublefree5); // #5522
         TEST_CASE(doublefree6); // #7685
+        TEST_CASE(doublefree7);
 
         // exit
         TEST_CASE(exit1);
@@ -267,6 +269,20 @@ private:
               "    free(ref);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign14() {
+        check("void f(int x) {\n"
+              "    char *p;\n"
+              "    if (x && (p = malloc(10))) { }"
+              "}");
+        ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    char *p;\n"
+              "    if (x && (p = new char[10])) { }"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
     }
 
     void deallocuse1() {
@@ -854,6 +870,22 @@ private:
               "  free(getword(f));\n"
               "  fclose(f);\n"
               "}", /*cpp=*/false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void doublefree7() {
+        check("void f(char *p, int x) {\n"
+              "    free(p);\n"
+              "    if (x && (p = malloc(10)))\n"
+              "        free(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char *p, int x) {\n"
+              "    delete[] p;\n"
+              "    if (x && (p = new char[10]))\n"
+              "        delete[] p;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
