@@ -773,11 +773,13 @@ def misra_15_6(rawTokens):
 
 def misra_15_7(data):
     for token in data.tokenlist:
-        if not simpleMatch(token, 'if ('):
+        if not simpleMatch(token, '}'):
             continue
-        if not simpleMatch(token.next.link, ') {'):
+        if not token.scope.type == 'If':
             continue
-        if not simpleMatch(token.next.link.next.link, '} else'):
+        if not token.scope.nestedIn.type == 'Else':
+            continue
+        if not token.next.str == 'else':
             reportError(token, 15, 7)
 
 # TODO add 16.1 rule
