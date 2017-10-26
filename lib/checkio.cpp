@@ -2051,7 +2051,7 @@ void CheckIO::argumentType(std::ostream& os, const ArgumentInfo * argInfo)
                     os << " *";
             } else {
                 if (type->isUnsigned()) {
-                    if (type->originalName() == "__int64" || type->originalName() == "__int32")
+                    if (type->originalName() == "__int64" || type->originalName() == "__int32" || type->originalName() == "ptrdiff_t")
                         os << "unsigned ";
                 }
                 os << type->originalName();
