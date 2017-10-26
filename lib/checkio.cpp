@@ -2050,8 +2050,10 @@ void CheckIO::argumentType(std::ostream& os, const ArgumentInfo * argInfo)
                 if (argInfo->address)
                     os << " *";
             } else {
-                if ((type->originalName() == "__int64" || type->originalName() == "__int32") && type->isUnsigned())
-                    os << "unsigned ";
+                if (type->isUnsigned()) {
+                    if (type->originalName() == "__int64" || type->originalName() == "__int32")
+                        os << "unsigned ";
+                }
                 os << type->originalName();
                 if (type->strAt(1) == "*" || argInfo->address)
                     os << " *";
