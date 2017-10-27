@@ -1010,14 +1010,14 @@ void CheckCondition::checkIncorrectLogicOperator()
                 incorrectLogicOperatorError(tok, text, alwaysTrue, inconclusive);
             } else if (printStyle && secondTrue) {
                 const std::string text = "If '" + cond1str + "', the comparison '" + cond2str +
-                                         "' is always " + (secondTrue ? "true" : "false") + ".";
+                                         "' is always true.";
                 redundantConditionError(tok, text, inconclusive);
             } else if (printStyle && firstTrue) {
                 //const std::string text = "The comparison " + cond1str + " is always " +
                 //                         (firstTrue ? "true" : "false") + " when " +
                 //                         cond2str + ".";
                 const std::string text = "If '" + cond2str + "', the comparison '" + cond1str +
-                                         "' is always " + (firstTrue ? "true" : "false") + ".";
+                                         "' is always true.";
                 redundantConditionError(tok, text, inconclusive);
             }
         }

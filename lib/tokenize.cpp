@@ -9437,7 +9437,7 @@ void Tokenizer::simplifyOperatorName()
             bool done = false;
             while (!done && par) {
                 done = true;
-                if (par && par->isName()) {
+                if (par->isName()) {
                     op += par->str();
                     par = par->next();
                     // merge namespaces eg. 'operator std :: string () const {'
