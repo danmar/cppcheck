@@ -2182,6 +2182,20 @@ private:
                       "[test.cpp:6]: (warning) %lx in format string (no. 1) requires 'unsigned long' but the argument type is 'unsigned int'.\n"
                       "[test.cpp:7]: (warning) %llx in format string (no. 1) requires 'unsigned long long' but the argument type is 'unsigned int'.\n", errout.str());
 
+        check("void foo(int i, intmax_t im, ptrdiff_t p) {\n"
+              "  printf(\"%lld\", i);\n"
+              "  printf(\"%lld\", im);\n"
+              "  printf(\"%lld\", p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %lld in format string (no. 1) requires 'long long' but the argument type is 'signed int'.\n", errout.str());
+
+        check("void foo(intmax_t im, ptrdiff_t p) {\n"
+              "  printf(\"%lld\", im);\n"
+              "  printf(\"%lld\", p);\n"
+              "}", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %lld in format string (no. 1) requires 'long long' but the argument type is 'intmax_t {aka signed long long}'.\n"
+                      "[test.cpp:3]: (portability) %lld in format string (no. 1) requires 'long long' but the argument type is 'ptrdiff_t {aka signed long long}'.\n", errout.str());
+
         check("class Foo {\n"
               "    double d;\n"
               "    struct Bar {\n"
