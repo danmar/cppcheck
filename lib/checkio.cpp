@@ -1181,7 +1181,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             break;
                                         case 'z':
                                             if (!typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
-                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                                invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                             break;
                                         case 'L':
                                             if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
