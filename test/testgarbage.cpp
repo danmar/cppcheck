@@ -218,6 +218,7 @@ private:
         TEST_CASE(garbageCode185); // #6011
         TEST_CASE(garbageCode186); // #8151
         TEST_CASE(garbageCode187);
+        TEST_CASE(garbageCode188);
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -562,12 +563,12 @@ private:
     }
 
     void garbageCode36() { // #6334
-        checkCode("{ } < class template < > , { = } ; class... >\n"
-                  "struct Y { }\n"
-                  "class Types { }\n"
-                  "( X < int > \"uses template\" ) ( < ( ) \"uses ;"
-                  "( int int ::primary \"uses template\" ) int double \"uses )"
-                  "::primary , \"uses template\" ;\n");
+        ASSERT_THROW(checkCode("{ } < class template < > , { = } ; class... >\n"
+                     "struct Y { }\n"
+                     "class Types { }\n"
+                     "( X < int > \"uses template\" ) ( < ( ) \"uses ;"
+                     "( int int ::primary \"uses template\" ) int double \"uses )"
+                     "::primary , \"uses template\" ;\n"), InternalError);
     }
 
     void garbageCode37() {
@@ -710,7 +711,7 @@ private:
     }
 
     void garbageCode77() { // #6755
-        checkCode("void foo (int **p) { { { };>= } } unsigned *d = (b b--) --*d");
+        ASSERT_THROW(checkCode("void foo (int **p) { { { };>= } } unsigned *d = (b b--) --*d"), InternalError);
     }
 
     void garbageCode78() { // #6756
@@ -823,7 +824,7 @@ private:
     }
 
     void garbageCode105() { // #6859
-        checkCode("void foo (int i) { int a , for (a 1; a( < 4; a++) if (a) (b b++) (b);) n++; }");
+        ASSERT_THROW(checkCode("void foo (int i) { int a , for (a 1; a( < 4; a++) if (a) (b b++) (b);) n++; }"), InternalError);
     }
 
     void garbageCode106() { // #6880
@@ -843,7 +844,7 @@ private:
     }
 
     void garbageCode110() { //  #6902 "segmentation fault (invalid code) in CheckStl::string_c_str"
-        checkCode("( *const<> ( size_t ) ; foo ) { } * ( *const ( size_t ) ( ) ;> foo )< { }");
+        ASSERT_THROW(checkCode("( *const<> ( size_t ) ; foo ) { } * ( *const ( size_t ) ( ) ;> foo )< { }"), InternalError);
     }
 
     void garbageCode111() { //  #6907
@@ -866,7 +867,7 @@ private:
     }
 
     void garbageCode116() { // #5356
-        checkCode("struct template<int { = }; > struct B { }; B < 0 > b;");
+        ASSERT_THROW(checkCode("struct template<int { = }; > struct B { }; B < 0 > b;"), InternalError);
     }
 
     void garbageCode117() { // #6121
@@ -1097,7 +1098,7 @@ private:
     }
 
     void garbageCode144() { // #6865
-        checkCode("template < typename > struct A { } ; template < typename > struct A < INVALID > : A < int[ > { }] ;");
+        ASSERT_THROW(checkCode("template < typename > struct A { } ; template < typename > struct A < INVALID > : A < int[ > { }] ;"), InternalError);
     }
 
     void garbageCode146() { // #7081
@@ -1430,6 +1431,10 @@ private:
     void garbageCode187() { // # 8152 - segfault in handling
         const std::string inp("0|\0|0>;\n", 8);
         ASSERT_THROW(checkCode(inp), InternalError);
+    }
+
+    void garbageCode188() { // #8255
+        ASSERT_THROW(checkCode("{z r(){(){for(;<(x);){if(0==0)}}}}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
