@@ -404,7 +404,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
         return false;
 
     // address of variable
-    const bool addressOf = tok && Token::simpleMatch(tok->previous(), "&");
+    const bool addressOf = Token::simpleMatch(tok->previous(), "&");
 
     // passing variable to subfunction?
     if (Token::Match(tok->tokAt(-2), ") & %name% [,)]") && Token::Match(tok->linkAt(-2)->previous(), "[,(] ("))
