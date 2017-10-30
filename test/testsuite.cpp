@@ -67,7 +67,7 @@ std::size_t TestFixture::todos_counter = 0;
 std::size_t TestFixture::succeeded_todos_counter = 0;
 std::set<std::string> TestFixture::missingLibs;
 
-TestFixture::TestFixture(const char* _name)
+TestFixture::TestFixture(const char * const _name)
     :classname(_name)
     ,quiet_tests(false)
 {
@@ -116,7 +116,7 @@ static std::string writestr(const std::string &str, bool gccStyle = false)
     return ostr.str();
 }
 
-void TestFixture::assert_(const char *filename, unsigned int linenr, bool condition) const
+void TestFixture::assert_(const char * const filename, const unsigned int linenr, const bool condition) const
 {
     if (!condition) {
         ++fails_counter;
@@ -124,7 +124,7 @@ void TestFixture::assert_(const char *filename, unsigned int linenr, bool condit
     }
 }
 
-void TestFixture::assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
+void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
 {
     if (expected != actual) {
         ++fails_counter;
@@ -163,25 +163,25 @@ std::string TestFixture::deleteLineNumber(const std::string &message) const
     return result;
 }
 
-void TestFixture::assertEqualsWithoutLineNumbers(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
+void TestFixture::assertEqualsWithoutLineNumbers(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
 {
     assertEquals(filename, linenr, deleteLineNumber(expected), deleteLineNumber(actual), msg);
 }
 
-void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
+void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
 {
     assertEquals(filename, linenr, std::string(expected), actual, msg);
 }
-void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg) const
+void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string &msg) const
 {
     assertEquals(filename, linenr, std::string(expected), std::string(actual), msg);
 }
-void TestFixture::assertEquals(const char *filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg) const
+void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg) const
 {
     assertEquals(filename, linenr, expected, std::string(actual), msg);
 }
 
-void TestFixture::assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg) const
+void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg) const
 {
     if (expected != actual) {
         std::ostringstream ostr1;
@@ -192,7 +192,7 @@ void TestFixture::assertEquals(const char *filename, unsigned int linenr, long l
     }
 }
 
-void TestFixture::assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, double tolerance, const std::string &msg) const
+void TestFixture::assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg) const
 {
     if (expected < (actual - tolerance) || expected > (actual + tolerance)) {
         std::ostringstream ostr1;
@@ -203,7 +203,7 @@ void TestFixture::assertEqualsDouble(const char *filename, unsigned int linenr, 
     }
 }
 
-void TestFixture::todoAssertEquals(const char *filename, unsigned int linenr,
+void TestFixture::todoAssertEquals(const char * const filename, const unsigned int linenr,
                                    const std::string &wanted,
                                    const std::string &current,
                                    const std::string &actual) const
@@ -219,7 +219,7 @@ void TestFixture::todoAssertEquals(const char *filename, unsigned int linenr,
     }
 }
 
-void TestFixture::todoAssertEquals(const char *filename, unsigned int linenr, long long wanted, long long current, long long actual) const
+void TestFixture::todoAssertEquals(const char * const filename, const unsigned int linenr, const long long wanted, const long long current, const long long actual) const
 {
     std::ostringstream wantedStr, currentStr, actualStr;
     wantedStr << wanted;
@@ -228,7 +228,7 @@ void TestFixture::todoAssertEquals(const char *filename, unsigned int linenr, lo
     todoAssertEquals(filename, linenr, wantedStr.str(), currentStr.str(), actualStr.str());
 }
 
-void TestFixture::assertThrow(const char *filename, unsigned int linenr) const
+void TestFixture::assertThrow(const char * const filename, const unsigned int linenr) const
 {
     ++fails_counter;
     errmsg << filename << ':' << linenr << ": Assertion succeeded. "
@@ -236,7 +236,7 @@ void TestFixture::assertThrow(const char *filename, unsigned int linenr) const
 
 }
 
-void TestFixture::assertThrowFail(const char *filename, unsigned int linenr) const
+void TestFixture::assertThrowFail(const char * const filename, const unsigned int linenr) const
 {
     ++fails_counter;
     errmsg << filename << ':' << linenr << ": Assertion failed. "
@@ -244,7 +244,7 @@ void TestFixture::assertThrowFail(const char *filename, unsigned int linenr) con
 
 }
 
-void TestFixture::assertNoThrowFail(const char *filename, unsigned int linenr) const
+void TestFixture::assertNoThrowFail(const char * const filename, const unsigned int linenr) const
 {
     ++fails_counter;
     errmsg << filename << ':' << linenr << ": Assertion failed. "
@@ -252,7 +252,7 @@ void TestFixture::assertNoThrowFail(const char *filename, unsigned int linenr) c
 
 }
 
-void TestFixture::complainMissingLib(const char* libname) const
+void TestFixture::complainMissingLib(const char * const libname) const
 {
     missingLibs.insert(libname);
 }

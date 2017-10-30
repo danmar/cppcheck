@@ -47,24 +47,24 @@ protected:
 
     bool prepareTest(const char testname[]);
 
-    void assert_(const char *filename, unsigned int linenr, bool condition) const;
+    void assert_(const char * const filename, const unsigned int linenr, const bool condition) const;
 
-    void assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
-    void assertEqualsWithoutLineNumbers(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
-    void assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
-    void assertEquals(const char *filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg = emptyString) const;
-    void assertEquals(const char *filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg = emptyString) const;
-    void assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg = emptyString) const;
-    void assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, double tolerance, const std::string &msg = emptyString) const;
+    void assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
+    void assertEqualsWithoutLineNumbers(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
+    void assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
+    void assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string &msg = emptyString) const;
+    void assertEquals(const char * const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg = emptyString) const;
+    void assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg = emptyString) const;
+    void assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg = emptyString) const;
 
-    void todoAssertEquals(const char *filename, unsigned int linenr, const std::string &wanted,
+    void todoAssertEquals(const char * const filename, const unsigned int linenr, const std::string &wanted,
                           const std::string &current, const std::string &actual) const;
-    void todoAssertEquals(const char *filename, unsigned int linenr, long long wanted,
-                          long long current, long long actual) const;
-    void assertThrow(const char *filename, unsigned int linenr) const;
-    void assertThrowFail(const char *filename, unsigned int linenr) const;
-    void assertNoThrowFail(const char *filename, unsigned int linenr) const;
-    void complainMissingLib(const char* libname) const;
+    void todoAssertEquals(const char * const filename, const unsigned int linenr, const long long wanted,
+                          const long long current, const long long actual) const;
+    void assertThrow(const char * const filename, const unsigned int linenr) const;
+    void assertThrowFail(const char * const filename, const unsigned int linenr) const;
+    void assertNoThrowFail(const char * const filename, const unsigned int linenr) const;
+    void complainMissingLib(const char * const libname) const;
     std::string deleteLineNumber(const std::string &message) const;
 
 
@@ -74,7 +74,7 @@ public:
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
     void run(const std::string &str);
 
-    explicit TestFixture(const char* _name);
+    explicit TestFixture(const char * const _name);
     virtual ~TestFixture() { }
 
     static std::size_t runTests(const options& args);
