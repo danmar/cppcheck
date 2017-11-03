@@ -61,6 +61,8 @@ private:
         TEST_CASE(lineNumber); // Ticket 3059
 
         TEST_CASE(ignore_declaration); // ignore declaration
+
+        TEST_CASE(operatorOverload);
     }
 
     void check(const char code[], Settings::PlatformType platform = Settings::Native) {
@@ -386,6 +388,69 @@ private:
               "void (*list[])(void) = {f}");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void operatorOverload() {
+        check("class A {\n"
+              "private:\n"
+              "    friend std::ostream & operator<<(std::ostream &, const A&);\n"
+              "};\n"
+              "std::ostream & operator<<(std::ostream &os, const A&) {\n"
+              "    os << \"This is class A\";\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A{};\n"
+              "A operator + (const A &, const A &){ return A(); }\n"
+              "A operator - (const A &, const A &){ return A(); }\n"
+              "A operator * (const A &, const A &){ return A(); }\n"
+              "A operator / (const A &, const A &){ return A(); }\n"
+              "A operator % (const A &, const A &){ return A(); }\n"
+              "A operator & (const A &, const A &){ return A(); }\n"
+              "A operator | (const A &, const A &){ return A(); }\n"
+              "A operator ~ (const A &){ return A(); }\n"
+              "A operator ! (const A &){ return A(); }\n"
+              "bool operator < (const A &, const A &){ return true; }\n"
+              "bool operator > (const A &, const A &){ return true; }\n"
+              "A operator += (const A &, const A &){ return A(); }\n"
+              "A operator -= (const A &, const A &){ return A(); }\n"
+              "A operator *= (const A &, const A &){ return A(); }\n"
+              "A operator /= (const A &, const A &){ return A(); }\n"
+              "A operator %= (const A &, const A &){ return A(); }\n"
+              "A operator &= (const A &, const A &){ return A(); }\n"
+              "A operator ^= (const A &, const A &){ return A(); }\n"
+              "A operator |= (const A &, const A &){ return A(); }\n"
+              "A operator << (const A &, const int){ return A(); }\n"
+              "A operator >> (const A &, const int){ return A(); }\n"
+              "A operator <<= (const A &, const int){ return A(); }\n"
+              "A operator >>= (const A &, const int){ return A(); }\n"
+              "bool operator == (const A &, const A &){ return true; }\n"
+              "bool operator != (const A &, const A &){ return true; }\n"
+              "bool operator <= (const A &, const A &){ return true; }\n"
+              "bool operator >= (const A &, const A &){ return true; }\n"
+              "A operator && (const A &, const int){ return A(); }\n"
+              "A operator || (const A &, const int){ return A(); }\n"
+              "A operator ++ (const A &, const int){ return A(); }\n"
+              "A operator ++ (const A &){ return A(); }\n"
+              "A operator -- (const A &, const int){ return A(); }\n"
+              "A operator -- (const A &){ return A(); }\n"
+              "A operator , (const A &, const A &){ return A(); }\n");
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("class A {\n"
+              "public:\n"
+              "    static void * operator new(std::size_t);\n"
+              "    static void * operator new[](std::size_t);\n"
+              "};\n"
+              "void * A::operator new(std::size_t s) {\n"
+              "    return malloc(s);\n"
+              "}\n"
+              "void * A::operator new[](std::size_t s) {\n"
+              "    return malloc(s);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestUnusedFunctions)

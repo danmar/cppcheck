@@ -235,6 +235,49 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 }
 
 
+static bool isOperatorFunction(const std::string & funcName) {
+    /* Operator functions are invalid function names for C, so no need to check
+     * this in here. As result the returned error function might be incorrect.
+     *
+     * List of valid operators can be found at:
+     * http://en.cppreference.com/w/cpp/language/operators
+     *
+     * Conversion functions must be a member function (at least for gcc), so no
+     * need to cover them for unused functions
+     *
+     * Literal functions are treated at a different place, so no check is done
+     * in here
+     */
+    const std::string operatorPrefix = "operator";
+    if (funcName.compare(0, operatorPrefix.length(), operatorPrefix) != 0) {
+        return false;
+    }
+
+    std::string opName = funcName.substr(operatorPrefix.length());
+
+    /* Operation overload + allocation/deallocation
+     *
+     * Don't treat the following, as they have to be a member function:
+     * '=', '()', '[]', '->', '->*'
+     */
+    const std::vector<std::string> knownOperators = {
+        "+", "-", "*", "/", "%",  "&", "|", "~", "!", "<", ">", "+=", "-=",
+        "*=", "/=", "%=", "^=", "&=", "|=", "<<", ">>", ">>=", "<<=", "==",
+        "!=", "<=", ">=", "&&", "||", "++", "--", ",",
+        // Allocation variants; space is delete within the simplification
+        "new", "new[]",
+        // Deallocation variants; space is delete within the simplification
+        "delete", "delete[]"
+    };
+    for (auto const & curOp : knownOperators) {
+        if (curOp == opName) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 
 
 void CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings)
@@ -248,10 +291,12 @@ void CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
             it->first == "if")
             continue;
         if (!func.usedSameFile) {
-            std::string filename;
-            if (func.filename != "+")
-                filename = func.filename;
-            unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
+            if (!isOperatorFunction(it->first)) {
+                std::string filename;
+                if (func.filename != "+")
+                    filename = func.filename;
+                unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
+            }
         } else if (! func.usedOtherFile) {
             /** @todo add error message "function is only used in <file> it can be static" */
             /*
@@ -382,8 +427,10 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
             continue;
 
         if (calls.find(functionName) == calls.end()) {
-            const Location &loc = decl->second;
-            unusedFunctionError(errorLogger, loc.fileName, loc.lineNumber, functionName);
+            if (!isOperatorFunction(functionName)) {
+                const Location &loc = decl->second;
+                unusedFunctionError(errorLogger, loc.fileName, loc.lineNumber, functionName);
+            }
         }
     }
 }
