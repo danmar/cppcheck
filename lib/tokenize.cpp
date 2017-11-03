@@ -1980,12 +1980,12 @@ void Tokenizer::simplifyRoundCurlyParentheses()
 void Tokenizer::simplifySQL()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "EXEC SQL")) {
+        if (Token::simpleMatch(tok, "__CPPCHECK_PRO_C_EXEC__ SQL")) {
             const Token *end = findSQLBlockEnd(tok);
             if (end == nullptr)
                 syntaxError(nullptr);
 
-            std::string instruction = tok->stringifyList(end);
+            const std::string instruction = tok->stringifyList(end);
             // delete all tokens until the embedded SQL block end
             Token::eraseTokens(tok, end);
 
@@ -9893,8 +9893,8 @@ const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart) const
     for (const Token *tok = tokSQLStart->tokAt(2); tok != nullptr; tok = tok->next()) {
         if (tokLastEnd == nullptr && tok->str() == ";")
             tokLastEnd = tok;
-        else if (tok->str() == "EXEC") {
-            if (Token::simpleMatch(tok->tokAt(-2), "END - EXEC ;"))
+        else if (tok->str() == "__CPPCHECK_PRO_C_EXEC__") {
+            if (Token::simpleMatch(tok->tokAt(-2), "END - __CPPCHECK_PRO_C_EXEC__ ;"))
                 return tok->next();
             return tokLastEnd;
         }

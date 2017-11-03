@@ -5782,19 +5782,19 @@ private:
     void simplifySQL() {
         // Oracle PRO*C extensions for inline SQL. Just replace the SQL with "asm()" to fix wrong error messages
         // ticket: #1959
-        ASSERT_EQUALS("asm ( \"\"EXEC SQL SELECT A FROM B\"\" ) ;", tokenizeAndStringify("EXEC SQL SELECT A FROM B;",false));
-        ASSERT_THROW(tokenizeAndStringify("EXEC SQL",false), InternalError);
+        ASSERT_EQUALS("asm ( \"\"__CPPCHECK_PRO_C_EXEC__ SQL SELECT A FROM B\"\" ) ;", tokenizeAndStringify("__CPPCHECK_PRO_C_EXEC__ SQL SELECT A FROM B;",false));
+        ASSERT_THROW(tokenizeAndStringify("__CPPCHECK_PRO_C_EXEC__ SQL",false), InternalError);
 
-        ASSERT_EQUALS("asm ( \"\"EXEC SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - EXEC\"\" ) ; asm ( \"\"EXEC SQL COMMIT\"\" ) ;",
-              tokenizeAndStringify("EXEC SQL EXECUTE BEGIN Proc1(A); END; END-EXEC; EXEC SQL COMMIT;",false));
-        ASSERT_EQUALS("asm ( \"\"EXEC SQL UPDATE A SET B = C\"\" ) ; asm ( \"\"EXEC SQL COMMIT\"\" ) ;",
-              tokenizeAndStringify("EXEC SQL UPDATE A SET B = C; EXEC SQL COMMIT;",false));
-        ASSERT_EQUALS("asm ( \"\"EXEC SQL COMMIT\"\" ) ; asm ( \"\"EXEC SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - EXEC\"\" ) ;",
-              tokenizeAndStringify("EXEC SQL COMMIT; EXEC SQL EXECUTE BEGIN Proc1(A); END; END-EXEC;",false));
+        ASSERT_EQUALS("asm ( \"\"__CPPCHECK_PRO_C_EXEC__ SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - __CPPCHECK_PRO_C_EXEC__\"\" ) ; asm ( \"\"__CPPCHECK_PRO_C_EXEC__ SQL COMMIT\"\" ) ;",
+              tokenizeAndStringify("__CPPCHECK_PRO_C_EXEC__ SQL EXECUTE BEGIN Proc1(A); END; END-__CPPCHECK_PRO_C_EXEC__; __CPPCHECK_PRO_C_EXEC__ SQL COMMIT;",false));
+        ASSERT_EQUALS("asm ( \"\"__CPPCHECK_PRO_C_EXEC__ SQL UPDATE A SET B = C\"\" ) ; asm ( \"\"__CPPCHECK_PRO_C_EXEC__ SQL COMMIT\"\" ) ;",
+              tokenizeAndStringify("__CPPCHECK_PRO_C_EXEC__ SQL UPDATE A SET B = C; __CPPCHECK_PRO_C_EXEC__ SQL COMMIT;",false));
+        ASSERT_EQUALS("asm ( \"\"__CPPCHECK_PRO_C_EXEC__ SQL COMMIT\"\" ) ; asm ( \"\"__CPPCHECK_PRO_C_EXEC__ SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - __CPPCHECK_PRO_C_EXEC__\"\" ) ;",
+              tokenizeAndStringify("__CPPCHECK_PRO_C_EXEC__ SQL COMMIT; __CPPCHECK_PRO_C_EXEC__ SQL EXECUTE BEGIN Proc1(A); END; END-__CPPCHECK_PRO_C_EXEC__;",false));
 
-        ASSERT_THROW(tokenizeAndStringify("int f(){ EXEC SQL } int a;",false), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("EXEC SQL int f(){",false), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("EXEC SQL END-EXEC int a;",false), InternalError);
+        ASSERT_THROW(tokenizeAndStringify("int f(){ __CPPCHECK_PRO_C_EXEC__ SQL } int a;",false), InternalError);
+        ASSERT_THROW(tokenizeAndStringify("__CPPCHECK_PRO_C_EXEC__ SQL int f(){",false), InternalError);
+        ASSERT_THROW(tokenizeAndStringify("__CPPCHECK_PRO_C_EXEC__ SQL END-__CPPCHECK_PRO_C_EXEC__ int a;",false), InternalError);
     }
 
     void simplifyCAlternativeTokens() {
