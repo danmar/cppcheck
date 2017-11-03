@@ -9889,22 +9889,19 @@ void Tokenizer::SimplifyNamelessRValueReferences()
 
 const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart) const
 {
-    const Token *tokSQLEnd = nullptr;
     const Token *tokLastEnd = nullptr;
-    for (const Token *tok = tokSQLStart->tokAt(2); tok != nullptr && tokSQLEnd == nullptr; tok = tok->next()) {
+    for (const Token *tok = tokSQLStart->tokAt(2); tok != nullptr; tok = tok->next()) {
         if (tokLastEnd == nullptr && tok->str() == ";")
             tokLastEnd = tok;
         else if (tok->str() == "EXEC") {
             if (Token::simpleMatch(tok->tokAt(-2), "END - EXEC ;"))
-                tokSQLEnd = tok->next();
-            else
-                tokSQLEnd = tokLastEnd;
-            break;
+                return tok->next();
+            return tokLastEnd;
         }
         else if (Token::Match(tok, "{|}|==|&&|!|&|^|<<|>>|++|+=|-=|/=|*=|>>=|<<=|->|::|~"))
             break; // We are obviously outside the SQL block
     }
 
-    return tokSQLEnd ? tokSQLEnd : tokLastEnd;
+    return tokLastEnd;
 }
 
