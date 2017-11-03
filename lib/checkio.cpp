@@ -1033,7 +1033,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 break;
                             }
                         }
-                    } else if (!scan && printWarning) {
+                    } else if (printWarning) {
                         std::string specifier;
                         bool done = false;
                         while (!done) {

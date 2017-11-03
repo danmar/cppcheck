@@ -265,7 +265,7 @@ void CheckStl::iterators()
 
             // bailout handling. Assume that the iterator becomes valid if we see else.
             // TODO: better handling
-            else if (tok2 && tok2->str() == "else") {
+            else if (tok2->str() == "else") {
                 validIterator = true;
             }
         }

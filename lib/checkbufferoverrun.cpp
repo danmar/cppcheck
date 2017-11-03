@@ -706,7 +706,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<const st
         }
 
         // memset, memcmp, memcpy, strncpy, fgets..
-        if (declarationId == 0 && size > 0 && Token::Match(tok, "%name% ( !!)")) {
+        if (declarationId == 0 && Token::Match(tok, "%name% ( !!)")) {
             std::list<const Token *> callstack;
             callstack.push_back(tok);
             const Token* tok2 = tok->tokAt(2);
