@@ -5783,8 +5783,18 @@ private:
         // Oracle PRO*C extensions for inline SQL. Just replace the SQL with "asm()" to fix wrong error messages
         // ticket: #1959
         ASSERT_EQUALS("asm ( \"\"EXEC SQL SELECT A FROM B\"\" ) ;", tokenizeAndStringify("EXEC SQL SELECT A FROM B;",false));
-        ASSERT_EQUALS("asm ( \"\"EXEC SQL\"\" ) ;", tokenizeAndStringify("EXEC SQL",false));
+        ASSERT_THROW(tokenizeAndStringify("EXEC SQL",false), InternalError);
 
+        ASSERT_EQUALS("asm ( \"\"EXEC SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - EXEC\"\" ) ; asm ( \"\"EXEC SQL COMMIT\"\" ) ;",
+              tokenizeAndStringify("EXEC SQL EXECUTE BEGIN Proc1(A); END; END-EXEC; EXEC SQL COMMIT;",false));
+        ASSERT_EQUALS("asm ( \"\"EXEC SQL UPDATE A SET B = C\"\" ) ; asm ( \"\"EXEC SQL COMMIT\"\" ) ;",
+              tokenizeAndStringify("EXEC SQL UPDATE A SET B = C; EXEC SQL COMMIT;",false));
+        ASSERT_EQUALS("asm ( \"\"EXEC SQL COMMIT\"\" ) ; asm ( \"\"EXEC SQL EXECUTE BEGIN Proc1 ( A ) ; END ; END - EXEC\"\" ) ;",
+              tokenizeAndStringify("EXEC SQL COMMIT; EXEC SQL EXECUTE BEGIN Proc1(A); END; END-EXEC;",false));
+
+        ASSERT_THROW(tokenizeAndStringify("int f(){ EXEC SQL } int a;",false), InternalError);
+        ASSERT_THROW(tokenizeAndStringify("EXEC SQL int f(){",false), InternalError);
+        ASSERT_THROW(tokenizeAndStringify("EXEC SQL END-EXEC int a;",false), InternalError);
     }
 
     void simplifyCAlternativeTokens() {
