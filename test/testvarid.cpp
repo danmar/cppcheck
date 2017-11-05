@@ -91,6 +91,7 @@ private:
         TEST_CASE(varid58); // #6638: for loop in for condition
         TEST_CASE(varid59); // #6696
         TEST_CASE(varid60); // #7267 cast '(unsigned x)10'
+        TEST_CASE(varid61); // #4988 inline function
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -1048,6 +1049,16 @@ private:
     void varid60() { // #7267 - cast
         ASSERT_EQUALS("1: a = ( x y ) 10 ;\n",
                       tokenize("a=(x y)10;", false));
+    }
+
+    void varid61() {
+        const char code[] = "void foo(int b) {\n"
+                            "  void bar(int a, int b) {}\n"
+                            "}";
+        const char expected[] = "1: void foo ( int b@1 ) {\n"
+                                "2: void bar ( int a@2 , int b@3 ) { }\n"
+                                "3: }\n";
+        ASSERT_EQUALS(expected, tokenize(code, false));
     }
 
     void varid_cpp_keywords_in_c_code() {

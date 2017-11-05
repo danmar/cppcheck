@@ -2598,6 +2598,7 @@ void Tokenizer::setVarIdPass1()
     scopeStack.push(VarIdScopeInfo());
     std::stack<const Token *> functionDeclEndStack;
     bool initlist = false;
+    bool inlineFunction = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!functionDeclEndStack.empty() && tok == functionDeclEndStack.top()) {
             functionDeclEndStack.pop();
@@ -2625,6 +2626,8 @@ void Tokenizer::setVarIdPass1()
                 scopeInfo.push(variableId);
             }
         } else if (Token::Match(tok, "{|}")) {
+            inlineFunction = false;
+
             const Token * const startToken = (tok->str() == "{") ? tok : tok->link();
 
             // parse anonymous unions as part of the current scope
@@ -2682,7 +2685,7 @@ void Tokenizer::setVarIdPass1()
              Token::Match(tok, "[;{}]") ||
              (tok->str() == "(" && isFunctionHead(tok,"{")) ||
              (tok->str() == "(" && !scopeStack.top().isExecutable && isFunctionHead(tok,";:")) ||
-             (tok->str() == "," && !scopeStack.top().isExecutable) ||
+             (tok->str() == "," && (!scopeStack.top().isExecutable || inlineFunction)) ||
              (tok->isName() && endsWith(tok->str(), ':')))) {
 
             // No variable declarations in sizeof
@@ -2717,6 +2720,9 @@ void Tokenizer::setVarIdPass1()
                 syntaxError(errTok);
             }
             if (decl) {
+                if (tok->str() == "(" && isFunctionHead(tok,"{") && scopeStack.top().isExecutable)
+                    inlineFunction = true;
+
                 const Token* prev2 = tok2->previous();
                 if (Token::Match(prev2, "%type% [;[=,)]") && tok2->previous()->str() != "const")
                     ;
