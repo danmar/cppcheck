@@ -80,6 +80,8 @@
           </Directory>
           <Directory Id='PtfsFolder' Name='platforms'>
             <Component Id='OptionalPtfs' Guid='$(var.optionalPtfsGUID)'>
+              <File Id='avr8.xml' Name='avr8.xml' Source='$(var.PtfsDir)\avr8.xml' />
+              <File Id='msp430_eabi_large_datamodel.xml' Name='msp430_eabi_large_datamodel.xml' Source='$(var.PtfsDir)\msp430_eabi_large_datamodel.xml' />
               <File Id='unix32unsigned.xml' Name='unix32-unsigned.xml' Source='$(var.PtfsDir)\unix32-unsigned.xml' />
               <File Id='unix64unsigned.xml' Name='unix64-unsigned.xml' Source='$(var.PtfsDir)\unix64-unsigned.xml' />
             </Component>
