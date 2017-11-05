@@ -314,9 +314,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             }
             tok = tok->next();
 
-            // * / &
-            while (Token::Match(tok, "[*&]"))
-                tok = tok->next();
+            if (Token::simpleMatch(tok,"("))
+                tok = tok->link()->next();
 
             if (!tok)
                 return 0;

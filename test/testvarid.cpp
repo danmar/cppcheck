@@ -99,6 +99,7 @@ private:
         TEST_CASE(varidFunctionCall4);  // ticket #3280
         TEST_CASE(varidFunctionCall5);
         TEST_CASE(varidStl);
+        TEST_CASE(varidStl2);
         TEST_CASE(varid_newauto);       // not declaration: new const auto(0);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -1153,6 +1154,14 @@ private:
                                 "7: static std :: vector < CvsProcess * > ex1@7 ;\n"
                                 "8: extern std :: vector < CvsProcess * > ex2@8 ;\n"
                                 "9: std :: map < int , 1 > m@9 ;\n";
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varidStl2() {
+        const std::string actual = tokenize("std::bitset<static_cast<int>(2)> x;");
+
+        const char expected[] = "1: std :: bitset < static_cast < int > ( 2 ) > x@1 ;\n";
 
         ASSERT_EQUALS(expected, actual);
     }
