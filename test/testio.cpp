@@ -957,6 +957,7 @@ private:
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%u", "unsigned int", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%u", "unsigned int", "std::size_t", "unsigned long", "unsigned long long");
@@ -996,6 +997,7 @@ private:
         TEST_SCANF_WARN_AKA("%lu","unsigned long","size_t","unsigned long","unsigned long long");
         TEST_SCANF_WARN_AKA("%lu","unsigned long","ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%lu","unsigned long","ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA_WIN64("%lu","unsigned long","unsigned ptrdiff_t", "unsigned long long");
         TEST_SCANF_WARN_AKA("%lu","unsigned long","intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%lu","unsigned long","uintmax_t","unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%lu","unsigned long","std::size_t","unsigned long", "unsigned long long");
@@ -1040,6 +1042,7 @@ private:
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA_WIN32("%llu","unsigned long long","unsigned ptrdiff_t", "unsigned long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","std::size_t", "unsigned long", "unsigned long long");
@@ -1083,6 +1086,7 @@ private:
         TEST_SCANF_WARN_AKA("%hu", "unsigned short", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%hu", "unsigned short", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%hu", "unsigned short", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hu", "unsigned short", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%hu", "unsigned short", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%hu", "unsigned short", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%hu", "unsigned short", "std::size_t", "unsigned long", "unsigned long long");
@@ -1131,6 +1135,7 @@ private:
         TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%hhu", "unsigned char", "std::size_t", "unsigned long", "unsigned long long");
@@ -1174,6 +1179,7 @@ private:
         TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA_WIN32("%Lu", "unsigned long long", "unsigned ptrdiff_t", "unsigned long");
         TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%Lu", "unsigned long long", "std::size_t", "unsigned long", "unsigned long long");
@@ -1248,6 +1254,7 @@ private:
         TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_NOWARN("%ju", "uintmax_t", "uintmax_t");
         TEST_SCANF_WARN_AKA("%ju", "uintmax_t", "std::size_t", "unsigned long", "unsigned long long");
@@ -1332,6 +1339,7 @@ private:
         TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_NOWARN("%tu", "unsigned ptrdiff_t", "unsigned ptrdiff_t");
         TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%tu", "unsigned ptrdiff_t", "std::size_t", "unsigned long", "unsigned long long");
@@ -1372,6 +1380,7 @@ private:
         TEST_SCANF_WARN_AKA("%Id", "ptrdiff_t", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%Id", "ptrdiff_t", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_NOWARN("%Id", "ptrdiff_t", "ptrdiff_t");
+        TEST_SCANF_WARN_AKA("%Id", "ptrdiff_t", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%Id", "ptrdiff_t", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%Id", "ptrdiff_t", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%Id", "ptrdiff_t", "std::size_t", "unsigned long", "unsigned long long");
@@ -1401,6 +1410,7 @@ private:
         TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "size_t", "unsigned long");
         TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "unsigned ptrdiff_t", "unsigned long");
         TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "uintmax_t", "unsigned long");
         TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "std::size_t", "unsigned long");
@@ -1448,6 +1458,7 @@ private:
         TEST_SCANF_WARN_AKA("%I32u", "unsigned __int32", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%I32u", "unsigned __int32", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%I32u", "unsigned __int32", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I32u", "unsigned __int32", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%I32u", "unsigned __int32", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%I32u", "unsigned __int32", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%I32u", "unsigned __int32", "std::size_t", "unsigned long", "unsigned long long");
@@ -1474,6 +1485,7 @@ private:
         TEST_SCANF_WARN_AKA("%I32x", "unsigned __int32", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%I32x", "unsigned __int32", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%I32x", "unsigned __int32", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%I32x", "unsigned __int32", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%I32x", "unsigned __int32", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%I32x", "unsigned __int32", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%I32x", "unsigned __int32", "std::size_t", "unsigned long", "unsigned long long");
@@ -1508,6 +1520,7 @@ private:
         TEST_SCANF_WARN_AKA("%d", "int", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%d", "int", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%d", "int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%d", "int", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%d", "int", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%d", "int", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%d", "int", "std::size_t", "unsigned long", "unsigned long long");
@@ -1547,6 +1560,7 @@ private:
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%x", "unsigned int", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%x", "unsigned int", "std::size_t", "unsigned long", "unsigned long long");
@@ -1586,6 +1600,7 @@ private:
         TEST_SCANF_WARN_AKA("%f", "float", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%f", "float", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%f", "float", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%f", "float", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%f", "float", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%f", "float", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%f", "float", "std::size_t", "unsigned long", "unsigned long long");
@@ -1625,6 +1640,7 @@ private:
         TEST_SCANF_WARN_AKA("%lf", "double", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%lf", "double", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%lf", "double", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%lf", "double", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%lf", "double", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%lf", "double", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%lf", "double", "std::size_t", "unsigned long", "unsigned long long");
@@ -1652,6 +1668,7 @@ private:
         TEST_SCANF_WARN_AKA("%Lf", "long double", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%Lf", "long double", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%Lf", "long double", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%Lf", "long double", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%Lf", "long double", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%Lf", "long double", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%Lf", "long double", "std::size_t", "unsigned long", "unsigned long long");
@@ -1679,6 +1696,7 @@ private:
         TEST_SCANF_WARN_AKA("%n", "int", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%n", "int", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%n", "int", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%n", "int", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%n", "int", "intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%n", "int", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%n", "int", "std::size_t", "unsigned long", "unsigned long long");
