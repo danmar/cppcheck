@@ -2730,6 +2730,19 @@ private:
                "}";
         values = tokenValues(code, "n ==");
         ASSERT_EQUALS(true, values.size() != 1U || !values.front().isUninitValue());
+
+        // #8233
+        code = "void foo() {\n"
+               "  int x;\n"
+               "  int y = 1;\n"
+               "  if (y>1)\n"
+               "    x = 1;\n"
+               "  else\n"
+               "    x = 1;\n"
+               "  if (x>1) {}\n"
+               "}";
+        values = tokenValues(code, "x >");
+        ASSERT_EQUALS(true, values.size() == 1U && values.front().isIntValue());
     }
 };
 

@@ -1595,7 +1595,7 @@ static bool valueFlowForward(Token * const               startToken,
                                  errorLogger,
                                  settings);
 
-                if (isVariableChanged(startToken1, startToken1->link(), varid, var->isGlobal(), settings)) {
+                if (!condAlwaysFalse && isVariableChanged(startToken1, startToken1->link(), varid, var->isGlobal(), settings)) {
                     removeValues(values, truevalues);
 
                     std::list<ValueFlow::Value>::iterator it;
@@ -1625,6 +1625,14 @@ static bool valueFlowForward(Token * const               startToken,
                                      tokenlist,
                                      errorLogger,
                                      settings);
+
+                    if (!condAlwaysTrue && isVariableChanged(startTokenElse, startTokenElse->link(), varid, var->isGlobal(), settings)) {
+                        removeValues(values, falsevalues);
+
+                        std::list<ValueFlow::Value>::iterator it;
+                        for (it = values.begin(); it != values.end(); ++it)
+                            it->changeKnownToPossible();
+                    }
 
                     // goto '}'
                     tok2 = startTokenElse->link();
