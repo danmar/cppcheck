@@ -413,8 +413,16 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
 static void loadVisualStudioProperties(const std::string &props, std::map<std::string,std::string,cppcheck::stricmp> *variables, std::string *includePath, const std::string &additionalIncludeDirectories, std::list<ItemDefinitionGroup> &itemDefinitionGroupList)
 {
     std::string filename(props);
+	// variables cant be resolved
     if (!simplifyPathWithVariables(filename, *variables))
         return;
+
+	// prepend project dir (if it exists) to transform relative paths into absolute ones
+	if (!Path::isAbsolute(filename) && variables->count("ProjectDir") > 0)
+	{
+		filename = Path::getAbsoluteFilePath(variables->at("ProjectDir") + filename);
+	}
+
     tinyxml2::XMLDocument doc;
     if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_SUCCESS)
         return;
