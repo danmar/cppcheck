@@ -966,10 +966,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                     } else {
                                         switch (specifier[0]) {
                                         case 'l':
-                                            if (specifier[1] == 'l') {
-                                                if (argInfo.typeToken->str() != "double" || !argInfo.typeToken->isLong())
-                                                    invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                            } else if (argInfo.typeToken->str() != "double" || argInfo.typeToken->isLong())
+                                            if (argInfo.typeToken->str() != "double" || argInfo.typeToken->isLong())
                                                 invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
                                             break;
                                         case 'L':
