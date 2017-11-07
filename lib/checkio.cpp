@@ -784,7 +784,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                             break;
                                         default:
-                                            if (argInfo.typeToken->str() != "int" || !argInfo.typeToken->isUnsigned())
+                                            if (argInfo.typeToken->str() != "int")
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                             else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
                                                      typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
