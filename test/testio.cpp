@@ -1502,6 +1502,7 @@ private:
         TEST_SCANF_WARN("%Id", "ptrdiff_t", "float");
         TEST_SCANF_WARN("%Id", "ptrdiff_t", "double");
         TEST_SCANF_WARN("%Id", "ptrdiff_t", "long double");
+        TEST_SCANF_WARN("%Id", "ptrdiff_t", "void *");
         TEST_SCANF_WARN_AKA("%Id", "ptrdiff_t", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%Id", "ptrdiff_t", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_NOWARN("%Id", "ptrdiff_t", "ptrdiff_t");
@@ -1532,6 +1533,7 @@ private:
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "float");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "double");
         TEST_SCANF_WARN("%I64u", "unsigned __int64", "long double");
+        TEST_SCANF_WARN("%I64u", "unsigned __int64", "void *");
         TEST_SCANF_WARN_AKA_WIN32("%I64u", "unsigned __int64", "size_t", "unsigned long");
         TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%I64u", "unsigned __int64", "ptrdiff_t", "signed long", "signed long long");
@@ -1580,6 +1582,7 @@ private:
         TEST_SCANF_WARN("%I32u", "unsigned __int32", "float");
         TEST_SCANF_WARN("%I32u", "unsigned __int32", "double");
         TEST_SCANF_WARN("%I32u", "unsigned __int32", "long double");
+        TEST_SCANF_WARN("%I32u", "unsigned __int32", "void *");
         TEST_SCANF_WARN_AKA("%I32u", "unsigned __int32", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%I32u", "unsigned __int32", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%I32u", "unsigned __int32", "ptrdiff_t", "signed long", "signed long long");
@@ -1607,6 +1610,7 @@ private:
         TEST_SCANF_WARN("%I32x", "unsigned __int32", "float");
         TEST_SCANF_WARN("%I32x", "unsigned __int32", "double");
         TEST_SCANF_WARN("%I32x", "unsigned __int32", "long double");
+        TEST_SCANF_WARN("%I32x", "unsigned __int32", "void *");
         TEST_SCANF_WARN_AKA("%I32x", "unsigned __int32", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%I32x", "unsigned __int32", "ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%I32x", "unsigned __int32", "ptrdiff_t", "signed long", "signed long long");
