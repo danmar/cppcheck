@@ -1060,11 +1060,11 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 specifier += *i;
                                 if (argInfo.typeToken->tokType() == Token::eString)
                                     invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                else if (argInfo.isKnownType()) {
-                                    if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                        // use %p on pointers and arrays
-                                        invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                    } else if (!Token::Match(argInfo.typeToken, "bool|short|long|int|char|wchar_t")) {
+                                else if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                    // use %p on pointers and arrays
+                                    invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
+                                } else if (argInfo.isKnownType()) {
+                                    if (!Token::Match(argInfo.typeToken, "bool|short|long|int|char|wchar_t")) {
                                         if (!(!argInfo.isArrayOrPointer() && argInfo.element))
                                             invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                     } else {
@@ -1118,9 +1118,6 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             break;
                                         }
                                     }
-                                } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                    // use %p on pointers and arrays
-                                    invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                 }
                                 done = true;
                                 break;
@@ -1129,11 +1126,11 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 specifier += *i;
                                 if (argInfo.typeToken->tokType() == Token::eString) {
                                     invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
+                                } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                    // use %p on pointers and arrays
+                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                 } else if (argInfo.isKnownType()) {
-                                    if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                        // use %p on pointers and arrays
-                                        invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                    } else if (argInfo.typeToken->isUnsigned() && !Token::Match(argInfo.typeToken, "char|short")) {
+                                    if (argInfo.typeToken->isUnsigned() && !Token::Match(argInfo.typeToken, "char|short")) {
                                         if (!(!argInfo.isArrayOrPointer() && argInfo.element))
                                             invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                     } else if (!Token::Match(argInfo.typeToken, "bool|char|short|int|long")) {
@@ -1196,9 +1193,6 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             break;
                                         }
                                     }
-                                } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                    // use %p on pointers and arrays
-                                    invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                 }
                                 done = true;
                                 break;
@@ -1206,11 +1200,11 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 specifier += *i;
                                 if (argInfo.typeToken->tokType() == Token::eString) {
                                     invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                    // use %p on pointers and arrays
+                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                 } else if (argInfo.isKnownType()) {
-                                    if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                        // use %p on pointers and arrays
-                                        invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                    } else if (!argInfo.typeToken->isUnsigned() && !Token::Match(argInfo.typeToken, "bool|_Bool")) {
+                                    if (!argInfo.typeToken->isUnsigned() && !Token::Match(argInfo.typeToken, "bool|_Bool")) {
                                         if (!(!argInfo.isArrayOrPointer() && argInfo.element))
                                             invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                     } else if (!Token::Match(argInfo.typeToken, "bool|char|short|long|int")) {
@@ -1269,8 +1263,6 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             break;
                                         }
                                     }
-                                } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                 }
                                 done = true;
                                 break;
@@ -1289,19 +1281,16 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 specifier += *i;
                                 if (argInfo.typeToken->tokType() == Token::eString)
                                     invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                else if (argInfo.isKnownType()) {
-                                    if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                        // use %p on pointers and arrays
-                                        invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                    } else if (!Token::Match(argInfo.typeToken, "float|double")) {
+                                else if (argInfo.isArrayOrPointer() && !argInfo.element) {
+                                    // use %p on pointers and arrays
+                                    invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
+                                } else if (argInfo.isKnownType()) {
+                                    if (!Token::Match(argInfo.typeToken, "float|double")) {
                                         if (!(!argInfo.isArrayOrPointer() && argInfo.element))
                                             invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
                                     } else if ((specifier[0] == 'L' && (!argInfo.typeToken->isLong() || argInfo.typeToken->str() != "double")) ||
                                                (specifier[0] != 'L' && argInfo.typeToken->isLong()))
                                         invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
-                                } else if (argInfo.isArrayOrPointer() && !argInfo.element) {
-                                    // use %p on pointers and arrays
-                                    invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
                                 }
                                 done = true;
                                 break;
