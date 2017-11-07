@@ -4,7 +4,7 @@ README of the Y2038 cppcheck addon
 Contents
 
 1. What is Y2038?
-2. What is the Y2038 ccpcheck addon?
+2. What is the Y2038 cppcheck addon?
 3. How does the Y2038 cppcheck addon work?
 4. How to use the Y2038 cppcheck addon
 
@@ -15,7 +15,7 @@ Contents
 In a few words:
 
 In Linux, the current date and time is kept as the number of seconds elapsed
-since the Unich epoch, that is, since January 1st, 1970 at 00:00:00 GMT.
+since the Unix epoch, that is, since January 1st, 1970 at 00:00:00 GMT.
 
 Most of the time, this representation is stored as a 32-bit signed quantity.
 
@@ -118,7 +118,7 @@ you can run cppcheck on these files as on any others:
 	cppcheck --dump addons/y2038/test/y2038-*.c
 	y2038.py addons/y2038/test/y2038-*.dump
 
-If you havve not installed cppcheck yet, you will have to run these
+If you have not installed cppcheck yet, you will have to run these
 commands from the root of the cppcheck repository:
 
     make
