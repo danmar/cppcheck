@@ -2311,6 +2311,17 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (portability) %zd in format string (no. 1) requires 'ssize_t' but the argument type is 'std::size_t {aka unsigned long long}'.\n"
                       "[test.cpp:3]: (portability) %tu in format string (no. 1) requires 'unsigned ptrdiff_t' but the argument type is 'std::ptrdiff_t {aka signed long long}'.\n", errout.str());
 
+        check("void foo(size_t s, uintmax_t um) {\n"
+              "  printf(\"%lu\", s);\n"
+              "  printf(\"%lu\", um);\n"
+              "  printf(\"%llu\", s);\n"
+              "  printf(\"%llu\", um);\n"
+              "}", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %lu in format string (no. 1) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:3]: (portability) %lu in format string (no. 1) requires 'unsigned long' but the argument type is 'uintmax_t {aka unsigned long long}'.\n"
+                      "[test.cpp:4]: (portability) %llu in format string (no. 1) requires 'unsigned long long' but the argument type is 'size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:5]: (portability) %llu in format string (no. 1) requires 'unsigned long long' but the argument type is 'uintmax_t {aka unsigned long long}'.\n", errout.str());
+
         check("void foo(unsigned int i) {\n"
               "  printf(\"%ld\", i);\n"
               "  printf(\"%lld\", i);\n"
