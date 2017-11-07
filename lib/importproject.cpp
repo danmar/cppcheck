@@ -419,9 +419,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
 
 	// prepend project dir (if it exists) to transform relative paths into absolute ones
 	if (!Path::isAbsolute(filename) && variables->count("ProjectDir") > 0)
-	{
 		filename = Path::getAbsoluteFilePath(variables->at("ProjectDir") + filename);
-	}
 
     tinyxml2::XMLDocument doc;
     if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_SUCCESS)
