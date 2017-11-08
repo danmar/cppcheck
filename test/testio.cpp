@@ -1075,7 +1075,7 @@ private:
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","ptrdiff_t", "signed long", "signed long long");
-        TEST_SCANF_WARN_AKA_WIN32("%llu","unsigned long long","unsigned ptrdiff_t", "unsigned long");
+        TEST_SCANF_WARN_AKA("%llu","unsigned long long","unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","uintmax_t", "unsigned long", "unsigned long long");
         TEST_SCANF_WARN_AKA("%llu","unsigned long long","intptr_t", "signed long", "signed long long");

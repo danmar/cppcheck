@@ -898,6 +898,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                     invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                 else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                         typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
                                                          argInfo.typeToken->originalName() == "uintmax_t")
                                                     invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                             } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
