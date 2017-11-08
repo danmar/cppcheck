@@ -763,8 +763,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             } else if (specifier.find("I32") != std::string::npos) {
                                                 if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
                                                     invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                            } else if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") &&
-                                                       !typesMatch(argInfo.typeToken->originalName(), "size_t"))
+                                            } else if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                             break;
                                         case 'j':
