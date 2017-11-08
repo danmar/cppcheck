@@ -2858,15 +2858,82 @@ void Tokenizer::setVarIdPass1()
     }
 }
 
+namespace {
+    struct Member {
+        Member(const std::list<std::string> &s, Token *t) : scope(s), tok(t) {}
+        std::list<std::string> scope;
+        Token *tok;
+    };
+
+    struct ScopeInfo2 {
+        ScopeInfo2(const std::string &name_, const Token *classEnd_) : name(name_), classEnd(classEnd_) {}
+        const std::string name;
+        const Token * const classEnd;
+    };
+}
+
+static std::string getScopeName(const std::list<ScopeInfo2> &scopeInfo)
+{
+    std::string ret;
+    for (std::list<ScopeInfo2>::const_iterator it = scopeInfo.begin(); it != scopeInfo.end(); ++it)
+        ret += (ret.empty() ? "" : " :: ") + (it->name);
+    return ret;
+}
+
+static Token * matchFunctionName(const Member &func, const std::list<ScopeInfo2> &scopeInfo)
+{
+    if (scopeInfo.empty())
+        return nullptr;
+    std::list<std::string>::const_iterator funcScopeIt = func.scope.begin();
+    Token *tok2 = func.tok;
+    for (std::list<ScopeInfo2>::const_iterator it = scopeInfo.begin(); tok2 && it != scopeInfo.end(); ++it) {
+        if (funcScopeIt != func.scope.end()) {
+            if (it->name != *funcScopeIt)
+                return nullptr;
+            funcScopeIt++;
+            continue;
+        }
+
+        if (!Token::Match(tok2, "%name% ::|<"))
+            return nullptr;
+        if (tok2->str() != it->name)
+            return nullptr;
+        if (tok2->next()->str() == "<") {
+            tok2 = tok2->next()->findClosingBracket();
+            if (!Token::simpleMatch(tok2, "> ::"))
+                return nullptr;
+        }
+        tok2 = tok2->tokAt(2);
+    }
+    return (funcScopeIt == func.scope.end() && Token::Match(tok2, "~| %name% (")) ? tok2 : nullptr;
+}
+
 void Tokenizer::setVarIdPass2()
 {
     std::map<unsigned int, std::map<std::string, unsigned int> > structMembers;
 
     // Member functions and variables in this source
-    std::list<Token *> allMemberFunctions;
-    std::list<Token *> allMemberVars;
+    std::list<Member> allMemberFunctions;
+    std::list<Member> allMemberVars;
     if (!isC()) {
+        std::map<const Token *, std::string> endOfScope;
+        std::list<std::string> scope;
         for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
+            if (!tok2->previous() || Token::Match(tok2->previous(), "[;{}]")) {
+                if (Token::Match(tok2, "using namespace %name% ;"))
+                    scope.push_back(tok2->strAt(2));
+                else if (Token::Match(tok2, "namespace %name% {")) {
+                    scope.push_back(tok2->strAt(1));
+                    endOfScope[tok2->linkAt(2)] = tok2->strAt(1);
+                }
+            }
+
+            if (tok2->str() == "}") {
+                std::map<const Token *, std::string>::iterator it = endOfScope.find(tok2);
+                if (it != endOfScope.end())
+                    scope.remove(it->second);
+            }
+
             const Token* tok3 = nullptr;
             if (Token::Match(tok2, "%name% :: ~| %name%"))
                 tok3 = tok2->next();
@@ -2885,28 +2952,41 @@ void Tokenizer::setVarIdPass2()
                 syntaxError(tok2);
             const std::string& str3 = tok3->str();
             if (str3 == "(")
-                allMemberFunctions.push_back(tok2);
+                allMemberFunctions.push_back(Member(scope, tok2));
             else if (str3 != "::" && tok2->strAt(-1) != "::") // Support only one depth
-                allMemberVars.push_back(tok2);
+                allMemberVars.push_back(Member(scope, tok2));
         }
     }
+
+    std::list<ScopeInfo2> scopeInfo;
 
     // class members..
     std::map<std::string, std::map<std::string, unsigned int> > varsByClass;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        while (tok->str() == "}" && !scopeInfo.empty() && tok == scopeInfo.back().classEnd)
+            scopeInfo.pop_back();
+
         if (!Token::Match(tok, "namespace|class|struct %name% {|:|::"))
             continue;
 
-        std::string classname(tok->next()->str());
+        const std::string &scopeName(getScopeName(scopeInfo));
+        const std::string scopeName2(scopeName.empty() ? std::string() : (scopeName + " :: "));
+
+        std::list<const Token *> classnameTokens;
+        classnameTokens.push_back(tok->next());
         const Token* tokStart = tok->tokAt(2);
         unsigned int nestedCount = 1;
         while (Token::Match(tokStart, ":: %name%")) {
-            classname += " :: " + tokStart->strAt(1);
+            classnameTokens.push_back(tokStart->next());
             tokStart = tokStart->tokAt(2);
             nestedCount++;
         }
 
-        std::map<std::string, unsigned int>& thisClassVars = varsByClass[classname];
+        std::string classname;
+        for (std::list<const Token *>::const_iterator it = classnameTokens.begin(); it != classnameTokens.end(); ++it)
+            classname += (classname.empty() ? "" : " :: ") + (*it)->str();
+
+        std::map<std::string, unsigned int>& thisClassVars = varsByClass[scopeName2 + classname];
         while (tokStart && tokStart->str() != "{") {
             if (Token::Match(tokStart, "public|private|protected %name%"))
                 tokStart = tokStart->next();
@@ -2916,14 +2996,18 @@ void Tokenizer::setVarIdPass2()
             }
             tokStart = tokStart->next();
         }
+
         // What member variables are there in this class?
         if (tokStart) {
+            for (std::list<const Token *>::const_iterator it = classnameTokens.begin(); it != classnameTokens.end(); ++it)
+                scopeInfo.push_back(ScopeInfo2((*it)->str(), tokStart->link()));
+
             for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
                 // skip parentheses..
                 if (tok2->link()) {
                     if (tok2->str() == "{") {
                         if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
-                            setVarIdClassFunction(classname, tok2, tok2->link(), thisClassVars, structMembers, &_varId);
+                            setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, &_varId);
                         tok2 = tok2->link();
                     } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(")
                         tok2 = tok2->link();
@@ -2940,11 +3024,11 @@ void Tokenizer::setVarIdPass2()
             continue;
 
         // Member variables
-        for (std::list<Token *>::iterator func = allMemberVars.begin(); func != allMemberVars.end(); ++func) {
-            if (!Token::simpleMatch(*func, classname.c_str()))
+        for (std::list<Member>::iterator func = allMemberVars.begin(); func != allMemberVars.end(); ++func) {
+            if (!Token::simpleMatch(func->tok, classname.c_str()))
                 continue;
 
-            Token *tok2 = *func;
+            Token *tok2 = func->tok;
             tok2 = tok2->tokAt(2);
             tok2->varId(thisClassVars[tok2->str()]);
         }
@@ -2953,23 +3037,11 @@ void Tokenizer::setVarIdPass2()
             continue;
 
         // Set variable ids in member functions for this class..
-        for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
-            Token *tok2 = *func;
-
-            if (!Token::Match(tok2, classname.c_str())) {
-                if (tok2->str() != classname) // #8031: Both could be "A < B >" and if so, one must not bail out
-                    continue;
-            }
-
-            if (Token::Match(tok2, "%name% <"))
-                tok2 = tok2->next()->findClosingBracket();
-
-            // Found a class function..
-            if (!Token::Match(tok2, "%any% :: ~| %name%"))
+        for (std::list<Member>::const_iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
+            Token *tok2 = matchFunctionName(*func, scopeInfo);
+            if (!tok2)
                 continue;
 
-            // Goto the end parentheses..
-            tok2 = tok2->tokAt(nestedCount*2);
             if (tok2->str() == "~")
                 tok2 = tok2->linkAt(2);
             else

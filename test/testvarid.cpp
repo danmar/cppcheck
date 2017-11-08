@@ -126,7 +126,8 @@ private:
         TEST_CASE(varid_in_class18);    // #7127
         TEST_CASE(varid_in_class19);
         TEST_CASE(varid_in_class20);    // #7267
-        TEST_CASE(varid_namespace);     // #7272
+        TEST_CASE(varid_namespace_1);   // #7272
+        TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_initListWithScope);
@@ -1764,7 +1765,7 @@ private:
                       "8: template < class C > cacheEntry < C > :: cacheEntry ( ) : m_key@1 ( ) { }\n", tokenize(code, false, "test.cpp"));
     }
 
-    void varid_namespace() { // #7272
+    void varid_namespace_1() { // #7272
         const char code[] = "namespace Blah {\n"
                             "  struct foo { int x;};\n"
                             "  struct bar {\n"
@@ -1779,6 +1780,25 @@ private:
                       "5: union { char y@3 ; } ;\n"
                       "6: } ;\n"
                       "7: }\n", tokenize(code, false, "test.cpp"));
+    }
+
+    void varid_namespace_2() { // #7000
+        const char code[] = "namespace Ui {\n"
+                            "    class C { int X; };\n"  // X@1
+                            "}\n"
+                            "\n"
+                            "class C {\n"
+                            "   void dostuff();\n"
+                            "   int X;\n"  // X@2
+                            "};\n"
+                            "\n"
+                            "void C::dostuff() {\n"
+                            "   X = 0;\n"  // X@2
+                            "}";
+
+        const std::string actual = tokenize(code, false, "test.cpp");
+
+        ASSERT(actual.find("X@2 = 0") != std::string::npos);
     }
 
     void varid_initList() {
