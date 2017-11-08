@@ -1464,7 +1464,7 @@ private:
         TEST_SCANF_WARN("%zd", "ssize_t", "void *");
         TEST_SCANF_WARN_AKA("%zd", "ssize_t", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_NOWARN("%zd", "ssize_t", "ssize_t");
-        //TEST_SCANF_WARN_AKA("%zd", "ssize_t", "ptrdiff_t", "signed long", "signed long long");
+        TEST_SCANF_WARN_AKA("%zd", "ssize_t", "ptrdiff_t", "signed long", "signed long long");
 
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "bool");
         TEST_SCANF_WARN("%tu", "unsigned ptrdiff_t", "char");
@@ -1983,8 +1983,10 @@ private:
                                 "    scanf(\"%zd\", &s2);\n"
                                 "    scanf(\"%zd\", &s3);\n"
                                 "}\n";
-            const char* result("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ssize_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n");
-            const char* result_win64("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ssize_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n");
+            const char* result("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ssize_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
+                               "[test.cpp:6]: (portability) %zd in format string (no. 1) requires 'ssize_t *' but the argument type is 'ptrdiff_t * {aka signed long *}'.\n");
+            const char* result_win64("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ssize_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
+                                     "[test.cpp:6]: (portability) %zd in format string (no. 1) requires 'ssize_t *' but the argument type is 'ptrdiff_t * {aka signed long long *}'.\n");
 
             check(code, false, true, Settings::Unix32);
             ASSERT_EQUALS(result, errout.str());

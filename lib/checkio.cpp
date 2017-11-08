@@ -847,8 +847,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                             break;
                                         case 'z':
-                                            if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") &&
-                                                !typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "ssize_t"))
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                             break;
                                         case 't':
