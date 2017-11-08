@@ -1462,7 +1462,7 @@ private:
         TEST_SCANF_WARN("%zd", "ssize_t", "bool");
         TEST_SCANF_WARN("%zd", "ssize_t", "signed short");
         TEST_SCANF_WARN("%zd", "ssize_t", "void *");
-        //TEST_SCANF_WARN("%zd", "ssize_t", "size_t");
+        TEST_SCANF_WARN_AKA("%zd", "ssize_t", "size_t", "unsigned long", "unsigned long long");
         TEST_SCANF_NOWARN("%zd", "ssize_t", "ssize_t");
         //TEST_SCANF_WARN_AKA("%zd", "ssize_t", "ptrdiff_t", "signed long", "signed long long");
 
