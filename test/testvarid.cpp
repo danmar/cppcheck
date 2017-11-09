@@ -180,6 +180,8 @@ private:
 
         TEST_CASE(varidnamespace1);
         TEST_CASE(varidnamespace2);
+        TEST_CASE(usingNamespace1);
+        TEST_CASE(usingNamespace2);
     }
 
     std::string tokenize(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
@@ -2847,6 +2849,30 @@ private:
                                 "7: return foo ( A :: B :: buf@1 ) ;\n"
                                 "8: }\n";
 
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void usingNamespace1() {
+        const char code[] = "namespace NS {\n"
+                            "  class A { int x; void dostuff(); };\n"
+                            "}\n"
+                            "using namespace NS;\n"
+                            "void A::dostuff() { x = 0; }\n";
+        const char expected[] = "1: namespace NS {\n"
+                                "2: class A { int x@1 ; void dostuff ( ) ; } ;\n"
+                                "3: }\n"
+                                "4: using namespace NS ;\n"
+                                "5: void A :: dostuff ( ) { x@1 = 0 ; }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void usingNamespace2() {
+        const char code[] = "class A { int x; void dostuff(); };\n"
+                            "using namespace NS;\n"
+                            "void A::dostuff() { x = 0; }\n";
+        const char expected[] = "1: class A { int x@1 ; void dostuff ( ) ; } ;\n"
+                                "2: using namespace NS ;\n"
+                                "3: void A :: dostuff ( ) { x@1 = 0 ; }\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 };

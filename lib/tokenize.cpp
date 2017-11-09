@@ -2917,6 +2917,11 @@ static Token * matchMemberVarName(const Member &var, const std::list<ScopeInfo2>
 static Token * matchMemberFunctionName(const Member &func, const std::list<ScopeInfo2> &scopeInfo)
 {
     Token *tok = matchMemberName(func, scopeInfo);
+    if (!tok) {
+        const std::list<std::string> emptyScope;
+        const Member m2(emptyScope,func.tok);
+        tok = matchMemberName(m2, scopeInfo);
+    }
     return Token::Match(tok, "~| %name% (") ? tok : nullptr;
 }
 
