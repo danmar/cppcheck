@@ -45,6 +45,7 @@
     <ClCompile Include="testexceptionsafety.cpp" />
     <ClCompile Include="testfilelister.cpp" />
     <ClCompile Include="testgarbage.cpp" />
+    <ClCompile Include="testimportproject.cpp" />
     <ClCompile Include="testincompletestatement.cpp" />
     <ClCompile Include="testinternal.cpp" />
     <ClCompile Include="testio.cpp" />
