@@ -179,6 +179,7 @@ private:
         TEST_CASE(varid_classnameshaddowsvariablename); // #3990
 
         TEST_CASE(varidnamespace1);
+        TEST_CASE(varidnamespace2);
     }
 
     std::string tokenize(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
@@ -2823,6 +2824,28 @@ private:
                                 "4: int main ( ) {\n"
                                 "5: return foo ( A :: buf@1 ) ;\n"
                                 "6: }\n";
+
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidnamespace2() {
+        const char code[] = "namespace A {\n"
+                            "  namespace B {\n"
+                            "    char buf[20];\n"
+                            "  }\n"
+                            "}\n"
+                            "int main() {\n"
+                            "  return foo(A::B::buf);\n"
+                            "}";
+
+        const char expected[] = "1: namespace A {\n"
+                                "2: namespace B {\n"
+                                "3: char buf@1 [ 20 ] ;\n"
+                                "4: }\n"
+                                "5: }\n"
+                                "6: int main ( ) {\n"
+                                "7: return foo ( A :: B :: buf@1 ) ;\n"
+                                "8: }\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }

@@ -2880,17 +2880,17 @@ static std::string getScopeName(const std::list<ScopeInfo2> &scopeInfo)
     return ret;
 }
 
-static Token * matchFunctionName(const Member &func, const std::list<ScopeInfo2> &scopeInfo)
+static Token * matchMemberName(const Member &member, const std::list<ScopeInfo2> &scopeInfo)
 {
     if (scopeInfo.empty())
         return nullptr;
-    std::list<std::string>::const_iterator funcScopeIt = func.scope.begin();
-    Token *tok2 = func.tok;
+    std::list<std::string>::const_iterator memberScopeIt = member.scope.begin();
+    Token *tok2 = member.tok;
     for (std::list<ScopeInfo2>::const_iterator it = scopeInfo.begin(); tok2 && it != scopeInfo.end(); ++it) {
-        if (funcScopeIt != func.scope.end()) {
-            if (it->name != *funcScopeIt)
+        if (memberScopeIt != member.scope.end()) {
+            if (it->name != *memberScopeIt)
                 return nullptr;
-            ++funcScopeIt;
+            ++memberScopeIt;
             continue;
         }
 
@@ -2905,7 +2905,19 @@ static Token * matchFunctionName(const Member &func, const std::list<ScopeInfo2>
         }
         tok2 = tok2->tokAt(2);
     }
-    return (funcScopeIt == func.scope.end() && Token::Match(tok2, "~| %name% (")) ? tok2 : nullptr;
+    return (memberScopeIt == member.scope.end() && Token::Match(tok2, "~| %name%")) ? tok2 : nullptr;
+}
+
+static Token * matchMemberVarName(const Member &var, const std::list<ScopeInfo2> &scopeInfo)
+{
+    Token *tok = matchMemberName(var, scopeInfo);
+    return Token::Match(tok, "%name% !!(") ? tok : nullptr;
+}
+
+static Token * matchMemberFunctionName(const Member &func, const std::list<ScopeInfo2> &scopeInfo)
+{
+    Token *tok = matchMemberName(func, scopeInfo);
+    return Token::Match(tok, "~| %name% (") ? tok : nullptr;
 }
 
 void Tokenizer::setVarIdPass2()
@@ -3024,12 +3036,10 @@ void Tokenizer::setVarIdPass2()
             continue;
 
         // Member variables
-        for (std::list<Member>::iterator func = allMemberVars.begin(); func != allMemberVars.end(); ++func) {
-            if (!Token::simpleMatch(func->tok, classname.c_str()))
+        for (std::list<Member>::iterator var = allMemberVars.begin(); var != allMemberVars.end(); ++var) {
+            Token *tok2 = matchMemberVarName(*var, scopeInfo);
+            if (!tok2)
                 continue;
-
-            Token *tok2 = func->tok;
-            tok2 = tok2->tokAt(2);
             tok2->varId(thisClassVars[tok2->str()]);
         }
 
@@ -3038,7 +3048,7 @@ void Tokenizer::setVarIdPass2()
 
         // Set variable ids in member functions for this class..
         for (std::list<Member>::const_iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
-            Token *tok2 = matchFunctionName(*func, scopeInfo);
+            Token *tok2 = matchMemberFunctionName(*func, scopeInfo);
             if (!tok2)
                 continue;
 
