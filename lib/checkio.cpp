@@ -747,7 +747,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                     invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                 else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
                                                          typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                         typesMatch(argInfo.typeToken->originalName(), "intmax_t", "u"))
+                                                         typesMatch(argInfo.typeToken->originalName(), "uintmax_t"))
                                                     invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                             } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
@@ -899,7 +899,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                     invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                 else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
                                                          typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                         argInfo.typeToken->originalName() == "uintmax_t")
+                                                         typesMatch(argInfo.typeToken->originalName(), "uintmax_t"))
                                                     invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                             } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
