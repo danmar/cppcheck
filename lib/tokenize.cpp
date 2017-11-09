@@ -2860,7 +2860,7 @@ void Tokenizer::setVarIdPass1()
 
 namespace {
     struct Member {
-        Member(const std::list<std::string> &s, const std::list<const Token *> ns, Token *t) : usingnamespaces(ns), scope(s), tok(t) {}
+        Member(const std::list<std::string> &s, const std::list<const Token *> &ns, Token *t) : usingnamespaces(ns), scope(s), tok(t) {}
         std::list<const Token *> usingnamespaces;
         std::list<std::string> scope;
         Token *tok;
@@ -2921,7 +2921,7 @@ static Token * matchMemberName(const std::list<std::string> &scope, const Token 
                 return nullptr;
         }
         memberToken = memberToken->tokAt(2);
-        scopeIt++;
+        ++scopeIt;
     }
 
     return Token::Match(memberToken, "~| %name%") ? memberToken : nullptr;
