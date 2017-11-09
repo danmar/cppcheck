@@ -2860,7 +2860,8 @@ void Tokenizer::setVarIdPass1()
 
 namespace {
     struct Member {
-        Member(const std::list<std::string> &s, Token *t) : scope(s), tok(t) {}
+        Member(const std::list<std::string> &s, const std::list<const Token *> ns, Token *t) : usingnamespaces(ns), scope(s), tok(t) {}
+        std::list<const Token *> usingnamespaces;
         std::list<std::string> scope;
         Token *tok;
     };
@@ -2880,32 +2881,70 @@ static std::string getScopeName(const std::list<ScopeInfo2> &scopeInfo)
     return ret;
 }
 
+static Token * matchMemberName(const std::list<std::string> &scope, const Token *nsToken, Token *memberToken, const std::list<ScopeInfo2> &scopeInfo)
+{
+    std::list<ScopeInfo2>::const_iterator scopeIt = scopeInfo.begin();
+
+    // Current scope..
+    for (std::list<std::string>::const_iterator it = scope.begin(); it != scope.end(); ++it) {
+        if (scopeIt == scopeInfo.end() || scopeIt->name != *it)
+            return nullptr;
+        ++scopeIt;
+    }
+
+    // using namespace..
+    if (nsToken) {
+        while (Token::Match(nsToken, "%name% ::")) {
+            if (scopeIt != scopeInfo.end() && nsToken->str() == scopeIt->name) {
+                nsToken = nsToken->tokAt(2);
+                ++scopeIt;
+            } else {
+                return nullptr;
+            }
+        }
+        if (!Token::Match(nsToken, "%name% ;"))
+            return nullptr;
+        if (scopeIt == scopeInfo.end() || nsToken->str() != scopeIt->name)
+            return nullptr;
+        ++scopeIt;
+    }
+
+    // Parse member tokens..
+    while (scopeIt != scopeInfo.end()) {
+        if (!Token::Match(memberToken, "%name% ::|<"))
+            return nullptr;
+        if (memberToken->str() != scopeIt->name)
+            return nullptr;
+        if (memberToken->next()->str() == "<") {
+            memberToken = memberToken->next()->findClosingBracket();
+            if (!Token::simpleMatch(memberToken, "> ::"))
+                return nullptr;
+        }
+        memberToken = memberToken->tokAt(2);
+        scopeIt++;
+    }
+
+    return Token::Match(memberToken, "~| %name%") ? memberToken : nullptr;
+}
+
 static Token * matchMemberName(const Member &member, const std::list<ScopeInfo2> &scopeInfo)
 {
     if (scopeInfo.empty())
         return nullptr;
-    std::list<std::string>::const_iterator memberScopeIt = member.scope.begin();
-    Token *tok2 = member.tok;
-    for (std::list<ScopeInfo2>::const_iterator it = scopeInfo.begin(); tok2 && it != scopeInfo.end(); ++it) {
-        if (memberScopeIt != member.scope.end()) {
-            if (it->name != *memberScopeIt)
-                return nullptr;
-            ++memberScopeIt;
-            continue;
-        }
 
-        if (!Token::Match(tok2, "%name% ::|<"))
-            return nullptr;
-        if (tok2->str() != it->name)
-            return nullptr;
-        if (tok2->next()->str() == "<") {
-            tok2 = tok2->next()->findClosingBracket();
-            if (!Token::simpleMatch(tok2, "> ::"))
-                return nullptr;
-        }
-        tok2 = tok2->tokAt(2);
+    // Does this member match without "using namespace"..
+    Token *ret = matchMemberName(member.scope, nullptr, member.tok, scopeInfo);
+    if (ret)
+        return ret;
+
+    // Try to match member using the "using namespace ..." namespaces..
+    for (std::list<const Token *>::const_iterator ns = member.usingnamespaces.begin(); ns != member.usingnamespaces.end(); ++ns) {
+        ret = matchMemberName(member.scope, *ns, member.tok, scopeInfo);
+        if (ret)
+            return ret;
     }
-    return (memberScopeIt == member.scope.end() && Token::Match(tok2, "~| %name%")) ? tok2 : nullptr;
+
+    return nullptr;
 }
 
 static Token * matchMemberVarName(const Member &var, const std::list<ScopeInfo2> &scopeInfo)
@@ -2917,11 +2956,6 @@ static Token * matchMemberVarName(const Member &var, const std::list<ScopeInfo2>
 static Token * matchMemberFunctionName(const Member &func, const std::list<ScopeInfo2> &scopeInfo)
 {
     Token *tok = matchMemberName(func, scopeInfo);
-    if (!tok) {
-        const std::list<std::string> emptyScope;
-        const Member m2(emptyScope,func.tok);
-        tok = matchMemberName(m2, scopeInfo);
-    }
     return Token::Match(tok, "~| %name% (") ? tok : nullptr;
 }
 
@@ -2935,11 +2969,16 @@ void Tokenizer::setVarIdPass2()
     if (!isC()) {
         std::map<const Token *, std::string> endOfScope;
         std::list<std::string> scope;
+        std::list<const Token *> usingnamespaces;
         for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
             if (!tok2->previous() || Token::Match(tok2->previous(), "[;{}]")) {
-                if (Token::Match(tok2, "using namespace %name% ;"))
-                    scope.push_back(tok2->strAt(2));
-                else if (Token::Match(tok2, "namespace %name% {")) {
+                if (Token::Match(tok2, "using namespace %name% ::|;")) {
+                    const Token *endtok = tok2->tokAt(2);
+                    while (Token::Match(endtok, "%name% ::"))
+                        endtok = endtok->tokAt(2);
+                    if (Token::Match(endtok, "%name% ;"))
+                        usingnamespaces.push_back(tok2->tokAt(2));
+                } else if (Token::Match(tok2, "namespace %name% {")) {
                     scope.push_back(tok2->strAt(1));
                     endOfScope[tok2->linkAt(2)] = tok2->strAt(1);
                 }
@@ -2969,9 +3008,9 @@ void Tokenizer::setVarIdPass2()
                 syntaxError(tok2);
             const std::string& str3 = tok3->str();
             if (str3 == "(")
-                allMemberFunctions.push_back(Member(scope, tok2));
+                allMemberFunctions.push_back(Member(scope, usingnamespaces, tok2));
             else if (str3 != "::" && tok2->strAt(-1) != "::") // Support only one depth
-                allMemberVars.push_back(Member(scope, tok2));
+                allMemberVars.push_back(Member(scope, usingnamespaces, tok2));
         }
     }
 

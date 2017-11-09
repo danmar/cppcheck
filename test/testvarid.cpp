@@ -182,6 +182,7 @@ private:
         TEST_CASE(varidnamespace2);
         TEST_CASE(usingNamespace1);
         TEST_CASE(usingNamespace2);
+        TEST_CASE(usingNamespace3);
     }
 
     std::string tokenize(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
@@ -2873,6 +2874,32 @@ private:
         const char expected[] = "1: class A { int x@1 ; void dostuff ( ) ; } ;\n"
                                 "2: using namespace NS ;\n"
                                 "3: void A :: dostuff ( ) { x@1 = 0 ; }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void usingNamespace3() {
+        const char code[] = "namespace A {\n"
+                            "    namespace B {\n"
+                            "        class C {\n"
+                            "            double m;\n"
+                            "            C();\n"
+                            "        };\n"
+                            "    }\n"
+                            "}\n"
+                            "using namespace A::B;\n"
+                            "C::C() : m(42) {}";
+
+        const char expected[] = "1: namespace A {\n"
+                                "2: namespace B {\n"
+                                "3: class C {\n"
+                                "4: double m@1 ;\n"
+                                "5: C ( ) ;\n"
+                                "6: } ;\n"
+                                "7: }\n"
+                                "8: }\n"
+                                "9: using namespace A :: B ;\n"
+                                "10: C :: C ( ) : m@1 ( 42 ) { }\n";
+
         ASSERT_EQUALS(expected, tokenize(code));
     }
 };
