@@ -1429,7 +1429,7 @@ private:
         TEST_SCANF_WARN_AKA("%jd", "intmax_t", "std::ssize_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%jd", "intmax_t", "std::ptrdiff_t", "signed long", "signed long long");
         TEST_SCANF_NOWARN("%jd", "intmax_t", "intmax_t");
-        TEST_SCANF_NOWARN("%jd", "intmax_t", "uintmax_t");
+        TEST_SCANF_WARN_AKA("%jd", "intmax_t", "uintmax_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%zu", "size_t", "bool");
         TEST_SCANF_WARN("%zu", "size_t", "char");
