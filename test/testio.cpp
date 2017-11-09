@@ -1021,7 +1021,7 @@ private:
         TEST_SCANF_WARN("%lx","unsigned long","signed short");
         TEST_SCANF_WARN("%lx","unsigned long","unsigned short");
         TEST_SCANF_WARN("%lx","unsigned long","signed int");
-        TEST_SCANF_WARN("%lx","unsigned long","unsigned int"); 
+        TEST_SCANF_WARN("%lx","unsigned long","unsigned int");
         TEST_SCANF_WARN("%lx","unsigned long","signed long");
         TEST_SCANF_NOWARN("%lx","unsigned long","unsigned long");
         TEST_SCANF_WARN("%lx","unsigned long","signed long long");
