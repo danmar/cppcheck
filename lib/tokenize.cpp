@@ -2890,7 +2890,7 @@ static Token * matchFunctionName(const Member &func, const std::list<ScopeInfo2>
         if (funcScopeIt != func.scope.end()) {
             if (it->name != *funcScopeIt)
                 return nullptr;
-            funcScopeIt++;
+            ++funcScopeIt;
             continue;
         }
 
