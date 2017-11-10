@@ -3009,8 +3009,8 @@ void Tokenizer::setVarIdPass2()
                 else
                     break;
             }
-            if (!tok)
-                syntaxError(tok1);
+            if (!tok->next())
+                syntaxError(tok);
             if (Token::Match(tok, "%name% ("))
                 allMemberFunctions.push_back(Member(scope, usingnamespaces, tok1));
             else
