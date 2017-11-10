@@ -2970,47 +2970,51 @@ void Tokenizer::setVarIdPass2()
         std::map<const Token *, std::string> endOfScope;
         std::list<std::string> scope;
         std::list<const Token *> usingnamespaces;
-        for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
-            if (!tok2->previous() || Token::Match(tok2->previous(), "[;{}]")) {
-                if (Token::Match(tok2, "using namespace %name% ::|;")) {
-                    const Token *endtok = tok2->tokAt(2);
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            if (!tok->previous() || Token::Match(tok->previous(), "[;{}]")) {
+                if (Token::Match(tok, "using namespace %name% ::|;")) {
+                    const Token *endtok = tok->tokAt(2);
                     while (Token::Match(endtok, "%name% ::"))
                         endtok = endtok->tokAt(2);
                     if (Token::Match(endtok, "%name% ;"))
-                        usingnamespaces.push_back(tok2->tokAt(2));
-                } else if (Token::Match(tok2, "namespace %name% {")) {
-                    scope.push_back(tok2->strAt(1));
-                    endOfScope[tok2->linkAt(2)] = tok2->strAt(1);
+                        usingnamespaces.push_back(tok->tokAt(2));
+                } else if (Token::Match(tok, "namespace %name% {")) {
+                    scope.push_back(tok->strAt(1));
+                    endOfScope[tok->linkAt(2)] = tok->strAt(1);
                 }
             }
 
-            if (tok2->str() == "}") {
-                std::map<const Token *, std::string>::iterator it = endOfScope.find(tok2);
+            if (tok->str() == "}") {
+                std::map<const Token *, std::string>::iterator it = endOfScope.find(tok);
                 if (it != endOfScope.end())
                     scope.remove(it->second);
             }
 
-            const Token* tok3 = nullptr;
-            if (Token::Match(tok2, "%name% :: ~| %name%"))
-                tok3 = tok2->next();
-            else if (Token::Match(tok2, "%name% <") && Token::Match(tok2->next()->findClosingBracket(),"> :: ~| %name%"))
-                tok3 = tok2->next()->findClosingBracket()->next();
+            Token* const tok1 = tok;
+            if (Token::Match(tok->previous(), "!!:: %name% :: ~| %name%"))
+                tok = tok->next();
+            else if (Token::Match(tok->previous(), "!!:: %name% <") && Token::Match(tok->next()->findClosingBracket(),"> :: ~| %name%"))
+                tok = tok->next()->findClosingBracket()->next();
             else
                 continue;
 
-            while (Token::Match(tok3, ":: ~| %name%")) {
-                tok3 = tok3->next();
-                if (tok3->str() == "~")
-                    tok3 = tok3->next();
-                tok3 = tok3->next();
+            while (Token::Match(tok, ":: ~| %name%")) {
+                tok = tok->next();
+                if (tok->str() == "~")
+                    tok = tok->next();
+                else if (Token::Match(tok, "%name% <") && Token::Match(tok->next()->findClosingBracket(),"> :: ~| %name%"))
+                    tok = tok->next()->findClosingBracket()->next();
+                else if (Token::Match(tok, "%name% ::"))
+                    tok = tok->next();
+                else
+                    break;
             }
-            if (!tok3)
-                syntaxError(tok2);
-            const std::string& str3 = tok3->str();
-            if (str3 == "(")
-                allMemberFunctions.push_back(Member(scope, usingnamespaces, tok2));
-            else if (str3 != "::" && tok2->strAt(-1) != "::") // Support only one depth
-                allMemberVars.push_back(Member(scope, usingnamespaces, tok2));
+            if (!tok)
+                syntaxError(tok1);
+            if (Token::Match(tok, "%name% ("))
+                allMemberFunctions.push_back(Member(scope, usingnamespaces, tok1));
+            else
+                allMemberVars.push_back(Member(scope, usingnamespaces, tok1));
         }
     }
 

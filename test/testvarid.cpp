@@ -126,6 +126,7 @@ private:
         TEST_CASE(varid_in_class18);    // #7127
         TEST_CASE(varid_in_class19);
         TEST_CASE(varid_in_class20);    // #7267
+        TEST_CASE(varid_in_class21);    // #7788
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_initList);
@@ -1767,6 +1768,28 @@ private:
                       "6: } ;\n"
                       "7:\n"
                       "8: template < class C > cacheEntry < C > :: cacheEntry ( ) : m_key@1 ( ) { }\n", tokenize(code, false, "test.cpp"));
+    }
+
+    void varid_in_class21() {
+        const char code[] = "template <typename t1,typename t2>\n"
+                            "class A::B {\n"
+                            "    B();\n"
+                            "    int x;\n"
+                            "};\n"
+                            "\n"
+                            "template <typename t1,typename t2>\n"
+                            "A::B<t1,t2>::B() : x(9) {}";
+
+        const char expected[] = "1: template < typename t1 , typename t2 >\n"
+                                "2: class A :: B {\n"
+                                "3: B ( ) ;\n"
+                                "4: int x@1 ;\n"
+                                "5: } ;\n"
+                                "6:\n"
+                                "7: template < typename t1 , typename t2 >\n"
+                                "8: A :: B < t1 , t2 > :: B ( ) : x@1 ( 9 ) { }\n";
+
+        ASSERT_EQUALS(expected, tokenize(code, false, "test.cpp"));
     }
 
     void varid_namespace_1() { // #7272
