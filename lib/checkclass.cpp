@@ -573,11 +573,6 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             assignVar(ftok->next()->varId(), scope, usage);
         }
 
-        // Before a new statement there is "[{};()=[]" or ::
-        // We can also have a new statement after any operators or comparisons
-        if (! Token::Match(ftok, "%op%|%comp%|{|}|;|(|)|=|[|::"))
-            continue;
-
         // If assignment comes after an && or || this is really inconclusive because of short circuiting
         if (Token::Match(ftok, "%oror%|&&"))
             continue;

@@ -143,6 +143,7 @@ private:
         TEST_CASE(uninitVar28); // ticket #6258
         TEST_CASE(uninitVar29);
         TEST_CASE(uninitVar30); // ticket #6417
+        TEST_CASE(uninitVar31); // ticket #8271
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -2324,6 +2325,24 @@ private:
               "using namespace NS;\n"
               "MyClass::~MyClass() { }\n"
               "MyClass::MyClass() : SomeVar(false) { }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar31() { // ticket #8271
+        check("void bar();\n"
+              "class MyClass {\n"
+              "public:\n"
+              "    MyClass();\n"
+              "    void Restart();\n"
+              "protected:\n"
+              "    int m_retCode;\n"
+              "};\n"
+              "MyClass::MyClass() {\n"
+              "    bar(),Restart();\n"
+              "}\n"
+              "void MyClass::Restart() {\n"
+              "    m_retCode = 0;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
