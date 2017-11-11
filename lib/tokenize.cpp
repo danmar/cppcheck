@@ -3035,11 +3035,9 @@ void Tokenizer::setVarIdPass2()
         std::list<const Token *> classnameTokens;
         classnameTokens.push_back(tok->next());
         const Token* tokStart = tok->tokAt(2);
-        unsigned int nestedCount = 1;
         while (Token::Match(tokStart, ":: %name%")) {
             classnameTokens.push_back(tokStart->next());
             tokStart = tokStart->tokAt(2);
-            nestedCount++;
         }
 
         std::string classname;
