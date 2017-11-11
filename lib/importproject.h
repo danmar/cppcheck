@@ -48,7 +48,7 @@ namespace cppcheck {
 class CPPCHECKLIB ImportProject {
 public:
     /** File settings. Multiple configurations for a file is allowed. */
-    struct FileSettings {
+    struct CPPCHECKLIB FileSettings {
         FileSettings() : platformType(cppcheck::Platform::Unspecified), msc(false), useMfc(false) {}
         std::string cfg;
         std::string filename;
