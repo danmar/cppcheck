@@ -3044,37 +3044,41 @@ void Tokenizer::setVarIdPass2()
         for (std::list<const Token *>::const_iterator it = classnameTokens.begin(); it != classnameTokens.end(); ++it)
             classname += (classname.empty() ? "" : " :: ") + (*it)->str();
 
-        std::map<std::string, unsigned int>& thisClassVars = varsByClass[scopeName2 + classname];
-        while (tokStart && tokStart->str() != "{") {
-            if (Token::Match(tokStart, "public|private|protected %name%"))
-                tokStart = tokStart->next();
-            if (tokStart->strAt(1) == "," || tokStart->strAt(1) == "{") {
+        std::map<std::string, unsigned int> &thisClassVars = varsByClass[scopeName2 + classname];
+        while (Token::Match(tokStart, ":|::|,|%name%")) {
+            if (Token::Match(tokStart, "%name% <")) {
+                tokStart = tokStart->next()->findClosingBracket();
+                if (tokStart)
+                    tokStart = tokStart->next();
+                continue;
+            }
+            if (Token::Match(tokStart, "%name% ,|{")) {
                 const std::map<std::string, unsigned int>& baseClassVars = varsByClass[tokStart->str()];
                 thisClassVars.insert(baseClassVars.begin(), baseClassVars.end());
             }
             tokStart = tokStart->next();
         }
+        if (!Token::simpleMatch(tokStart, "{"))
+            continue;
 
         // What member variables are there in this class?
-        if (tokStart) {
-            for (std::list<const Token *>::const_iterator it = classnameTokens.begin(); it != classnameTokens.end(); ++it)
-                scopeInfo.push_back(ScopeInfo2((*it)->str(), tokStart->link()));
+        for (std::list<const Token *>::const_iterator it = classnameTokens.begin(); it != classnameTokens.end(); ++it)
+            scopeInfo.push_back(ScopeInfo2((*it)->str(), tokStart->link()));
 
-            for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
-                // skip parentheses..
-                if (tok2->link()) {
-                    if (tok2->str() == "{") {
-                        if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
-                            setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, &_varId);
-                        tok2 = tok2->link();
-                    } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(")
-                        tok2 = tok2->link();
-                }
-
-                // Found a member variable..
-                else if (tok2->varId() > 0)
-                    thisClassVars[tok2->str()] = tok2->varId();
+        for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
+            // skip parentheses..
+            if (tok2->link()) {
+                if (tok2->str() == "{") {
+                    if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
+                        setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, &_varId);
+                    tok2 = tok2->link();
+                } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(")
+                    tok2 = tok2->link();
             }
+
+            // Found a member variable..
+            else if (tok2->varId() > 0)
+                thisClassVars[tok2->str()] = tok2->varId();
         }
 
         // Are there any member variables in this class?
