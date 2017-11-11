@@ -86,33 +86,34 @@ void LibraryDialog::openCfg()
                                  filter,
                                  &selectedFilter);
 
-    if (!selectedFile.isEmpty()) {
-        QFile file(selectedFile);
-        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            ignoreChanges = true;
-            data.open(file);
-            mFileName = selectedFile;
-            ui->buttonSave->setEnabled(false);
-            ui->buttonSaveAs->setEnabled(true);
-            ui->filter->clear();
-            ui->functions->clear();
-            for (CppcheckLibraryData::Function &function : data.functions) {
-                ui->functions->addItem(new FunctionListItem(ui->functions,
-                                       &function,
-                                       false));
-            }
-            ui->sortFunctions->setEnabled(!data.functions.empty());
-            ui->filter->setEnabled(!data.functions.empty());
-            ui->addFunction->setEnabled(true);
-            ignoreChanges = false;
-        } else {
-            QMessageBox msg(QMessageBox::Critical,
-                            tr("Cppcheck"),
-                            tr("Can not open file %1.").arg(selectedFile),
-                            QMessageBox::Ok,
-                            this);
-            msg.exec();
+    if (selectedFile.isEmpty())
+        return;
+
+    QFile file(selectedFile);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        ignoreChanges = true;
+        data.open(file);
+        mFileName = selectedFile;
+        ui->buttonSave->setEnabled(false);
+        ui->buttonSaveAs->setEnabled(true);
+        ui->filter->clear();
+        ui->functions->clear();
+        for (CppcheckLibraryData::Function &function : data.functions) {
+            ui->functions->addItem(new FunctionListItem(ui->functions,
+                                   &function,
+                                   false));
         }
+        ui->sortFunctions->setEnabled(!data.functions.empty());
+        ui->filter->setEnabled(!data.functions.empty());
+        ui->addFunction->setEnabled(true);
+        ignoreChanges = false;
+    } else {
+        QMessageBox msg(QMessageBox::Critical,
+                        tr("Cppcheck"),
+                        tr("Can not open file %1.").arg(selectedFile),
+                        QMessageBox::Ok,
+                        this);
+        msg.exec();
     }
 }
 
