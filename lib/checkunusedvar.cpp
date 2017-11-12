@@ -1364,6 +1364,11 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (Token::findmatch(scope->classEnd, castPattern.c_str()))
             continue;
 
+        // (struct S){..}
+        const std::string initPattern("( struct| " + scope->className + " ) {");
+        if (Token::findmatch(scope->classEnd, initPattern.c_str()))
+            continue;
+
         // Bail out if struct is used in sizeof..
         for (const Token *tok = scope->classEnd; nullptr != (tok = Token::findsimplematch(tok, "sizeof ("));) {
             tok = tok->tokAt(2);
