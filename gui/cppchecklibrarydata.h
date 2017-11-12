@@ -152,6 +152,7 @@ public:
     };
 
     void clear() {
+        containers.clear();
         defines.clear();
         functions.clear();
         memoryresource.clear();
