@@ -327,8 +327,6 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
         xmlWriter.writeEmptyElement("const");
     if (function.gccPure)
         xmlWriter.writeEmptyElement("pure");
-    if (function.noreturn != CppcheckLibraryData::Function::Unknown)
-        xmlWriter.writeTextElement("noreturn", (function.noreturn == CppcheckLibraryData::Function::True) ? "true" : "false");
     if (!function.returnValue.empty()) {
         xmlWriter.writeStartElement("returnValue");
         if (!function.returnValue.type.isNull())
@@ -339,6 +337,8 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
             xmlWriter.writeCharacters(function.returnValue.value);
         xmlWriter.writeEndElement();
     }
+    if (function.noreturn != CppcheckLibraryData::Function::Unknown)
+        xmlWriter.writeTextElement("noreturn", (function.noreturn == CppcheckLibraryData::Function::True) ? "true" : "false");
     if (function.leakignore)
         xmlWriter.writeEmptyElement("leak-ignore");
     // Argument info..
