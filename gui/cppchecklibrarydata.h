@@ -35,6 +35,8 @@ public:
         QString inherits;
         QString startPattern;
         QString endPattern;
+        QString opLessAllowed;
+        QString itEndPattern;
 
         bool access_arrayLike;
         int  size_templateParameter;
@@ -71,6 +73,15 @@ public:
         bool gccConst;
         bool leakignore;
         bool useretval;
+        struct ReturnValue {
+            ReturnValue() : container(-1) {}
+            QString type;
+            QString value;
+            int container;
+            bool empty() const {
+                return type.isNull() && value.isNull() && container < 0;
+            }
+        } returnValue;
         struct {
             QString scan;
             QString secure;
@@ -83,6 +94,8 @@ public:
             QString name;
             unsigned int nr;
             static const unsigned int ANY;
+            static const unsigned int VARIADIC;
+            QString defaultValue;
             bool notbool;
             bool notnull;
             bool notuninit;
@@ -95,17 +108,24 @@ public:
                 QString arg2;
             };
             QList<struct MinSize> minsizes;
+            struct Iterator {
+                Iterator() : container(-1) {}
+                int container;
+                QString type;
+            } iterator;
         };
         QList<struct Arg> args;
 
         struct {
             QString severity;
+            QString cstd;
             QString reason;
             QString alternatives;
             QString msg;
 
             bool isEmpty() const {
-                return severity.isEmpty() &&
+                return cstd.isEmpty() &&
+                       severity.isEmpty() &&
                        reason.isEmpty() &&
                        alternatives.isEmpty() &&
                        msg.isEmpty();
