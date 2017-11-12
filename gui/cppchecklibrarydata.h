@@ -159,7 +159,16 @@ public:
         podtypes.clear();
     }
 
-    bool open(QIODevice &file);
+
+    void swap(CppcheckLibraryData &other) {
+        containers.swap(other.containers);
+        defines.swap(other.defines);
+        functions.swap(other.functions);
+        memoryresource.swap(other.memoryresource);
+        podtypes.swap(other.podtypes);
+    }
+
+    QString open(QIODevice &file);
     QString toString() const;
 
     QList<struct Container> containers;

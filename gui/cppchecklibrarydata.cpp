@@ -28,6 +28,11 @@ CppcheckLibraryData::CppcheckLibraryData()
 {
 }
 
+static std::string unhandledElement(const QXmlStreamReader &xmlReader)
+{
+    throw std::runtime_error(QObject::tr("line %1: Unhandled element %2").arg(xmlReader.lineNumber()).arg(xmlReader.name().toString()).toStdString());
+}
+
 static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
 {
     CppcheckLibraryData::Container container;
@@ -72,7 +77,7 @@ static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
                     container.otherFunctions.append(function);
             }
         } else {
-            throw std::runtime_error("Unhandled element " + elementName.toStdString());
+            unhandledElement(xmlReader);
         }
     }
     return container;
@@ -126,7 +131,7 @@ static CppcheckLibraryData::Function::Arg loadFunctionArg(QXmlStreamReader &xmlR
             arg.iterator.container = xmlReader.attributes().value("container").toInt();
             arg.iterator.type = xmlReader.attributes().value("type").toString();
         } else {
-            throw std::runtime_error("Unhandled element " + elementName.toStdString());
+            unhandledElement(xmlReader);
         }
     }
     return arg;
@@ -170,7 +175,7 @@ static CppcheckLibraryData::Function loadFunction(QXmlStreamReader &xmlReader, c
             function.warn.alternatives = xmlReader.attributes().value("alternatives").toString();
             function.warn.msg          = xmlReader.readElementText();
         } else {
-            throw std::runtime_error("Unhandled element " + elementName.toStdString());
+            unhandledElement(xmlReader);
         }
     }
     return function;
@@ -196,7 +201,7 @@ static CppcheckLibraryData::MemoryResource loadMemoryResource(QXmlStreamReader &
         else if (elementName == "use")
             memoryresource.use.append(xmlReader.readElementText());
         else
-            throw std::runtime_error("Unhandled element " + elementName.toStdString());
+            unhandledElement(xmlReader);
     }
     return memoryresource;
 }
@@ -210,7 +215,7 @@ static CppcheckLibraryData::PodType loadPodType(const QXmlStreamReader &xmlReade
     return podtype;
 }
 
-bool CppcheckLibraryData::open(QIODevice &file)
+QString CppcheckLibraryData::open(QIODevice &file)
 {
     clear();
     QString comments;
@@ -239,10 +244,9 @@ bool CppcheckLibraryData::open(QIODevice &file)
                 else if (elementName == "podtype")
                     podtypes.append(loadPodType(xmlReader));
                 else
-                    return false;
+                    unhandledElement(xmlReader);
             } catch (std::runtime_error &e) {
-                const QString what(e.what());
-                return false;
+                return e.what();
             }
             comments.clear();
             break;
@@ -251,7 +255,7 @@ bool CppcheckLibraryData::open(QIODevice &file)
         }
     }
 
-    return true;
+    return QString();
 }
 
 static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString name, int extra, const QList<struct CppcheckLibraryData::Container::Function> &functions)
