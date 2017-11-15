@@ -1163,6 +1163,10 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             if (!typesMatch(argInfo.typeToken->originalName(), "size_t"))
                                                 invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                             break;
+                                        case 't':
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t"))
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            break;
                                         case 'I':
                                             if (specifier.find("I64") != std::string::npos) {
                                                 if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())

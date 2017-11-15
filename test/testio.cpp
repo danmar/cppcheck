@@ -3741,14 +3741,14 @@ private:
         TEST_PRINTF_WARN_AKA("%zx", "size_t", "std::intptr_t", "signed long", "signed long long");
         TEST_PRINTF_WARN_AKA("%zx", "size_t", "std::uintptr_t", "unsigned long", "unsigned long long");
 
-        //TODO TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "bool");
+        TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "bool");
         TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "char");
         TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "signed char");
-        //TODO TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "unsigned char");
+        TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "unsigned char");
         TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "signed short");
-        //TODO TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "unsigned short");
+        TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "unsigned short");
         TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "signed int");
-        //TODO TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "unsigned int");
+        TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "unsigned int");
         TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "signed long");
         TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "unsigned long");
         TEST_PRINTF_WARN("%tu", "unsigned ptrdiff_t", "signed long long");
