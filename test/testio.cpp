@@ -3677,7 +3677,7 @@ private:
         TEST_PRINTF_WARN_AKA("%jx", "uintmax_t", "ssize_t", "signed long", "signed long long");
         TEST_PRINTF_WARN_AKA("%jx", "uintmax_t", "ptrdiff_t", "signed long", "signed long long");
         TEST_PRINTF_WARN_AKA("%jx", "uintmax_t", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
-        //TODO TEST_PRINTF_WARN_AKA("%jx", "uintmax_t", "intmax_t", "signed long", "signed long long");
+        TEST_PRINTF_WARN_AKA("%jx", "uintmax_t", "intmax_t", "signed long", "signed long long");
         TEST_PRINTF_NOWARN("%jx", "uintmax_t", "uintmax_t");
         TEST_PRINTF_WARN_AKA("%jx", "uintmax_t", "std::size_t", "unsigned long", "unsigned long long");
         TEST_PRINTF_WARN_AKA("%jx", "uintmax_t", "std::ssize_t", "signed long", "signed long long");

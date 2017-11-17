@@ -1007,8 +1007,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                             break;
                                         case 'j':
-                                            if (!(argInfo.typeToken->originalName() == "intmax_t" ||
-                                                  argInfo.typeToken->originalName() == "uintmax_t"))
+                                            if (argInfo.typeToken->originalName() != "uintmax_t")
                                                 invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                             break;
                                         case 'z':
