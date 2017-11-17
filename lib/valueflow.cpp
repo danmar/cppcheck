@@ -108,6 +108,34 @@ static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, cons
 #define bailout(tokenlist, errorLogger, tok, what) bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, "(valueFlow)")
 #endif
 
+static void changeKnownToPossible(std::list<ValueFlow::Value> &values)
+{
+    std::list<ValueFlow::Value>::iterator it;
+    for (it = values.begin(); it != values.end(); ++it)
+        it->changeKnownToPossible();
+}
+
+static bool mightBeNonConstPointerFunctionArg(const Token *tok)
+{
+    // TODO: check if argument might be non-const pointer
+    const Token *parent = tok->astParent();
+    while (parent && parent->str() == ",")
+        parent = parent->astParent();
+    return (parent && Token::Match(parent->previous(), "%name% ("));
+}
+
+static const Token *findVariableInAST(const Token *tok, unsigned int varid)
+{
+    if (!tok)
+        return nullptr;
+    if (tok->varId() == varid)
+        return tok;
+    const Token *ret1 = findVariableInAST(tok->astOperand1(), varid);
+    if (ret1)
+        return ret1;
+    return findVariableInAST(tok->astOperand2(), varid);
+}
+
 /**
  * Is condition always false when variable has given value?
  * \param condition   top ast token in condition
@@ -1465,9 +1493,7 @@ static bool valueFlowForward(Token * const               startToken,
                        Token::simpleMatch(tok2->link()->previous(), "else {") &&
                        !isReturnScope(tok2->link()->tokAt(-2)) &&
                        isVariableChanged(tok2->link(), tok2, varid, var->isGlobal(), settings)) {
-                std::list<ValueFlow::Value>::iterator it;
-                for (it = values.begin(); it != values.end(); ++it)
-                    it->changeKnownToPossible();
+                changeKnownToPossible(values);
             }
         }
 
@@ -1482,8 +1508,7 @@ static bool valueFlowForward(Token * const               startToken,
         }
 
         if (Token::Match(tok2, "[;{}] %name% :") || tok2->str() == "case") {
-            for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it)
-                it->changeKnownToPossible();
+            changeKnownToPossible(values);
             tok2 = tok2->tokAt(2);
             continue;
         }
@@ -1597,10 +1622,7 @@ static bool valueFlowForward(Token * const               startToken,
 
                 if (!condAlwaysFalse && isVariableChanged(startToken1, startToken1->link(), varid, var->isGlobal(), settings)) {
                     removeValues(values, truevalues);
-
-                    std::list<ValueFlow::Value>::iterator it;
-                    for (it = values.begin(); it != values.end(); ++it)
-                        it->changeKnownToPossible();
+                    changeKnownToPossible(values);
                 }
 
                 // goto '}'
@@ -1628,10 +1650,7 @@ static bool valueFlowForward(Token * const               startToken,
 
                     if (!condAlwaysTrue && isVariableChanged(startTokenElse, startTokenElse->link(), varid, var->isGlobal(), settings)) {
                         removeValues(values, falsevalues);
-
-                        std::list<ValueFlow::Value>::iterator it;
-                        for (it = values.begin(); it != values.end(); ++it)
-                            it->changeKnownToPossible();
+                        changeKnownToPossible(values);
                     }
 
                     // goto '}'
@@ -1811,9 +1830,7 @@ static bool valueFlowForward(Token * const               startToken,
                     if (tok2 == endToken)
                         break;
                     --indentlevel;
-                    for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
-                        it->changeKnownToPossible();
-                    }
+                    changeKnownToPossible(values);
                     continue;
                 }
             }
@@ -1841,6 +1858,8 @@ static bool valueFlowForward(Token * const               startToken,
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = values.begin(); it != values.end(); ++it)
                     valueFlowAST(const_cast<Token*>(expr), varid, *it, settings);
+                if ((expr->valueType() && expr->valueType()->pointer) && mightBeNonConstPointerFunctionArg(tok2) && findVariableInAST(expr,varid))
+                    changeKnownToPossible(values);
             } else {
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = values.begin(); it != values.end(); ++it) {
@@ -1852,6 +1871,9 @@ static bool valueFlowForward(Token * const               startToken,
                     else
                         valueFlowAST(const_cast<Token*>(op2), varid, *it, settings);
                 }
+
+                if (mightBeNonConstPointerFunctionArg(tok2) && findVariableInAST(op2,varid))
+                    changeKnownToPossible(values);
             }
 
             // Skip conditional expressions..
@@ -2245,11 +2267,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             }
 
             // Static variable initialisation?
-            if (var->isStatic() && var->nameToken() == tok->astOperand1()) {
-                for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
-                    it->changeKnownToPossible();
-                }
-            }
+            if (var->isStatic() && var->nameToken() == tok->astOperand1())
+                changeKnownToPossible(values);
 
             // Skip RHS
             const Token * nextExpression = nextAfterAstRightmostLeaf(tok);
@@ -3057,9 +3076,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             }
 
             // passed values are not "known"..
-            for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
-                it->changeKnownToPossible();
-            }
+            changeKnownToPossible(argvalues);
 
             valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
         }

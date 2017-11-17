@@ -2392,6 +2392,27 @@ private:
 
         code = "void f() {\n"
                "  int x = 0;\n"
+               "  dostuff(&x);\n"
+               "  if (x < 0) {}\n"
+               "}\n";
+        ASSERT(isNotKnownValues(code, "<"));
+
+        code = "void f() {\n"
+               "  int x = 0;\n"
+               "  dostuff(0 ? ptr : &x);\n"
+               "  if (x < 0) {}\n"
+               "}\n";
+        ASSERT(isNotKnownValues(code, "<"));
+
+        code = "void f() {\n"
+               "  int x = 0;\n"
+               "  dostuff(unknown ? ptr : &x);\n"
+               "  if (x < 0) {}\n"
+               "}\n";
+        ASSERT(isNotKnownValues(code, "<"));
+
+        code = "void f() {\n"
+               "  int x = 0;\n"
                "  fred.dostuff(x);\n"
                "  if (x < 0) {}\n"
                "}\n";
