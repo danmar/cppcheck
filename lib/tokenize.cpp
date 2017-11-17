@@ -8258,19 +8258,6 @@ void Tokenizer::validate() const
         cppcheckError(lastTok);
 }
 
-static const std::set<std::string> controlFlowKeywords = make_container< std::set<std::string> > () <<
-        "goto" <<
-        "do" <<
-        "if" <<
-        "else" <<
-        "for" <<
-        "while" <<
-        "switch" <<
-        "case" <<
-        "break" <<
-        "continue" <<
-        "return";
-
 const Token * Tokenizer::findGarbageCode() const
 {
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
@@ -8336,7 +8323,7 @@ const Token * Tokenizer::findGarbageCode() const
         return list.back();
     if (Token::Match(list.back(), "void|char|short|int|long|float|double|const|volatile|static|inline|struct|class|enum|union|template|sizeof|case|break|continue|typedef"))
         return list.back();
-    if ((list.back()->str()==")"||list.back()->str()=="}") && list.back()->previous() && controlFlowKeywords.find(list.back()->previous()->str()) != controlFlowKeywords.end())
+    if ((list.back()->str()==")" || list.back()->str()=="}") && list.back()->previous() && list.back()->previous()->isControlFlowKeyword())
         return list.back()->previous();
 
     return nullptr;
@@ -8346,7 +8333,7 @@ const Token * Tokenizer::findGarbageCode() const
 bool Tokenizer::isGarbageExpr(const Token *start, const Token *end)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
-        if (controlFlowKeywords.find(tok->str()) != controlFlowKeywords.end())
+        if (tok->isControlFlowKeyword())
             return true;
         if (tok->str() == ";")
             return true;

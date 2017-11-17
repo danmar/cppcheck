@@ -401,6 +401,9 @@ public:
     void isAttributePacked(bool value) {
         setFlag(fIsAttributePacked, value);
     }
+    bool isControlFlowKeyword() const {
+        return getFlag(fIsControlFlowKeyword);
+    }
     bool isOperatorKeyword() const {
         return getFlag(fIsOperatorKeyword);
     }
@@ -889,12 +892,12 @@ private:
         fIsAttributeNothrow     = (1 << 13), // __attribute__((nothrow)), __declspec(nothrow)
         fIsAttributeUsed        = (1 << 14), // __attribute__((used))
         fIsAttributePacked      = (1 << 15), // __attribute__((packed))
-        fIsOperatorKeyword      = (1 << 16), // operator=, etc
-        fIsComplex              = (1 << 17), // complex/_Complex type
-        fIsEnumType             = (1 << 18), // enumeration type
-
-        fIsName                 = (1 << 19),
-        fIsLiteral              = (1 << 20),
+        fIsControlFlowKeyword   = (1 << 16), // if/switch/while/...
+        fIsOperatorKeyword      = (1 << 17), // operator=, etc
+        fIsComplex              = (1 << 18), // complex/_Complex type
+        fIsEnumType             = (1 << 19), // enumeration type
+        fIsName                 = (1 << 20),
+        fIsLiteral              = (1 << 21),
     };
 
     unsigned int _flags;

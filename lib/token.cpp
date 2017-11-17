@@ -65,8 +65,23 @@ Token::~Token()
     delete _values;
 }
 
+static const std::set<std::string> controlFlowKeywords = make_container< std::set<std::string> > () <<
+        "goto" <<
+        "do" <<
+        "if" <<
+        "else" <<
+        "for" <<
+        "while" <<
+        "switch" <<
+        "case" <<
+        "break" <<
+        "continue" <<
+        "return";
+
 void Token::update_property_info()
 {
+    setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(_str) != controlFlowKeywords.end());
+
     if (!_str.empty()) {
         if (_str == "true" || _str == "false")
             tokType(eBoolean);

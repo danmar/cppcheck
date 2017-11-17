@@ -427,10 +427,10 @@ void CheckFunctions::checkLibraryMatchFunctions()
         else if (New)
             continue;
 
-        if (!Token::Match(tok, "%name% (") || Token::Match(tok, "for|if|while|switch|sizeof|catch|asm|return"))
+        if (!Token::Match(tok, "%name% (") || Token::Match(tok, "asm|sizeof|catch"))
             continue;
 
-        if (tok->varId() != 0 || tok->type() || tok->isStandardType())
+        if (tok->varId() != 0 || tok->type() || tok->isStandardType() || tok->isControlFlowKeyword())
             continue;
 
         if (tok->linkAt(1)->strAt(1) == "(")
