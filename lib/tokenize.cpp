@@ -8175,7 +8175,7 @@ void Tokenizer::checkConfiguration() const
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%name% ("))
             continue;
-        if (Token::Match(tok, "if|for|while|switch"))
+        if (tok->isControlFlowKeyword())
             continue;
         for (const Token *tok2 = tok->tokAt(2); tok2 && tok2->str() != ")"; tok2 = tok2->next()) {
             if (tok2->str() == ";") {
