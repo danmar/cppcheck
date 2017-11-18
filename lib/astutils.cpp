@@ -398,6 +398,16 @@ bool isReturnScope(const Token * const endToken)
     return false;
 }
 
+bool isVariableChangedByFunctionCall(const Token *tok, unsigned int varid, const Settings *settings, bool *inconclusive)
+{
+    if (!tok)
+        return false;
+    if (tok->varId() == varid)
+        return isVariableChangedByFunctionCall(tok, settings, inconclusive);
+    return isVariableChangedByFunctionCall(tok->astOperand1(), varid, settings, inconclusive) ||
+           isVariableChangedByFunctionCall(tok->astOperand2(), varid, settings, inconclusive);
+}
+
 bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
@@ -411,7 +421,17 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
         ;
     else if (Token::Match(tok->tokAt(addressOf?-2:-1), "[(,] &| %name% [,)]"))
         ;
-    else
+    else if (Token::Match(tok->tokAt(addressOf?-2:-1), "[?:] &| %name% [:,)]")) {
+        const Token *parent = tok->astParent();
+        if (parent == tok->previous() && parent->str() == "&")
+            parent = parent->astParent();
+        while (Token::Match(parent, "[?:]"))
+            parent = parent->astParent();
+        while (Token::simpleMatch(parent, ","))
+            parent = parent->astParent();
+        if (!parent || parent->str() != "(")
+            return false;
+    } else
         return false;
 
     // reinterpret_cast etc..

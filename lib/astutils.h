@@ -78,6 +78,17 @@ bool isReturnScope(const Token *endToken);
  * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
  * the return value is false and the output parameter inconclusive is set to true
  *
+ * @param tok           ast tree
+ * @param varid         Variable Id
+ * @param settings      program settings
+ * @param inconclusive  pointer to output variable which indicates that the answer of the question is inconclusive
+ */
+bool isVariableChangedByFunctionCall(const Token *tok, unsigned int varid, const Settings *settings, bool *inconclusive);
+
+/** Is variable changed by function call?
+ * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
+ * the return value is false and the output parameter inconclusive is set to true
+ *
  * @param tok           token of variable in function call
  * @param settings      program settings
  * @param inconclusive pointer to output variable which indicates that the answer of the question is inconclusive

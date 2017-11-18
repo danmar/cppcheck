@@ -115,27 +115,6 @@ static void changeKnownToPossible(std::list<ValueFlow::Value> &values)
         it->changeKnownToPossible();
 }
 
-static bool mightBeNonConstPointerFunctionArg(const Token *tok)
-{
-    // TODO: check if argument might be non-const pointer
-    const Token *parent = tok->astParent();
-    while (parent && parent->str() == ",")
-        parent = parent->astParent();
-    return (parent && Token::Match(parent->previous(), "%name% ("));
-}
-
-static const Token *findVariableInAST(const Token *tok, unsigned int varid)
-{
-    if (!tok)
-        return nullptr;
-    if (tok->varId() == varid)
-        return tok;
-    const Token *ret1 = findVariableInAST(tok->astOperand1(), varid);
-    if (ret1)
-        return ret1;
-    return findVariableInAST(tok->astOperand2(), varid);
-}
-
 /**
  * Is condition always false when variable has given value?
  * \param condition   top ast token in condition
@@ -1858,7 +1837,7 @@ static bool valueFlowForward(Token * const               startToken,
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = values.begin(); it != values.end(); ++it)
                     valueFlowAST(const_cast<Token*>(expr), varid, *it, settings);
-                if ((expr->valueType() && expr->valueType()->pointer) && mightBeNonConstPointerFunctionArg(tok2) && findVariableInAST(expr,varid))
+                if (isVariableChangedByFunctionCall(expr, varid, settings, nullptr))
                     changeKnownToPossible(values);
             } else {
                 std::list<ValueFlow::Value>::const_iterator it;
@@ -1871,8 +1850,7 @@ static bool valueFlowForward(Token * const               startToken,
                     else
                         valueFlowAST(const_cast<Token*>(op2), varid, *it, settings);
                 }
-
-                if (mightBeNonConstPointerFunctionArg(tok2) && findVariableInAST(op2,varid))
+                if (isVariableChangedByFunctionCall(op2, varid, settings, nullptr))
                     changeKnownToPossible(values);
             }
 
