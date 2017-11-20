@@ -566,9 +566,7 @@ void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
 {
     const simplecpp::DUI dui = createDUI(_settings, emptyString, files[0]);
 
-    simplecpp::OutputList outputList;
-
-    tokenlists = simplecpp::load(rawtokens, files, dui, &outputList);
+    tokenlists = simplecpp::load(rawtokens, files, dui, nullptr);
 }
 
 void Preprocessor::removeComments()
