@@ -846,7 +846,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                             break;
                                         case 'j':
-                                            if (argInfo.typeToken->originalName() != "intmax_t")
+                                            if (!typesMatch(argInfo.typeToken->originalName(), "intmax_t"))
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                             break;
                                         case 'z':
