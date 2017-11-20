@@ -827,12 +827,12 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                     invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                 else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                         argInfo.typeToken->originalName() == "intmax_t")
+                                                         typesMatch(argInfo.typeToken->originalName(), "intmax_t"))
                                                     invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                             } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                             else if (typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
-                                                     argInfo.typeToken->originalName() == "intmax_t")
+                                                     typesMatch(argInfo.typeToken->originalName(), "intmax_t"))
                                                 invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                             break;
                                         case 'I':
