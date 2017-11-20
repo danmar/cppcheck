@@ -1026,7 +1026,6 @@ void CheckIO::checkFormatString(const Token * const tok,
                                                 if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
                                                     invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                             } else if (!(typesMatch(argInfo.typeToken->originalName(), "size_t") ||
-                                                         typesMatch(argInfo.typeToken->originalName(), "ptrdiff_t") ||
                                                          argInfo.typeToken->originalName() == "WPARAM" ||
                                                          argInfo.typeToken->originalName() == "UINT_PTR" ||
                                                          argInfo.typeToken->originalName() == "LONG_PTR" ||

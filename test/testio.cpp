@@ -3854,15 +3854,15 @@ private:
         TEST_PRINTF_WARN("%Ix", "size_t", "void *");
         TEST_PRINTF_NOWARN("%Ix", "size_t", "size_t");
         TEST_PRINTF_WARN_AKA("%Ix", "size_t", "ssize_t", "signed long", "signed long long");
-        //TODO TEST_PRINTF_WARN_AKA("%Ix", "size_t", "ptrdiff_t", "signed long", "signed long long");
-        //TODO TEST_PRINTF_WARN_AKA("%Ix", "size_t", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
+        TEST_PRINTF_WARN_AKA("%Ix", "size_t", "ptrdiff_t", "signed long", "signed long long");
+        TEST_PRINTF_WARN_AKA("%Ix", "size_t", "unsigned ptrdiff_t", "unsigned long", "unsigned long long");
         TEST_PRINTF_WARN_AKA("%Ix", "size_t", "intmax_t", "signed long", "signed long long");
         TEST_PRINTF_WARN_AKA("%Ix", "size_t", "uintmax_t", "unsigned long", "unsigned long long");
         TEST_PRINTF_WARN_AKA("%Ix", "size_t", "intptr_t", "signed long", "signed long long");
         TEST_PRINTF_WARN_AKA("%Ix", "size_t", "uintptr_t", "unsigned long", "unsigned long long");
         TEST_PRINTF_NOWARN("%Ix", "size_t", "std::size_t");
         TEST_PRINTF_WARN_AKA("%Ix", "size_t", "std::ssize_t", "signed long", "signed long long");
-        //TODO TEST_PRINTF_WARN_AKA("%Ix", "size_t", "std::ptrdiff_t", "signed long", "signed long long");
+        TEST_PRINTF_WARN_AKA("%Ix", "size_t", "std::ptrdiff_t", "signed long", "signed long long");
         TEST_PRINTF_WARN_AKA("%Ix", "size_t", "std::intmax_t", "signed long", "signed long long");
         TEST_PRINTF_WARN_AKA("%Ix", "size_t", "std::uintmax_t", "unsigned long", "unsigned long long");
         TEST_PRINTF_WARN_AKA("%Ix", "size_t", "std::intptr_t", "signed long", "signed long long");
@@ -4050,6 +4050,7 @@ private:
               "}", false, true, Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long}'.\n"
                       "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long}'.\n"
+                      "[test.cpp:9]: (portability) %Ix in format string (no. 3) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long}'.\n"
                       "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka signed int}'.\n"
                       "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
                       "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka signed long long}'.\n"
@@ -4071,6 +4072,7 @@ private:
               "}", false, true, Settings::Win64);
         ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long long}'.\n"
                       "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long long}'.\n"
+                      "[test.cpp:9]: (portability) %Ix in format string (no. 3) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long long}'.\n"
                       "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka signed int}'.\n"
                       "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
                       "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka signed long long}'.\n"
