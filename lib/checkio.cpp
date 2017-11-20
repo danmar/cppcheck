@@ -1003,7 +1003,13 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             if (specifier[1] == 'l') {
                                                 if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                     invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                                else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                         argInfo.typeToken->originalName() == "uintmax_t")
+                                                    invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                             } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
+                                                invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                            else if (typesMatch(argInfo.typeToken->originalName(), "size_t") ||
+                                                         argInfo.typeToken->originalName() == "uintmax_t")
                                                 invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                             break;
                                         case 'j':
