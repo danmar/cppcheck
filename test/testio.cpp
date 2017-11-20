@@ -1074,6 +1074,7 @@ private:
         TEST_SCANF_WARN("%ld","long","unsigned long");
         TEST_SCANF_WARN("%ld","long","void *");
         TEST_SCANF_WARN_AKA("%ld","long","size_t","unsigned long","unsigned long long");
+        TEST_SCANF_WARN_AKA("%ld","long","intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%ld","long","std::ptrdiff_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA_WIN64("%ld","long","std::intptr_t", "signed long long");
         TEST_SCANF_WARN_AKA("%ld","long","std::uintptr_t", "unsigned long", "unsigned long long");
@@ -1148,6 +1149,7 @@ private:
         TEST_SCANF_WARN("%lld","long long","unsigned long long");
         TEST_SCANF_WARN("%lld","long long","void *");
         TEST_SCANF_WARN_AKA("%lld","long long","size_t", "unsigned long", "unsigned long long");
+        TEST_SCANF_WARN_AKA("%lld","long long","intmax_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA("%lld","long long","std::ptrdiff_t", "signed long", "signed long long");
         TEST_SCANF_WARN_AKA_WIN32("%lld","long long","std::intptr_t", "signed long");
 
