@@ -3255,6 +3255,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %hx in format string (no. 1) requires 'unsigned short' but the argument type is 'char'.\n"
                       "[test.cpp:2]: (warning) %hx in format string (no. 2) requires 'unsigned short' but the argument type is 'unsigned char'.\n"
+                      "[test.cpp:2]: (warning) %hx in format string (no. 3) requires 'unsigned short' but the argument type is 'signed short'.\n"
                       "[test.cpp:2]: (warning) %hx in format string (no. 5) requires 'unsigned short' but the argument type is 'signed int'.\n"
                       "[test.cpp:2]: (warning) %hx in format string (no. 6) requires 'unsigned short' but the argument type is 'unsigned int'.\n"
                       "[test.cpp:2]: (warning) %hx in format string (no. 7) requires 'unsigned short' but the argument type is 'signed long'.\n"
@@ -3496,7 +3497,7 @@ private:
         TEST_PRINTF_WARN("%hx", "unsigned short", "char");
         TEST_PRINTF_WARN("%hx", "unsigned short", "signed char");
         TEST_PRINTF_WARN("%hx", "unsigned short", "unsigned char");
-        //TODO TEST_PRINTF_WARN("%hx", "unsigned short", "signed short");
+        TEST_PRINTF_WARN("%hx", "unsigned short", "signed short");
         TEST_PRINTF_NOWARN("%hx", "unsigned short", "unsigned short");
         TEST_PRINTF_WARN("%hx", "unsigned short", "signed int");
         TEST_PRINTF_WARN("%hx", "unsigned short", "unsigned int");

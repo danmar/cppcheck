@@ -996,7 +996,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                             if (specifier[1] == 'h') {
                                                 if (!(argInfo.typeToken->str() == "char" && argInfo.typeToken->isUnsigned()))
                                                     invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                            } else if (argInfo.typeToken->str() != "short")
+                                            } else if (!(argInfo.typeToken->str() == "short" && argInfo.typeToken->isUnsigned()))
                                                 invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                             break;
                                         case 'l':
