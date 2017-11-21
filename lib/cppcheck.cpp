@@ -152,6 +152,10 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 			toolinfo += _settings.isEnabled(Settings::INFORMATION) ? 'i' : ' ';
 			toolinfo += _settings.userDefines;
 
+			// Reset filestream in case it was used already
+			fileStream.clear();
+			fileStream.seekg(0, std::ios::beg);
+
 			// Read complete file to generate checksum over it
 			const std::string filecontent(std::string((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>()));
 
@@ -167,7 +171,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 				return exitcode;  // known results => no need to reanalyze file
 			}
 
-			// reset stream state and position for analysis
+			// Reset stream state and position to beginning for analysis
 			fileStream.clear();
 			fileStream.seekg(0, std::ios::beg);
 		}
