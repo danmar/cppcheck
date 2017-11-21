@@ -2374,7 +2374,8 @@ private:
               "  printf(\"%hhx %hhd\", sc, uc);\n"
               "  printf(\"%hd %hu\", si, usi);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %hhd in format string (no. 2) requires 'char' but the argument type is 'unsigned char'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hhx in format string (no. 1) requires 'unsigned char' but the argument type is 'signed char'.\n"
+                      "[test.cpp:2]: (warning) %hhd in format string (no. 2) requires 'char' but the argument type is 'unsigned char'.\n", errout.str());
 
         check("void foo(long long int lli, unsigned long long int ulli, long int li, unsigned long int uli) {\n"
               "  printf(\"%llo %llx\", lli, ulli);\n"
@@ -3219,7 +3220,8 @@ private:
         check("void foo(char c, unsigned char uc, short s, unsigned short us, int i, unsigned int ui, long l, unsigned long ul) {\n"
               "    printf(\"%hhx %hhx %hhx %hhx %hhx %hhx %hhx %hhx\", c, uc, s, us, i, ui, l, ul);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %hhx in format string (no. 3) requires 'unsigned char' but the argument type is 'signed short'.\n"
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %hhx in format string (no. 1) requires 'unsigned char' but the argument type is 'char'.\n"
+                      "[test.cpp:2]: (warning) %hhx in format string (no. 3) requires 'unsigned char' but the argument type is 'signed short'.\n"
                       "[test.cpp:2]: (warning) %hhx in format string (no. 4) requires 'unsigned char' but the argument type is 'unsigned short'.\n"
                       "[test.cpp:2]: (warning) %hhx in format string (no. 5) requires 'unsigned char' but the argument type is 'signed int'.\n"
                       "[test.cpp:2]: (warning) %hhx in format string (no. 6) requires 'unsigned char' but the argument type is 'unsigned int'.\n"
@@ -3547,8 +3549,8 @@ private:
         TEST_PRINTF_WARN_AKA("%hhu", "unsigned char", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_PRINTF_WARN("%hhx", "unsigned char", "bool");
-        //TODO TEST_PRINTF_WARN("%hhx", "unsigned char", "char");
-        //TODO TEST_PRINTF_WARN("%hhx", "unsigned char", "signed char");
+        TEST_PRINTF_WARN("%hhx", "unsigned char", "char");
+        TEST_PRINTF_WARN("%hhx", "unsigned char", "signed char");
         TEST_PRINTF_NOWARN("%hhx", "unsigned char", "unsigned char");
         TEST_PRINTF_WARN("%hhx", "unsigned char", "signed short");
         TEST_PRINTF_WARN("%hhx", "unsigned char", "unsigned short");
