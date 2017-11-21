@@ -163,6 +163,14 @@ public:
     bool validateCfg(const std::string &cfg, const std::list<simplecpp::MacroUsage> &macroUsageList);
     void validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro);
 
+	/**
+	* Calculate CRC32 checksum. Using string.
+	*
+	* @param data		string to generate checksum for
+	* @return CRC32 checksum
+	*/
+	static unsigned int calculateChecksum(const std::string &data);
+
     /**
      * Calculate CRC32 checksum. Using toolinfo, tokens1, filedata.
      *

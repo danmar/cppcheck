@@ -868,6 +868,11 @@ static std::uint32_t crc32(const std::string &data)
     return crc ^ ~0U;
 }
 
+unsigned int Preprocessor::calculateChecksum(const std::string &data)
+{
+	return crc32(data);
+}
+
 unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const
 {
     std::ostringstream ostr;
