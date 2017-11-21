@@ -153,7 +153,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 			toolinfo += _settings.userDefines;
 
 			// Read complete file to generate checksum over it
-			const std::string filecontent(std::istreambuf_iterator<char>(fileStream), {});
+			const std::string filecontent(std::string((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>()));
 
 			// Calculate checksum so it can be compared with old checksum / future checksums
 			const unsigned int checksum = preprocessor.calculateChecksum(toolinfo+'\n'+filecontent);
