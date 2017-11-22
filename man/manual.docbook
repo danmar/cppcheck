@@ -525,23 +525,15 @@ cppcheck -DA --force file.c</programlisting>
   <chapter>
     <title>XML output</title>
 
-    <para>Cppcheck can generate output in <literal>XML</literal> format. There
-    is an old <literal>XML</literal> format (version 1) and a new
-    <literal>XML</literal> format (version 2). Please use the new version if
-    you can.</para>
-
-    <para>The old version is kept for backwards compatibility only. It will
-    not be changed, but it will likely be removed someday. Use
+    <para>Cppcheck can generate output in <literal>XML</literal> format. Use
     <parameter>--xml</parameter> to enable this format.</para>
 
-    <para>The new version fixes a few problems with the old format. The new
-    format will probably be updated in future versions of cppcheck with new
-    attributes and elements. A sample command to check a file and output
-    errors in the new <literal>XML</literal> format:</para>
+    <para>A sample command to check a file and output
+    errors in the <literal>XML</literal> format:</para>
 
-    <programlisting>cppcheck --xml-version=2 file1.cpp</programlisting>
+    <programlisting>cppcheck --xml file1.cpp</programlisting>
 
-    <para>Here is a sample version 2 report:</para>
+    <para>Here is a sample report:</para>
 
     <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;results version="2"&gt;
