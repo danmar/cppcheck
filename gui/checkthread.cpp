@@ -174,7 +174,23 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 
             const std::string &buildDir = mCppcheck.settings().buildDir;
             if (!buildDir.empty()) {
-                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename, fileSettings->cfg));
+				std::ifstream fileStream(fileSettings->filename);
+
+				fileStream.open();
+
+				if (fileStream.is_open())
+					break;
+
+				// Get toolinfo
+				std::string toolinfo = AnalyzerInformation::getToolInfo(mCppcheck.settings());
+
+				// Read complete file to generate checksum over it
+				const std::string filecontent(std::string((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>()));
+
+				// Calculate checksum so it can be compared with old checksum / future checksums
+				const unsigned int checksum = preprocessor.calculateChecksum(toolinfo + '\n' + filecontent);
+
+                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, checksum));
 
                 QStringList args2(args);
                 args2.insert(0,"-E");
