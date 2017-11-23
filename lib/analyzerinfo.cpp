@@ -32,18 +32,6 @@ AnalyzerInformation::~AnalyzerInformation()
     close();
 }
 
-static std::string getFilename(const std::string &fullpath)
-{
-    std::string::size_type pos1 = fullpath.find_last_of("/\\");
-    pos1 = (pos1 == std::string::npos) ? 0U : (pos1 + 1U);
-    std::string::size_type pos2 = fullpath.rfind('.');
-    if (pos2 < pos1)
-        pos2 = std::string::npos;
-    if (pos2 != std::string::npos)
-        pos2 = pos2 - pos1;
-    return fullpath.substr(pos1,pos2);
-}
-
 void AnalyzerInformation::close()
 {
     analyzerInfoFile.clear();
