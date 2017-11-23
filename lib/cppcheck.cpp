@@ -229,14 +229,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
         if (!_settings.buildDir.empty()) {
             // Get toolinfo
-            std::string toolinfo;
-            toolinfo += CPPCHECK_VERSION_STRING;
-            toolinfo += _settings.isEnabled(Settings::WARNING) ? 'w' : ' ';
-            toolinfo += _settings.isEnabled(Settings::STYLE) ? 's' : ' ';
-            toolinfo += _settings.isEnabled(Settings::PERFORMANCE) ? 'p' : ' ';
-            toolinfo += _settings.isEnabled(Settings::PORTABILITY) ? 'p' : ' ';
-            toolinfo += _settings.isEnabled(Settings::INFORMATION) ? 'i' : ' ';
-            toolinfo += _settings.userDefines;
+			std::string toolinfo = AnalyzerInformation::getToolInfo(_settings);
 
             // Calculate checksum so it can be compared with old checksum / future checksums
             const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo);
