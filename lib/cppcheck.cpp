@@ -241,7 +241,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             // Calculate checksum so it can be compared with old checksum / future checksums
             const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo);
             std::list<ErrorLogger::ErrorMessage> errors;
-            if (!analyzerInformation.analyzeFile(_settings.buildDir, filename, cfgname, checksum, &errors)) {
+            if (!analyzerInformation.analyzeFile(_settings.buildDir, filename, checksum, &errors)) {
                 while (!errors.empty()) {
                     reportErr(errors.front());
                     errors.pop_front();

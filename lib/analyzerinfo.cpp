@@ -69,7 +69,7 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned long long
     return true;
 }
 
-bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, unsigned long long checksum, std::list<ErrorLogger::ErrorMessage> *errors)
+bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, unsigned long long checksum, std::list<ErrorLogger::ErrorMessage> *errors)
 {
     if (buildDir.empty() || sourcefile.empty())
         return true;
