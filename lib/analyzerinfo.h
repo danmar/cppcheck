@@ -56,6 +56,7 @@ public:
     void reportErr(const ErrorLogger::ErrorMessage &msg, bool verbose);
     void setFileInfo(const std::string &check, const std::string &fileInfo);
 
+	static std::string getAnalyzerInfoFile(const std::string &buildDir, unsigned long long checksum);
 	static std::string getToolInfo(const Settings &settings);
 private:
     std::ofstream fout;

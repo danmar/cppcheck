@@ -41,6 +41,11 @@ void AnalyzerInformation::close()
     }
 }
 
+std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, unsigned long long checksum)
+{
+	return buildDir + "/" + std::to_string(checksum);
+}
+
 static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned long long checksum, std::list<ErrorLogger::ErrorMessage> *errors)
 {
     tinyxml2::XMLDocument doc;
@@ -70,7 +75,7 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
         return true;
     close();
 
-	analyzerInfoFile = buildDir + "/" + std::to_string(checksum);
+	analyzerInfoFile = getAnalyzerInfoFile(buildDir, checksum);
 
     if (skipAnalysis(analyzerInfoFile, checksum, errors))
         return false;
