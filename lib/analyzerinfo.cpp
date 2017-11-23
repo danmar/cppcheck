@@ -43,27 +43,6 @@ static std::string getFilename(const std::string &fullpath)
     return fullpath.substr(pos1,pos2);
 }
 
-void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::list<ImportProject::FileSettings> &fileSettings)
-{
-    std::map<std::string, unsigned int> fileCount;
-
-    const std::string filesTxt(buildDir + "/files.txt");
-    std::ofstream fout(filesTxt.c_str());
-    for (std::list<std::string>::const_iterator f = sourcefiles.begin(); f != sourcefiles.end(); ++f) {
-        const std::string afile = getFilename(*f);
-        if (fileCount.find(afile) == fileCount.end())
-            fileCount[afile] = 0;
-        fout << afile << ".a" << (++fileCount[afile]) << "::" << Path::fromNativeSeparators(*f) << '\n';
-    }
-
-    for (std::list<ImportProject::FileSettings>::const_iterator fs = fileSettings.begin(); fs != fileSettings.end(); ++fs) {
-        const std::string afile = getFilename(fs->filename);
-        if (fileCount.find(afile) == fileCount.end())
-            fileCount[afile] = 0;
-        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs->cfg << ":" << Path::fromNativeSeparators(fs->filename) << std::endl;
-    }
-}
-
 void AnalyzerInformation::close()
 {
     analyzerInfoFile.clear();
@@ -96,43 +75,13 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned long long
     return true;
 }
 
-std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg)
-{
-    const std::string files(buildDir + "/files.txt");
-    std::ifstream fin(files.c_str());
-    if (fin.is_open()) {
-        std::string line;
-        const std::string endsWith(':' + cfg + ':' + sourcefile);
-        while (std::getline(fin,line)) {
-            if (line.size() <= endsWith.size() + 2U)
-                continue;
-            if (line.compare(line.size()-endsWith.size(), endsWith.size(), endsWith) != 0)
-                continue;
-            std::ostringstream ostr;
-            ostr << buildDir << '/' << line.substr(0,line.find(':'));
-            return ostr.str();
-        }
-    }
-
-    std::string filename = Path::fromNativeSeparators(buildDir);
-    if (!endsWith(filename, '/'))
-        filename += '/';
-    const std::string::size_type pos = sourcefile.rfind('/');
-    if (pos == std::string::npos)
-        filename += sourcefile;
-    else
-        filename += sourcefile.substr(pos+1);
-    filename += ".analyzerinfo";
-    return filename;
-}
-
 bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, unsigned long long checksum, std::list<ErrorLogger::ErrorMessage> *errors)
 {
     if (buildDir.empty() || sourcefile.empty())
         return true;
     close();
 
-    analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg);
+	analyzerInfoFile = buildDir + "/" + std::to_string(checksum);
 
     if (skipAnalysis(analyzerInfoFile, checksum, errors))
         return false;
