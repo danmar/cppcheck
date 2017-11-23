@@ -20,6 +20,7 @@
 
 #include "path.h"
 #include "utils.h"
+#include "version.h"
 
 #include <tinyxml2.h>
 #include <cstring>
@@ -107,4 +108,18 @@ void AnalyzerInformation::setFileInfo(const std::string &check, const std::strin
 {
     if (fout.is_open() && !fileInfo.empty())
         fout << "  <FileInfo check=\"" << check << "\">\n" << fileInfo << "  </FileInfo>\n";
+}
+
+std::string AnalyzerInformation::getToolInfo(const Settings& settings)
+{
+	std::string toolinfo;
+	toolinfo += CPPCHECK_VERSION_STRING;
+	toolinfo += settings.isEnabled(Settings::WARNING) ? 'w' : ' ';
+	toolinfo += settings.isEnabled(Settings::STYLE) ? 's' : ' ';
+	toolinfo += settings.isEnabled(Settings::PERFORMANCE) ? 'p' : ' ';
+	toolinfo += settings.isEnabled(Settings::PORTABILITY) ? 'p' : ' ';
+	toolinfo += settings.isEnabled(Settings::INFORMATION) ? 'i' : ' ';
+	toolinfo += settings.userDefines;
+
+	return toolinfo;
 }

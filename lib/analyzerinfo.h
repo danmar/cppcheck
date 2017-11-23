@@ -24,6 +24,7 @@
 #include "config.h"
 #include "errorlogger.h"
 #include "importproject.h"
+#include "settings.h"
 
 #include <fstream>
 #include <list>
@@ -54,6 +55,8 @@ public:
     bool analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, unsigned long long checksum, std::list<ErrorLogger::ErrorMessage> *errors);
     void reportErr(const ErrorLogger::ErrorMessage &msg, bool verbose);
     void setFileInfo(const std::string &check, const std::string &fileInfo);
+
+	static std::string getToolInfo(const Settings &settings);
 private:
     std::ofstream fout;
     std::string analyzerInfoFile;
