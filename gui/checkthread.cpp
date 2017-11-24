@@ -23,7 +23,6 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QSettings>
-#include <fstream>
 #include "checkthread.h"
 #include "erroritem.h"
 #include "threadresult.h"
