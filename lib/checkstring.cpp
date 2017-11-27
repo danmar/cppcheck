@@ -32,6 +32,7 @@
 #include <cstddef>
 #include <list>
 #include <vector>
+#include <stack>
 #include <utility>
 
 //---------------------------------------------------------------------------
@@ -329,6 +330,91 @@ void CheckString::incorrectStringCompareError(const Token *tok, const std::strin
 void CheckString::incorrectStringBooleanError(const Token *tok, const std::string& string)
 {
     reportError(tok, Severity::warning, "incorrectStringBooleanError", "Conversion of string literal " + string + " to bool always evaluates to true.", CWE571, false);
+}
+
+//---------------------------------------------------------------------------
+// always true: strcmp(str,"a")==0 || strcmp(str,"b")
+// TODO: Library configuration for string comparison functions
+//---------------------------------------------------------------------------
+void CheckString::overlappingStringComparisons()
+{
+    if (!_settings->isEnabled(Settings::WARNING))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+			if (tok->str() != "||")
+				continue;
+			std::list<const Token *> equals0;
+			std::list<const Token *> notEquals0;
+			std::stack<const Token *> tokens;
+			tokens.push(tok);
+			while (!tokens.empty()) {
+				const Token * const t = tokens.top();
+				tokens.pop();
+				if (!t)
+					continue;
+				if (t->str() == "||") {
+					tokens.push(t->astOperand1());
+					tokens.push(t->astOperand2());
+					continue;
+				}
+				if (t->str() == "==") {
+					if (Token::simpleMatch(t->astOperand1(), "(") && Token::simpleMatch(t->astOperand2(), "0"))
+						equals0.push_back(t->astOperand1());
+					else if (Token::simpleMatch(t->astOperand2(), "(") && Token::simpleMatch(t->astOperand1(), "0"))
+						equals0.push_back(t->astOperand2());
+					continue;
+				}
+				if (t->str() == "!=") {
+					if (Token::simpleMatch(t->astOperand1(), "(") && Token::simpleMatch(t->astOperand2(), "0"))
+						notEquals0.push_back(t->astOperand1());
+					else if (Token::simpleMatch(t->astOperand2(), "(") && Token::simpleMatch(t->astOperand1(), "0"))
+						notEquals0.push_back(t->astOperand2());
+					continue;
+				}
+				if (t->str() == "!" && Token::simpleMatch(t->astOperand1(), "("))
+					equals0.push_back(t->astOperand1());
+				else if (t->str() == "(")
+					notEquals0.push_back(t);
+			}
+
+			bool error = false;
+			for (std::list<const Token *>::const_iterator eq0 = equals0.begin(); !error && eq0 != equals0.end(); ++eq0) {
+				for (std::list<const Token *>::const_iterator ne0 = notEquals0.begin(); !error && ne0 != notEquals0.end(); ++ne0) {
+					const Token *tok1 = *eq0;
+					const Token *tok2 = *ne0;
+					if (!Token::simpleMatch(tok1->previous(), "strcmp ("))
+						continue;
+					if (!Token::simpleMatch(tok2->previous(), "strcmp ("))
+						continue;
+					const std::vector<const Token *> args1 = getArguments(tok1->previous());
+					const std::vector<const Token *> args2 = getArguments(tok2->previous());
+					if (args1.size() != 2 || args2.size() != 2)
+						continue;
+					if (args1[1]->isLiteral() && 
+					    args2[1]->isLiteral() &&
+					    args1[1]->str() != args2[1]->str() &&
+					    isSameExpression(_tokenizer->isCPP(), true, args1[0], args2[0], _settings->library, true))
+						overlappingStringComparisonsError(tok1, tok2);
+				}
+			}
+		}
+	}
+}
+
+void CheckString::overlappingStringComparisonsError(const Token *eq0, const Token *ne0)
+{
+	std::string eq0Expr(eq0 ? eq0->expressionString() : std::string("strcmp(x,\"abc\")"));
+	if (eq0 && eq0->astParent()->str() == "!")
+	     eq0Expr = "!" + eq0Expr;
+	else
+		eq0Expr += " == 0";
+	const std::string ne0Expr = (ne0 ? ne0->expressionString() : std::string("strcmp(x,\"def\")")) + " != 0";
+	reportError(ne0, Severity::warning, "overlappingStringComparisons", "The comparison operator in '" + ne0Expr + "' should maybe be '==' instead, currently the expression '" + eq0Expr + "' is redundant.");
 }
 
 //---------------------------------------------------------------------------

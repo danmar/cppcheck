@@ -57,6 +57,7 @@ public:
         checkString.strPlusChar();
         checkString.checkSuspiciousStringCompare();
         checkString.stringLiteralWrite();
+        checkString.overlappingStringComparisons();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -84,6 +85,9 @@ public:
     /** @brief %Check for suspicious code that compares string literals for equality */
     void checkAlwaysTrueOrFalseStringCompare();
 
+    /** @brief %Check for overlapping string comparisons */
+    void overlappingStringComparisons();
+
     /** @brief %Check for overlapping source and destination passed to sprintf() */
     void sprintfOverlappingData();
 
@@ -97,6 +101,7 @@ private:
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void suspiciousStringCompareError(const Token* tok, const std::string& var);
     void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
+    void overlappingStringComparisonsError(const Token* tok1, const Token *tok2);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckString c(nullptr, settings, errorLogger);
@@ -110,6 +115,7 @@ private:
         c.incorrectStringBooleanError(nullptr, "\"Hello World\"");
         c.alwaysTrueFalseStringCompareError(nullptr, "str1", "str2");
         c.alwaysTrueStringVariableCompareError(nullptr, "varname1", "varname2");
+        c.overlappingStringComparisonsError(nullptr, nullptr);
     }
 
     static std::string myName() {
@@ -123,7 +129,8 @@ private:
                "- suspicious condition (runtime comparison of string literals)\n"
                "- suspicious condition (string literals as boolean)\n"
                "- suspicious comparison of a string literal with a char* variable\n"
-               "- suspicious comparison of '\\0' with a char* variable\n";
+               "- suspicious comparison of '\\0' with a char* variable\n"
+               "- overlapping string comparisons (strcmp(str,\"x\")==0 || strcmp(str,\"y\")!=0)";
     }
 };
 /// @}
