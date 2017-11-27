@@ -51,7 +51,7 @@ private:
         TEST_CASE(sprintf4);        // struct member
 
         TEST_CASE(incorrectStringCompare);
-        
+
         TEST_CASE(overlappingStringComparisons);
     }
 
@@ -581,13 +581,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-	void overlappingStringComparisons() {
-		check("void f(const char *str) {\n"
+    void overlappingStringComparisons() {
+        check("void f(const char *str) {\n"
               "  if (strcmp(str, \"abc\") == 0 || strcmp(str, \"def\")) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) The comparison operator in 'strcmp(str,\"def\") != 0' should maybe be '==' instead, currently the expression 'strcmp(str,\"abc\") == 0' is redundant.\n", errout.str());
 
-		check("struct X {\n"
+        check("struct X {\n"
               "  char *str;\n"
               "};\n"
               "\n"
@@ -595,7 +595,7 @@ private:
               "  if (strcmp(x->str, \"abc\") == 0 || strcmp(x->str, \"def\")) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (warning) The comparison operator in 'strcmp(x->str,\"def\") != 0' should maybe be '==' instead, currently the expression 'strcmp(x->str,\"abc\") == 0' is redundant.\n", errout.str());
-	}
+    }
 };
 
 REGISTER_TEST(TestString)

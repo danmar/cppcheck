@@ -564,11 +564,11 @@ private:
 
     void garbageCode36() { // #6334
         ASSERT_THROW(checkCode("{ } < class template < > , { = } ; class... >\n"
-                     "struct Y { }\n"
-                     "class Types { }\n"
-                     "( X < int > \"uses template\" ) ( < ( ) \"uses ;"
-                     "( int int ::primary \"uses template\" ) int double \"uses )"
-                     "::primary , \"uses template\" ;\n"), InternalError);
+                               "struct Y { }\n"
+                               "class Types { }\n"
+                               "( X < int > \"uses template\" ) ( < ( ) \"uses ;"
+                               "( int int ::primary \"uses template\" ) int double \"uses )"
+                               "::primary , \"uses template\" ;\n"), InternalError);
     }
 
     void garbageCode37() {
