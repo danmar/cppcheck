@@ -130,7 +130,7 @@ private:
                "- suspicious condition (string literals as boolean)\n"
                "- suspicious comparison of a string literal with a char* variable\n"
                "- suspicious comparison of '\\0' with a char* variable\n"
-               "- overlapping string comparisons (strcmp(str,\"x\")==0 || strcmp(str,\"y\")!=0)";
+               "- overlapping string comparisons (strcmp(str,\"x\")==0 || strcmp(str,\"y\")!=0)\n";
     }
 };
 /// @}
