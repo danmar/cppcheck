@@ -1451,7 +1451,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
                             QMessageBox::Yes | QMessageBox::No,
                             this);
             if (msg.exec() == QMessageBox::Yes) {
-                QDir().mkdir(buildDir);
+                QDir().mkpath(buildDir);
             }
         }
     }
