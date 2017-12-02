@@ -113,6 +113,9 @@ private:
         TEST_CASE(templateNamePosition);
 
         TEST_CASE(expandSpecialized);
+
+        // Test TemplateSimplifier::instantiateMatch
+        TEST_CASE(instantiateMatch);
     }
 
     std::string tok(const char code[], bool simplify = true, bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -1472,6 +1475,31 @@ private:
     void expandSpecialized() {
         ASSERT_EQUALS("class A < int > { } ;", tok("template<> class A<int> {};"));
         ASSERT_EQUALS("class A < int > : public B { } ;", tok("template<> class A<int> : public B {};"));
+    }
+
+    unsigned int instantiateMatch(const char code[], const std::string& name, const std::size_t numberOfArguments, const char patternAfter[]) {
+        Tokenizer tokenizer(&settings, this);
+
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp", "");
+
+        return TemplateSimplifier::instantiateMatch(tokenizer.tokens(), name, numberOfArguments, patternAfter);
+    }
+
+    void instantiateMatch() {
+        // Ticket #8175
+        ASSERT_EQUALS(false,
+                      instantiateMatch("ConvertHelper < From, To > c ;",
+                                       "ConvertHelper", 2, ":: %name% ("));
+        ASSERT_EQUALS(true,
+                      instantiateMatch("ConvertHelper < From, To > :: Create ( ) ;",
+                                       "ConvertHelper", 2, ":: %name% ("));
+        ASSERT_EQUALS(false,
+                      instantiateMatch("integral_constant < bool, sizeof ( ConvertHelper < From, To > :: Create ( ) ) > ;",
+                                       "integral_constant", 2, ":: %name% ("));
+        ASSERT_EQUALS(false,
+                      instantiateMatch("integral_constant < bool, sizeof ( ns :: ConvertHelper < From, To > :: Create ( ) ) > ;",
+                                       "integral_constant", 2, ":: %name% ("));
     }
 };
 
