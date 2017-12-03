@@ -3067,6 +3067,13 @@ private:
             const char expected[] = "void f ( ) { int A ; A = 1 ; int B ; B = 2 ; int C ; C = 3 ; int D ; int E ; E = 5 ; int F ; F = 6 ; }";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+
+        // ticket #8284
+        {
+            const char code[] = "class : foo<int> { } abc;";
+            const char expected[] = "class Anonymous0 : foo < int > { } ; Anonymous0 abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void simplifyStructDecl2() { // ticket #2479 (segmentation fault)

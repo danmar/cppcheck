@@ -8373,6 +8373,8 @@ void Tokenizer::simplifyFuncInWhile()
 
 void Tokenizer::simplifyStructDecl()
 {
+    const bool cpp = isCPP();
+
     // A counter that is used when giving unique names for anonymous structs.
     unsigned int count = 0;
 
@@ -8387,6 +8389,13 @@ void Tokenizer::simplifyStructDecl()
         // check for anonymous struct/union
         if (Token::Match(tok, "struct|union {")) {
             if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[|(|{")) {
+                tok->insertToken("Anonymous" + MathLib::toString(count++));
+            }
+        }
+        // check for derived anonymous class/struct
+        else if (cpp && Token::Match(tok, "class|struct :")) {
+            const Token *tok1 = Token::findmatch(tok, "{");
+            if (tok1 && Token::Match(tok1->link(), "} *|&| %type% ,|;|[|(|{")) {
                 tok->insertToken("Anonymous" + MathLib::toString(count++));
             }
         }
