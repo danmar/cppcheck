@@ -8394,7 +8394,7 @@ void Tokenizer::simplifyStructDecl()
         }
         // check for derived anonymous class/struct
         else if (cpp && Token::Match(tok, "class|struct :")) {
-            const Token *tok1 = Token::findmatch(tok, "{");
+            const Token *tok1 = Token::findsimplematch(tok, "{");
             if (tok1 && Token::Match(tok1->link(), "} *|&| %type% ,|;|[|(|{")) {
                 tok->insertToken("Anonymous" + MathLib::toString(count++));
             }
