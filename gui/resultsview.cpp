@@ -416,7 +416,7 @@ void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
     QPoint globalPos = mUI.mListLog->mapToGlobal(pos);
 
     QMenu contextMenu;
-    contextMenu.addAction("Clear Log", this, SLOT(log_clear()));
+    contextMenu.addAction(tr("Clear Log"), this, SLOT(log_clear()));
 
     contextMenu.exec(globalPos);
 }
