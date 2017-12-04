@@ -3070,8 +3070,8 @@ private:
 
         // ticket #8284
         {
-            const char code[] = "class : foo<int> { } abc;";
-            const char expected[] = "class Anonymous0 : foo < int > { } ; Anonymous0 abc ;";
+            const char code[] = "void f() { class : foo<int> { } abc; }";
+            const char expected[] = "void f ( ) { class Anonymous0 : foo < int > { } ; Anonymous0 abc ; }";
             ASSERT_EQUALS(expected, tok(code, false));
         }
     }

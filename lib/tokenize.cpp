@@ -2175,6 +2175,7 @@ const Token * Tokenizer::startOfExecutableScope(const Token * tok)
 
 void Tokenizer::simplifyLabelsCaseDefault()
 {
+    const bool cpp = isCPP();
     bool executablescope = false;
     unsigned int indentLevel = 0;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -2230,8 +2231,10 @@ void Tokenizer::simplifyLabelsCaseDefault()
                 syntaxError(tok);
             }
         } else if (Token::Match(tok, "[;{}] %name% : !!;")) {
-            tok = tok->tokAt(2);
-            tok->insertToken(";");
+            if (!cpp || !Token::Match(tok->next(), "class|struct")) {
+                tok = tok->tokAt(2);
+                tok->insertToken(";");
+            }
         }
     }
 }
