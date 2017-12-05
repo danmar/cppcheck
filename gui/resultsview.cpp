@@ -28,6 +28,7 @@
 #include <QSettings>
 #include <QDir>
 #include <QDate>
+#include <QMenu>
 #include "common.h"
 #include "erroritem.h"
 #include "resultsview.h"
@@ -59,6 +60,8 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(this, &ResultsView::collapseAllResults, mUI.mTree, &ResultsTree::collapseAll);
     connect(this, &ResultsView::expandAllResults, mUI.mTree, &ResultsTree::expandAll);
     connect(this, &ResultsView::showHiddenResults, mUI.mTree, &ResultsTree::showHiddenResults);
+
+    mUI.mListLog->setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
@@ -401,4 +404,19 @@ void ResultsView::log(const QString &str)
 void ResultsView::debugError(const ErrorItem &item)
 {
     mUI.mListLog->addItem(item.ToString());
+}
+
+void ResultsView::log_clear()
+{
+    mUI.mListLog->clear();
+}
+
+void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
+{
+    QPoint globalPos = mUI.mListLog->mapToGlobal(pos);
+
+    QMenu contextMenu;
+    contextMenu.addAction(tr("Clear Log"), this, SLOT(log_clear()));
+
+    contextMenu.exec(globalPos);
 }
