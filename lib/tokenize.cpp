@@ -2178,6 +2178,7 @@ const Token * Tokenizer::startOfExecutableScope(const Token * tok)
 
 void Tokenizer::simplifyLabelsCaseDefault()
 {
+    const bool cpp = isCPP();
     bool executablescope = false;
     unsigned int indentLevel = 0;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -2233,8 +2234,10 @@ void Tokenizer::simplifyLabelsCaseDefault()
                 syntaxError(tok);
             }
         } else if (Token::Match(tok, "[;{}] %name% : !!;")) {
-            tok = tok->tokAt(2);
-            tok->insertToken(";");
+            if (!cpp || !Token::Match(tok->next(), "class|struct")) {
+                tok = tok->tokAt(2);
+                tok->insertToken(";");
+            }
         }
     }
 }
@@ -8506,6 +8509,8 @@ void Tokenizer::simplifyFuncInWhile()
 
 void Tokenizer::simplifyStructDecl()
 {
+    const bool cpp = isCPP();
+
     // A counter that is used when giving unique names for anonymous structs.
     unsigned int count = 0;
 
@@ -8520,6 +8525,13 @@ void Tokenizer::simplifyStructDecl()
         // check for anonymous struct/union
         if (Token::Match(tok, "struct|union {")) {
             if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[|(|{")) {
+                tok->insertToken("Anonymous" + MathLib::toString(count++));
+            }
+        }
+        // check for derived anonymous class/struct
+        else if (cpp && Token::Match(tok, "class|struct :")) {
+            const Token *tok1 = Token::findsimplematch(tok, "{");
+            if (tok1 && Token::Match(tok1->link(), "} *|&| %type% ,|;|[|(|{")) {
                 tok->insertToken("Anonymous" + MathLib::toString(count++));
             }
         }
