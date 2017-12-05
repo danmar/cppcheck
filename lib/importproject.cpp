@@ -222,8 +222,18 @@ void ImportProject::importCompileCommands(std::istream &istr)
                             fval += command[pos];
                         pos++;
                     }
-                    if (F=='D')
-                        fs.defines += fval + ";";
+                    if (F=='D') {
+                        std::string defval;
+                        while (pos < command.size() && command[pos] != ' ') {
+                            if (command[pos] != '\\')
+                                defval += command[pos];
+                            pos++;
+                        }
+                        fs.defines += fval;
+                        if (!defval.empty())
+                            fs.defines += defval;
+                        fs.defines += ";";
+                    }
                     else if (F=='U')
                         fs.undefs.insert(fval);
                     else if (F=='I')
