@@ -224,9 +224,21 @@ void ImportProject::importCompileCommands(std::istream &istr)
                     }
                     if (F=='D') {
                         std::string defval;
+                        bool escape = false;
                         while (pos < command.size() && command[pos] != ' ') {
-                            if (command[pos] != '\\')
+                            if (command[pos] != '\\') {
                                 defval += command[pos];
+                                escape = false;
+                            }
+                            else {
+                                if (escape) {
+                                    defval += "\\";
+                                    escape = false;
+                                }
+                                else {
+                                    escape = true;
+                                }
+                            }
                             pos++;
                         }
                         fs.defines += fval;
