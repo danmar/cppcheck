@@ -29,6 +29,7 @@
 #include <QDir>
 #include <QDate>
 #include <QMenu>
+#include <QClipboard>
 #include "common.h"
 #include "erroritem.h"
 #include "resultsview.h"
@@ -406,17 +407,47 @@ void ResultsView::debugError(const ErrorItem &item)
     mUI.mListLog->addItem(item.ToString());
 }
 
-void ResultsView::log_clear()
+void ResultsView::logClear()
 {
     mUI.mListLog->clear();
 }
 
+void ResultsView::logCopyEntry()
+{
+    const QListWidgetItem * item = mUI.mListLog->currentItem();
+    if(nullptr != item)
+    {
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(item->text());
+    }
+}
+
+void ResultsView::logCopyComplete()
+{
+    QString logText;
+    for(int i=0; i < mUI.mListLog->count(); ++i)
+    {
+        const QListWidgetItem * item = mUI.mListLog->item(i);
+        if(nullptr != item)
+        {
+            logText += item->text();
+        }
+    }
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(logText);
+}
+
 void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
 {
-    QPoint globalPos = mUI.mListLog->mapToGlobal(pos);
+    if(mUI.mListLog->count() > 0)
+    {
+        QPoint globalPos = mUI.mListLog->mapToGlobal(pos);
 
-    QMenu contextMenu;
-    contextMenu.addAction(tr("Clear Log"), this, SLOT(log_clear()));
+        QMenu contextMenu;
+        contextMenu.addAction(tr("Clear Log"), this, SLOT(logClear()));
+        contextMenu.addAction(tr("Copy this Log entry"), this, SLOT(logCopyEntry()));
+        contextMenu.addAction(tr("Copy complete Log"), this, SLOT(logCopyComplete()));
 
-    contextMenu.exec(globalPos);
+        contextMenu.exec(globalPos);
+    }
 }

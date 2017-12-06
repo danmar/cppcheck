@@ -314,7 +314,17 @@ public slots:
     /**
      * \brief Clear log messages
      */
-    void log_clear();
+    void logClear();
+
+    /**
+     * \brief Copy selected log message entry
+     */
+    void logCopyEntry();
+
+    /**
+     * \brief Copy all log messages
+     */
+    void logCopyComplete();
 
 protected:
     /**
