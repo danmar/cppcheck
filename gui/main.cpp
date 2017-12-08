@@ -41,11 +41,11 @@ static bool CheckArgs(const QStringList &args);
 
 int main(int argc, char *argv[])
 {
-    
+
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
-    
+
     QApplication app(argc, argv);
 
 #if QT_VERSION < 0x050000

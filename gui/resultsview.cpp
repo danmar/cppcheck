@@ -415,8 +415,7 @@ void ResultsView::logClear()
 void ResultsView::logCopyEntry()
 {
     const QListWidgetItem * item = mUI.mListLog->currentItem();
-    if(nullptr != item)
-    {
+    if (nullptr != item) {
         QClipboard *clipboard = QApplication::clipboard();
         clipboard->setText(item->text());
     }
@@ -425,11 +424,9 @@ void ResultsView::logCopyEntry()
 void ResultsView::logCopyComplete()
 {
     QString logText;
-    for(int i=0; i < mUI.mListLog->count(); ++i)
-    {
+    for (int i=0; i < mUI.mListLog->count(); ++i) {
         const QListWidgetItem * item = mUI.mListLog->item(i);
-        if(nullptr != item)
-        {
+        if (nullptr != item) {
             logText += item->text();
         }
     }
@@ -439,8 +436,7 @@ void ResultsView::logCopyComplete()
 
 void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
 {
-    if(mUI.mListLog->count() > 0)
-    {
+    if (mUI.mListLog->count() > 0) {
         QPoint globalPos = mUI.mListLog->mapToGlobal(pos);
 
         QMenu contextMenu;
