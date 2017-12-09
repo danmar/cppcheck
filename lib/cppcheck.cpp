@@ -139,6 +139,43 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
     bool internalErrorFound(false);
     try {
         Preprocessor preprocessor(_settings, this);
+
+		// Check with checksum for unmodified file early to avoid expensive tokenizing
+		if (!_settings.buildDir.empty()) {
+			// Get toolinfo
+			std::string toolinfo;
+			toolinfo += CPPCHECK_VERSION_STRING;
+			toolinfo += _settings.isEnabled(Settings::WARNING) ? 'w' : ' ';
+			toolinfo += _settings.isEnabled(Settings::STYLE) ? 's' : ' ';
+			toolinfo += _settings.isEnabled(Settings::PERFORMANCE) ? 'p' : ' ';
+			toolinfo += _settings.isEnabled(Settings::PORTABILITY) ? 'p' : ' ';
+			toolinfo += _settings.isEnabled(Settings::INFORMATION) ? 'i' : ' ';
+			toolinfo += _settings.userDefines;
+
+			// Reset filestream in case it was used already
+			fileStream.clear();
+			fileStream.seekg(0, std::ios::beg);
+
+			// Read complete file to generate checksum over it
+			const std::string filecontent(std::string((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>()));
+
+			// Calculate checksum so it can be compared with old checksum / future checksums
+			const unsigned int checksum = preprocessor.calculateChecksum(toolinfo+'\n'+filecontent);
+
+			std::list<ErrorLogger::ErrorMessage> errors;
+			if (!analyzerInformation.analyzeFile(_settings.buildDir, filename, cfgname, checksum, &errors)) {
+				while (!errors.empty()) {
+					reportErr(errors.front());
+					errors.pop_front();
+				}
+				return exitcode;  // known results => no need to reanalyze file
+			}
+
+			// Reset stream state and position to beginning for analysis
+			fileStream.clear();
+			fileStream.seekg(0, std::ios::beg);
+		}
+
         std::set<std::string> configurations;
 
         simplecpp::OutputList outputList;
@@ -226,29 +263,6 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         preprocessor.inlineSuppressions(tokens1);
         tokens1.removeComments();
         preprocessor.removeComments();
-
-        if (!_settings.buildDir.empty()) {
-            // Get toolinfo
-            std::string toolinfo;
-            toolinfo += CPPCHECK_VERSION_STRING;
-            toolinfo += _settings.isEnabled(Settings::WARNING) ? 'w' : ' ';
-            toolinfo += _settings.isEnabled(Settings::STYLE) ? 's' : ' ';
-            toolinfo += _settings.isEnabled(Settings::PERFORMANCE) ? 'p' : ' ';
-            toolinfo += _settings.isEnabled(Settings::PORTABILITY) ? 'p' : ' ';
-            toolinfo += _settings.isEnabled(Settings::INFORMATION) ? 'i' : ' ';
-            toolinfo += _settings.userDefines;
-
-            // Calculate checksum so it can be compared with old checksum / future checksums
-            const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo);
-            std::list<ErrorLogger::ErrorMessage> errors;
-            if (!analyzerInformation.analyzeFile(_settings.buildDir, filename, cfgname, checksum, &errors)) {
-                while (!errors.empty()) {
-                    reportErr(errors.front());
-                    errors.pop_front();
-                }
-                return exitcode;  // known results => no need to reanalyze file
-            }
-        }
 
         // Get directives
         preprocessor.setDirectives(tokens1);
