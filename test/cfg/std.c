@@ -48,6 +48,11 @@ void bufferAccessOutOfBounds(void)
     // cppcheck-suppress bufferAccessOutOfBounds
     // cppcheck-suppress redundantCopy
     strncpy(a,"abcde",6);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress redundantCopy
+    strncpy(a,"a",6);
+    // cppcheck-suppress redundantCopy
+    strncpy(a,"abcdefgh",4);
     fread(a,1,5,stdin);
     // cppcheck-suppress bufferAccessOutOfBounds
     fread(a,1,6,stdin);
