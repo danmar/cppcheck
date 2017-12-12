@@ -1281,7 +1281,7 @@ Checking minsize.c...
 
               <listitem>
                 <para>buffer size must be larger than other argument buffer
-                size. Example: see strncpy configuration in std.cfg</para>
+                size. Example: see memccpy configuration in posix.cfg</para>
               </listitem>
             </varlistentry>
 
