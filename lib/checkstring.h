@@ -57,7 +57,7 @@ public:
         checkString.strPlusChar();
         checkString.checkSuspiciousStringCompare();
         checkString.stringLiteralWrite();
-        checkString.deadStrcmp();
+        checkString.overlappingStrcmp();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -85,8 +85,8 @@ public:
     /** @brief %Check for suspicious code that compares string literals for equality */
     void checkAlwaysTrueOrFalseStringCompare();
 
-    /** @brief %Check for dead string comparison */
-    void deadStrcmp();
+    /** @brief %Check for overlapping strcmp() */
+    void overlappingStrcmp();
 
     /** @brief %Check for overlapping source and destination passed to sprintf() */
     void sprintfOverlappingData();
@@ -101,7 +101,7 @@ private:
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void suspiciousStringCompareError(const Token* tok, const std::string& var);
     void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
-    void deadStrcmpError(const Token* tok1, const Token *tok2);
+    void overlappingStrcmpError(const Token* tok1, const Token *tok2);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckString c(nullptr, settings, errorLogger);
@@ -115,7 +115,7 @@ private:
         c.incorrectStringBooleanError(nullptr, "\"Hello World\"");
         c.alwaysTrueFalseStringCompareError(nullptr, "str1", "str2");
         c.alwaysTrueStringVariableCompareError(nullptr, "varname1", "varname2");
-        c.deadStrcmpError(nullptr, nullptr);
+        c.overlappingStrcmpError(nullptr, nullptr);
     }
 
     static std::string myName() {
@@ -130,7 +130,7 @@ private:
                "- suspicious condition (string literals as boolean)\n"
                "- suspicious comparison of a string literal with a char* variable\n"
                "- suspicious comparison of '\\0' with a char* variable\n"
-               "- dead string comparison; (strcmp(str,\"x\")==0 || strcmp(str,\"y\")) is logically the same as (strcmp(str,\"y\") != 0)\n";
+               "- overlapping strcmp() expression\n";
     }
 };
 /// @}

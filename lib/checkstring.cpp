@@ -336,7 +336,7 @@ void CheckString::incorrectStringBooleanError(const Token *tok, const std::strin
 // always true: strcmp(str,"a")==0 || strcmp(str,"b")
 // TODO: Library configuration for string comparison functions
 //---------------------------------------------------------------------------
-void CheckString::deadStrcmp()
+void CheckString::overlappingStrcmp()
 {
     if (!_settings->isEnabled(Settings::WARNING))
         return;
@@ -399,29 +399,24 @@ void CheckString::deadStrcmp()
                         args2[1]->isLiteral() &&
                         args1[1]->str() != args2[1]->str() &&
                         isSameExpression(_tokenizer->isCPP(), true, args1[0], args2[0], _settings->library, true))
-                        deadStrcmpError(tok1, tok2);
+                        overlappingStrcmpError(tok1, tok2);
                 }
             }
         }
     }
 }
 
-void CheckString::deadStrcmpError(const Token *eq0, const Token *ne0)
+void CheckString::overlappingStrcmpError(const Token *eq0, const Token *ne0)
 {
     std::string eq0Expr(eq0 ? eq0->expressionString() : std::string("strcmp(x,\"abc\")"));
     if (eq0 && eq0->astParent()->str() == "!")
         eq0Expr = "!" + eq0Expr;
     else
         eq0Expr += " == 0";
+
     const std::string ne0Expr = (ne0 ? ne0->expressionString() : std::string("strcmp(x,\"def\")")) + " != 0";
 
-    const Token *ortok = eq0;
-    while (ortok && ortok->str() != "||")
-        ortok = ortok->astParent();
-
-    const std::string expression = ortok ? ortok->expressionString() : (eq0Expr + " || " + ne0Expr);
-
-    reportError(ne0, Severity::warning, "deadStrcmp", "The expression '" + expression + "' has a dead string comparison. The expression is logically the same as \'" + ne0Expr + "\'.");
+    reportError(ne0, Severity::warning, "overlappingStrcmp", "The expression '" + ne0Expr + "' is suspicious. It overlaps '" + eq0Expr + "'.");
 }
 
 //---------------------------------------------------------------------------

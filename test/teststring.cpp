@@ -585,7 +585,7 @@ private:
         check("void f(const char *str) {\n"
               "  if (strcmp(str, \"abc\") == 0 || strcmp(str, \"def\")) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) The expression 'strcmp(str,\"abc\")==0||strcmp(str,\"def\")' has a dead string comparison. The expression is logically the same as 'strcmp(str,\"def\") != 0'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) The expression 'strcmp(str,\"def\") != 0' is suspicious. It overlaps 'strcmp(str,\"abc\") == 0'.\n", errout.str());
 
         check("struct X {\n"
               "  char *str;\n"
@@ -594,7 +594,7 @@ private:
               "void f(const struct X *x) {\n"
               "  if (strcmp(x->str, \"abc\") == 0 || strcmp(x->str, \"def\")) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) The expression 'strcmp(x->str,\"abc\")==0||strcmp(x->str,\"def\")' has a dead string comparison. The expression is logically the same as 'strcmp(x->str,\"def\") != 0'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) The expression 'strcmp(x->str,\"def\") != 0' is suspicious. It overlaps 'strcmp(x->str,\"abc\") == 0'.\n", errout.str());
     }
 };
 
