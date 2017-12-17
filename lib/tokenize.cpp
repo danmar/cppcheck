@@ -3239,24 +3239,30 @@ void Tokenizer::createLinks2()
             // Then this is probably a template instantiation if either "B" or "C" has comparisons
             if (token->tokType() == Token::eLogicalOp && !type.empty() && type.top()->str() == "<") {
                 const Token *prev = token->previous();
-                while (Token::Match(prev, "%name%|%num%|%str%|%cop%|)|]")) {
+                bool foundComparison = false;
+                while (Token::Match(prev, "%name%|%num%|%str%|%cop%|)|]") && prev != type.top()) {
                     if (prev->str() == ")" || prev->str() == "]")
                         prev = prev->link();
-                    else if (prev->tokType() == Token::eLogicalOp || prev->isComparisonOp())
+                    else if (prev->tokType() == Token::eLogicalOp)
                         break;
+                    else if (prev->isComparisonOp())
+                        foundComparison = true;
                     prev = prev->previous();
                 }
-                if (prev && prev != type.top() && prev->isComparisonOp())
+                if (prev == type.top() && foundComparison)
                     continue;
                 const Token *next = token->next();
-                while (Token::Match(next, "%name%|%num%|%str%|%cop%|(|[")) {
+                foundComparison = false;
+                while (Token::Match(next, "%name%|%num%|%str%|%cop%|(|[") && next->str() != ">") {
                     if (next->str() == "(" || next->str() == "[")
                         next = next->link();
-                    else if (next->tokType() == Token::eLogicalOp || next->isComparisonOp())
+                    else if (next->tokType() == Token::eLogicalOp)
                         break;
+                    else if (next->isComparisonOp())
+                        foundComparison = true;
                     next = next->next();
                 }
-                if (next && next != type.top() && next->isComparisonOp() && next->str() != ">")
+                if (next && next->str() == ">" && foundComparison)
                     continue;
             }
 

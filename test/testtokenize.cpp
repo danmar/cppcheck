@@ -4523,6 +4523,18 @@ private:
         }
 
         {
+            // if (a < ... > d) { }
+            const char code[] = "if (a < b || c == 3 || d > e);";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+
+            ASSERT_EQUALS(true, tok->linkAt(3) == nullptr);
+        }
+
+        {
             // template
             const char code[] = "a<b==3 || c> d;";
             errout.str("");
