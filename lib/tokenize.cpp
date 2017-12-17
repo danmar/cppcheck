@@ -3235,6 +3235,31 @@ void Tokenizer::createLinks2()
         } else if (!templateToken && !isStruct && Token::Match(token, "%oror%|&&|;")) {
             if (Token::Match(token, "&& [,>]"))
                 continue;
+            // If there is some such code:  A<B||C>..
+            // Then this is probably a template instantiation if either "B" or "C" has comparisons
+            if (token->tokType() == Token::eLogicalOp && !type.empty() && type.top()->str() == "<") {
+                const Token *prev = token->previous();
+                while (Token::Match(prev, "%name%|%num%|%str%|%cop%|)|]")) {
+                    if (prev->str() == ")" || prev->str() == "]")
+                        prev = prev->link();
+                    else if (prev->tokType() == Token::eLogicalOp || prev->isComparisonOp())
+                        break;
+                    prev = prev->previous();
+                }
+                if (prev && prev != type.top() && prev->isComparisonOp())
+                    continue;
+                const Token *next = token->next();
+                while (Token::Match(next, "%name%|%num%|%str%|%cop%|(|[")) {
+                    if (next->str() == "(" || next->str() == "[")
+                        next = next->link();
+                    else if (next->tokType() == Token::eLogicalOp || next->isComparisonOp())
+                        break;
+                    next = next->next();
+                }
+                if (next && next != type.top() && next->isComparisonOp() && next->str() != ">")
+                    continue;
+            }
+
             while (!type.empty() && type.top()->str() == "<")
                 type.pop();
         } else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId()) {

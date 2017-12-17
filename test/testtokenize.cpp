@@ -4523,6 +4523,28 @@ private:
         }
 
         {
+            // template
+            const char code[] = "a<b==3 || c> d;";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+            ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(7));
+        }
+
+        {
+            // template
+            const char code[] = "a<b || c==4> d;";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+            ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(7));
+        }
+
+        {
             const char code[] = "template < f = b || c > struct S;";
             errout.str("");
             Tokenizer tokenizer(&settings0, this);
