@@ -22,6 +22,15 @@
 #include <list>
 #include <map>
 #include <string>
+#include <iostream>
+
+class TestImporter : public ImportProject {
+public:
+    void importCompileCommands(std::istream &istr) {
+        ImportProject::importCompileCommands(istr);
+    }
+};
+
 
 class TestImportProject : public TestFixture {
 public:
@@ -35,6 +44,7 @@ private:
         TEST_CASE(setIncludePaths1);
         TEST_CASE(setIncludePaths2);
         TEST_CASE(setIncludePaths3); // macro names are case insensitive
+        TEST_CASE(importCompileCommands);
     }
 
     void setDefines() const {
@@ -83,6 +93,18 @@ private:
         fs.setIncludePaths("/home/fred", in, variables);
         ASSERT_EQUALS(1U, fs.includePaths.size());
         ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
+    }
+
+    void importCompileCommands() const {
+
+        const char json[] = "[ { \"directory\": \"/tmp\","
+                            "\"command\": \"gcc -I/tmp -DTEST1 -DTEST2=2  -DTEST3=\\\"\\\\\\\"3\\\\\\\"\\\" -o /tmp/src.o -c /tmp/src.c\","
+                            "\"file\": \"/tmp/src.c\" } ]";
+        std::istringstream istr(json);
+        TestImporter importer;
+        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        ASSERT_EQUALS("TEST1=1;TEST2=2;TEST3=\"\\\"3\\\"\"", importer.fileSettings.begin()->defines);
     }
 };
 
