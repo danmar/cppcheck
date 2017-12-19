@@ -379,7 +379,7 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
         else if (tok->str() == "{")
             ++level;
         else if (tok->str() == "}") {
-            if (!level)
+            if (level == 0)
                 break;
             --level;
         }
