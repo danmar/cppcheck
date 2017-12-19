@@ -1115,7 +1115,7 @@ Checking null.c...
 
           <para>Note that this implies <literal>&lt;not-uninit&gt;</literal>
           as far as values are concerned. Uninitialized memory might still be
-          passed do the function.</para>
+          passed to the function.</para>
 
           <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
 
