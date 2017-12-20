@@ -526,12 +526,10 @@ void CheckOther::checkRedundantAssignment()
                         bool bailout = false;
                         for (const Token *tok3 = tok2->link(); tok3 != tok2; tok3 = tok3->previous()) {
                             if (tok3->varId()) {
-                                if (!tok3->variable())
+                                const Variable *var = tok3->variable();
+                                if (!var || !var->isConst() || var->isReference() || var->isPointer()) {
                                     bailout = true;
-                                else {
-                                    const Variable *var = tok3->variable();
-                                    if (!var->isConst() || var->isReference() || var->isPointer())
-                                        bailout = true;
+                                    break;
                                 }
                             }
                         }
