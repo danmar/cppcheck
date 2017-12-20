@@ -22,7 +22,6 @@
 #include <list>
 #include <map>
 #include <string>
-#include <iostream>
 
 class TestImporter : public ImportProject {
 public:

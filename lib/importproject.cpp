@@ -232,7 +232,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
                             }
                             else {
                                 if (escape) {
-                                    defval += "\\";
+                                    defval += '\\';
                                     escape = false;
                                 }
                                 else {
@@ -244,7 +244,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
                         fs.defines += fval;
                         if (!defval.empty())
                             fs.defines += defval;
-                        fs.defines += ";";
+                        fs.defines += ';';
                     }
                     else if (F=='U')
                         fs.undefs.insert(fval);

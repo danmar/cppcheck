@@ -94,7 +94,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     CppCheck temp(_errorLogger, _useGlobalSuppressions);
     temp._settings = _settings;
     if (!temp._settings.userDefines.empty())
-        temp._settings.userDefines += ";";
+        temp._settings.userDefines += ';';
     temp._settings.userDefines += fs.cppcheckDefines();
     temp._settings.includePaths = fs.includePaths;
     // TODO: temp._settings.userUndefs = fs.undefs;
