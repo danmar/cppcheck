@@ -632,8 +632,10 @@ void CheckCondition::multiCondition2()
                 }
                 bool changed = false;
                 for (std::set<unsigned int>::const_iterator it = vars.begin(); it != vars.end(); ++it) {
-                    if (isVariableChanged(tok1, tok2, *it, nonlocal, _settings))
+                    if (isVariableChanged(tok1, tok2, *it, nonlocal, _settings)) {
                         changed = true;
+                        break;
+                    }
                 }
                 if (changed)
                     break;
