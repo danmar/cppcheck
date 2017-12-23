@@ -1431,11 +1431,9 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
         if (!Token::simpleMatch(nameTok->next(), templateParametersMatchPattern.c_str()))
             continue;
 
-        std::string fullName(nameTok->str());
-        for (const Token *tok = nameTok->tokAt(-2); Token::Match(tok, "%name% ::"); tok = tok->tokAt(-2))
-            fullName = tok->str() + "::" + fullName;
-        fullName = getFullName(scopeInfo, fullName);
-        if (fullName != templateName)
+        // FIXME Proper name matching
+        const std::string lastName(templateName.find(" ") == std::string::npos ? templateName : templateName.substr(templateName.rfind(" ") + 1));
+        if (lastName != nameTok->str())
             continue;
 
         // match parameters

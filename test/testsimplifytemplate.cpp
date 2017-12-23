@@ -108,6 +108,7 @@ private:
         TEST_CASE(template_namespace_1);
         TEST_CASE(template_namespace_2);
         TEST_CASE(template_namespace_3);
+        TEST_CASE(template_namespace_4);
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
@@ -1410,12 +1411,31 @@ private:
                             "}";
         ASSERT_EQUALS("namespace test16 {"
                       " void * test ( ) {"
-                      " return foo < int > :: bar ( ) ;"
+                      " return test16 :: foo < int > :: bar ( ) ;"
                       " } "
                       "} "
                       "struct test16 :: foo < int > {"
                       " static void * bar ( ) ; "
                       "} ;", tok(code));
+    }
+
+    void template_namespace_4() {
+        const char code[] = "namespace foo {\n"
+                            "  template<class T> class A { void dostuff() {} };\n"
+                            "  struct S : public A<int> {\n"
+                            "    void f() {\n"
+                            "      A<int>::dostuff();\n"
+                            "    }\n"
+                            "  };\n"
+                            "}";
+        ASSERT_EQUALS("namespace foo {"
+                      " struct S : public foo :: A < int > {"
+                      " void f ( ) {"
+                      " foo :: A < int > :: dostuff ( ) ;"
+                      " }"
+                      " } ; "
+                      "} "
+                      "class foo :: A < int > { void dostuff ( ) { } } ;", tok(code));
     }
 
     unsigned int templateParameters(const char code[]) {
