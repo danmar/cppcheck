@@ -73,42 +73,34 @@ public:
     static std::set<std::string> expandSpecialized(Token *tokens);
 
     /**
-     * Token and its full scopename
-     */
-    struct TokenAndName {
-        TokenAndName(Token *tok, const std::string &scopeName) : token(tok), name(scopeName) {}
-        Token *token;
-        std::string name;
-    };
-
-    /**
      * Get template declarations
      * @return list of template declarations
      */
-    static std::list<TokenAndName> getTemplateDeclarations(Token *tokens, bool &codeWithTemplates);
+    static std::list<Token *> getTemplateDeclarations(Token *tokens, bool &codeWithTemplates);
 
     /**
      * Get template instantiations
      * @return list of template instantiations
      */
-    static std::list<TokenAndName> getTemplateInstantiations(Token *tokens);
+    static std::list<Token *> getTemplateInstantiations(Token *tokens);
 
     /**
      * simplify template instantiations (use default argument values)
      * @param templates list of template declarations
      * @param templateInstantiations list of template instantiations
      */
-    static void useDefaultArgumentValues(const std::list<TokenAndName> &templates,
-                                         std::list<TokenAndName> *templateInstantiations);
+    static void useDefaultArgumentValues(const std::list<Token *> &templates,
+                                         std::list<Token *> *templateInstantiations);
 
     /**
      * Match template declaration/instantiation
      * @param instance template instantiation
+     * @param name name of template
      * @param numberOfArguments number of template arguments
      * @param patternAfter pattern that must match the tokens after the ">"
      * @return match => true
      */
-    static bool instantiateMatch(const Token *instance, const std::size_t numberOfArguments, const char patternAfter[]);
+    static bool instantiateMatch(const Token *instance, const std::string &name, const std::size_t numberOfArguments, const char patternAfter[]);
 
     /**
      * Match template declaration/instantiation
@@ -120,12 +112,12 @@ public:
 
     static void expandTemplate(
         TokenList& tokenlist,
-        const Token *templateDeclarationToken,
-        const std::string &fullName,
+        const Token *tok,
+        const std::string &name,
         const std::vector<const Token *> &typeParametersInDeclaration,
         const std::string &newName,
         const std::vector<const Token *> &typesUsedInTemplateInstantiation,
-        std::list<TokenAndName> &templateInstantiations);
+        std::list<Token *> &templateInstantiations);
 
     /**
      * @brief TemplateParametersInDeclaration
@@ -146,7 +138,7 @@ public:
      * @param tokenlist token list
      * @param errorlogger error logger
      * @param _settings settings
-     * @param templateDeclaration template declaration
+     * @param tok token where the template declaration begins
      * @param maxtime time when the simplification will stop
      * @param templateInstantiations a list of template usages (not necessarily just for this template)
      * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
@@ -156,26 +148,24 @@ public:
         TokenList& tokenlist,
         ErrorLogger* errorlogger,
         const Settings *_settings,
-        const TokenAndName &templateDeclaration,
+        const Token *tok,
         const std::time_t maxtime,
-        std::list<TokenAndName> &templateInstantiations,
+        std::list<Token *> &templateInstantiations,
         std::set<std::string> &expandedtemplates);
 
     /**
      * Replace all matching template usages  'Foo < int >' => 'Foo<int>'
      * @param instantiationToken Template instantiation token
-     * @param templateName full template name with scope info
-     * @param templateParametersMatchPattern template parameters, Token::simpleMatch compatible pattern
+     * @param templateMatchPattern Pattern compatible with Token::simpleMatch
      * @param newName The new type name
      * @param typesUsedInTemplateInstantiation template instantiation parameters
      * @param templateInstantiations All seen instantiations
      */
     static void replaceTemplateUsage(Token *const instantiationToken,
-                                     const std::string &templateName,
-                                     const std::string &templateParametersMatchPattern,
+                                     const std::string &templateMatchPattern,
                                      const std::string &newName,
                                      const std::vector<const Token *> &typesUsedInTemplateInstantiation,
-                                     std::list<TokenAndName> &templateInstantiations);
+                                     std::list<Token *> &templateInstantiations);
 
     /**
      * Simplify templates
@@ -210,6 +200,7 @@ public:
     static bool simplifyCalculations(Token *_tokens);
 
 private:
+
     /**
      * Remove a specific "template < ..." template class/function
      */

@@ -105,10 +105,7 @@ private:
         TEST_CASE(template_constructor);    // #3152 - template constructor is removed
         TEST_CASE(syntax_error_templates_1);
         TEST_CASE(template_member_ptr); // Ticket #5786 - crash upon valid code
-        TEST_CASE(template_namespace_1);
-        TEST_CASE(template_namespace_2);
-        TEST_CASE(template_namespace_3);
-        TEST_CASE(template_namespace_4);
+        TEST_CASE(template_namespace);
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
@@ -1381,7 +1378,7 @@ private:
             "};");
     }
 
-    void template_namespace_1() {
+    void template_namespace() {
         // #6570
         const char code[] = "namespace {\n"
                             "  template<class T> void Fred(T value) { }\n"
@@ -1390,52 +1387,6 @@ private:
         ASSERT_EQUALS("namespace { } "
                       "Fred < int > ( 123 ) ; "
                       "void Fred < int > ( int value ) { }", tok(code));
-    }
-
-    void template_namespace_2() {
-        // #8283
-        const char code[] = "namespace X {\n"
-                            "  template<class T> struct S { };\n"
-                            "}\n"
-                            "X::S<int> s;";
-        ASSERT_EQUALS("X :: S < int > s ; "
-                      "struct X :: S < int > { } ;", tok(code));
-    }
-
-    void template_namespace_3() {
-        const char code[] = "namespace test16 {\n"
-                            "  template <class T> struct foo {\n"
-                            "    static void *bar();\n"
-                            "  };\n"
-                            "  void *test() { return foo<int>::bar(); }\n"
-                            "}";
-        ASSERT_EQUALS("namespace test16 {"
-                      " void * test ( ) {"
-                      " return test16 :: foo < int > :: bar ( ) ;"
-                      " } "
-                      "} "
-                      "struct test16 :: foo < int > {"
-                      " static void * bar ( ) ; "
-                      "} ;", tok(code));
-    }
-
-    void template_namespace_4() {
-        const char code[] = "namespace foo {\n"
-                            "  template<class T> class A { void dostuff() {} };\n"
-                            "  struct S : public A<int> {\n"
-                            "    void f() {\n"
-                            "      A<int>::dostuff();\n"
-                            "    }\n"
-                            "  };\n"
-                            "}";
-        ASSERT_EQUALS("namespace foo {"
-                      " struct S : public foo :: A < int > {"
-                      " void f ( ) {"
-                      " foo :: A < int > :: dostuff ( ) ;"
-                      " }"
-                      " } ; "
-                      "} "
-                      "class foo :: A < int > { void dostuff ( ) { } } ;", tok(code));
     }
 
     unsigned int templateParameters(const char code[]) {
@@ -1526,29 +1477,29 @@ private:
         ASSERT_EQUALS("class A < int > : public B { } ;", tok("template<> class A<int> : public B {};"));
     }
 
-    unsigned int instantiateMatch(const char code[], const std::size_t numberOfArguments, const char patternAfter[]) {
+    unsigned int instantiateMatch(const char code[], const std::string& name, const std::size_t numberOfArguments, const char patternAfter[]) {
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp", "");
 
-        return TemplateSimplifier::instantiateMatch(tokenizer.tokens(), numberOfArguments, patternAfter);
+        return TemplateSimplifier::instantiateMatch(tokenizer.tokens(), name, numberOfArguments, patternAfter);
     }
 
     void instantiateMatch() {
         // Ticket #8175
         ASSERT_EQUALS(false,
                       instantiateMatch("ConvertHelper < From, To > c ;",
-                                       2, ":: %name% ("));
+                                       "ConvertHelper", 2, ":: %name% ("));
         ASSERT_EQUALS(true,
                       instantiateMatch("ConvertHelper < From, To > :: Create ( ) ;",
-                                       2, ":: %name% ("));
+                                       "ConvertHelper", 2, ":: %name% ("));
         ASSERT_EQUALS(false,
                       instantiateMatch("integral_constant < bool, sizeof ( ConvertHelper < From, To > :: Create ( ) ) > ;",
-                                       2, ":: %name% ("));
+                                       "integral_constant", 2, ":: %name% ("));
         ASSERT_EQUALS(false,
                       instantiateMatch("integral_constant < bool, sizeof ( ns :: ConvertHelper < From, To > :: Create ( ) ) > ;",
-                                       2, ":: %name% ("));
+                                       "integral_constant", 2, ":: %name% ("));
     }
 };
 
