@@ -276,6 +276,17 @@ private:
                                    "    static int i;\n"
                                    "};");
         ASSERT_EQUALS("", errout.str());
+
+        // #7987 - Don't show warning when there is a move constructor
+        checkCopyCtorAndEqOperator("struct S {\n"
+                                   "  std::string test;\n"
+                                   "  S(S&& s) : test(std::move(s.test)) { }\n"
+                                   "  S& operator = (S &&s) {\n"
+                                   "    test = std::move(s.test);\n"
+                                   "    return *this;\n"
+                                   "  }\n"
+                                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkExplicitConstructors(const char code[]) {

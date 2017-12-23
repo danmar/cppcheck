@@ -2405,6 +2405,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
             continue;
 
         CtorType copyCtors = CtorType::NO;
+        bool moveCtor = false;
         CtorType assignmentOperators = CtorType::NO;
 
         std::list<Function>::const_iterator func;
@@ -2418,7 +2419,14 @@ void CheckClass::checkCopyCtorAndEqOperator()
                     assignmentOperators = func->hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
                 }
             }
+            if (func->type == Function::eMoveConstructor) {
+                moveCtor = true;
+                break;
+            }
         }
+
+        if (moveCtor)
+            continue;
 
         if ((copyCtors == CtorType::WITH_BODY && assignmentOperators == CtorType::NO) ||
             (copyCtors == CtorType::NO && assignmentOperators == CtorType::WITH_BODY))
