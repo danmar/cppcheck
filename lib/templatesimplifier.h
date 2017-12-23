@@ -156,7 +156,7 @@ public:
         TokenList& tokenlist,
         ErrorLogger* errorlogger,
         const Settings *_settings,
-        const TokenAndName templateDeclaration,
+        const TokenAndName &templateDeclaration,
         const std::time_t maxtime,
         std::list<TokenAndName> &templateInstantiations,
         std::set<std::string> &expandedtemplates);
