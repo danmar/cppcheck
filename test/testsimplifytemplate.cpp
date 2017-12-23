@@ -107,6 +107,7 @@ private:
         TEST_CASE(template_member_ptr); // Ticket #5786 - crash upon valid code
         TEST_CASE(template_namespace_1);
         TEST_CASE(template_namespace_2);
+        TEST_CASE(template_namespace_3);
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
@@ -1398,6 +1399,23 @@ private:
                             "X::S<int> s;";
         ASSERT_EQUALS("X :: S < int > s ; "
                       "struct X :: S < int > { } ;", tok(code));
+    }
+
+    void template_namespace_3() {
+        const char code[] = "namespace test16 {\n"
+                            "  template <class T> struct foo {\n"
+                            "    static void *bar();\n"
+                            "  };\n"
+                            "  void *test() { return foo<int>::bar(); }\n"
+                            "}";
+        ASSERT_EQUALS("namespace test16 {"
+                      " void * test ( ) {"
+                      " return foo < int > :: bar ( ) ;"
+                      " } "
+                      "} "
+                      "struct test16 :: foo < int > {"
+                      " static void * bar ( ) ; "
+                      "} ;", tok(code));
     }
 
     unsigned int templateParameters(const char code[]) {

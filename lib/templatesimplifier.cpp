@@ -832,6 +832,9 @@ void TemplateSimplifier::expandTemplate(
         int indentlevel = 0;
         std::stack<Token *> brackets; // holds "(", "[" and "{" tokens
 
+        // FIXME use full name matching somehow
+        const std::string lastName = (fullName.find(" ") != std::string::npos) ? fullName.substr(fullName.rfind(" ")+1) : fullName;
+
         for (; tok3; tok3 = tok3->next()) {
             if (tok3->isName()) {
                 // search for this token in the type vector
@@ -859,8 +862,7 @@ void TemplateSimplifier::expandTemplate(
                 }
             }
 
-            // FIXME replace name..
-            const std::string lastName = (fullName.find(" ") != std::string::npos) ? fullName.substr(fullName.rfind(" ")+1) : fullName;
+            // replace name..
             if (Token::Match(tok3, (lastName + " !!<").c_str())) {
                 if (Token::Match(tok3->tokAt(-2), "> :: %name% ( )")) {
                     ; // Ticket #7942: Replacing for out-of-line constructors generates invalid syntax
@@ -915,6 +917,7 @@ void TemplateSimplifier::expandTemplate(
                     // the "}" token should only be added if indentlevel is 1 but I add it always intentionally
                     // if indentlevel ever becomes 0, cppcheck will write:
                     // ### Error: Invalid number of character {
+                    inTemplateDefinition = false;
                     break;
                 }
                 --indentlevel;
