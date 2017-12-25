@@ -97,6 +97,7 @@ private:
         TEST_CASE(template57);  // #7891
         TEST_CASE(template58);  // #6021 - use after free (deleted tokens in simplifyCalculations)
         TEST_CASE(template59);  // #8051 - TemplateSimplifier::simplifyTemplateInstantiation failure
+        TEST_CASE(template60);  // handling of methods outside template definition
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
@@ -1093,6 +1094,19 @@ private:
                            "struct Factorial < 3 > { enum FacHelper { value = 3 * Factorial < 2 > :: value } ; } ; "
                            "struct Factorial < 2 > { enum FacHelper { value = 2 * Factorial < 1 > :: value } ; } ; "
                            "struct Factorial < 1 > { enum FacHelper { value = Factorial < 0 > :: value } ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template60() { // Extracted from Clang testfile
+        const char code[] = "template <typename T> struct S { typedef int type; };\n"
+                            "template <typename T> void f() {}\n"
+                            "template <typename T> void h() { f<typename S<T>::type(0)>(); }\n"
+                            "\n"
+                            "void j() { h<int>(); }";
+        const char exp[] = "template < typename T > void f ( ) { } " // <- TODO: This template is not expanded
+                           "void j ( ) { h < int > ( ) ; } "
+                           "void h < int > ( ) { f < S < int > :: type ( 0 ) > ( ) ; } "
+                           "struct S < int > { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 

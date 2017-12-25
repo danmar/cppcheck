@@ -774,8 +774,16 @@ void TemplateSimplifier::expandTemplate(
     std::list<Token *> &templateInstantiations)
 {
     bool inTemplateDefinition=false;
+    const Token *endOfTemplateDefinition = nullptr;
     std::vector<const Token *> localTypeParametersInDeclaration;
     for (const Token *tok3 = tokenlist.front(); tok3; tok3 = tok3 ? tok3->next() : nullptr) {
+        if (inTemplateDefinition) {
+            if (!endOfTemplateDefinition && tok3->str() == "{")
+                endOfTemplateDefinition = tok3->link();
+            if (tok3 == endOfTemplateDefinition)
+                inTemplateDefinition = false;
+        }
+
         if (tok3->str()=="template") {
             if (tok3->next() && tok3->next()->str()=="<") {
                 TemplateParametersInDeclaration(tok3->tokAt(2), localTypeParametersInDeclaration);
@@ -799,6 +807,11 @@ void TemplateSimplifier::expandTemplate(
         // member function implemented outside class definition
         else if (inTemplateDefinition &&
                  TemplateSimplifier::instantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %name% (")) {
+            const Token *tok4 = tok3->next()->findClosingBracket();
+            while (tok4 && tok4->str() != "(")
+                tok4 = tok4->next();
+            if (!Tokenizer::isFunctionHead(tok4, "{:", true))
+                continue;
             tokenlist.addtoken(newName, tok3->linenr(), tok3->fileIndex());
             while (tok3 && tok3->str() != "::")
                 tok3 = tok3->next();

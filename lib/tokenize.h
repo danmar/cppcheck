@@ -504,8 +504,6 @@ public:
      */
     const Token * isFunctionHead(const Token *tok, const std::string &endsWith) const;
 
-private:
-
     /**
      * is token pointing at function head?
      * @param tok         A '(' or ')' token in a possible function head
@@ -514,6 +512,8 @@ private:
      * @return token matching with endsWith if syntax seems to be a function head else nullptr
      */
     static const Token * isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp);
+
+private:
 
     /**
      * simplify "while (0)"
