@@ -118,6 +118,16 @@ public:
      */
     static int getTemplateNamePosition(const Token *tok);
 
+    /**
+     * Expand a template. Create "expanded" class/function at end of tokenlist.
+     * @param tokenlist                         The tokenlist that is changed
+     * @param templateDeclarationToken          The template declaration token for the template that will be "expanded"
+     * @param fullName                          Full name of template
+     * @param typeParametersInDeclaration       The type parameters of the template
+     * @param newName                           New name of class/function.
+     * @param typesUsedInTemplateInstantiation  Type parameters in instantiation
+     * @param templateInstantiations            List of template instantiations.
+     */
     static void expandTemplate(
         TokenList& tokenlist,
         const Token *templateDeclarationToken,
@@ -165,14 +175,14 @@ public:
      * Replace all matching template usages  'Foo < int >' => 'Foo<int>'
      * @param instantiationToken Template instantiation token
      * @param templateName full template name with scope info
-     * @param templateParametersMatchPattern template parameters, Token::simpleMatch compatible pattern
+     * @param typeStringsUsedInTemplateInstantiation template parameters. list of token strings.
      * @param newName The new type name
      * @param typesUsedInTemplateInstantiation template instantiation parameters
      * @param templateInstantiations All seen instantiations
      */
     static void replaceTemplateUsage(Token *const instantiationToken,
                                      const std::string &templateName,
-                                     const std::string &templateParametersMatchPattern,
+                                     const std::list<std::string> &typeStringsUsedInTemplateInstantiation,
                                      const std::string &newName,
                                      const std::vector<const Token *> &typesUsedInTemplateInstantiation,
                                      std::list<TokenAndName> &templateInstantiations);

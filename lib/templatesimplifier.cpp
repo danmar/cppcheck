@@ -1352,7 +1352,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         // New type..
         std::vector<const Token *> typesUsedInTemplateInstantiation;
         std::string typeForNewName;
-        std::string typeForPatternMatch;
+        std::list<std::string> typeStringsUsedInTemplateInstantiation;
         unsigned int indentlevel = 0;
         for (const Token *tok3 = tok2->tokAt(2); tok3 && (indentlevel > 0 || tok3->str() != ">"); tok3 = tok3->next()) {
             // #2648 - unhandled parentheses => bail out
@@ -1373,9 +1373,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 typesUsedInTemplateInstantiation.push_back(tok3);
             const bool constconst = tok3->str() == "const" && tok3->strAt(1) == "const";
             if (!constconst) {
-                if (!typeForPatternMatch.empty())
-                    typeForPatternMatch += ' ';
-                typeForPatternMatch += tok3->str();
+                typeStringsUsedInTemplateInstantiation.push_back(tok3->str());
             }
             // add additional type information
             if (!constconst && !Token::Match(tok3, "class|struct|enum")) {
@@ -1390,7 +1388,6 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 typeForNewName += tok3->str();
             }
         }
-        const std::string templateParametersMatchPattern("< " + typeForPatternMatch + " >");
 
         if (typeForNewName.empty() || typeParametersInDeclaration.size() != typesUsedInTemplateInstantiation.size()) {
             if (printDebug && errorlogger) {
@@ -1413,17 +1410,27 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         }
 
         // Replace all these template usages..
-        replaceTemplateUsage(tok2, iter2->name, templateParametersMatchPattern, newName, typesUsedInTemplateInstantiation, templateInstantiations);
+        replaceTemplateUsage(tok2, iter2->name, typeStringsUsedInTemplateInstantiation, newName, typesUsedInTemplateInstantiation, templateInstantiations);
     }
 
     // Template has been instantiated .. then remove the template declaration
     return instantiated;
 }
 
+static bool matchTemplateParameters(const Token *nameTok, const std::list<std::string> &strings)
+{
+    std::list<std::string>::const_iterator it = strings.begin();
+    const Token *tok = nameTok->tokAt(2);
+    while (tok && it != strings.end() && *it == tok->str()) {
+        tok = tok->next();
+        ++it;
+    }
+    return it == strings.end() && tok && tok->str() == ">";
+}
 
 void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
         const std::string &templateName,
-        const std::string &templateParametersMatchPattern,
+        const std::list<std::string> &typeStringsUsedInTemplateInstantiation,
         const std::string &newName,
         const std::vector<const Token *> &typesUsedInTemplateInstantiation,
         std::list<TokenAndName> &templateInstantiations)
@@ -1434,7 +1441,7 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
         setScopeInfo(nameTok, &scopeInfo);
         if (!Token::Match(nameTok, "%name% <"))
             continue;
-        if (!Token::simpleMatch(nameTok->next(), templateParametersMatchPattern.c_str()))
+        if (!matchTemplateParameters(nameTok, typeStringsUsedInTemplateInstantiation))
             continue;
 
         // FIXME Proper name matching

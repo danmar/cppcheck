@@ -690,7 +690,7 @@ private:
         // #3226 - inner template
         const char code[] = "template<class A, class B> class Fred {};\n"
                             "Fred<int,Fred<int,int> > x;\n";
-        ASSERT_EQUALS("Fred < int , Fred<int,int> > x ; class Fred<int,int> { } ; class Fred<int,Fred<int,int>> { } ;", tok(code));
+        ASSERT_EQUALS("Fred<int,Fred<int,int>> x ; class Fred<int,int> { } ; class Fred<int,Fred<int,int>> { } ;", tok(code));
     }
 
     void template30() {
@@ -734,7 +734,7 @@ private:
                                 "template<class T> struct C { A<B<X<T> > > ab; };\n"
                                 "C<int> c;";
             ASSERT_EQUALS("C<int> c ; "
-                          "struct C<int> { A < B<X<int>> > ab ; } ; "
+                          "struct C<int> { A<B<X<int>>> ab ; } ; "
                           "struct B<X<int>> { } ; "  // <- redundant.. but nevermind
                           "struct A<B<X<int>>> { } ;", tok(code));
         }
