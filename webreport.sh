@@ -17,5 +17,5 @@ cd ..
 
 # Detect duplicate code..
 ~/pmd-4.2.6/bin/cpd.sh lib/ > devinfo/cpd.txt
-java -jar ~/simian-2.4.0/bin/simian-2.4.0.jar -language=c++ -reportDuplicateText -threshold=10 lib/*.cpp lib/*.h > devinfo/simian.txt
+#java -jar ~/simian-2.4.0/bin/simian-2.4.0.jar -language=c++ -reportDuplicateText -threshold=10 lib/*.cpp lib/*.h > devinfo/simian.txt
 
