@@ -842,7 +842,6 @@ void TemplateSimplifier::expandTemplate(
         else
             continue;
 
-        int indentlevel = 0;
         std::stack<Token *> brackets; // holds "(", "[" and "{" tokens
 
         // FIXME use full name matching somehow
@@ -912,7 +911,6 @@ void TemplateSimplifier::expandTemplate(
             // link() newly tokens manually
             else if (tok3->str() == "{") {
                 brackets.push(tokenlist.back());
-                indentlevel++;
             } else if (tok3->str() == "(") {
                 brackets.push(tokenlist.back());
             } else if (tok3->str() == "[") {
@@ -925,15 +923,10 @@ void TemplateSimplifier::expandTemplate(
                     tokenlist.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->fileIndex());
                 }
                 brackets.pop();
-                if (indentlevel <= 1 && brackets.empty()) {
-                    // there is a bug if indentlevel is 0
-                    // the "}" token should only be added if indentlevel is 1 but I add it always intentionally
-                    // if indentlevel ever becomes 0, cppcheck will write:
-                    // ### Error: Invalid number of character {
+                if (brackets.empty()) {
                     inTemplateDefinition = false;
                     break;
                 }
-                --indentlevel;
             } else if (tok3->str() == ")") {
                 assert(brackets.empty() == false && brackets.top()->str() == "(");
                 Token::createMutualLinks(brackets.top(), tokenlist.back());
