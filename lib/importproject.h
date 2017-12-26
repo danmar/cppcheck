@@ -74,8 +74,9 @@ public:
     void ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType);
 
     void import(const std::string &filename);
-private:
+protected:
     void importCompileCommands(std::istream &istr);
+private:
     void importSln(std::istream &istr, const std::string &path);
     void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories);
 };
