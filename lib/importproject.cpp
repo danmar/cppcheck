@@ -229,13 +229,11 @@ void ImportProject::importCompileCommands(std::istream &istr)
                             if (command[pos] != '\\') {
                                 defval += command[pos];
                                 escape = false;
-                            }
-                            else {
+                            } else {
                                 if (escape) {
                                     defval += '\\';
                                     escape = false;
-                                }
-                                else {
+                                } else {
                                     escape = true;
                                 }
                             }
@@ -245,8 +243,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
                         if (!defval.empty())
                             fs.defines += defval;
                         fs.defines += ';';
-                    }
-                    else if (F=='U')
+                    } else if (F=='U')
                         fs.undefs.insert(fval);
                     else if (F=='I')
                         fs.includePaths.push_back(fval);
