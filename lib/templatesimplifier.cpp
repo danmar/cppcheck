@@ -471,30 +471,30 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDecla
     std::list<TokenAndName> declarations;
     for (Token *tok = tokens; tok; tok = tok->next()) {
         setScopeInfo(tok, &scopeInfo);
-        if (Token::simpleMatch(tok, "template <")) {
-            // Some syntax checks, see #6865
-            if (!tok->tokAt(2))
-                syntaxError(tok->next());
-            if (tok->strAt(2)=="typename" &&
-                (!tok->tokAt(3) || !Token::Match(tok->tokAt(3), "%name%|.|,|>")))
-                syntaxError(tok->next());
-            codeWithTemplates = true;
-            Token *parmEnd = tok->next()->findClosingBracket();
-            for (const Token *tok2 = parmEnd; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(")
-                    tok2 = tok2->link();
-                else if (tok2->str() == ")")
-                    break;
-                // Just a declaration => ignore this
-                else if (tok2->str() == ";")
-                    break;
-                // Implementation => add to "templates"
-                else if (tok2->str() == "{") {
-                    int namepos = getTemplateNamePosition(parmEnd);
-                    if (namepos > 0)
-                        declarations.push_back(TokenAndName(tok, getFullName(scopeInfo, parmEnd->strAt(namepos))));
-                    break;
-                }
+        if (!Token::simpleMatch(tok, "template <"))
+            continue;
+        // Some syntax checks, see #6865
+        if (!tok->tokAt(2))
+            syntaxError(tok->next());
+        if (tok->strAt(2)=="typename" &&
+            (!tok->tokAt(3) || !Token::Match(tok->tokAt(3), "%name%|.|,|>")))
+            syntaxError(tok->next());
+        codeWithTemplates = true;
+        Token *parmEnd = tok->next()->findClosingBracket();
+        for (const Token *tok2 = parmEnd; tok2; tok2 = tok2->next()) {
+            if (tok2->str() == "(")
+                tok2 = tok2->link();
+            else if (tok2->str() == ")")
+                break;
+            // Just a declaration => ignore this
+            else if (tok2->str() == ";")
+                break;
+            // Implementation => add to "templates"
+            else if (tok2->str() == "{") {
+                int namepos = getTemplateNamePosition(parmEnd);
+                if (namepos > 0)
+                    declarations.push_back(TokenAndName(tok, getFullName(scopeInfo, parmEnd->strAt(namepos))));
+                break;
             }
         }
     }
