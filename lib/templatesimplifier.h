@@ -146,7 +146,7 @@ public:
      * @return  template < typename T, typename S >
      *                                              ^ return
      */
-    static const Token * TemplateParametersInDeclaration(
+    static const Token * getTemplateParametersInDeclaration(
         const Token * tok,
         std::vector<const Token *> & typeParametersInDeclaration);
 

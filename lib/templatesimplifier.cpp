@@ -806,7 +806,7 @@ void TemplateSimplifier::expandTemplate(
         if (tok3->str()=="template") {
             if (tok3->next() && tok3->next()->str()=="<") {
                 std::vector<const Token *> localTypeParametersInDeclaration;
-                TemplateParametersInDeclaration(tok3->tokAt(2), localTypeParametersInDeclaration);
+                getTemplateParametersInDeclaration(tok3->tokAt(2), localTypeParametersInDeclaration);
                 if (localTypeParametersInDeclaration.size() != typeParametersInDeclaration.size())
                     inTemplateDefinition = false; // Partial specialization
                 else
@@ -1259,7 +1259,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
     return ret;
 }
 
-const Token * TemplateSimplifier::TemplateParametersInDeclaration(
+const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
     const Token * tok,
     std::vector<const Token *> & typeParametersInDeclaration)
 {
@@ -1286,7 +1286,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
     // Contains tokens such as "T"
     std::vector<const Token *> typeParametersInDeclaration;
-    const Token * const tok = TemplateParametersInDeclaration(templateDeclaration.token->tokAt(2), typeParametersInDeclaration);
+    const Token * const tok = getTemplateParametersInDeclaration(templateDeclaration.token->tokAt(2), typeParametersInDeclaration);
 
     // bail out if the end of the file was reached
     if (!tok)
