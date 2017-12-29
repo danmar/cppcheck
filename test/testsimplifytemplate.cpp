@@ -118,6 +118,9 @@ private:
 
         TEST_CASE(expandSpecialized);
 
+        TEST_CASE(templateAlias1);
+        TEST_CASE(templateAlias2);
+
         // Test TemplateSimplifier::instantiateMatch
         TEST_CASE(instantiateMatch);
     }
@@ -683,7 +686,7 @@ private:
     void template27() {
         // #3350 - template inside macro call
         const char code[] = "X(template<class T> class Fred);";
-        ASSERT_EQUALS("X ( template < class T > class Fred ) ;", tok(code));
+        ASSERT_THROW(tok(code), InternalError);
     }
 
     void template28() {
@@ -1538,6 +1541,26 @@ private:
     void expandSpecialized() {
         ASSERT_EQUALS("class A<int> { } ;", tok("template<> class A<int> {};"));
         ASSERT_EQUALS("class A<int> : public B { } ;", tok("template<> class A<int> : public B {};"));
+    }
+
+    void templateAlias1() {
+        const char code[] = "template<class T, int N> struct Foo {};\n"
+                            "template<class T> using Bar = Foo<T,3>;\n"
+                            "Bar<int> b;\n";
+
+        const char expected[] = "; Foo<int,3> b ; struct Foo<int,3> { } ;";
+
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void templateAlias2() {
+        const char code[] = "namespace A { template<class T, int N> struct Foo {}; }\n"
+                            "template<class T> using Bar = A::Foo<T,3>;\n"
+                            "Bar<int> b;\n";
+
+        const char expected[] = "; A::Foo<int,3> b ; struct A::Foo<int,3> { } ;";
+
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     unsigned int instantiateMatch(const char code[], const std::size_t numberOfArguments, const char patternAfter[]) {

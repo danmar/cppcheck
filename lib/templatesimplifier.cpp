@@ -701,6 +701,96 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<TokenAndName> 
     }
 }
 
+void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::TokenAndName> *templateInstantiations)
+{
+    std::list<TemplateSimplifier::TokenAndName>::iterator it1, it2;
+    for (it1 = templateInstantiations->begin(); it1 != templateInstantiations->end();) {
+        TemplateSimplifier::TokenAndName &templateAlias = *it1;
+        ++it1;
+        Token *startToken = templateAlias.token;
+        while (Token::Match(startToken->tokAt(-2), "%name% :: %name%"))
+            startToken = startToken->tokAt(-2);
+        if (!Token::Match(startToken->tokAt(-4), "> using %name% = %name% ::|<"))
+            continue;
+        const std::string aliasName(startToken->strAt(-2));
+        const Token * const aliasToken1 = startToken;
+
+        // Get start token for alias
+        startToken = startToken->tokAt(-5);
+        while (Token::Match(startToken, "%name%|<|>|>>|,"))
+            startToken = startToken->previous();
+        if (!Token::Match(startToken, "[;{}] template <"))
+            continue;
+
+        // alias parameters..
+        std::vector<const Token *> aliasParameters;
+        TemplateSimplifier::getTemplateParametersInDeclaration(startToken->tokAt(3), aliasParameters);
+        std::map<std::string, unsigned int> aliasParameterNames;
+        for (unsigned int argnr = 0; argnr < aliasParameters.size(); ++argnr)
+            aliasParameterNames[aliasParameters[argnr]->str()] = argnr;
+
+        // Look for alias usages..
+        const Token *endToken = nullptr;
+        for (it2 = it1; it2 != templateInstantiations->end(); ++it2) {
+            TemplateSimplifier::TokenAndName &aliasUsage = *it2;
+            if (aliasUsage.name != aliasName)
+                continue;
+            std::vector<std::pair<Token *, Token *>> args;
+            Token *tok2 = aliasUsage.token->tokAt(2);
+            while (tok2) {
+                Token * const start = tok2;
+                while (tok2 && !Token::Match(tok2, "[,>;{}]"))
+                    tok2 = tok2->next();
+
+                args.push_back(std::pair<Token *, Token *>(start, tok2));
+                if (tok2 && tok2->str() == ",") {
+                    tok2 = tok2->next();
+                } else {
+                    break;
+                }
+            }
+            if (!tok2 || tok2->str() != ">" || args.size() != aliasParameters.size())
+                continue;
+
+            // Replace template alias code..
+            aliasUsage.name = templateAlias.name;
+            if (aliasUsage.name.find(" ") == std::string::npos) {
+                aliasUsage.token->str(templateAlias.token->str());
+            } else {
+                tok2 = Tokenizer::copyTokens(aliasUsage.token, aliasToken1, templateAlias.token, true);
+                aliasUsage.token->deleteThis();
+                aliasUsage.token = tok2;
+            }
+            tok2 = aliasUsage.token->next(); // the '<'
+            Token *tok1 = templateAlias.token->tokAt(2);
+            while (tok1 && tok1->str() != ";") {
+                Token *fromStart, *fromEnd;
+                if (aliasParameterNames.find(tok1->str()) != aliasParameterNames.end()) {
+                    const unsigned int argnr = aliasParameterNames[tok1->str()];
+                    fromStart = args[argnr].first;
+                    fromEnd   = args[argnr].second->previous();
+                } else {
+                    fromStart = fromEnd = tok1;
+                }
+
+                if (tok2->next() == fromStart)
+                    tok2 = fromEnd;
+                else
+                    tok2 = Tokenizer::copyTokens(tok2, fromStart, fromEnd, true);
+                tok1 = tok1->next();
+            }
+            endToken = tok1;
+            Token::eraseTokens(tok2, args.back().second->next());
+        }
+        if (endToken) {
+            Token::eraseTokens(startToken, endToken);
+            it2 = it1;
+            --it2;
+            templateInstantiations->erase(it2,it1);
+        }
+    }
+}
+
 bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::size_t numberOfArguments, const char patternAfter[])
 {
 //    if (!Token::simpleMatch(instance, (name + " <").c_str()))
@@ -1554,6 +1644,8 @@ void TemplateSimplifier::simplifyTemplates(
 
     // Template arguments with default values
     TemplateSimplifier::useDefaultArgumentValues(templates, &templateInstantiations);
+
+    TemplateSimplifier::simplifyTemplateAliases(&templateInstantiations);
 
     // expand templates
     //bool done = false;

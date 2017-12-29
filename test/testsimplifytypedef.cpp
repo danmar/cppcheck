@@ -1183,8 +1183,8 @@ private:
 
     void simplifyTypedef39() {
         const char code[] = "typedef int A;\n"
-                            "template <const A, volatile A>::value;";
-        const char expected[] = "template < const int , int > :: value ;";
+                            "template <const A, volatile A> struct S{};";
+        const char expected[] = "template < const int , int > struct S { } ;";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }

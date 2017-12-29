@@ -102,6 +102,12 @@ public:
                                          std::list<TokenAndName> *templateInstantiations);
 
     /**
+     * simplify template aliases
+     * @param templateInstantiations pointer to list of template instantiations
+     */
+    static void simplifyTemplateAliases(std::list<TokenAndName> *templateInstantiations);
+
+    /**
      * Match template declaration/instantiation
      * @param instance template instantiation
      * @param numberOfArguments number of template arguments

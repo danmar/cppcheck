@@ -757,7 +757,7 @@ private:
 
     // #4245 - segfault
     void tokenize26() {
-        tokenizeAndStringify("class x { protected : template < int y = } ;");
+        ASSERT_THROW(tokenizeAndStringify("class x { protected : template < int y = } ;"), InternalError); // Garbage code
     }
 
     void tokenize27() {
@@ -3938,7 +3938,7 @@ private:
     }
 
     void vardecl23() {  // #4276 - segmentation fault
-        tokenizeAndStringify("class a { protected : template < class int x = 1 ; public : int f ( ) ; }");
+        ASSERT_THROW(tokenizeAndStringify("class a { protected : template < class int x = 1 ; public : int f ( ) ; }"), InternalError);
     }
 
     void vardecl24() {  // #4187 - variable declaration within lambda function

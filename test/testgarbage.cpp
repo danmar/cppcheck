@@ -292,7 +292,7 @@ private:
                             "void G( template <typename T> class (j) ) {}";
 
         // don't segfault..
-        checkCode(code);
+        ASSERT_THROW(checkCode(code), InternalError);
     }
 
     void wrong_syntax3() {   // #3544
@@ -402,7 +402,7 @@ private:
 
     void garbageCode7() {
         checkCode("1 (int j) { return return (c) * sizeof } y[1];");
-        checkCode("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)");
+        ASSERT_THROW(checkCode("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)"), InternalError);
     }
 
     void garbageCode8() { // #5604
@@ -602,7 +602,7 @@ private:
     }
 
     void garbageCode45() { // #6608
-        checkCode("struct true template < > { = } > struct Types \"s\" ; static_assert < int > ;");
+        ASSERT_THROW(checkCode("struct true template < > { = } > struct Types \"s\" ; static_assert < int > ;"), InternalError);
     }
 
     void garbageCode46() { // #6705
@@ -863,7 +863,7 @@ private:
     }
 
     void garbageCode115() { // #5506
-        checkCode("A template < int { int = -1 ; } template < int N > struct B { int [ A < N > :: zero ] ;  } ; B < 0 > b ;");
+        ASSERT_THROW(checkCode("A template < int { int = -1 ; } template < int N > struct B { int [ A < N > :: zero ] ;  } ; B < 0 > b ;"), InternalError);
     }
 
     void garbageCode116() { // #5356
@@ -1008,13 +1008,13 @@ private:
     void garbageCode134() {
         // Ticket #5605, #5759, #5762, #5774, #5823, #6059
         ASSERT_THROW(checkCode("foo() template<typename T1 = T2 = typename = unused, T5 = = unused> struct tuple Args> tuple<Args...> { } main() { foo<int,int,int,int,int,int>(); }"), InternalError);
-        checkCode("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }");
-        checkCode("() template < T = typename = x > struct a {} { f <int> () }");
+        ASSERT_THROW(checkCode("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }"), InternalError);
+        ASSERT_THROW(checkCode("() template < T = typename = x > struct a {} { f <int> () }"), InternalError);
         checkCode("template < T = typename = > struct a { f <int> }");
-        checkCode("struct S { int i, j; }; "
-                  "template<int S::*p, typename U> struct X {}; "
-                  "X<&S::i, int> x = X<&S::i, int>(); "
-                  "X<&S::j, int> y = X<&S::j, int>(); ");
+        ASSERT_THROW(checkCode("struct S { int i, j; }; "
+                               "template<int S::*p, typename U> struct X {}; "
+                               "X<&S::i, int> x = X<&S::i, int>(); "
+                               "X<&S::j, int> y = X<&S::j, int>(); "), InternalError);
         checkCode("template <typename T> struct A {}; "
                   "template <> struct A<void> {}; "
                   "void foo(const void* f = 0) {}");

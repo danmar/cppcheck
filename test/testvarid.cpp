@@ -2112,10 +2112,10 @@ private:
     }
 
     void varid_templateUsing() { // #5781 #7273
-        const char code[] = "template<class T> using X = Y<T>;\n"
+        const char code[] = "template<class T> using X = Y<T,4>;\n"
                             "X<int> x;";
-        TODO_ASSERT_EQUALS("\nY<int> x@1;\n",
-                           "1: template < class T > using X ; X = Y < T > ;\n"
+        TODO_ASSERT_EQUALS("\nY<int,4> x@1;\n",
+                           "1: template < class T > using X = Y < T , 4 > ;\n"
                            "2: X < int > x@1 ;\n",
                            tokenize(code));
     }
@@ -2139,9 +2139,9 @@ private:
     }
 
     void varid_typename() {
-        ASSERT_EQUALS("1: template < int d , class A , class B > ;\n", tokenize("template<int d, class A, class B>;"));
+        ASSERT_EQUALS("1: template < int d , class A , class B > struct S { } ;\n", tokenize("template<int d, class A, class B> struct S {};"));
 
-        ASSERT_EQUALS("1: template < int d , typename A , typename B > ;\n", tokenize("template<int d, typename A, typename B>;"));
+        ASSERT_EQUALS("1: template < int d , typename A , typename B > struct S { } ;\n", tokenize("template<int d, typename A, typename B> struct S {};"));
 
         ASSERT_EQUALS("1: typename A a@1 ;\n", tokenize("typename A a;"));
     }

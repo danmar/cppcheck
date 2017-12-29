@@ -5605,6 +5605,8 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             syntaxError(nullptr); // #7043 invalid code
         if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|)|public:|protected:|private:"))
             continue;
+        if (Token::simpleMatch(tok, "template <"))
+            continue;
 
         Token *type0 = tok;
         if (!Token::Match(type0, "::|extern| %type%"))
@@ -8361,6 +8363,38 @@ const Token * Tokenizer::findGarbageCode() const
         return list.back();
     if ((list.back()->str()==")" || list.back()->str()=="}") && list.back()->previous() && list.back()->previous()->isControlFlowKeyword())
         return list.back()->previous();
+
+    // Garbage templates..
+    if (isCPP()) {
+        for (const Token *tok = tokens(); tok; tok = tok->next()) {
+            if (!Token::Match(tok, "template <"))
+                continue;
+            if (tok->previous() && !Token::Match(tok->previous(), "[:;{}]"))
+                return tok;
+            const Token *tok1 = tok;
+            tok = tok->tokAt(2);
+            while (Token::Match(tok,"%name%|*|,|.|(")) {
+                if (tok->str() == "(")
+                    tok = tok->link();
+                tok = tok->next();
+            }
+            if (tok && tok->str() == "=") {
+                while (tok && !Token::Match(tok, "[;{}]") && !Token::Match(tok, ">|>> %name%")) {
+                    if (tok->str() == "(")
+                        tok = tok->link();
+                    tok = tok->next();
+                }
+            }
+            if (!tok)
+                return tok1;
+            if (Token::Match(tok->previous(), "template <"))
+                continue;
+            if (!Token::Match(tok, ">|>>"))
+                return tok1;
+            if (!Token::Match(tok, ">|>> %name%"))
+                return tok->next() ? tok->next() : tok1;
+        }
+    }
 
     return nullptr;
 }
