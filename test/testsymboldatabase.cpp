@@ -1271,6 +1271,12 @@ private:
 
     void testConstructors() {
         {
+            GET_SYMBOL_DB("class Foo { Foo(); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
             GET_SYMBOL_DB("class Foo { Foo(Foo f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eConstructor && !ctor->isExplicit());
@@ -1283,13 +1289,49 @@ private:
             ASSERT(ctor && ctor->retDef == 0);
         }
         {
+            GET_SYMBOL_DB("class Foo { Foo(Bar& f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
             GET_SYMBOL_DB("class Foo { Foo(Foo& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
             ASSERT(ctor && ctor->retDef == 0);
         }
         {
+            GET_SYMBOL_DB("class Foo { Foo(const Foo &f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
+            GET_SYMBOL_DB("template <T> class Foo { Foo(Foo<T>& f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(7)->function();
+            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo& f, int default = 0); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo& f, char noDefault); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
             GET_SYMBOL_DB("class Foo { Foo(Foo&& f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo & & f, int default = 1, bool defaultToo = true); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
             ASSERT(ctor && ctor->retDef == 0);

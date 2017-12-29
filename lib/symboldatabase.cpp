@@ -50,6 +50,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseFindAllScopes();
     createSymbolDatabaseClassInfo();
     createSymbolDatabaseVariableInfo();
+    createSymbolDatabaseCopyAndMoveConstructors();
     createSymbolDatabaseFunctionScopes();
     createSymbolDatabaseClassAndStructScopes();
     createSymbolDatabaseFunctionReturnTypes();
@@ -421,29 +422,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                         // destructor
                         if (function.tokenDef->previous()->str() == "~")
                             function.type = Function::eDestructor;
-
-                        // copy/move constructor?
-                        else if (Token::Match(function.tokenDef, "%name% ( const| %name% &|&& &| %name%| )") ||
-                                 Token::Match(function.tokenDef, "%name% ( const| %name% <")) {
-                            const Token* typeTok = function.tokenDef->tokAt(2);
-                            if (typeTok->str() == "const")
-                                typeTok = typeTok->next();
-                            if (typeTok->strAt(1) == "<") { // TODO: Remove this branch (#4710)
-                                if (Token::Match(typeTok->linkAt(1), "> & %name%| )"))
-                                    function.type = Function::eCopyConstructor;
-                                else if (Token::Match(typeTok->linkAt(1), "> &&|& & %name%| )"))
-                                    function.type = Function::eMoveConstructor;
-                                else
-                                    function.type = Function::eConstructor;
-                            } else if (typeTok->strAt(1) == "&&" || typeTok->strAt(2) == "&")
-                                function.type = Function::eMoveConstructor;
-                            else
-                                function.type = Function::eCopyConstructor;
-
-                            if (typeTok->str() != function.tokenDef->str())
-                                function.type = Function::eConstructor; // Overwrite, if types are not identical
-                        }
-                        // regular constructor
+                        // constructor of any kind
                         else
                             function.type = Function::eConstructor;
 
@@ -504,9 +483,6 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     // count the number of constructors
                     if (function.isConstructor())
                         scope->numConstructors++;
-                    if (function.type == Function::eCopyConstructor ||
-                        function.type == Function::eMoveConstructor)
-                        scope->numCopyOrMoveConstructors++;
 
                     // assume implementation is inline (definition and implementation same)
                     function.token = function.tokenDef;
@@ -913,6 +889,33 @@ void SymbolDatabase::createSymbolDatabaseVariableInfo()
         for (func = it->functionList.begin(); func != it->functionList.end(); ++func) {
             // add arguments
             func->addArguments(this, &*it);
+        }
+    }
+}
+
+void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
+{
+    // fill in class and struct copy/move constructors
+    for (std::list<Scope>::iterator scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
+        if (!scope->isClassOrStruct())
+            continue;
+
+        std::list<Function>::iterator func;
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            if (!func->isConstructor() || func->minArgCount() != 1)
+                continue;
+
+            const Variable* firstArg = func->getArgumentVar(0);
+            if (firstArg->type() == scope->definedType) {
+                if (firstArg->isRValueReference())
+                    func->type = Function::eMoveConstructor;
+                else if (firstArg->isReference())
+                    func->type = Function::eCopyConstructor;
+            }
+
+            if (func->type == Function::eCopyConstructor ||
+                func->type == Function::eMoveConstructor)
+                scope->numCopyOrMoveConstructors++;
         }
     }
 }
