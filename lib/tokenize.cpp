@@ -8367,7 +8367,7 @@ const Token * Tokenizer::findGarbageCode() const
     // Garbage templates..
     if (isCPP()) {
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
-            if (!Token::Match(tok, "template <"))
+            if (!Token::simpleMatch(tok, "template <"))
                 continue;
             if (tok->previous() && !Token::Match(tok->previous(), "[:;{}]"))
                 return tok;
@@ -8387,7 +8387,7 @@ const Token * Tokenizer::findGarbageCode() const
             }
             if (!tok)
                 return tok1;
-            if (Token::Match(tok->previous(), "template <"))
+            if (Token::simpleMatch(tok->previous(), "template <"))
                 continue;
             if (!Token::Match(tok, ">|>>"))
                 return tok1;
