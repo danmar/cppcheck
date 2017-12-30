@@ -1655,17 +1655,17 @@ void TemplateSimplifier::simplifyTemplates(
         }
     }
 
-    std::list<TokenAndName> templates(TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), _codeWithTemplates));
+    std::list<TokenAndName> templateDeclarations(TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), _codeWithTemplates));
 
     // Locate possible instantiations of templates..
-    std::list<TokenAndName> templateInstantiations(TemplateSimplifier::getTemplateInstantiations(tokenlist.front(), templates));
+    std::list<TokenAndName> templateInstantiations(TemplateSimplifier::getTemplateInstantiations(tokenlist.front(), templateDeclarations));
 
     // No template instantiations? Then return.
     if (templateInstantiations.empty())
         return;
 
     // Template arguments with default values
-    TemplateSimplifier::useDefaultArgumentValues(templates, &templateInstantiations);
+    TemplateSimplifier::useDefaultArgumentValues(templateDeclarations, &templateInstantiations);
 
     TemplateSimplifier::simplifyTemplateAliases(&templateInstantiations);
 
@@ -1674,8 +1674,8 @@ void TemplateSimplifier::simplifyTemplates(
     //while (!done)
     {
         //done = true;
-        std::list<TokenAndName> templates2;
-        for (std::list<TokenAndName>::reverse_iterator iter1 = templates.rbegin(); iter1 != templates.rend(); ++iter1) {
+        std::list<TokenAndName> instantiatedTemplates;
+        for (std::list<TokenAndName>::reverse_iterator iter1 = templateDeclarations.rbegin(); iter1 != templateDeclarations.rend(); ++iter1) {
             bool instantiated = TemplateSimplifier::simplifyTemplateInstantiations(tokenlist,
                                 errorlogger,
                                 _settings,
@@ -1684,17 +1684,17 @@ void TemplateSimplifier::simplifyTemplates(
                                 templateInstantiations,
                                 expandedtemplates);
             if (instantiated)
-                templates2.push_back(*iter1);
+                instantiatedTemplates.push_back(*iter1);
         }
 
-        for (std::list<TokenAndName>::const_iterator it = templates2.begin(); it != templates2.end(); ++it) {
+        for (std::list<TokenAndName>::const_iterator it = instantiatedTemplates.begin(); it != instantiatedTemplates.end(); ++it) {
             std::list<TokenAndName>::iterator it1;
-            for (it1 = templates.begin(); it1 != templates.end(); ++it1) {
+            for (it1 = templateDeclarations.begin(); it1 != templateDeclarations.end(); ++it1) {
                 if (it1->token == it->token)
                     break;
             }
-            if (it1 != templates.end()) {
-                templates.erase(it1);
+            if (it1 != templateDeclarations.end()) {
+                templateDeclarations.erase(it1);
                 removeTemplate(it->token);
             }
         }
