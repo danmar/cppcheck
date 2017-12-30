@@ -1397,7 +1397,7 @@ static bool matchSpecialization(const Token *templateDeclarationNameToken, const
         const Token *startToken = (*it);
         while (startToken->previous() && !Token::Match(startToken->previous(), "[;{}]"))
             startToken = startToken->previous();
-        if (!Token::Match(startToken, "template <"))
+        if (!Token::simpleMatch(startToken, "template <"))
             continue;
         std::vector<const Token *> templateParameters;
         TemplateSimplifier::getTemplateParametersInDeclaration(startToken->tokAt(2), templateParameters);
