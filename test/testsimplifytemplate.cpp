@@ -110,6 +110,7 @@ private:
         TEST_CASE(template_namespace_2);
         TEST_CASE(template_namespace_3);
         TEST_CASE(template_namespace_4);
+        TEST_CASE(template_namespace_5);
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
@@ -1453,6 +1454,12 @@ private:
                       " } ; "
                       "} "
                       "class foo::A<int> { void dostuff ( ) { } } ;", tok(code));
+    }
+
+    void template_namespace_5() {
+        const char code[] = "template<class C> struct S {};\n"
+                            "namespace X { S<int> s; }";
+        ASSERT_EQUALS("namespace X { S<int> s ; } struct S<int> { } ;", tok(code));
     }
 
     unsigned int templateParameters(const char code[]) {

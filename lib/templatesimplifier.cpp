@@ -493,7 +493,7 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDecla
             else if (tok2->str() == "{") {
                 int namepos = getTemplateNamePosition(parmEnd);
                 if (namepos > 0)
-                    declarations.push_back(TokenAndName(tok, getFullName(scopeInfo, parmEnd->strAt(namepos))));
+                    declarations.push_back(TokenAndName(tok, getScopeName(scopeInfo), getFullName(scopeInfo, parmEnd->strAt(namepos))));
                 break;
             }
         }
@@ -502,7 +502,7 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDecla
 }
 
 
-std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateInstantiations(Token *tokens)
+std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateInstantiations(Token *tokens, const std::list<TokenAndName> &declarations)
 {
     std::list<TokenAndName> instantiations;
     std::list<ScopeInfo2> scopeList;
@@ -541,13 +541,35 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateInsta
             for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
                 if (Token::Match(tok2, ", %name% <") &&
                     TemplateSimplifier::templateParameters(tok2->tokAt(2))) {
-                    instantiations.push_back(TokenAndName(tok2->next(),getFullName(scopeList, tok2->strAt(1))));
+                    instantiations.push_back(TokenAndName(tok2->next(), getScopeName(scopeList), getFullName(scopeList, tok2->strAt(1))));
                 }
             }
 
             // Add outer template..
-            if (TemplateSimplifier::templateParameters(tok->next()))
-                instantiations.push_back(TokenAndName(tok, scopeName + (scopeName.empty()?"":" :: ") + tok->str()));
+            if (TemplateSimplifier::templateParameters(tok->next())) {
+                bool done = false;
+                const std::string scopeName1(scopeName);
+                while (!done) {
+                    const std::string fullName = scopeName + (scopeName.empty()?"":" :: ") + tok->str();
+
+                    for (std::list<TokenAndName>::const_iterator it = declarations.begin(); it != declarations.end(); ++it) {
+                        if (it->name == fullName) {
+                            instantiations.push_back(TokenAndName(tok, getScopeName(scopeList), fullName));
+                            done = true;
+                            break;
+                        }
+                    }
+
+                    if (!done) {
+                        if (scopeName.empty()) {
+                            instantiations.push_back(TokenAndName(tok, getScopeName(scopeList), scopeName1 + (scopeName1.empty()?"":" :: ") + tok->str()));
+                            break;
+                        }
+                        const std::string::size_type pos = scopeName.rfind(" :: ");
+                        scopeName = (pos == std::string::npos) ? std::string() : scopeName.substr(0,pos);
+                    }
+                }
+            }
         }
     }
 
@@ -995,7 +1017,7 @@ void TemplateSimplifier::expandTemplate(
                 std::string name = tok3->str();
                 for (const Token *prev = tok3->tokAt(-2); Token::Match(prev, "%name% ::"); prev = prev->tokAt(-2))
                     name = prev->str() + " :: " + name;
-                templateInstantiations.push_back(TokenAndName(tokenlist.back(), getFullName(scopeInfo, name)));
+                templateInstantiations.push_back(TokenAndName(tokenlist.back(), getScopeName(scopeInfo), getFullName(scopeInfo, name)));
             }
 
             // link() newly tokens manually
@@ -1636,7 +1658,7 @@ void TemplateSimplifier::simplifyTemplates(
     std::list<TokenAndName> templates(TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), _codeWithTemplates));
 
     // Locate possible instantiations of templates..
-    std::list<TokenAndName> templateInstantiations(TemplateSimplifier::getTemplateInstantiations(tokenlist.front()));
+    std::list<TokenAndName> templateInstantiations(TemplateSimplifier::getTemplateInstantiations(tokenlist.front(), templates));
 
     // No template instantiations? Then return.
     if (templateInstantiations.empty())

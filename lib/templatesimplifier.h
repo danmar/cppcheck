@@ -76,8 +76,9 @@ public:
      * Token and its full scopename
      */
     struct TokenAndName {
-        TokenAndName(Token *tok, const std::string &scopeName) : token(tok), name(scopeName) {}
+        TokenAndName(Token *tok, const std::string &s, const std::string &n) : token(tok), scope(s), name(n) {}
         Token *token;
+        std::string scope;
         std::string name;
     };
 
@@ -89,9 +90,11 @@ public:
 
     /**
      * Get template instantiations
+     * @param tokens start of token list
+     * @param declarations template declarations, so names can be matched
      * @return list of template instantiations
      */
-    static std::list<TokenAndName> getTemplateInstantiations(Token *tokens);
+    static std::list<TokenAndName> getTemplateInstantiations(Token *tokens, const std::list<TokenAndName> &declarations);
 
     /**
      * simplify template instantiations (use default argument values)
