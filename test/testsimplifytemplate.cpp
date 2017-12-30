@@ -98,6 +98,8 @@ private:
         TEST_CASE(template58);  // #6021 - use after free (deleted tokens in simplifyCalculations)
         TEST_CASE(template59);  // #8051 - TemplateSimplifier::simplifyTemplateInstantiation failure
         TEST_CASE(template60);  // handling of methods outside template definition
+        TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
+        TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
@@ -1114,6 +1116,24 @@ private:
                            "void j ( ) { h<int> ( ) ; } "
                            "void h<int> ( ) { f < S<int> :: type ( 0 ) > ( ) ; } "
                            "struct S<int> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
+        const char code[] = "template <typename T> struct C {};\n"
+                            "template <typename T> struct S {a};\n"
+                            "template <typename T> struct S<C<T>> {b};\n"
+                            "S<int> s;";
+        const char exp[]  = "template < typename T > struct C { } ; template < typename T > struct S < C < T > > { b } ; S<int> s ; struct S<int> { a } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template_specialization_2() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
+        const char code[] = "template <typename T> struct C {};\n"
+                            "template <typename T> struct S {a};\n"
+                            "template <typename T> struct S<C<T>> {b};\n"
+                            "S<C<int>> s;";
+        const char exp[]  = "template < typename T > struct C { } ; template < typename T > struct S { a } ; S<C<int>> s ; struct S<C<int>> { b } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 

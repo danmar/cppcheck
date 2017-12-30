@@ -166,6 +166,7 @@ public:
      * @param errorlogger error logger
      * @param _settings settings
      * @param templateDeclaration template declaration
+     * @param specializations template specializations (list each template name token)
      * @param maxtime time when the simplification will stop
      * @param templateInstantiations a list of template usages (not necessarily just for this template)
      * @param expandedtemplates all templates that has been expanded so far. The full names are stored.
@@ -176,6 +177,7 @@ public:
         ErrorLogger* errorlogger,
         const Settings *_settings,
         const TokenAndName &templateDeclaration,
+        const std::list<const Token *> &specializations,
         const std::time_t maxtime,
         std::list<TokenAndName> &templateInstantiations,
         std::set<std::string> &expandedtemplates);

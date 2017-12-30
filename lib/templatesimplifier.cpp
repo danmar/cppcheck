@@ -906,6 +906,7 @@ void TemplateSimplifier::expandTemplate(
     std::list<ScopeInfo2> scopeInfo;
     bool inTemplateDefinition = false;
     const Token *endOfTemplateDefinition = nullptr;
+    const Token * const templateDeclarationNameToken = templateDeclarationToken->tokAt(getTemplateNamePosition(templateDeclarationToken));
     for (const Token *tok3 = tokenlist.front(); tok3; tok3 = tok3 ? tok3->next() : nullptr) {
         setScopeInfo(const_cast<Token *>(tok3), &scopeInfo);
         if (inTemplateDefinition) {
@@ -987,11 +988,15 @@ void TemplateSimplifier::expandTemplate(
             }
 
             // replace name..
-            if (Token::Match(tok3, (lastName + " !!<").c_str())) {
+            if (tok3 && tok3->str() == lastName) {
                 if (Token::Match(tok3->tokAt(-2), "> :: %name% ( )")) {
                     ; // Ticket #7942: Replacing for out-of-line constructors generates invalid syntax
-                } else {
+                } else if (!Token::simpleMatch(tok3->next(), "<")) {
                     tokenlist.addtoken(newName, tok3->linenr(), tok3->fileIndex());
+                    continue;
+                } else if (tok3 == templateDeclarationNameToken) {
+                    tokenlist.addtoken(newName, tok3->linenr(), tok3->fileIndex());
+                    tok3 = tok3->next()->findClosingBracket();
                     continue;
                 }
             }
@@ -1383,11 +1388,52 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
     return tok;
 }
 
+static bool matchSpecialization(const Token *templateDeclarationNameToken, const Token *templateInstantiationNameToken, const std::list<const Token *> & specializations)
+{
+    // Is there a matching specialization?
+    for (std::list<const Token *>::const_iterator it = specializations.begin(); it != specializations.end(); ++it) {
+        if (!Token::Match(*it, "%name% <"))
+            continue;
+        const Token *startToken = (*it);
+        while (startToken->previous() && !Token::Match(startToken->previous(), "[;{}]"))
+            startToken = startToken->previous();
+        if (!Token::Match(startToken, "template <"))
+            continue;
+        std::vector<const Token *> templateParameters;
+        TemplateSimplifier::getTemplateParametersInDeclaration(startToken->tokAt(2), templateParameters);
+
+        const Token *instToken = templateInstantiationNameToken->tokAt(2);
+        const Token *declToken = (*it)->tokAt(2);
+        const Token * const endToken = (*it)->next()->findClosingBracket();
+        while (declToken != endToken) {
+            if (declToken->str() != instToken->str()) {
+                int nr = 0;
+                while (nr < templateParameters.size() && templateParameters[nr]->str() != declToken->str())
+                    ++nr;
+
+                if (nr == templateParameters.size())
+                    break;
+            }
+            declToken = declToken->next();
+            instToken = instToken->next();
+        }
+
+        if (declToken == endToken && instToken->str() == ">") {
+            // specialization matches.
+            return templateDeclarationNameToken == *it;
+        }
+    }
+
+    // No specialization matches. Return true if the declaration is not a specialization.
+    return Token::Match(templateDeclarationNameToken, "%name% !!<");
+}
+
 bool TemplateSimplifier::simplifyTemplateInstantiations(
     TokenList& tokenlist,
     ErrorLogger* errorlogger,
     const Settings *_settings,
     const TokenAndName &templateDeclaration,
+    const std::list<const Token *> &specializations,
     const std::time_t maxtime,
     std::list<TokenAndName> &templateInstantiations,
     std::set<std::string> &expandedtemplates)
@@ -1407,7 +1453,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     const bool printDebug = _settings->debugwarnings;
 
     // get the position of the template name
-    int namepos = TemplateSimplifier::getTemplateNamePosition(tok);
+    const int namepos = TemplateSimplifier::getTemplateNamePosition(tok);
     if (namepos == -1) {
         // debug message that we bail out..
         if (printDebug && errorlogger) {
@@ -1440,6 +1486,9 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         }
 
         if (iter2->name != templateDeclaration.name)
+            continue;
+
+        if (!matchSpecialization(tok->tokAt(namepos), iter2->token, specializations))
             continue;
 
         Token * const tok2 = iter2->token;
@@ -1676,10 +1725,22 @@ void TemplateSimplifier::simplifyTemplates(
         //done = true;
         std::list<TokenAndName> instantiatedTemplates;
         for (std::list<TokenAndName>::reverse_iterator iter1 = templateDeclarations.rbegin(); iter1 != templateDeclarations.rend(); ++iter1) {
+            // get specializations..
+            std::list<const Token *> specializations;
+            for (std::list<TokenAndName>::const_iterator iter2 = templateDeclarations.begin(); iter2 != templateDeclarations.end(); ++iter2) {
+                if (iter1->name == iter2->name) {
+                    const Token *tok = iter2->token->next()->findClosingBracket();
+                    int namepos = getTemplateNamePosition(tok);
+                    if (namepos > 0)
+                        specializations.push_back(tok->tokAt(namepos));
+                }
+            }
+
             bool instantiated = TemplateSimplifier::simplifyTemplateInstantiations(tokenlist,
                                 errorlogger,
                                 _settings,
                                 *iter1,
+                                specializations,
                                 maxtime,
                                 templateInstantiations,
                                 expandedtemplates);
