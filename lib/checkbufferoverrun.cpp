@@ -1234,12 +1234,11 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
         for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             // if the previous token exists, it must be either a variable name or "[;{}]"
-            if (tok->previous() && !tok->previous()->isName() && !Token::Match(tok->previous(), "[;{}]"))
+            if (tok->previous() && !Token::Match(tok->previous(), "%name%|;|{|}"))
                 continue;
 
             // size : Max array index
             MathLib::bigint size = 0;
-
 
             // nextTok : used to skip to next statement.
             const Token * nextTok = tok;
