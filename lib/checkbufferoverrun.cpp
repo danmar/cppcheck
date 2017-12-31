@@ -1233,8 +1233,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         const Scope * scope = symbolDatabase->functionScopes[i];
 
         for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            // if the previous token exists, it must be either a variable name or "[;{}]"
-            if (tok->previous() && !Token::Match(tok->previous(), "%name%|;|{|}"))
+            if (!Token::Match(tok, "[*;{}] %var% ="))
                 continue;
 
             // size : Max array index

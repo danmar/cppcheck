@@ -2985,6 +2985,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'tab4[20]' accessed at index 20, which is out of bounds.\n", errout.str());
 
+        // ticket #1478
+        check("void foo() {\n"
+              "    char *p = malloc(10);\n"
+              "    free(p);\n"
+              "    p = malloc(10);\n"
+              "    p[10] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'p[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+
         // ticket #1134
         check("void f() {\n"
               "    int *x, i;\n"
