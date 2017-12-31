@@ -1008,13 +1008,13 @@ private:
     void garbageCode134() {
         // Ticket #5605, #5759, #5762, #5774, #5823, #6059
         ASSERT_THROW(checkCode("foo() template<typename T1 = T2 = typename = unused, T5 = = unused> struct tuple Args> tuple<Args...> { } main() { foo<int,int,int,int,int,int>(); }"), InternalError);
-        ASSERT_THROW(checkCode("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }"), InternalError);
-        ASSERT_THROW(checkCode("() template < T = typename = x > struct a {} { f <int> () }"), InternalError);
+        checkCode("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }");
+        checkCode("() template < T = typename = x > struct a {} { f <int> () }");
         checkCode("template < T = typename = > struct a { f <int> }");
-        ASSERT_THROW(checkCode("struct S { int i, j; }; "
-                               "template<int S::*p, typename U> struct X {}; "
-                               "X<&S::i, int> x = X<&S::i, int>(); "
-                               "X<&S::j, int> y = X<&S::j, int>(); "), InternalError);
+        checkCode("struct S { int i, j; }; "
+                  "template<int S::*p, typename U> struct X {}; "
+                  "X<&S::i, int> x = X<&S::i, int>(); "
+                  "X<&S::j, int> y = X<&S::j, int>(); ");
         checkCode("template <typename T> struct A {}; "
                   "template <> struct A<void> {}; "
                   "void foo(const void* f = 0) {}");

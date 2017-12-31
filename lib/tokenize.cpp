@@ -8369,27 +8369,11 @@ const Token * Tokenizer::findGarbageCode() const
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "template <"))
                 continue;
-            if (tok->previous() && !Token::Match(tok->previous(), "[:;{}]"))
+            if (tok->previous() && !Token::Match(tok->previous(), "[:;{})]"))
                 return tok;
-            const Token *tok1 = tok;
-            tok = tok->tokAt(2);
-            while (Token::Match(tok,"%name%|*|,|.|(")) {
-                if (tok->str() == "(")
-                    tok = tok->link();
-                tok = tok->next();
-            }
-            if (tok && tok->str() == "=") {
-                while (tok && !Token::Match(tok, "[;{}]") && !Token::Match(tok, ">|>> %name%")) {
-                    if (tok->str() == "(")
-                        tok = tok->link();
-                    tok = tok->next();
-                }
-            }
+            const Token * const tok1 = tok;
+            tok = tok->next()->findClosingBracket();
             if (!tok)
-                return tok1;
-            if (Token::simpleMatch(tok->previous(), "template <"))
-                continue;
-            if (!Token::Match(tok, ">|>>"))
                 return tok1;
             if (!Token::Match(tok, ">|>> %name%"))
                 return tok->next() ? tok->next() : tok1;
