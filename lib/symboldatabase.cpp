@@ -100,7 +100,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 tok2 = tok2->link()->next();
 
             // make sure we have valid code
-            if (!tok2 || !Token::Match(tok2, "{|:")) {
+            if (!Token::Match(tok2, "{|:")) {
                 // check for qualified variable
                 if (tok2 && tok2->next()) {
                     if (tok2->next()->str() == ";")
