@@ -822,30 +822,28 @@ Token* Token::nextTemplateArgument() const
 
 const Token * Token::findClosingBracket() const
 {
+    if (_str != "<")
+        return nullptr;
+
     const Token *closing = nullptr;
 
-    if (_str == "<") {
-        unsigned int depth = 0;
-        for (closing = this; closing != nullptr; closing = closing->next()) {
-            if (Token::Match(closing, "{|[|(")) {
-                closing = closing->link();
-                if (!closing)
-                    return nullptr; // #6803
-            } else if (Token::Match(closing, "}|]|)|;")) {
-                if (depth > 0)
-                    return nullptr;
-                break;
-            } else if (closing->str() == "<")
-                ++depth;
-            else if (closing->str() == ">") {
-                if (--depth == 0)
-                    break;
-            } else if (closing->str() == ">>") {
-                if (--depth == 0)
-                    break;
-                if (--depth == 0)
-                    break;
-            }
+    unsigned int depth = 0;
+    for (closing = this; closing != nullptr; closing = closing->next()) {
+        if (Token::Match(closing, "{|[|(")) {
+            closing = closing->link();
+            if (!closing)
+                return nullptr; // #6803
+        } else if (Token::Match(closing, "}|]|)|;"))
+            return nullptr;
+        else if (closing->str() == "<")
+            ++depth;
+        else if (closing->str() == ">") {
+            if (--depth == 0)
+                return closing;
+        } else if (closing->str() == ">>") {
+            if (depth <= 2)
+                return closing;
+            depth -= 2;
         }
     }
 
