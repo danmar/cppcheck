@@ -88,19 +88,37 @@ void CheckInternal::checkTokenMatchPatterns()
 void CheckInternal::checkRedundantTokCheck()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "&& Token :: simpleMatch|Match|findsimplematch|findmatch ("))
-            continue;
-        // in code like
-        // if (tok->previous() && Token::match(tok->previous(), "bla")) {}
-        // the first tok->previous() check is redundant
-        const Token *astOp1 = tok->astOperand1();
-        const Token *astOp2 = getArguments(tok->tokAt(3))[0];
+          if (Token::Match(tok, "&& Token :: simpleMatch|Match|findsimplematch|findmatch (")) {
+          // in code like
+          // if (tok->previous() && Token::match(tok->previous(), "bla")) {}
+          // the first tok->previous() check is redundant
+          const Token *astOp1 = tok->astOperand1();
+          const Token *astOp2 = getArguments(tok->tokAt(3))[0];
 
-        if (astOp1->expressionString() == astOp2->expressionString()) {
-            checkRedundantTokCheckError(astOp2);
+        //  std::cout << "\n astOp1: " << tok->astOperand1()->str() << ""; // tok
+        //  std::cout << "\n astOp2: " << getArguments(tok->tokAt(3))[0]->str() << "\n "; // tok
+        //  std::cout << "\n";
+
+
+          if (astOp1->expressionString() == astOp2->expressionString()) {
+              checkRedundantTokCheckError(astOp2);
+          }
+        // if (!tok || !Token::match(tok, "foo"))
+        } else if  (Token::Match(tok, "%oror% ! Token :: simpleMatch|Match|findsimplematch|findmatch (")) {
+          // the first tok condition is negated
+          const Token *negTok = tok->next()->astParent()->astOperand1();
+          if (Token::simpleMatch(negTok, "!")) {
+            const Token *astOp1 = negTok->astOperand1();
+            const Token *astOp2 = getArguments(tok->tokAt(4))[0];
+
+            if (astOp1->expressionString() == astOp2->expressionString()) {
+                checkRedundantTokCheckError(astOp2);
+            }
+          }
         }
+      }
     }
-}
+
 
 void CheckInternal::checkRedundantTokCheckError(const Token* tok)
 {
