@@ -55,25 +55,25 @@ void MainWindow::showResult(QListWidgetItem *item)
     QProcess process;
     process.setWorkingDirectory(WORK_FOLDER);
 
-    // Download archive
     if (!QFileInfo(WORK_FOLDER + '/' + archiveName).exists()) {
+        // Download archive
         process.start("wget", QStringList()<<url);
         if (!process.waitForFinished(-1))
             return;
-    }
 
-    // Unpack archive
-    QStringList args;
-    if (url.endsWith(".tar.gz"))
-        args << "xzvf";
-    else if (url.endsWith(".tar.bz2"))
-        args << "xjvf";
-    else if (url.endsWith(".tar.xz"))
-        args << "xJvf";
-    args << archiveName;
-    process.start("tar", args);
-    if (!process.waitForFinished(-1))
-        return;
+        // Unpack archive
+        QStringList args;
+        if (url.endsWith(".tar.gz"))
+            args << "xzvf";
+        else if (url.endsWith(".tar.bz2"))
+            args << "xjvf";
+        else if (url.endsWith(".tar.xz"))
+            args << "xJvf";
+        args << archiveName;
+        process.start("tar", args);
+        if (!process.waitForFinished(-1))
+            return;
+    }
 
     // Open file
     ui->code->setFocus();
