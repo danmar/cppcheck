@@ -3272,8 +3272,14 @@ void Tokenizer::createLinks2()
             type.push(token);
             if (!templateToken && (token->previous()->str() == "template"))
                 templateToken = token;
-        } else if (token->str() == ">") {
+        } else if (token->str() == ">" || token->str() == ">>") {
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
+                continue;
+            Token * const top1 = type.top();
+            type.pop();
+            Token * const top2 = type.empty() ? nullptr : type.top();
+            type.push(top1);
+            if (token->str() == ">>" && (!top2 || top2->str() != "<"))
                 continue;
             if (token->next() &&
                 !Token::Match(token->next(), "%name%|>|&|&&|*|::|,|(|)|{|}|;|[|:") &&
@@ -3291,13 +3297,18 @@ void Tokenizer::createLinks2()
                     continue;
             }
 
-            Token* top = type.top();
-            type.pop();
-
-            if (top == templateToken)
-                templateToken = nullptr;
-
-            Token::createMutualLinks(top, token);
+            if (token->str() == ">>") {
+                type.pop();
+                type.pop();
+                Token::createMutualLinks(top2, token);
+                if (top1 == templateToken || top2 == templateToken)
+                    templateToken = nullptr;
+            } else {
+                type.pop();
+                Token::createMutualLinks(top1, token);
+                if (top1 == templateToken)
+                    templateToken = nullptr;
+            }
         }
     }
 }
@@ -8266,7 +8277,7 @@ void Tokenizer::validate() const
             linkTokens.push(tok);
         }
 
-        else if (Token::Match(tok, "[})]]") || (tok->str() == ">" && tok->link())) {
+        else if (Token::Match(tok, "[})]]") || (Token::Match(tok, ">|>>") && tok->link())) {
             if (tok->link() == nullptr)
                 cppcheckError(tok);
 
