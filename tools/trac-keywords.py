@@ -17,6 +17,8 @@ def readdb():
             continue
         nr = line[:pos1]
         for kw in line[pos1+1:].split(' '):
+            if kw == '':
+                continue
             if kw not in ret:
                 ret[kw] = []
             ret[kw].append(nr);
