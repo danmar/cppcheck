@@ -32,7 +32,9 @@ $ASTYLE $style $options test/*.cpp
 $ASTYLE $style $options test/cfg/*.c*
 $ASTYLE $style $options test/*.h
 
-$ASTYLE $style $options tools/*.cpp
+$ASTYLE $style $options --recursive "tools/*.cpp"
+$ASTYLE $style $options --recursive "tools/*.h"
+
 $ASTYLE $style $options --recursive "samples/*.c"
 $ASTYLE $style $options --recursive "samples/*.cpp"
 

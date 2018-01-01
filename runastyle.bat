@@ -15,6 +15,7 @@ astyle %STYLE% %OPTIONS% lib/*.h
 astyle %STYLE% %OPTIONS% test/*.cpp
 astyle %STYLE% %OPTIONS% test/cfg/*.cpp
 astyle %STYLE% %OPTIONS% test/*.h
-astyle %STYLE% %OPTIONS% tools/*.cpp
+astyle %STYLE% %OPTIONS% -r tools/*.cpp
+astyle %STYLE% %OPTIONS% -r tools/*.h
 astyle %STYLE% %OPTIONS% -r samples/*.c
 astyle %STYLE% %OPTIONS% -r samples/*.cpp
