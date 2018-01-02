@@ -20,9 +20,9 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QPushButton" name="pasteResults">
+         <widget class="QPushButton" name="loadFile">
           <property name="text">
-           <string>Paste results</string>
+           <string>Load</string>
           </property>
          </widget>
         </item>
@@ -86,7 +86,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>pasteResults</sender>
+   <sender>loadFile</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>pasteResults()</slot>
@@ -117,9 +117,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>loadFile</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>loadFile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>22</x>
+     <y>65</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>22</x>
+     <y>46</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
-  <slot>pasteResults()</slot>
+  <slot>loadFile()</slot>
   <slot>showResult(QListWidgetItem*)</slot>
  </slots>
 </ui>
