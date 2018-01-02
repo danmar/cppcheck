@@ -3595,6 +3595,13 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int f() {\n"
+                       "  char *p = (char *)malloc(256);\n"
+                       "  while(*p && *p == '_')\n"
+                       "    p++;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
+
         // #6646 - init in for loop
         checkUninitVar("void f() {\n" // No FP
                        "  for (int i;;i++)\n"
