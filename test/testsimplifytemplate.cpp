@@ -98,6 +98,7 @@ private:
         TEST_CASE(template58);  // #6021 - use after free (deleted tokens in simplifyCalculations)
         TEST_CASE(template59);  // #8051 - TemplateSimplifier::simplifyTemplateInstantiation failure
         TEST_CASE(template60);  // handling of methods outside template definition
+        TEST_CASE(template61);  // daca2, kodi
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1116,6 +1117,22 @@ private:
                            "void j ( ) { h<int> ( ) ; } "
                            "void h<int> ( ) { f < S<int> :: type ( 0 ) > ( ) ; } "
                            "struct S<int> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template61() { // hang in daca, code extracted from kodi
+        const char code[] = "template <typename T> struct Foo {};\n"
+                            "template <typename T> struct Bar {\n"
+                            "  void f1(Bar<T> x) {}\n"
+                            "  Foo<Bar<T>> f2() { }\n"
+                            "};\n"
+                            "Bar<int> c;";
+        const char exp[] = "Bar<int> c ; "
+                           "struct Bar<int> {"
+                           " void f1 ( Bar<int> x ) { }"
+                           " Foo<Bar<int>> f2 ( ) { } "
+                           "} ; "
+                           "struct Foo<Bar<int>> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 

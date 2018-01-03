@@ -1485,6 +1485,10 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             }
         }
 
+        // already simplified
+        if (!Token::Match(iter2->token, "%name% <"))
+            continue;
+
         if (iter2->name != templateDeclaration.name)
             continue;
 
