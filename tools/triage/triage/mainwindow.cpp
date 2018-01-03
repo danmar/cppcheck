@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QDir>
 #include <QFileInfo>
+#include <QFileDialog>
 
 const QString WORK_FOLDER(QDir::homePath() + "/triage");
 
@@ -21,12 +22,20 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::pasteResults()
+void MainWindow::loadFile()
 {
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("daca results file"), WORK_FOLDER, tr("Text files (*.txt)"));
+    if (fileName.isEmpty())
+        return;
     ui->results->clear();
-    const QStringList lines = QApplication::clipboard()->text().split("\n");
+    QFile file(fileName);
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    QTextStream textStream(&file);
     QString url;
-    foreach (const QString line, lines) {
+    while (true) {
+        const QString line = textStream.readLine();
+        if (line.isNull())
+            break;
         if (line.startsWith("ftp://"))
             url = line;
         else if (!url.isEmpty()) {

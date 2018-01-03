@@ -16,7 +16,7 @@ public:
     ~MainWindow();
 
 public slots:
-    void pasteResults();
+    void loadFile();
     void showResult(QListWidgetItem *item);
 
 private:

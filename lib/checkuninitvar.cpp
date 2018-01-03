@@ -522,8 +522,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         else if (Token::Match(tok, "for|while (") || Token::simpleMatch(tok, "do {")) {
             const bool forwhile = Token::Match(tok, "for|while (");
 
-            // is variable initialized in for-head (don't report errors yet)?
-            if (forwhile && checkIfForWhileHead(tok->next(), var, true, false, *alloc, membervar))
+            // is variable initialized in for-head?
+            if (forwhile && checkIfForWhileHead(tok->next(), var, tok->str() == "for", false, *alloc, membervar))
                 return true;
 
             // goto the {
