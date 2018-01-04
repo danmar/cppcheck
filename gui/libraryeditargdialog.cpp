@@ -22,7 +22,7 @@ LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibrar
     ui->minsize2arg2->setEnabled(arg.minsizes.count() >= 2 && arg.minsizes[1].type == "mul");
 
     QStringList items;
-    items << "None" << "argvalue" << "constant" << "mul" << "sizeof" << "strlen";
+    items << "None" << "argvalue" << "mul" << "sizeof" << "strlen";
 
     ui->minsize1type->clear();
     ui->minsize1type->addItems(items);

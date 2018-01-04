@@ -116,11 +116,6 @@
          </item>
          <item>
           <property name="text">
-           <string>constant</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
            <string>mul</string>
           </property>
          </item>
@@ -222,11 +217,6 @@
          <item>
           <property name="text">
            <string>argvalue</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>constant</string>
           </property>
          </item>
          <item>
