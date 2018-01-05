@@ -124,6 +124,7 @@ private:
 
         TEST_CASE(templateAlias1);
         TEST_CASE(templateAlias2);
+        TEST_CASE(templateAlias3); // #8315
 
         // Test TemplateSimplifier::instantiateMatch
         TEST_CASE(instantiateMatch);
@@ -1604,6 +1605,14 @@ private:
 
         const char expected[] = "; A::Foo<int,3> b ; struct A::Foo<int,3> { } ;";
 
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void templateAlias3() { // #8315
+        const char code[] = "template <int> struct Tag {};\n"
+                            "template <int ID> using SPtr = std::shared_ptr<void(Tag<ID>)>;\n"
+                            "SPtr<0> s;";
+        const char expected[] = "template < int > struct Tag { } ; std :: shared_ptr < void ( Tag < 0 > ) > s ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 

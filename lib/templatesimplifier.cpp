@@ -775,8 +775,11 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
             Token *tok2 = aliasUsage.token->tokAt(2);
             while (tok2) {
                 Token * const start = tok2;
-                while (tok2 && !Token::Match(tok2, "[,>;{}]"))
+                while (tok2 && !Token::Match(tok2, "[,>;{}]")) {
+                    if (tok2->link() && Token::Match(tok2, "(|<|["))
+                        tok2 = tok2->link();
                     tok2 = tok2->next();
+                }
 
                 args.push_back(std::pair<Token *, Token *>(start, tok2));
                 if (tok2 && tok2->str() == ",") {
@@ -798,31 +801,41 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
                 aliasUsage.token = tok2;
             }
             tok2 = aliasUsage.token->next(); // the '<'
-            Token *tok1 = templateAlias.token->tokAt(2);
-            while (tok1 && tok1->str() != ";") {
-                Token *fromStart, *fromEnd;
-                if (aliasParameterNames.find(tok1->str()) != aliasParameterNames.end()) {
-                    const unsigned int argnr = aliasParameterNames[tok1->str()];
-                    fromStart = args[argnr].first;
-                    fromEnd   = args[argnr].second->previous();
-                } else {
-                    fromStart = fromEnd = tok1;
-                }
-
-                if (tok2->next() == fromStart)
-                    tok2 = fromEnd;
-                else
-                    tok2 = Tokenizer::copyTokens(tok2, fromStart, fromEnd, true);
-                tok1 = tok1->next();
+            const Token * const endToken1 = templateAlias.token->next()->findClosingBracket();
+            Token * const endToken2 = Tokenizer::copyTokens(tok2, templateAlias.token->tokAt(2), endToken1->previous(), false);
+            for (; tok2 != endToken2; tok2 = tok2->next()) {
+                if (!tok2->isName() || aliasParameterNames.find(tok2->str()) == aliasParameterNames.end())
+                    continue;
+                const unsigned int argnr = aliasParameterNames[tok2->str()];
+                const Token * const fromStart = args[argnr].first;
+                const Token * const fromEnd   = args[argnr].second->previous();
+                Token * const destToken = tok2;
+                tok2 = Tokenizer::copyTokens(tok2, fromStart, fromEnd, true);
+                destToken->deleteThis();
             }
-            endToken = tok1;
-            Token::eraseTokens(tok2, args.back().second->next());
+
+            endToken = endToken1->next();
+
+            Token::eraseTokens(tok2, args.back().second);
         }
         if (endToken) {
+            // Remove all template instantiations in template alias
+            for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
+                if (!Token::Match(tok, "%name% <"))
+                    continue;
+                std::list<TokenAndName>::iterator it = std::find_if(templateInstantiations->begin(),
+                                                       templateInstantiations->end(),
+                                                       FindToken(tok));
+                if (it == templateInstantiations->end())
+                    continue;
+                if (it == it1)
+                    it1++;
+                std::list<TokenAndName>::iterator next = it;
+                next++;
+                templateInstantiations->erase(it,next);
+            }
+
             Token::eraseTokens(startToken, endToken);
-            it2 = it1;
-            --it2;
-            templateInstantiations->erase(it2,it1);
         }
     }
 }
