@@ -34,7 +34,7 @@
 namespace {
     class FindToken {
     public:
-        FindToken(const Token *t) : token(t) {}
+        explicit FindToken(const Token *t) : token(t) {}
         bool operator()(const TemplateSimplifier::TokenAndName &t) const {
             return t.token == token;
         }
@@ -44,7 +44,7 @@ namespace {
 
     class FindName {
     public:
-        FindName(const std::string &s) : name(s) {}
+        explicit FindName(const std::string &s) : name(s) {}
         bool operator()(const TemplateSimplifier::TokenAndName &t) const {
             return t.name == name;
         }
