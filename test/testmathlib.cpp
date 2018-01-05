@@ -308,7 +308,7 @@ private:
         ASSERT_EQUALS(1714631779, MathLib::toLongNumber("'\\U0001f34c'"));
         {
             // some unit-testing for a utility function
-            ASSERT_EQUALS(0, MathLib::characterLiteralToLongNumber(std::string("")));
+            ASSERT_EQUALS(0, MathLib::characterLiteralToLongNumber(std::string()));
             ASSERT_EQUALS(32, MathLib::characterLiteralToLongNumber(std::string(" ")));
             ASSERT_EQUALS(538976288, MathLib::characterLiteralToLongNumber(std::string("          ")));
             ASSERT_THROW(MathLib::characterLiteralToLongNumber(std::string("\\u")), InternalError);
@@ -700,7 +700,7 @@ private:
         value = "garbage";
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
-        value = "";
+        value.clear();
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
 
         value = "llu ";

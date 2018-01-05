@@ -1361,7 +1361,7 @@ private:
                       "    if (pDocSh && !getCellRangesForAddress(nFlags)) ;\n"
                       "}");
 
-        ASSERT(db && errout.str() == "");
+        ASSERT(db && errout.str().empty());
 
         if (db) {
             const Scope *scope = db->findScopeByName("getFormula1");
@@ -1377,7 +1377,7 @@ private:
                       "    if (pDocSh && !getCellRangesForAddress(nFlags)) ;\n"
                       "}");
 
-        ASSERT(db && errout.str() == "");
+        ASSERT(db && errout.str().empty());
 
         if (db) {
             const Scope *scope = db->findScopeByName("getFormula1");
@@ -1397,7 +1397,7 @@ private:
                       "    if (pDocSh && !getCellRangesForAddress(nFlags)) ;\n"
                       "}");
 
-        ASSERT(db && errout.str() == "");
+        ASSERT(db && errout.str().empty());
 
         if (db) {
             const Scope *scope = db->findScopeByName("getFormula1");
@@ -1414,7 +1414,7 @@ private:
                       "extern void f5() { };\n"
                       "void f6() { }");
 
-        ASSERT(db && errout.str() == "");
+        ASSERT(db && errout.str().empty());
 
         if (db) {
             const Token *f = Token::findsimplematch(tokenizer.tokens(), "f1");

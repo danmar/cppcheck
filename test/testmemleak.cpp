@@ -2596,7 +2596,7 @@ private:
               "   if ((ret = alloc(&p)) != 0) return;\n"
               "   free(p);\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS(std::string(), errout.str());
     }
 
 
