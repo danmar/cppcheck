@@ -31,6 +31,28 @@
 #include <stack>
 #include <utility>
 
+namespace {
+    class FindToken {
+    public:
+        FindToken(const Token *t) : token(t) {}
+        bool operator()(const TemplateSimplifier::TokenAndName &t) const {
+            return t.token == token;
+        }
+    private:
+        const Token * const token;
+    };
+
+    class FindName {
+    public:
+        FindName(const std::string &s) : name(s) {}
+        bool operator()(const TemplateSimplifier::TokenAndName &t) const {
+            return t.name == name;
+        }
+    private:
+        const std::string name;
+    };
+}
+
 void TemplateSimplifier::cleanupAfterSimplify(Token *tokens)
 {
     bool goback = false;
@@ -547,20 +569,14 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateInsta
 
             // Add outer template..
             if (TemplateSimplifier::templateParameters(tok->next())) {
-                bool done = false;
                 const std::string scopeName1(scopeName);
-                while (!done) {
+                while (true) {
                     const std::string fullName = scopeName + (scopeName.empty()?"":" :: ") + tok->str();
-
-                    for (std::list<TokenAndName>::const_iterator it = declarations.begin(); it != declarations.end(); ++it) {
-                        if (it->name == fullName) {
-                            instantiations.push_back(TokenAndName(tok, getScopeName(scopeList), fullName));
-                            done = true;
-                            break;
-                        }
-                    }
-
-                    if (!done) {
+                    const std::list<TokenAndName>::const_iterator it = std::find_if(declarations.begin(), declarations.end(), FindName(fullName));
+                    if (it != declarations.end()) {
+                        instantiations.push_back(TokenAndName(tok, getScopeName(scopeList), fullName));
+                        break;
+                    } else {
                         if (scopeName.empty()) {
                             instantiations.push_back(TokenAndName(tok, getScopeName(scopeList), scopeName1 + (scopeName1.empty()?"":" :: ") + tok->str()));
                             break;
@@ -697,11 +713,9 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<TokenAndName> 
                 if (Token::Match(tok2, "(|{|["))
                     tok2 = tok2->link();
                 else if (Token::Match(tok2, "%type% <") && templateParameters(tok2->next())) {
-                    std::list<TokenAndName>::iterator ti;
-                    for (ti = templateInstantiations->begin(); ti != templateInstantiations->end(); ++ti) {
-                        if (ti->token == tok2)
-                            break;
-                    }
+                    std::list<TokenAndName>::iterator ti = std::find_if(templateInstantiations->begin(),
+                                                           templateInstantiations->end(),
+                                                           FindToken(tok2));
                     if (ti != templateInstantiations->end())
                         templateInstantiations->erase(ti);
                     ++indentlevel;
