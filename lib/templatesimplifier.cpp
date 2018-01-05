@@ -830,10 +830,10 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
                                                        FindToken(tok));
                 if (it == templateInstantiations->end())
                     continue;
-                if (it == it1)
-                    it1++;
                 std::list<TokenAndName>::iterator next = it;
-                next++;
+                ++next;
+                if (it == it1)
+                    it1 = next;
                 templateInstantiations->erase(it,next);
             }
 
