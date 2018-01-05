@@ -793,7 +793,7 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
 
             // Replace template alias code..
             aliasUsage.name = templateAlias.name;
-            if (aliasUsage.name.find(" ") == std::string::npos) {
+            if (aliasUsage.name.find(' ') == std::string::npos) {
                 aliasUsage.token->str(templateAlias.token->str());
             } else {
                 tok2 = Tokenizer::copyTokens(aliasUsage.token, aliasToken1, templateAlias.token, true);
@@ -987,7 +987,7 @@ void TemplateSimplifier::expandTemplate(
         std::stack<Token *> brackets; // holds "(", "[" and "{" tokens
 
         // FIXME use full name matching somehow
-        const std::string lastName = (fullName.find(" ") != std::string::npos) ? fullName.substr(fullName.rfind(" ")+1) : fullName;
+        const std::string lastName = (fullName.find(' ') != std::string::npos) ? fullName.substr(fullName.rfind(' ')+1) : fullName;
 
         for (; tok3; tok3 = tok3->next()) {
             if (tok3->isName()) {
@@ -1639,7 +1639,7 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
             continue;
 
         // FIXME Proper name matching
-        const std::string lastName(templateName.find(" ") == std::string::npos ? templateName : templateName.substr(templateName.rfind(" ") + 1));
+        const std::string lastName(templateName.find(' ') == std::string::npos ? templateName : templateName.substr(templateName.rfind(' ') + 1));
         if (lastName != nameTok->str())
             continue;
 
