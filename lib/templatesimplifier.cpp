@@ -811,6 +811,8 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
                 const Token * const fromEnd   = args[argnr].second->previous();
                 Token * const destToken = tok2;
                 tok2 = Tokenizer::copyTokens(tok2, fromStart, fromEnd, true);
+                if (tok2 == destToken->next())
+                    tok2 = destToken;
                 destToken->deleteThis();
             }
 
