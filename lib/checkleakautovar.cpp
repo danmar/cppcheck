@@ -533,7 +533,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 tok = tok->next();
             while (Token::Match(tok, "%name% ::|."))
                 tok = tok->tokAt(2);
-            const bool isnull = tok->hasKnownIntValue() && tok->values().front().intvalue == 0;
+            const bool isnull = tok->hasKnownIntValue() && tok->values().front().intValue == 0;
             if (!isnull && tok->varId() && tok->strAt(1) != "[") {
                 VarInfo::AllocInfo allocation(arrayDelete ? -2 : -1, VarInfo::DEALLOC);
                 changeAllocStatus(varInfo, allocation, tok, tok);
@@ -601,7 +601,7 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const Va
             if (arg->str() == "&")
                 arg = arg->next();
 
-            bool isnull = arg->hasKnownIntValue() && arg->values().front().intvalue == 0;
+            bool isnull = arg->hasKnownIntValue() && arg->values().front().intValue == 0;
 
             // Is variable allocated?
             if (!isnull && (!af || af->arg == argNr))

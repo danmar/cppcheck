@@ -120,7 +120,7 @@ void MathLib::value::promote(const MathLib::value &v)
         }
     } else if (!isFloat()) {
         isUnsigned = false;
-        doubleValue = intValue;
+        doubleValue = static_cast<double>(intValue);
         type = MathLib::value::FLOAT;
     }
 }
@@ -426,7 +426,7 @@ std::string MathLib::normalizeCharacterLiteral(const std::string& iLiteral)
             case '5':
             case '6':
             case '7':
-                normalizedLiteral.push_back(iLiteral[idx]-'0');
+                normalizedLiteral.push_back(static_cast<char>(static_cast<int>(iLiteral[idx])-static_cast<int>('0')));
                 break;
             case 'a':
                 normalizedLiteral.push_back('\a');
@@ -552,7 +552,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
 double MathLib::toDoubleNumber(const std::string &str)
 {
     if (str[0] == '\'' && str.size() >= 3U && endsWith(str,'\''))
-        return characterLiteralToLongNumber(str.substr(1,str.size()-2));
+        return static_cast<double>(characterLiteralToLongNumber(str.substr(1,str.size()-2)));
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
     // nullcheck

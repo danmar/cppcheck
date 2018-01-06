@@ -1053,7 +1053,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                            Token::Match(tok, "%name% ;") &&
                            tok->varId() == 0 &&
                            tok->hasKnownIntValue() &&
-                           tok->values().front().intvalue == 0) {
+                           tok->values().front().intValue == 0) {
                     variables.use(varid1, tok);
                 } else {
                     variables.write(varid1, tok);

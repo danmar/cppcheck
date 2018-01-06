@@ -491,7 +491,7 @@ static bool alwaysTrue(const Token *tok)
         return false;
     if (tok->values().size() == 1U &&
         tok->values().front().isKnown() &&
-        tok->values().front().intvalue != 0)
+        tok->values().front().intValue != 0)
         return true;
     if (tok->str() == "||")
         return alwaysTrue(tok->astOperand1()) || alwaysTrue(tok->astOperand2());

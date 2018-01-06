@@ -487,9 +487,9 @@ void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &inde
     std::ostringstream errmsg;
     if (index.condition)
         errmsg << ValueFlow::eitherTheConditionIsRedundant(index.condition)
-               << ", otherwise there is negative array index " << index.intvalue << ".";
+               << ", otherwise there is negative array index " << index.intValue << ".";
     else
-        errmsg << "Array index " << index.intvalue << " is out of bounds.";
+        errmsg << "Array index " << index.intValue << " is out of bounds.";
     reportError(errorPath, index.errorSeverity() ? Severity::error : Severity::warning, "negativeContainerIndex", errmsg.str(), CWE786, index.isInconclusive());
 }
 

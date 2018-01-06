@@ -94,4 +94,14 @@ inline static int caseInsensitiveStringCompare(const std::string &lhs, const std
 
 #define UNUSED(x) (void)(x)
 
+
+#ifdef __GNUC__
+#define DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED __declspec(deprecated)
+#else
+#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#define DEPRECATED
+#endif
+
 #endif

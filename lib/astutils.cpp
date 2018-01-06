@@ -92,7 +92,7 @@ static bool match(const Token *tok, const std::string &rhs)
 {
     if (tok->str() == rhs)
         return true;
-    if (tok->isName() && !tok->varId() && tok->values().size() == 1U && tok->values().front().isKnown() && MathLib::toString(tok->values().front().intvalue) == rhs)
+    if (tok->isName() && !tok->varId() && tok->values().size() == 1U && tok->values().front().isKnown() && MathLib::toString(tok->values().front().intValue) == rhs)
         return true;
     return false;
 }
@@ -310,9 +310,9 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
         const ValueFlow::Value &rhsValue2 = value2->values().front();
 
         if (op1 == "<" || op1 == "<=")
-            return (op2 == "==" || op2 == ">" || op2 == ">=") && (rhsValue1.intvalue < rhsValue2.intvalue);
+            return (op2 == "==" || op2 == ">" || op2 == ">=") && (rhsValue1.intValue < rhsValue2.intValue);
         else if (op1 == ">=" || op1 == ">")
-            return (op2 == "==" || op2 == "<" || op2 == "<=") && (rhsValue1.intvalue > rhsValue2.intvalue);
+            return (op2 == "==" || op2 == "<" || op2 == "<=") && (rhsValue1.intValue > rhsValue2.intValue);
 
         return false;
     }

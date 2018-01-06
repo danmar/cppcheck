@@ -140,7 +140,7 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
     else
         errmsg << "Invalid " << functionName << "() argument nr " << argnr << '.';
     if (invalidValue)
-        errmsg << " The value is " << invalidValue->intvalue << " but the valid values are '" << validstr << "'.";
+        errmsg << " The value is " << invalidValue->intValue << " but the valid values are '" << validstr << "'.";
     else
         errmsg << " The value is 0 or 1 (boolean) but the valid values are '" << validstr << "'.";
     if (invalidValue)

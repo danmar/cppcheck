@@ -278,8 +278,8 @@ void CheckCondition::checkBadBitmaskCheck()
                                    (parent->str() == "(" && Token::Match(parent->astOperand1(), "if|while")) ||
                                    (parent->str() == "return" && parent->astOperand1() == tok && inBooleanFunction(tok));
 
-            const bool isTrue = (tok->astOperand1()->values().size() == 1 && tok->astOperand1()->values().front().intvalue != 0 && tok->astOperand1()->values().front().isKnown()) ||
-                                (tok->astOperand2()->values().size() == 1 && tok->astOperand2()->values().front().intvalue != 0 && tok->astOperand2()->values().front().isKnown());
+            const bool isTrue = (tok->astOperand1()->values().size() == 1 && tok->astOperand1()->values().front().intValue != 0 && tok->astOperand1()->values().front().isKnown()) ||
+                                (tok->astOperand2()->values().size() == 1 && tok->astOperand2()->values().front().intValue != 0 && tok->astOperand2()->values().front().isKnown());
 
             if (isBoolean && isTrue)
                 badBitmaskCheckError(tok);
@@ -1269,7 +1269,7 @@ void CheckCondition::alwaysTrueFalse()
 
 void CheckCondition::alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value)
 {
-    const bool condvalue = value && (value->intvalue != 0);
+    const bool condvalue = value && (value->intValue != 0);
     const std::string expr = tok ? tok->expressionString() : std::string("x");
     const std::string errmsg = "Condition '" + expr + "' is always " + (condvalue ? "true" : "false");
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
