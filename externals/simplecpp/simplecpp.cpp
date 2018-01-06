@@ -129,15 +129,15 @@ static bool isAlternativeUnaryOp(const simplecpp::Token *tok, const std::string 
 void simplecpp::Location::adjust(const std::string &str)
 {
     if (str.find_first_of("\r\n") == std::string::npos) {
-        col += str.size();
+        col += static_cast<unsigned int>(str.size());
         return;
     }
 
     for (std::size_t i = 0U; i < str.size(); ++i) {
-        col++;
+        ++col;
         if (str[i] == '\n' || str[i] == '\r') {
             col = 1;
-            line++;
+            ++line;
             if (str[i] == '\r' && (i+1)<str.size() && str[i+1]=='\n')
                 ++i;
         }
@@ -326,7 +326,7 @@ static void ungetChar(std::istream &istr, unsigned int bom)
 
 static unsigned short getAndSkipBOM(std::istream &istr)
 {
-    const unsigned char ch1 = istr.peek();
+    const unsigned char ch1 = static_cast<unsigned char>(istr.peek());
 
     // The UTF-16 BOM is 0xfffe or 0xfeff.
     if (ch1 >= 0xfe) {
@@ -438,11 +438,11 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                     location.line = 1U;
                 } else if (lastline == "# line %num%") {
                     loc.push(location);
-                    location.line = std::atol(cback()->str.c_str());
+                    location.line = static_cast<unsigned int>(std::atol(cback()->str.c_str()));
                 } else if (lastline == "# line %num% %str%") {
                     loc.push(location);
                     location.fileIndex = fileIndex(cback()->str.substr(1U, cback()->str.size() - 2U));
-                    location.line = std::atol(cback()->previous->str.c_str());
+                    location.line = static_cast<unsigned int>(std::atol(cback()->previous->str.c_str()));
                 }
                 // #endfile
                 else if (lastline == "# endfile" && !loc.empty()) {
@@ -542,9 +542,9 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 back()->setstr(escapeString(currentToken));
                 location.adjust(currentToken);
                 if (currentToken.find_first_of("\r\n") == std::string::npos)
-                    location.col += 2 + 2 * delim.size();
+                    location.col += 2u + 2u * static_cast<unsigned int>(delim.size());
                 else
-                    location.col += 1 + delim.size();
+                    location.col += 1u + static_cast<unsigned int>(delim.size());
                 continue;
             }
 
@@ -579,7 +579,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         push_back(new Token(currentToken, location));
 
         if (multiline)
-            location.col += currentToken.size();
+            location.col += static_cast<unsigned int>(currentToken.size());
         else
             location.adjust(currentToken);
     }
@@ -1015,7 +1015,7 @@ unsigned int simplecpp::TokenList::fileIndex(const std::string &filename)
             return i;
     }
     files.push_back(filename);
-    return files.size() - 1U;
+    return static_cast<unsigned int>(files.size()) - 1U;
 }
 
 
