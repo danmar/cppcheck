@@ -99,6 +99,7 @@ private:
         TEST_CASE(template59);  // #8051 - TemplateSimplifier::simplifyTemplateInstantiation failure
         TEST_CASE(template60);  // handling of methods outside template definition
         TEST_CASE(template61);  // daca2, kodi
+        TEST_CASE(template62);  // #8314 - inner template instantiation
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -547,16 +548,8 @@ private:
 
     void template20() {
         // Ticket #1788 - the destructor implementation is lost
-        const char code[] = "template <class T> class A\n"
-                            "{\n"
-                            "public:\n"
-                            "    ~A();\n"
-                            "};\n"
-                            "\n"
-                            "template <class T> A<T>::~A()\n"
-                            "{\n"
-                            "}\n"
-                            "\n"
+        const char code[] = "template <class T> class A { public:  ~A(); };\n"
+                            "template <class T> A<T>::~A() {}\n"
                             "A<int> a;\n";
 
         // The expected result..
@@ -1134,6 +1127,21 @@ private:
                            " Foo<Bar<int>> f2 ( ) { } "
                            "} ; "
                            "struct Foo<Bar<int>> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template62() { // #8314
+        const char code[] = "template <class T> struct C1 {};\n"
+                            "template <class T> void f() { x = y ? C1<int>::allocate(1) : 0; }\n"
+                            "template <class T, unsigned S> class C3 {};\n"
+                            "template <class T, unsigned S> C3<T, S>::C3(const C3<T, S> &v) { C1<T *> c1; }\n"
+                            "C3<int,6> c3;";
+        const char exp[] = "template < class T > void f ( ) { x = y ? C1 < int > :: allocate ( 1 ) : 0 ; } "
+                           "template < class T , int S > C3 < T , S > :: C3 ( const C3 < T , S > & v ) { C1 < T * > c1 ; } "
+                           "C3<int,6> c3 ; "
+                           "class C3<int,6> { } ; "
+                           "C3<int,6> :: C3<int,6> ( const C3<int,6> & v ) { C1<int*> c1 ; } "
+                           "struct C1<int*> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 

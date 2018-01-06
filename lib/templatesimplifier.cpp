@@ -982,6 +982,17 @@ void TemplateSimplifier::expandTemplate(
                  Token::Match(tok3, "%name% <") &&
                  fullName == getFullName(scopeInfo, tok3->str()) &&
                  TemplateSimplifier::instantiateMatch(tok3, typeParametersInDeclaration.size(), ":: ~| %name% (")) {
+            // there must be template..
+            bool istemplate = false;
+            for (const Token *prev = tok3; prev && !Token::Match(prev, "[;{}]"); prev = prev->previous()) {
+                if (prev->str() == "template") {
+                    istemplate = true;
+                    break;
+                }
+            }
+            if (!istemplate)
+                continue;
+
             const Token *tok4 = tok3->next()->findClosingBracket();
             while (tok4 && tok4->str() != "(")
                 tok4 = tok4->next();
