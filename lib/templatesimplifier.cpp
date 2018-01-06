@@ -803,9 +803,20 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
             tok2 = aliasUsage.token->next(); // the '<'
             const Token * const endToken1 = templateAlias.token->next()->findClosingBracket();
             Token * const endToken2 = Tokenizer::copyTokens(tok2, templateAlias.token->tokAt(2), endToken1->previous(), false);
-            for (; tok2 != endToken2; tok2 = tok2->next()) {
-                if (!tok2->isName() || aliasParameterNames.find(tok2->str()) == aliasParameterNames.end())
+            for (const Token *tok1 = templateAlias.token->next(); tok2 != endToken2; tok1 = tok1->next(), tok2 = tok2->next()) {
+                if (!tok2->isName())
                     continue;
+                if (aliasParameterNames.find(tok2->str()) == aliasParameterNames.end()) {
+                    // Create template instance..
+                    if (Token::Match(tok1, "%name% <")) {
+                        const std::list<TokenAndName>::iterator it = std::find_if(templateInstantiations->begin(),
+                                templateInstantiations->end(),
+                                FindToken(tok1));
+                        if (it != templateInstantiations->end())
+                            templateInstantiations->push_back(TokenAndName(tok2, it->scope, it->name));
+                    }
+                    continue;
+                }
                 const unsigned int argnr = aliasParameterNames[tok2->str()];
                 const Token * const fromStart = args[argnr].first;
                 const Token * const fromEnd   = args[argnr].second->previous();
@@ -818,6 +829,7 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
 
             endToken = endToken1->next();
 
+            // Remove alias usage code (parameters)
             Token::eraseTokens(tok2, args.back().second);
         }
         if (endToken) {

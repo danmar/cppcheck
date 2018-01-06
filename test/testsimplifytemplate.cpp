@@ -1612,7 +1612,7 @@ private:
         const char code[] = "template <int> struct Tag {};\n"
                             "template <int ID> using SPtr = std::shared_ptr<void(Tag<ID>)>;\n"
                             "SPtr<0> s;";
-        const char expected[] = "template < int > struct Tag { } ; std :: shared_ptr < void ( Tag < 0 > ) > s ;";
+        const char expected[] = "; std :: shared_ptr < void ( Tag<0> ) > s ; struct Tag<0> { } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
