@@ -378,7 +378,7 @@ void CheckType::checkFloatToIntegerOverflow()
                 continue;
             if (!_settings->isEnabled(&(*it), false))
                 continue;
-            if (it->floatValue > ~0ULL)
+            if (it->floatValue > static_cast<double>(~0ULL))
                 floatToIntegerOverflowError(tok, *it);
             else if ((-it->floatValue) > (1ULL<<62))
                 floatToIntegerOverflowError(tok, *it);
@@ -396,7 +396,7 @@ void CheckType::checkFloatToIntegerOverflow()
                     bits = _settings->long_long_bit;
                 else
                     continue;
-                if (bits < MathLib::bigint_bits && it->floatValue >= (((MathLib::biguint)1) << bits))
+                if (bits < MathLib::bigint_bits && it->floatValue >= static_cast<double>((((MathLib::biguint)1) << bits)))
                     floatToIntegerOverflowError(tok, *it);
             }
         }

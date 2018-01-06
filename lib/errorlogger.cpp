@@ -364,7 +364,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
     printer.PushAttribute("msg", fixInvalidChars(_shortMessage).c_str());
     printer.PushAttribute("verbose", fixInvalidChars(_verboseMessage).c_str());
     if (_cwe.id)
-        printer.PushAttribute("cwe", _cwe.id);
+        printer.PushAttribute("cwe", static_cast<unsigned int>(_cwe.id));
     if (_inconclusive)
         printer.PushAttribute("inconclusive", "true");
 
