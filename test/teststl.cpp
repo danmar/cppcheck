@@ -53,6 +53,7 @@ private:
         TEST_CASE(iterator11);
         TEST_CASE(iterator12);
         TEST_CASE(iterator13);
+        TEST_CASE(iterator14); // #8191
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_break);  // #3644 - handle "break"
@@ -517,6 +518,15 @@ private:
               "        v++it;\n"
               "    while (!z && it!=t.end())\n"
               "        v++it;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator14() {
+        check("void f() {\n"
+              "    std::map<int,Foo> x;\n"
+              "    std::map<int,Foo>::const_iterator it;\n"
+              "    for (it = x.find(0)->second.begin(); it != x.find(0)->second.end(); ++it) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

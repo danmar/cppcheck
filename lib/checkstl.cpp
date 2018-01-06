@@ -241,7 +241,7 @@ void CheckStl::iterators()
                      Token::Match(skipMembers(tok2->tokAt(2)), "begin|rbegin|cbegin|crbegin|find (")) {
                 validatingToken = skipMembers(tok2->tokAt(2))->linkAt(1);
                 containerToken = skipMembers(tok2->tokAt(2))->tokAt(-2);
-                if (containerToken->varId() == 0)
+                if (containerToken->varId() == 0 || Token::simpleMatch(validatingToken, ") ."))
                     containerToken = nullptr;
                 containerAssignScope = tok2->scope();
 
