@@ -182,6 +182,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
 
+        check("struct C { std::list<int> l1; void func(); };\n"
+              "void C::func() {\n"
+              "    std::list<int>::iterator it;\n"
+              "    for (it = l1.begin(); it != l1.end(); ++it) { }\n"
+              "    C c;\n"
+              "    for (it = c.l1.begin(); it != c.l1.end(); ++it) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // Same check with reverse iterator
         check("void f()\n"
               "{\n"
