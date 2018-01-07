@@ -6173,7 +6173,7 @@ private:
               "    g(std::move(a));\n"
               "    g(std::move(a));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable a.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable 'a'.\n", errout.str());
     }
 
     void doubleMoveMemberInitialization1() {
@@ -6187,7 +6187,7 @@ private:
               "    B b1;\n"
               "    B b2;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Access of moved variable b.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Access of moved variable 'b'.\n", errout.str());
     }
 
     void doubleMoveMemberInitialization2() {
@@ -6200,7 +6200,7 @@ private:
               "    B b1;\n"
               "    B b2;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable b.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable 'b'.\n", errout.str());
     }
 
     void moveAndAssign1() {
@@ -6220,7 +6220,7 @@ private:
               "    B b = g(std::move(a));\n"
               "    C c = g(std::move(a));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable a.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable 'a'.\n", errout.str());
     }
 
     void moveAssignMoveAssign() {
@@ -6236,8 +6236,8 @@ private:
               "    a = b;\n"
               "    h(a);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable a.\n"
-                      "[test.cpp:8]: (warning) Access of moved variable a.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'a'.\n"
+                      "[test.cpp:8]: (warning) Access of moved variable 'a'.\n", errout.str());
     }
 
     void moveAndReset1() {
@@ -6259,7 +6259,7 @@ private:
               "    b.reset(g(std::move(a)));\n"
               "    c.reset(g(std::move(a)));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Access of moved variable a.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Access of moved variable 'a'.\n", errout.str());
     }
 
     void moveResetMoveReset() {
@@ -6275,8 +6275,8 @@ private:
               "    a.reset(b);\n"
               "    h(a);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable a.\n"
-                      "[test.cpp:8]: (warning) Access of moved variable a.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'a'.\n"
+                      "[test.cpp:8]: (warning) Access of moved variable 'a'.\n", errout.str());
     }
 
     void moveAndFunctionParameter() {
@@ -6287,8 +6287,8 @@ private:
               "    g(a);\n"
               "    A c = a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable a.\n"
-                      "[test.cpp:6]: (warning) Access of moved variable a.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable 'a'.\n"
+                      "[test.cpp:6]: (warning) Access of moved variable 'a'.\n", errout.str());
     }
 
     void moveAndFunctionParameterReference() {
@@ -6310,8 +6310,8 @@ private:
               "    g(a);\n"
               "    A c = a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable a.\n"
-                      "[test.cpp:6]: (warning) Access of moved variable a.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable 'a'.\n"
+                      "[test.cpp:6]: (warning) Access of moved variable 'a'.\n", errout.str());
     }
 
     void moveAndFunctionParameterUnknown() {
@@ -6321,8 +6321,8 @@ private:
               "    g(a);\n"
               "    A c = a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Access of moved variable a.\n"
-                      "[test.cpp:5]: (warning, inconclusive) Access of moved variable a.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Access of moved variable 'a'.\n"
+                      "[test.cpp:5]: (warning, inconclusive) Access of moved variable 'a'.\n", errout.str());
     }
 
     void moveAndReturn() {
@@ -6334,7 +6334,7 @@ private:
               "        return g(std::move(b));\n"
               "    return h(std::move(a),std::move(b));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Access of moved variable a.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Access of moved variable 'a'.\n", errout.str());
     }
 
     void moveAndClear() {
@@ -6354,8 +6354,8 @@ private:
               "    x = p->x;\n"
               "    y = p->y;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable p.\n"
-                      "[test.cpp:5]: (warning) Access of moved variable p.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'p'.\n"
+                      "[test.cpp:5]: (warning) Access of moved variable 'p'.\n", errout.str());
     }
 
     void partiallyMoved() {
@@ -6382,7 +6382,7 @@ private:
               "    g(std::forward<T>(t));\n"
               "    T s = t;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable t.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable 't'.\n", errout.str());
     }
 
     void funcArgNamesDifferent() {
