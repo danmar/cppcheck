@@ -1383,7 +1383,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
                 // get constant folded value:
                 if (rhs && rhs->values().size() == 1U && rhs->values().front().isKnown()) {
-                    enumerator.value = rhs->values().front().intvalue;
+                    enumerator.value = rhs->values().front().intValue;
                     enumerator.value_known = true;
                     value = enumerator.value + 1;
                 }
@@ -1486,7 +1486,7 @@ void SymbolDatabase::createSymbolDatabaseUnknownArrayDimensions()
 
                         // get constant folded value:
                         if (rhs && rhs->values().size() == 1U && rhs->values().front().isKnown()) {
-                            dimension.num = rhs->values().front().intvalue;
+                            dimension.num = rhs->values().front().intValue;
                             dimension.known = true;
                         }
                     }
@@ -4658,7 +4658,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
 void SymbolDatabase::setValueType(Token *tok, const Variable &var)
 {
     ValueType valuetype;
-    valuetype.pointer = var.dimensions().size();
+    valuetype.pointer = static_cast<unsigned int>(var.dimensions().size());
     valuetype.typeScope = var.typeScope();
     if (parsedecl(var.typeStartToken(), &valuetype, defaultSignedness, _settings))
         setValueType(tok, valuetype);

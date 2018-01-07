@@ -1357,9 +1357,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 switch (it->valueType) {
                 case ValueFlow::Value::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
-                        out << "intvalue=\"" << (MathLib::biguint)it->intvalue << '\"';
+                        out << "intValue=\"" << (MathLib::biguint)it->intValue << '\"';
                     else
-                        out << "intvalue=\"" << it->intvalue << '\"';
+                        out << "intValue=\"" << it->intValue << '\"';
                     break;
                 case ValueFlow::Value::TOK:
                     out << "tokvalue=\"" << it->tokvalue << '\"';
@@ -1391,9 +1391,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 switch (it->valueType) {
                 case ValueFlow::Value::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
-                        out << (MathLib::biguint)it->intvalue;
+                        out << (MathLib::biguint)it->intValue;
                     else
-                        out << it->intvalue;
+                        out << it->intValue;
                     break;
                 case ValueFlow::Value::TOK:
                     out << it->tokvalue->str();
@@ -1428,7 +1428,7 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = _values->begin(); it != _values->end(); ++it) {
-        if (it->isIntValue() && it->intvalue <= val) {
+        if (it->isIntValue() && it->intValue <= val) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
             if (!ret->isInconclusive() && !ret->condition)
@@ -1451,7 +1451,7 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = _values->begin(); it != _values->end(); ++it) {
-        if (it->isIntValue() && it->intvalue >= val) {
+        if (it->isIntValue() && it->intValue >= val) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
             if (!ret->isInconclusive() && !ret->condition)
@@ -1474,7 +1474,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, unsigned int 
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = _values->begin(); it != _values->end(); ++it) {
-        if (it->isIntValue() && !settings->library.isargvalid(ftok, argnr, it->intvalue)) {
+        if (it->isIntValue() && !settings->library.isargvalid(ftok, argnr, it->intValue)) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
             if (!ret->isInconclusive() && !ret->condition)
@@ -1584,8 +1584,8 @@ bool Token::addValue(const ValueFlow::Value &value)
         // if value already exists, don't add it again
         std::list<ValueFlow::Value>::iterator it;
         for (it = _values->begin(); it != _values->end(); ++it) {
-            // different intvalue => continue
-            if (it->intvalue != value.intvalue)
+            // different intValue => continue
+            if (it->intValue != value.intValue)
                 continue;
 
             // different types => continue

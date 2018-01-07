@@ -296,7 +296,7 @@ void CheckOther::warningOldStylePointerCast()
                 tok = tok->next();
 
             const Token *p = tok->tokAt(4);
-            if (p->hasKnownIntValue() && p->values().front().intvalue==0) // Casting nullpointers is safe
+            if (p->hasKnownIntValue() && p->values().front().intValue==0) // Casting nullpointers is safe
                 continue;
 
             // Is "type" a class?
@@ -1500,14 +1500,14 @@ void CheckOther::checkCharVariable()
                     const ValueFlow::Value *v2 = tok->astOperand2()->getMaxValue(false);
                     if (!v1)
                         v1 = tok->astOperand1()->getValueGE(0x80, _settings);
-                    if (v1 && !(tok->str() == "&" && v2 && v2->isKnown() && v2->intvalue >= 0 && v2->intvalue < 0x100))
+                    if (v1 && !(tok->str() == "&" && v2 && v2->isKnown() && v2->intValue >= 0 && v2->intValue < 0x100))
                         warn = true;
                 } else if (!warn && astIsSignedChar(tok->astOperand2())) {
                     const ValueFlow::Value *v1 = tok->astOperand2()->getValueLE(-1, _settings);
                     const ValueFlow::Value *v2 = tok->astOperand1()->getMaxValue(false);
                     if (!v1)
                         v1 = tok->astOperand2()->getValueGE(0x80, _settings);
-                    if (v1 && !(tok->str() == "&" && v2 && v2->isKnown() && v2->intvalue >= 0 && v2->intvalue < 0x100))
+                    if (v1 && !(tok->str() == "&" && v2 && v2->isKnown() && v2->intValue >= 0 && v2->intValue < 0x100))
                         warn = true;
                 }
 

@@ -101,7 +101,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
                     continue;
                 std::string nr;
                 if (index.size() > 1U)
-                    nr = "(" + MathLib::toString(i + 1) + getOrdinalText(i + 1) + " array index) ";
+                    nr = "(" + MathLib::toString(i + static_cast<std::size_t>(1u)) + getOrdinalText(static_cast<int>(i) + 1) + " array index) ";
                 errorPath.push_back(ErrorPathItem(it->first, nr + info));
             }
         }
@@ -121,11 +121,11 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
         for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
             errmsg << "[" << arrayInfo.num(i) << "]";
         if (index.size() == 1)
-            errmsg << "' is accessed at index " << index[0].intvalue << ", which is out of bounds.";
+            errmsg << "' is accessed at index " << index[0].intValue << ", which is out of bounds.";
         else {
             errmsg << "' index " << arrayInfo.varname();
             for (std::size_t i = 0; i < index.size(); ++i)
-                errmsg << "[" << index[i].intvalue << "]";
+                errmsg << "[" << index[i].intValue << "]";
             errmsg << " is out of bounds.";
         }
 
@@ -136,11 +136,11 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
         for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
             errmsg << "[" << arrayInfo.num(i) << "]";
         if (index.size() == 1)
-            errmsg << "' accessed at index " << index[0].intvalue << ", which is out of bounds.";
+            errmsg << "' accessed at index " << index[0].intValue << ", which is out of bounds.";
         else {
             errmsg << "' index " << arrayInfo.varname();
             for (std::size_t i = 0; i < index.size(); ++i)
-                errmsg << "[" << index[i].intvalue << "]";
+                errmsg << "[" << index[i].intValue << "]";
             errmsg << " out of bounds.";
         }
 
@@ -633,7 +633,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<const st
             if (indexes.empty() && arrayInfo.num().size() == 1U && Token::simpleMatch(tok2, "[") && tok2->astOperand2()) {
                 const ValueFlow::Value *value = tok2->astOperand2()->getMaxValue(false);
                 if (value) {
-                    indexes.push_back(value->intvalue);
+                    indexes.push_back(value->intValue);
                 }
             }
 
@@ -800,7 +800,7 @@ static std::vector<ValueFlow::Value> valueFlowGetArrayIndexes(const Token * cons
             indexvarid = index->varId;
         if (index->varId > 0 && indexvarid != index->varId)
             return empty;
-        if (index->intvalue < 0)
+        if (index->intValue < 0)
             return empty;
         indexes.push_back(*index);
     }
@@ -872,7 +872,7 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
         if (printInconclusive) {
             // check each index for overflow
             for (std::size_t i = 0; i < indexes.size(); ++i) {
-                if (indexes[i].intvalue >= arrayInfo.num(i)) {
+                if (indexes[i].intValue >= arrayInfo.num(i)) {
                     // The access is still within the memory range for the array
                     // so it may be intentional.
                     arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
@@ -951,7 +951,7 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
             if (!value)
                 value = index->getValueLE(-1, _settings);
             if (value)
-                pointerOutOfBoundsError(tok->astParent(), index, value->intvalue);
+                pointerOutOfBoundsError(tok->astParent(), index, value->intValue);
         }
     }
 
@@ -963,7 +963,7 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
             if (index && !value)
                 value = index->getValueLE(-1 - arrayInfo.num(0), _settings);
             if (value)
-                pointerOutOfBoundsError(tok->astParent(), index, value->intvalue);
+                pointerOutOfBoundsError(tok->astParent(), index, value->intValue);
         }
     }
 
@@ -1150,7 +1150,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         if (Token::Match(tok, "%str% [") && tok->next()->astOperand2()) {
             const std::size_t size = Token::getStrSize(tok);
             const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
-            if (value && value->intvalue >= (isAddressOf(tok) ? size + 1U : size))
+            if (value && value->intValue >= (isAddressOf(tok) ? size + 1U : size))
                 bufferOverrunError(tok, tok->str());
         }
 
@@ -1186,7 +1186,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
                     std::vector<MathLib::bigint> indexes2(indexes.size());
                     for (unsigned int i = 0; i < indexes.size(); ++i)
-                        indexes2[i] = indexes[i].intvalue;
+                        indexes2[i] = indexes[i].intValue;
 
                     arrayIndexOutOfBoundsError(callstack, arrayInfo, indexes2);
                 }
@@ -1256,7 +1256,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 tok = tok->tokAt(5);
                 if (tok->astOperand2() == nullptr || tok->astOperand2()->getMaxValue(false) == nullptr)
                     continue;
-                size = tok->astOperand2()->getMaxValue(false)->intvalue;
+                size = tok->astOperand2()->getMaxValue(false)->intValue;
                 nextTok = tok->link()->next();
                 if (size < 0) {
                     negativeMemoryAllocationSizeError(tok);
@@ -1272,7 +1272,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 tok = tok->tokAt(4);
                 if (tok->astOperand2() == nullptr || tok->astOperand2()->getMaxValue(false) == nullptr)
                     continue;
-                size = tok->astOperand2()->getMaxValue(false)->intvalue;
+                size = tok->astOperand2()->getMaxValue(false)->intValue;
                 nextTok = tok->link()->tokAt(2);
 
                 if (size < 0) {
@@ -1800,9 +1800,9 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::V
     std::ostringstream errmsg;
     if (index.condition)
         errmsg << ValueFlow::eitherTheConditionIsRedundant(index.condition)
-               << ", otherwise there is negative array index " << index.intvalue << ".";
+               << ", otherwise there is negative array index " << index.intValue << ".";
     else
-        errmsg << "Array index " << index.intvalue << " is out of bounds.";
+        errmsg << "Array index " << index.intValue << " is out of bounds.";
     reportError(errorPath, index.errorSeverity() ? Severity::error : Severity::warning, "negativeIndex", errmsg.str(), CWE786, index.isInconclusive());
 }
 
@@ -1867,7 +1867,7 @@ MathLib::bigint CheckBufferOverrun::ArrayInfo::totalIndex(const std::vector<Valu
     MathLib::bigint elements = 1;
     for (std::size_t i = 0; i < _num.size(); ++i) {
         const std::size_t ri = _num.size() - 1U - i;
-        index += indexes[ri].intvalue * elements;
+        index += indexes[ri].intValue * elements;
         elements *= _num[ri];
     }
     return index;
@@ -1964,8 +1964,8 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
                 tok->variable()->isGlobal()           &&
                 tok->next()->astOperand2()) {
                 const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
-                if (value && value->intvalue > 0) {
-                    const MathLib::bigint arrayIndex = value->intvalue;
+                if (value && value->intValue > 0) {
+                    const MathLib::bigint arrayIndex = value->intValue;
                     std::map<std::string, struct MyFileInfo::ArrayUsage>::iterator it = fileInfo->arrayUsage.find(tok->str());
                     if (it != fileInfo->arrayUsage.end() && it->second.index >= arrayIndex)
                         continue;
@@ -2007,7 +2007,7 @@ Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLEle
             struct MyFileInfo::ArrayUsage arrayUsage;
             arrayUsage.index = MathLib::toLongNumber(arrayIndex);
             arrayUsage.fileName = fileName;
-            arrayUsage.linenr = MathLib::toLongNumber(linenr);
+            arrayUsage.linenr = static_cast<unsigned int>(MathLib::toLongNumber(linenr));
             fileInfo->arrayUsage[array] = arrayUsage;
         } else if (e->Name() == ArraySize) {
             const char *array = e->Attribute("array");

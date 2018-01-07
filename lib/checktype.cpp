@@ -106,7 +106,7 @@ void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Val
     const ErrorPath errorPath = getErrorPath(tok, &rhsbits, "Shift");
 
     std::ostringstream errmsg;
-    errmsg << "Shifting " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is undefined behaviour";
+    errmsg << "Shifting " << lhsbits << "-bit value by " << rhsbits.intValue << " bits is undefined behaviour";
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
 
@@ -125,7 +125,7 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
     const ErrorPath errorPath = getErrorPath(tok, &rhsbits, "Shift");
 
     std::ostringstream errmsg;
-    errmsg << "Shifting signed " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is undefined behaviour";
+    errmsg << "Shifting signed " << lhsbits << "-bit value by " << rhsbits.intValue << " bits is undefined behaviour";
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
 
@@ -175,7 +175,7 @@ void CheckType::checkIntegerOverflow()
             continue;
 
         // For left shift, it's common practice to shift into the sign bit
-        if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (((MathLib::bigint)1) << bits))
+        if (tok->str() == "<<" && value->intValue > 0 && value->intValue < (((MathLib::bigint)1) << bits))
             continue;
 
         integerOverflowError(tok, *value);
@@ -378,7 +378,7 @@ void CheckType::checkFloatToIntegerOverflow()
                 continue;
             if (!_settings->isEnabled(&(*it), false))
                 continue;
-            if (it->floatValue > ~0ULL)
+            if (it->floatValue > static_cast<double>(~0ULL))
                 floatToIntegerOverflowError(tok, *it);
             else if ((-it->floatValue) > (1ULL<<62))
                 floatToIntegerOverflowError(tok, *it);
@@ -396,7 +396,7 @@ void CheckType::checkFloatToIntegerOverflow()
                     bits = _settings->long_long_bit;
                 else
                     continue;
-                if (bits < MathLib::bigint_bits && it->floatValue >= (((MathLib::biguint)1) << bits))
+                if (bits < MathLib::bigint_bits && it->floatValue >= static_cast<double>((((MathLib::biguint)1) << bits)))
                     floatToIntegerOverflowError(tok, *it);
             }
         }

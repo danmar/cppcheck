@@ -1130,11 +1130,11 @@ private:
         ASSERT_EQUALS("0.0"   , MathLib::toString(+0.0));
         ASSERT_EQUALS("0.0"   , MathLib::toString(-0.0));
         // float (trailing f or F)
-        ASSERT_EQUALS("0"     , MathLib::toString(+0.0f));
-        ASSERT_EQUALS("-0"    , MathLib::toString(-0.0F));
+        ASSERT_EQUALS("0.000000"     , MathLib::toString(+0.0f));
+        ASSERT_EQUALS("-0.000000"    , MathLib::toString(-0.0F));
         // double (tailing l or L)
-        ASSERT_EQUALS("0"     , MathLib::toString(+0.0l));
-        ASSERT_EQUALS("-0"    , MathLib::toString(-0.0L));
+        ASSERT_EQUALS("0.000000"     , MathLib::toString(+0.0l));
+        ASSERT_EQUALS("-0.000000"    , MathLib::toString(-0.0L));
     }
 
     void characterLiteralsNormalization() const {

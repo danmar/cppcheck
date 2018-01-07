@@ -778,7 +778,7 @@ public:
         if (!_values)
             return nullptr;
         for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
-            if (it->isIntValue() && it->intvalue == val)
+            if (it->isIntValue() && it->intValue == val)
                 return &(*it);
         }
         return nullptr;
@@ -791,7 +791,7 @@ public:
         for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
             if (!it->isIntValue())
                 continue;
-            if ((!ret || it->intvalue > ret->intvalue) &&
+            if ((!ret || it->intValue > ret->intValue) &&
                 ((it->condition != nullptr) == condition))
                 ret = &(*it);
         }

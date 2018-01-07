@@ -179,7 +179,7 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
         return 0;
 
     if (type->tokType() == Token::eString)
-        return Token::getStrLength(type) + 1U;
+        return static_cast<unsigned int>((Token::getStrLength(type))) + 1U;
 
     std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->str());
     if (it == _typeSize.end()) {
@@ -2255,7 +2255,7 @@ void Tokenizer::simplifyCaseRange()
                 tok->str(":");
                 tok->deleteNext();
                 tok->next()->str("case");
-                for (MathLib::bigint i = end-1; i > start; i--) {
+                for (MathLib::bigint i = end-1; i > start; --i) {
                     tok->insertToken(":");
                     tok->insertToken(MathLib::toString(i));
                     tok->insertToken("case");
@@ -2269,7 +2269,7 @@ void Tokenizer::simplifyCaseRange()
                 tok->str(":");
                 tok->deleteNext();
                 tok->next()->str("case");
-                for (char i = end - 1; i > start; i--) {
+                for (char i = static_cast<char>(end - static_cast<char>(1)); i > start; --i) {
                     tok->insertToken(":");
                     tok->insertToken(std::string(1, '\'') + i + '\'');
                     tok->insertToken("case");

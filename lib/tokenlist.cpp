@@ -92,7 +92,7 @@ unsigned int TokenList::appendFileIfNew(const std::string &fileName)
             _isCPP = _settings->enforcedLang == Settings::CPP || (_settings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
         }
     }
-    return _files.size() - 1U;
+    return static_cast<unsigned int>(_files.size()) - 1U;
 }
 
 void TokenList::deleteTokens(Token *tok)

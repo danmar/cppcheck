@@ -73,10 +73,20 @@ public:
     static bigint toLongNumber(const std::string & str);
     static biguint toULongNumber(const std::string & str);
 
+    #ifdef __GNUC__
+    #define DEPRECATED __attribute__((deprecated))
+    #elif defined(_MSC_VER)
+    #define DEPRECATED __declspec(deprecated)
+    #else
+    #pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+    #define DEPRECATED
+    #endif
+
+    // [[deprecated("Replace with C++11 std::to_string()")]]
     template<class T> static std::string toString(T value) {
-        std::ostringstream result;
-        result << value;
-        return result.str();
+//        std::ostringstream result;
+//        result << value;
+        return std::to_string(value);
     }
     static double toDoubleNumber(const std::string & str);
 
