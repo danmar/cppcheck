@@ -219,6 +219,7 @@ private:
         TEST_CASE(garbageCode186); // #8151
         TEST_CASE(garbageCode187);
         TEST_CASE(garbageCode188);
+        TEST_CASE(garbageCode189); // #8317
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1435,6 +1436,10 @@ private:
 
     void garbageCode188() { // #8255
         ASSERT_THROW(checkCode("{z r(){(){for(;<(x);){if(0==0)}}}}"), InternalError);
+    }
+
+    void garbageCode189() { // #8317
+        checkCode("t&n(){()()[](){()}}$");
     }
 
     void syntaxErrorFirstToken() {

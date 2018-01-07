@@ -459,6 +459,8 @@ void CheckAutoVariables::returnReference()
             for (const Token *tok2 = scope->classStart->next(); tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
                 if (!tok2->scope()->isExecutable()) {
                     tok2 = tok2->scope()->classEnd;
+                    if (!tok2)
+                        break;
                     continue;
                 }
 
