@@ -220,6 +220,7 @@ private:
         TEST_CASE(garbageCode187);
         TEST_CASE(garbageCode188);
         TEST_CASE(garbageCode189); // #8317
+        TEST_CASE(garbageCode190); // #8307
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1440,6 +1441,14 @@ private:
 
     void garbageCode189() { // #8317
         checkCode("t&n(){()()[](){()}}$");
+    }
+
+    void garbageCode190() { // #8307
+        checkCode("void foo() {\n"
+                  "    int i;\n"
+                  "    i *= 0;\n"
+                  "    !i <;\n"
+                  "}");
     }
 
     void syntaxErrorFirstToken() {

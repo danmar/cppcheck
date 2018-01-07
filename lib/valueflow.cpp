@@ -1073,7 +1073,7 @@ static void valueFlowReverse(TokenList *tokenlist,
                     val.intvalue -= rhsValue;
                 else if (assignToken->str() == "-=")
                     val.intvalue += rhsValue;
-                else if (assignToken->str() == "*=")
+                else if (assignToken->str() == "*=" && rhsValue != 0)
                     val.intvalue /= rhsValue;
                 else {
                     if (settings->debugwarnings)
