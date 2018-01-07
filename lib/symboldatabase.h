@@ -1163,6 +1163,7 @@ private:
     void createSymbolDatabaseFindAllScopes();
     void createSymbolDatabaseClassInfo();
     void createSymbolDatabaseVariableInfo();
+    void createSymbolDatabaseCopyAndMoveConstructors();
     void createSymbolDatabaseFunctionScopes();
     void createSymbolDatabaseClassAndStructScopes();
     void createSymbolDatabaseFunctionReturnTypes();
