@@ -796,13 +796,13 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
             if (aliasUsage.name.find(' ') == std::string::npos) {
                 aliasUsage.token->str(templateAlias.token->str());
             } else {
-                tok2 = Tokenizer::copyTokens(aliasUsage.token, aliasToken1, templateAlias.token, true);
+                tok2 = TokenList::copyTokens(aliasUsage.token, aliasToken1, templateAlias.token, true);
                 aliasUsage.token->deleteThis();
                 aliasUsage.token = tok2;
             }
             tok2 = aliasUsage.token->next(); // the '<'
             const Token * const endToken1 = templateAlias.token->next()->findClosingBracket();
-            Token * const endToken2 = Tokenizer::copyTokens(tok2, templateAlias.token->tokAt(2), endToken1->previous(), false);
+            Token * const endToken2 = TokenList::copyTokens(tok2, templateAlias.token->tokAt(2), endToken1->previous(), false);
             for (const Token *tok1 = templateAlias.token->next(); tok2 != endToken2; tok1 = tok1->next(), tok2 = tok2->next()) {
                 if (!tok2->isName())
                     continue;
@@ -821,7 +821,7 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
                 const Token * const fromStart = args[argnr].first;
                 const Token * const fromEnd   = args[argnr].second->previous();
                 Token * const destToken = tok2;
-                tok2 = Tokenizer::copyTokens(tok2, fromStart, fromEnd, true);
+                tok2 = TokenList::copyTokens(tok2, fromStart, fromEnd, true);
                 if (tok2 == destToken->next())
                     tok2 = destToken;
                 destToken->deleteThis();

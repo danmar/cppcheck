@@ -769,16 +769,6 @@ public:
     }
 
     /**
-     * Copy tokens.
-     * @param dest destination token where copied tokens will be inserted after
-     * @param first first token to copy
-     * @param last last token to copy
-     * @param one_line true=>copy all tokens to the same line as dest. false=>copy all tokens to dest while keeping the 'line breaks'
-     * @return new location of last token copied
-     */
-    static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
-
-    /**
     * Helper function to check whether number is zero (0 or 0.0 or 0E+0) or not?
     * @param s the string to check
     * @return true in case is is zero and false otherwise.

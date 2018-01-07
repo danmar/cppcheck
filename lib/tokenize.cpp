@@ -197,44 +197,6 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
 
     return it->second;
 }
-
-//---------------------------------------------------------------------------
-
-Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last, bool one_line)
-{
-    std::stack<Token *> links;
-    Token *tok2 = dest;
-    unsigned int linenrs = dest->linenr();
-    const unsigned int commonFileIndex = dest->fileIndex();
-    for (const Token *tok = first; tok != last->next(); tok = tok->next()) {
-        tok2->insertToken(tok->str());
-        tok2 = tok2->next();
-        tok2->fileIndex(commonFileIndex);
-        tok2->linenr(linenrs);
-        tok2->tokType(tok->tokType());
-        tok2->flags(tok->flags());
-        tok2->varId(tok->varId());
-
-        // Check for links and fix them up
-        if (Token::Match(tok2, "(|[|{"))
-            links.push(tok2);
-        else if (Token::Match(tok2, ")|]|}")) {
-            if (links.empty())
-                return tok2;
-
-            Token * link = links.top();
-
-            tok2->link(link);
-            link->link(tok2);
-
-            links.pop();
-        }
-        if (!one_line && tok->next())
-            linenrs += tok->next()->linenr() - tok->linenr();
-    }
-    return tok2;
-}
-
 //---------------------------------------------------------------------------
 
 // check if this statement is a duplicate definition
@@ -1310,7 +1272,7 @@ void Tokenizer::simplifyTypedef()
                     }
 
                     // add remainder of type
-                    tok2 = copyTokens(tok2, typeStart->next(), typeEnd);
+                    tok2 = TokenList::copyTokens(tok2, typeStart->next(), typeEnd);
 
                     if (!pointers.empty()) {
                         for (std::list<std::string>::const_iterator iter = pointers.begin(); iter != pointers.end(); ++iter) {
@@ -1323,7 +1285,7 @@ void Tokenizer::simplifyTypedef()
                         tok2->insertToken("(");
                         tok2 = tok2->next();
                         Token *tok3 = tok2;
-                        tok2 = copyTokens(tok2, funcStart, funcEnd);
+                        tok2 = TokenList::copyTokens(tok2, funcStart, funcEnd);
 
                         if (!inCast)
                             tok2 = processFunc(tok2, inOperator);
@@ -1335,7 +1297,7 @@ void Tokenizer::simplifyTypedef()
                         tok2 = tok2->next();
                         Token::createMutualLinks(tok2, tok3);
 
-                        tok2 = copyTokens(tok2, argStart, argEnd);
+                        tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
 
                         if (specStart) {
                             Token *spec = specStart;
@@ -1393,7 +1355,7 @@ void Tokenizer::simplifyTypedef()
                         if (!tok2)
                             syntaxError(nullptr);
 
-                        tok2 = copyTokens(tok2, argStart, argEnd);
+                        tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
                         if (inTemplate) {
                             if (!tok2)
                                 syntaxError(nullptr);
@@ -1442,13 +1404,13 @@ void Tokenizer::simplifyTypedef()
                             Token::createMutualLinks(tok2, tok4);
                         }
 
-                        tok2 = copyTokens(tok2, argStart, argEnd);
+                        tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
 
                         tok2->insertToken(")");
                         tok2 = tok2->next();
                         Token::createMutualLinks(tok2, tok3);
 
-                        tok2 = copyTokens(tok2, argFuncRetStart, argFuncRetEnd);
+                        tok2 = TokenList::copyTokens(tok2, argFuncRetStart, argFuncRetEnd);
                     } else if (ptrToArray || refToArray) {
                         tok2->insertToken("(");
                         tok2 = tok2->next();
@@ -1520,7 +1482,7 @@ void Tokenizer::simplifyTypedef()
                             }
                         }
                     } else if (typeOf) {
-                        tok2 = copyTokens(tok2, argStart, argEnd);
+                        tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
                     } else if (tok2->strAt(2) == "[") {
                         do {
                             if (!tok2->linkAt(2))
@@ -1560,7 +1522,7 @@ void Tokenizer::simplifyTypedef()
                             if (!tok2->next())
                                 syntaxError(tok2); // can't recover so quit
 
-                            tok2 = copyTokens(tok2, arrayStart, arrayEnd);
+                            tok2 = TokenList::copyTokens(tok2, arrayStart, arrayEnd);
                             if (!tok2->next())
                                 syntaxError(tok2);
 
@@ -9817,7 +9779,7 @@ void Tokenizer::simplifyReturnStrncat()
             Token *end = tok->next()->nextArgument()->tokAt(-2);
 
             //all the first argument is copied
-            copyTokens(tok2, tok->next(), end);
+            TokenList::copyTokens(tok2, tok->next(), end);
             tok2->insertToken("return");
         }
     }
