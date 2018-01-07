@@ -88,3 +88,11 @@ build*
 
 # Temporal files
 *.swp
+
+
+# Snapcraft build
+part
+prime
+parts
+stage
+*.snap
