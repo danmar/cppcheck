@@ -98,9 +98,13 @@ distribution.
 /* Versioning, past 1.0.14:
 	http://semver.org/
 */
-static const int TIXML2_MAJOR_VERSION = 5;
-static const int TIXML2_MINOR_VERSION = 0;
-static const int TIXML2_PATCH_VERSION = 1;
+static const int TIXML2_MAJOR_VERSION = 6;
+static const int TIXML2_MINOR_VERSION = 1;
+static const int TIXML2_PATCH_VERSION = 0;
+
+#define TINYXML2_MAJOR_VERSION 6
+#define TINYXML2_MINOR_VERSION 1
+#define TINYXML2_PATCH_VERSION 0
 
 namespace tinyxml2
 {
@@ -192,10 +196,11 @@ template <class T, int INITIAL_SIZE>
 class DynArray
 {
 public:
-    DynArray() {
-        _mem = _pool;
-        _allocated = INITIAL_SIZE;
-        _size = 0;
+    DynArray() :
+        _mem( _pool ),
+        _allocated( INITIAL_SIZE ),
+        _size( 0 )
+    {
     }
 
     ~DynArray() {
@@ -333,7 +338,7 @@ template< int ITEM_SIZE >
 class MemPoolT : public MemPool
 {
 public:
-    MemPoolT() : _root(0), _currentAllocs(0), _nAllocs(0), _maxAllocs(0), _nUntracked(0)	{}
+    MemPoolT() : _blockPtrs(), _root(0), _currentAllocs(0), _nAllocs(0), _maxAllocs(0), _nUntracked(0)	{}
     ~MemPoolT() {
         Clear();
     }
@@ -1211,7 +1216,7 @@ public:
 private:
     enum { BUF_SIZE = 200 };
 
-    XMLAttribute() : _parseLineNum( 0 ), _next( 0 ), _memPool( 0 ) {}
+    XMLAttribute() : _name(), _value(),_parseLineNum( 0 ), _next( 0 ), _memPool( 0 ) {}
     virtual ~XMLAttribute()	{}
 
     XMLAttribute( const XMLAttribute& );	// not supported
@@ -1359,6 +1364,17 @@ public:
         }
         return a->QueryFloatValue( value );
     }
+
+	/// See QueryIntAttribute()
+	XMLError QueryStringAttribute(const char* name, const char** value) const {
+		const XMLAttribute* a = FindAttribute(name);
+		if (!a) {
+			return XML_NO_ATTRIBUTE;
+		}
+		*value = a->Value();
+		return XML_SUCCESS;
+	}
+
 
 	
     /** Given an attribute name, QueryAttribute() returns
@@ -1634,6 +1650,13 @@ enum Whitespace {
 class TINYXML2_LIB XMLDocument : public XMLNode
 {
     friend class XMLElement;
+    // Gives access to SetError, but over-access for everything else.
+    // Wishing C++ had "internal" scope.
+    friend class XMLNode;       
+    friend class XMLText;
+    friend class XMLComment;
+    friend class XMLDeclaration;
+    friend class XMLUnknown;
 public:
     /// constructor
     XMLDocument( bool processEntities = true, Whitespace whitespaceMode = PRESERVE_WHITESPACE );
@@ -1785,10 +1808,8 @@ public:
     */
     void DeleteNode( XMLNode* node );
 
-    void SetError( XMLError error, const char* str1, const char* str2, int lineNum );
-
     void ClearError() {
-        SetError(XML_SUCCESS, 0, 0, 0);
+        SetError(XML_SUCCESS, 0, 0);
     }
 
     /// Return true if there was an error parsing the document.
@@ -1802,19 +1823,19 @@ public:
 	const char* ErrorName() const;
     static const char* ErrorIDToName(XMLError errorID);
 
-    /// Return a possibly helpful diagnostic location or string.
-	const char* GetErrorStr1() const;
+    /** Returns a "long form" error description. A hopefully helpful 
+        diagnostic with location, line number, and/or additional info.
+    */
+	const char* ErrorStr() const;
 
-    /// Return a possibly helpful secondary diagnostic location or string.
-	const char* GetErrorStr2() const;
+    /// A (trivial) utility function that prints the ErrorStr() to stdout.
+    void PrintError() const;
 
     /// Return the line where the error occured, or zero if unknown.
-    int GetErrorLineNum() const
+    int ErrorLineNum() const
     {
         return _errorLineNum;
     }
-    /// If there is an error, print it to stdout.
-    void PrintError() const;
     
     /// Clear the document, resetting it to the initial state.
     void Clear();
@@ -1826,7 +1847,7 @@ public:
 
 		NOTE: that the 'target' must be non-null.
 	*/
-	void DeepCopy(XMLDocument* target);
+	void DeepCopy(XMLDocument* target) const;
 
 	// internal
     char* Identify( char* p, XMLNode** node );
@@ -1849,8 +1870,7 @@ private:
     bool			_processEntities;
     XMLError		_errorID;
     Whitespace		_whitespaceMode;
-    mutable StrPair	_errorStr1;
-    mutable StrPair	_errorStr2;
+    mutable StrPair	_errorStr;
     int             _errorLineNum;
     char*			_charBuffer;
     int				_parseCurLineNum;
@@ -1870,6 +1890,8 @@ private:
 	static const char* _errorNames[XML_ERROR_COUNT];
 
     void Parse();
+
+    void SetError( XMLError error, int lineNum, const char* format, ... );
 
     template<class NodeType, int PoolElementSize>
     NodeType* CreateUnlinkedNode( MemPoolT<PoolElementSize>& pool );
@@ -1947,16 +1969,13 @@ class TINYXML2_LIB XMLHandle
 {
 public:
     /// Create a handle from any node (at any depth of the tree.) This can be a null pointer.
-    XMLHandle( XMLNode* node )												{
-        _node = node;
+    XMLHandle( XMLNode* node ) : _node( node ) {
     }
     /// Create a handle from a node.
-    XMLHandle( XMLNode& node )												{
-        _node = &node;
+    XMLHandle( XMLNode& node ) : _node( &node ) {
     }
     /// Copy constructor
-    XMLHandle( const XMLHandle& ref )										{
-        _node = ref._node;
+    XMLHandle( const XMLHandle& ref ) : _node( ref._node ) {
     }
     /// Assignment
     XMLHandle& operator=( const XMLHandle& ref )							{
@@ -2030,14 +2049,11 @@ private:
 class TINYXML2_LIB XMLConstHandle
 {
 public:
-    XMLConstHandle( const XMLNode* node )											{
-        _node = node;
+    XMLConstHandle( const XMLNode* node ) : _node( node ) {
     }
-    XMLConstHandle( const XMLNode& node )											{
-        _node = &node;
+    XMLConstHandle( const XMLNode& node ) : _node( &node ) {
     }
-    XMLConstHandle( const XMLConstHandle& ref )										{
-        _node = ref._node;
+    XMLConstHandle( const XMLConstHandle& ref ) : _node( ref._node ) {
     }
 
     XMLConstHandle& operator=( const XMLConstHandle& ref )							{
@@ -2229,6 +2245,9 @@ protected:
 	*/
     virtual void PrintSpace( int depth );
     void Print( const char* format, ... );
+    void Write( const char* data, size_t size );
+    inline void Write( const char* data )           { Write( data, strlen( data ) ); }
+    void Putc( char ch );
 
     void SealElementIfJustOpened();
     bool _elementJustOpened;
@@ -2252,6 +2271,10 @@ private:
     bool _restrictedEntityFlag[ENTITY_RANGE];
 
     DynArray< char, 20 > _buffer;
+
+    // Prohibit cloning, intentionally not implemented
+    XMLPrinter( const XMLPrinter& );
+    XMLPrinter& operator=( const XMLPrinter& );
 };
 
 
