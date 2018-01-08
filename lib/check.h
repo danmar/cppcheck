@@ -88,10 +88,6 @@ public:
      */
     static void reportError(const ErrorLogger::ErrorMessage &errmsg);
 
-    bool inconclusiveFlag() const {
-        return _settings && _settings->inconclusive;
-    }
-
     /** Base class used for whole-program analysis */
     class FileInfo {
     public:
