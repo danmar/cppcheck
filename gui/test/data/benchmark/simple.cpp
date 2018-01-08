@@ -637,8 +637,8 @@ void CheckOther::checkIncorrectLogicOperator()
                 { "(",    Second, "<",    "&&", First,  "<",    ")",    MoreEqual, false }, // (3 < x)  && (x < 1)  <- always false
                 { "(",    Second, ">",    "&&", Second, "<",    ")",    LessEqual, false }, // (1 > x)  && (3 < x)  <- always false
                 { "(",    Second, "<",    "&&", Second, ">",    ")",    MoreEqual, false }, // (3 < x)  && (1 > x)  <- always false
-                { "(",    First , ">|>=", "||", First,  "<|<=", ")",    Less,      true  }, // (x > 3)  || (x < 10) <- always true
-                { "(",    First , "<|<=", "||", First,  ">|>=", ")",    More,      true  }, // (x < 10) || (x > 3)  <- always true
+                { "(",    First, ">|>=", "||", First,  "<|<=", ")",    Less,      true  },  // (x > 3)  || (x < 10) <- always true
+                { "(",    First, "<|<=", "||", First,  ">|>=", ")",    More,      true  },  // (x < 10) || (x > 3)  <- always true
                 { "(",    Second, "<|<=", "||", First,  "<|<=", ")",    Less,      true  }, // (3 < x)  || (x < 10) <- always true
                 { "(",    First,  "<|<=", "||", Second, "<|<=", ")",    More,      true  }, // (x < 10) || (3 < x)  <- always true
                 { "(",    First,  ">|>=", "||", Second, ">|>=", ")",    Less,      true  }, // (x > 3)  || (10 > x) <- always true

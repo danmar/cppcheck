@@ -3345,7 +3345,7 @@ private:
                    "    int B::getB() { return b; }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
-                      "[test.cpp:9] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n" , errout.str());
+                      "[test.cpp:9] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n", errout.str());
 
         checkConst("class Fred {\n"
                    "    class B {\n"
@@ -3360,7 +3360,7 @@ private:
                    "    int B::getB() { return b; }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
-                      "[test.cpp:10] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n" , errout.str());
+                      "[test.cpp:10] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n", errout.str());
 
         checkConst("class Fred {\n"
                    "    class B {\n"
@@ -3375,7 +3375,7 @@ private:
                    "int Fred::B::A::getA() { return a; }\n"
                    "int Fred::B::getB() { return b; }");
         ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
-                      "[test.cpp:11] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n" , errout.str());
+                      "[test.cpp:11] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n", errout.str());
     }
 
     // operator< can often be const

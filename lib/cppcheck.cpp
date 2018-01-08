@@ -866,7 +866,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
         (*it)->analyseWholeProgram(fileInfoList, _settings, *this);
 
     for (std::list<Check::FileInfo*>::iterator fi = fileInfoList.begin(); fi != fileInfoList.end(); ++fi)
-        delete(*fi);
+        delete (*fi);
 }
 
 bool CppCheck::isUnusedFunctionCheckEnabled() const

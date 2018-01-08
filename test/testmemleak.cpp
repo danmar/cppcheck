@@ -657,7 +657,7 @@ private:
             , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
             , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "stpcpy", "strcasecmp"
             , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strlen", "strncat", "strncmp"
-            , "strncpy", "strrchr", "strspn" ,"strstr", "strtod", "strtol", "strtoul", "switch"
+            , "strncpy", "strrchr", "strspn","strstr", "strtod", "strtol", "strtoul", "switch"
             , "sync_file_range", "telldir", "typeid", "while", "write", "writev", "lstat", "stat"
             , "_open", "_wopen", "vscanf", "vsscanf", "vfscanf", "vasprintf", "utime", "utimes", "unlink"
             , "tempnam", "system", "symlink", "strpbrk", "strncasecmp", "strdup", "strcspn", "strcoll"
