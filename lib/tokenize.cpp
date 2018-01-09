@@ -5538,6 +5538,8 @@ void Tokenizer::simplifyVarDecl(const bool only_k_r_fpar)
 
 void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar)
 {
+    const bool isCPP11  = _settings->standards.cpp >= Standards::CPP11;
+
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
     bool finishedwithkr = true;
@@ -5585,6 +5587,8 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
         if (!Token::Match(type0, "::|extern| %type%"))
             continue;
         if (Token::Match(type0, "else|return|public:|protected:|private:"))
+            continue;
+        if (isCPP11 && type0->str() == "using")
             continue;
 
         bool isconst = false;
