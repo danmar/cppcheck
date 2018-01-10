@@ -27,13 +27,12 @@ parts:
       - build-essential
       - qt5-default
       - qtbase5-dev
-      - libstdc++6
-      - libopencv-dev
-      - libopencv-calib3d-dev
   desktop-qt5:
     stage-packages:
       # A set of Ubuntu packages to be downloaded and unpacked to join the part before it’s built.
       # Note that these packages are not installed on the host. Like the rest of the part, all files from these packages will make it into the final snap unless filtered out via the prime keyword.
+      - libqt5gui5
+      - libqt5svg5 # for loading icon themes which are svg
       - libtiff5-dev
       - libjpeg8-dev
       - libxkbcommon0
@@ -41,7 +40,5 @@ parts:
       - dmz-cursor-theme
       - light-themes
       - shared-mime-info
-      - libqt5gui5
       - libgdk-pixbuf2.0-0
-      - libqt5svg5 # for loading icon themes which are svg
       - locales-all
