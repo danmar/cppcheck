@@ -61,7 +61,7 @@ void CheckStl::iteratorsError(const Token *tok, const std::string &container1, c
 }
 
 // Error message used when dereferencing an iterator that has been erased..
-void CheckStl::dereferenceErasedError(const Token *erased, const Token* deref, const std::string &itername)
+void CheckStl::dereferenceErasedError(const Token *erased, const Token* deref, const std::string &itername, bool inconclusive)
 {
     if (erased) {
         std::list<const Token*> callstack;
@@ -70,12 +70,12 @@ void CheckStl::dereferenceErasedError(const Token *erased, const Token* deref, c
         reportError(callstack, Severity::error, "eraseDereference",
                     "Iterator '" + itername + "' used after element has been erased.\n"
                     "The iterator '" + itername + "' is invalid after the element it pointed to has been erased. "
-                    "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, false);
+                    "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, inconclusive);
     } else {
         reportError(deref, Severity::error, "eraseDereference",
                     "Invalid iterator '" + itername + "' used.\n"
                     "The iterator '" + itername + "' is invalid before being assigned. "
-                    "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, false);
+                    "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, inconclusive);
     }
 }
 
@@ -86,7 +86,7 @@ static const Token *skipMembers(const Token *tok)
     return tok;
 }
 
-static bool isIterator(const Variable *var)
+static bool isIterator(const Variable *var, bool& inconclusiveType)
 {
     // Check that its an iterator
     if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator|auto"))
@@ -99,8 +99,11 @@ static bool isIterator(const Variable *var)
         // look for operator* and operator++
         const Function* end = var->type()->getFunction("operator*");
         const Function* incOperator = var->type()->getFunction("operator++");
-        if (!end || end->argCount() > 0 || !incOperator)
+        if (!end || end->argCount() > 0 || !incOperator) {
             return false;
+        } else {
+            inconclusiveType = true; // heuristics only
+        }
     }
 
     return true;
@@ -126,7 +129,8 @@ void CheckStl::iterators()
     for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
         const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
 
-        if (!isIterator(var))
+		bool inconclusiveType=false;
+        if (!isIterator(var, inconclusiveType))
             continue;
 
         // the validIterator flag says if the iterator has a valid value or not
@@ -202,7 +206,8 @@ void CheckStl::iterators()
                         while (par2->str() != ")") {
                             if (par2->varId() == containerToken->varId())
                                 break;
-                            if (isIterator(par2->variable()))
+							bool inconclusiveType2=false;
+                            if (isIterator(par2->variable(), inconclusiveType2))
                                 break;  // TODO: check if iterator points at same container
                             if (par2->str() == "(")
                                 par2 = par2->link();
@@ -266,10 +271,10 @@ void CheckStl::iterators()
 
             // Dereferencing invalid iterator?
             else if (!validIterator && Token::Match(tok2, "* %varid%", iteratorId)) {
-                dereferenceErasedError(eraseToken, tok2, tok2->strAt(1));
+                dereferenceErasedError(eraseToken, tok2, tok2->strAt(1), inconclusiveType);
                 tok2 = tok2->next();
             } else if (!validIterator && Token::Match(tok2, "%varid% . %name%", iteratorId)) {
-                dereferenceErasedError(eraseToken, tok2, tok2->str());
+                dereferenceErasedError(eraseToken, tok2, tok2->str(), inconclusiveType);
                 tok2 = tok2->tokAt(2);
             }
 
@@ -514,7 +519,8 @@ void CheckStl::erase()
 
 void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
 {
-    if (!var || !Token::simpleMatch(var->typeEndToken(), "iterator"))
+    bool inconclusiveType=false;
+    if (!isIterator(var, inconclusiveType))
         return;
     for (const Token *tok = scope.classStart; tok != scope.classEnd; tok = tok->next()) {
         if (tok->str() != "(")
@@ -541,14 +547,14 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
             if (tok2->varId() == var->declarationId()) {
                 if (Token::simpleMatch(tok2->next(), "="))
                     break;
-                dereferenceErasedError(tok, tok2, tok2->str());
+                dereferenceErasedError(tok, tok2, tok2->str(), inconclusiveType);
                 break;
             }
             if (indentlevel == 0U && Token::Match(tok2, "break|return|goto"))
                 break;
         }
         if (tok2 == scope.classEnd)
-            dereferenceErasedError(tok, scope.classDef, var->nameToken()->str());
+            dereferenceErasedError(tok, scope.classDef, var->nameToken()->str(), inconclusiveType);
     }
 }
 
