@@ -109,10 +109,12 @@ public:
         return nullptr;
     }
 
-    virtual void analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) {
+    // Return true if an error is reported.
+    virtual bool analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) {
         (void)fileInfo;
         (void)settings;
         (void)errorLogger;
+        return false;
     }
 
 protected:

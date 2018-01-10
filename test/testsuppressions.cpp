@@ -161,7 +161,8 @@ private:
         for (std::map<std::string, std::string>::const_iterator file = files.begin(); file != files.end(); ++file) {
             exitCode |= cppCheck.check(file->first, file->second);
         }
-        cppCheck.analyseWholeProgram();
+        if (cppCheck.analyseWholeProgram())
+            exitCode |= settings.exitCode;
 
         reportSuppressions(settings, files);
 
