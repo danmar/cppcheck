@@ -349,6 +349,8 @@ private:
         TEST_CASE(auto10); // #8020
 
         TEST_CASE(unionWithConstructor);
+
+        TEST_CASE(using1);
     }
 
     void array() {
@@ -5311,6 +5313,50 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "Fred ( float");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3);
+    }
+
+    void using1() {
+        Standards::cppstd_t original_std = settings1.standards.cpp;
+        settings1.standards.cpp = Standards::CPP11;
+        GET_SYMBOL_DB("using INT = int;\n\n"
+                      "using PINT = INT *;\n"
+                      "using PCINT = const PINT;\n"
+                      "INT i;\n"
+                      "PINT pi;\n"
+                      "PCINT pci;");
+        settings1.standards.cpp = original_std;
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "INT i ;");
+
+        ASSERT(db && tok && tok->next() && tok->next()->valueType());
+        if (db && tok && tok->next() && tok->next()->valueType()) {
+            tok = tok->next();
+            ASSERT_EQUALS(0, tok->valueType()->constness);
+            ASSERT_EQUALS(0, tok->valueType()->pointer);
+            ASSERT_EQUALS(ValueType::SIGNED, tok->valueType()->sign);
+            ASSERT_EQUALS(ValueType::INT, tok->valueType()->type);
+        }
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "PINT pi ;");
+
+        ASSERT(db && tok && tok->next() && tok->next()->valueType());
+        if (db && tok && tok->next() && tok->next()->valueType()) {
+            tok = tok->next();
+            ASSERT_EQUALS(0, tok->valueType()->constness);
+            ASSERT_EQUALS(1, tok->valueType()->pointer);
+            ASSERT_EQUALS(ValueType::SIGNED, tok->valueType()->sign);
+            ASSERT_EQUALS(ValueType::INT, tok->valueType()->type);
+        }
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "PCINT pci ;");
+
+        ASSERT(db && tok && tok->next() && tok->next()->valueType());
+        if (db && tok && tok->next() && tok->next()->valueType()) {
+            tok = tok->next();
+            ASSERT_EQUALS(1, tok->valueType()->constness);
+            ASSERT_EQUALS(1, tok->valueType()->pointer);
+            ASSERT_EQUALS(ValueType::SIGNED, tok->valueType()->sign);
+            ASSERT_EQUALS(ValueType::INT, tok->valueType()->type);
+        }
     }
 
 };

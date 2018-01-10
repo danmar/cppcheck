@@ -5538,6 +5538,8 @@ void Tokenizer::simplifyVarDecl(const bool only_k_r_fpar)
 
 void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar)
 {
+    const bool isCPP11  = _settings->standards.cpp >= Standards::CPP11;
+
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
     bool finishedwithkr = true;
@@ -5585,6 +5587,8 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
         if (!Token::Match(type0, "::|extern| %type%"))
             continue;
         if (Token::Match(type0, "else|return|public:|protected:|private:"))
+            continue;
+        if (isCPP11 && type0->str() == "using")
             continue;
 
         bool isconst = false;
@@ -5828,6 +5832,8 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
 
 void Tokenizer::simplifyPlatformTypes()
 {
+    const bool isCPP11  = _settings->standards.cpp >= Standards::CPP11;
+
     enum { isLongLong, isLong, isInt } type;
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
@@ -5846,11 +5852,15 @@ void Tokenizer::simplifyPlatformTypes()
         if (!Token::Match(tok, "std| ::| %type%"))
             continue;
         bool isUnsigned;
-        if (Token::Match(tok, "std| ::| size_t|uintptr_t|uintmax_t"))
+        if (Token::Match(tok, "std| ::| size_t|uintptr_t|uintmax_t")) {
+            if (isCPP11 && tok->strAt(-1) == "using" && tok->strAt(1) == "=")
+                continue;
             isUnsigned = true;
-        else if (Token::Match(tok, "std| ::| ssize_t|ptrdiff_t|intptr_t|intmax_t"))
+        } else if (Token::Match(tok, "std| ::| ssize_t|ptrdiff_t|intptr_t|intmax_t")) {
+            if (isCPP11 && tok->strAt(-1) == "using" && tok->strAt(1) == "=")
+                continue;
             isUnsigned = false;
-        else
+        } else
             continue;
 
         bool inStd = false;

@@ -276,6 +276,21 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 tok = tok->tokAt(2);
         }
 
+        // using type alias
+        else if (_tokenizer->isCPP() && Token::Match(tok, "using %name% =")) {
+            if (!findType(tok->next(), scope)) {
+                // fill typeList..
+                typeList.push_back(Type(tok, nullptr, scope));
+                Type* new_type = &typeList.back();
+                scope->definedTypesMap[new_type->name()] = new_type;
+            }
+
+            tok = tok->tokAt(3);
+
+            while (tok && tok->str() != ";")
+                tok = tok->next();
+        }
+
         // unnamed struct and union
         else if (Token::Match(tok, "struct|union {") &&
                  Token::Match(tok->next()->link(), "} *|&| %name% ;|[")) {
@@ -3517,7 +3532,14 @@ static const Token* skipPointers(const Token* tok)
 
 bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const
 {
-    if (check && check->_tokenizer->isCPP() && Token::Match(tok, "throw|new"))
+    const bool isCPP = check && check->_tokenizer->isCPP();
+
+    if (isCPP && Token::Match(tok, "throw|new"))
+        return false;
+
+    const bool isCPP11 = isCPP && check->_settings->standards.cpp >= Standards::CPP11;
+
+    if (isCPP11 && tok->str() == "using")
         return false;
 
     const Token* localTypeTok = skipScopeIdentifiers(tok);
@@ -4986,7 +5008,10 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->sign = ValueType::Sign::SIGNED;
         else if (type->isUnsigned())
             valuetype->sign = ValueType::Sign::UNSIGNED;
-        if (type->str() == "const")
+        if (valuetype->type == ValueType::Type::UNKNOWN_TYPE &&
+            type->type() && type->type()->isTypeAlias() && type->type()->typeStart)
+            parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings);
+        else if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
         else if (const Library::Container *container = settings->library.detectContainer(type)) {
             valuetype->type = ValueType::Type::CONTAINER;
