@@ -7,7 +7,7 @@ if [[ $(pwd) == */test/cfg ]] ; then # we are in test/cfg
 	DIR=""
 else # assume we are in repo root
 	CPPCHECK="./cppcheck"
-	DIR=./test/cfg/
+	DIR=test/cfg/
 fi
 
 # Cppcheck options

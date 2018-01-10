@@ -132,7 +132,7 @@ void uninitvar_proj(void)
 {
     double d;
     const std::complex<double> dc(d,d);
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     (void)std::proj(dc);
 }
 
@@ -725,17 +725,14 @@ void uninitvar_floor(void)
 
 void uninitvar_fma(void)
 {
-    // cppcheck-suppress unassignedVariable
     float f1,f2,f3;
     // cppcheck-suppress uninitvar
     (void)std::fmaf(f1,f2,f3);
 
-    // cppcheck-suppress unassignedVariable
     double d1,d2,d3;
     // cppcheck-suppress uninitvar
     (void)std::fma(d1,d2,d3);
 
-    // cppcheck-suppress unassignedVariable
     long double ld1,ld2,ld3;
     // cppcheck-suppress uninitvar
     (void)std::fmal(ld1,ld2,ld3);
@@ -2842,18 +2839,14 @@ void uninivar_snprintf(char *S, size_t N, char *Format, int Int)
     (void)std::snprintf(s,n,format,i);
     // cppcheck-suppress uninitvar
     (void)std::snprintf(S,n,Format,Int); // n is uninitialized
-    // cppcheck-suppress redundantCopy
     // cppcheck-suppress uninitvar
     (void)std::snprintf(S,N,format,Int); // format is uninitialized
-    // cppcheck-suppress redundantCopy
     // cppcheck-suppress uninitvar
     (void)std::snprintf(S,N,Format,i); // i is uninitialized
-    // cppcheck-suppress redundantCopy
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     (void)std::snprintf(s,N,Format,Int);
 
     // no warning is expected for
-    // cppcheck-suppress redundantCopy
     (void)std::snprintf(S,N,Format,Int);
 }
 
@@ -2939,14 +2932,14 @@ void uninitvar_setw(void)
 void uninitvar_setiosflags(void)
 {
     std::ios_base::fmtflags mask;
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     std::cout << std::setiosflags(mask); // #6987 - false negative
 }
 
 void uninitvar_resetiosflags(void)
 {
     std::ios_base::fmtflags mask;
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     std::cout << std::resetiosflags(mask); // #6987 - false negative
 }
 
@@ -3040,20 +3033,19 @@ void ignoredReturnValue_abs(int i)
 {
     // cppcheck-suppress ignoredReturnValue
     std::abs(i);
-    // cppcheck-suppress constStatement
     // cppcheck-suppress ignoredReturnValue
     std::abs(-199);
 }
 
 void nullPointer_ifstream_read(std::ifstream &f)
 {
-    // cppcheck-suppress nullPointer
+    // TODO cppcheck-suppress nullPointer
     f.read(NULL, 10);
 }
 
 void nullPointer_istream_read(std::istream &f)
 {
-    // cppcheck-suppress nullPointer
+    // TODO cppcheck-suppress nullPointer
     f.read(NULL, 10);
 }
 

@@ -162,7 +162,7 @@ void nullpointer(int value)
 
     // #6100 False positive nullPointer - calling mbstowcs(NULL,)
     res += mbstowcs(0,"",0);
-    // cppcheck-suppress unreadVariable
+    // TODO cppcheck-suppress unreadVariable
     res += wcstombs(0,L"",0);
 
     strtok(NULL,"xyz");
@@ -441,7 +441,7 @@ void uninitvar_asctime(void)
 void uninitvar_assert(void)
 {
     int i;
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     assert(i);
 }
 #endif
@@ -1206,17 +1206,14 @@ void uninitvar_floor(void)
 
 void uninitvar_fma(void)
 {
-    // cppcheck-suppress unassignedVariable
     float f1,f2,f3;
     // cppcheck-suppress uninitvar
     (void)fmaf(f1,f2,f3);
 
-    // cppcheck-suppress unassignedVariable
     double d1,d2,d3;
     // cppcheck-suppress uninitvar
     (void)fma(d1,d2,d3);
 
-    // cppcheck-suppress unassignedVariable
     long double ld1,ld2,ld3;
     // cppcheck-suppress uninitvar
     (void)fmal(ld1,ld2,ld3);
@@ -3364,17 +3361,14 @@ void uninitvar_sprintf(char *S, char *Format, int Argument)
     int argument;
     // cppcheck-suppress uninitvar
     (void)sprintf(s,format,argument);
-    // cppcheck-suppress redundantCopy
     // cppcheck-suppress uninitvar
     (void)sprintf(s,Format,Argument);
     // cppcheck-suppress uninitvar
     (void)sprintf(S,format,Argument);
-    // cppcheck-suppress redundantCopy
     // cppcheck-suppress uninitvar
     (void)sprintf(S,Format,argument);
 
     // no warning is expected for
-    // cppcheck-suppress redundantCopy
     (void)sprintf(S,Format,Argument);
 }
 
@@ -3427,18 +3421,14 @@ void uninivar_snprintf(char *S, size_t N, char *Format, int Int)
     (void)snprintf(s,n,format,i);
     // cppcheck-suppress uninitvar
     (void)snprintf(S,n,Format,Int); // n is uninitialized
-    // cppcheck-suppress redundantCopy
     // cppcheck-suppress uninitvar
     (void)snprintf(S,N,format,Int); // format is uninitialized
-    // cppcheck-suppress redundantCopy
     // cppcheck-suppress uninitvar
     (void)snprintf(S,N,Format,i); // i is uninitialized
-    // cppcheck-suppress redundantCopy
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     (void)snprintf(s,N,Format,Int);
 
     // no warning is expected for
-    // cppcheck-suppress redundantCopy
     (void)snprintf(S,N,Format,Int);
 }
 
@@ -3587,7 +3577,6 @@ void ignoredReturnValue_abs(int i)
 {
     // cppcheck-suppress ignoredReturnValue
     abs(i);
-    // cppcheck-suppress constStatement
     // cppcheck-suppress ignoredReturnValue
     abs(-100);
 }
@@ -3691,7 +3680,7 @@ void invalidPrintfArgType_printf(void)
 
     // #7016
     uint8_t n = 7;
-    // cppcheck-suppress invalidPrintfArgType_uint
+    // TODO cppcheck-suppress invalidPrintfArgType_uint
     printf("%"PRIi16"\n", n);
 }
 
@@ -3707,41 +3696,41 @@ void valueFlow(void)
 
     // When adding functions below, please sort alphabetically.
 
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(strlen(abc) == 3);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(abs(three) == 3);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(abs(minusThree) == 3);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(isblank(blank) == 1);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(isblank(tab) == 1);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(isblank(c0) == 0);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(isdigit(c0) == 1);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(isdigit(ca) == 0);
 
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(iswblank(wblank) == 1);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(iswblank(wtab) == 1);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(iswblank(w0) == 0);
 
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(iswdigit(w0) == 0);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(iswdigit(wtab) == 1);
 
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(labs(three) == 3);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(labs(minusThree) == 3);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(llabs(three) == 3);
-    // cppcheck-suppress knownConditionTrueFalse
+    // TODO cppcheck-suppress knownConditionTrueFalse
     AssertAlwaysTrue(llabs(minusThree) == 3);
 }

@@ -163,7 +163,7 @@ void uninitvar(int fd)
     void *p;
     // cppcheck-suppress uninitvar
     write(x,"ab",2);
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     write(fd,buf,2); // #6325
     // cppcheck-suppress uninitvar
     write(fd,"ab",x);
@@ -232,10 +232,9 @@ void timet_h(struct timespec* ptp1)
     clock_settime(clk_id, ptp1);
 
     struct timespec tp;
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     clock_settime(CLOCK_REALTIME, &tp); // #6577 - false negative
     // cppcheck-suppress uninitvar
-    // cppcheck-suppress clock_settimeCalled
     clock_settime(clk_id, &tp);
 
     time_t clock = time(0);
