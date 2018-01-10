@@ -5832,6 +5832,8 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
 
 void Tokenizer::simplifyPlatformTypes()
 {
+    const bool isCPP11  = _settings->standards.cpp >= Standards::CPP11;
+
     enum { isLongLong, isLong, isInt } type;
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
@@ -5850,11 +5852,15 @@ void Tokenizer::simplifyPlatformTypes()
         if (!Token::Match(tok, "std| ::| %type%"))
             continue;
         bool isUnsigned;
-        if (Token::Match(tok, "std| ::| size_t|uintptr_t|uintmax_t"))
+        if (Token::Match(tok, "std| ::| size_t|uintptr_t|uintmax_t")) {
+            if (isCPP11 && tok->strAt(-1) == "using" && tok->strAt(1) == "=")
+                continue;
             isUnsigned = true;
-        else if (Token::Match(tok, "std| ::| ssize_t|ptrdiff_t|intptr_t|intmax_t"))
+        } else if (Token::Match(tok, "std| ::| ssize_t|ptrdiff_t|intptr_t|intmax_t")) {
+            if (isCPP11 && tok->strAt(-1) == "using" && tok->strAt(1) == "=")
+                continue;
             isUnsigned = false;
-        else
+        } else
             continue;
 
         bool inStd = false;
