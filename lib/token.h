@@ -422,6 +422,12 @@ public:
     void isEnumType(bool value) {
         setFlag(fIsEnumType, value);
     }
+    bool isTemplateArg() const {
+        return getFlag(fIsTemplateArg);
+    }
+    void isTemplateArg(bool value) {
+        setFlag(fIsTemplateArg, value);
+    }
 
     static const Token *findsimplematch(const Token * const startTok, const char pattern[]);
     static const Token *findsimplematch(const Token * const startTok, const char pattern[], const Token * const end);
@@ -898,6 +904,7 @@ private:
         fIsEnumType             = (1 << 19), // enumeration type
         fIsName                 = (1 << 20),
         fIsLiteral              = (1 << 21),
+        fIsTemplateArg          = (1 << 22),
     };
 
     unsigned int _flags;

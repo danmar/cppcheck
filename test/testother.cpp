@@ -129,6 +129,7 @@ private:
         TEST_CASE(duplicateExpression5); // ticket #3749 (macros with same values)
         TEST_CASE(duplicateExpression6); // ticket #4639
         TEST_CASE(duplicateExpressionTernary); // #6391
+        TEST_CASE(duplicateExpressionTemplate); // #6930
 
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
@@ -3872,6 +3873,15 @@ private:
         check("std::string stringMerge(std::string const& x, std::string const& y) {\n" // #7938
               "    return ((x > y) ? (y + x) : (x + y));\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpressionTemplate() { // #6930
+        check("template <int I> void f() {\n"
+              "    if (I >= 0 && I < 3) {}\n"
+              "}\n"
+              "\n"
+              "static auto a = f<0>();");
         ASSERT_EQUALS("", errout.str());
     }
 

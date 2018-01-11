@@ -1034,6 +1034,7 @@ void TemplateSimplifier::expandTemplate(
                         else if (typeindentlevel > 0 && typetok->str() == ">")
                             --typeindentlevel;
                         tokenlist.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
+                        tokenlist.back()->isTemplateArg(true);
                     }
                     continue;
                 }
