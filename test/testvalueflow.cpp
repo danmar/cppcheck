@@ -2622,6 +2622,13 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 6));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 7));
         ASSERT(value.isKnown());
+
+        // template parameters are not known
+        code = "template <int X> void f() { a = X; }\n"
+               "f<1>();";
+        value = valueOfTok(code, "1");
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(false, value.isKnown());
     }
 
     void valueFlowSizeofForwardDeclaredEnum() {
