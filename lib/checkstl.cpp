@@ -129,7 +129,7 @@ void CheckStl::iterators()
     for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
         const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
 
-		bool inconclusiveType=false;
+        bool inconclusiveType=false;
         if (!isIterator(var, inconclusiveType))
             continue;
 
@@ -206,7 +206,7 @@ void CheckStl::iterators()
                         while (par2->str() != ")") {
                             if (par2->varId() == containerToken->varId())
                                 break;
-							bool inconclusiveType2=false;
+                            bool inconclusiveType2=false;
                             if (isIterator(par2->variable(), inconclusiveType2))
                                 break;  // TODO: check if iterator points at same container
                             if (par2->str() == "(")

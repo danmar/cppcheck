@@ -137,7 +137,7 @@ private:
         TEST_CASE(stabilityOfChecks); // #4684 cppcheck crash in template function call
 
         TEST_CASE(dereferenceInvalidIterator);
-		TEST_CASE(dereferenceInvalidIterator2); // #6572
+        TEST_CASE(dereferenceInvalidIterator2); // #6572
         TEST_CASE(dereference_auto);
 
         TEST_CASE(readingEmptyStlContainer);
@@ -2896,8 +2896,8 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
-	
-	void dereferenceInvalidIterator2() {
+
+    void dereferenceInvalidIterator2() {
         // Self-implemented iterator class
         check("class iterator {\n"
               "public:\n"
