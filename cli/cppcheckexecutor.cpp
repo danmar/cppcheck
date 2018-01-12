@@ -888,7 +888,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                 c++;
             }
         }
-        cppcheck.analyseWholeProgram();
+        if (cppcheck.analyseWholeProgram())
+            returnValue++;
     } else if (!ThreadExecutor::isEnabled()) {
         std::cout << "No thread support yet implemented for this platform." << std::endl;
     } else {

@@ -2022,8 +2022,9 @@ Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLEle
 }
 
 
-void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings&, ErrorLogger &errorLogger)
+bool CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings&, ErrorLogger &errorLogger)
 {
+    bool errors = false;
     // Merge all fileInfo
     MyFileInfo all;
     for (std::list<Check::FileInfo*>::const_iterator it = fileInfo.begin(); it != fileInfo.end(); ++it) {
@@ -2069,8 +2070,10 @@ void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &
                                                    "arrayIndexOutOfBounds",
                                                    CWE788, false);
             errorLogger.reportErr(errmsg);
+            errors = true;
         }
     }
+    return errors;
 }
 
 unsigned int CheckBufferOverrun::sizeOfType(const Token *type) const
