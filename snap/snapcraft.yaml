@@ -27,6 +27,8 @@ parts:
       - build-essential
       - qt5-default
       - qtbase5-dev
+      - dpkg-dev
+      - qttools5-dev # For Qt5LinguistTools
   desktop-qt5:
     stage-packages:
       # A set of Ubuntu packages to be downloaded and unpacked to join the part before it’s built.
@@ -42,3 +44,5 @@ parts:
       - shared-mime-info
       - libgdk-pixbuf2.0-0
       - locales-all
+      - xcb
+      - libxcb1
