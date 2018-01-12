@@ -92,6 +92,7 @@ static bool isIterator(const Variable *var, bool& inconclusiveType)
     if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator|auto"))
         return false;
 
+    inconclusiveType = false;
     if (var->typeEndToken()->str() == "auto")
         return (var->nameToken()->valueType() && var->nameToken()->valueType()->type == ValueType::Type::ITERATOR);
 
