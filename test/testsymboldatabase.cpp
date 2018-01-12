@@ -351,6 +351,7 @@ private:
         TEST_CASE(unionWithConstructor);
 
         TEST_CASE(using1);
+        TEST_CASE(using2); // #8331
     }
 
     void array() {
@@ -5318,7 +5319,7 @@ private:
     void using1() {
         Standards::cppstd_t original_std = settings1.standards.cpp;
         settings1.standards.cpp = Standards::CPP11;
-        GET_SYMBOL_DB("using INT = int;\n\n"
+        GET_SYMBOL_DB("using INT = int;\n"
                       "using PINT = INT *;\n"
                       "using PCINT = const PINT;\n"
                       "INT i;\n"
@@ -5357,6 +5358,36 @@ private:
             ASSERT_EQUALS(ValueType::SIGNED, tok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, tok->valueType()->type);
         }
+    }
+
+    void using2() { // #8331 (segmentation fault)
+        Standards::cppstd_t original_std = settings1.standards.cpp;
+        settings1.standards.cpp = Standards::CPP11;
+
+        {
+            GET_SYMBOL_DB("using pboolean = pboolean;\n"
+                          "pboolean b;");
+            const Token *tok = Token::findsimplematch(tokenizer.tokens(), "b ;");
+
+            ASSERT(db && tok && !tok->valueType());
+        }
+
+        {
+            GET_SYMBOL_DB("using pboolean = bool;\n"
+                          "using pboolean = pboolean;\n"
+                          "pboolean b;");
+            const Token *tok = Token::findsimplematch(tokenizer.tokens(), "b ;");
+
+            ASSERT(db && tok && tok->valueType());
+            if (db && tok && tok->valueType()) {
+                ASSERT_EQUALS(0, tok->valueType()->constness);
+                ASSERT_EQUALS(0, tok->valueType()->pointer);
+                ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, tok->valueType()->sign);
+                ASSERT_EQUALS(ValueType::BOOL, tok->valueType()->type);
+            }
+        }
+
+        settings1.standards.cpp = original_std;
     }
 
 };

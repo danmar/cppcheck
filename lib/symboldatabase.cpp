@@ -5009,7 +5009,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         else if (type->isUnsigned())
             valuetype->sign = ValueType::Sign::UNSIGNED;
         if (valuetype->type == ValueType::Type::UNKNOWN_TYPE &&
-            type->type() && type->type()->isTypeAlias() && type->type()->typeStart)
+            type->type() && type->type()->isTypeAlias() && type->type()->typeStart &&
+            type->type()->typeStart->str() != type->str())
             parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings);
         else if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
