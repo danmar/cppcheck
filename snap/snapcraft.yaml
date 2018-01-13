@@ -1,8 +1,8 @@
 name:               cppcheckgui
-version:            'todo'
-summary:            todo
+version:            '1.81.99'
+summary:            A tool for static C/C++ code analysis
 description:        |
-  todo
+  A tool for static C/C++ code analysis
 grade:              stable
 confinement:        devmode
 icon:               snap/gui/cppcheck-gui.png
@@ -13,7 +13,6 @@ apps:
     command:        desktop-launch ${SNAP}/bin/cppcheck-gui
     plugs:          [home, unity7, x11, camera,network-bind, network-control, account-control]
 
-# TODO(gocarlos):   check if all those dependencies are needed.
 parts:
   cppcheckgui:
     source-type:    git
@@ -28,7 +27,9 @@ parts:
       - qt5-default
       - qtbase5-dev
       - dpkg-dev
-      - qttools5-dev # For Qt5LinguistTools
+      # For Qt5LinguistTools
+      - qttools5-dev
+      - qttools5-dev-tools
   desktop-qt5:
     stage-packages:
       # A set of Ubuntu packages to be downloaded and unpacked to join the part before it’s built.
