@@ -17,6 +17,7 @@
  */
 
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
+#define SIMPLECPP_WINDOWS
 #define NOMINMAX
 #endif
 #include "simplecpp.h"
@@ -33,11 +34,10 @@
 #include <stdexcept>
 #include <utility>
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
+#ifdef SIMPLECPP_WINDOWS
 #include <windows.h>
 #undef ERROR
 #undef TRUE
-#define SIMPLECPP_WINDOWS
 #endif
 
 static bool isHex(const std::string &s)
@@ -338,7 +338,7 @@ static unsigned short getAndSkipBOM(std::istream &istr)
 
     // Skip UTF-8 BOM 0xefbbbf
     if (ch1 == 0xef) {
-        istr.get();
+        (void)istr.get();
         if (istr.get() == 0xbb && istr.peek() == 0xbf) {
             (void)istr.get();
         } else {
@@ -699,6 +699,7 @@ void simplecpp::TokenList::combineOperators()
     }
 }
 
+static const std::string COMPL("compl");
 static const std::string NOT("not");
 void simplecpp::TokenList::constFoldUnaryNotPosNeg(simplecpp::Token *tok)
 {
@@ -706,9 +707,15 @@ void simplecpp::TokenList::constFoldUnaryNotPosNeg(simplecpp::Token *tok)
         // "not" might be !
         if (isAlternativeUnaryOp(tok, NOT))
             tok->op = '!';
+        // "compl" might be ~
+        else if (isAlternativeUnaryOp(tok, COMPL))
+            tok->op = '~';
 
         if (tok->op == '!' && tok->next && tok->next->number) {
             tok->setstr(tok->next->str == "0" ? "1" : "0");
+            deleteToken(tok->next);
+        } else if (tok->op == '~' && tok->next && tok->next->number) {
+            tok->setstr(toString(~stringToLL(tok->next->str)));
             deleteToken(tok->next);
         } else {
             if (tok->previous && (tok->previous->number || tok->previous->name))
@@ -1662,7 +1669,12 @@ namespace simplecpp {
 
             if (varargs && tokensB.empty() && tok->previous->str == ",")
                 output->deleteToken(A);
-            else {
+            else if (strAB != "," && macros.find(strAB) == macros.end()) {
+                A->setstr(strAB);
+                for (Token *b = tokensB.front(); b; b = b->next)
+                    b->location = loc;
+                output->takeTokens(tokensB);
+            } else {
                 output->deleteToken(A);
                 TokenList tokens(files);
                 tokens.push_back(new Token(strAB, tok->location));
@@ -1738,15 +1750,11 @@ static bool realFileName(const std::string &f, std::string *result)
     if (!alpha)
         return false;
 
-    // Convert char path to CHAR path
-    std::vector<CHAR> buf(f.size()+1U, 0);
-    for (unsigned int i = 0; i < f.size(); ++i)
-        buf[i] = f[i];
-
     // Lookup filename or foldername on file system
     WIN32_FIND_DATAA FindFileData;
-    HANDLE hFind = FindFirstFileA(&buf[0], &FindFileData);
-    if (hFind == INVALID_HANDLE_VALUE)
+    HANDLE hFind = FindFirstFileExA(f.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
+
+    if (INVALID_HANDLE_VALUE == hFind)
         return false;
     *result = FindFileData.cFileName;
     FindClose(hFind);
@@ -1821,6 +1829,9 @@ namespace simplecpp {
      */
     std::string simplifyPath(std::string path)
     {
+        if (path.empty())
+            return path;
+
         std::string::size_type pos;
 
         // replace backslash separators
@@ -1929,15 +1940,15 @@ static void simplifySizeof(simplecpp::TokenList &expr, const std::map<std::strin
     }
 }
 
-static const char * const altopData[] = {"and","or","bitand","bitor","not","not_eq","xor"};
-static const std::set<std::string> altop(&altopData[0], &altopData[7]);
+static const char * const altopData[] = {"and","or","bitand","bitor","compl","not","not_eq","xor"};
+static const std::set<std::string> altop(&altopData[0], &altopData[8]);
 static void simplifyName(simplecpp::TokenList &expr)
 {
     for (simplecpp::Token *tok = expr.front(); tok; tok = tok->next) {
         if (tok->name) {
             if (altop.find(tok->str) != altop.end()) {
                 bool alt;
-                if (tok->str == "not") {
+                if (tok->str == "not" || tok->str == "compl") {
                     alt = isAlternativeUnaryOp(tok,tok->str);
                 } else {
                     alt = isAlternativeBinaryOp(tok,tok->str);
@@ -2016,6 +2027,9 @@ static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const
 
 static std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader)
 {
+    if (filedata.empty()) {
+        return "";
+    }
     if (isAbsolutePath(header)) {
         return (filedata.find(header) != filedata.end()) ? simplecpp::simplifyPath(header) : "";
     }
