@@ -3082,6 +3082,10 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         // skip over stuff to get to type
         while (Token::Match(typeTok, "const|enum|struct|::"))
             typeTok = typeTok->next();
+        if (Token::Match(typeTok, ",|)")) { // #8333
+            symbolDatabase->_tokenizer->syntaxError(typeTok);
+            return;
+        }
         // skip over qualification
         while (Token::Match(typeTok, "%type% ::"))
             typeTok = typeTok->tokAt(2);
