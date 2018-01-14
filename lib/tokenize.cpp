@@ -1942,26 +1942,27 @@ void Tokenizer::simplifyRoundCurlyParentheses()
 void Tokenizer::simplifySQL()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL")) {
-            const Token *end = findSQLBlockEnd(tok);
-            if (end == nullptr)
-                syntaxError(nullptr);
+        if (!Token::simpleMatch(tok, "__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL"))
+            continue;
 
-            const std::string instruction = tok->stringifyList(end);
-            // delete all tokens until the embedded SQL block end
-            Token::eraseTokens(tok, end);
+        const Token *end = findSQLBlockEnd(tok);
+        if (end == nullptr)
+            syntaxError(nullptr);
 
-            // insert "asm ( "instruction" ) ;"
-            tok->str("asm");
-            // it can happen that 'end' is NULL when wrong code is inserted
-            if (!tok->next())
-                tok->insertToken(";");
-            tok->insertToken(")");
-            tok->insertToken("\"" + instruction + "\"");
-            tok->insertToken("(");
-            // jump to ';' and continue
-            tok = tok->tokAt(3);
-        }
+        const std::string instruction = tok->stringifyList(end);
+        // delete all tokens until the embedded SQL block end
+        Token::eraseTokens(tok, end);
+
+        // insert "asm ( "instruction" ) ;"
+        tok->str("asm");
+        // it can happen that 'end' is NULL when wrong code is inserted
+        if (!tok->next())
+            tok->insertToken(";");
+        tok->insertToken(")");
+        tok->insertToken("\"" + instruction + "\"");
+        tok->insertToken("(");
+        // jump to ';' and continue
+        tok = tok->tokAt(3);
     }
 }
 
@@ -10058,7 +10059,7 @@ void Tokenizer::SimplifyNamelessRValueReferences()
     }
 }
 
-const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart) const
+const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart)
 {
     const Token *tokLastEnd = nullptr;
     for (const Token *tok = tokSQLStart->tokAt(2); tok != nullptr; tok = tok->next()) {

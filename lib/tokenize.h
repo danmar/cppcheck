@@ -719,7 +719,7 @@ private:
     void printUnknownTypes() const;
 
     /** Find end of SQL (or PL/SQL) block */
-    const Token *findSQLBlockEnd(const Token *tokSQLStart) const;
+    static const Token *findSQLBlockEnd(const Token *tokSQLStart);
 
 public:
 
