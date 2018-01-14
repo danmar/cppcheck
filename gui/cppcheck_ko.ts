@@ -16,10 +16,6 @@
         <translation>Cppcheck - 정적 C/C++ 코드 분석 도구.</translation>
     </message>
     <message>
-        <source>Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</source>
-        <translation type="obsolete">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team.</translation>
-    </message>
-    <message>
         <source>This program is licensed under the terms
 of the GNU General Public License version 3</source>
         <translation>이 프로그램은 GNU General Public License version 3을

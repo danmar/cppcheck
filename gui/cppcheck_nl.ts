@@ -21,8 +21,7 @@
     <message>
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2018 Cppcheck team.</source>
-        <oldsource>Copyright © 2007-2017 Cppcheck team.</oldsource>
-        <translation type="unfinished">Copyright © 2007-2017 het cppcheck team.</translation>
+        <translation>Copyright © 2007-2018 het cppcheck team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>

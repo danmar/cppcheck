@@ -21,8 +21,7 @@
     <message>
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2018 Cppcheck team.</source>
-        <oldsource>Copyright © 2007-2017 Cppcheck team.</oldsource>
-        <translation type="unfinished">版权所有 © 2007-2017 Daniel Marjamäki 与 Cppcheck 团队。</translation>
+        <translation>版权所有 © 2007-2018 Daniel Marjamäki 与 Cppcheck 团队。</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
