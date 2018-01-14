@@ -8,6 +8,10 @@
 # Update translations
 #   lupdate gui.pro
 #
+# Update copyright year
+# git diff c4caee6b1828e3688c88ebacfc8ac90eace8a7ac | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-201./Copyright (C) 2007-2018/'
+# git diff | grep '^diff --git a/'
+#
 # Make sure "cppcheck --errorlist" works. For example with:
 # make test
 # ./cppcheck --errorlist > errlist.xml && xmllint --noout errlist.xml
