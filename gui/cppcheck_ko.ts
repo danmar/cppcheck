@@ -30,7 +30,7 @@ of the GNU General Public License version 3</source>
         <translation>Cppcheck 홈페이지(%1)를 방문해보세요</translation>
     </message>
     <message>
-        <source>Copyright © 2007-2017 Cppcheck team.</source>
+        <source>Copyright © 2007-2018 Cppcheck team.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -225,6 +225,10 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <source>Save the library as</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Failed to load %1. %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>LibraryEditArgDialog</name>
@@ -284,10 +288,6 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>argvalue</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>constant</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1301,6 +1301,10 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <source>Visual Studio (*.sln *.vcxproj);;Compile database (compile_commands.json)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Clang-tidy (not found)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QDialogButtonBox</name>
@@ -1334,6 +1338,14 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     <message>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>파일(%2)로부터 언어(%1) 불러오기 실패</translation>
+    </message>
+    <message>
+        <source>line %1: Unhandled element %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> (Not found)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1584,6 +1596,18 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Warning Details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy this Log entry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy complete Log</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

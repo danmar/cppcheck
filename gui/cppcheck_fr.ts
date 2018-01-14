@@ -26,7 +26,7 @@ General Public License version 3</translation>
         <translation>Visitez le site Cppcheck : %1</translation>
     </message>
     <message>
-        <source>Copyright © 2007-2017 Cppcheck team.</source>
+        <source>Copyright © 2007-2018 Cppcheck team.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -207,6 +207,10 @@ Parameters: -l(line) (file)</source>
         <source>Save the library as</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Failed to load %1. %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>LibraryEditArgDialog</name>
@@ -266,10 +270,6 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>argvalue</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>constant</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1198,6 +1198,10 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <source>Visual Studio (*.sln *.vcxproj);;Compile database (compile_commands.json)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Clang-tidy (not found)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QDialogButtonBox</name>
@@ -1230,6 +1234,14 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Unknown language specified!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>line %1: Unhandled element %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> (Not found)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1477,6 +1489,18 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Warning Details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy this Log entry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy complete Log</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
