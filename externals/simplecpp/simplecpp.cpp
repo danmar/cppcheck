@@ -380,6 +380,11 @@ static void portabilityBackslash(simplecpp::OutputList *outputList, const std::v
     outputList->push_back(err);
 }
 
+static bool isRawStringId(const std::string &str)
+{
+    return str == "R" || str == "uR" || str == "UR" || str == "LR" || str == "u8R";
+}
+
 void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filename, OutputList *outputList)
 {
     std::stack<simplecpp::Location> loc;
@@ -521,7 +526,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         // string / char literal
         else if (ch == '\"' || ch == '\'') {
             // C++11 raw string literal
-            if (ch == '\"' && cback() && cback()->op == 'R') {
+            if (ch == '\"' && cback() && cback()->name && isRawStringId(cback()->str)) {
                 std::string delim;
                 ch = readChar(istr,bom);
                 while (istr.good() && ch != '(' && ch != '\n') {
@@ -539,7 +544,12 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                     // TODO report
                     return;
                 currentToken.erase(currentToken.size() - endOfRawString.size(), endOfRawString.size() - 1U);
-                back()->setstr(escapeString(currentToken));
+                if (cback()->op == 'R')
+                    back()->setstr(escapeString(currentToken));
+                else {
+                    back()->setstr(cback()->str.substr(0, cback()->str.size() - 1));
+                    push_back(new Token(currentToken, location)); // push string without newlines
+                }
                 location.adjust(currentToken);
                 if (currentToken.find_first_of("\r\n") == std::string::npos)
                     location.col += 2 + 2 * delim.size();
