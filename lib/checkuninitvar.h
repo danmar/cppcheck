@@ -91,12 +91,36 @@ public:
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
-        /* functions that must have initialized data */
-        std::set<std::string>  uvarFunctions;
+        struct FunctionArg {
+            FunctionArg(const std::string &s, unsigned int i, const std::string &fileName, unsigned int linenr, const std::string &varname) : functionName(s), argnr(i), variableName(varname) {
+                location.fileName = fileName;
+                location.linenr   = linenr;
+            }
+            std::string functionName;
+            unsigned int argnr;
+            std::string variableName;
+            struct {
+                std::string fileName;
+                unsigned int linenr;
+            } location;
+        };
 
-        /* functions calls with uninitialized data */
-        std::set<std::string>  functionCalls;
+        /* function arguments that must be initialized */
+        std::list<FunctionArg> unsafeFunctionArgs;
+
+        /* uninitialized function args */
+        std::list<FunctionArg> uninitializedFunctionArgs;
+
+        std::string toString() const;
     };
+
+    /** @brief Parse current TU and extract file info */
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
+
+    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const;
+
+    /** @brief Analyse all file infos for all TU */
+    bool analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
 
     void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);

@@ -31,6 +31,8 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
+#include <tinyxml2.h>
+
 #include <cassert>
 #include <cstddef>
 #include <list>
@@ -1280,3 +1282,166 @@ void CheckUninitVar::deadPointerError(const Token *pointer, const Token *alias)
                 "deadpointer",
                 "Dead pointer usage. Pointer '" + strpointer + "' is dead if it has been assigned '" + stralias + "' at line " + MathLib::toString(alias ? alias->linenr() : 0U) + ".", CWE825, false);
 }
+
+std::string CheckUninitVar::MyFileInfo::toString() const
+{
+    std::ostringstream ret;
+    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it = unsafeFunctionArgs.begin(); it != unsafeFunctionArgs.end(); ++it) {
+        ret << "    <unsafefunctionarg"
+            << " functionName=\"" << it->functionName << '\"'
+            << " argnr=\"" << it->argnr << '\"'
+            << " fileName=\"" << it->location.fileName << '\"'
+            << " linenr=\"" << it->location.linenr << '\"'
+            << "/>\n";
+    }
+    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it = uninitializedFunctionArgs.begin(); it != uninitializedFunctionArgs.end(); ++it) {
+        ret << "    <uninitializedFunctionArgs"
+            << " functionName=\"" << it->functionName << '\"'
+            << " argnr=\"" << it->argnr << '\"'
+            << " fileName=\"" << it->location.fileName << '\"'
+            << " linenr=\"" << it->location.linenr << '\"'
+            << "/>\n";
+    }
+    return ret.str();
+}
+
+Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings * /*settings*/) const
+{
+    const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
+    std::list<Scope>::const_iterator scope;
+
+    MyFileInfo *fileInfo = new MyFileInfo;
+
+    // Parse all functions in TU
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        if (!scope->isExecutable() || scope->type != Scope::eFunction)
+            continue;
+        const Function *const function = scope->function;
+
+        // Unsafe arguments..
+        for (int argnr = 0; argnr < function->argCount(); ++argnr) {
+            const Variable * const argvar = function->getArgumentVar(argnr);
+            if (!argvar->isPointer())
+                continue;
+            for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+                if (tok->variable() != argvar)
+                    continue;
+                if (!Token::Match(tok->astParent(), "*|["))
+                    break;
+                while (Token::Match(tok->astParent(), "*|["))
+                    tok = tok->astParent();
+                if (Token::Match(tok->astParent(),"%cop%"))
+                    fileInfo->unsafeFunctionArgs.push_back(MyFileInfo::FunctionArg(scope->className, argnr, tokenizer->list.file(tok), tok->linenr(), argvar->name()));
+                break;
+            }
+        }
+
+        // Unsafe calls..
+        for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand2())
+                continue;
+            if (Token::Match(tok->astOperand1(), "if|while|for"))
+                continue;
+            const std::vector<const Token *> args(getArguments(tok->previous()));
+            for (int i = 0; i < args.size(); ++i) {
+                const Token *argtok = args[i];
+                if (!argtok || argtok->str() != "&" || argtok->astOperand2())
+                    continue;
+                argtok = argtok->astOperand1();
+                if (!argtok || !argtok->valueType() || argtok->valueType()->pointer != 0)
+                    continue;
+                if (argtok->values().size() != 1U)
+                    continue;
+                const ValueFlow::Value &v = argtok->values().front();
+                if (v.valueType != ValueFlow::Value::UNINIT || v.isInconclusive())
+                    continue;
+                fileInfo->uninitializedFunctionArgs.push_back(MyFileInfo::FunctionArg(tok->astOperand1()->str(), i, tokenizer->list.file(argtok), argtok->linenr(), argtok->str()));
+            }
+        }
+    }
+
+    return fileInfo;
+}
+
+Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
+{
+    MyFileInfo *fileInfo = new MyFileInfo;
+    for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
+        if (std::strcmp(e->Name(),"unsafefunction")!=0 && std::strcmp(e->Name(),"uninitializedFunctionArgs")!=0)
+            continue;
+        const char *functionName = e->Attribute("functionName");
+        if (!functionName)
+            continue;
+        const char *argnr = e->Attribute("argnr");
+        if (!argnr || !MathLib::isInt(argnr))
+            continue;
+        const char *fileName = e->Attribute("fileName");
+        if (!fileName)
+            continue;
+        const char *linenr = e->Attribute("argnr");
+        if (!linenr || !MathLib::isInt(linenr))
+            continue;
+        const char *variableName = e->Attribute("variableName");
+        if (!variableName)
+            continue;
+        const MyFileInfo::FunctionArg fa(functionName, MathLib::toLongNumber(argnr), fileName, MathLib::toLongNumber(linenr), variableName);
+        if (std::strcmp(e->Name(), "unsafefunction") == 0)
+            fileInfo->unsafeFunctionArgs.push_back(fa);
+        else
+            fileInfo->uninitializedFunctionArgs.push_back(fa);
+    }
+    return fileInfo;
+}
+
+bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+{
+	(void)settings; // This argument is unused
+
+    // Merge all fileinfo..
+    MyFileInfo all;
+    for (std::list<Check::FileInfo *>::const_iterator it = fileInfo.begin(); it != fileInfo.end(); ++it) {
+        const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(*it);
+        if (!fi)
+            continue;
+        all.unsafeFunctionArgs.insert(all.unsafeFunctionArgs.end(), fi->unsafeFunctionArgs.begin(), fi->unsafeFunctionArgs.end());
+        all.uninitializedFunctionArgs.insert(all.uninitializedFunctionArgs.end(), fi->uninitializedFunctionArgs.begin(), fi->uninitializedFunctionArgs.end());
+    }
+
+    bool foundErrors = false;
+
+    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it1 = all.uninitializedFunctionArgs.begin(); it1 != all.uninitializedFunctionArgs.end(); ++it1) {
+        const CheckUninitVar::MyFileInfo::FunctionArg &uninitializedFunctionArg = *it1;
+        for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it2 = all.unsafeFunctionArgs.begin(); it2 != all.unsafeFunctionArgs.end(); ++it2) {
+            const CheckUninitVar::MyFileInfo::FunctionArg &unsafeFunctionArg = *it2;
+            if (uninitializedFunctionArg.functionName != unsafeFunctionArg.functionName || uninitializedFunctionArg.argnr != unsafeFunctionArg.argnr)
+                continue;
+
+            ErrorLogger::ErrorMessage::FileLocation fileLoc1;
+            fileLoc1.setfile(uninitializedFunctionArg.location.fileName);
+            fileLoc1.line = uninitializedFunctionArg.location.linenr;
+            fileLoc1.setinfo("Calling function " + uninitializedFunctionArg.functionName + ", variable " + uninitializedFunctionArg.variableName + " is uninitialized");
+
+            ErrorLogger::ErrorMessage::FileLocation fileLoc2;
+            fileLoc2.setfile(unsafeFunctionArg.location.fileName);
+            fileLoc2.line = unsafeFunctionArg.location.linenr;
+            fileLoc2.setinfo("Using argument " + unsafeFunctionArg.variableName);
+
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+            locationList.push_back(fileLoc1);
+            locationList.push_back(fileLoc2);
+
+            const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                   emptyString,
+                                                   Severity::error,
+                                                   "using argument " + unsafeFunctionArg.variableName + " that points at uninitialized variable " + uninitializedFunctionArg.variableName,
+                                                   "uninitvar",
+                                                   CWE908, false);
+            errorLogger.reportErr(errmsg);
+
+            foundErrors = true;
+        }
+    }
+
+    return foundErrors;
+}
+
