@@ -1290,6 +1290,7 @@ std::string CheckUninitVar::MyFileInfo::toString() const
         ret << "    <unsafefunctionarg"
             << " functionName=\"" << it->functionName << '\"'
             << " argnr=\"" << it->argnr << '\"'
+            << " variableName=\"" << it->variableName << "\""
             << " fileName=\"" << it->location.fileName << '\"'
             << " linenr=\"" << it->location.linenr << '\"'
             << "/>\n";
@@ -1298,6 +1299,7 @@ std::string CheckUninitVar::MyFileInfo::toString() const
         ret << "    <uninitializedFunctionArgs"
             << " functionName=\"" << it->functionName << '\"'
             << " argnr=\"" << it->argnr << '\"'
+            << " variableName=\"" << it->variableName << "\""
             << " fileName=\"" << it->location.fileName << '\"'
             << " linenr=\"" << it->location.linenr << '\"'
             << "/>\n";
@@ -1314,7 +1316,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
 
     // Parse all functions in TU
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (!scope->isExecutable() || scope->type != Scope::eFunction)
+        if (!scope->isExecutable() || scope->type != Scope::eFunction || !scope->function)
             continue;
         const Function *const function = scope->function;
 
@@ -1395,7 +1397,7 @@ Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement
 
 bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
 {
-	(void)settings; // This argument is unused
+    (void)settings; // This argument is unused
 
     // Merge all fileinfo..
     MyFileInfo all;
