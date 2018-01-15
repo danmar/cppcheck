@@ -53,6 +53,8 @@ static const struct CWE CWE676(676U);
 static const struct CWE CWE908(908U);
 static const struct CWE CWE825(825U);
 
+static const std::string UNSAFE_FUNCTION_ARG("unsafeFunctionArg");
+static const std::string UNINITIALIZED_FUNCTION_ARG("uninitializedFunctionArg");
 
 void CheckUninitVar::check()
 {
@@ -1283,26 +1285,25 @@ void CheckUninitVar::deadPointerError(const Token *pointer, const Token *alias)
                 "Dead pointer usage. Pointer '" + strpointer + "' is dead if it has been assigned '" + stralias + "' at line " + MathLib::toString(alias ? alias->linenr() : 0U) + ".", CWE825, false);
 }
 
+static void writeFunctionArgXml(const CheckUninitVar::MyFileInfo::FunctionArg &fa, const std::string &elementName, std::ostream &out)
+{
+    out << "    <" << elementName
+        << " functionName=\"" << fa.functionName << '\"'
+        << " argnr=\"" << fa.argnr << '\"'
+        << " variableName=\"" << fa.variableName << "\""
+        << " fileName=\"" << fa.location.fileName << '\"'
+        << " linenr=\"" << fa.location.linenr << '\"'
+        << "/>\n";
+}
+
 std::string CheckUninitVar::MyFileInfo::toString() const
 {
     std::ostringstream ret;
     for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it = unsafeFunctionArgs.begin(); it != unsafeFunctionArgs.end(); ++it) {
-        ret << "    <unsafefunctionarg"
-            << " functionName=\"" << it->functionName << '\"'
-            << " argnr=\"" << it->argnr << '\"'
-            << " variableName=\"" << it->variableName << "\""
-            << " fileName=\"" << it->location.fileName << '\"'
-            << " linenr=\"" << it->location.linenr << '\"'
-            << "/>\n";
+        writeFunctionArgXml(*it, UNSAFE_FUNCTION_ARG, ret);
     }
     for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it = uninitializedFunctionArgs.begin(); it != uninitializedFunctionArgs.end(); ++it) {
-        ret << "    <uninitializedFunctionArgs"
-            << " functionName=\"" << it->functionName << '\"'
-            << " argnr=\"" << it->argnr << '\"'
-            << " variableName=\"" << it->variableName << "\""
-            << " fileName=\"" << it->location.fileName << '\"'
-            << " linenr=\"" << it->location.linenr << '\"'
-            << "/>\n";
+        writeFunctionArgXml(*it, UNINITIALIZED_FUNCTION_ARG, ret);
     }
     return ret.str();
 }
@@ -1367,9 +1368,9 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
 
 Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
 {
-    MyFileInfo *fileInfo = new MyFileInfo;
+    MyFileInfo *fileInfo = nullptr;
     for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
-        if (std::strcmp(e->Name(),"unsafefunction")!=0 && std::strcmp(e->Name(),"uninitializedFunctionArgs")!=0)
+        if (e->Name() != UNSAFE_FUNCTION_ARG && e->Name() != UNINITIALIZED_FUNCTION_ARG)
             continue;
         const char *functionName = e->Attribute("functionName");
         if (!functionName)
@@ -1380,17 +1381,21 @@ Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement
         const char *fileName = e->Attribute("fileName");
         if (!fileName)
             continue;
-        const char *linenr = e->Attribute("argnr");
+        const char *linenr = e->Attribute("linenr");
         if (!linenr || !MathLib::isInt(linenr))
             continue;
         const char *variableName = e->Attribute("variableName");
         if (!variableName)
             continue;
         const MyFileInfo::FunctionArg fa(functionName, MathLib::toLongNumber(argnr), fileName, MathLib::toLongNumber(linenr), variableName);
-        if (std::strcmp(e->Name(), "unsafefunction") == 0)
+        if (!fileInfo)
+            fileInfo = new MyFileInfo;
+        if (e->Name() == UNSAFE_FUNCTION_ARG)
             fileInfo->unsafeFunctionArgs.push_back(fa);
-        else
+        else if (e->Name() == UNINITIALIZED_FUNCTION_ARG)
             fileInfo->uninitializedFunctionArgs.push_back(fa);
+        else
+            throw InternalError(nullptr, "Wrong analyze info");
     }
     return fileInfo;
 }
