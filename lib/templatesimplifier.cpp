@@ -1041,7 +1041,7 @@ void TemplateSimplifier::expandTemplate(
             }
 
             // replace name..
-            if (tok3 && tok3->str() == lastName) {
+            if (tok3->str() == lastName) {
                 if (Token::Match(tok3->tokAt(-2), "> :: %name% ( )")) {
                     ; // Ticket #7942: Replacing for out-of-line constructors generates invalid syntax
                 } else if (!Token::simpleMatch(tok3->next(), "<")) {

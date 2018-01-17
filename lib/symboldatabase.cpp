@@ -3670,7 +3670,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
 {
     const Scope * scope = tok->scope();
 
-    const std::string tokStr = tok->str();
+    const std::string &tokStr = tok->str();
 
     if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end()) {
         return nullptr;

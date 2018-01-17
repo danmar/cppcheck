@@ -101,7 +101,7 @@ private:
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void suspiciousStringCompareError(const Token* tok, const std::string& var);
     void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
-    void overlappingStrcmpError(const Token* tok1, const Token *tok2);
+    void overlappingStrcmpError(const Token* eq0, const Token *ne0);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckString c(nullptr, settings, errorLogger);
