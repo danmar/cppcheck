@@ -134,7 +134,7 @@ def scanarchive(filepath, jobs, cpulimit):
 
     if not wget(filepath):
         if not wget(filepath):
-            logging.error('wget failed at {}', filepath)
+            logging.error('wget failed at {}'.format(filepath))
             return
 
     filename = filepath[filepath.rfind('/') + 1:]
