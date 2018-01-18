@@ -221,6 +221,7 @@ private:
         TEST_CASE(garbageCode188);
         TEST_CASE(garbageCode189); // #8317
         TEST_CASE(garbageCode190); // #8307
+        TEST_CASE(garbageCode191); // #8333
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1203,7 +1204,7 @@ private:
                            "{\n"
                            "    (foo(s, , 2, , , 5, , 7)) abort()\n"
                            "}\n";
-        checkCode(code);
+        ASSERT_THROW(checkCode(code), InternalError);
 
         // #6106
         code = " f { int i ; b2 , [ ] ( for ( i = 0 ; ; ) ) }";
@@ -1449,6 +1450,15 @@ private:
                   "    i *= 0;\n"
                   "    !i <;\n"
                   "}");
+    }
+
+    void garbageCode191() { // #8333
+        ASSERT_THROW(checkCode("struct A { int f(const); };"), InternalError);
+        ASSERT_THROW(checkCode("struct A { int f(int, const, char); };"), InternalError);
+        ASSERT_THROW(checkCode("struct A { int f(struct); };"), InternalError);
+
+        // The following code is valid and should not trigger any error
+        checkCode("struct A { int f ( char ) ; } ;");
     }
 
     void syntaxErrorFirstToken() {
