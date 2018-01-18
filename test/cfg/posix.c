@@ -62,6 +62,12 @@ void nullPointer(char *p, int fd)
     // not implemented yet: cppcheck-suppress nullPointer
     write(fd,NULL,42);
     write(fd,NULL,0);
+    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress nullPointer
+    open(NULL, 0);
+    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress nullPointer
+    open(NULL, 0, 0);
 }
 
 void memleak_getaddrinfo()
@@ -107,6 +113,20 @@ void resourceLeak_socket(void)
     // cppcheck-suppress resourceLeak
 }
 
+void resourceLeak_open1(void)
+{
+    // cppcheck-suppress unreadVariable
+    int fd = open("file", O_RDWR | O_CREAT);
+    // cppcheck-suppress resourceLeak   
+}
+
+void resourceLeak_open2(void)
+{
+    // cppcheck-suppress unreadVariable
+    int fd = open("file", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    // cppcheck-suppress resourceLeak   
+}
+
 void noleak(int x, int y, int z)
 {
     DIR *p1 = fdopendir(x);
@@ -115,6 +135,10 @@ void noleak(int x, int y, int z)
     closedir(p2);
     int s = socket(AF_INET,SOCK_STREAM,0);
     close(s);
+    int fd1 = open("a", O_RDWR | O_CREAT);
+    close(fd1);
+    int fd2 = open("a", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    close(fd2);
     /* TODO: add configuration for open/fdopen
         // #2830
         int fd = open("path", O_RDONLY);
