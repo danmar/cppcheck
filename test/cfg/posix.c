@@ -117,14 +117,14 @@ void resourceLeak_open1(void)
 {
     // cppcheck-suppress unreadVariable
     int fd = open("file", O_RDWR | O_CREAT);
-    // cppcheck-suppress resourceLeak   
+    // cppcheck-suppress resourceLeak
 }
 
 void resourceLeak_open2(void)
 {
     // cppcheck-suppress unreadVariable
     int fd = open("file", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-    // cppcheck-suppress resourceLeak   
+    // cppcheck-suppress resourceLeak
 }
 
 void noleak(int x, int y, int z)
