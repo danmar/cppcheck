@@ -1516,9 +1516,6 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         return false;
     }
 
-    // name of template function/class..
-    const std::string name(tok->strAt(namepos));
-
     const bool isfunc(tok->strAt(namepos + 1) == "(");
 
     // locate template usage..
