@@ -924,7 +924,7 @@ void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
             if (firstArg->type() == scope->definedType) {
                 if (firstArg->isRValueReference())
                     func->type = Function::eMoveConstructor;
-                else if (firstArg->isReference())
+                else if (firstArg->isReference() && !firstArg->isPointer())
                     func->type = Function::eCopyConstructor;
             }
 
