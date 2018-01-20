@@ -163,9 +163,11 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     updateAddonCheckBox(mUI.mAddonThreadSafety, projectFile, dataDir, "threadsafety");
     updateAddonCheckBox(mUI.mAddonY2038, projectFile, dataDir, "y2038");
     updateAddonCheckBox(mUI.mAddonCert, projectFile, dataDir, "cert");
+    updateAddonCheckBox(mUI.mAddonMisra, projectFile, dataDir, "misra");
 
     mUI.mAddonY2038->setChecked(projectFile->getAddons().contains("y2038"));
     mUI.mAddonCert->setChecked(projectFile->getAddons().contains("cert"));
+    mUI.mAddonMisra->setChecked(projectFile->getAddons().contains("misra"));
     mUI.mToolClangAnalyzer->setChecked(projectFile->getClangAnalyzer());
     mUI.mToolClangTidy->setChecked(projectFile->getClangTidy());
     if (CheckThread::clangTidyCmd().isEmpty()) {
@@ -202,6 +204,8 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         list << "y2038";
     if (mUI.mAddonCert->isChecked())
         list << "cert";
+    if (mUI.mAddonMisra->isChecked())
+        list << "misra";
     projectFile->setAddons(list);
     projectFile->setClangAnalyzer(mUI.mToolClangAnalyzer->isChecked());
     projectFile->setClangTidy(mUI.mToolClangTidy->isChecked());

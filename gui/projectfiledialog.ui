@@ -494,6 +494,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="mAddonMisra">
+         <property name="text">
+          <string>MISRA C 2012</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_5">
          <property name="orientation">
           <enum>Qt::Vertical</enum>

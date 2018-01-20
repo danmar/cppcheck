@@ -84,6 +84,7 @@
 #define SETTINGS_LANGUAGE               "Application language"
 #define SETTINGS_GLOBAL_INCLUDE_PATHS   "Global include paths"
 #define SETTINGS_PYTHON_PATH            "Python path"
+#define SETTINGS_MISRA_FILE             "MISRA C 2012 file"
 #define SETTINGS_CLANG_PATH             "Clang path"
 #define SETTINGS_VS_INCLUDE_PATHS       "VS include paths"
 #define SETTINGS_INLINE_SUPPRESSIONS    "Inline suppressions"

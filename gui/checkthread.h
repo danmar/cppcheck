@@ -56,6 +56,10 @@ public:
         mAddonsAndTools = addonsAndTools;
     }
 
+    void setMisraFile(const QString &misraFile) {
+        mMisraFile = misraFile;
+    }
+
     void setDataDir(const QString &dataDir) {
         mDataDir = dataDir;
     }
@@ -148,6 +152,7 @@ private:
     QString mDataDir;
     QStringList mClangIncludePaths;
     QStringList mSuppressions;
+    QString mMisraFile;
 };
 /// @}
 #endif // CHECKTHREAD_H

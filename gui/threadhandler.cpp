@@ -94,6 +94,7 @@ void ThreadHandler::check(const Settings &settings)
 
     for (int i = 0; i < mRunningThreadCount; i++) {
         mThreads[i]->setAddonsAndTools(mAddonsAndTools);
+        mThreads[i]->setMisraFile(mMisraFile);
         mThreads[i]->setSuppressions(mSuppressions);
         mThreads[i]->setClangIncludePaths(mClangIncludePaths);
         mThreads[i]->setDataDir(mDataDir);

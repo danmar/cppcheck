@@ -456,7 +456,7 @@ void MainWindow::doAnalyzeProject(ImportProject p)
 
     //mThread->SetanalyzeProject(true);
     if (mProjectFile) {
-        mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools());
+        mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
         QString clangHeaders = mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString();
         mThread->setClangIncludePaths(clangHeaders.split(";"));
         mThread->setSuppressions(mProjectFile->getSuppressions());
@@ -498,6 +498,8 @@ void MainWindow::doAnalyzeFiles(const QStringList &files)
     mUI.mResults->checkingStarted(fileNames.count());
 
     mThread->setFiles(fileNames);
+    if (mProjectFile)
+        mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
     setPath(SETTINGS_LAST_CHECK_PATH, checkPath);
@@ -1428,7 +1430,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
     QFileInfo inf(projectFile->getFilename());
     const QString rootpath = projectFile->getRootPath();
 
-    mThread->setAddonsAndTools(projectFile->getAddonsAndTools());
+    mThread->setAddonsAndTools(projectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
     mUI.mResults->setTags(projectFile->getTags());
 
     // If the root path is not given or is not "current dir", use project
