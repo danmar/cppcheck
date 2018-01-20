@@ -287,6 +287,13 @@ private:
                                    "  }\n"
                                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8337 - False positive in copy constructor detection
+        checkCopyCtorAndEqOperator("struct StaticListNode {\n"
+                                   "  StaticListNode(StaticListNode*& prev) : m_next(0) {}\n"
+                                   "  StaticListNode* m_next;\n"
+                                   "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkExplicitConstructors(const char code[]) {
