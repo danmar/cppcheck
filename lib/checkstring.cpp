@@ -382,9 +382,8 @@ void CheckString::overlappingStrcmp()
                     notEquals0.push_back(t);
             }
 
-            bool error = false;
-            for (std::list<const Token *>::const_iterator eq0 = equals0.begin(); !error && eq0 != equals0.end(); ++eq0) {
-                for (std::list<const Token *>::const_iterator ne0 = notEquals0.begin(); !error && ne0 != notEquals0.end(); ++ne0) {
+            for (std::list<const Token *>::const_iterator eq0 = equals0.begin(); eq0 != equals0.end(); ++eq0) {
+                for (std::list<const Token *>::const_iterator ne0 = notEquals0.begin(); ne0 != notEquals0.end(); ++ne0) {
                     const Token *tok1 = *eq0;
                     const Token *tok2 = *ne0;
                     if (!Token::simpleMatch(tok1->previous(), "strcmp ("))
