@@ -309,19 +309,9 @@
        <item>
         <widget class="QGroupBox" name="groupBox_4">
          <property name="title">
-          <string>Misra addon: rule texts</string>
+          <string>Misra addon</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_7">
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The Misra addon can read the rule texts from a file; either a Misra PDF or a plaintext file.&lt;/p&gt;&lt;p&gt;PDF: To extract text from the MISRA PDF, the misra addon uses the tool 'pdftotext' available in xpdf (crossplatform open source tool). That tool must be installed.&lt;/p&gt;&lt;p&gt;Text: Copy/paste the text in the chapter &amp;quot;Appendix A Summary of guidelines&amp;quot; from the MISRA pdf into a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
