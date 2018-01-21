@@ -10069,7 +10069,7 @@ const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart)
             if (Token::simpleMatch(tok->tokAt(-2), "END - __CPPCHECK_EMBEDDED_SQL_EXEC__ ;"))
                 return tok->next();
             return tokLastEnd;
-        } else if (Token::Match(tok, "{|}|==|&&|!|&|^|<<|>>|++|+=|-=|/=|*=|>>=|<<=|->|::|~"))
+        } else if (Token::Match(tok, "{|}|==|&&|!|^|<<|>>|++|+=|-=|/=|*=|>>=|<<=|~"))
             break; // We are obviously outside the SQL block
     }
 
