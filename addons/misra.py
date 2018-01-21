@@ -1055,7 +1055,7 @@ def loadRuleTexts(filename):
 def loadRuleTextsFromPdf(filename):
     f = tempfile.NamedTemporaryFile(delete=False)
     f.close()
-    print('tempfile:' + f.name)
+    #print('tempfile:' + f.name)
     subprocess.call(['pdftotext', filename, f.name])
     loadRuleTexts(f.name)
     try:
@@ -1071,7 +1071,12 @@ OPTIONS:
 
 --rule-texts=<file>   Load rule texts from plain text file.
 
-                      You can more or less copy/paste the chapter:
+                      If you have the tool 'pdftotext' you can generate
+                      this textfile with such command:
+
+                          $ pdftotext MISRA_C_2012.pdf MISRA_C_2012.txt
+
+                      Otherwise you can more or less copy/paste the chapter
                         Appendix A Summary of guidelines
                       from the MISRA pdf.
 
