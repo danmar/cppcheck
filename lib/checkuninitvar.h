@@ -100,6 +100,9 @@ public:
                 location.fileName = fileName;
                 location.linenr   = linenr;
             }
+
+            FunctionArg(const Tokenizer *tokenizer, const Scope *scope, unsigned int argnr_, const Token *tok);
+
             std::string id;
             std::string functionName;
             unsigned int argnr;
@@ -167,6 +170,9 @@ private:
                "- using allocated data before it has been initialized\n"
                "- using dead pointer\n";
     }
+
+    static bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok);
+
 };
 /// @}
 //---------------------------------------------------------------------------

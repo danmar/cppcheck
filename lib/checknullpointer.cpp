@@ -548,3 +548,18 @@ void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value 
                 value && value->isInconclusive());
 }
 
+bool CheckNullPointer::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok)
+{
+    const Variable * const argvar = scope->function->getArgumentVar(argnr);
+    if (!argvar->isPointer())
+        return false;
+    for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
+        if (tok2->variable() != argvar)
+            continue;
+        if (!Token::Match(tok2->astParent(), "*|["))
+            return false;
+        *tok = tok2;
+        return true;
+    }
+    return false;
+}

@@ -1308,6 +1308,18 @@ std::string CheckUninitVar::MyFileInfo::toString() const
 
 #define FUNCTION_ID(function)  tokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr())
 
+CheckUninitVar::MyFileInfo::FunctionArg::FunctionArg(const Tokenizer *tokenizer, const Scope *scope, unsigned int argnr_, const Token *tok)
+    :
+    id(FUNCTION_ID(scope->function)),
+    functionName(scope->className),
+    argnr(argnr_),
+    variableName(scope->function->getArgumentVar(argnr-1)->name())
+{
+    location.fileName = tokenizer->list.file(tok);
+    location.linenr   = tok->linenr();
+}
+
+
 Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings * /*settings*/) const
 {
     const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
@@ -1321,26 +1333,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
             continue;
         const Function *const function = scope->function;
 
-        // Unsafe arguments..
-        for (int argnr = 0; argnr < function->argCount(); ++argnr) {
-            const Variable * const argvar = function->getArgumentVar(argnr);
-            if (!argvar->isPointer())
-                continue;
-            for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-                if (tok->variable() != argvar)
-                    continue;
-                if (!Token::Match(tok->astParent(), "*|["))
-                    break;
-                fileInfo->dereferenced.push_back(MyFileInfo::FunctionArg(FUNCTION_ID(function), scope->className, argnr+1, tokenizer->list.file(tok), tok->linenr(), argvar->name()));
-                while (Token::Match(tok->astParent(), "*|["))
-                    tok = tok->astParent();
-                if (Token::Match(tok->astParent(),"%cop%"))
-                    fileInfo->readData.push_back(MyFileInfo::FunctionArg(FUNCTION_ID(function), scope->className, argnr+1, tokenizer->list.file(tok), tok->linenr(), argvar->name()));
-                break;
-            }
-        }
-
-        // Unsafe calls..
+        // function calls where uninitialized data is passed by address
         for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand2())
                 continue;
@@ -1371,9 +1364,38 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
                 fileInfo->uninitialized.push_back(MyFileInfo::FunctionArg(FUNCTION_ID(tok->astOperand1()->function()), tok->astOperand1()->str(), argnr+1, tokenizer->list.file(argtok), argtok->linenr(), argtok->str()));
             }
         }
+
+        // "Unsafe" functions unconditionally reads data before it is written..
+        for (int argnr = 0; argnr < function->argCount(); ++argnr) {
+            const Token *tok;
+            if (isUnsafeFunction(&*scope, argnr, &tok))
+                fileInfo->readData.push_back(MyFileInfo::FunctionArg(tokenizer, &*scope, argnr+1, tok));
+            if (CheckNullPointer::isUnsafeFunction(&*scope, argnr, &tok))
+                fileInfo->dereferenced.push_back(MyFileInfo::FunctionArg(tokenizer, &*scope, argnr+1, tok));
+        }
     }
 
     return fileInfo;
+}
+
+bool CheckUninitVar::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok)
+{
+    const Variable * const argvar = scope->function->getArgumentVar(argnr);
+    if (!argvar->isPointer())
+        return false;
+    for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
+        if (tok2->variable() != argvar)
+            continue;
+        if (!Token::Match(tok2->astParent(), "*|["))
+            return false;
+        while (Token::Match(tok2->astParent(), "*|["))
+            tok2 = tok2->astParent();
+        if (!Token::Match(tok2->astParent(),"%cop%"))
+            return false;
+        *tok = tok2;
+        return true;
+    }
+    return false;
 }
 
 Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
