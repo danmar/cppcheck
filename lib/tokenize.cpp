@@ -6473,7 +6473,7 @@ bool Tokenizer::simplifyKnownVariables()
 
                 const std::string structname = Token::Match(tok2->tokAt(-3), "[;{}] %name% .") ?
                                                std::string(tok2->strAt(-2) + " .") :
-                                               std::string("");
+                                               std::string();
 
                 const Token * const valueToken = tok2->tokAt(2);
 
