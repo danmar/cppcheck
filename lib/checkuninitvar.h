@@ -110,12 +110,19 @@ public:
             } location;
         };
 
-        /* function arguments that must be initialized */
-        std::list<FunctionArg> unsafeFunctionArgs;
+        /** uninitialized function args */
+        std::list<FunctionArg> uninitialized;
 
-        /* uninitialized function args */
-        std::list<FunctionArg> uninitializedFunctionArgs;
+        /** function arguments that data are unconditionally read */
+        std::list<FunctionArg> readData;
 
+        /** null pointer function args */
+        std::list<FunctionArg> nullPointer;
+
+        /** function arguments that are unconditionally dereferenced */
+        std::list<FunctionArg> dereferenced;
+
+        /** Convert MyFileInfo data into xml string */
         std::string toString() const;
     };
 
