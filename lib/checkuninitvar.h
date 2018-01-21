@@ -92,10 +92,15 @@ public:
     class MyFileInfo : public Check::FileInfo {
     public:
         struct FunctionArg {
-            FunctionArg(const std::string &s, unsigned int i, const std::string &fileName, unsigned int linenr, const std::string &varname) : functionName(s), argnr(i), variableName(varname) {
+            FunctionArg(const std::string &id_, const std::string &functionName_, unsigned int argnr_, const std::string &fileName, unsigned int linenr, const std::string &varname)
+                : id(id_),
+                  functionName(functionName_),
+                  argnr(argnr_),
+                  variableName(varname) {
                 location.fileName = fileName;
                 location.linenr   = linenr;
             }
+            std::string id;
             std::string functionName;
             unsigned int argnr;
             std::string variableName;

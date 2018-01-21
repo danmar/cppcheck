@@ -1288,6 +1288,7 @@ void CheckUninitVar::deadPointerError(const Token *pointer, const Token *alias)
 static void writeFunctionArgXml(const CheckUninitVar::MyFileInfo::FunctionArg &fa, const std::string &elementName, std::ostream &out)
 {
     out << "    <" << elementName
+        << " id=\"" << fa.id << '\"'
         << " functionName=\"" << fa.functionName << '\"'
         << " argnr=\"" << fa.argnr << '\"'
         << " variableName=\"" << fa.variableName << "\""
@@ -1307,6 +1308,8 @@ std::string CheckUninitVar::MyFileInfo::toString() const
     }
     return ret.str();
 }
+
+#define FUNCTION_ID(function)  tokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr())
 
 Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings * /*settings*/) const
 {
@@ -1334,7 +1337,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
                 while (Token::Match(tok->astParent(), "*|["))
                     tok = tok->astParent();
                 if (Token::Match(tok->astParent(),"%cop%"))
-                    fileInfo->unsafeFunctionArgs.push_back(MyFileInfo::FunctionArg(scope->className, argnr, tokenizer->list.file(tok), tok->linenr(), argvar->name()));
+                    fileInfo->unsafeFunctionArgs.push_back(MyFileInfo::FunctionArg(FUNCTION_ID(function), scope->className, argnr+1, tokenizer->list.file(tok), tok->linenr(), argvar->name()));
                 break;
             }
         }
@@ -1343,11 +1346,11 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
         for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand2())
                 continue;
-            if (Token::Match(tok->astOperand1(), "if|while|for"))
+            if (!tok->astOperand1()->function())
                 continue;
             const std::vector<const Token *> args(getArguments(tok->previous()));
-            for (int i = 0; i < args.size(); ++i) {
-                const Token *argtok = args[i];
+            for (int argnr = 0; argnr < args.size(); ++argnr) {
+                const Token *argtok = args[argnr];
                 if (!argtok || argtok->str() != "&" || argtok->astOperand2())
                     continue;
                 argtok = argtok->astOperand1();
@@ -1358,7 +1361,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
                 const ValueFlow::Value &v = argtok->values().front();
                 if (v.valueType != ValueFlow::Value::UNINIT || v.isInconclusive())
                     continue;
-                fileInfo->uninitializedFunctionArgs.push_back(MyFileInfo::FunctionArg(tok->astOperand1()->str(), i, tokenizer->list.file(argtok), argtok->linenr(), argtok->str()));
+                fileInfo->uninitializedFunctionArgs.push_back(MyFileInfo::FunctionArg(FUNCTION_ID(tok->astOperand1()->function()), tok->astOperand1()->str(), argnr+1, tokenizer->list.file(argtok), argtok->linenr(), argtok->str()));
             }
         }
     }
@@ -1371,6 +1374,9 @@ Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement
     MyFileInfo *fileInfo = nullptr;
     for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (e->Name() != UNSAFE_FUNCTION_ARG && e->Name() != UNINITIALIZED_FUNCTION_ARG)
+            continue;
+        const char *id = e->Attribute("id");
+        if (!id)
             continue;
         const char *functionName = e->Attribute("functionName");
         if (!functionName)
@@ -1387,7 +1393,7 @@ Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement
         const char *variableName = e->Attribute("variableName");
         if (!variableName)
             continue;
-        const MyFileInfo::FunctionArg fa(functionName, MathLib::toLongNumber(argnr), fileName, MathLib::toLongNumber(linenr), variableName);
+        const MyFileInfo::FunctionArg fa(id, functionName, MathLib::toLongNumber(argnr), fileName, MathLib::toLongNumber(linenr), variableName);
         if (!fileInfo)
             fileInfo = new MyFileInfo;
         if (e->Name() == UNSAFE_FUNCTION_ARG)
@@ -1420,7 +1426,7 @@ bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &file
         const CheckUninitVar::MyFileInfo::FunctionArg &uninitializedFunctionArg = *it1;
         for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it2 = all.unsafeFunctionArgs.begin(); it2 != all.unsafeFunctionArgs.end(); ++it2) {
             const CheckUninitVar::MyFileInfo::FunctionArg &unsafeFunctionArg = *it2;
-            if (uninitializedFunctionArg.functionName != unsafeFunctionArg.functionName || uninitializedFunctionArg.argnr != unsafeFunctionArg.argnr)
+            if (uninitializedFunctionArg.id != unsafeFunctionArg.id || uninitializedFunctionArg.argnr != unsafeFunctionArg.argnr)
                 continue;
 
             ErrorLogger::ErrorMessage::FileLocation fileLoc1;
