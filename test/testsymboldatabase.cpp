@@ -351,7 +351,8 @@ private:
         TEST_CASE(unionWithConstructor);
 
         TEST_CASE(using1);
-        TEST_CASE(using2); // #8331
+        TEST_CASE(using2); // #8331 (segmentation fault)
+        TEST_CASE(using3); // #8343 (segmentation fault)
     }
 
     void array() {
@@ -5390,6 +5391,17 @@ private:
         settings1.standards.cpp = original_std;
     }
 
+    void using3() { // #8343 (segmentation fault)
+        Standards::cppstd_t original_std = settings1.standards.cpp;
+        settings1.standards.cpp = Standards::CPP11;
+        GET_SYMBOL_DB("template <typename T>\n"
+                      "using vector = typename MemoryModel::template vector<T>;\n"
+                      "vector<uninitialized_uint64> m_bits;");
+        settings1.standards.cpp = original_std;
+
+        ASSERT(db);
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestSymbolDatabase)

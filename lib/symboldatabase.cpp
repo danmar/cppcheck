@@ -278,7 +278,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
         // using type alias
         else if (_tokenizer->isCPP() && Token::Match(tok, "using %name% =")) {
-            if (!findType(tok->next(), scope)) {
+            if (tok->strAt(-1) != ">" && !findType(tok->next(), scope)) {
                 // fill typeList..
                 typeList.push_back(Type(tok, nullptr, scope));
                 Type* new_type = &typeList.back();
