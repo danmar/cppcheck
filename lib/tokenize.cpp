@@ -1500,6 +1500,9 @@ void Tokenizer::simplifyTypedef()
                             if (!inCast && !inSizeof)
                                 tok2 = tok2->next();
 
+                            if (tok2->str() == "const")
+                                tok2 = tok2->next();
+
                             // reference to array?
                             if (tok2->str() == "&") {
                                 tok2 = tok2->previous();
@@ -1521,6 +1524,10 @@ void Tokenizer::simplifyTypedef()
 
                             if (!tok2->next())
                                 syntaxError(tok2); // can't recover so quit
+
+                            // skip over array dimensions
+                            while (tok2->next()->str() == "[")
+                                tok2 = tok2->linkAt(1);
 
                             tok2 = TokenList::copyTokens(tok2, arrayStart, arrayEnd);
                             if (!tok2->next())
