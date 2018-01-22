@@ -157,6 +157,7 @@ private:
         TEST_CASE(simplifyTypedef117); // ticket #6507
         TEST_CASE(simplifyTypedef118); // ticket #5749
         TEST_CASE(simplifyTypedef119); // ticket #7541
+        TEST_CASE(simplifyTypedef120); // ticket #8357
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2439,6 +2440,16 @@ private:
                             "namespace Baz { }\n"
                             "enum Bar { XX = 1 };";
         const char exp [] = "enum Bar { XX = 1 } ;";
+        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef120() { // #8357
+        const char code[] = "typedef char test_utf8_char[5];\n"
+                            "static test_utf8_char const bad_chars[] = { };\n"
+                            "static void report_good(bool passed, test_utf8_char const c) { };";
+        const char exp [] = "static const char bad_chars [ ] [ 5 ] = { } ; "
+                            "static void report_good ( bool passed , const char c [ 5 ] ) { } ;";
         ASSERT_EQUALS(exp, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
