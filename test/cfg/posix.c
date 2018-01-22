@@ -68,6 +68,9 @@ void nullPointer(char *p, int fd)
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress nullPointer
     open(NULL, 0, 0);
+    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress nullPointer
+    int ret = access(NULL, 0);
 }
 
 void memleak_getaddrinfo()
@@ -159,6 +162,8 @@ void ignoredReturnValue(void *addr, int fd)
     setuid(42);
     // cppcheck-suppress ignoredReturnValue
     getuid();
+    // cppcheck-suppress ignoredReturnValue
+    access("filename", 1);
 }
 
 
@@ -221,6 +226,10 @@ void uninitvar(int fd)
     // cppcheck-suppress uninitvar
     // cppcheck-suppress utimeCalled
     utime(filename, times1);
+    
+    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress uninitvar
+    int access_ret = access("file", x);
 }
 
 void uninitvar_getcwd(void)
