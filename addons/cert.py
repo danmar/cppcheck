@@ -30,28 +30,29 @@ def simpleMatch(token, pattern):
         token = token.next
     return True
 
-def isUnpackedStruct(var):
-    decl = var.typeStartToken
-    while decl and decl.isName:
-        if decl.str == 'struct':
-            structScope = decl.next.typeScope
-            if structScope:
-                linenr = int(structScope.classStart.linenr)
-                for line in open(structScope.classStart.file):
-                    linenr -= 1
-                    if linenr == 0:
-                        return True
-                    if re.match(r'#pragma\s+pack\s*\(', line):
-                        return False
-            break
-        decl = decl.next
-    return False
+def isUnpackedStruct(token):
+    if token.valueType is None:
+        return False
+    if token.valueType.typeScope is None:
+        return False;
+    if token.valueType.typeScope.type != "Struct":
+        return False
+    startToken = token.valueType.typeScope.classStart
+
+    linenr = int(startToken.linenr)
+    for line in open(startToken.file):
+        linenr -= 1
+        if linenr == 0:
+            return True
+        if linenr < 3 and re.match(r'#pragma\s+pack\s*\(', line):
+            return False
+    return True
 
 
 def isLocalUnpackedStruct(arg):
     if arg and arg.str == '&' and not arg.astOperand2:
         arg = arg.astOperand1
-    return arg and arg.variable and (arg.variable.isLocal or arg.variable.isArgument) and isUnpackedStruct(arg.variable)
+    return arg and arg.variable and (arg.variable.isLocal or arg.variable.isArgument) and isUnpackedStruct(arg)
 
 
 def isBitwiseOp(token):
@@ -72,7 +73,7 @@ def isCast(expr):
 # do not compare padding data
 def exp42(data):
     for token in data.tokenlist:
-        if token.str != '(' or not token.astOperand1:
+        if token.str != '(' or not token.astOperand1 or token.astOperand1.str != 'memcmp':
             continue
 
         arg1 = None
@@ -82,7 +83,7 @@ def exp42(data):
                 arg1 = token.astOperand2.astOperand1.astOperand1
                 arg2 = token.astOperand2.astOperand1.astOperand2
 
-        if token.astOperand1.str == 'memcmp' and (isLocalUnpackedStruct(arg1) or isLocalUnpackedStruct(arg2)):
+        if isLocalUnpackedStruct(arg1) or isLocalUnpackedStruct(arg2):
             reportError(
                 token, 'style', "Comparison of struct padding data " +
                 "(fix either by packing the struct using '#pragma pack' or by rewriting the comparison)", 'cert-EXP42-C')
