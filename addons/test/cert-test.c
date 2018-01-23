@@ -23,6 +23,11 @@ void exp42()
     memcmp(&s3, &s4, sizeof(struct S));
 }
 
+void exp46()
+{
+    if ((x == y) & z) {} // cert-EXP46-c
+}
+
 unsigned char int31(int x)
 {
     x = (unsigned char)1000; // cert-INT31-c
