@@ -226,7 +226,7 @@ void uninitvar(int fd)
     // cppcheck-suppress uninitvar
     // cppcheck-suppress utimeCalled
     utime(filename, times1);
-    
+
     // cppcheck-suppress unreadVariable
     // cppcheck-suppress uninitvar
     int access_ret = access("file", x);
