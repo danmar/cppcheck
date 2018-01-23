@@ -1540,9 +1540,9 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         if (tok2 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "{|;|const|=")) {
             const Token* argStartTok;
             if (tok->link()->previous()->str() == "const")
-                argStartTok = tok->link()->tokAt(-2)->link();
+                argStartTok = tok->link()->linkAt(-2);
             else
-                argStartTok = tok->link()->previous()->link();
+                argStartTok = tok->link()->linkAt(-1);
             *funcStart = argStartTok->previous();
             *argStart = argStartTok;
             *declEnd = Token::findmatch(tok2->link()->next(), "{|;");
@@ -1553,9 +1553,9 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             if (Token::Match(tok2, "{|;|const|=")) {
                 const Token* argStartTok;
                 if (tok->link()->previous()->str() == "const")
-                    argStartTok = tok->link()->tokAt(-2)->link();
+                    argStartTok = tok->link()->linkAt(-2);
                 else
-                    argStartTok = tok->link()->previous()->link();
+                    argStartTok = tok->link()->linkAt(-1);
                 *funcStart = argStartTok->previous();
                 *argStart = argStartTok;
                 *declEnd = Token::findmatch(tok2, "{|;");
