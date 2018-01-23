@@ -179,7 +179,7 @@ args = parser.parse_args()
 
 workdir = os.path.expanduser(args.workdir)
 if not os.path.isdir(workdir):
-    print('workdir \'' + workdir + '\' is not a folder')
+    logging.critical('workdir \'' + workdir + '\' is not a folder')
     sys.exit(1)
 
 workdir = os.path.join(workdir, args.folder)
