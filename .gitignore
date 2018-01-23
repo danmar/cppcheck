@@ -88,3 +88,7 @@ build*
 
 # Temporal files
 *.swp
+
+# Manual folder
+man/manual.log
+man/manual.tex
