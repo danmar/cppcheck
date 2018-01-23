@@ -91,10 +91,14 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         return nullptr;
     if (tok->str() == "(")
         tok = tok->link();
-    if (Token::Match(tok, ") [;{]")) {
+    if (Token::Match(tok, ") )| ;|{|[")) {
         tok = tok->next();
         if (tok->isName())
             tok = tok->next();
+        if (tok->str() == ")")
+            tok = tok->next();
+        while (tok && tok->str() == "[")
+            tok = tok->link()->next();
         return (endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
     if (cpp && tok->str() == ")") {
@@ -102,6 +106,10 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         while (Token::Match(tok, "const|noexcept|override|volatile|&|&& !!(") ||
                (Token::Match(tok, "%name% !!(") && tok->isUpperCaseName()))
             tok = tok->next();
+        if (tok && tok->str() == ")")
+            tok = tok->next();
+        while (tok && tok->str() == "[")
+            tok = tok->link()->next();
         if (Token::Match(tok, "throw|noexcept ("))
             tok = tok->linkAt(1)->next();
         if (Token::Match(tok, "%name% (") && tok->isUpperCaseName())
@@ -1035,8 +1043,13 @@ void Tokenizer::simplifyTypedef()
                     }
 
                     // check for member functions
-                    else if (isCPP() && Token::Match(tok2, ") const| {")) {
-                        const Token *func = tok2->link()->previous();
+                    else if (isCPP() && Token::Match(tok2, ")|] const| {")) {
+                        const Token *temp = tok2;
+                        while (temp->str() == "]")
+                            temp = temp->link()->previous();
+                        const Token *func = temp->link()->previous();
+                        if (temp->str() != ")")
+                            continue;
                         if (!func || !func->previous()) // Ticket #4239
                             continue;
 
@@ -1107,7 +1120,6 @@ void Tokenizer::simplifyTypedef()
                 // check for typedef that can be substituted
                 else if (Token::simpleMatch(tok2, pattern.c_str()) ||
                          (inMemberFunc && tok2->str() == typeName->str())) {
-
                     // member function class variables don't need qualification
                     if (!(inMemberFunc && tok2->str() == typeName->str()) && pattern.find("::") != std::string::npos) { // has a "something ::"
                         Token *start = tok2;
@@ -1517,6 +1529,17 @@ void Tokenizer::simplifyTypedef()
                                 if (!tok2)
                                     syntaxError(nullptr);
 
+                                while (tok2->strAt(1) == "::")
+                                    tok2 = tok2->tokAt(2);
+
+                                // skip over function parameters
+                                if (tok2->strAt(1) == "(") {
+                                    tok2 = tok2->linkAt(1);
+
+                                    if (tok2->strAt(1) == "const")
+                                        tok2 = tok2->next();
+                                }
+
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();
                                 Token::createMutualLinks(tok2, tok3);
@@ -1532,8 +1555,6 @@ void Tokenizer::simplifyTypedef()
                             tok2 = TokenList::copyTokens(tok2, arrayStart, arrayEnd);
                             if (!tok2->next())
                                 syntaxError(tok2);
-
-                            tok2 = tok2->next();
 
                             if (tok2->str() == "=") {
                                 if (!tok2->next())

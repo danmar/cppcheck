@@ -158,6 +158,7 @@ private:
         TEST_CASE(simplifyTypedef118); // ticket #5749
         TEST_CASE(simplifyTypedef119); // ticket #7541
         TEST_CASE(simplifyTypedef120); // ticket #8357
+        TEST_CASE(simplifyTypedef121); // ticket #5766
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2450,6 +2451,43 @@ private:
                             "static void report_good(bool passed, test_utf8_char const c) { };";
         const char exp [] = "static const char bad_chars [ ] [ 5 ] = { } ; "
                             "static void report_good ( bool passed , const char c [ 5 ] ) { } ;";
+        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef121() { // #5766
+        const char code[] = "typedef float vec3[3];\n"
+                            "typedef float mat3x3[3][3];\n"
+                            "vec3 v3;\n"
+                            "mat3x3 m3x3;\n"
+                            "const vec3 &gv() { return v3; }\n"
+                            "const mat3x3 &gm() { return m3x3; }\n"
+                            "class Fred {\n"
+                            "public:\n"
+                            "    vec3 &v();\n"
+                            "    mat3x3 &m();\n"
+                            "    const vec3 &vc() const;\n"
+                            "    const mat3x3 &mc() const;\n"
+                            "};\n"
+                            "vec3 & Fred::v() { return v3; }\n"
+                            "mat3x3 & Fred::m() { return m3x3; }\n"
+                            "const vec3 & Fred::vc() const { return v3; }\n"
+                            "const mat3x3 & Fred::mc() const { return m3x3; }";
+        const char exp [] = "float v3 [ 3 ] ; "
+                            "float m3x3 [ 3 ] [ 3 ] ; "
+                            "const float ( & gv ( ) ) [ 3 ] { return v3 ; } "
+                            "const float ( & gm ( ) ) [ 3 ] [ 3 ] { return m3x3 ; } "
+                            "class Fred { "
+                            "public: "
+                            "float ( & v ( ) ) [ 3 ] ; "
+                            "float ( & m ( ) ) [ 3 ] [ 3 ] ; "
+                            "const float ( & vc ( ) const ) [ 3 ] ; "
+                            "const float ( & mc ( ) const ) [ 3 ] [ 3 ] ; "
+                            "} ; "
+                            "float ( & Fred :: v ( ) ) [ 3 ] { return v3 ; } "
+                            "float ( & Fred :: m ( ) ) [ 3 ] [ 3 ] { return m3x3 ; } "
+                            "const float ( & Fred :: vc ( ) const ) [ 3 ] { return v3 ; } "
+                            "const float ( & Fred :: mc ( ) const ) [ 3 ] [ 3 ] { return m3x3 ; }";
         ASSERT_EQUALS(exp, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
