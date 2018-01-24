@@ -159,6 +159,7 @@ private:
         TEST_CASE(simplifyTypedef119); // ticket #7541
         TEST_CASE(simplifyTypedef120); // ticket #8357
         TEST_CASE(simplifyTypedef121); // ticket #5766
+        TEST_CASE(simplifyTypedef122); // segmentation fault
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2489,6 +2490,12 @@ private:
                             "const float ( & Fred :: vc ( ) const ) [ 3 ] { return v3 ; } "
                             "const float ( & Fred :: mc ( ) const ) [ 3 ] [ 3 ] { return m3x3 ; }";
         ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef122() { // segmentation fault
+        const char code[] = "int result = [] { return git_run_cmd(\"update-index\",\"update-index -q --refresh\"); }();";
+        tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
