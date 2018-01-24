@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2017 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ private:
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void suspiciousStringCompareError(const Token* tok, const std::string& var);
     void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
-    void overlappingStrcmpError(const Token* tok1, const Token *tok2);
+    void overlappingStrcmpError(const Token* eq0, const Token *ne0);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckString c(nullptr, settings, errorLogger);

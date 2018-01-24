@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -286,6 +286,13 @@ private:
                                    "    return *this;\n"
                                    "  }\n"
                                    "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8337 - False positive in copy constructor detection
+        checkCopyCtorAndEqOperator("struct StaticListNode {\n"
+                                   "  StaticListNode(StaticListNode*& prev) : m_next(0) {}\n"
+                                   "  StaticListNode* m_next;\n"
+                                   "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3345,7 +3352,7 @@ private:
                    "    int B::getB() { return b; }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
-                      "[test.cpp:9] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n" , errout.str());
+                      "[test.cpp:9] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n", errout.str());
 
         checkConst("class Fred {\n"
                    "    class B {\n"
@@ -3360,7 +3367,7 @@ private:
                    "    int B::getB() { return b; }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
-                      "[test.cpp:10] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n" , errout.str());
+                      "[test.cpp:10] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n", errout.str());
 
         checkConst("class Fred {\n"
                    "    class B {\n"
@@ -3375,7 +3382,7 @@ private:
                    "int Fred::B::A::getA() { return a; }\n"
                    "int Fred::B::getB() { return b; }");
         ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
-                      "[test.cpp:11] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n" , errout.str());
+                      "[test.cpp:11] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n", errout.str());
     }
 
     // operator< can often be const

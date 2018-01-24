@@ -1,7 +1,7 @@
 #line 2
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -670,21 +670,25 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
 {
     if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
         ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
-        value.setKnown();
+        if (!tok->isTemplateArg())
+            value.setKnown();
         setTokenValue(const_cast<Token *>(tok), value, settings);
     } else if (tok->isNumber() && MathLib::isFloat(tok->str())) {
         ValueFlow::Value value;
         value.valueType = ValueFlow::Value::FLOAT;
         value.floatValue = MathLib::toDoubleNumber(tok->str());
-        value.setKnown();
+        if (!tok->isTemplateArg())
+            value.setKnown();
         setTokenValue(const_cast<Token *>(tok), value, settings);
     } else if (tok->enumerator() && tok->enumerator()->value_known) {
         ValueFlow::Value value(tok->enumerator()->value);
-        value.setKnown();
+        if (!tok->isTemplateArg())
+            value.setKnown();
         setTokenValue(const_cast<Token *>(tok), value, settings);
     } else if (tok->str() == "NULL" || (cpp && tok->str() == "nullptr")) {
         ValueFlow::Value value(0);
-        value.setKnown();
+        if (!tok->isTemplateArg())
+            value.setKnown();
         setTokenValue(const_cast<Token *>(tok), value, settings);
     } else if (Token::simpleMatch(tok, "sizeof (")) {
         const Token *tok2 = tok->tokAt(2);
@@ -695,7 +699,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                 size = getSizeOfType(type, settings);
             }
             ValueFlow::Value value(size);
-            if (settings->platformType != cppcheck::Platform::Unspecified)
+            if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                 value.setKnown();
             setTokenValue(const_cast<Token *>(tok), value, settings);
             setTokenValue(const_cast<Token *>(tok->next()), value, settings);
@@ -708,7 +712,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                 }
             }
             ValueFlow::Value value(size);
-            if (settings->platformType != cppcheck::Platform::Unspecified)
+            if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                 value.setKnown();
             setTokenValue(const_cast<Token *>(tok), value, settings);
             setTokenValue(const_cast<Token *>(tok->next()), value, settings);
@@ -724,7 +728,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                 sz1->variable()->dimensionKnown(0) &&
                 (Token::Match(sz2, "* %varid% )", varid1) || Token::Match(sz2, "%varid% [ 0 ] )", varid1))) {
                 ValueFlow::Value value(sz1->variable()->dimension(0));
-                if (settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->tokAt(4)), value, settings);
             }
@@ -732,42 +736,42 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             const ValueType &vt = ValueType::parseDecl(tok2,settings);
             if (vt.pointer) {
                 ValueFlow::Value value(settings->sizeof_pointer);
-                if (settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::CHAR) {
                 ValueFlow::Value value(1);
-                if (settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::SHORT) {
                 ValueFlow::Value value(settings->sizeof_short);
-                if (settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::INT) {
                 ValueFlow::Value value(settings->sizeof_int);
-                if (settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::LONG) {
                 ValueFlow::Value value(settings->sizeof_long);
-                if (settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::LONGLONG) {
                 ValueFlow::Value value(settings->sizeof_long_long);
-                if (settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::FLOAT) {
                 ValueFlow::Value value(settings->sizeof_float);
-                if (settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             } else if (vt.type == ValueType::Type::DOUBLE) {
                 ValueFlow::Value value(settings->sizeof_double);
-                if (settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
             }
@@ -789,13 +793,15 @@ static void valueFlowNumber(TokenList *tokenlist)
         for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
             if (tok->isName() && !tok->varId() && Token::Match(tok, "false|true")) {
                 ValueFlow::Value value(tok->str() == "true");
-                value.setKnown();
+                if (!tok->isTemplateArg())
+                    value.setKnown();
                 setTokenValue(tok, value, tokenlist->getSettings());
             } else if (Token::Match(tok, "[(,] NULL [,)]")) {
                 // NULL function parameters are not simplified in the
                 // normal tokenlist
                 ValueFlow::Value value(0);
-                value.setKnown();
+                if (!tok->isTemplateArg())
+                    value.setKnown();
                 setTokenValue(tok->next(), value, tokenlist->getSettings());
             }
         }
@@ -1073,7 +1079,7 @@ static void valueFlowReverse(TokenList *tokenlist,
                     val.intvalue -= rhsValue;
                 else if (assignToken->str() == "-=")
                     val.intvalue += rhsValue;
-                else if (assignToken->str() == "*=")
+                else if (assignToken->str() == "*=" && rhsValue != 0)
                     val.intvalue /= rhsValue;
                 else {
                     if (settings->debugwarnings)

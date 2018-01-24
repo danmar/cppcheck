@@ -89,7 +89,6 @@ build*
 # Temporal files
 *.swp
 
-
 # Snapcraft build
 part
 prime
@@ -97,3 +96,8 @@ parts
 stage
 *.snap
 snap/.snapcraft
+
+# Manual folder
+man/manual.log
+man/manual.tex
+

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -175,6 +175,47 @@ void TokenList::addtoken(const Token * tok, const unsigned int lineno, const uns
     _back->fileIndex(fileno);
     _back->flags(tok->flags());
 }
+
+
+//---------------------------------------------------------------------------
+// copyTokens - Copy and insert tokens
+//---------------------------------------------------------------------------
+
+Token *TokenList::copyTokens(Token *dest, const Token *first, const Token *last, bool one_line)
+{
+    std::stack<Token *> links;
+    Token *tok2 = dest;
+    unsigned int linenrs = dest->linenr();
+    const unsigned int commonFileIndex = dest->fileIndex();
+    for (const Token *tok = first; tok != last->next(); tok = tok->next()) {
+        tok2->insertToken(tok->str());
+        tok2 = tok2->next();
+        tok2->fileIndex(commonFileIndex);
+        tok2->linenr(linenrs);
+        tok2->tokType(tok->tokType());
+        tok2->flags(tok->flags());
+        tok2->varId(tok->varId());
+
+        // Check for links and fix them up
+        if (Token::Match(tok2, "(|[|{"))
+            links.push(tok2);
+        else if (Token::Match(tok2, ")|]|}")) {
+            if (links.empty())
+                return tok2;
+
+            Token * link = links.top();
+
+            tok2->link(link);
+            link->link(tok2);
+
+            links.pop();
+        }
+        if (!one_line && tok->next())
+            linenrs += tok->next()->linenr() - tok->linenr();
+    }
+    return tok2;
+}
+
 //---------------------------------------------------------------------------
 // InsertTokens - Copy and insert tokens
 //---------------------------------------------------------------------------

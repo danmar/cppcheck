@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2017 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -287,6 +287,12 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 
             QStringList args;
             args << addonFilePath << dumpFile;
+            if (addon == "misra" && !mMisraFile.isEmpty() && QFileInfo(mMisraFile).exists()) {
+                if (mMisraFile.endsWith('.pdf', Qt::CaseInsensitive))
+                    args << "--misra-pdf=" + mMisraFile;
+                else
+                    args << "--rule-texts=" + mMisraFile;
+            }
             qDebug() << python << args;
 
             QProcess process;

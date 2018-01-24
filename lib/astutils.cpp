@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -152,7 +152,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         }
         return false;
     }
-    if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro()))
+    if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro() || tok1->isTemplateArg() || tok2->isTemplateArg()))
         return false;
     if (tok1->isComplex() != tok2->isComplex())
         return false;

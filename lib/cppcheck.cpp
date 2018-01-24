@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -809,11 +809,13 @@ void CppCheck::getErrorMessages()
     Preprocessor::getErrorMessages(this, &s);
 }
 
-void CppCheck::analyseWholeProgram()
+bool CppCheck::analyseWholeProgram()
 {
+    bool errors = false;
     // Analyse the tokens
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-        (*it)->analyseWholeProgram(fileInfo, _settings, *this);
+        errors |= (*it)->analyseWholeProgram(fileInfo, _settings, *this);
+    return errors;
 }
 
 void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files)
@@ -866,7 +868,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
         (*it)->analyseWholeProgram(fileInfoList, _settings, *this);
 
     for (std::list<Check::FileInfo*>::iterator fi = fileInfoList.begin(); fi != fileInfoList.end(); ++fi)
-        delete(*fi);
+        delete (*fi);
 }
 
 bool CppCheck::isUnusedFunctionCheckEnabled() const

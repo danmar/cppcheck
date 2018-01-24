@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -796,13 +796,13 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
             if (aliasUsage.name.find(' ') == std::string::npos) {
                 aliasUsage.token->str(templateAlias.token->str());
             } else {
-                tok2 = Tokenizer::copyTokens(aliasUsage.token, aliasToken1, templateAlias.token, true);
+                tok2 = TokenList::copyTokens(aliasUsage.token, aliasToken1, templateAlias.token, true);
                 aliasUsage.token->deleteThis();
                 aliasUsage.token = tok2;
             }
             tok2 = aliasUsage.token->next(); // the '<'
             const Token * const endToken1 = templateAlias.token->next()->findClosingBracket();
-            Token * const endToken2 = Tokenizer::copyTokens(tok2, templateAlias.token->tokAt(2), endToken1->previous(), false);
+            Token * const endToken2 = TokenList::copyTokens(tok2, templateAlias.token->tokAt(2), endToken1->previous(), false);
             for (const Token *tok1 = templateAlias.token->next(); tok2 != endToken2; tok1 = tok1->next(), tok2 = tok2->next()) {
                 if (!tok2->isName())
                     continue;
@@ -821,7 +821,7 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
                 const Token * const fromStart = args[argnr].first;
                 const Token * const fromEnd   = args[argnr].second->previous();
                 Token * const destToken = tok2;
-                tok2 = Tokenizer::copyTokens(tok2, fromStart, fromEnd, true);
+                tok2 = TokenList::copyTokens(tok2, fromStart, fromEnd, true);
                 if (tok2 == destToken->next())
                     tok2 = destToken;
                 destToken->deleteThis();
@@ -1034,13 +1034,14 @@ void TemplateSimplifier::expandTemplate(
                         else if (typeindentlevel > 0 && typetok->str() == ">")
                             --typeindentlevel;
                         tokenlist.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
+                        tokenlist.back()->isTemplateArg(true);
                     }
                     continue;
                 }
             }
 
             // replace name..
-            if (tok3 && tok3->str() == lastName) {
+            if (tok3->str() == lastName) {
                 if (Token::Match(tok3->tokAt(-2), "> :: %name% ( )")) {
                     ; // Ticket #7942: Replacing for out-of-line constructors generates invalid syntax
                 } else if (!Token::simpleMatch(tok3->next(), "<")) {
@@ -1514,9 +1515,6 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         }
         return false;
     }
-
-    // name of template function/class..
-    const std::string name(tok->strAt(namepos));
 
     const bool isfunc(tok->strAt(namepos + 1) == "(");
 

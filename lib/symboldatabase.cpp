@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseFindAllScopes();
     createSymbolDatabaseClassInfo();
     createSymbolDatabaseVariableInfo();
+    createSymbolDatabaseCopyAndMoveConstructors();
     createSymbolDatabaseFunctionScopes();
     createSymbolDatabaseClassAndStructScopes();
     createSymbolDatabaseFunctionReturnTypes();
@@ -275,6 +276,21 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 tok = tok->tokAt(2);
         }
 
+        // using type alias
+        else if (_tokenizer->isCPP() && Token::Match(tok, "using %name% =")) {
+            if (tok->strAt(-1) != ">" && !findType(tok->next(), scope)) {
+                // fill typeList..
+                typeList.push_back(Type(tok, nullptr, scope));
+                Type* new_type = &typeList.back();
+                scope->definedTypesMap[new_type->name()] = new_type;
+            }
+
+            tok = tok->tokAt(3);
+
+            while (tok && tok->str() != ";")
+                tok = tok->next();
+        }
+
         // unnamed struct and union
         else if (Token::Match(tok, "struct|union {") &&
                  Token::Match(tok->next()->link(), "} *|&| %name% ;|[")) {
@@ -421,29 +437,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                         // destructor
                         if (function.tokenDef->previous()->str() == "~")
                             function.type = Function::eDestructor;
-
-                        // copy/move constructor?
-                        else if (Token::Match(function.tokenDef, "%name% ( const| %name% &|&& &| %name%| )") ||
-                                 Token::Match(function.tokenDef, "%name% ( const| %name% <")) {
-                            const Token* typeTok = function.tokenDef->tokAt(2);
-                            if (typeTok->str() == "const")
-                                typeTok = typeTok->next();
-                            if (typeTok->strAt(1) == "<") { // TODO: Remove this branch (#4710)
-                                if (Token::Match(typeTok->linkAt(1), "> & %name%| )"))
-                                    function.type = Function::eCopyConstructor;
-                                else if (Token::Match(typeTok->linkAt(1), "> &&|& & %name%| )"))
-                                    function.type = Function::eMoveConstructor;
-                                else
-                                    function.type = Function::eConstructor;
-                            } else if (typeTok->strAt(1) == "&&" || typeTok->strAt(2) == "&")
-                                function.type = Function::eMoveConstructor;
-                            else
-                                function.type = Function::eCopyConstructor;
-
-                            if (typeTok->str() != function.tokenDef->str())
-                                function.type = Function::eConstructor; // Overwrite, if types are not identical
-                        }
-                        // regular constructor
+                        // constructor of any kind
                         else
                             function.type = Function::eConstructor;
 
@@ -504,9 +498,6 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     // count the number of constructors
                     if (function.isConstructor())
                         scope->numConstructors++;
-                    if (function.type == Function::eCopyConstructor ||
-                        function.type == Function::eMoveConstructor)
-                        scope->numCopyOrMoveConstructors++;
 
                     // assume implementation is inline (definition and implementation same)
                     function.token = function.tokenDef;
@@ -913,6 +904,33 @@ void SymbolDatabase::createSymbolDatabaseVariableInfo()
         for (func = it->functionList.begin(); func != it->functionList.end(); ++func) {
             // add arguments
             func->addArguments(this, &*it);
+        }
+    }
+}
+
+void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
+{
+    // fill in class and struct copy/move constructors
+    for (std::list<Scope>::iterator scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
+        if (!scope->isClassOrStruct())
+            continue;
+
+        std::list<Function>::iterator func;
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            if (!func->isConstructor() || func->minArgCount() != 1)
+                continue;
+
+            const Variable* firstArg = func->getArgumentVar(0);
+            if (firstArg->type() == scope->definedType) {
+                if (firstArg->isRValueReference())
+                    func->type = Function::eMoveConstructor;
+                else if (firstArg->isReference() && !firstArg->isPointer())
+                    func->type = Function::eCopyConstructor;
+            }
+
+            if (func->type == Function::eCopyConstructor ||
+                func->type == Function::eMoveConstructor)
+                scope->numCopyOrMoveConstructors++;
         }
     }
 }
@@ -1515,15 +1533,34 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         return false;
 
     // function returning function pointer? '... ( ... %name% ( ... ))( ... ) {'
+    // function returning reference to array '... ( & %name% ( ... ))[ ... ] {'
     if (tok->str() == "(" && tok->strAt(1) != "*" &&
-        tok->link()->previous()->str() == ")") {
+        (tok->link()->previous()->str() == ")" || Token::simpleMatch(tok->link()->tokAt(-2), ") const"))) {
         const Token* tok2 = tok->link()->next();
         if (tok2 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "{|;|const|=")) {
-            const Token* argStartTok = tok->link()->previous()->link();
+            const Token* argStartTok;
+            if (tok->link()->previous()->str() == "const")
+                argStartTok = tok->link()->linkAt(-2);
+            else
+                argStartTok = tok->link()->linkAt(-1);
             *funcStart = argStartTok->previous();
             *argStart = argStartTok;
             *declEnd = Token::findmatch(tok2->link()->next(), "{|;");
             return true;
+        } else if (tok2 && tok2->str() == "[") {
+            while (tok2 && tok2->str() == "[")
+                tok2 = tok2->link()->next();
+            if (Token::Match(tok2, "{|;|const|=")) {
+                const Token* argStartTok;
+                if (tok->link()->previous()->str() == "const")
+                    argStartTok = tok->link()->linkAt(-2);
+                else
+                    argStartTok = tok->link()->linkAt(-1);
+                *funcStart = argStartTok->previous();
+                *argStart = argStartTok;
+                *declEnd = Token::findmatch(tok2, "{|;");
+                return true;
+            }
         }
     }
 
@@ -3064,6 +3101,10 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         // skip over stuff to get to type
         while (Token::Match(typeTok, "const|enum|struct|::"))
             typeTok = typeTok->next();
+        if (Token::Match(typeTok, ",|)")) { // #8333
+            symbolDatabase->_tokenizer->syntaxError(typeTok);
+            return;
+        }
         // skip over qualification
         while (Token::Match(typeTok, "%type% ::"))
             typeTok = typeTok->tokAt(2);
@@ -3514,7 +3555,14 @@ static const Token* skipPointers(const Token* tok)
 
 bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const
 {
-    if (check && check->_tokenizer->isCPP() && Token::Match(tok, "throw|new"))
+    const bool isCPP = check && check->_tokenizer->isCPP();
+
+    if (isCPP && Token::Match(tok, "throw|new"))
+        return false;
+
+    const bool isCPP11 = isCPP && check->_settings->standards.cpp >= Standards::CPP11;
+
+    if (isCPP11 && tok->str() == "using")
         return false;
 
     const Token* localTypeTok = skipScopeIdentifiers(tok);
@@ -3645,7 +3693,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
 {
     const Scope * scope = tok->scope();
 
-    const std::string tokStr = tok->str();
+    const std::string &tokStr = tok->str();
 
     if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end()) {
         return nullptr;
@@ -4983,7 +5031,11 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->sign = ValueType::Sign::SIGNED;
         else if (type->isUnsigned())
             valuetype->sign = ValueType::Sign::UNSIGNED;
-        if (type->str() == "const")
+        if (valuetype->type == ValueType::Type::UNKNOWN_TYPE &&
+            type->type() && type->type()->isTypeAlias() && type->type()->typeStart &&
+            type->type()->typeStart->str() != type->str())
+            parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings);
+        else if (type->str() == "const")
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
         else if (const Library::Container *container = settings->library.detectContainer(type)) {
             valuetype->type = ValueType::Type::CONTAINER;

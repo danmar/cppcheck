@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,6 +70,8 @@ private:
         TEST_CASE(testAstType); // #7014
         TEST_CASE(testPrintf0WithSuffix); // ticket #7069
         TEST_CASE(testReturnValueTypeStdLib);
+
+        TEST_CASE(testPrintfTypeAlias1);
     }
 
     void check(const char* code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
@@ -2461,7 +2463,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) %hd in format string (no. 1) requires 'short' but the argument type is 'unsigned int'.\n"
                       "[test.cpp:3]: (warning) %hhd in format string (no. 1) requires 'char' but the argument type is 'unsigned int'.\n"
                       "[test.cpp:4]: (warning) %ld in format string (no. 1) requires 'long' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %lld in format string (no. 1) requires 'long long' but the argument type is 'unsigned int'.\n" , errout.str());
+                      "[test.cpp:5]: (warning) %lld in format string (no. 1) requires 'long long' but the argument type is 'unsigned int'.\n", errout.str());
 
         check("void foo(size_t s, ptrdiff_t p) {\n"
               "  printf(\"%zd\", s);\n"
@@ -4664,6 +4666,32 @@ private:
               "   printf(\"%ld%lld\", atol(s), atoll(s));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testPrintfTypeAlias1() {
+        check("using INT = int;\n\n"
+              "using PINT = INT *;\n"
+              "using PCINT = const PINT;\n"
+              "INT i;\n"
+              "PINT pi;\n"
+              "PCINT pci;"
+              "void foo() {\n"
+              "    printf(\"%d %p %p\", i, pi, pci);\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("using INT = int;\n\n"
+              "using PINT = INT *;\n"
+              "using PCINT = const PINT;\n"
+              "INT i;\n"
+              "PINT pi;\n"
+              "PCINT pci;"
+              "void foo() {\n"
+              "    printf(\"%f %f %f\", i, pi, pci);\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n"
+                      "[test.cpp:8]: (warning) %f in format string (no. 2) requires 'double' but the argument type is 'signed int *'.\n"
+                      "[test.cpp:8]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'const signed int *'.\n", errout.str());
     }
 
 };

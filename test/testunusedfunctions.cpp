@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,7 +77,11 @@ private:
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
         checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
-        checkUnusedFunctions.check(this, settings);
+        // check() returns error if and only if errout is not empty.
+        if (checkUnusedFunctions.check(this, settings))
+            ASSERT(errout.str() != "");
+        else
+            ASSERT_EQUALS("", errout.str());
     }
 
     void incondition() {

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,6 +72,16 @@ public:
     void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);
 
     static void insertTokens(Token *dest, const Token *src, unsigned int n);
+
+    /**
+     * Copy tokens.
+     * @param dest destination token where copied tokens will be inserted after
+     * @param first first token to copy
+     * @param last last token to copy
+     * @param one_line true=>copy all tokens to the same line as dest. false=>copy all tokens to dest while keeping the 'line breaks'
+     * @return new location of last token copied
+     */
+    static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
 
     /**
      * Create tokens from code.

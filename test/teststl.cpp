@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ private:
         TEST_CASE(iterator11);
         TEST_CASE(iterator12);
         TEST_CASE(iterator13);
+        TEST_CASE(iterator14); // #8191
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_break);  // #3644 - handle "break"
@@ -136,6 +137,7 @@ private:
         TEST_CASE(stabilityOfChecks); // #4684 cppcheck crash in template function call
 
         TEST_CASE(dereferenceInvalidIterator);
+        TEST_CASE(dereferenceInvalidIterator2); // #6572
         TEST_CASE(dereference_auto);
 
         TEST_CASE(readingEmptyStlContainer);
@@ -517,6 +519,15 @@ private:
               "        v++it;\n"
               "    while (!z && it!=t.end())\n"
               "        v++it;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator14() {
+        check("void f() {\n"
+              "    std::map<int,Foo> x;\n"
+              "    std::map<int,Foo>::const_iterator it;\n"
+              "    for (it = x.find(0)->second.begin(); it != x.find(0)->second.end(); ++it) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1590,7 +1601,7 @@ private:
               "    iterator i;\n"
               "    return i.foo();;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Invalid iterator 'i' used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error, inconclusive) Invalid iterator 'i' used.\n", errout.str());
     }
 
     void stlBoundaries6() { // #7106
@@ -2884,6 +2895,31 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void dereferenceInvalidIterator2() {
+        // Self-implemented iterator class
+        check("class iterator {\n"
+              "public:\n"
+              "    CCommitPointer m_ptr;\n"
+              "    iterator() {}\n"
+              "    CCommitPointer& operator*() {\n"
+              "        return m_ptr;\n"
+              "    }\n"
+              "    CCommitPointer* operator->() {\n"
+              "        return &m_ptr;\n"
+              "    }\n"
+              "    iterator& operator++() {\n"
+              "        ++m_ptr.m_place;\n"
+              "        return *this;\n"
+              "    }\n"
+              "    }; \n"
+              "    iterator begin() {\n"
+              "    iterator it; \n"
+              "    it->m_place = 0;\n"
+              "    return it; \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:18]: (error, inconclusive) Invalid iterator 'it' used.\n", errout.str());
     }
 
     void readingEmptyStlContainer() {

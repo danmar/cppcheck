@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2017 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -548,3 +548,18 @@ void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value 
                 value && value->isInconclusive());
 }
 
+bool CheckNullPointer::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok)
+{
+    const Variable * const argvar = scope->function->getArgumentVar(argnr);
+    if (!argvar->isPointer())
+        return false;
+    for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
+        if (tok2->variable() != argvar)
+            continue;
+        if (!Token::Match(tok2->astParent(), "*|["))
+            return false;
+        *tok = tok2;
+        return true;
+    }
+    return false;
+}

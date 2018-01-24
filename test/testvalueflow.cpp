@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2017,6 +2017,18 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
+        // Ticket #7139
+        // "<<" in third expression of for
+        code = "void f(void) {\n"
+               "    int bit, x;\n"
+               "    for (bit = 1, x = 0; bit < 128; bit = bit << 1, x++) {\n"
+               "        z = x;\n"       // <- known value [0..6]
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 6));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 7));
+
         // &&
         code = "void foo() {\n"
                "  for (int x = 0; x < 10; x++) {\n"
@@ -2610,18 +2622,12 @@ private:
         ASSERT_EQUALS(0, value.intvalue);
         ASSERT(value.isKnown());
 
-        // Ticket #7139
-        // "<<" in third expression of for
-        code = "void f(void) {\n"
-               "    int bit, x;\n"
-               "    for (bit = 1, x = 0; bit < 128; bit = bit << 1, x++) {\n"
-               "        z = x;\n"       // <- known value [0..6]
-               "    }\n"
-               "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 6));
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, 7));
-        ASSERT(value.isKnown());
+        // template parameters are not known
+        code = "template <int X> void f() { a = X; }\n"
+               "f<1>();";
+        value = valueOfTok(code, "1");
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(false, value.isKnown());
     }
 
     void valueFlowSizeofForwardDeclaredEnum() {

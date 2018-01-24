@@ -7,7 +7,7 @@ if [[ $(pwd) == */test/cfg ]] ; then # we are in test/cfg
 	DIR=""
 else # assume we are in repo root
 	CPPCHECK="./cppcheck"
-	DIR=./test/cfg/
+	DIR=test/cfg/
 fi
 
 # Cppcheck options
@@ -37,3 +37,9 @@ ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.c
 ${CXX} ${CXX_OPT} ${DIR}std.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.cpp
 
+# windows.cpp
+# Syntax check via g++ does not work because it can not find a valid windows.h
+#${CXX} ${CXX_OPT} ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --platform=win32A  ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --platform=win32W  ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --platform=win64  ${DIR}windows.cpp

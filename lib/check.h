@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,10 +88,6 @@ public:
      */
     static void reportError(const ErrorLogger::ErrorMessage &errmsg);
 
-    bool inconclusiveFlag() const {
-        return _settings && _settings->inconclusive;
-    }
-
     /** Base class used for whole-program analysis */
     class FileInfo {
     public:
@@ -113,10 +109,12 @@ public:
         return nullptr;
     }
 
-    virtual void analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) {
+    // Return true if an error is reported.
+    virtual bool analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) {
         (void)fileInfo;
         (void)settings;
         (void)errorLogger;
+        return false;
     }
 
 protected:

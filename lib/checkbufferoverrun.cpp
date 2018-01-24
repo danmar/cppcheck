@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2022,8 +2022,9 @@ Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLEle
 }
 
 
-void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings&, ErrorLogger &errorLogger)
+bool CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings&, ErrorLogger &errorLogger)
 {
+    bool errors = false;
     // Merge all fileInfo
     MyFileInfo all;
     for (std::list<Check::FileInfo*>::const_iterator it = fileInfo.begin(); it != fileInfo.end(); ++it) {
@@ -2069,8 +2070,10 @@ void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &
                                                    "arrayIndexOutOfBounds",
                                                    CWE788, false);
             errorLogger.reportErr(errmsg);
+            errors = true;
         }
     }
+    return errors;
 }
 
 unsigned int CheckBufferOverrun::sizeOfType(const Token *type) const

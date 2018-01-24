@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -888,7 +888,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                 c++;
             }
         }
-        cppcheck.analyseWholeProgram();
+        if (cppcheck.analyseWholeProgram())
+            returnValue++;
     } else if (!ThreadExecutor::isEnabled()) {
         std::cout << "No thread support yet implemented for this platform." << std::endl;
     } else {

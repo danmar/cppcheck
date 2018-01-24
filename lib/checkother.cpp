@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2677,8 +2677,8 @@ bool CheckOther::isMovedParameterAllowedForInconclusiveFunction(const Token * to
 void CheckOther::accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive)
 {
     if (!tok) {
-        reportError(tok, Severity::warning, "accessMoved", "Access of moved variable v.", CWE672, false);
-        reportError(tok, Severity::warning, "accessForwarded", "Access of forwarded variable v.", CWE672, false);
+        reportError(tok, Severity::warning, "accessMoved", "Access of moved variable 'v'.", CWE672, false);
+        reportError(tok, Severity::warning, "accessForwarded", "Access of forwarded variable 'v'.", CWE672, false);
         return;
     }
 
@@ -2696,7 +2696,7 @@ void CheckOther::accessMovedError(const Token *tok, const std::string &varname, 
     default:
         return;
     }
-    const std::string errmsg("Access of " + kindString + " variable " + varname + ".");
+    const std::string errmsg("Access of " + kindString + " variable '" + varname + "'.");
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath, Severity::warning, errorId, errmsg, CWE672, inconclusive);
 }

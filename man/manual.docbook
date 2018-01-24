@@ -3,9 +3,9 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.82 dev</title>
+    <title>Cppcheck 1.82</title>
 
-    <date>2017-08-12</date>
+    <date>2018-01-21</date>
   </bookinfo>
 
   <chapter>
@@ -528,8 +528,8 @@ cppcheck -DA --force file.c</programlisting>
     <para>Cppcheck can generate output in <literal>XML</literal> format. Use
     <parameter>--xml</parameter> to enable this format.</para>
 
-    <para>A sample command to check a file and output
-    errors in the <literal>XML</literal> format:</para>
+    <para>A sample command to check a file and output errors in the
+    <literal>XML</literal> format:</para>
 
     <programlisting>cppcheck --xml file1.cpp</programlisting>
 
@@ -748,6 +748,68 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
 
     <para>The escape sequences \b (backspace), \n (newline), \r (formfeed) and
     \t (horizontal tab) are supported.</para>
+  </chapter>
+
+  <chapter>
+    <title>Misra</title>
+
+    <para>Cppcheck has an addon that checks for <literal>MISRA</literal> C
+    2012 compliance.</para>
+
+    <para>It is not allowed to publish the <literal>MISRA</literal> rule
+    texts. Therefore the <literal>MISRA</literal> rule texts are not available
+    directly in the addon. Instead, the addon can read the rule texts either
+    from the <literal>Misra</literal> PDF file or from a text file.</para>
+
+    <section>
+      <title>Requirements</title>
+
+      <para>The Cppcheck MISRA addon requires:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Python 2.X or 3.X</para>
+        </listitem>
+
+        <listitem>
+          <para><literal>For rule texts; MISRA</literal> PDF/Text file</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>MISRA PDF</title>
+
+      <para>If you want your code to be <literal>MISRA</literal> compliant
+      then you probably have the <literal>MISRA</literal> PDF.</para>
+
+      <para>However the MISRA PDF can only be used directly by the addon if
+      the <literal>xpdf</literal> package is installed, it is a cross platform
+      open source package.</para>
+    </section>
+
+    <section>
+      <title>MISRA Text file</title>
+
+      <para>If you have installed <literal>xpdf</literal>, this text file can
+      be easily generated on the command line (using
+      <literal>pdftotext</literal> that is included in
+      <literal>xpdf</literal>):</para>
+
+      <programlisting>pdftotext misra-c-2012.pdf output.txt</programlisting>
+
+      <para>Other pdf-to-text utilities might work also.</para>
+
+      <para>To create the text file manually, copy paste Appendix A "Summary
+      of guidelines" from the MISRA PDF. Format:</para>
+
+      <programlisting>Appendix A Summary of guidelines
+Rule 1.1
+Rule text
+Rule 1.2
+Rule text
+...</programlisting>
+    </section>
   </chapter>
 
   <chapter>

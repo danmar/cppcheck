@@ -307,6 +307,36 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Misra addon</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Misra PDF/Text file</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="mEditMisraFile"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="mBtnBrowseMisraFile">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_3">
          <property name="orientation">
           <enum>Qt::Vertical</enum>

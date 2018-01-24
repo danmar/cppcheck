@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -421,6 +421,12 @@ public:
     }
     void isEnumType(bool value) {
         setFlag(fIsEnumType, value);
+    }
+    bool isTemplateArg() const {
+        return getFlag(fIsTemplateArg);
+    }
+    void isTemplateArg(bool value) {
+        setFlag(fIsTemplateArg, value);
     }
 
     static const Token *findsimplematch(const Token * const startTok, const char pattern[]);
@@ -898,6 +904,7 @@ private:
         fIsEnumType             = (1 << 19), // enumeration type
         fIsName                 = (1 << 20),
         fIsLiteral              = (1 << 21),
+        fIsTemplateArg          = (1 << 22),
     };
 
     unsigned int _flags;

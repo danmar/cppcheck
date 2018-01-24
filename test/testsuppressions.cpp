@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -161,7 +161,8 @@ private:
         for (std::map<std::string, std::string>::const_iterator file = files.begin(); file != files.end(); ++file) {
             exitCode |= cppCheck.check(file->first, file->second);
         }
-        cppCheck.analyseWholeProgram();
+        if (cppCheck.analyseWholeProgram())
+            exitCode |= settings.exitCode;
 
         reportSuppressions(settings, files);
 

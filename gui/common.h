@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2017 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,6 +84,7 @@
 #define SETTINGS_LANGUAGE               "Application language"
 #define SETTINGS_GLOBAL_INCLUDE_PATHS   "Global include paths"
 #define SETTINGS_PYTHON_PATH            "Python path"
+#define SETTINGS_MISRA_FILE             "MISRA C 2012 file"
 #define SETTINGS_CLANG_PATH             "Clang path"
 #define SETTINGS_VS_INCLUDE_PATHS       "VS include paths"
 #define SETTINGS_INLINE_SUPPRESSIONS    "Inline suppressions"

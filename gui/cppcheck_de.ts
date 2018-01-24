@@ -20,8 +20,8 @@
     </message>
     <message>
         <location filename="about.ui" line="81"/>
-        <source>Copyright © 2007-2017 Cppcheck team.</source>
-        <translation>Copyright © 2007-2017 Cppcheck-Team.</translation>
+        <source>Copyright © 2007-2018 Cppcheck team.</source>
+        <translation>Copyright © 2007-2018 Cppcheck-Team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -342,59 +342,57 @@ Parameter: -l(line) (file)
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="101"/>
-        <location filename="libraryeditargdialog.ui" line="208"/>
+        <location filename="libraryeditargdialog.ui" line="203"/>
         <source>Type</source>
         <translation>Typ</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="109"/>
-        <location filename="libraryeditargdialog.ui" line="219"/>
+        <location filename="libraryeditargdialog.ui" line="214"/>
         <source>None</source>
         <translation>Keine</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="114"/>
-        <location filename="libraryeditargdialog.ui" line="224"/>
+        <location filename="libraryeditargdialog.ui" line="219"/>
         <source>argvalue</source>
         <translation>Argumentwert</translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="119"/>
-        <location filename="libraryeditargdialog.ui" line="229"/>
         <source>constant</source>
-        <translation>Konstant</translation>
+        <translation type="vanished">Konstant</translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="124"/>
-        <location filename="libraryeditargdialog.ui" line="234"/>
+        <location filename="libraryeditargdialog.ui" line="119"/>
+        <location filename="libraryeditargdialog.ui" line="224"/>
         <source>mul</source>
         <translation>Multiplikation</translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="129"/>
-        <location filename="libraryeditargdialog.ui" line="239"/>
+        <location filename="libraryeditargdialog.ui" line="124"/>
+        <location filename="libraryeditargdialog.ui" line="229"/>
         <source>strlen</source>
         <translation>strlen</translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="137"/>
-        <location filename="libraryeditargdialog.ui" line="247"/>
+        <location filename="libraryeditargdialog.ui" line="132"/>
+        <location filename="libraryeditargdialog.ui" line="237"/>
         <source>Arg</source>
         <translation>Argument 1</translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="164"/>
-        <location filename="libraryeditargdialog.ui" line="274"/>
+        <location filename="libraryeditargdialog.ui" line="159"/>
+        <location filename="libraryeditargdialog.ui" line="264"/>
         <source>Arg2</source>
         <translation>Argument 2</translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="199"/>
+        <location filename="libraryeditargdialog.ui" line="194"/>
         <source>and</source>
         <translation>und</translation>
     </message>
     <message>
-        <location filename="libraryeditargdialog.ui" line="320"/>
+        <location filename="libraryeditargdialog.ui" line="310"/>
         <source>Valid values</source>
         <translation>Zulässige Werte</translation>
     </message>

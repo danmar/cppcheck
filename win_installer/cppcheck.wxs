@@ -67,9 +67,11 @@
             <Component Id='OptionalCfgs' Guid='$(var.optionalCfgsGUID)'>
               <File Id='avr.cfg' Name='avr.cfg' Source='$(var.CfgsDir)\avr.cfg' />
               <File Id='bsd.cfg' Name='bsd.cfg' Source='$(var.CfgsDir)\bsd.cfg' />
+              <File Id='embedded_sql.cfg' Name='embedded_sql.cfg' Source='$(var.CfgsDir)\embedded_sql.cfg' />
               <File Id='gnu.cfg' Name='gnu.cfg' Source='$(var.CfgsDir)\gnu.cfg' />
               <File Id='gtk.cfg' Name='gtk.cfg' Source='$(var.CfgsDir)\gtk.cfg' />
               <File Id='microsoft_sal.cfg' Name='microsoft_sal.cfg' Source='$(var.CfgsDir)\microsoft_sal.cfg' />
+              <File Id='motif.cfg' Name='motif.cfg' Source='$(var.CfgsDir)\motif.cfg' />
               <File Id='posix.cfg' Name='posix.cfg' Source='$(var.CfgsDir)\posix.cfg' />
               <File Id='qt.cfg' Name='qt.cfg' Source='$(var.CfgsDir)\qt.cfg' />
               <File Id='sdl.cfg' Name='sdl.cfg' Source='$(var.CfgsDir)\sdl.cfg' />
@@ -91,6 +93,7 @@
               <File Id='cppcheckdata.py' Name='cppcheckdata.py' Source='$(var.AddonsDir)\cppcheckdata.py' />
               <File Id='cert.py' Name='cert.py' Source='$(var.AddonsDir)\cert.py' />
               <File Id='findcasts.py' Name='findcasts.py' Source='$(var.AddonsDir)\findcasts.py' />
+              <File Id='misra.py' Name='misra.py' Source='$(var.AddonsDir)\misra.py' />
               <File Id='naming.py' Name='naming.py' Source='$(var.AddonsDir)\naming.py' />
               <File Id='threadsafety.py' Name='threadsafety.py' Source='$(var.AddonsDir)\threadsafety.py' />
               <File Id='y2038.py' Name='y2038.py' Source='$(var.AddonsDir)\y2038\y2038.py' />

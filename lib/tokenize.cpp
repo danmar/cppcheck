@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,10 +91,14 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         return nullptr;
     if (tok->str() == "(")
         tok = tok->link();
-    if (Token::Match(tok, ") [;{]")) {
+    if (Token::Match(tok, ") )| ;|{|[")) {
         tok = tok->next();
         if (tok->isName())
             tok = tok->next();
+        if (tok->str() == ")")
+            tok = tok->next();
+        while (tok && tok->str() == "[")
+            tok = tok->link()->next();
         return (endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
     if (cpp && tok->str() == ")") {
@@ -102,6 +106,10 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         while (Token::Match(tok, "const|noexcept|override|volatile|&|&& !!(") ||
                (Token::Match(tok, "%name% !!(") && tok->isUpperCaseName()))
             tok = tok->next();
+        if (tok && tok->str() == ")")
+            tok = tok->next();
+        while (tok && tok->str() == "[")
+            tok = tok->link()->next();
         if (Token::Match(tok, "throw|noexcept ("))
             tok = tok->linkAt(1)->next();
         if (Token::Match(tok, "%name% (") && tok->isUpperCaseName())
@@ -197,44 +205,6 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
 
     return it->second;
 }
-
-//---------------------------------------------------------------------------
-
-Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last, bool one_line)
-{
-    std::stack<Token *> links;
-    Token *tok2 = dest;
-    unsigned int linenrs = dest->linenr();
-    const unsigned int commonFileIndex = dest->fileIndex();
-    for (const Token *tok = first; tok != last->next(); tok = tok->next()) {
-        tok2->insertToken(tok->str());
-        tok2 = tok2->next();
-        tok2->fileIndex(commonFileIndex);
-        tok2->linenr(linenrs);
-        tok2->tokType(tok->tokType());
-        tok2->flags(tok->flags());
-        tok2->varId(tok->varId());
-
-        // Check for links and fix them up
-        if (Token::Match(tok2, "(|[|{"))
-            links.push(tok2);
-        else if (Token::Match(tok2, ")|]|}")) {
-            if (links.empty())
-                return tok2;
-
-            Token * link = links.top();
-
-            tok2->link(link);
-            link->link(tok2);
-
-            links.pop();
-        }
-        if (!one_line && tok->next())
-            linenrs += tok->next()->linenr() - tok->linenr();
-    }
-    return tok2;
-}
-
 //---------------------------------------------------------------------------
 
 // check if this statement is a duplicate definition
@@ -1073,8 +1043,15 @@ void Tokenizer::simplifyTypedef()
                     }
 
                     // check for member functions
-                    else if (isCPP() && Token::Match(tok2, ") const| {")) {
-                        const Token *func = tok2->link()->previous();
+                    else if (isCPP() && Token::Match(tok2, ")|] const| {")) {
+                        const Token *temp = tok2;
+                        while (temp && temp->str() == "]" && temp->link() && temp->link()->previous())
+                            temp = temp->link()->previous();
+                        if (!temp || !temp->link() || !temp->link()->previous())
+                            continue;
+                        const Token *func = temp->link()->previous();
+                        if (temp->str() != ")")
+                            continue;
                         if (!func || !func->previous()) // Ticket #4239
                             continue;
 
@@ -1145,7 +1122,6 @@ void Tokenizer::simplifyTypedef()
                 // check for typedef that can be substituted
                 else if (Token::simpleMatch(tok2, pattern.c_str()) ||
                          (inMemberFunc && tok2->str() == typeName->str())) {
-
                     // member function class variables don't need qualification
                     if (!(inMemberFunc && tok2->str() == typeName->str()) && pattern.find("::") != std::string::npos) { // has a "something ::"
                         Token *start = tok2;
@@ -1310,7 +1286,7 @@ void Tokenizer::simplifyTypedef()
                     }
 
                     // add remainder of type
-                    tok2 = copyTokens(tok2, typeStart->next(), typeEnd);
+                    tok2 = TokenList::copyTokens(tok2, typeStart->next(), typeEnd);
 
                     if (!pointers.empty()) {
                         for (std::list<std::string>::const_iterator iter = pointers.begin(); iter != pointers.end(); ++iter) {
@@ -1323,7 +1299,7 @@ void Tokenizer::simplifyTypedef()
                         tok2->insertToken("(");
                         tok2 = tok2->next();
                         Token *tok3 = tok2;
-                        tok2 = copyTokens(tok2, funcStart, funcEnd);
+                        tok2 = TokenList::copyTokens(tok2, funcStart, funcEnd);
 
                         if (!inCast)
                             tok2 = processFunc(tok2, inOperator);
@@ -1335,7 +1311,7 @@ void Tokenizer::simplifyTypedef()
                         tok2 = tok2->next();
                         Token::createMutualLinks(tok2, tok3);
 
-                        tok2 = copyTokens(tok2, argStart, argEnd);
+                        tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
 
                         if (specStart) {
                             Token *spec = specStart;
@@ -1393,7 +1369,7 @@ void Tokenizer::simplifyTypedef()
                         if (!tok2)
                             syntaxError(nullptr);
 
-                        tok2 = copyTokens(tok2, argStart, argEnd);
+                        tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
                         if (inTemplate) {
                             if (!tok2)
                                 syntaxError(nullptr);
@@ -1442,13 +1418,13 @@ void Tokenizer::simplifyTypedef()
                             Token::createMutualLinks(tok2, tok4);
                         }
 
-                        tok2 = copyTokens(tok2, argStart, argEnd);
+                        tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
 
                         tok2->insertToken(")");
                         tok2 = tok2->next();
                         Token::createMutualLinks(tok2, tok3);
 
-                        tok2 = copyTokens(tok2, argFuncRetStart, argFuncRetEnd);
+                        tok2 = TokenList::copyTokens(tok2, argFuncRetStart, argFuncRetEnd);
                     } else if (ptrToArray || refToArray) {
                         tok2->insertToken("(");
                         tok2 = tok2->next();
@@ -1520,7 +1496,7 @@ void Tokenizer::simplifyTypedef()
                             }
                         }
                     } else if (typeOf) {
-                        tok2 = copyTokens(tok2, argStart, argEnd);
+                        tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
                     } else if (tok2->strAt(2) == "[") {
                         do {
                             if (!tok2->linkAt(2))
@@ -1538,6 +1514,9 @@ void Tokenizer::simplifyTypedef()
                             if (!inCast && !inSizeof)
                                 tok2 = tok2->next();
 
+                            if (tok2->str() == "const")
+                                tok2 = tok2->next();
+
                             // reference to array?
                             if (tok2->str() == "&") {
                                 tok2 = tok2->previous();
@@ -1552,6 +1531,17 @@ void Tokenizer::simplifyTypedef()
                                 if (!tok2)
                                     syntaxError(nullptr);
 
+                                while (tok2->strAt(1) == "::")
+                                    tok2 = tok2->tokAt(2);
+
+                                // skip over function parameters
+                                if (tok2->strAt(1) == "(") {
+                                    tok2 = tok2->linkAt(1);
+
+                                    if (tok2->strAt(1) == "const")
+                                        tok2 = tok2->next();
+                                }
+
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();
                                 Token::createMutualLinks(tok2, tok3);
@@ -1560,11 +1550,13 @@ void Tokenizer::simplifyTypedef()
                             if (!tok2->next())
                                 syntaxError(tok2); // can't recover so quit
 
-                            tok2 = copyTokens(tok2, arrayStart, arrayEnd);
+                            // skip over array dimensions
+                            while (tok2->next()->str() == "[")
+                                tok2 = tok2->linkAt(1);
+
+                            tok2 = TokenList::copyTokens(tok2, arrayStart, arrayEnd);
                             if (!tok2->next())
                                 syntaxError(tok2);
-
-                            tok2 = tok2->next();
 
                             if (tok2->str() == "=") {
                                 if (!tok2->next())
@@ -1980,26 +1972,27 @@ void Tokenizer::simplifyRoundCurlyParentheses()
 void Tokenizer::simplifySQL()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL")) {
-            const Token *end = findSQLBlockEnd(tok);
-            if (end == nullptr)
-                syntaxError(nullptr);
+        if (!Token::simpleMatch(tok, "__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL"))
+            continue;
 
-            const std::string instruction = tok->stringifyList(end);
-            // delete all tokens until the embedded SQL block end
-            Token::eraseTokens(tok, end);
+        const Token *end = findSQLBlockEnd(tok);
+        if (end == nullptr)
+            syntaxError(nullptr);
 
-            // insert "asm ( "instruction" ) ;"
-            tok->str("asm");
-            // it can happen that 'end' is NULL when wrong code is inserted
-            if (!tok->next())
-                tok->insertToken(";");
-            tok->insertToken(")");
-            tok->insertToken("\"" + instruction + "\"");
-            tok->insertToken("(");
-            // jump to ';' and continue
-            tok = tok->tokAt(3);
-        }
+        const std::string instruction = tok->stringifyList(end);
+        // delete all tokens until the embedded SQL block end
+        Token::eraseTokens(tok, end);
+
+        // insert "asm ( "instruction" ) ;"
+        tok->str("asm");
+        // it can happen that 'end' is NULL when wrong code is inserted
+        if (!tok->next())
+            tok->insertToken(";");
+        tok->insertToken(")");
+        tok->insertToken("\"" + instruction + "\"");
+        tok->insertToken("(");
+        // jump to ';' and continue
+        tok = tok->tokAt(3);
     }
 }
 
@@ -5576,6 +5569,8 @@ void Tokenizer::simplifyVarDecl(const bool only_k_r_fpar)
 
 void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar)
 {
+    const bool isCPP11  = _settings->standards.cpp >= Standards::CPP11;
+
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
     bool finishedwithkr = true;
@@ -5623,6 +5618,8 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
         if (!Token::Match(type0, "::|extern| %type%"))
             continue;
         if (Token::Match(type0, "else|return|public:|protected:|private:"))
+            continue;
+        if (isCPP11 && type0->str() == "using")
             continue;
 
         bool isconst = false;
@@ -5866,6 +5863,8 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
 
 void Tokenizer::simplifyPlatformTypes()
 {
+    const bool isCPP11  = _settings->standards.cpp >= Standards::CPP11;
+
     enum { isLongLong, isLong, isInt } type;
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
@@ -5884,11 +5883,15 @@ void Tokenizer::simplifyPlatformTypes()
         if (!Token::Match(tok, "std| ::| %type%"))
             continue;
         bool isUnsigned;
-        if (Token::Match(tok, "std| ::| size_t|uintptr_t|uintmax_t"))
+        if (Token::Match(tok, "std| ::| size_t|uintptr_t|uintmax_t")) {
+            if (isCPP11 && tok->strAt(-1) == "using" && tok->strAt(1) == "=")
+                continue;
             isUnsigned = true;
-        else if (Token::Match(tok, "std| ::| ssize_t|ptrdiff_t|intptr_t|intmax_t"))
+        } else if (Token::Match(tok, "std| ::| ssize_t|ptrdiff_t|intptr_t|intmax_t")) {
+            if (isCPP11 && tok->strAt(-1) == "using" && tok->strAt(1) == "=")
+                continue;
             isUnsigned = false;
-        else
+        } else
             continue;
 
         bool inStd = false;
@@ -6500,7 +6503,7 @@ bool Tokenizer::simplifyKnownVariables()
 
                 const std::string structname = Token::Match(tok2->tokAt(-3), "[;{}] %name% .") ?
                                                std::string(tok2->strAt(-2) + " .") :
-                                               std::string("");
+                                               std::string();
 
                 const Token * const valueToken = tok2->tokAt(2);
 
@@ -8355,7 +8358,7 @@ const Token * Tokenizer::findGarbageCode() const
 
     // Operators without operands..
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%cop% %or%|%oror%|/|%"))
+        if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             return tok;
         if (Token::Match(tok, ";|(|[ %comp%"))
             return tok;
@@ -8389,6 +8392,12 @@ const Token * Tokenizer::findGarbageCode() const
             if (!Token::Match(tok, ">|>> %name%"))
                 return tok->next() ? tok->next() : tok1;
         }
+    }
+
+    // Objective C/C++
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "[;{}] [ %name% %name% ] ;"))
+            return tok->next();
     }
 
     return nullptr;
@@ -9817,7 +9826,7 @@ void Tokenizer::simplifyReturnStrncat()
             Token *end = tok->next()->nextArgument()->tokAt(-2);
 
             //all the first argument is copied
-            copyTokens(tok2, tok->next(), end);
+            TokenList::copyTokens(tok2, tok->next(), end);
             tok2->insertToken("return");
         }
     }
@@ -10086,7 +10095,7 @@ void Tokenizer::SimplifyNamelessRValueReferences()
     }
 }
 
-const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart) const
+const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart)
 {
     const Token *tokLastEnd = nullptr;
     for (const Token *tok = tokSQLStart->tokAt(2); tok != nullptr; tok = tok->next()) {
@@ -10096,7 +10105,7 @@ const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart) const
             if (Token::simpleMatch(tok->tokAt(-2), "END - __CPPCHECK_EMBEDDED_SQL_EXEC__ ;"))
                 return tok->next();
             return tokLastEnd;
-        } else if (Token::Match(tok, "{|}|==|&&|!|&|^|<<|>>|++|+=|-=|/=|*=|>>=|<<=|->|::|~"))
+        } else if (Token::Match(tok, "{|}|==|&&|!|^|<<|>>|++|+=|-=|/=|*=|>>=|<<=|~"))
             break; // We are obviously outside the SQL block
     }
 

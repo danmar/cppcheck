@@ -8,6 +8,10 @@
 # Update translations
 #   lupdate gui.pro
 #
+# Update copyright year
+# git diff c4caee6b1828e3688c88ebacfc8ac90eace8a7ac | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-201./Copyright (C) 2007-2018/'
+# git diff | grep '^diff --git a/'
+#
 # Make sure "cppcheck --errorlist" works. For example with:
 # make test
 # ./cppcheck --errorlist > errlist.xml && xmllint --noout errlist.xml
@@ -17,12 +21,12 @@
 # git log --format='%aN' 1.81..HEAD | sort -u > AUTHORS2 && diff -y AUTHORS AUTHORS2 | less
 #
 # Update version numbers in:
-# sed -i "s/1.[0-9][0-9].99/1.81/" cli/main.cpp
-# sed -i "s/1.[0-9][0-9].99/1.81/" cmake/versions.cmake
-# sed -i "s/MINOR [0-9][0-9]/MINOR 81/" lib/version.h
-# sed -i "s/1.[0-9][0-9] dev/1.81/" man/manual.docbook
-# sed -i "s/1.[0-9][0-9] dev/1.81/" win_installer/productInfo.wxi
-# sed -i "s/1.[0-9][0-9].99/1.81/" win_installer/productInfo.wxi
+# sed -i "s/1.[0-9][0-9].99/1.82/" cli/main.cpp
+# sed -i "s/1.[0-9][0-9].99/1.82/" cmake/versions.cmake
+# sed -i "s/MINOR [0-9][0-9]/MINOR 82/" lib/version.h
+# sed -i "s/1.[0-9][0-9] dev/1.82/" man/manual.docbook
+# sed -i "s/1.[0-9][0-9] dev/1.82/" win_installer/productInfo.wxi
+# sed -i "s/1.[0-9][0-9].99/1.82/" win_installer/productInfo.wxi
 # Verify:
 # grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
 # git commit -a -m "1.43: Set versions"

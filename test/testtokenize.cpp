@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,6 +75,8 @@ private:
         TEST_CASE(tokenize34);  // #8031
 
         TEST_CASE(validate);
+
+        TEST_CASE(objectiveC); // Syntax error should be written for objective C/C++ code.
 
         TEST_CASE(syntax_case_default);
 
@@ -848,6 +850,10 @@ private:
         ASSERT_THROW(tokenizeAndStringify("void foo(int i) { reinterpret_cast<char>(i) };",false,false,Settings::Native,"test.h"), InternalError);
     }
 
+    void objectiveC() {
+        ASSERT_THROW(tokenizeAndStringify("void f() { [foo bar]; }"), InternalError);
+    }
+
     void syntax_case_default() { // correct syntax
         tokenizeAndStringify("void f() {switch (n) { case 0: z(); break;}}");
         ASSERT_EQUALS("", errout.str());
@@ -889,7 +895,7 @@ private:
     void foreach () {
         // #3690,#5154
         const char code[] ="void f() { for each ( char c in MyString ) { Console::Write(c); } }";
-        ASSERT_EQUALS("void f ( ) { asm ( \"char c in MyString\" ) { Console :: Write ( c ) ; } }" ,tokenizeAndStringify(code));
+        ASSERT_EQUALS("void f ( ) { asm ( \"char c in MyString\" ) { Console :: Write ( c ) ; } }", tokenizeAndStringify(code));
     }
 
     void combineOperators() {
@@ -5829,6 +5835,7 @@ private:
         ASSERT_THROW(tokenizeAndStringify("int f(){ __CPPCHECK_EMBEDDED_SQL_EXEC__ SQL } int a;",false), InternalError);
         ASSERT_THROW(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL int f(){",false), InternalError);
         ASSERT_THROW(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL END-__CPPCHECK_EMBEDDED_SQL_EXEC__ int a;",false), InternalError);
+        ASSERT_NO_THROW(tokenizeAndStringify("__CPPCHECK_EMBEDDED_SQL_EXEC__ SQL UPDATE A SET B = :&b->b1, C = :c::c1;",false));
     }
 
     void simplifyCAlternativeTokens() {

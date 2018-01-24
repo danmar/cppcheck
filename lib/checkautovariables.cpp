@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -459,6 +459,8 @@ void CheckAutoVariables::returnReference()
             for (const Token *tok2 = scope->classStart->next(); tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
                 if (!tok2->scope()->isExecutable()) {
                     tok2 = tok2->scope()->classEnd;
+                    if (!tok2)
+                        break;
                     continue;
                 }
 

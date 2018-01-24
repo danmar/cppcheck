@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2017 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,8 +71,9 @@ public:
     */
     void saveSettings(QSettings &settings) const;
 
-    void setAddonsAndTools(const QStringList &addonsAndTools) {
+    void setAddonsAndTools(const QStringList &addonsAndTools, const QString misraFile) {
         mAddonsAndTools = addonsAndTools;
+        mMisraFile = misraFile;
     }
 
     void setSuppressions(const QStringList &s) {
@@ -258,6 +259,7 @@ protected:
     QStringList mClangIncludePaths;
 
     QString mDataDir;
+    QString mMisraFile;
 private:
 
     /**

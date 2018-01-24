@@ -275,6 +275,10 @@ namespace simplecpp {
         Location    useLocation;
     };
 
+    /**
+     * Command line preprocessor settings.
+     * On the command line these are configured by -D, -U, -I, --include
+     */
     struct SIMPLECPP_LIB DUI {
         DUI() {}
         std::list<std::string> defines;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -237,8 +237,9 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
 
 
-void CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings)
+bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings)
 {
+    bool errors = false;
     for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it) {
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
@@ -252,15 +253,18 @@ void CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
             if (func.filename != "+")
                 filename = func.filename;
             unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
+            errors = true;
         } else if (! func.usedOtherFile) {
             /** @todo add error message "function is only used in <file> it can be static" */
             /*
             std::ostringstream errmsg;
             errmsg << "The function '" << it->first << "' is only used in the file it was declared in so it should have local linkage.";
             _errorLogger->reportErr( errmsg.str() );
+            errors = true;
             */
         }
     }
+    return errors;
 }
 
 void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
@@ -291,10 +295,10 @@ Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, c
     return nullptr;
 }
 
-void CheckUnusedFunctions::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+bool CheckUnusedFunctions::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
 {
     (void)fileInfo;
-    check(&errorLogger, settings);
+    return check(&errorLogger, settings);
 }
 
 CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)

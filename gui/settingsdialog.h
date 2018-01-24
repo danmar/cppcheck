@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2017 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,6 +129,11 @@ protected slots:
 
     /** @brief Slot for browsing for the clang binary */
     void browseClangPath();
+
+    /**
+     * @brief Browse for MISRA file
+     */
+    void browseMisraFile();
 protected:
     /**
     * @brief Clear all applications from the list and re insert them from mTempApplications

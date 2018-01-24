@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -349,6 +349,10 @@ private:
         TEST_CASE(auto10); // #8020
 
         TEST_CASE(unionWithConstructor);
+
+        TEST_CASE(using1);
+        TEST_CASE(using2); // #8331 (segmentation fault)
+        TEST_CASE(using3); // #8343 (segmentation fault)
     }
 
     void array() {
@@ -1271,6 +1275,12 @@ private:
 
     void testConstructors() {
         {
+            GET_SYMBOL_DB("class Foo { Foo(); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
             GET_SYMBOL_DB("class Foo { Foo(Foo f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eConstructor && !ctor->isExplicit());
@@ -1283,13 +1293,49 @@ private:
             ASSERT(ctor && ctor->retDef == 0);
         }
         {
+            GET_SYMBOL_DB("class Foo { Foo(Bar& f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
             GET_SYMBOL_DB("class Foo { Foo(Foo& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
             ASSERT(ctor && ctor->retDef == 0);
         }
         {
+            GET_SYMBOL_DB("class Foo { Foo(const Foo &f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
+            GET_SYMBOL_DB("template <T> class Foo { Foo(Foo<T>& f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(7)->function();
+            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo& f, int default = 0); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo& f, char noDefault); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
             GET_SYMBOL_DB("class Foo { Foo(Foo&& f); };");
+            const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
+            ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
+            ASSERT(ctor && ctor->retDef == 0);
+        }
+        {
+            GET_SYMBOL_DB("class Foo { Foo(Foo & & f, int default = 1, bool defaultToo = true); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
             ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
             ASSERT(ctor && ctor->retDef == 0);
@@ -5271,6 +5317,91 @@ private:
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3);
     }
 
+    void using1() {
+        Standards::cppstd_t original_std = settings1.standards.cpp;
+        settings1.standards.cpp = Standards::CPP11;
+        GET_SYMBOL_DB("using INT = int;\n"
+                      "using PINT = INT *;\n"
+                      "using PCINT = const PINT;\n"
+                      "INT i;\n"
+                      "PINT pi;\n"
+                      "PCINT pci;");
+        settings1.standards.cpp = original_std;
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "INT i ;");
+
+        ASSERT(db && tok && tok->next() && tok->next()->valueType());
+        if (db && tok && tok->next() && tok->next()->valueType()) {
+            tok = tok->next();
+            ASSERT_EQUALS(0, tok->valueType()->constness);
+            ASSERT_EQUALS(0, tok->valueType()->pointer);
+            ASSERT_EQUALS(ValueType::SIGNED, tok->valueType()->sign);
+            ASSERT_EQUALS(ValueType::INT, tok->valueType()->type);
+        }
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "PINT pi ;");
+
+        ASSERT(db && tok && tok->next() && tok->next()->valueType());
+        if (db && tok && tok->next() && tok->next()->valueType()) {
+            tok = tok->next();
+            ASSERT_EQUALS(0, tok->valueType()->constness);
+            ASSERT_EQUALS(1, tok->valueType()->pointer);
+            ASSERT_EQUALS(ValueType::SIGNED, tok->valueType()->sign);
+            ASSERT_EQUALS(ValueType::INT, tok->valueType()->type);
+        }
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "PCINT pci ;");
+
+        ASSERT(db && tok && tok->next() && tok->next()->valueType());
+        if (db && tok && tok->next() && tok->next()->valueType()) {
+            tok = tok->next();
+            ASSERT_EQUALS(1, tok->valueType()->constness);
+            ASSERT_EQUALS(1, tok->valueType()->pointer);
+            ASSERT_EQUALS(ValueType::SIGNED, tok->valueType()->sign);
+            ASSERT_EQUALS(ValueType::INT, tok->valueType()->type);
+        }
+    }
+
+    void using2() { // #8331 (segmentation fault)
+        Standards::cppstd_t original_std = settings1.standards.cpp;
+        settings1.standards.cpp = Standards::CPP11;
+
+        {
+            GET_SYMBOL_DB("using pboolean = pboolean;\n"
+                          "pboolean b;");
+            const Token *tok = Token::findsimplematch(tokenizer.tokens(), "b ;");
+
+            ASSERT(db && tok && !tok->valueType());
+        }
+
+        {
+            GET_SYMBOL_DB("using pboolean = bool;\n"
+                          "using pboolean = pboolean;\n"
+                          "pboolean b;");
+            const Token *tok = Token::findsimplematch(tokenizer.tokens(), "b ;");
+
+            ASSERT(db && tok && tok->valueType());
+            if (db && tok && tok->valueType()) {
+                ASSERT_EQUALS(0, tok->valueType()->constness);
+                ASSERT_EQUALS(0, tok->valueType()->pointer);
+                ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, tok->valueType()->sign);
+                ASSERT_EQUALS(ValueType::BOOL, tok->valueType()->type);
+            }
+        }
+
+        settings1.standards.cpp = original_std;
+    }
+
+    void using3() { // #8343 (segmentation fault)
+        Standards::cppstd_t original_std = settings1.standards.cpp;
+        settings1.standards.cpp = Standards::CPP11;
+        GET_SYMBOL_DB("template <typename T>\n"
+                      "using vector = typename MemoryModel::template vector<T>;\n"
+                      "vector<uninitialized_uint64> m_bits;");
+        settings1.standards.cpp = original_std;
+
+        ASSERT(db);
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestSymbolDatabase)

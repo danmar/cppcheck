@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2017 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
         // Check for postfix operators..
         CheckPostfixOperator checkPostfixOperator(&tokenizer, &settings, this);
@@ -59,6 +58,7 @@ private:
         TEST_CASE(testtemplate); // #4686
         TEST_CASE(testmember);
         TEST_CASE(testcomma);
+        TEST_CASE(testauto); // #8350
     }
 
     void testsimple() {
@@ -349,6 +349,18 @@ private:
               "    A a;\n"
               "    foo(i, a++);\n"
               "    foo(a++, i);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testauto() { // #8350
+        check("enum class Color { Red = 0, Green = 1, };\n"
+              "int fun(const Color color) {\n"
+              "    auto a = 0;\n"
+              "    for (auto i = static_cast<int>(color); i < 10; i++) {\n"
+              "        a += i;\n"
+              "    }\n"
+              "    return a;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

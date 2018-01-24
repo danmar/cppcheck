@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -131,9 +131,10 @@ public:
 
     /** Analyse whole program, run this after all TUs has been scanned.
      * This is deprecated and the plan is to remove this when
-     * .analyzeinfo is good enough
+     * .analyzeinfo is good enough.
+     * Return true if an error is reported.
      */
-    void analyseWholeProgram();
+    bool analyseWholeProgram();
 
     /** analyse whole program use .analyzeinfo files */
     void analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files);
