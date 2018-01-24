@@ -74,13 +74,6 @@ public:
     void returnReference();
 
 private:
-    static bool isPtrArg(const Token *tok);
-    static bool isArrayArg(const Token *tok);
-    static bool isRefPtrArg(const Token *tok);
-    static bool isNonReferenceArg(const Token *tok);
-    static bool isAutoVar(const Token *tok);
-    static bool isAutoVarArray(const Token *tok);
-
     /**
      * Returning a temporary object?
      * @param tok pointing at the "return" token
@@ -89,6 +82,7 @@ private:
     static bool returnTemporary(const Token *tok);
 
     void errorReturnAddressToAutoVariable(const Token *tok);
+    void errorAssignAddressOfLocalArrayToGlobalPointer(const Token *pointer, const Token *array);
     void errorReturnPointerToLocalArray(const Token *tok);
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnReference(const Token *tok);
@@ -102,6 +96,7 @@ private:
         CheckAutoVariables c(nullptr,settings,errorLogger);
         c.errorAutoVariableAssignment(nullptr, false);
         c.errorReturnAddressToAutoVariable(nullptr);
+        c.errorAssignAddressOfLocalArrayToGlobalPointer(nullptr, nullptr);
         c.errorReturnPointerToLocalArray(nullptr);
         c.errorReturnReference(nullptr);
         c.errorReturnTempReference(nullptr);

@@ -46,35 +46,37 @@ static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 static const CWE CWE562(562U);  // Return of Stack Variable Address
 static const CWE CWE590(590U);  // Free of Memory not on the Heap
 
-bool CheckAutoVariables::isPtrArg(const Token *tok)
+static bool isPtrArg(const Token *tok)
 {
     const Variable *var = tok->variable();
-
     return (var && var->isArgument() && var->isPointer());
 }
 
-bool CheckAutoVariables::isArrayArg(const Token *tok)
+static bool isGlobalPtr(const Token *tok)
 {
     const Variable *var = tok->variable();
+    return (var && var->isGlobal() && var->isPointer());
+}
 
+static bool isArrayArg(const Token *tok)
+{
+    const Variable *var = tok->variable();
     return (var && var->isArgument() && var->isArray());
 }
 
-bool CheckAutoVariables::isRefPtrArg(const Token *tok)
+static bool isRefPtrArg(const Token *tok)
 {
     const Variable *var = tok->variable();
-
     return (var && var->isArgument() && var->isReference() && var->isPointer());
 }
 
-bool CheckAutoVariables::isNonReferenceArg(const Token *tok)
+static bool isNonReferenceArg(const Token *tok)
 {
     const Variable *var = tok->variable();
-
     return (var && var->isArgument() && !var->isReference() && (var->isPointer() || var->typeStartToken()->isStandardType() || var->type()));
 }
 
-bool CheckAutoVariables::isAutoVar(const Token *tok)
+static bool isAutoVar(const Token *tok)
 {
     const Variable *var = tok->variable();
 
@@ -98,7 +100,7 @@ bool CheckAutoVariables::isAutoVar(const Token *tok)
     return true;
 }
 
-bool CheckAutoVariables::isAutoVarArray(const Token *tok)
+static bool isAutoVarArray(const Token *tok)
 {
     if (!tok)
         return false;
@@ -221,6 +223,25 @@ void CheckAutoVariables::autoVariables()
             } else if (Token::Match(tok, "[;{}] * %var% = & %var%") && isPtrArg(tok->tokAt(2)) && isAutoVar(tok->tokAt(5))) {
                 if (checkRvalueExpression(tok->tokAt(5)))
                     errorAutoVariableAssignment(tok->next(), false);
+            } else if (_settings->isEnabled(Settings::WARNING) && Token::Match(tok, "[;{}] %var% = %var% ;") && isGlobalPtr(tok->next()) && isAutoVarArray(tok->tokAt(3))) {
+                const Token * const pointer = tok->next();
+                const Token * const array   = tok->tokAt(3);
+                const Token * const end = array->variable()->typeStartToken()->scope()->classEnd;
+                const unsigned int varid = pointer->varId();
+                bool writtenAgain = false;
+                for (const Token *tok2 = array; tok2 != nullptr && tok2 != end; tok2 = tok2->next()) {
+                    if (Token::Match(tok2, "%varid% =", varid)) {
+                        writtenAgain = true;
+                        break;
+                    } else if (Token::Match(tok2, "%name% (") && !Token::simpleMatch(tok2->linkAt(1), ") {")) {
+                        // Bailout: possibly written
+                        // TODO: check if it is written
+                        writtenAgain = true;
+                        break;
+                    }
+                }
+                if (!writtenAgain)
+                    errorAssignAddressOfLocalArrayToGlobalPointer(pointer, array);
             } else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
                 if (printInconclusive && isPtrArg(tok->next())) {
@@ -331,6 +352,14 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
                     CWE562,
                     true);
     }
+}
+
+void CheckAutoVariables::errorAssignAddressOfLocalArrayToGlobalPointer(const Token *pointer, const Token *array)
+{
+    const std::string pointerName = pointer ? pointer->str() : std::string("pointer");
+    const std::string arrayName   = array ? array->str() : std::string("array");
+    reportError(pointer, Severity::warning, "autoVariablesAssignGlobalPointer",
+                "Address of local array " + arrayName + " is assigned to global pointer " + pointerName +" and not reassigned before " + arrayName + " goes out of scope.", CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname)

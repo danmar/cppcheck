@@ -87,6 +87,8 @@ private:
         TEST_CASE(testassign1);  // Ticket #1819
         TEST_CASE(testassign2);  // Ticket #2765
 
+        TEST_CASE(assignAddressOfLocalArrayToGlobalPointer);
+
         TEST_CASE(returnLocalVariable1);
         TEST_CASE(returnLocalVariable2);
         TEST_CASE(returnLocalVariable3); // &x[0]
@@ -619,6 +621,23 @@ private:
         check("static void function(unsigned long **datap) {\n"
               "    struct my_s *mr = global_structure_pointer;\n"
               "    *datap = &mr->value;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void assignAddressOfLocalArrayToGlobalPointer() {
+        check("int *p;\n"
+              "void f() {\n"
+              "  int x[10];\n"
+              "  p = x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Address of local array x is assigned to global pointer p and not reassigned before x goes out of scope.\n", errout.str());
+
+        check("int *p;\n"
+              "void f() {\n"
+              "  int x[10];\n"
+              "  p = x;\n"
+              "  p = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
