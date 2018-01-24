@@ -8356,7 +8356,7 @@ const Token * Tokenizer::findGarbageCode() const
 
     // Operators without operands..
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%cop% %or%|%oror%|/|%"))
+        if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             return tok;
         if (Token::Match(tok, ";|(|[ %comp%"))
             return tok;

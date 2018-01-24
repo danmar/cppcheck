@@ -222,6 +222,9 @@ private:
         TEST_CASE(garbageCode189); // #8317
         TEST_CASE(garbageCode190); // #8307
         TEST_CASE(garbageCode191); // #8333
+
+        TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
+
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1197,6 +1200,12 @@ private:
         ASSERT_THROW(checkCode("f(a,b,c,d)float [  a[],d;int ]  b[],c;{} "), InternalError); // don't hang
     }
 
+
+    void garbageCodeFuzzerClientMode1() {
+        ASSERT_THROW(checkCode("void f() { x= name2 & name3 name2 = | 0.1 , | 0.1 , | 0.1 name4 <= >( ); }"), InternalError);
+        ASSERT_THROW(checkCode("void f() { x = , * [ | + 0xff | > 0xff]; }"), InternalError);
+        ASSERT_THROW(checkCode("void f() {  x = , | 0xff , 0.1 < ; }"), InternalError);
+    }
 
     void garbageValueFlow() {
         // #6089
