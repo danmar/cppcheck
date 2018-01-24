@@ -1533,15 +1533,34 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         return false;
 
     // function returning function pointer? '... ( ... %name% ( ... ))( ... ) {'
+    // function returning reference to array '... ( & %name% ( ... ))[ ... ] {'
     if (tok->str() == "(" && tok->strAt(1) != "*" &&
-        tok->link()->previous()->str() == ")") {
+        (tok->link()->previous()->str() == ")" || Token::simpleMatch(tok->link()->tokAt(-2), ") const"))) {
         const Token* tok2 = tok->link()->next();
         if (tok2 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "{|;|const|=")) {
-            const Token* argStartTok = tok->link()->previous()->link();
+            const Token* argStartTok;
+            if (tok->link()->previous()->str() == "const")
+                argStartTok = tok->link()->linkAt(-2);
+            else
+                argStartTok = tok->link()->linkAt(-1);
             *funcStart = argStartTok->previous();
             *argStart = argStartTok;
             *declEnd = Token::findmatch(tok2->link()->next(), "{|;");
             return true;
+        } else if (tok2 && tok2->str() == "[") {
+            while (tok2 && tok2->str() == "[")
+                tok2 = tok2->link()->next();
+            if (Token::Match(tok2, "{|;|const|=")) {
+                const Token* argStartTok;
+                if (tok->link()->previous()->str() == "const")
+                    argStartTok = tok->link()->linkAt(-2);
+                else
+                    argStartTok = tok->link()->linkAt(-1);
+                *funcStart = argStartTok->previous();
+                *argStart = argStartTok;
+                *declEnd = Token::findmatch(tok2, "{|;");
+                return true;
+            }
         }
     }
 

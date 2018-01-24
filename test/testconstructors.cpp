@@ -187,6 +187,7 @@ private:
         TEST_CASE(constructors_crash1);    // ticket #5641
         TEST_CASE(classWithOperatorInName);// ticket #2827
         TEST_CASE(templateConstructor);    // ticket #7942
+        TEST_CASE(typedefArray);           // ticket #5766
 
         TEST_CASE(uninitAssignmentWithOperator);  // ticket #7429
         TEST_CASE(uninitCompoundAssignment);      // ticket #7429
@@ -3394,6 +3395,16 @@ private:
               "};\n"
               "template <class T> Containter<T>::Containter() : mElements(nullptr) {}\n"
               "Containter<int> intContainer;");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void typedefArray() { // ticket #5766
+        check("typedef float    rvec[3];\n"
+              "class SelectionPosition {\n"
+              "public:\n"
+              "    SelectionPosition() {}\n"
+              "    const rvec &x() const;\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
