@@ -1303,6 +1303,7 @@ std::string CheckUninitVar::MyFileInfo::toString() const
     writeFunctionArgsXml(readData, "readData", ret);
     writeFunctionArgsXml(nullPointer, "nullPointer", ret);
     writeFunctionArgsXml(dereferenced, "dereferenced", ret);
+    writeFunctionArgsXml(nestedCall, "nestedCall", ret);
     return ret.str();
 }
 
@@ -1319,6 +1320,54 @@ CheckUninitVar::MyFileInfo::FunctionArg::FunctionArg(const Tokenizer *tokenizer,
     location.linenr   = tok->linenr();
 }
 
+static bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok)
+{
+    const Variable * const argvar = scope->function->getArgumentVar(argnr);
+    if (!argvar->isPointer())
+        return false;
+    for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
+        if (tok2->variable() != argvar)
+            continue;
+        if (!Token::Match(tok2->astParent(), "*|["))
+            return false;
+        while (Token::Match(tok2->astParent(), "*|["))
+            tok2 = tok2->astParent();
+        if (!Token::Match(tok2->astParent(),"%cop%"))
+            return false;
+        *tok = tok2;
+        return true;
+    }
+    return false;
+}
+
+static int isCallFunction(const Scope *scope, int argnr, const Token **tok)
+{
+    const Variable * const argvar = scope->function->getArgumentVar(argnr);
+    if (!argvar->isPointer())
+        return -1;
+    for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
+        if (tok2->variable() != argvar)
+            continue;
+        if (!Token::Match(tok2->previous(), "[(,] %var% [,)]"))
+            break;
+        int argnr2 = 1;
+        const Token *prev = tok2;
+        while (prev && prev->str() != "(") {
+            if (Token::Match(prev,"]|)"))
+                prev = prev->link();
+            else if (prev->str() == ",")
+                ++argnr2;
+            prev = prev->previous();
+        }
+        if (!prev || !Token::Match(prev->previous(), "%name% ("))
+            break;
+        if (!prev->astOperand1()->function())
+            break;
+        *tok = prev->previous();
+        return argnr2;
+    }
+    return -1;
+}
 
 Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings * /*settings*/) const
 {
@@ -1373,29 +1422,22 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
             if (CheckNullPointer::isUnsafeFunction(&*scope, argnr, &tok))
                 fileInfo->dereferenced.push_back(MyFileInfo::FunctionArg(tokenizer, &*scope, argnr+1, tok));
         }
+
+        // Nested function calls
+        for (int argnr = 0; argnr < function->argCount(); ++argnr) {
+            const Token *tok;
+            int argnr2 = isCallFunction(&*scope, argnr, &tok);
+            if (argnr2 > 0) {
+                MyFileInfo::FunctionArg fa(tokenizer, &*scope, argnr+1, tok);
+                fa.id  = FUNCTION_ID(function);
+                fa.id2 = FUNCTION_ID(tok->function());
+                fa.argnr2 = argnr2;
+                fileInfo->nestedCall.push_back(fa);
+            }
+        }
     }
 
     return fileInfo;
-}
-
-bool CheckUninitVar::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok)
-{
-    const Variable * const argvar = scope->function->getArgumentVar(argnr);
-    if (!argvar->isPointer())
-        return false;
-    for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
-        if (tok2->variable() != argvar)
-            continue;
-        if (!Token::Match(tok2->astParent(), "*|["))
-            return false;
-        while (Token::Match(tok2->astParent(), "*|["))
-            tok2 = tok2->astParent();
-        if (!Token::Match(tok2->astParent(),"%cop%"))
-            return false;
-        *tok = tok2;
-        return true;
-    }
-    return false;
 }
 
 Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
@@ -1431,10 +1473,27 @@ Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement
             fileInfo->nullPointer.push_back(fa);
         else if (std::strcmp(e->Name(), "dereferenced") == 0)
             fileInfo->dereferenced.push_back(fa);
+        else if (std::strcmp(e->Name(), "nestedCall") == 0)
+            fileInfo->nestedCall.push_back(fa);
         else
             throw InternalError(nullptr, "Wrong analyze info");
     }
     return fileInfo;
+}
+
+static bool findPath(const CheckUninitVar::MyFileInfo::FunctionArg &from,
+                     const CheckUninitVar::MyFileInfo::FunctionArg &to,
+                     const std::list<CheckUninitVar::MyFileInfo::FunctionArg> &nestedCalls)
+{
+    if (from.id == to.id && from.argnr == to.argnr)
+        return true;
+
+    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it = nestedCalls.begin(); it != nestedCalls.end(); ++it) {
+        if (from.id == it->id && from.argnr == it->argnr && it->id2 == to.id && it->argnr2 == to.argnr)
+            return true;
+    }
+
+    return false;
 }
 
 bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
@@ -1451,6 +1510,7 @@ bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &file
         all.readData.insert(all.readData.end(), fi->readData.begin(), fi->readData.end());
         all.nullPointer.insert(all.nullPointer.end(), fi->nullPointer.begin(), fi->nullPointer.end());
         all.dereferenced.insert(all.dereferenced.end(), fi->dereferenced.begin(), fi->dereferenced.end());
+        all.nestedCall.insert(all.nestedCall.end(), fi->nestedCall.begin(), fi->nestedCall.end());
     }
 
     bool foundErrors = false;
@@ -1459,7 +1519,8 @@ bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &file
         const CheckUninitVar::MyFileInfo::FunctionArg &uninitialized = *it1;
         for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it2 = all.readData.begin(); it2 != all.readData.end(); ++it2) {
             const CheckUninitVar::MyFileInfo::FunctionArg &readData = *it2;
-            if (uninitialized.id != readData.id || uninitialized.argnr != readData.argnr)
+
+            if (!findPath(*it1, *it2, all.nestedCall))
                 continue;
 
             ErrorLogger::ErrorMessage::FileLocation fileLoc1;
@@ -1494,7 +1555,8 @@ bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &file
         const CheckUninitVar::MyFileInfo::FunctionArg &nullPointer = *it1;
         for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it2 = all.dereferenced.begin(); it2 != all.dereferenced.end(); ++it2) {
             const CheckUninitVar::MyFileInfo::FunctionArg &dereference = *it2;
-            if (nullPointer.id != dereference.id || nullPointer.argnr != dereference.argnr)
+
+            if (!findPath(*it1, *it2, all.nestedCall))
                 continue;
 
             ErrorLogger::ErrorMessage::FileLocation fileLoc1;

@@ -4003,6 +4003,14 @@ private:
             "  f(&x);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) using argument p that points at uninitialized variable x\n", errout.str());
+
+        ctu("void use(int *p) { a = *p + 3; }\n"
+            "void call(int x, int *p) { x++; use(p); }\n"
+            "int main() {\n"
+            "  int x;\n"
+            "  call(4,&x);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (error) using argument p that points at uninitialized variable x\n", errout.str());
     }
 };
 

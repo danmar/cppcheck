@@ -96,6 +96,7 @@ public:
                 : id(id_),
                   functionName(functionName_),
                   argnr(argnr_),
+                  argnr2(0),
                   variableName(varname) {
                 location.fileName = fileName;
                 location.linenr   = linenr;
@@ -104,8 +105,10 @@ public:
             FunctionArg(const Tokenizer *tokenizer, const Scope *scope, unsigned int argnr_, const Token *tok);
 
             std::string id;
+            std::string id2;
             std::string functionName;
             unsigned int argnr;
+            unsigned int argnr2;
             std::string variableName;
             struct {
                 std::string fileName;
@@ -124,6 +127,9 @@ public:
 
         /** function arguments that are unconditionally dereferenced */
         std::list<FunctionArg> dereferenced;
+
+        /** function calls other function.. */
+        std::list<FunctionArg> nestedCall;
 
         /** Convert MyFileInfo data into xml string */
         std::string toString() const;
@@ -170,9 +176,6 @@ private:
                "- using allocated data before it has been initialized\n"
                "- using dead pointer\n";
     }
-
-    static bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok);
-
 };
 /// @}
 //---------------------------------------------------------------------------
