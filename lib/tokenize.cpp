@@ -8394,6 +8394,12 @@ const Token * Tokenizer::findGarbageCode() const
         }
     }
 
+    // Objective C/C++
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "[;{}] [ %name% %name% ] ;"))
+            return tok->next();
+    }
+
     return nullptr;
 }
 

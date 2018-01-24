@@ -76,6 +76,8 @@ private:
 
         TEST_CASE(validate);
 
+        TEST_CASE(objectiveC); // Syntax error should be written for objective C/C++ code.
+
         TEST_CASE(syntax_case_default);
 
         TEST_CASE(foreach);     // #3690
@@ -846,6 +848,10 @@ private:
         ASSERT_THROW(tokenizeAndStringify(";template<class T> class X { };",false,false,Settings::Native,"test.c"), InternalError);
         ASSERT_THROW(tokenizeAndStringify("int X<Y>() {};",false,false,Settings::Native,"test.c"), InternalError);
         ASSERT_THROW(tokenizeAndStringify("void foo(int i) { reinterpret_cast<char>(i) };",false,false,Settings::Native,"test.h"), InternalError);
+    }
+
+    void objectiveC() {
+        ASSERT_THROW(tokenizeAndStringify("void f() { [foo bar]; }"), InternalError);
     }
 
     void syntax_case_default() { // correct syntax
