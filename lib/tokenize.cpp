@@ -99,7 +99,7 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
             tok = tok->next();
         while (tok && tok->str() == "[")
             tok = tok->link()->next();
-        return (endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
+        return (tok && endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
     if (cpp && tok->str() == ")") {
         tok = tok->next();
