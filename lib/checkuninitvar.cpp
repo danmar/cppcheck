@@ -1362,7 +1362,7 @@ static int isCallFunction(const Scope *scope, int argnr, const Token **tok)
         }
         if (!prev || !Token::Match(prev->previous(), "%name% ("))
             break;
-        if (!prev->astOperand1()->function())
+        if (!prev->astOperand1() || !prev->astOperand1()->function())
             break;
         *tok = prev->previous();
         return argnr2;
