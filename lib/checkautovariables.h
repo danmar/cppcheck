@@ -83,6 +83,7 @@ private:
 
     void errorReturnAddressToAutoVariable(const Token *tok);
     void errorAssignAddressOfLocalArrayToGlobalPointer(const Token *pointer, const Token *array);
+    void errorAssignAddressOfLocalVariableToGlobalPointer(const Token *pointer, const Token *variable);
     void errorReturnPointerToLocalArray(const Token *tok);
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnReference(const Token *tok);

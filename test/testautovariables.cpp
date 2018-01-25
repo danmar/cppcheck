@@ -88,6 +88,7 @@ private:
         TEST_CASE(testassign2);  // Ticket #2765
 
         TEST_CASE(assignAddressOfLocalArrayToGlobalPointer);
+        TEST_CASE(assignAddressOfLocalVariableToGlobalPointer);
 
         TEST_CASE(returnLocalVariable1);
         TEST_CASE(returnLocalVariable2);
@@ -637,6 +638,23 @@ private:
               "void f() {\n"
               "  int x[10];\n"
               "  p = x;\n"
+              "  p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void assignAddressOfLocalVariableToGlobalPointer() {
+        check("int *p;\n"
+              "void f() {\n"
+              "  int x;\n"
+              "  p = &x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Address of local variable x is assigned to global pointer p and not reassigned before x goes out of scope.\n", errout.str());
+
+        check("int *p;\n"
+              "void f() {\n"
+              "  int x;\n"
+              "  p = &x;\n"
               "  p = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());

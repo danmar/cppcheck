@@ -208,6 +208,22 @@ void CheckAutoVariables::assignFunctionArg()
     }
 }
 
+static bool reassignedGlobalPointer(const Token *vartok, unsigned int pointerVarId)
+{
+    const Token * const end = vartok->variable()->typeStartToken()->scope()->classEnd;
+    for (const Token *tok2 = vartok; tok2 != nullptr && tok2 != end; tok2 = tok2->next()) {
+        if (Token::Match(tok2, "%varid% =", pointerVarId))
+            return true;
+        if (Token::Match(tok2, "%name% (") && !Token::simpleMatch(tok2->linkAt(1), ") {")) {
+            // Bailout: possibly written
+            // TODO: check if it is written
+            return true;
+        }
+    }
+    return false;
+}
+
+
 void CheckAutoVariables::autoVariables()
 {
     const bool printInconclusive = _settings->inconclusive;
@@ -223,25 +239,17 @@ void CheckAutoVariables::autoVariables()
             } else if (Token::Match(tok, "[;{}] * %var% = & %var%") && isPtrArg(tok->tokAt(2)) && isAutoVar(tok->tokAt(5))) {
                 if (checkRvalueExpression(tok->tokAt(5)))
                     errorAutoVariableAssignment(tok->next(), false);
-            } else if (_settings->isEnabled(Settings::WARNING) && Token::Match(tok, "[;{}] %var% = %var% ;") && isGlobalPtr(tok->next()) && isAutoVarArray(tok->tokAt(3))) {
+            } else if (_settings->isEnabled(Settings::WARNING) && Token::Match(tok, "[;{}] %var% = &| %var% ;") && isGlobalPtr(tok->next())) {
                 const Token * const pointer = tok->next();
-                const Token * const array   = tok->tokAt(3);
-                const Token * const end = array->variable()->typeStartToken()->scope()->classEnd;
-                const unsigned int varid = pointer->varId();
-                bool writtenAgain = false;
-                for (const Token *tok2 = array; tok2 != nullptr && tok2 != end; tok2 = tok2->next()) {
-                    if (Token::Match(tok2, "%varid% =", varid)) {
-                        writtenAgain = true;
-                        break;
-                    } else if (Token::Match(tok2, "%name% (") && !Token::simpleMatch(tok2->linkAt(1), ") {")) {
-                        // Bailout: possibly written
-                        // TODO: check if it is written
-                        writtenAgain = true;
-                        break;
-                    }
+                if (isAutoVarArray(tok->tokAt(3))) {
+                    const Token * const array = tok->tokAt(3);
+                    if (!reassignedGlobalPointer(array, pointer->varId()))
+                        errorAssignAddressOfLocalArrayToGlobalPointer(pointer, array);
+                } else if (isAutoVar(tok->tokAt(4))) {
+                    const Token * const variable = tok->tokAt(4);
+                    if (!reassignedGlobalPointer(variable, pointer->varId()))
+                        errorAssignAddressOfLocalVariableToGlobalPointer(pointer, variable);
                 }
-                if (!writtenAgain)
-                    errorAssignAddressOfLocalArrayToGlobalPointer(pointer, array);
             } else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
                 if (printInconclusive && isPtrArg(tok->next())) {
@@ -360,6 +368,14 @@ void CheckAutoVariables::errorAssignAddressOfLocalArrayToGlobalPointer(const Tok
     const std::string arrayName   = array ? array->str() : std::string("array");
     reportError(pointer, Severity::warning, "autoVariablesAssignGlobalPointer",
                 "Address of local array " + arrayName + " is assigned to global pointer " + pointerName +" and not reassigned before " + arrayName + " goes out of scope.", CWE562, false);
+}
+
+void CheckAutoVariables::errorAssignAddressOfLocalVariableToGlobalPointer(const Token *pointer, const Token *variable)
+{
+    const std::string pointerName = pointer ? pointer->str() : std::string("pointer");
+    const std::string variableName = variable ? variable->str() : std::string("variable");
+    reportError(pointer, Severity::warning, "autoVariablesAssignGlobalPointer",
+                "Address of local variable " + variableName + " is assigned to global pointer " + pointerName +" and not reassigned before " + variableName + " goes out of scope.", CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname)
