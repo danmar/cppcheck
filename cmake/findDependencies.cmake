@@ -1,6 +1,9 @@
-set(GUI_QT_COMPONENTS Core Gui Widgets PrintSupport)
-find_package(Qt5 COMPONENTS ${GUI_QT_COMPONENTS})
-find_package(Qt5LinguistTools)
+if (BUILD_GUI)
+    set(GUI_QT_COMPONENTS Core Gui Widgets PrintSupport)
+    find_package(Qt5 COMPONENTS ${GUI_QT_COMPONENTS})
+    find_package(Qt5LinguistTools)
+endif()
+
 if (HAVE_RULES)
     find_library(PCRE pcre)
     if (NOT PCRE)
