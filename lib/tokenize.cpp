@@ -8362,6 +8362,8 @@ const Token * Tokenizer::findGarbageCode() const
             return tok;
         if (Token::Match(tok, ";|(|[ %comp%"))
             return tok;
+        if (Token::Match(tok, "%cop%|= ]") && tok->str() != "&")
+            return tok;
     }
 
     // Code must not start with an arithmetical operand
