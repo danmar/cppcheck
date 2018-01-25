@@ -1307,9 +1307,9 @@ std::string CheckUninitVar::MyFileInfo::toString() const
     return ret.str();
 }
 
-#define FUNCTION_ID(function)  tokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr())
+#define FUNCTION_ID(function)  _tokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr())
 
-CheckUninitVar::MyFileInfo::FunctionArg::FunctionArg(const Tokenizer *tokenizer, const Scope *scope, unsigned int argnr_, const Token *tok)
+CheckUninitVar::MyFileInfo::FunctionArg::FunctionArg(const Tokenizer *_tokenizer, const Scope *scope, unsigned int argnr_, const Token *tok)
     :
     id(FUNCTION_ID(scope->function)),
     functionName(scope->className),
@@ -1317,11 +1317,11 @@ CheckUninitVar::MyFileInfo::FunctionArg::FunctionArg(const Tokenizer *tokenizer,
     argnr2(0),
     variableName(scope->function->getArgumentVar(argnr-1)->name())
 {
-    location.fileName = tokenizer->list.file(tok);
+    location.fileName = _tokenizer->list.file(tok);
     location.linenr   = tok->linenr();
 }
 
-static bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok)
+bool CheckUninitVar::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const
 {
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
     if (!argvar->isPointer())
@@ -1329,11 +1329,7 @@ static bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok)
     for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
         if (tok2->variable() != argvar)
             continue;
-        if (!Token::Match(tok2->astParent(), "*|["))
-            return false;
-        while (Token::Match(tok2->astParent(), "*|["))
-            tok2 = tok2->astParent();
-        if (!Token::Match(tok2->astParent(),"%cop%"))
+        if (!isVariableUsage(tok2, true, Alloc::ARRAY))
             return false;
         *tok = tok2;
         return true;
@@ -1370,9 +1366,15 @@ static int isCallFunction(const Scope *scope, int argnr, const Token **tok)
     return -1;
 }
 
-Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings * /*settings*/) const
+Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
+    const CheckUninitVar checker(tokenizer, settings, nullptr);
+    return checker.getFileInfo();
+}
+
+Check::FileInfo *CheckUninitVar::getFileInfo() const
+{
+    const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
     std::list<Scope>::const_iterator scope;
 
     MyFileInfo *fileInfo = new MyFileInfo;
@@ -1398,7 +1400,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
                     // null pointer..
                     const ValueFlow::Value *value = argtok->getValue(0);
                     if (value && !value->isInconclusive())
-                        fileInfo->nullPointer.push_back(MyFileInfo::FunctionArg(FUNCTION_ID(tok->astOperand1()->function()), tok->astOperand1()->str(), argnr+1, tokenizer->list.file(argtok), argtok->linenr(), argtok->str()));
+                        fileInfo->nullPointer.push_back(MyFileInfo::FunctionArg(FUNCTION_ID(tok->astOperand1()->function()), tok->astOperand1()->str(), argnr+1, _tokenizer->list.file(argtok), argtok->linenr(), argtok->str()));
                 }
                 // pointer to uninitialized data..
                 if (argtok->str() != "&" || argtok->astOperand2())
@@ -1411,7 +1413,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
                 const ValueFlow::Value &v = argtok->values().front();
                 if (v.valueType != ValueFlow::Value::UNINIT || v.isInconclusive())
                     continue;
-                fileInfo->uninitialized.push_back(MyFileInfo::FunctionArg(FUNCTION_ID(tok->astOperand1()->function()), tok->astOperand1()->str(), argnr+1, tokenizer->list.file(argtok), argtok->linenr(), argtok->str()));
+                fileInfo->uninitialized.push_back(MyFileInfo::FunctionArg(FUNCTION_ID(tok->astOperand1()->function()), tok->astOperand1()->str(), argnr+1, _tokenizer->list.file(argtok), argtok->linenr(), argtok->str()));
             }
         }
 
@@ -1419,9 +1421,9 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
         for (int argnr = 0; argnr < function->argCount(); ++argnr) {
             const Token *tok;
             if (isUnsafeFunction(&*scope, argnr, &tok))
-                fileInfo->readData.push_back(MyFileInfo::FunctionArg(tokenizer, &*scope, argnr+1, tok));
+                fileInfo->readData.push_back(MyFileInfo::FunctionArg(_tokenizer, &*scope, argnr+1, tok));
             if (CheckNullPointer::isUnsafeFunction(&*scope, argnr, &tok))
-                fileInfo->dereferenced.push_back(MyFileInfo::FunctionArg(tokenizer, &*scope, argnr+1, tok));
+                fileInfo->dereferenced.push_back(MyFileInfo::FunctionArg(_tokenizer, &*scope, argnr+1, tok));
         }
 
         // Nested function calls
@@ -1429,7 +1431,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
             const Token *tok;
             int argnr2 = isCallFunction(&*scope, argnr, &tok);
             if (argnr2 > 0) {
-                MyFileInfo::FunctionArg fa(tokenizer, &*scope, argnr+1, tok);
+                MyFileInfo::FunctionArg fa(_tokenizer, &*scope, argnr+1, tok);
                 fa.id  = FUNCTION_ID(function);
                 fa.id2 = FUNCTION_ID(tok->function());
                 fa.argnr2 = argnr2;

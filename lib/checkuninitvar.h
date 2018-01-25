@@ -155,6 +155,9 @@ public:
     void uninitStructMemberError(const Token *tok, const std::string &membername);
 
 private:
+    Check::FileInfo *getFileInfo() const;
+    bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const;
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckUninitVar c(nullptr, settings, errorLogger);
 
