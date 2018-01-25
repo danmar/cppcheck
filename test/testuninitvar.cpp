@@ -3996,7 +3996,7 @@ private:
 
     void ctu() {
         ctu("void f(int *p) {\n"
-            "    a = *p + 3;\n"
+            "    a = *p;\n"
             "}\n"
             "int main() {\n"
             "  int x;\n"

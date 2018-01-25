@@ -937,10 +937,10 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     }
 
     if (Token::Match(vartok->previous(), "++|--|%cop%")) {
-        if (_tokenizer->isCPP() && alloc == ARRAY && Token::Match(vartok->tokAt(-4), "& %var% =|( *"))
+        if ((!_tokenizer || _tokenizer->isCPP()) && alloc == ARRAY && Token::Match(vartok->tokAt(-4), "& %var% =|( *"))
             return false;
 
-        if (_tokenizer->isCPP() && Token::Match(vartok->previous(), ">>|<<")) {
+        if (_tokenizer && _tokenizer->isCPP() && Token::Match(vartok->previous(), ">>|<<")) {
             const Token* tok2 = vartok->previous();
             if (Token::simpleMatch(tok2->astOperand1(), ">>"))
                 return false; // Looks like stream operator, initializes the variable
@@ -1012,7 +1012,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         return true;
     }
 
-    if (_tokenizer->isCPP() && Token::Match(vartok->next(), "<<|>>")) {
+    if (_tokenizer && _tokenizer->isCPP() && Token::Match(vartok->next(), "<<|>>")) {
         // Is this calculation done in rhs?
         const Token *tok = vartok;
         while (Token::Match(tok, "%name%|.|::"))
@@ -1320,7 +1320,7 @@ CheckUninitVar::MyFileInfo::FunctionArg::FunctionArg(const Tokenizer *tokenizer,
     location.linenr   = tok->linenr();
 }
 
-static bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok)
+bool CheckUninitVar::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const
 {
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
     if (!argvar->isPointer())
@@ -1328,11 +1328,7 @@ static bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok)
     for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
         if (tok2->variable() != argvar)
             continue;
-        if (!Token::Match(tok2->astParent(), "*|["))
-            return false;
-        while (Token::Match(tok2->astParent(), "*|["))
-            tok2 = tok2->astParent();
-        if (!Token::Match(tok2->astParent(),"%cop%"))
+        if (!isVariableUsage(tok2, true, Alloc::ARRAY))
             return false;
         *tok = tok2;
         return true;
