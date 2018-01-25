@@ -1314,6 +1314,7 @@ CheckUninitVar::MyFileInfo::FunctionArg::FunctionArg(const Tokenizer *tokenizer,
     id(FUNCTION_ID(scope->function)),
     functionName(scope->className),
     argnr(argnr_),
+    argnr2(0),
     variableName(scope->function->getArgumentVar(argnr-1)->name())
 {
     location.fileName = tokenizer->list.file(tok);
