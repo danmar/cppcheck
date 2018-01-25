@@ -8362,7 +8362,7 @@ const Token * Tokenizer::findGarbageCode() const
             return tok;
         if (Token::Match(tok, ";|(|[ %comp%"))
             return tok;
-        if (Token::Match(tok, "%cop%|= ]") && tok->str() != "&")
+        if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "[|, &|= ]")))
             return tok;
     }
 
