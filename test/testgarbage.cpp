@@ -1206,6 +1206,7 @@ private:
         ASSERT_THROW(checkCode("void f() { x = , * [ | + 0xff | > 0xff]; }"), InternalError);
         ASSERT_THROW(checkCode("void f() {  x = , | 0xff , 0.1 < ; }"), InternalError);
         ASSERT_THROW(checkCode("void f() { x = [ 1 || ] ; }"), InternalError);
+        ASSERT_THROW(checkCode("void f1() { x = name6 1 || ? name3 [  ( 1 || +) ] ; }"), InternalError);
     }
 
     void garbageValueFlow() {

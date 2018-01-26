@@ -8308,6 +8308,24 @@ void Tokenizer::validate() const
         cppcheckError(lastTok);
 }
 
+static const Token *findUnmatchedTernaryOp(const Token * const begin, const Token * const end)
+{
+    std::stack<const Token *> ternaryOp;
+    for (const Token *tok = begin; tok != end && tok->str() != ";"; tok = tok->next()) {
+        if (tok->str() == "?")
+            ternaryOp.push(tok);
+        else if (!ternaryOp.empty() && tok->str() == ":")
+            ternaryOp.pop();
+        else if (Token::Match(tok,"(|[")) {
+            const Token *inner = findUnmatchedTernaryOp(tok->next(), tok->link());
+            if (inner)
+                return inner;
+            tok = tok->link();
+        }
+    }
+    return ternaryOp.empty() ? nullptr : ternaryOp.top();
+}
+
 const Token * Tokenizer::findGarbageCode() const
 {
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
@@ -8365,6 +8383,10 @@ const Token * Tokenizer::findGarbageCode() const
         if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "[|, &|= ]")))
             return tok;
     }
+
+    // ternary operator without :
+    if (const Token *ternaryOp = findUnmatchedTernaryOp(tokens(), nullptr))
+        return ternaryOp;
 
     // Code must not start with an arithmetical operand
     if (Token::Match(list.front(), "%cop%"))
