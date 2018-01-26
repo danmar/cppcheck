@@ -73,6 +73,7 @@ private:
         TEST_CASE(tokenize32);  // #5884 (fsanitize=undefined: left shift of negative value -10000 in lib/templatesimplifier.cpp:852:46)
         TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
         TEST_CASE(tokenize34);  // #8031
+        TEST_CASE(tokenize35);  // #8361
 
         TEST_CASE(validate);
 
@@ -839,6 +840,11 @@ private:
                                 "5: Containter<int> :: Containter ( ) : mElements@2 ( nullptr ) { }\n";
             ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
         }
+    }
+
+    void tokenize35() { // #8361
+        tokenizeAndStringify("typedef int CRCWord; "
+                             "template<typename T> ::CRCWord const Compute(T const t) { return 0; }");
     }
 
     void validate() {
