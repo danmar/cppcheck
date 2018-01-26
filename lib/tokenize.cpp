@@ -8413,7 +8413,7 @@ const Token * Tokenizer::findGarbageCode() const
             tok = tok->next()->findClosingBracket();
             if (!tok)
                 return tok1;
-            if (!Token::Match(tok, ">|>> %name%"))
+            if (!Token::Match(tok, ">|>> ::| %name%"))
                 return tok->next() ? tok->next() : tok1;
         }
     }
