@@ -1502,7 +1502,7 @@ void CheckOther::checkCharVariable()
                         v1 = tok->astOperand1()->getValueGE(0x80, _settings);
                     if (v1 && !(tok->str() == "&" && v2 && v2->isKnown() && v2->intvalue >= 0 && v2->intvalue < 0x100))
                         warn = true;
-                } else if (!warn && astIsSignedChar(tok->astOperand2())) {
+                } else if (astIsSignedChar(tok->astOperand2())) {
                     const ValueFlow::Value *v1 = tok->astOperand2()->getValueLE(-1, _settings);
                     const ValueFlow::Value *v2 = tok->astOperand1()->getMaxValue(false);
                     if (!v1)
