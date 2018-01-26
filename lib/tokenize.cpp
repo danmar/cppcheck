@@ -8308,7 +8308,7 @@ void Tokenizer::validate() const
         cppcheckError(lastTok);
 }
 
-static const Token *findUnmatchedTernaryOp(const Token * const begin, const Token * const end)
+static const Token *findUnmatchedTernaryOp(const Token * const begin, const Token * const end, unsigned depth = 0)
 {
     std::stack<const Token *> ternaryOp;
     for (const Token *tok = begin; tok != end && tok->str() != ";"; tok = tok->next()) {
@@ -8316,8 +8316,8 @@ static const Token *findUnmatchedTernaryOp(const Token * const begin, const Toke
             ternaryOp.push(tok);
         else if (!ternaryOp.empty() && tok->str() == ":")
             ternaryOp.pop();
-        else if (Token::Match(tok,"(|[")) {
-            const Token *inner = findUnmatchedTernaryOp(tok->next(), tok->link());
+        else if (depth < 100 && Token::Match(tok,"(|[")) {
+            const Token *inner = findUnmatchedTernaryOp(tok->next(), tok->link(), depth+1);
             if (inner)
                 return inner;
             tok = tok->link();
