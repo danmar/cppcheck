@@ -1507,7 +1507,7 @@ void CheckBufferOverrun::bufferOverrun()
                 continue;
 
             const Variable *var = pointerToken->variable();
-            if (!var || !var->isArray())
+            if (!var || !var->isArray() || var->dimension(0) <= 0)
                 continue;
 
             const ValueFlow::Value *value = indexToken->getValueGE(var->dimension(0)+1, _settings);
