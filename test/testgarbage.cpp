@@ -379,6 +379,9 @@ private:
 
         //ticket #4267
         ASSERT_THROW(checkCode("f ( ) { switch break; { switch ( x ) { case } case break; -6: ( ) ; } }"), InternalError);
+
+        // Missing semicolon
+        ASSERT_THROW(checkCode("void foo () { switch(0) case 0 : default : }"), InternalError);
     }
 
     void garbageCode1() {
