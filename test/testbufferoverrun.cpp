@@ -185,6 +185,7 @@ private:
         // char *p2 = a + 11   // UB
         TEST_CASE(pointer_out_of_bounds_1);
         TEST_CASE(pointer_out_of_bounds_2);
+        TEST_CASE(pointer_out_of_bounds_3);
         TEST_CASE(pointer_out_of_bounds_sub);
 
         TEST_CASE(strncat1);
@@ -2793,6 +2794,14 @@ private:
               "    free(p);"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void pointer_out_of_bounds_3() {
+        check("struct S { int a[10]; };\n"
+              "void f(struct S *s) {\n"
+              "    char *p = s->a + 100;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 's->a+100' is out of bounds.\n", errout.str());
     }
 
     void pointer_out_of_bounds_sub() {

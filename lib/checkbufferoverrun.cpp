@@ -1481,6 +1481,39 @@ void CheckBufferOverrun::bufferOverrun()
 {
     // singlepass checking using ast, symboldatabase and valueflow
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (_settings->isEnabled(Settings::PORTABILITY) && tok->str() == "+" && tok->valueType() && tok->valueType()->pointer > 0) {
+            if (!tok->astOperand1() || !tok->astOperand1()->valueType())
+                continue;
+            if (!tok->astOperand2() || !tok->astOperand2()->valueType())
+                continue;
+
+            // pointer arithmetic..
+            const Token *pointerToken, *indexToken;
+
+            if (tok->astOperand1()->valueType()->pointer == 0) {
+                indexToken = tok->astOperand1();
+                pointerToken = tok->astOperand2();
+            } else if (tok->astOperand2()->valueType()->pointer == 0) {
+                indexToken = tok->astOperand2();
+                pointerToken = tok->astOperand1();
+            }
+
+            while (pointerToken && pointerToken->str() == ".")
+                pointerToken = pointerToken->astOperand2();
+
+            if (!pointerToken || !pointerToken->isName())
+                continue;
+
+            const Variable *var = pointerToken->variable();
+            if (!var || !var->isArray())
+                continue;
+
+            const ValueFlow::Value *value = indexToken->getValueGE(var->dimension(0)+1, _settings);
+            if (value) {
+                pointerOutOfBoundsError(tok, indexToken, value->intvalue);
+            }
+        }
+
         // Array index
         if (!Token::Match(tok, "%name% ["))
             continue;
@@ -1876,7 +1909,7 @@ MathLib::bigint CheckBufferOverrun::ArrayInfo::totalIndex(const std::vector<Valu
 
 void CheckBufferOverrun::arrayIndexThenCheck()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!_settings->isEnabled(Settings::PORTABILITY))
         return;
 
     const std::size_t functions = symbolDatabase->functionScopes.size();
