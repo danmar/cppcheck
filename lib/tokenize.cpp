@@ -8350,12 +8350,14 @@ const Token * Tokenizer::findGarbageCode() const
             if (Token::simpleMatch(tok->linkAt(1), ") {")) {
                 tok = tok->linkAt(1)->linkAt(1);
             } else {
-                while (tok->str() != ";" && tok->str() != "{") {
-                    if (tok->next() == nullptr) {
-                        return tok;
-                    }
+                const Token *switchToken = tok;
+                tok = tok->linkAt(1);
+                while (tok && !Token::Match(tok, "[;{}]"))
                     tok = tok->next();
-                }
+                if (!tok)
+                    return switchToken;
+                if (tok->str() != ";")
+                    return tok;
             }
         } else if (tok->str() == "(") {
             tok = tok->link();
