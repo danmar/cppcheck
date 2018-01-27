@@ -1469,7 +1469,7 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
 
 const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, unsigned int argnr, const Settings *settings) const
 {
-    if (!_values)
+    if (!_values || !settings)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
@@ -1481,7 +1481,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, unsigned int 
                 break;
         }
     }
-    if (settings && ret) {
+    if (ret) {
         if (ret->isInconclusive() && !settings->inconclusive)
             return nullptr;
         if (ret->condition && !settings->isEnabled(Settings::WARNING))
