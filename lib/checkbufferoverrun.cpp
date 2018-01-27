@@ -1496,6 +1496,8 @@ void CheckBufferOverrun::bufferOverrun()
             } else if (tok->astOperand2()->valueType()->pointer == 0) {
                 indexToken = tok->astOperand2();
                 pointerToken = tok->astOperand1();
+            } else {
+                continue;
             }
 
             while (pointerToken && pointerToken->str() == ".")
