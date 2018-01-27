@@ -95,6 +95,7 @@ private:
         TEST_CASE(returnLocalVariable3); // &x[0]
         TEST_CASE(returnLocalVariable4); // x+y
         TEST_CASE(returnLocalVariable5); // cast
+        TEST_CASE(returnLocalVariable6); // valueflow
 
         // return reference..
         TEST_CASE(returnReference1);
@@ -755,6 +756,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Pointer to local array variable returned.\n", errout.str());
     }
 
+    void returnLocalVariable6() { // valueflow
+        check("int *foo() {\n"
+              "    int x = 123;\n"
+              "    int p = &x;\n"
+              "    return p;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Address of auto-variable 'x' returned\n", errout.str());
+    }
 
     void returnReference1() {
         check("std::string &foo()\n"

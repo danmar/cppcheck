@@ -279,6 +279,26 @@ void CheckAutoVariables::autoVariables()
                     errorAutoVariableAssignment(tok->next(), false);
             }
             // Critical return
+            else if (Token::Match(tok, "return %var% ;") && isAutoVar(tok->next())) {
+                const std::list<ValueFlow::Value> &values = tok->next()->values();
+                const ValueFlow::Value *value = nullptr;
+                for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
+                    if (!it->isTokValue())
+                        continue;
+                    if (!_settings->inconclusive && it->isInconclusive())
+                        continue;
+                    if (!Token::Match(it->tokvalue->previous(), "= & %var%"))
+                        continue;
+                    if (!isAutoVar(it->tokvalue->next()))
+                        continue;
+                    if (!value || value->isInconclusive())
+                        value = &(*it);
+                }
+
+                if (value)
+                    errorReturnAddressToAutoVariable(tok, value);
+            }
+
             else if (Token::Match(tok, "return & %var% ;")) {
                 const Token* varTok = tok->tokAt(2);
                 if (isAutoVar(varTok))
@@ -334,6 +354,11 @@ void CheckAutoVariables::returnPointerToLocalArray()
 void CheckAutoVariables::errorReturnAddressToAutoVariable(const Token *tok)
 {
     reportError(tok, Severity::error, "returnAddressOfAutoVariable", "Address of an auto-variable returned.", CWE562, false);
+}
+
+void CheckAutoVariables::errorReturnAddressToAutoVariable(const Token *tok, const ValueFlow::Value *value)
+{
+    reportError(tok, Severity::error, "returnAddressOfAutoVariable", "Address of auto-variable '" + value->tokvalue->astOperand1()->expressionString() + "' returned", CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnPointerToLocalArray(const Token *tok)

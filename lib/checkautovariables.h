@@ -82,6 +82,7 @@ private:
     static bool returnTemporary(const Token *tok);
 
     void errorReturnAddressToAutoVariable(const Token *tok);
+    void errorReturnAddressToAutoVariable(const Token *tok, const ValueFlow::Value *value);
     void errorAssignAddressOfLocalArrayToGlobalPointer(const Token *pointer, const Token *array);
     void errorAssignAddressOfLocalVariableToGlobalPointer(const Token *pointer, const Token *variable);
     void errorReturnPointerToLocalArray(const Token *tok);
