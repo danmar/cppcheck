@@ -71,6 +71,10 @@ void nullPointer(char *p, int fd)
     // cppcheck-suppress unreadVariable
     // cppcheck-suppress nullPointer
     int ret = access(NULL, 0);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress nullPointer
+    fdopen(fd, NULL);
 }
 
 void memleak_getaddrinfo()
@@ -88,12 +92,11 @@ void memleak_mmap(int fd)
     // cppcheck-suppress memleak
 }
 
-/* TODO: add configuration for fdopen
 void resourceLeak_fdopen(int fd) {
+    // cppcheck-suppress unreadVariable
     FILE *f = fdopen(fd, "r");
     // cppcheck-suppress resourceLeak
 }
-*/
 
 void resourceLeak_fdopendir(int fd)
 {
@@ -230,6 +233,10 @@ void uninitvar(int fd)
     // cppcheck-suppress unreadVariable
     // cppcheck-suppress uninitvar
     int access_ret = access("file", x);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress uninitvar
+    fdopen(x, "rw");
 }
 
 void uninitvar_getcwd(void)
