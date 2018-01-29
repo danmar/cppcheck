@@ -59,6 +59,25 @@ void validCode()
     FreeLibrary(hModule);
     hModule = GetModuleHandle(NULL);
     FreeLibrary(hModule);
+
+    // Valid Event usage, no leaks, valid arguments
+    HANDLE event;
+    event = CreateEvent(NULL, FALSE, FALSE, NULL);
+    if (NULL != event) {
+        SetEvent(event);
+        CloseHandle(event);
+    }
+    event = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"testevent");
+    if (NULL != event) {
+        PulseEvent(event);
+        SetEvent(event);
+        CloseHandle(event);
+    }
+    event = CreateEventEx(NULL, L"testevent3", CREATE_EVENT_INITIAL_SET, EVENT_MODIFY_STATE);
+    if (NULL != event) {
+        ResetEvent(event);
+        CloseHandle(event);
+    }
 }
 
 void bufferAccessOutOfBounds()
@@ -102,6 +121,17 @@ void nullPointer()
     HMODULE * phModule = NULL;
     // cppcheck-suppress nullPointer
     GetModuleHandleEx(0, NULL, phModule);
+
+    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress nullPointer
+    OpenEvent(EVENT_ALL_ACCESS, FALSE, NULL);
+    HANDLE hEvent = NULL;
+    // cppcheck-suppress nullPointer
+    PulseEvent(hEvent);
+    // cppcheck-suppress nullPointer
+    ResetEvent(hEvent);
+    // cppcheck-suppress nullPointer
+    SetEvent(hEvent);
 }
 
 void resourceLeak_CreateSemaphoreA()
@@ -162,6 +192,30 @@ void resourceLeak_LoadLibrary()
     // cppcheck-suppress resourceLeak
 }
 
+void resourceLeak_CreateEvent()
+{
+    HANDLE hEvent;
+    hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    SetEvent(hEvent);
+    // cppcheck-suppress resourceLeak
+}
+
+void resourceLeak_CreateEventExA()
+{
+    HANDLE hEvent;
+    // cppcheck-suppress unreadVariable
+    hEvent = CreateEventExA(NULL, "test", CREATE_EVENT_INITIAL_SET, EVENT_MODIFY_STATE);
+    // cppcheck-suppress resourceLeak
+}
+
+void resourceLeak_OpenEventW()
+{
+    HANDLE hEvent;
+    // cppcheck-suppress unreadVariable
+    hEvent = OpenEventW(EVENT_ALL_ACCESS, TRUE, L"testevent");
+    // cppcheck-suppress resourceLeak
+}
+
 void ignoredReturnValue()
 {
     // cppcheck-suppress leakReturnValNotUsed
@@ -187,6 +241,13 @@ void ignoredReturnValue()
     // cppcheck-suppress ignoredReturnValue
     GetProcAddress(hInstLib, "name");
     FreeLibrary(hInstLib);
+
+    // cppcheck-suppress leakReturnValNotUsed
+    CreateEvent(NULL, FALSE, FALSE, NULL);
+    // cppcheck-suppress leakReturnValNotUsed
+    OpenEvent(EVENT_ALL_ACCESS, FALSE, L"testevent");
+    // cppcheck-suppress leakReturnValNotUsed
+    CreateEventEx(NULL, L"test", CREATE_EVENT_INITIAL_SET, EVENT_MODIFY_STATE);
 }
 
 void invalidFunctionArg()
@@ -243,6 +304,16 @@ void uninitvar()
     ReleaseMutex(hMutex);
     // cppcheck-suppress uninitvar
     CloseHandle(hMutex);
+
+    HANDLE hEvent;
+    // cppcheck-suppress uninitvar
+    PulseEvent(hEvent);
+    // cppcheck-suppress uninitvar
+    ResetEvent(hEvent);
+    // cppcheck-suppress uninitvar
+    SetEvent(hEvent);
+    // cppcheck-suppress uninitvar
+    CloseHandle(hEvent);
 }
 
 void allocDealloc_GetModuleHandleEx()
