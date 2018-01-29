@@ -233,6 +233,7 @@ void uninitvar(int fd)
     // cppcheck-suppress unreadVariable
     // cppcheck-suppress uninitvar
     int access_ret = access("file", x);
+
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
