@@ -3180,14 +3180,6 @@ void uninivar_strrchr(void)
     (void)strrchr(str,c);
 }
 
-void uninivar_strbprk(void)
-{
-    char *cs;
-    char *ct;
-    // cppcheck-suppress uninitvar
-    (void)strbprk(cs,ct);
-}
-
 void uninivar_wcsrchr(void)
 {
     wchar_t* ws;
