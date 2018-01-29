@@ -1486,12 +1486,16 @@ Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement
 
 static bool findPath(const CheckUninitVar::MyFileInfo::FunctionArg &from,
                      const CheckUninitVar::MyFileInfo::FunctionArg &to,
-                     const std::list<CheckUninitVar::MyFileInfo::FunctionArg> &nestedCalls)
+                     const std::map<std::string, std::list<CheckUninitVar::MyFileInfo::FunctionArg>> &nestedCalls)
 {
     if (from.id == to.id && from.argnr == to.argnr)
         return true;
 
-    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it = nestedCalls.begin(); it != nestedCalls.end(); ++it) {
+    const std::map<std::string, std::list<CheckUninitVar::MyFileInfo::FunctionArg>>::const_iterator nc = nestedCalls.find(from.id);
+    if (nc == nestedCalls.end())
+        return false;
+
+    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it = nc->second.begin(); it != nc->second.end(); ++it) {
         if (from.id == it->id && from.argnr == it->argnr && it->id2 == to.id && it->argnr2 == to.argnr)
             return true;
     }
@@ -1518,12 +1522,18 @@ bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &file
 
     bool foundErrors = false;
 
+    std::map<std::string, std::list<CheckUninitVar::MyFileInfo::FunctionArg>> nestedCalls;
+    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it = all.nestedCall.begin(); it != all.nestedCall.end(); ++it) {
+        std::list<CheckUninitVar::MyFileInfo::FunctionArg> &list = nestedCalls[it->id];
+        list.push_back(*it);
+    }
+
     for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it1 = all.uninitialized.begin(); it1 != all.uninitialized.end(); ++it1) {
         const CheckUninitVar::MyFileInfo::FunctionArg &uninitialized = *it1;
         for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it2 = all.readData.begin(); it2 != all.readData.end(); ++it2) {
             const CheckUninitVar::MyFileInfo::FunctionArg &readData = *it2;
 
-            if (!findPath(*it1, *it2, all.nestedCall))
+            if (!findPath(*it1, *it2, nestedCalls))
                 continue;
 
             ErrorLogger::ErrorMessage::FileLocation fileLoc1;
@@ -1559,7 +1569,7 @@ bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &file
         for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it2 = all.dereferenced.begin(); it2 != all.dereferenced.end(); ++it2) {
             const CheckUninitVar::MyFileInfo::FunctionArg &dereference = *it2;
 
-            if (!findPath(*it1, *it2, all.nestedCall))
+            if (!findPath(*it1, *it2, nestedCalls))
                 continue;
 
             ErrorLogger::ErrorMessage::FileLocation fileLoc1;
