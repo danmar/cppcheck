@@ -92,7 +92,8 @@ void memleak_mmap(int fd)
     // cppcheck-suppress memleak
 }
 
-void resourceLeak_fdopen(int fd) {
+void resourceLeak_fdopen(int fd)
+{
     // cppcheck-suppress unreadVariable
     FILE *f = fdopen(fd, "r");
     // cppcheck-suppress resourceLeak
