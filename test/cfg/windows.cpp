@@ -78,6 +78,12 @@ void validCode()
         ResetEvent(event);
         CloseHandle(event);
     }
+
+    void *pMem1 = _malloca(1);
+    _freea(pMem1);
+    // Memory from _alloca must not be freed
+    void *pMem2 = _alloca(10);
+    memset(pMem2, 0, 10);
 }
 
 void bufferAccessOutOfBounds()
@@ -132,6 +138,13 @@ void nullPointer()
     ResetEvent(hEvent);
     // cppcheck-suppress nullPointer
     SetEvent(hEvent);
+}
+
+void memleak_malloca()
+{
+    // cppcheck-suppress unreadVariable
+    void *pMem = _malloca(10);
+    // cppcheck-suppress memleak
 }
 
 void resourceLeak_CreateSemaphoreA()
@@ -248,6 +261,11 @@ void ignoredReturnValue()
     OpenEvent(EVENT_ALL_ACCESS, FALSE, L"testevent");
     // cppcheck-suppress leakReturnValNotUsed
     CreateEventEx(NULL, L"test", CREATE_EVENT_INITIAL_SET, EVENT_MODIFY_STATE);
+
+    // cppcheck-suppress leakReturnValNotUsed
+    _malloca(10);
+    // cppcheck-suppress ignoredReturnValue
+    _alloca(5);
 }
 
 void invalidFunctionArg()
@@ -281,6 +299,13 @@ void invalidFunctionArg()
     // cppcheck-suppress invalidFunctionArg
     HINSTANCE hInstLib = LoadLibraryEx(L"My.dll", 1, 0);
     FreeLibrary(hInstLib);
+
+    // cppcheck-suppress invalidFunctionArg
+    void *pMem = _malloca(-1);
+    _freea(pMem);
+    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress invalidFunctionArg
+    pMem = _alloca(-5);
 }
 
 void uninitvar()
