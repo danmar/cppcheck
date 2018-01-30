@@ -75,6 +75,9 @@ void nullPointer(char *p, int fd)
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress nullPointer
     fdopen(fd, NULL);
+    // cppcheck-suppress strtokCalled
+    // cppcheck-suppress nullPointer
+    strtok(p, NULL);
 }
 
 void memleak_getaddrinfo()
@@ -239,6 +242,11 @@ void uninitvar(int fd)
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
     fdopen(x, "rw");
+
+    char *strtok_arg1;
+    // cppcheck-suppress strtokCalled
+    // cppcheck-suppress uninitvar
+    strtok(strtok_arg1, ";");
 }
 
 void uninitvar_getcwd(void)
