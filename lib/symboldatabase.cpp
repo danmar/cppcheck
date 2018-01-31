@@ -130,9 +130,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     // goto initial '{'
                     if (!new_scope->definedType) {
                         _tokenizer->syntaxError(nullptr); // #6808
-                    }
-                    tok2 = new_scope->definedType->initBaseInfo(tok, tok2);
-
+						tok2 = new_scope->definedType->initBaseInfo(tok, tok2);
+					}
                     // make sure we have valid code
                     if (!tok2) {
                         break;
