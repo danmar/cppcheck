@@ -27,6 +27,11 @@ void validCode()
     // cppcheck-suppress lstrcatCalled
     lstrcat(buf, "test");
 
+    // cppcheck-suppress strlwrCalled
+    strlwr(buf);
+    // cppcheck-suppress struprCalled
+    strupr(buf);
+
     // Valid Mutex usage, no leaks, valid arguments
     HANDLE hMutex1;
     hMutex1 = CreateMutex(NULL, TRUE, NULL);
@@ -41,17 +46,6 @@ void validCode()
     hMutex3 = OpenMutex(MUTEX_ALL_ACCESS, FALSE, "sem");
     CloseHandle(hMutex3);
 
-    // Valid Library usage, no leaks, valid arguments
-    HINSTANCE hInstLib = LoadLibrary(L"My.dll");
-    FreeLibrary(hInstLib);
-    hInstLib = LoadLibraryA("My.dll");
-    FreeLibrary(hInstLib);
-    hInstLib = LoadLibraryEx(L"My.dll", NULL, 0);
-    FreeLibrary(hInstLib);
-    hInstLib = LoadLibraryExW(L"My.dll", NULL, 0);
-    FreeLibrary(hInstLib);
-    hInstLib = ::LoadLibrary(L"My.dll");
-    FreeLibraryAndExitThread(hInstLib, 0);
     // Valid Module usage, no leaks, valid arguments
     HMODULE hModule = GetModuleHandle(L"My.dll");
     FreeLibrary(hModule);
@@ -84,6 +78,18 @@ void validCode()
     // Memory from _alloca must not be freed
     void *pMem2 = _alloca(10);
     memset(pMem2, 0, 10);
+
+    // Valid Library usage, no leaks, valid arguments
+    HINSTANCE hInstLib = LoadLibrary(L"My.dll");
+    FreeLibrary(hInstLib);
+    hInstLib = LoadLibraryA("My.dll");
+    FreeLibrary(hInstLib);
+    hInstLib = LoadLibraryEx(L"My.dll", NULL, 0);
+    FreeLibrary(hInstLib);
+    hInstLib = LoadLibraryExW(L"My.dll", NULL, 0);
+    FreeLibrary(hInstLib);
+    hInstLib = ::LoadLibrary(L"My.dll");
+    FreeLibraryAndExitThread(hInstLib, 0); // Does not return! Must be at the end!
 }
 
 void bufferAccessOutOfBounds()
@@ -138,6 +144,14 @@ void nullPointer()
     ResetEvent(hEvent);
     // cppcheck-suppress nullPointer
     SetEvent(hEvent);
+
+    char *str = NULL;
+    // cppcheck-suppress strlwrCalled
+    // cppcheck-suppress nullPointer
+    strlwr(str);
+    // cppcheck-suppress struprCalled
+    // cppcheck-suppress nullPointer
+    strupr(str);
 }
 
 void memleak_malloca()
@@ -339,6 +353,14 @@ void uninitvar()
     SetEvent(hEvent);
     // cppcheck-suppress uninitvar
     CloseHandle(hEvent);
+
+    char buf_uninit[10];
+    // cppcheck-suppress strlwrCalled
+    // cppcheck-suppress uninitvar
+    strlwr(buf_uninit);
+    // cppcheck-suppress struprCalled
+    // cppcheck-suppress uninitvar
+    strupr(buf_uninit);
 }
 
 void allocDealloc_GetModuleHandleEx()
