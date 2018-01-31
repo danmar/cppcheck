@@ -6,17 +6,17 @@
 
 @REM If project management wishes to take a newer astyle version into use
 @REM just change this string to match the start of astyle version string.
-set ASTYLE_VERSION="Artistic Style Version 3.0.1"
-set ASTYLE="astyle"
+@SET ASTYLE_VERSION="Artistic Style Version 3.0.1"
+@SET ASTYLE="astyle"
 
-set DETECTED_VERSION=""
-for /f "tokens=*" %%i in ('%ASTYLE% --version') do set DETECTED_VERSION=%%i
-echo %DETECTED_VERSION% | findstr /b /c:%ASTYLE_VERSION% > nul && (
-    echo "%DETECTED_VERSION%" matches %ASTYLE_VERSION%
+@SET DETECTED_VERSION=""
+@FOR /F "tokens=*" %%i IN ('%ASTYLE% --version') DO SET DETECTED_VERSION=%%i
+@ECHO %DETECTED_VERSION% | FINDSTR /B /C:%ASTYLE_VERSION% > nul && (
+    ECHO "%DETECTED_VERSION%" matches %ASTYLE_VERSION%
 ) || (
-    echo You should use: %ASTYLE_VERSION%
-    echo Detected: "%DETECTED_VERSION%"
-    goto EXIT_ERROR
+    ECHO You should use: %ASTYLE_VERSION%
+    ECHO Detected: "%DETECTED_VERSION%"
+    GOTO EXIT_ERROR
 )
 
 @SET STYLE=--style=kr --indent=spaces=4 --indent-namespaces --lineend=linux --min-conditional-indent=0
@@ -41,7 +41,25 @@ echo %DETECTED_VERSION% | findstr /b /c:%ASTYLE_VERSION% > nul && (
 %ASTYLE% %STYLE% %OPTIONS% -r samples/*.c
 %ASTYLE% %STYLE% %OPTIONS% -r samples/*.cpp
 
-goto :EOF
+@REM Format configuration files
+@SET XMLLINT=xmllint
+WHERE %XMLLINT%
+@IF %ERRORLEVEL% NEQ 0 (
+    ECHO WARNING: %XMLLINT% was not found. Skipping configuration file formatting!
+) ELSE (
+    PUSHD "cfg"
+    FOR /F "tokens=* delims=" %%f IN ('DIR /B *.cfg') DO @CALL :runxmllint "%%f"
+    POPD
+)
+
+@GOTO :EOF
 
 :EXIT_ERROR
-exit /b 1
+EXIT /B 1
+
+@REM Function that formats one XML file
+@REM Argument: %1: XML-File to format
+:runxmllint
+    xmllint --format -o "%~1_" "%~1"
+    MOVE /Y "%~1_" "%~1"
+@GOTO :EOF
