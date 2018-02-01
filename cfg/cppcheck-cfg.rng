@@ -80,7 +80,7 @@
               <optional>
                 <attribute name="type">
                   <data type="string">
-                    <param name="pattern">([a-zA-Z_][a-zA-Z_0-9]*[ ])*([a-zA-Z_][a-zA-Z_0-9]*::)*[a-zA-Z_][a-zA-Z_0-9]*([ ]?[*])*</param>
+                    <param name="pattern">([a-zA-Z_][a-zA-Z_0-9]*[ ])*([a-zA-Z_][a-zA-Z_0-9]*::)*[a-zA-Z_][a-zA-Z_0-9]*([ ]?[*|&amp;])*</param>
                   </data>
                 </attribute>
               </optional>
