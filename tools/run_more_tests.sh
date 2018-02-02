@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script Used by generate_and_run_tests.sh
+# Script Used by generate_and_run_more_tests.sh
 
 set -e
 
