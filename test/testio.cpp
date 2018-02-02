@@ -4323,10 +4323,30 @@ private:
                       "[test.cpp:5]: (warning) sprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
 
         check("void foo() {\n"
+              "    char str[10];\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    sprintf_s(str, \"%d %u\", u, i, 0);\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:5]: (warning) sprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo() {\n"
               "    wchar_t str[10];\n"
               "    int i;\n"
               "    unsigned int u;\n"
               "    swprintf_s(str, sizeof(str) / sizeof(wchar_t), L\"%d %u\", u, i, 0);\n"
+              "}\n", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
+                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
+                      "[test.cpp:5]: (warning) swprintf_s format string requires 2 parameters but 3 are given.\n", errout.str());
+
+        check("void foo() {\n"
+              "    wchar_t str[10];\n"
+              "    int i;\n"
+              "    unsigned int u;\n"
+              "    swprintf_s(str, L\"%d %u\", u, i, 0);\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
                       "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"

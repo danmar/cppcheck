@@ -94,6 +94,28 @@ void validCode()
     pMem = HeapReAlloc(GetProcessHeap(), 0, pMem, 0);
     HeapFree(GetProcessHeap(), 0, pMem);
 
+    char bufC[50];
+    sprintf_s(bufC, "Hello");
+    printf("%s", bufC);
+    sprintf_s(bufC, "%s", "test");
+    printf("%s", bufC);
+    sprintf_s(bufC, _countof(bufC), "%s", "test");
+    printf("%s", bufC);
+    wchar_t bufWC[50];
+    swprintf_s(bufWC, L"Hello");
+    wprintf(L"%s\n", bufWC);
+    swprintf_s(bufWC, L"%s %d", L"swprintf_s", 3);
+    wprintf(L"%s\n", bufWC);
+    swprintf_s(bufWC, _countof(bufWC), L"%s %d", L"swprintf_s", 6);
+    wprintf(L"%s\n", bufWC);
+    TCHAR bufTC[50];
+    _stprintf(bufTC, TEXT("Hello"));
+    _tprintf(TEXT("%s"), bufTC);
+    _stprintf(bufTC, TEXT("%d"), 1);
+    _tprintf(TEXT("%s"), bufTC);
+    _stprintf(bufTC, _countof(bufTC), TEXT("%d"), 2);
+    _tprintf(TEXT("%s"), bufTC);
+
     // Valid Library usage, no leaks, valid arguments
     HINSTANCE hInstLib = LoadLibrary(L"My.dll");
     FreeLibrary(hInstLib);
@@ -413,6 +435,69 @@ void uninitvar()
     DWORD dwordUninit;
     // cppcheck-suppress uninitvar
     SetLastError(dwordUninit);
+}
+
+void errorPrintf()
+{
+    char bufC[50];
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    sprintf_s(bufC, _countof(bufC), "%s %d", "sprintf_s");
+    printf("%s\n", bufC);
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    sprintf_s(bufC, "%s %d", "sprintf_s");
+    printf("%s\n", bufC);
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    sprintf_s(bufC, _countof(bufC), "test", 0);
+    printf("%s\n", bufC);
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    sprintf_s(bufC, "test", "sprintf_s");
+    printf("%s\n", bufC);
+    // cppcheck-suppress invalidPrintfArgType_s
+    sprintf_s(bufC, _countof(bufC), "%s", 1);
+    printf("%s\n", bufC);
+    // cppcheck-suppress invalidPrintfArgType_s
+    sprintf_s(bufC, "%s", 1);
+    printf("%s\n", bufC);
+
+    wchar_t bufWC[50];
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    swprintf_s(bufWC, _countof(bufWC), L"%s %d", L"swprintf_s");
+    wprintf(L"%s\n", bufWC);
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    swprintf_s(bufWC, L"%s %d", L"swprintf_s");
+    wprintf(L"%s\n", bufWC);
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    swprintf_s(bufWC, _countof(bufWC), L"test", 0);
+    wprintf(L"%s\n", bufWC);
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    swprintf_s(bufWC, L"test", L"swprintf_s");
+    wprintf(L"%s\n", bufWC);
+    // cppcheck-suppress invalidPrintfArgType_s
+    swprintf_s(bufWC, _countof(bufWC), L"%s", 1);
+    wprintf(L"%s\n", bufWC);
+    // cppcheck-suppress invalidPrintfArgType_s
+    swprintf_s(bufWC, L"%s", 1);
+    wprintf(L"%s\n", bufWC);
+
+    TCHAR bufTC[50];
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    _stprintf_s(bufTC, _countof(bufTC), TEXT("%s %d"), TEXT("_stprintf_s"));
+    _tprintf(L"%s\n", bufTC);
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    _stprintf_s(bufTC, TEXT("%s %d"), TEXT("_stprintf_s"));
+    _tprintf(TEXT("%s\n"), bufTC);
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    _stprintf_s(bufTC, _countof(bufTC), TEXT("test"), 0);
+    _tprintf(TEXT("%s\n"), bufTC);
+    // cppcheck-suppress wrongPrintfScanfArgNum
+    _stprintf_s(bufTC, TEXT("test"), TEXT("_stprintf_s"));
+    _tprintf(TEXT("%s\n"), bufTC);
+    // cppcheck-suppress invalidPrintfArgType_s
+    _stprintf_s(bufTC, _countof(bufTC), TEXT("%s"), 1);
+    _tprintf(TEXT("%s\n"), bufTC);
+    // cppcheck-suppress invalidPrintfArgType_s
+    _stprintf_s(bufTC, TEXT("%s"), 1);
+    _tprintf(TEXT("%s\n"), bufTC);
 }
 
 void allocDealloc_GetModuleHandleEx()
