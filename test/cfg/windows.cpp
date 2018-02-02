@@ -79,6 +79,21 @@ void validCode()
     void *pMem2 = _alloca(10);
     memset(pMem2, 0, 10);
 
+    SYSTEMTIME st;
+    GetSystemTime(&st);
+
+    DWORD lastError = GetLastError();
+    SetLastError(lastError);
+
+    PSID pEveryoneSID = NULL;
+    SID_IDENTIFIER_AUTHORITY SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
+    AllocateAndInitializeSid(&SIDAuthWorld, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pEveryoneSID)
+    FreeSid(pEveryoneSID);
+
+    LPVOID pMem = HeapAlloc(GetProcessHeap(), 0, 10);
+    pMem = HeapReAlloc(GetProcessHeap(), 0, pMem, 0);
+    HeapFree(GetProcessHeap(), 0, pMem);
+
     // Valid Library usage, no leaks, valid arguments
     HINSTANCE hInstLib = LoadLibrary(L"My.dll");
     FreeLibrary(hInstLib);
@@ -152,12 +167,35 @@ void nullPointer()
     // cppcheck-suppress struprCalled
     // cppcheck-suppress nullPointer
     strupr(str);
+
+    // cppcheck-suppress nullPointer
+    GetSystemTime(NULL);
+    // cppcheck-suppress nullPointer
+    GetLocalTime(NULL);
 }
 
 void memleak_malloca()
 {
     // cppcheck-suppress unreadVariable
     void *pMem = _malloca(10);
+    // cppcheck-suppress memleak
+}
+
+void memleak_AllocateAndInitializeSid()
+{
+    PSID pEveryoneSID = NULL;
+    SID_IDENTIFIER_AUTHORITY SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
+    AllocateAndInitializeSid(&SIDAuthWorld, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pEveryoneSID)
+    // TODO: enable when #6994 is implemented cppcheck-suppress memleak
+}
+
+void memleak_HeapAlloc()
+{
+    LPVOID pMem;
+    pMem = HeapAlloc(GetProcessHeap(), 0, 10);
+    HeapValidate(GetProcessHeap(), 0, pMem);
+    // cppcheck-suppress unreadVariable
+    SIZE_T memSize = HeapSize(GetProcessHeap(), 0, pMem);
     // cppcheck-suppress memleak
 }
 
@@ -280,6 +318,16 @@ void ignoredReturnValue()
     _malloca(10);
     // cppcheck-suppress ignoredReturnValue
     _alloca(5);
+
+    // cppcheck-suppress ignoredReturnValue
+    GetLastError();
+
+    // cppcheck-suppress ignoredReturnValue
+    GetProcessHeap()
+    // cppcheck-suppress leakReturnValNotUsed
+    HeapAlloc(GetProcessHeap(), 0, 10);
+    // cppcheck-suppress leakReturnValNotUsed
+    HeapReAlloc(GetProcessHeap(), 0, 1, 0);
 }
 
 void invalidFunctionArg()
@@ -361,6 +409,10 @@ void uninitvar()
     // cppcheck-suppress struprCalled
     // cppcheck-suppress uninitvar
     strupr(buf_uninit);
+
+    DWORD dwordUninit;
+    // cppcheck-suppress uninitvar
+    SetLastError(dwordUninit);
 }
 
 void allocDealloc_GetModuleHandleEx()
