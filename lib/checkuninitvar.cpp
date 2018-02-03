@@ -1554,7 +1554,7 @@ bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &file
                                                    emptyString,
                                                    Severity::error,
                                                    "using argument " + readData.variableName + " that points at uninitialized variable " + uninitialized.variableName,
-                                                   "uninitvar",
+                                                   "ctuuninitvar",
                                                    CWE908, false);
             errorLogger.reportErr(errmsg);
 
@@ -1590,7 +1590,7 @@ bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &file
                                                    emptyString,
                                                    Severity::error,
                                                    "Null pointer dereference: " + dereference.variableName,
-                                                   "uninitvar",
+                                                   "ctunullpointer",
                                                    CWE476, false);
             errorLogger.reportErr(errmsg);
 
