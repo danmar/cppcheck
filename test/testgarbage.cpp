@@ -222,6 +222,7 @@ private:
         TEST_CASE(garbageCode189); // #8317
         TEST_CASE(garbageCode190); // #8307
         TEST_CASE(garbageCode191); // #8333
+        TEST_CASE(garbageCode192); // #8386 (segmentation fault)
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1473,6 +1474,10 @@ private:
 
         // The following code is valid and should not trigger any error
         checkCode("struct A { int f ( char ) ; } ;");
+    }
+
+    void garbageCode192() { // #8386 (segmentation fault)
+        ASSERT_THROW(checkCode("{(()[((0||0xf||))]0[])}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
