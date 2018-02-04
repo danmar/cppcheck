@@ -2874,6 +2874,13 @@ private:
                        "    buf[1] = buf[0];\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // unknown macro
+        checkUninitVar("void f() {\n"
+                       "  struct listnode *item;\n"
+                       "  list_for_each(item, &key_list) {}\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_value() {
