@@ -1425,11 +1425,12 @@ Check::FileInfo *CheckUninitVar::getFileInfo() const
         }
 
         // "Unsafe" functions unconditionally reads data before it is written..
+        CheckNullPointer checkNullPointer(_tokenizer, _settings, _errorLogger);
         for (int argnr = 0; argnr < function->argCount(); ++argnr) {
             const Token *tok;
             if (isUnsafeFunction(&*scope, argnr, &tok))
                 fileInfo->readData.push_back(MyFileInfo::FunctionArg(_tokenizer, &*scope, argnr+1, tok));
-            if (CheckNullPointer::isUnsafeFunction(&*scope, argnr, &tok))
+            if (checkNullPointer.isUnsafeFunction(&*scope, argnr, &tok))
                 fileInfo->dereferenced.push_back(MyFileInfo::FunctionArg(_tokenizer, &*scope, argnr+1, tok));
         }
 

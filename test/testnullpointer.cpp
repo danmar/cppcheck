@@ -17,6 +17,7 @@
  */
 
 #include "checknullpointer.h"
+#include "checkuninitvar.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -105,6 +106,7 @@ private:
         TEST_CASE(nullpointer_internal_error); // #5080
         TEST_CASE(ticket6505);
         TEST_CASE(subtract);
+        TEST_CASE(ctu);
     }
 
     void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp") {
@@ -2571,6 +2573,67 @@ private:
               "  p = s - 20;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is overflow in pointer subtraction.\n", errout.str());
+    }
+
+    void ctu(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList2();
+
+        // Check code..
+        std::list<Check::FileInfo*> fileInfo;
+        CheckUninitVar check(&tokenizer, &settings, this);
+        fileInfo.push_back(check.getFileInfo(&tokenizer, &settings));
+        check.analyseWholeProgram(fileInfo, settings, *this);
+        while (!fileInfo.empty()) {
+            delete fileInfo.back();
+            fileInfo.pop_back();
+        }
+    }
+
+    void ctu() {
+        ctu("void f(int *fp) {\n"
+            "    a = *fp;\n"
+            "}\n"
+            "int main() {\n"
+            "  int *p = 0;\n"
+            "  f(p);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Null pointer dereference: fp\n", errout.str());
+
+        ctu("void use(int *p) { a = *p + 3; }\n"
+            "void call(int x, int *p) { x++; use(p); }\n"
+            "int main() {\n"
+            "  call(4,0);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (error) Null pointer dereference: p\n", errout.str());
+
+        ctu("void dostuff(int *x, int *y) {\n"
+            "  if (!var)\n"
+            "    return -1;\n"  // <- early return
+            "  *x = *y;\n"
+            "}\n"
+            "\n"
+            "void f() {\n"
+            "  dostuff(a, 0);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("void dostuff(int *x, int *y) {\n"
+            "  if (cond)\n"
+            "    *y = -1;\n"  // <- conditionally written
+            "  *x = *y;\n"
+            "}\n"
+            "\n"
+            "void f() {\n"
+            "  dostuff(a, 0);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
