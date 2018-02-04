@@ -3492,7 +3492,7 @@ bool Tokenizer::simplifySizeof()
                 if (Token::Match(decltok, "%name% [") && Token::simpleMatch(decltok->linkAt(1), "] [")) {
                     const Token *tok2 = decltok;
                     for (unsigned int i = 0; i < derefs; i++)
-                        tok2 = tok2->linkAt(1); // Skip all dimensions that are derefenced before the sizeof call
+                        tok2 = tok2->linkAt(1); // Skip all dimensions that are dereferenced before the sizeof call
                     while (Token::Match(tok2, "] [ %num% ]")) {
                         size *= MathLib::toULongNumber(tok2->strAt(2));
                         tok2 = tok2->linkAt(1);
@@ -10148,4 +10148,3 @@ const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart)
 
     return tokLastEnd;
 }
-

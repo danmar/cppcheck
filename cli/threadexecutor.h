@@ -92,7 +92,7 @@ private:
 
     /**
      * @brief Check load average condition
-     * @param nchildren - count of currently runned children
+     * @param nchildren - count of currently ran children
      * @return true - if new process can be started
      */
     bool checkLoadAverage(size_t nchildren);

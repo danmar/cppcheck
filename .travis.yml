@@ -49,7 +49,7 @@ script:
   - if [[  "$CHECK_LLVM" == "yes" ]] && [[ "$CC" == "clang" ]]; then wget "https://github.com/llvm-mirror/llvm/archive/7733e74e5454d6f18da28c06be917c1e73d12d01.zip"  & make -j 4 & wait; unzip 7733e74e5454d6f18da28c06be917c1e73d12d01.zip > /dev/null;  touch /tmp/llvm.cppcheck;  cd ./llvm-7733e74e5454d6f18da28c06be917c1e73d12d01 ; ../cppcheck . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" -j 2 |& tee /tmp/llvm.cppcheck; cd ../ ; echo "LLVM"  ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck; exit; fi
 # check if dmake needs to be rerun but if yes, don't fail the build but notify us.
 # to update dmake: "make dmake; ./dmake; and commit
-  - echo "If the following commmand fails, run 'make dmake; make run-dmake' and commit the resulting change."
+  - echo "If the following command fails, run 'make dmake; make run-dmake' and commit the resulting change."
   - if [[ "$CHECK_MAKEFILE_REGEN" == "true" ]]; then make -s dmake; make -s run-dmake ; git diff --exit-code; exit; fi
 # check with TEST_MATHLIB_VALUE enabled
   - touch lib/mathlib.cpp test/testmathlib.cpp

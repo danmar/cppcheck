@@ -3219,7 +3219,7 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
 
             if (!derivedFromType->derivedFrom.empty() && !derivedFromType->hasCircularDependencies()) {
                 // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN and
-                // #5590 with a loop within the class hierarchie.
+                // #5590 with a loop within the class hierarchy.
                 if (isImplicitlyVirtual_rec(derivedFromType, safe))  {
                     return true;
                 }

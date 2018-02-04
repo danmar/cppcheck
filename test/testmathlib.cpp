@@ -1141,7 +1141,7 @@ private:
         // `A` is 0x41 and 0101
         ASSERT_EQUALS("A", MathLib::normalizeCharacterLiteral("\\x41"));
         ASSERT_EQUALS("A", MathLib::normalizeCharacterLiteral("\\101"));
-        // Hexa and octal numbers should not only be intepreted in byte 1
+        // Hexa and octal numbers should not only be interpreted in byte 1
         ASSERT_EQUALS("TESTATEST", MathLib::normalizeCharacterLiteral("TEST\\x41TEST"));
         ASSERT_EQUALS("TESTATEST", MathLib::normalizeCharacterLiteral("TEST\\101TEST"));
         ASSERT_EQUALS("TESTTESTA", MathLib::normalizeCharacterLiteral("TESTTEST\\x41"));

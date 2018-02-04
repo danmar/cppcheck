@@ -432,7 +432,7 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
 static void loadVisualStudioProperties(const std::string &props, std::map<std::string,std::string,cppcheck::stricmp> *variables, std::string *includePath, const std::string &additionalIncludeDirectories, std::list<ItemDefinitionGroup> &itemDefinitionGroupList)
 {
     std::string filename(props);
-    // variables cant be resolved
+    // variables can't be resolved
     if (!simplifyPathWithVariables(filename, *variables))
         return;
 

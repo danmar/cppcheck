@@ -1896,7 +1896,7 @@ static bool valueFlowForward(Token * const               startToken,
                 }
                 if (values.empty()) {
                     if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "coumpound assignment of " + tok2->str());
+                        bailout(tokenlist, errorLogger, tok2, "compound assignment of " + tok2->str());
                     return false;
                 }
             }
@@ -3292,5 +3292,3 @@ std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
     }
     return "Either the condition '" + condition->expressionString() + "' is redundant";
 }
-
-

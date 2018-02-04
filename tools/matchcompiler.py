@@ -544,7 +544,7 @@ class MatchCompiler:
                     varId = res[3]
 
             # endToken support. We resolve the overloaded type by checking if varId is used or not.
-            # Function protoypes:
+            # Function prototypes:
             #     Token *findsimplematch(const Token *tok, const char pattern[]);
             #     Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
             #     Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);

@@ -5579,15 +5579,15 @@ private:
         ASSERT_EQUALS("void foo ( ) { std :: swap ( a , b ) ; }", tokenizeAndStringify(code4, false));
 
         static const char code5[] = "using namespace std;\n"
-                                    "void foo() {map(a, b); }"; // Thats obviously not std::map<>
+                                    "void foo() {map(a, b); }"; // That's obviously not std::map<>
         ASSERT_EQUALS("void foo ( ) { map ( a , b ) ; }", tokenizeAndStringify(code5, false));
 
         static const char code6[] = "using namespace std;\n"
-                                    "string<wchar_t> s;"; // Thats obviously not std::string
+                                    "string<wchar_t> s;"; // That's obviously not std::string
         ASSERT_EQUALS("string < wchar_t > s ;", tokenizeAndStringify(code6, false));
 
         static const char code7[] = "using namespace std;\n"
-                                    "swap s;"; // Thats obviously not std::swap
+                                    "swap s;"; // That's obviously not std::swap
         ASSERT_EQUALS("swap s ;", tokenizeAndStringify(code7, false));
 
         static const char code8[] = "using namespace std;\n"

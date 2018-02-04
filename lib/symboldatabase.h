@@ -147,7 +147,7 @@ public:
     const Function* getFunction(const std::string& funcName) const;
 
     /**
-    * Check for circulare dependencies, i.e. loops within the class hierarchie
+    * Check for circulare dependencies, i.e. loops within the class hierarchy
     * @param ancestors list of ancestors. For internal usage only, clients should not supply this argument.
     * @return true if there is a circular dependency
     */
