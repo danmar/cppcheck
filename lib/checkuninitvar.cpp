@@ -1327,6 +1327,13 @@ bool CheckUninitVar::isUnsafeFunction(const Scope *scope, int argnr, const Token
     if (!argvar->isPointer())
         return false;
     for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
+        if (Token::simpleMatch(tok2, ") {")) {
+            tok2 = tok2->linkAt(1);
+            if (Token::findmatch(tok2->link(), "return|throw", tok2))
+                return false;
+            if (isVariableChanged(tok2->link(), tok2, argvar->declarationId(), false, _settings))
+                return false;
+        }
         if (tok2->variable() != argvar)
             continue;
         if (!isVariableUsage(tok2, true, Alloc::ARRAY))

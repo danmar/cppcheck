@@ -4011,6 +4011,31 @@ private:
             "  call(4,&x);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (error) using argument p that points at uninitialized variable x\n", errout.str());
+
+        ctu("void dostuff(int *x, int *y) {\n"
+            "  if (!var)\n"
+            "    return -1;\n"  // <- early return
+            "  *x = *y;\n"
+            "}\n"
+            "\n"
+            "void f() {\n"
+            "  int x;\n"
+            "  dostuff(a, &x);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("void dostuff(int *x, int *y) {\n"
+            "  if (cond)\n"
+            "    *y = -1;\n"  // <- conditionally written
+            "  *x = *y;\n"
+            "}\n"
+            "\n"
+            "void f() {\n"
+            "  int x;\n"
+            "  dostuff(a, &x);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 };
 
