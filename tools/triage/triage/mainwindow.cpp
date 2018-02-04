@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QFileDialog>
+#include <ctime>
 
 const QString WORK_FOLDER(QDir::homePath() + "/triage");
 
@@ -15,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    qsrand(std::time(0));
 }
 
 MainWindow::~MainWindow()
@@ -33,13 +35,14 @@ void MainWindow::loadFile()
     QTextStream textStream(&file);
     QString url;
     QString errorMessage;
+    QStringList allErrors;
     while (true) {
         const QString line = textStream.readLine();
         if (line.isNull())
             break;
         if (line.startsWith("ftp://")) {
             if (!url.isEmpty() && !errorMessage.isEmpty())
-                ui->results->addItem(url + "\n" + errorMessage);
+                allErrors << (url + "\n" + errorMessage);
             url = line;
             errorMessage.clear();
         } else if (!url.isEmpty() && QRegExp(".*: (error|warning|note):.*").exactMatch(line)) {
@@ -49,7 +52,13 @@ void MainWindow::loadFile()
         }
     }
     if (!url.isEmpty() && !errorMessage.isEmpty())
-        ui->results->addItem(url + "\n" + errorMessage);
+        allErrors << (url + "\n" + errorMessage);
+    if (allErrors.size() > 100) {
+        std::random_shuffle(allErrors.begin(), allErrors.end());
+        ui->results->addItems(allErrors.mid(0,100));
+    } else {
+        ui->results->addItems(allErrors);
+    }
 }
 
 void MainWindow::showResult(QListWidgetItem *item)
