@@ -220,6 +220,7 @@ private:
         TEST_CASE(simplifyFunctionParameters1); // #3721
         TEST_CASE(simplifyFunctionParameters2); // #4430
         TEST_CASE(simplifyFunctionParameters3); // #4436
+        TEST_CASE(simplifyFunctionParametersMultiTemplate);
         TEST_CASE(simplifyFunctionParametersErrors);
 
         TEST_CASE(removeParentheses1);       // Ticket #61
@@ -3113,6 +3114,12 @@ private:
                             "Item ( int i , int j ) ; "
                             "} ; "
                             "Item :: Item ( int i , int j ) : i ( i ) , j ( j ) { }";
+        ASSERT_EQUALS(code, tokenizeAndStringify(code));
+    }
+
+    void simplifyFunctionParametersMultiTemplate() {
+        const char code[] = "template < typename T1 > template < typename T2 > "
+                            "void A < T1 > :: foo ( T2 ) { }";
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 

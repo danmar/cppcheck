@@ -8420,7 +8420,7 @@ const Token * Tokenizer::findGarbageCode() const
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "template <"))
                 continue;
-            if (tok->previous() && !Token::Match(tok->previous(), "[:;{})]"))
+            if (tok->previous() && !Token::Match(tok->previous(), "[:;{})>]"))
                 return tok;
             const Token * const tok1 = tok;
             tok = tok->next()->findClosingBracket();
