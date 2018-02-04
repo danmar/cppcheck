@@ -32,17 +32,24 @@ void MainWindow::loadFile()
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream textStream(&file);
     QString url;
+    QString errorMessage;
     while (true) {
         const QString line = textStream.readLine();
         if (line.isNull())
             break;
-        if (line.startsWith("ftp://"))
+        if (line.startsWith("ftp://")) {
+            if (!url.isEmpty() && !errorMessage.isEmpty())
+                ui->results->addItem(url + "\n" + errorMessage);
             url = line;
-        else if (!url.isEmpty()) {
-            ui->results->addItem(url + "\n" + line);
-            url.clear();
+            errorMessage.clear();
+        } else if (!url.isEmpty() && QRegExp(".*: (error|warning|note):.*").exactMatch(line)) {
+            if (!errorMessage.isEmpty())
+                errorMessage += '\n';
+            errorMessage += line;
         }
     }
+    if (!url.isEmpty() && !errorMessage.isEmpty())
+        ui->results->addItem(url + "\n" + errorMessage);
 }
 
 void MainWindow::showResult(QListWidgetItem *item)
@@ -50,7 +57,7 @@ void MainWindow::showResult(QListWidgetItem *item)
     if (!item->text().startsWith("ftp://"))
         return;
     const QStringList lines = item->text().split("\n");
-    if (lines.size() != 2)
+    if (lines.size() < 2)
         return;
     const QString url = lines[0];
     const QString msg = lines[1];
