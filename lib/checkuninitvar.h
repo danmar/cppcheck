@@ -128,7 +128,7 @@ public:
         /** function arguments that are unconditionally dereferenced */
         std::list<FunctionArg> dereferenced;
 
-        /** function calls other function.. */
+        /** function calls other function */
         std::list<FunctionArg> nestedCall;
 
         /** Convert MyFileInfo data into xml string */

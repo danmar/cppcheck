@@ -3559,8 +3559,12 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyAsm();
 
     // Bail out if code is garbage
-    if (const Token *garbage = findGarbageCode())
-        syntaxError(garbage);
+    if (m_timerResults) {
+        Timer t("Tokenizer::tokenize::findGarbageCode", _settings->showtime, m_timerResults);
+        findGarbageCode();
+    } else {
+       findGarbageCode();
+    }
 
     checkConfiguration();
 
@@ -8327,19 +8331,19 @@ static const Token *findUnmatchedTernaryOp(const Token * const begin, const Toke
     return ternaryOp.empty() ? nullptr : ternaryOp.top();
 }
 
-const Token * Tokenizer::findGarbageCode() const
+void Tokenizer::findGarbageCode() const
 {
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
             if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|(|)|,"))
-                return tok;
+                syntaxError(tok);
             if (Token::Match(tok->previous(), "[(,]"))
                 continue;
             if (!Token::Match(tok->next(), "( !!)"))
-                return tok;
+                syntaxError(tok);
             if (tok->str() != "for") {
                 if (isGarbageExpr(tok->next(), tok->linkAt(1)))
-                    return tok;
+                    syntaxError(tok);
             }
         }
     }
@@ -8355,14 +8359,14 @@ const Token * Tokenizer::findGarbageCode() const
                 while (tok && !Token::Match(tok, "[;{}]"))
                     tok = tok->next();
                 if (!tok)
-                    return switchToken;
+                    syntaxError(switchToken);
                 if (tok->str() != ";")
-                    return tok;
+                    syntaxError(tok);
             }
         } else if (tok->str() == "(") {
             tok = tok->link();
         } else if (tok->str() == "case") {
-            return tok;
+            syntaxError(tok);
         }
     }
 
@@ -8383,37 +8387,37 @@ const Token * Tokenizer::findGarbageCode() const
         }
         // if we have an invalid number of semicolons inside for( ), assume syntax error
         if ((semicolons == 1) || (semicolons > 2)) {
-            return tok;
+            syntaxError(tok);
         }
     }
 
     // Operators without operands..
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
-            return tok;
+            syntaxError(tok);
         if (Token::Match(tok, ";|(|[ %comp%"))
-            return tok;
+            syntaxError(tok);
         if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "[|, &|= ]")))
-            return tok;
+            syntaxError(tok);
     }
 
     // ternary operator without :
     if (const Token *ternaryOp = findUnmatchedTernaryOp(tokens(), nullptr))
-        return ternaryOp;
+        syntaxError(ternaryOp);
 
     // Code must not start with an arithmetical operand
     if (Token::Match(list.front(), "%cop%"))
-        return list.front();
+        syntaxError(list.front());
 
     // Code must end with } ; ) NAME
     if (!Token::Match(list.back(), "%name%|;|}|)"))
-        return list.back();
+        syntaxError(list.back());
     if (list.back()->str() == ")" && !Token::Match(list.back()->link()->previous(), "%name% ("))
-        return list.back();
+        syntaxError(list.back());
     if (Token::Match(list.back(), "void|char|short|int|long|float|double|const|volatile|static|inline|struct|class|enum|union|template|sizeof|case|break|continue|typedef"))
-        return list.back();
+        syntaxError(list.back());
     if ((list.back()->str()==")" || list.back()->str()=="}") && list.back()->previous() && list.back()->previous()->isControlFlowKeyword())
-        return list.back()->previous();
+        syntaxError(list.back()->previous());
 
     // Garbage templates..
     if (isCPP()) {
@@ -8421,23 +8425,21 @@ const Token * Tokenizer::findGarbageCode() const
             if (!Token::simpleMatch(tok, "template <"))
                 continue;
             if (tok->previous() && !Token::Match(tok->previous(), "[:;{})>]"))
-                return tok;
+                syntaxError(tok);
             const Token * const tok1 = tok;
             tok = tok->next()->findClosingBracket();
             if (!tok)
-                return tok1;
+                syntaxError(tok1);
             if (!Token::Match(tok, ">|>> ::| %name%"))
-                return tok->next() ? tok->next() : tok1;
+                syntaxError(tok->next() ? tok->next() : tok1);
         }
     }
 
     // Objective C/C++
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "[;{}] [ %name% %name% ] ;"))
-            return tok->next();
+            syntaxError(tok->next());
     }
-
-    return nullptr;
 }
 
 

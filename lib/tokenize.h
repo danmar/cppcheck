@@ -588,8 +588,8 @@ private:
      */
     void validate() const;
 
-    /** Detect garbage code */
-    const Token * findGarbageCode() const;
+    /** Detect garbage code and call syntaxError() if found. */
+    void findGarbageCode() const;
 
     /** Detect garbage expression */
     static bool isGarbageExpr(const Token *start, const Token *end);
