@@ -439,6 +439,7 @@ void uninitvar_asctime(void)
 void uninitvar_assert(void)
 {
     int i;
+    // cppcheck-suppress checkLibraryNoReturn
     // cppcheck-suppress uninitvar
     assert(i);
 }
