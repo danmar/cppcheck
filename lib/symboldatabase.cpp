@@ -128,10 +128,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 // only create base list for classes and structures
                 if (new_scope->isClassOrStruct()) {
                     // goto initial '{'
-                    if (!new_scope->definedType) {
+                    if (!new_scope->definedType)
                         _tokenizer->syntaxError(nullptr); // #6808
-                        break;
-                    }
                     tok2 = new_scope->definedType->initBaseInfo(tok, tok2);
                     // make sure we have valid code
                     if (!tok2) {
