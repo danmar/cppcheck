@@ -264,7 +264,7 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
             */
         }
     }
-    return errors;
+    return errors && errorLogger->hasErrors();
 }
 
 void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,

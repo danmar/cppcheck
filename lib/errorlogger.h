@@ -332,6 +332,12 @@ public:
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg) = 0;
 
     /**
+     * Returns true if an error has been reported which should
+     * cause a non-zero cppcheck exit code.
+     */
+    virtual bool hasErrors() const { return false; }
+
+    /**
      * Report progress to client
      * @param filename main file that is checked
      * @param stage for example preprocess / tokenize / simplify / check
