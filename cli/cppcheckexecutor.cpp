@@ -838,13 +838,6 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         reportErr(ErrorLogger::ErrorMessage::getXMLHeader());
     }
 
-    if (!settings.buildDir.empty()) {
-        std::list<std::string> fileNames;
-        for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i)
-            fileNames.push_back(i->first);
-        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.project.fileSettings);
-    }
-
     unsigned int returnValue = 0;
     if (settings.jobs == 1) {
         // Single process
