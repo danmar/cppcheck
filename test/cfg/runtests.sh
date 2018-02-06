@@ -43,3 +43,8 @@ ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32A  ${DIR}windows.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32W  ${DIR}windows.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win64  ${DIR}windows.cpp
+
+# wxwidgets.cpp
+# Syntax check via g++ is disabled because wx headers are not always present.
+#${CXX} ${CXX_OPT} ${DIR}wxwidgets.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets ${DIR}wxwidgets.cpp
