@@ -191,8 +191,6 @@ private:
      */
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
 
-    virtual bool hasErrors() const { return exitcode > 0; }
-
     /**
      * @brief Information about progress is directed here.
      *

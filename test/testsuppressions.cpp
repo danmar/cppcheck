@@ -52,6 +52,8 @@ private:
         TEST_CASE(suppressionWithRelativePaths); // #4733
         TEST_CASE(suppressingSyntaxErrors); // #7076
         TEST_CASE(suppressingSyntaxErrorsInline); // #5917
+
+        TEST_CASE(unusedFunction);
     }
 
     void suppressionsBadId1() const {
@@ -149,7 +151,10 @@ private:
 
         CppCheck cppCheck(*this, true);
         Settings& settings = cppCheck.settings();
+        settings.exitCode = 1;
         settings.inlineSuppressions = true;
+        if (suppression == "unusedFunction")
+            settings.addEnabled("unusedFunction");
         settings.addEnabled("information");
         settings.jointSuppressionReport = true;
         if (!suppression.empty()) {
@@ -434,6 +439,10 @@ private:
                             "}";
         checkSuppression(files, "");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void unusedFunction() {
+        ASSERT_EQUALS(0, checkSuppression("void f() {}", "unusedFunction"));
     }
 };
 

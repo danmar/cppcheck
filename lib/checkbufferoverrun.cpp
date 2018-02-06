@@ -2108,7 +2108,7 @@ bool CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &
             errors = true;
         }
     }
-    return errors && errorLogger.hasErrors();
+    return errors;
 }
 
 unsigned int CheckBufferOverrun::sizeOfType(const Token *type) const

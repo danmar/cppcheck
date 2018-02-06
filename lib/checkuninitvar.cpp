@@ -1606,5 +1606,5 @@ bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &file
         }
     }
 
-    return foundErrors && errorLogger.hasErrors();
+    return foundErrors;
 }

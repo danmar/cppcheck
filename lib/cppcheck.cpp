@@ -815,7 +815,7 @@ bool CppCheck::analyseWholeProgram()
     // Analyse the tokens
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
         errors |= (*it)->analyseWholeProgram(fileInfo, _settings, *this);
-    return errors;
+    return errors && (exitcode > 0);
 }
 
 void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files)
