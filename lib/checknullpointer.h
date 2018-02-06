@@ -99,8 +99,6 @@ public:
         nullPointerError(tok, "", &v, false);
     }
     void nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value* value, bool inconclusive);
-
-    bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const;
 private:
 
     /** Get error messages. Used by --errorlist */
