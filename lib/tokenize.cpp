@@ -3563,7 +3563,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         Timer t("Tokenizer::tokenize::findGarbageCode", _settings->showtime, m_timerResults);
         findGarbageCode();
     } else {
-       findGarbageCode();
+        findGarbageCode();
     }
 
     checkConfiguration();
