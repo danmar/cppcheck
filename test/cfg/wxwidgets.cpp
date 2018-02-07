@@ -58,3 +58,11 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     wxLogMessage(pcUninit);
 }
+
+void deprecatedFunctions(wxApp &a, const wxString &s, wxArtProvider *artProvider)
+{
+    // cppcheck-suppress MacOpenFileCalled
+    a.MacOpenFile(s);
+    // cppcheck-suppress InsertCalled
+    wxArtProvider::Insert(artProvider);
+}
