@@ -59,10 +59,17 @@ void uninitvar()
     wxLogMessage(pcUninit);
 }
 
-void deprecatedFunctions(wxApp &a, const wxString &s, wxArtProvider *artProvider)
+void deprecatedFunctions(wxApp &a, const wxString &s, wxArtProvider *artProvider, wxCalendarCtrl &calenderCtrl, wxComboCtrl &comboCtrl)
 {
     // cppcheck-suppress MacOpenFileCalled
     a.MacOpenFile(s);
     // cppcheck-suppress InsertCalled
     wxArtProvider::Insert(artProvider);
+    // cppcheck-suppress EnableYearChangeCalled
+    calenderCtrl.EnableYearChange(false);
+    // cppcheck-suppress EnableYearChangeCalled
+    calenderCtrl.EnableYearChange(/*default=yes*/);
+    // cppcheck-suppress GetTextIndentCalled
+    // cppcheck-suppress ignoredReturnValue
+    comboCtrl.GetTextIndent();
 }
