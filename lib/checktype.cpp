@@ -195,7 +195,7 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
 
     reportError(getErrorPath(tok, &value, "Integer overflow"),
                 value.errorSeverity() ? Severity::error : Severity::warning,
-                "integerOverflow",
+                (value.condition == nullptr) ? "integerOverflow" : "integerOverflowCond",
                 msg,
                 CWE190,
                 value.isInconclusive());
