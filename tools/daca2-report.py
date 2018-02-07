@@ -30,6 +30,18 @@ def readdate(data):
             return None
         datepos += 1
 
+def summaryHtml(style, font, text1, text2, text3):
+    font1 = ''
+    font2 = ''
+    if font:
+	    font1 = font
+        font2 = '</font>'
+    return '<tr> ' +
+           '<td ' + style + '>' + font1 + text1 + font2 + '</td> ' +
+           '<td ' + style + '>' + font1 + text2 + font2 + '</td> ' +
+           '<td ' + style + '>' + font1 + text3 + font2 + '</td> ' +
+           '</tr>\n'
+
 daca2folder = os.path.expanduser('~/daca2/')
 path = ''
 for arg in sys.argv[1:]:
@@ -75,8 +87,8 @@ recent = []
 totalNumber = {}
 categories = {}
 for severity in ['error', 'warning', 'style', 'portability', 'performance']:
-	totalNumber[severity] = 0
-	categories[severity] = []
+    totalNumber[severity] = 0
+    categories[severity] = []
 
 daca2 = daca2folder
 for lib in (False, True):
@@ -158,12 +170,12 @@ mainpage.write('</table>\n')
 
 mainpage.write('<b>Summary</b>\n')
 mainpage.write('<table>\n')
-mainpage.write('<tr><td>Severity</td><td>Types</td><td>Amount</td>\n')
-mainpage.write('<tr><td>Error (there is bug)</td><td>' + str(len(categories['error'])) + '</td><td>' + str(totalNumber['error']) + '</td></tr>\n')
-mainpage.write('<tr><td>Warning (potential bug)</td><td>' + str(len(categories['warning'])) + '</td><td>' + str(totalNumber['warning']) + '</td></tr>\n')
-mainpage.write('<tr><td>Style</td><td>' + str(len(categories['style'])) + '</td><td>' + str(totalNumber['style']) + '</td></tr>\n')
-mainpage.write('<tr><td>Portability</td><td>' + str(len(categories['portability'])) + '</td><td>' + str(totalNumber['portability']) + '</td></tr>\n')
-mainpage.write('<tr><td>Performance</td><td>' + str(len(categories['performance'])) + '</td><td>' + str(totalNumber['performance']) + '</td></tr>\n')
+mainpage.write(summaryHtml('style="background-color:#369"', '<font style="color:#eee">', 'Severity', 'Types', 'Amount'))
+mainpage.write(summaryHtml('style="background-color:#fff"', None, 'Error (there is bug)', categories['error'], totalNumber['error']))
+mainpage.write(summaryHtml('style="background-color:#ccccff"', None, 'Warning (potential bug)', categories['warning'], totalNumber['warning']))
+mainpage.write(summaryHtml('style="background-color:#fff"', None, 'Style', categories['style'], totalNumber['style']))
+mainpage.write(summaryHtml('style="background-color:#ccccff"', None, 'Portability', categories['portability'], totalNumber['portability']))
+mainpage.write(summaryHtml('style="background-color:#fff"', None, 'Performance', categories['performance'], totalNumber['performance']))
 mainpage.write('</table>\n')
 
 if lastupdate:
