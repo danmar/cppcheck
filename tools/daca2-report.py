@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
-
+import re
 
 def readdate(data):
     if data[:5] == 'DATE ':
@@ -72,6 +72,12 @@ mainpage.write(
 lastupdate = None
 recent = []
 
+totalNumber = {}
+categories = {}
+for severity in ['error', 'warning', 'style', 'portability', 'performance']:
+	totalNumber[severity] = 0
+	categories[severity] = []
+
 daca2 = daca2folder
 for lib in (False, True):
     for a in "0123456789abcdefghijklmnopqrstuvwxyz":
@@ -97,6 +103,24 @@ for lib in (False, True):
                 recent.append(a)
         else:
             datestr = ''
+
+        for line in data.split('\n'):
+            res = re.match(r'.*: (error|warning|style|performance|style|portability):.* \[([a-zA-Z0-9_\\-]+)\]', line)
+            if res is None:
+                continue
+            severity = res.group(1)
+            messageId = res.group(2)
+            if messageId == 'cppcheckError':
+                continue
+            if messageId == 'internalAstError':
+                continue
+            if messageId == 'preprocessorErrorDirective':
+                continue
+            if messageId == 'syntaxError':
+                continue
+            totalNumber[severity] = totalNumber[severity] + 1
+            if not messageId in categories[severity]:
+                categories[severity].append(messageId)
 
         mainpage.write(
             '<tr>' +
@@ -130,6 +154,16 @@ for lib in (False, True):
         f.write('</html>\n')
         f.close()
 
+mainpage.write('</table>\n')
+
+mainpage.write('<b>Summary</b>\n')
+mainpage.write('<table>\n')
+mainpage.write('<tr><td>Severity</td><td>Types</td><td>Amount</td>\n')
+mainpage.write('<tr><td>Error (there is bug)</td><td>' + str(len(categories['error'])) + '</td><td>' + str(totalNumber['error']) + '</td></tr>\n')
+mainpage.write('<tr><td>Warning (potential bug)</td><td>' + str(len(categories['warning'])) + '</td><td>' + str(totalNumber['warning']) + '</td></tr>\n')
+mainpage.write('<tr><td>Style</td><td>' + str(len(categories['style'])) + '</td><td>' + str(totalNumber['style']) + '</td></tr>\n')
+mainpage.write('<tr><td>Portability</td><td>' + str(len(categories['portability'])) + '</td><td>' + str(totalNumber['portability']) + '</td></tr>\n')
+mainpage.write('<tr><td>Performance</td><td>' + str(len(categories['performance'])) + '</td><td>' + str(totalNumber['performance']) + '</td></tr>\n')
 mainpage.write('</table>\n')
 
 if lastupdate:
