@@ -10,6 +10,7 @@
 #include <ctime>
 
 const QString WORK_FOLDER(QDir::homePath() + "/triage");
+const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -61,6 +62,32 @@ void MainWindow::loadFile()
     }
 }
 
+static bool wget(const QString url)
+{
+    QProcess process;
+    process.setWorkingDirectory(WORK_FOLDER);
+    process.start("wget", QStringList() << url);
+    return process.waitForFinished(-1);
+}
+
+static bool unpackArchive(const QString archiveName)
+{
+    // Unpack archive
+    QStringList args;
+    if (archiveName.endsWith(".tar.gz"))
+        args << "xzvf";
+    else if (archiveName.endsWith(".tar.bz2"))
+        args << "xjvf";
+    else if (archiveName.endsWith(".tar.xz"))
+        args << "xJvf";
+    args << archiveName;
+
+    QProcess process;
+    process.setWorkingDirectory(WORK_FOLDER);
+    process.start("tar", args);
+    return process.waitForFinished(-1);
+}
+
 void MainWindow::showResult(QListWidgetItem *item)
 {
     if (!item->text().startsWith("ftp://"))
@@ -77,27 +104,19 @@ void MainWindow::showResult(QListWidgetItem *item)
     const QString fileName = msg.left(msg.indexOf(":"));
     const int lineNumber = msg.mid(pos1+1,pos2-pos1-1).toInt();
 
-    QProcess process;
-    process.setWorkingDirectory(WORK_FOLDER);
-
-    if (!QFileInfo(WORK_FOLDER + '/' + archiveName).exists()) {
-        // Download archive
-        process.start("wget", QStringList()<<url);
-        if (!process.waitForFinished(-1))
-            return;
-
-        // Unpack archive
-        QStringList args;
-        if (url.endsWith(".tar.gz"))
-            args << "xzvf";
-        else if (url.endsWith(".tar.bz2"))
-            args << "xjvf";
-        else if (url.endsWith(".tar.xz"))
-            args << "xJvf";
-        args << archiveName;
-        process.start("tar", args);
-        if (!process.waitForFinished(-1))
-            return;
+    if (!QFileInfo(fileName).exists()) {
+        if (QFileInfo(DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz").exists()) {
+            if (!unpackArchive(DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz"))
+                return;
+        } else {
+            if (!QFileInfo(WORK_FOLDER + '/' + archiveName).exists()) {
+                // Download archive
+                if (!wget(url))
+                    return;
+            }
+            if (!unpackArchive(WORK_FOLDER + '/' + archiveName))
+                return;
+        }
     }
 
     // Open file
