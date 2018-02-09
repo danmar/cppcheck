@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    qsrand(std::time(0));
+    std::srand(std::time(0));
 }
 
 MainWindow::~MainWindow()
@@ -55,6 +55,11 @@ void MainWindow::loadFile()
     if (!url.isEmpty() && !errorMessage.isEmpty())
         allErrors << (url + "\n" + errorMessage);
     if (allErrors.size() > 100) {
+        // remove items in /test/
+        for (int i = allErrors.size()-1; i >= 0 && allErrors.size() > 100; --i) {
+            if (allErrors[i].indexOf("test") > 0)
+                allErrors.removeAt(i);
+        }
         std::random_shuffle(allErrors.begin(), allErrors.end());
         ui->results->addItems(allErrors.mid(0,100));
     } else {
