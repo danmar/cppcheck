@@ -160,30 +160,30 @@ bool cppcheck::Platform::platformFile(const char exename[], const std::string &f
     // open file..
     tinyxml2::XMLDocument doc;
     if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_SUCCESS) {
-		std::vector<std::string> filenames;
-		filenames.push_back(filename + ".xml");
-		if (exename && strchr(exename, '/')) {
-			filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
-			filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
-		}
+        std::vector<std::string> filenames;
+        filenames.push_back(filename + ".xml");
+        if (exename && strchr(exename, '/')) {
+            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
+            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
+        }
 #ifdef CFGDIR
-		std::string cfgdir = CFGDIR;
-		if (cfgdir[cfgdir.size()-1] != '/')
-			cfgdir += '/';
-		filenames.push_back(CFGDIR + ("../platforms/" + filename));
-		filenames.push_back(CFGDIR + ("../platforms/" + filename + ".xml"));
+        std::string cfgdir = CFGDIR;
+        if (cfgdir[cfgdir.size()-1] != '/')
+            cfgdir += '/';
+        filenames.push_back(CFGDIR + ("../platforms/" + filename));
+        filenames.push_back(CFGDIR + ("../platforms/" + filename + ".xml"));
 #endif
-		bool success = false;
-		for (int i = 0; i < filenames.size(); ++i) {
-			std::cout << "platform:" << filenames[i] << std::endl;
-			if (doc.LoadFile(filenames[i].c_str()) == tinyxml2::XML_SUCCESS) {
-				success = true;
-				break;
-			}
-		}
-		if (!success)
-			return false;
-	}
+        bool success = false;
+        for (int i = 0; i < filenames.size(); ++i) {
+            std::cout << "platform:" << filenames[i] << std::endl;
+            if (doc.LoadFile(filenames[i].c_str()) == tinyxml2::XML_SUCCESS) {
+                success = true;
+                break;
+            }
+        }
+        if (!success)
+            return false;
+    }
 
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
 
