@@ -45,6 +45,22 @@ ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32W  ${DIR}windows.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win64  ${DIR}windows.cpp
 
 # wxwidgets.cpp
-# Syntax check via g++ is disabled because wx headers are not always present.
-#${CXX} ${CXX_OPT} ${DIR}wxwidgets.cpp
-${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets ${DIR}wxwidgets.cpp
+set +e
+WXCONFIG=`wx-config --cxxflags`
+WXCONFIG_RETURNCODE=$?
+set -e
+if [ $WXCONFIG_RETURNCODE -ne 0 ]; then
+    echo "wx-config does not work, skipping syntax check for wxWidgets tests."
+else
+    set +e
+    echo -e "#include <wx/filefn.h>\n#include <wx/app.h>\n#include <wx/artprov.h>\n" | ${CXX} ${CXX_OPT} ${WXCONFIG} -x c++ -
+    WXCHECK_RETURNCODE=$?
+    set -e
+    if [ $WXCHECK_RETURNCODE -ne 0 ]; then
+        echo "wxWidgets not completely present (with GUI classes) or not working, skipping syntax check with ${CXX}."
+    else
+        echo "wxWidgets found, checking syntax with ${CXX} now."
+        ${CXX} ${CXX_OPT} ${WXCONFIG} -Wno-deprecated-declarations ${DIR}wxwidgets.cpp
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets -f ${DIR}wxwidgets.cpp
