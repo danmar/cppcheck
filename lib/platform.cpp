@@ -170,8 +170,8 @@ bool cppcheck::Platform::platformFile(const char exename[], const std::string &f
 		std::string cfgdir = CFGDIR;
 		if (cfgdir[cfgdir.size()-1] != '/')
 			cfgdir += '/';
-		filenames.push_back(CFG_DIR + ("../platforms/" + filename));
-		filenames.push_back(CFG_DIR + ("../platforms/" + filename + ".xml"));
+		filenames.push_back(CFGDIR + ("../platforms/" + filename));
+		filenames.push_back(CFGDIR + ("../platforms/" + filename + ".xml"));
 #endif
 		bool success = false;
 		for (int i = 0; i < filenames.size(); ++i) {
