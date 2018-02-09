@@ -76,6 +76,7 @@ void nullpointer(int value)
 {
     int res = 0;
     FILE *fp;
+    wchar_t *pWcsUninit;
 
 #ifndef __CYGWIN__
     // cppcheck-suppress nullPointer
@@ -126,39 +127,77 @@ void nullpointer(int value)
     strchr(0,0);
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
+    wcschr(0,0);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress nullPointer
     strlen(0);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress nullPointer
+    wcslen(0);
     // cppcheck-suppress nullPointer
     strcpy(0,0);
+    // cppcheck-suppress nullPointer
+    wcscpy(0,0);
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
     strspn(0,0);
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
+    wcsspn(0,0);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress nullPointer
     strcspn(0,0);
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
+    wcscspn(0,0);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress nullPointer
     strcoll(0,0);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress nullPointer
+    wcscoll(0,0);
     // cppcheck-suppress nullPointer
     strcat(0,0);
+    // cppcheck-suppress nullPointer
+    wcscat(0,0);
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
     strcmp(0,0);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress nullPointer
+    wcscmp(0,0);
     // cppcheck-suppress nullPointer
     strncpy(0,0,1);
     // cppcheck-suppress nullPointer
+    wcsncpy(0,0,1);
+    // cppcheck-suppress nullPointer
     strncat(0,0,1);
+    // cppcheck-suppress nullPointer
+    wcsncat(0,0,1);
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
     strncmp(0,0,1);
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
+    wcsncmp(0,0,1);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress nullPointer
     strstr(0,0);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress nullPointer
+    wcsstr(0,0);
     // cppcheck-suppress nullPointer
     strtoul(0,0,0);
     // cppcheck-suppress nullPointer
+    wcstoul(0,0,0);
+    // cppcheck-suppress nullPointer
     strtoull(0,0,0);
     // cppcheck-suppress nullPointer
+    wcstoull(0,0,0);
+    // cppcheck-suppress nullPointer
     strtol(0,0,0);
+    // cppcheck-suppress nullPointer
+    wcstol(0,0,0);
 
     // #6100 False positive nullPointer - calling mbstowcs(NULL,)
     res += mbstowcs(0,"",0);
@@ -166,10 +205,14 @@ void nullpointer(int value)
     res += wcstombs(0,L"",0);
 
     strtok(NULL,"xyz");
+    wcstok(NULL,L"xyz",&pWcsUninit);
 
     strxfrm(0,"foo",0);
     // TODO: error message (#6306 and http://trac.cppcheck.net/changeset/d11eb4931aea51cf2cb74faccdcd2a3289b818d6/)
     strxfrm(0,"foo",42);
+    wcsxfrm(0,L"foo",0);
+    // TODO: error message when arg1==NULL and arg3!=0 #6306: https://trac.cppcheck.net/ticket/6306#comment:2
+    wcsxfrm(0,L"foo",42);
 
     snprintf(NULL, 0, "someformatstring"); // legal
     // cppcheck-suppress nullPointer
@@ -178,6 +221,9 @@ void nullpointer(int value)
     scanf("%i", &res);
     // cppcheck-suppress nullPointer
     scanf("%i", NULL);
+    wscanf(L"%i", &res);
+    // cppcheck-suppress nullPointer
+    wscanf(L"%i", NULL);
 }
 
 void nullpointerMemchr1(char *p, char *s)
