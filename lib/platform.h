@@ -97,7 +97,7 @@ namespace cppcheck {
         bool platform(PlatformType type);
 
         /** set the platform type for user specified platforms */
-        bool platformFile(const std::string &filename);
+        bool platformFile(const char exename[], const std::string &filename);
 
         /**
         * @brief Returns true if platform type is Windows

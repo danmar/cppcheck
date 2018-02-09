@@ -714,7 +714,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                     _settings->platform(Settings::Native);
                 else if (platform == "unspecified")
                     _settings->platform(Settings::Unspecified);
-                else if (!_settings->platformFile(platform)) {
+                else if (!_settings->platformFile(argv[0], platform)) {
                     std::string message("cppcheck: error: unrecognized platform: \"");
                     message += platform;
                     message += "\".";
