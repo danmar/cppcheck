@@ -799,6 +799,8 @@ void CppCheck::getErrorMessages()
     s.addEnabled("performance");
     s.addEnabled("information");
 
+    purgedConfigurationMessage("","");
+
     tooManyConfigs = true;
     tooManyConfigsError("",0U);
 
