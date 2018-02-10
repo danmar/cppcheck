@@ -23,7 +23,6 @@
 #include <cstring>
 #include <limits>
 #include <vector>
-#include <iostream>
 
 cppcheck::Platform::Platform()
 {
@@ -168,14 +167,13 @@ bool cppcheck::Platform::platformFile(const char exename[], const std::string &f
         }
 #ifdef CFGDIR
         std::string cfgdir = CFGDIR;
-        if (cfgdir[cfgdir.size()-1] != '/')
+        if (!cfgdir.empty() && cfgdir[cfgdir.size()-1] != '/')
             cfgdir += '/';
-        filenames.push_back(CFGDIR + ("../platforms/" + filename));
-        filenames.push_back(CFGDIR + ("../platforms/" + filename + ".xml"));
+        filenames.push_back(cfgdir + ("../platforms/" + filename));
+        filenames.push_back(cfgdir + ("../platforms/" + filename + ".xml"));
 #endif
         bool success = false;
         for (int i = 0; i < filenames.size(); ++i) {
-            std::cout << "platform:" << filenames[i] << std::endl;
             if (doc.LoadFile(filenames[i].c_str()) == tinyxml2::XML_SUCCESS) {
                 success = true;
                 break;
