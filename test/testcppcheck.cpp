@@ -90,6 +90,20 @@ private:
             }
         }
         ASSERT_EQUALS("", duplicate);
+
+        // Check for error ids from this class.
+        bool foundPurgedConfiguration = false;
+        bool foundTooManyConfigs = false;
+        for (std::list<std::string>::iterator it = errorLogger.id.begin();
+             it != errorLogger.id.end();
+             ++it) {
+            if (*it == "purgedConfiguration")
+                foundPurgedConfiguration = true;
+            else if (*it == "toomanyconfigs")
+                foundTooManyConfigs = true;
+        }
+        ASSERT(foundPurgedConfiguration);
+        ASSERT(foundTooManyConfigs);
     }
 };
 
