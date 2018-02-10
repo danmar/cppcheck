@@ -57,7 +57,7 @@
             <item>
              <widget class="QPushButton" name="mBtnBrowseImportProject">
               <property name="text">
-               <string>...</string>
+               <string>Browse...</string>
               </property>
              </widget>
             </item>
@@ -309,7 +309,7 @@
           <item>
            <widget class="QPushButton" name="mBtnBrowseBuildDir">
             <property name="text">
-             <string>...</string>
+             <string>Browse...</string>
             </property>
            </widget>
           </item>
