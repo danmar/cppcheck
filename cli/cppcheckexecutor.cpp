@@ -33,6 +33,7 @@
 #include "suppressions.h"
 #include "threadexecutor.h"
 #include "utils.h"
+#include "checkunusedfunctions.h"
 
 #include <csignal>
 #include <cstdio>
@@ -178,6 +179,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     Preprocessor::missingIncludeFlag = false;
     Preprocessor::missingSystemIncludeFlag = false;
+
+    CheckUnusedFunctions::clear();
 
     CppCheck cppCheck(*this, true);
 

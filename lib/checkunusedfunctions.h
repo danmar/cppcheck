@@ -50,10 +50,15 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
+    static void clear() {
+        instance._functions.clear();
+        instance._functionCalls.clear();
+    }
+
     // Parse current tokens and determine..
     // * Check what functions are used
     // * What functions are declared
-    void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings, bool clear=true);
+    void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
 
     // Return true if an error is reported.
     bool check(ErrorLogger * const errorLogger, const Settings& settings);

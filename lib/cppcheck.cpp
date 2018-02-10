@@ -399,7 +399,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
                 // Analyze info..
                 if (!_settings.buildDir.empty())
-                    checkUnusedFunctions.parseTokens(_tokenizer, filename.c_str(), &_settings, false);
+                    checkUnusedFunctions.parseTokens(_tokenizer, filename.c_str(), &_settings);
 
                 // simplify more if required, skip rest of iteration if failed
                 if (_simplify) {

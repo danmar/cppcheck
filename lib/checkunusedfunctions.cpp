@@ -47,14 +47,12 @@ static const struct CWE CWE561(561U);   // Dead Code
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings, bool clear)
+void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings)
 {
     const bool doMarkup = settings->library.markupFile(FileName);
     const SymbolDatabase* symbolDatabase = tokenizer.getSymbolDatabase();
 
     // Function declarations..
-    if (clear)
-        _functionDecl.clear();
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); i++) {
         const Scope* scope = symbolDatabase->functionScopes[i];
         const Function* func = scope->function;
@@ -88,8 +86,6 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     }
 
     // Function usage..
-    if (clear)
-        _functionCalls.clear();
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
 
         // parsing of library code to find called functions
