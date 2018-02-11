@@ -1459,7 +1459,8 @@ static bool valueFlowForward(Token * const               startToken,
                 }
 
                 bool bailoutflag = false;
-                for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
+                const Token * const start1 = iselse ? tok2->link()->linkAt(-2) : nullptr;
+                for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end();) {
                     if (!iselse && conditionIsTrue(condition, getProgramMemory(condition->astParent(), varid, *it))) {
                         bailoutflag = true;
                         break;
@@ -1468,12 +1469,19 @@ static bool valueFlowForward(Token * const               startToken,
                         bailoutflag = true;
                         break;
                     }
+                    if (iselse && it->isPossible() && isVariableChanged(start1, start1->link(), varid, var->isGlobal(), settings))
+                        values.erase(it++);
+                    else
+                        ++it;
                 }
                 if (bailoutflag) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, conditional return is assumed to be executed");
                     return false;
                 }
+
+                if (values.empty())
+                    return true;
             } else if (indentlevel <= 0 &&
                        Token::simpleMatch(tok2->link()->previous(), "else {") &&
                        !isReturnScope(tok2->link()->tokAt(-2)) &&

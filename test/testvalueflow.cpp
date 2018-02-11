@@ -42,10 +42,11 @@ private:
     Settings settings;
 
     void run() {
-        // strcpy cfg
+        // strcpy, abort cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"
                            "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
+                           "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
                            "</def>";
         settings.library.loadxmldata(cfg, sizeof(cfg));
 
@@ -2770,6 +2771,18 @@ private:
                "}";
         values = tokenValues(code, "x >");
         ASSERT_EQUALS(true, values.size() == 1U && values.front().isIntValue());
+
+        // #8348 - noreturn else
+        code = "int test_input_int(int a, int b) {\n"
+               "    int x;\n"
+               "    if (a == 1)\n"
+               "        x = b;\n"
+               "    else\n"
+               "        abort();\n"
+               "    a = x + 1;\n"
+               "}\n";
+        values = tokenValues(code, "x +");
+        ASSERT_EQUALS(true, values.empty());
     }
 };
 
