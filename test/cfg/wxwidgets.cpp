@@ -84,17 +84,39 @@ void deprecatedFunctions(wxApp &a, const wxString &s, wxArtProvider *artProvider
     // cppcheck-suppress MacOpenFileCalled
     a.MacOpenFile(s);
 #endif
+
+#if wxCHECK_VERSION(3, 1, 0)  // wxWidets-3.1.0 or higher:
+    // Some functions are not available anymore in newer versions
+
+    // @todo cppcheck-suppress ShowPopupCalled
+    comboCtrl.ShowPopup();
+#else
     // cppcheck-suppress InsertCalled
     wxArtProvider::Insert(artProvider);
+
+    // cppcheck-suppress GetTextIndentCalled
+    // cppcheck-suppress ignoredReturnValue
+    comboCtrl.GetTextIndent();
+
+    // cppcheck-suppress HidePopupCalled
+    comboCtrl.HidePopup(true);
+    // cppcheck-suppress HidePopupCalled
+    comboCtrl.HidePopup(false);
+    // cppcheck-suppress HidePopupCalled
+    comboCtrl.HidePopup(/*default=false*/);
+
+    // cppcheck-suppress SetTextIndentCalled
+    comboCtrl.SetTextIndent(0);
+#endif
+
 #if defined(__WXMSW__) || defined(__WXGTK__)
     // EnableYearChange() is not available on these GUI systems
 #else
     // cppcheck-suppress EnableYearChangeCalled
     calenderCtrl.EnableYearChange(false);
     // cppcheck-suppress EnableYearChangeCalled
+    calenderCtrl.EnableYearChange(true);
+    // cppcheck-suppress EnableYearChangeCalled
     calenderCtrl.EnableYearChange(/*default=yes*/);
 #endif
-    // cppcheck-suppress GetTextIndentCalled
-    // cppcheck-suppress ignoredReturnValue
-    comboCtrl.GetTextIndent();
 }
