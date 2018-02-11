@@ -466,6 +466,16 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
         TokenString currentToken;
 
+        if (cback() && cback()->previous && cback()->previous->op == '#' && (lastLine() == "# error" || lastLine() == "# warning")) {
+            while (istr.good() && ch != '\r' && ch != '\n') {
+                currentToken += ch;
+                ch = readChar(istr, bom);
+            }
+            istr.unget();
+            push_back(new Token(currentToken, location));
+            continue;
+        }
+
         // number or name
         if (isNameChar(ch)) {
             const bool num = std::isdigit(ch);
@@ -2311,6 +2321,17 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                     }
                 } else {
                     inc2.takeTokens(inc1);
+                }
+
+                if (!inc2.empty() && inc2.cfront()->op == '<' && inc2.cback()->op == '>') {
+                    TokenString hdr;
+                    // TODO: Sometimes spaces must be added in the string
+                    // Somehow preprocessToken etc must be told that the location should be source location not destination location
+                    for (const Token *tok = inc2.cfront(); tok; tok = tok->next) {
+                        hdr += tok->str;
+                    }
+                    inc2.clear();
+                    inc2.push_back(new Token(hdr, inc1.cfront()->location));
                 }
 
                 if (inc2.empty() || inc2.cfront()->str.size() <= 2U) {
