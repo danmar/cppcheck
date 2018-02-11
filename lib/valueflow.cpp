@@ -1460,7 +1460,7 @@ static bool valueFlowForward(Token * const               startToken,
 
                 bool bailoutflag = false;
                 const Token * const start1 = iselse ? tok2->link()->linkAt(-2) : nullptr;
-                for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end();) {
+                for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end();) {
                     if (!iselse && conditionIsTrue(condition, getProgramMemory(condition->astParent(), varid, *it))) {
                         bailoutflag = true;
                         break;
