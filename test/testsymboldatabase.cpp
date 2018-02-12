@@ -316,6 +316,8 @@ private:
         TEST_CASE(nothrowAttributeFunction);
         TEST_CASE(nothrowDeclspecFunction);
 
+        TEST_CASE(noreturnAttributeFunction);
+
         TEST_CASE(varTypesIntegral); // known integral
         TEST_CASE(varTypesFloating); // known floating
         TEST_CASE(varTypesOther);    // (un)known
@@ -4112,6 +4114,19 @@ private:
             ASSERT_EQUALS(true, func != nullptr);
             if (func)
                 ASSERT_EQUALS(true, func->isAttributeNothrow());
+        }
+    }
+
+    void noreturnAttributeFunction() {
+        GET_SYMBOL_DB("template <class T> [[noreturn]] void func() { }");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Function *func = findFunctionByName("func", &db->scopeList.front());
+            ASSERT_EQUALS(true, func != nullptr);
+            if (func)
+                ASSERT_EQUALS(true, func->isAttributeNoreturn());
         }
     }
 

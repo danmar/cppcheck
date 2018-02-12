@@ -3583,8 +3583,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (_settings->terminated())
         return false;
 
-    // Remove [[deprecated]]
-    simplifyDeprecated();
+    // Remove [[attribute]]
+    simplifyCPP14Attribute();
 
     // remove __attribute__((?))
     simplifyAttribute();
@@ -8430,7 +8430,8 @@ void Tokenizer::findGarbageCode() const
             tok = tok->next()->findClosingBracket();
             if (!tok)
                 syntaxError(tok1);
-            if (!Token::Match(tok, ">|>> ::| %name%"))
+            if (!Token::Match(tok, ">|>> ::| %name%") &&
+                !Token::Match(tok, ">|>> [ [ %name%"))
                 syntaxError(tok->next() ? tok->next() : tok1);
         }
     }
@@ -9811,13 +9812,18 @@ void Tokenizer::removeUnnecessaryQualification()
     }
 }
 
-void Tokenizer::simplifyDeprecated()
+void Tokenizer::simplifyCPP14Attribute()
 {
-    if (_settings->standards.cpp != Standards::CPP11 || isC())
+    if (_settings->standards.cpp < Standards::CPP11 || isC())
         return; // It is actually a C++14 feature, however, there seems to be nothing dangerous about removing it for C++11 as well
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->link() && Token::simpleMatch(tok, "[ [ deprecated")) {
+        if (tok->link() && Token::Match(tok, "[ [ deprecated|noreturn")) {
+            if (tok->strAt(2) == "noreturn") {
+                const Token * head = Token::findsimplematch(tok->tokAt(5), "(");
+                if (head && isFunctionHead(head, "{"))
+                    head->previous()->isAttributeNoreturn(true);
+            }
             Token::eraseTokens(tok, tok->link()->next());
             tok->deleteThis();
         }
