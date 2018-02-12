@@ -58,7 +58,8 @@ namespace difftool
             string f = errorLoc.Substring(1, errorLoc.LastIndexOf(':')-1);
             int errorLine = Int32.Parse(errorLoc.Substring(1 + errorLoc.LastIndexOf(':')));
             string[] lines = System.IO.File.ReadAllLines(path + f);
-            string[] keywords = { "void", "bool", "char", "short", "int", "long", "class", "struct", "enum", "for", "if", "while", "using", "namespace", "unsigned", "signed" };
+            string[] keywords = { "void", "bool", "char", "short", "int", "long", "class", "struct", "enum", "for", "if", "while", "using", "namespace", "unsigned", "signed", "private", "protected", "public",
+                                  "static", "const" };
             System.IO.StreamWriter file = new System.IO.StreamWriter(path + filename);
             file.Write("<html><body><pre>" + textToHtml(w) + "\n");
             int linenr = 1;
@@ -129,10 +130,15 @@ namespace difftool
             string path;
             if (Directory.Exists("/home/danielm/shared/testing"))
                 path = "/home/danielm/shared/testing/";
+            else if (Directory.Exists("/home/danielm/testing"))
+                path = "/home/danielm/testing/";
             else if (Directory.Exists(@"c:\Users\danielm.evidente\testing"))
                 path = @"c:\Users\danielm.evidente\testing\";
             else
+            {
+                Console.WriteLine("Directory testing not found");
                 return;
+            }
 
             string[] old = System.IO.File.ReadAllLines(path + "1.82.txt");
             string[] head = System.IO.File.ReadAllLines(path + "head.txt");
