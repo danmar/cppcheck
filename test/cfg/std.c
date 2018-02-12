@@ -201,7 +201,6 @@ void nullpointer(int value)
 
     // #6100 False positive nullPointer - calling mbstowcs(NULL,)
     res += mbstowcs(0,"",0);
-    // TODO cppcheck-suppress unreadVariable
     res += wcstombs(0,L"",0);
 
     strtok(NULL,"xyz");
@@ -483,14 +482,13 @@ void uninitvar_asctime(void)
     (void)asctime(tm);
 }
 
-#if 0
 void uninitvar_assert(void)
 {
     int i;
-    // TODO cppcheck-suppress uninitvar
+    // cppcheck-suppress checkLibraryNoReturn
+    // cppcheck-suppress uninitvar
     assert(i);
 }
-#endif
 
 void uninitvar_sqrt(void)
 {
