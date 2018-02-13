@@ -133,7 +133,7 @@ for lib in (False, True):
             if messageId == 'syntaxError':
                 continue
             totalNumber[severity] = totalNumber[severity] + 1
-            if not messageId in categories[severity]:
+            if messageId not in categories[severity]:
                 categories[severity].append(messageId)
 
         mainpage.write(
