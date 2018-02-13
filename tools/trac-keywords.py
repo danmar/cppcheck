@@ -4,6 +4,7 @@ import sys
 
 TRACDB = 'trac.db'
 
+
 def readdb():
     global TRACDB
     cmds = ['sqlite3', TRACDB, 'SELECT id,keywords FROM ticket WHERE status<>"closed";']
@@ -16,12 +17,12 @@ def readdb():
         if pos1 <= 0:
             continue
         nr = line[:pos1]
-        for kw in line[pos1+1:].split(' '):
+        for kw in line[pos1 + 1:].split(' '):
             if kw == '':
                 continue
             if kw not in ret:
                 ret[kw] = []
-            ret[kw].append(nr);
+            ret[kw].append(nr)
     return ret
 
 for arg in sys.argv[1:]:
@@ -35,5 +36,3 @@ for kw in sorted(data.keys()):
     for ticket in data[kw]:
         out = out + ' ' + ticket
     print(out)
-
-

@@ -3,6 +3,7 @@ import os
 import sys
 import re
 
+
 def readdate(data):
     if data[:5] == 'DATE ':
         datepos = 0
@@ -30,11 +31,12 @@ def readdate(data):
             return None
         datepos += 1
 
+
 def summaryHtml(style, font, text1, text2, text3):
     font1 = ''
     font2 = ''
     if font:
-	    font1 = font
+        font1 = font
         font2 = '</font>'
     return '<tr> ' +
            '<td ' + style + '>' + font1 + text1 + font2 + '</td> ' +

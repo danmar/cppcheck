@@ -215,7 +215,7 @@ try:
     for archive in archives:
         if len(args.skip) > 0:
             a = archive[:archive.rfind('/')]
-            a = a[a.rfind('/')+1:]
+            a = a[a.rfind('/') + 1:]
             if a in args.skip:
                 continue
         scanarchive(archive, args.jobs, args.cpulimit)
