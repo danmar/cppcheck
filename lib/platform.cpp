@@ -197,6 +197,8 @@ bool cppcheck::Platform::platformFile(const char exename[], const std::string &f
             for (const tinyxml2::XMLElement *sz = node->FirstChildElement(); sz; sz = sz->NextSiblingElement()) {
                 if (std::strcmp(sz->Name(), "short") == 0)
                     sizeof_short = std::atoi(sz->GetText());
+                else if (std::strcmp(sz->Name(), "bool") == 0)
+                    sizeof_bool = std::atoi(sz->GetText());
                 else if (std::strcmp(sz->Name(), "int") == 0)
                     sizeof_int = std::atoi(sz->GetText());
                 else if (std::strcmp(sz->Name(), "long") == 0)
