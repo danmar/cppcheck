@@ -195,26 +195,26 @@ bool cppcheck::Platform::platformFile(const char exename[], const std::string &f
             char_bit = std::atoi(node->GetText());
         else if (std::strcmp(node->Name(), "sizeof") == 0) {
             for (const tinyxml2::XMLElement *sz = node->FirstChildElement(); sz; sz = sz->NextSiblingElement()) {
-                if (std::strcmp(node->Name(), "short") == 0)
-                    sizeof_short = std::atoi(node->GetText());
-                else if (std::strcmp(node->Name(), "int") == 0)
-                    sizeof_int = std::atoi(node->GetText());
-                else if (std::strcmp(node->Name(), "long") == 0)
-                    sizeof_long = std::atoi(node->GetText());
-                else if (std::strcmp(node->Name(), "long-long") == 0)
-                    sizeof_long_long = std::atoi(node->GetText());
-                else if (std::strcmp(node->Name(), "float") == 0)
-                    sizeof_float = std::atoi(node->GetText());
-                else if (std::strcmp(node->Name(), "double") == 0)
-                    sizeof_double = std::atoi(node->GetText());
-                else if (std::strcmp(node->Name(), "long-double") == 0)
-                    sizeof_long_double = std::atoi(node->GetText());
-                else if (std::strcmp(node->Name(), "pointer") == 0)
-                    sizeof_pointer = std::atoi(node->GetText());
-                else if (std::strcmp(node->Name(), "size_t") == 0)
-                    sizeof_size_t = std::atoi(node->GetText());
-                else if (std::strcmp(node->Name(), "wchar_t") == 0)
-                    sizeof_wchar_t = std::atoi(node->GetText());
+                if (std::strcmp(sz->Name(), "short") == 0)
+                    sizeof_short = std::atoi(sz->GetText());
+                else if (std::strcmp(sz->Name(), "int") == 0)
+                    sizeof_int = std::atoi(sz->GetText());
+                else if (std::strcmp(sz->Name(), "long") == 0)
+                    sizeof_long = std::atoi(sz->GetText());
+                else if (std::strcmp(sz->Name(), "long-long") == 0)
+                    sizeof_long_long = std::atoi(sz->GetText());
+                else if (std::strcmp(sz->Name(), "float") == 0)
+                    sizeof_float = std::atoi(sz->GetText());
+                else if (std::strcmp(sz->Name(), "double") == 0)
+                    sizeof_double = std::atoi(sz->GetText());
+                else if (std::strcmp(sz->Name(), "long-double") == 0)
+                    sizeof_long_double = std::atoi(sz->GetText());
+                else if (std::strcmp(sz->Name(), "pointer") == 0)
+                    sizeof_pointer = std::atoi(sz->GetText());
+                else if (std::strcmp(sz->Name(), "size_t") == 0)
+                    sizeof_size_t = std::atoi(sz->GetText());
+                else if (std::strcmp(sz->Name(), "wchar_t") == 0)
+                    sizeof_wchar_t = std::atoi(sz->GetText());
             }
         }
     }
@@ -225,6 +225,5 @@ bool cppcheck::Platform::platformFile(const char exename[], const std::string &f
     long_long_bit = char_bit * sizeof_long_long;
 
     platformType = PlatformFile;
-
     return true;
 }
