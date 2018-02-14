@@ -16,6 +16,7 @@
 #include <wx/combo.h>
 #include <wx/icon.h>
 #include <wx/bitmap.h>
+#include <wx/dataview.h>
 
 void validCode()
 {
@@ -78,7 +79,19 @@ void uninitvar()
     wxLogMessage(pcUninit);
 }
 
-void deprecatedFunctions(wxApp &a, const wxString &s, wxArtProvider *artProvider, wxCalendarCtrl &calenderCtrl, wxComboCtrl &comboCtrl)
+void deprecatedFunctions_wxDataViewCustomRenderer(wxDataViewCustomRenderer &dataViewCustomRenderer, wxPoint cursor, wxRect cell, wxDataViewModel *model, const wxDataViewItem &item, unsigned int col)
+{
+    // cppcheck-suppress ActivateCalled
+    dataViewCustomRenderer.Activate(cell, model, item, col);
+    // cppcheck-suppress LeftClickCalled
+    dataViewCustomRenderer.LeftClick(cursor, cell, model, item, col);
+}
+
+void deprecatedFunctions(wxApp &a,
+                         const wxString &s,
+                         wxArtProvider *artProvider,
+                         wxCalendarCtrl &calenderCtrl,
+                         wxComboCtrl &comboCtrl)
 {
 #ifdef __WXOSX__
     // cppcheck-suppress MacOpenFileCalled
