@@ -466,7 +466,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
         TokenString currentToken;
 
-        if (cback() && cback()->previous && cback()->previous->op == '#' && (lastLine() == "# error" || lastLine() == "# warning")) {
+        if (cback() && cback()->location.line == location.line && cback()->previous && cback()->previous->op == '#' && (lastLine() == "# error" || lastLine() == "# warning")) {
             while (istr.good() && ch != '\r' && ch != '\n') {
                 currentToken += ch;
                 ch = readChar(istr, bom);
@@ -575,14 +575,20 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
             std::string s = currentToken;
             std::string::size_type pos;
+            int newlines = 0;
             while ((pos = s.find_first_of("\r\n")) != std::string::npos) {
                 s.erase(pos,1);
+                newlines++;
             }
 
             push_back(new Token(s, location)); // push string without newlines
 
-            location.adjust(currentToken);
-
+            if (newlines > 0 && lastLine().compare(0,9,"# define ") == 0) {
+                multiline += newlines;
+                location.adjust(s);
+            } else {
+                location.adjust(currentToken);
+            }
             continue;
         }
 
@@ -1332,7 +1338,7 @@ namespace simplecpp {
                         if (it != macros.end() && expandedmacros.find(tok->str) == expandedmacros.end()) {
                             const Macro &m = it->second;
                             if (!m.functionLike()) {
-                                m.expand(tokens, tok, macros, files);
+                                m.expand(tokens, tok->location, tok, macros, expandedmacros);
                                 expanded = true;
                             }
                         }
@@ -1496,6 +1502,11 @@ namespace simplecpp {
                 TokenList temp(files);
                 if (expandArg(&temp, tok, loc, macros, expandedmacros, parametertokens)) {
                     if (!(temp.cback() && temp.cback()->name && tok->next && tok->next->op == '(')) {
+                        output->takeTokens(temp);
+                        return tok->next;
+                    }
+
+                    if (!sameline(tok, tok->next)) {
                         output->takeTokens(temp);
                         return tok->next;
                     }
