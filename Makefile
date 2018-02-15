@@ -305,6 +305,14 @@ ConfigFilesCHECKED := $(patsubst %.cfg,%.checked,$(ConfigFiles))
 	xmllint --noout --relaxng cfg/cppcheck-cfg.rng $<
 validateCFG: ${ConfigFilesCHECKED}
 
+# Validation of platforms files:
+PlatformFiles := $(wildcard platforms/*.xml)
+PlatformFilesCHECKED := $(patsubst %.xml,%.checked,$(PlatformFiles))
+.PHONY: validatePlatforms
+%.checked:%.xml
+	xmllint --noout --relaxng platforms/cppcheck-platforms.rng $<
+validatePlatforms: ${PlatformFilesCHECKED}
+
 
 ###### Build
 

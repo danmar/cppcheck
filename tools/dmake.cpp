@@ -375,7 +375,7 @@ int main(int argc, char **argv)
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
     fout << "\t./testrunner -q\n\n";
-    fout << "checkcfg:\tcppcheck validateCFG\n";
+    fout << "checkcfg:\tcppcheck validateCFG validatePlatforms\n";
     fout << "\t./test/cfg/runtests.sh\n\n";
     fout << "dmake:\ttools/dmake.o cli/filelister.o $(SRCDIR)/pathmatch.o $(SRCDIR)/path.o externals/simplecpp/simplecpp.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
@@ -407,7 +407,13 @@ int main(int argc, char **argv)
     fout << "%.checked:%.cfg\n";
     fout << "\txmllint --noout --relaxng cfg/cppcheck-cfg.rng $<\n";
     fout << "validateCFG: ${ConfigFilesCHECKED}\n\n";
-
+    fout << "# Validation of platforms files:\n";
+    fout << "PlatformFiles := $(wildcard platforms/*.xml)\n";
+    fout << "PlatformFilesCHECKED := $(patsubst %.xml,%.checked,$(PlatformFiles))\n";
+    fout << ".PHONY: validatePlatforms\n";
+    fout << "%.checked:%.xml\n";
+    fout << "\txmllint --noout --relaxng platforms/cppcheck-platforms.rng $<\n";
+    fout << "validatePlatforms: ${PlatformFilesCHECKED}\n\n";
 
     fout << "\n###### Build\n\n";
 
