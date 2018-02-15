@@ -28,6 +28,10 @@
 /// @addtogroup Core
 /// @{
 
+namespace tinyxml2 {
+    class XMLDocument;
+}
+
 namespace cppcheck {
 
     /**
@@ -98,6 +102,9 @@ namespace cppcheck {
 
         /** set the platform type for user specified platforms */
         bool platformFile(const char exename[], const std::string &filename);
+
+        /** load platform from xml document, primarily for testing */
+        bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
 
         /**
         * @brief Returns true if platform type is Windows

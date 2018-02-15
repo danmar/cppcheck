@@ -183,7 +183,12 @@ bool cppcheck::Platform::platformFile(const char exename[], const std::string &f
             return false;
     }
 
-    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
+    return loadFromXmlDocument(&doc);
+}
+
+bool cppcheck::Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
+{
+    const tinyxml2::XMLElement * const rootnode = doc->FirstChildElement();
 
     if (!rootnode || std::strcmp(rootnode->Name(), "platform") != 0)
         return false;
