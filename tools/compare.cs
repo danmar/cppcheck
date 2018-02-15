@@ -10,7 +10,7 @@ namespace difftool
 {
     class Program
     {
-        static private string firstLine(string s)
+        static private string FirstLine(string s)
         {
             int i = s.IndexOf('\n');
             return i > 0 ? s.Substring(0, i) : s;
@@ -33,20 +33,20 @@ namespace difftool
                     ret.Add(s1[i1]);
                     continue;
                 }
-                if (firstLine(s1[i1]) == firstLine(s2[i2]))
+                if (FirstLine(s1[i1]) == FirstLine(s2[i2]))
                 {
                     ++i2;
                     continue;
                 }
                 for (int i3 = i2 + 1; i3 < i2 + 300 && i3 < s2.Length; ++i3)
                 {
-                    if (firstLine(s1[i1]) == firstLine(s2[i3]))
+                    if (FirstLine(s1[i1]) == FirstLine(s2[i3]))
                     {
                         i2 = i3;
                         break;
                     }
                 }
-                if (firstLine(s1[i1]) == firstLine(s2[i2]))
+                if (FirstLine(s1[i1]) == FirstLine(s2[i2]))
                 {
                     ++i2;
                     continue;
@@ -56,12 +56,12 @@ namespace difftool
             return ret;
         }
 
-        static private string textToHtml(string s)
+        static private string TextToHtml(string s)
         {
             return s.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
         }
 
-        static Boolean isNameChar(char c)
+        static Boolean IsNameChar(char c)
         {
             return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
         }
@@ -133,7 +133,7 @@ namespace difftool
                                   "static", "const", "template", "typename", "auto", "virtual",
                                   "true", "false", "this" };
             System.IO.StreamWriter file = new System.IO.StreamWriter(path + filename);
-            file.Write("<html><head><title>" + textToHtml(w) + "</title></head><body bgcolor=\"" + backgroundColor + "\"><pre>" + foregroundFont + textToHtml(w) + "\n");
+            file.Write("<html><head><title>" + TextToHtml(w) + "</title></head><body bgcolor=\"" + backgroundColor + "\"><pre>" + foregroundFont + TextToHtml(w) + "\n");
             int linenr = 0;
             bool multiline = false;
             foreach (string line in lines)
@@ -158,12 +158,12 @@ namespace difftool
                             if (currentToken.EndsWith("*/"))
                                 multiline = false;
                         }
-                        file.Write(multiLineCommentFont + textToHtml(currentToken) + "</font>");
+                        file.Write(multiLineCommentFont + TextToHtml(currentToken) + "</font>");
                     }
-                    else if (isNameChar(line[i]))
+                    else if (IsNameChar(line[i]))
                     {
                         string currentToken = "";
-                        while (i < line.Length && isNameChar(line[i]))
+                        while (i < line.Length && IsNameChar(line[i]))
                         {
                             currentToken += line[i];
                             i++;
@@ -187,11 +187,11 @@ namespace difftool
                             if (currentToken.Length > 1 && currentToken[0] == line[i - 1])
                                 break;
                         }
-                        file.Write(stringFont + textToHtml(currentToken) + "</font>");
+                        file.Write(stringFont + TextToHtml(currentToken) + "</font>");
                     }
                     else if (line[i] == '/' && i + 1 < line.Length && line[i + 1] == '/')
                     {
-                        file.Write(singleLineCommentFont + textToHtml(line.Substring(i)) + "</font>");
+                        file.Write(singleLineCommentFont + TextToHtml(line.Substring(i)) + "</font>");
                         i = line.Length;
                     }
                     else if (line[i] == '/' && i + 1 < line.Length && line[i + 1] == '*')
@@ -206,18 +206,18 @@ namespace difftool
                             if (currentToken.Length > 3 && currentToken.EndsWith("*/"))
                                 multiline = false;
                         }
-                        file.Write(multiLineCommentFont + textToHtml(currentToken) + "</font>");
+                        file.Write(multiLineCommentFont + TextToHtml(currentToken) + "</font>");
                     }
                     else
                     {
-                        file.Write(textToHtml(line.Substring(i, 1)));
+                        file.Write(TextToHtml(line.Substring(i, 1)));
                         i++;
                     }
                 }
                 file.Write('\n');
 
                 if (errorLine == linenr)
-                    file.Write("        <mark>" + textToHtml(w.Substring(w.IndexOf(": "))) + "</mark>\n");
+                    file.Write("        <mark>" + TextToHtml(w.Substring(w.IndexOf(": "))) + "</mark>\n");
             }
             file.Write("</font></pre></body></html>");
             file.Close();
@@ -303,7 +303,7 @@ namespace difftool
                         string filename = "code" + fileIndex.ToString() + ".html";
                         fileIndex++;
                         writeSourceFile(path, w, "html/" + filename);
-                        file.WriteLine("<a href=\"{0}\">{1}</a>", filename, textToHtml(w));
+                        file.WriteLine("<a href=\"{0}\">{1}</a>", filename, TextToHtml(w));
                     }
                     file.WriteLine("</pre>");
                 }
