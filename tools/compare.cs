@@ -133,7 +133,22 @@ namespace difftool
                                   "static", "const", "template", "typename", "auto", "virtual",
                                   "true", "false", "this" };
             System.IO.StreamWriter file = new System.IO.StreamWriter(path + filename);
-            file.Write("<html><head><title>" + TextToHtml(w) + "</title></head><body bgcolor=\"" + backgroundColor + "\"><pre>" + foregroundFont + TextToHtml(w) + "\n");
+            file.WriteLine("<html>");
+            file.WriteLine("<head>");
+            file.WriteLine("<title>" + TextToHtml(w) + "</title>");
+            file.WriteLine("<style>");
+            file.WriteLine("  table {");
+            file.WriteLine("    border: 0px;");
+            file.WriteLine("    border-spacing: 0;");
+            file.WriteLine("  }");
+            file.WriteLine("  td {");
+            file.WriteLine("    border: 1px solid red;");
+            file.WriteLine("    padding: 5px;");
+            file.WriteLine("    background-color: #ffe0e0;");
+            file.WriteLine("}");
+            file.WriteLine("</style>");
+            file.WriteLine("</head>");
+            file.WriteLine("<body bgcolor=\"" + backgroundColor + "\"><pre>" + foregroundFont + TextToHtml(w) + "\n");
             int linenr = 0;
             bool multiline = false;
             foreach (string line in lines)
@@ -217,7 +232,7 @@ namespace difftool
                 file.Write('\n');
 
                 if (errorLine == linenr)
-                    file.Write("        <mark>" + TextToHtml(w.Substring(w.IndexOf(": "))) + "</mark>\n");
+                    file.WriteLine("<table width=\"100%\"><tr><td><b>" + TextToHtml(errorMessage) + "</td></tr></table>");
             }
             file.Write("</font></pre></body></html>");
             file.Close();
