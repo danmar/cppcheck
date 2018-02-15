@@ -13,6 +13,7 @@ nullPointer:build/checkother.cpp
 *:gui/test*
 *:test/test.cxx
 *:test/cfg*
+*:test/platforms*
 
 *:externals*
 *:htmlreport*
