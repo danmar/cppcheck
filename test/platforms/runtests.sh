@@ -14,8 +14,8 @@ fi
 CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
 
 # Compiler settings
-CXX=g++
-CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security'
+#CXX=g++
+#CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security'
 CC=gcc
 CC_OPT='-Wno-format -Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
 
