@@ -139,6 +139,10 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
 
     bool hide = !mShowSeverities.isShown(item.severity);
 
+    // Ids that are temporarily hidden..
+    if (mHiddenMessageId.contains(item.errorId))
+        hide = true;
+
     //If specified, filter on summary, message, filename, and id
     if (!hide && !mFilter.isEmpty()) {
         if (!item.summary.contains(mFilter, Qt::CaseInsensitive) &&
@@ -190,6 +194,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data["file0"] = stripPath(item.file0, true);
     data["sinceDate"] = item.sinceDate;
     data["tags"] = item.tags;
+    data["hide"] = hide;
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
@@ -423,6 +428,7 @@ void ResultsTree::filterResults(const QString& filter)
 void ResultsTree::showHiddenResults()
 {
     //Clear the "hide" flag for each item
+    mHiddenMessageId.clear();
     int filecount = mModel.rowCount();
     for (int i = 0; i < filecount; i++) {
         QStandardItem *fileItem = mModel.item(i, 0);
@@ -930,6 +936,8 @@ void ResultsTree::hideAllIdResult()
     QVariantMap data = mContextItem->data().toMap();
 
     QString messageId = data["id"].toString();
+
+    mHiddenMessageId.append(messageId);
 
     // hide all errors with that message Id
     int filecount = mModel.rowCount();

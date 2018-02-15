@@ -545,6 +545,8 @@ private:
 
     QStringList mTags;
 
+    QStringList mHiddenMessageId;
+
     QItemSelectionModel *mSelectionModel;
     ThreadHandler *mThread;
 
