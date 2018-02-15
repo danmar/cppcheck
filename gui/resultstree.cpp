@@ -921,44 +921,45 @@ void ResultsTree::recheckSelectedFiles()
 
 void ResultsTree::hideAllIdResult()
 {
-    if (mContextItem && mContextItem->parent()) {
-        // Make sure we are working with the first column
-        if (mContextItem->column() != 0)
-            mContextItem = mContextItem->parent()->child(mContextItem->row(), 0);
-        QVariantMap data = mContextItem->data().toMap();
+    if (!mContextItem || !mContextItem->parent())
+        return;
 
-        QString messageId = data["id"].toString();
+    // Make sure we are working with the first column
+    if (mContextItem->column() != 0)
+        mContextItem = mContextItem->parent()->child(mContextItem->row(), 0);
+    QVariantMap data = mContextItem->data().toMap();
 
-        // hide all errors with that message Id
-        int filecount = mModel.rowCount();
-        for (int i = 0; i < filecount; i++) {
-            //Get file i
-            QStandardItem *file = mModel.item(i, 0);
-            if (!file) {
+    QString messageId = data["id"].toString();
+
+    // hide all errors with that message Id
+    int filecount = mModel.rowCount();
+    for (int i = 0; i < filecount; i++) {
+        //Get file i
+        QStandardItem *file = mModel.item(i, 0);
+        if (!file) {
+            continue;
+        }
+
+        //Get the amount of errors this file contains
+        int errorcount = file->rowCount();
+
+        for (int j = 0; j < errorcount; j++) {
+            //Get the error itself
+            QStandardItem *child = file->child(j, 0);
+            if (!child) {
                 continue;
             }
 
-            //Get the amount of errors this file contains
-            int errorcount = file->rowCount();
-
-            for (int j = 0; j < errorcount; j++) {
-                //Get the error itself
-                QStandardItem *child = file->child(j, 0);
-                if (!child) {
-                    continue;
-                }
-
-                QVariantMap userdata = child->data().toMap();
-                if (userdata["id"].toString() == messageId) {
-                    userdata["hide"] = true;
-                    child->setData(QVariant(userdata));
-                }
+            QVariantMap userdata = child->data().toMap();
+            if (userdata["id"].toString() == messageId) {
+                userdata["hide"] = true;
+                child->setData(QVariant(userdata));
             }
         }
-
-        refreshTree();
-        emit resultsHidden(true);
     }
+
+    refreshTree();
+    emit resultsHidden(true);
 }
 
 void ResultsTree::suppressSelectedIds()
