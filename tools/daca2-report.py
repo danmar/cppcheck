@@ -32,17 +32,18 @@ def readdate(data):
         datepos += 1
 
 
-def summaryHtml(style, font, text1, text2, text3):
+def summaryHtml(style, font, severity, categories, totalNumber):
     font1 = ''
     font2 = ''
     if font:
         font1 = font
         font2 = '</font>'
-    return '<tr> ' +
-           '<td ' + style + '>' + font1 + text1 + font2 + '</td> ' +
-           '<td ' + style + '>' + font1 + text2 + font2 + '</td> ' +
-           '<td ' + style + '>' + font1 + text3 + font2 + '</td> ' +
-           '</tr>\n'
+    ret = '<tr> '
+    ret = ret + '<td ' + style + '>' + font1 + severity + font2 + '</td> '
+    ret = ret + '<td ' + style + '>' + font1 + str(categories) + font2 + '</td> '
+    ret = ret + '<td ' + style + '>' + font1 + str(totalNumber) + font2 + '</td> '
+    ret = ret + '</tr>\n'
+    return ret
 
 daca2folder = os.path.expanduser('~/daca2/')
 path = ''
@@ -173,11 +174,11 @@ mainpage.write('</table>\n')
 mainpage.write('<b>Summary</b>\n')
 mainpage.write('<table>\n')
 mainpage.write(summaryHtml('style="background-color:#369"', '<font style="color:#eee">', 'Severity', 'Types', 'Amount'))
-mainpage.write(summaryHtml('style="background-color:#fff"', None, 'Error (there is bug)', categories['error'], totalNumber['error']))
-mainpage.write(summaryHtml('style="background-color:#ccccff"', None, 'Warning (potential bug)', categories['warning'], totalNumber['warning']))
-mainpage.write(summaryHtml('style="background-color:#fff"', None, 'Style', categories['style'], totalNumber['style']))
-mainpage.write(summaryHtml('style="background-color:#ccccff"', None, 'Portability', categories['portability'], totalNumber['portability']))
-mainpage.write(summaryHtml('style="background-color:#fff"', None, 'Performance', categories['performance'], totalNumber['performance']))
+mainpage.write(summaryHtml('style="background-color:#fff"', None, 'Error (there is bug)', len(categories['error']), totalNumber['error']))
+mainpage.write(summaryHtml('style="background-color:#ccccff"', None, 'Warning (potential bug)', len(categories['warning']), totalNumber['warning']))
+mainpage.write(summaryHtml('style="background-color:#fff"', None, 'Style', len(categories['style']), totalNumber['style']))
+mainpage.write(summaryHtml('style="background-color:#ccccff"', None, 'Portability', len(categories['portability']), totalNumber['portability']))
+mainpage.write(summaryHtml('style="background-color:#fff"', None, 'Performance', len(categories['performance']), totalNumber['performance']))
 mainpage.write('</table>\n')
 
 if lastupdate:
