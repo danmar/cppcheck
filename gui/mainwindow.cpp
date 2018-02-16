@@ -930,6 +930,7 @@ void MainWindow::analysisDone()
     mUI.mActionPosix->setEnabled(true);
     if (mScratchPad)
         mScratchPad->setEnabled(true);
+    mUI.mActionViewStats->setEnabled(true);
 
     if (mProjectFile && !mProjectFile->getBuildDir().isEmpty()) {
         const QString prjpath = QFileInfo(mProjectFile->getFilename()).absolutePath();

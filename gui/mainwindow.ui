@@ -495,6 +495,9 @@
    </property>
   </action>
   <action name="mActionViewStats">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="gui.qrc">
      <normaloff>:/images/text-x-generic.png</normaloff>:/images/text-x-generic.png</iconset>
