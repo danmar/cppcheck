@@ -70,6 +70,11 @@ static BOOL MyFileExists(const std::string& path)
 
 void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
 {
+    addFiles(files, path, extra, true, ignored);
+}
+
+void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+{
     const std::string cleanedPath = Path::toNativeSeparators(path);
 
     // basedir is the base directory which is used to form pathnames.
@@ -134,8 +139,10 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
             }
         } else {
             // Directory
-            if (!ignored.match(fname))
-                FileLister::recursiveAddFiles(files, fname, extra, ignored);
+            if (recursive) {
+                if (!ignored.match(fname))
+                    FileLister::recursiveAddFiles(files, fname, extra, ignored);
+            }
         }
     } while (FindNextFileA(hFind, &ffd) != FALSE);
 
