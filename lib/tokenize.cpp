@@ -8922,17 +8922,17 @@ void Tokenizer::simplifyCPPAttribute()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->link() && Token::Match(tok, "[ [ %name%")) {
-            if (tok->strAt(2) == "noreturn") {
-                const Token * head = tok->tokAt(5);
-                while (Token::Match(head, "%name%|::|*|&"))
-                    head = head->next();
-                if (head && isFunctionHead(head, "{|;"))
-                    head->previous()->isAttributeNoreturn(true);
-            }
-            Token::eraseTokens(tok, tok->link()->next());
-            tok->deleteThis();
+        if (!tok->link() || !Token::Match(tok, "[ [ %name%"))
+            continue;
+        if (tok->strAt(2) == "noreturn") {
+            const Token * head = tok->link()->next();
+            while (Token::Match(head, "%name%|::|*|&"))
+                head = head->next();
+            if (head && head->str() == "(" && isFunctionHead(head, "{|;"))
+                head->previous()->isAttributeNoreturn(true);
         }
+        Token::eraseTokens(tok, tok->link()->next());
+        tok->deleteThis();
     }
 }
 
