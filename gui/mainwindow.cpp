@@ -188,16 +188,16 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI.mActionEditProjectFile->setEnabled(mProjectFile != nullptr);
 
     for (int i = 0; i < mPlatforms.getCount(); i++) {
-        Platform plat = mPlatforms.mPlatforms[i];
-        QAction *act = new QAction(this);
-        plat.mActMainWindow = act;
-        mPlatforms.mPlatforms[i] = plat;
-        act->setText(plat.mTitle);
-        act->setData(plat.mType);
-        act->setCheckable(true);
-        act->setActionGroup(mPlatformActions);
-        mUI.mMenuAnalyze->insertAction(mUI.mActionPlatforms, act);
-        connect(act, SIGNAL(triggered()), this, SLOT(selectPlatform()));
+        Platform platform = mPlatforms.mPlatforms[i];
+        QAction *action = new QAction(this);
+        platform.mActMainWindow = action;
+        mPlatforms.mPlatforms[i] = platform;
+        action->setText(platform.mTitle);
+        action->setData(platform.mType);
+        action->setCheckable(true);
+        action->setActionGroup(mPlatformActions);
+        mUI.mMenuAnalyze->insertAction(mUI.mActionPlatforms, action);
+        connect(action, SIGNAL(triggered()), this, SLOT(selectPlatform()));
     }
 
     mUI.mActionC89->setActionGroup(mCStandardActions);
@@ -216,12 +216,12 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    const Settings::PlatformType defaultPlat = Settings::Win32W;
+    const Settings::PlatformType defaultPlatform = Settings::Win32W;
 #else
-    const Settings::PlatformType defaultPlat = Settings::Unspecified;
+    const Settings::PlatformType defaultPlatform = Settings::Unspecified;
 #endif
-    Platform &plat = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlat).toInt());
-    plat.mActMainWindow->setChecked(true);
+    Platform &platform = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
+    platform.mActMainWindow->setChecked(true);
 }
 
 MainWindow::~MainWindow()
@@ -1421,6 +1421,7 @@ bool MainWindow::loadLastResults()
         return false;
     mUI.mResults->readErrorsXml(lastResults);
     mUI.mResults->setCheckDirectory(mSettings->value(SETTINGS_LAST_CHECK_PATH,QString()).toString());
+    mUI.mActionViewStats->setEnabled(true);
     return true;
 }
 
