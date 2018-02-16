@@ -440,7 +440,7 @@ private:
         TEST_CASE(simplifyMathExpressions); //ticket #1620
         TEST_CASE(simplifyStaticConst);
 
-        TEST_CASE(simplifyDeprecated);
+        TEST_CASE(simplifyCPPAttribute);
 
         TEST_CASE(simplifyCaseRange);
 
@@ -7972,7 +7972,7 @@ private:
         ASSERT_EQUALS(expected3, tokenizeAndStringify(code3, true));
     }
 
-    void simplifyDeprecated() {
+    void simplifyCPPAttribute() {
         ASSERT_EQUALS("int f ( ) ;",
                       tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Native, "test.cpp", true));
 
@@ -7981,6 +7981,18 @@ private:
 
         ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
                       tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Native, "test.c", true));
+
+        ASSERT_EQUALS("template < class T > int f ( ) { }",
+                      tokenizeAndStringify("template <class T> [[noreturn]] int f(){}", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("template < class T > [ [ noreturn ] ] int f ( ) { }",
+                      tokenizeAndStringify("template <class T> [[noreturn]] int f(){}", false, true, Settings::Native, "test.cpp", false));
+        ASSERT_EQUALS("int f ( int i ) ;",
+                      tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("[ [ maybe_unused ] ] int f ( [ [ maybe_unused ] ] int i ) ;",
+                      tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", false, true, Settings::Native, "test.cpp", false));
+
     }
 
     void simplifyCaseRange() {

@@ -671,9 +671,9 @@ private:
     void simplifyOperatorName();
 
     /**
-    * Remove [[deprecated]] (C++14) from TokenList
+    * Remove [[attribute]] (C++11 and later) from TokenList
     */
-    void simplifyDeprecated();
+    void simplifyCPPAttribute();
 
     /**
      * Replace strlen(str)
