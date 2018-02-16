@@ -48,3 +48,8 @@ do
    xmllint --format -o ${CFGFILE}_ ${CFGFILE}
    mv -f ${CFGFILE}_ ${CFGFILE}
 done
+for PLATFORMFILE in platforms/*.xml
+do
+   xmllint --format -o ${PLATFORMFILE}_ ${PLATFORMFILE}
+   mv -f ${PLATFORMFILE}_ ${PLATFORMFILE}
+done
