@@ -3584,7 +3584,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         return false;
 
     // Remove [[attribute]]
-    simplifyCPP14Attribute();
+    simplifyCPPAttribute();
 
     // remove __attribute__((?))
     simplifyAttribute();
@@ -8916,6 +8916,26 @@ void Tokenizer::simplifyAttribute()
     }
 }
 
+void Tokenizer::simplifyCPPAttribute()
+{
+    if (_settings->standards.cpp < Standards::CPP11 || isC())
+        return;
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->link() && Token::Match(tok, "[ [ %name%")) {
+            if (tok->strAt(2) == "noreturn") {
+                const Token * head = tok->tokAt(5);
+                while (Token::Match(head, "%name%|::|*|&"))
+                    head = head->next();
+                if (head && isFunctionHead(head, "{|;"))
+                    head->previous()->isAttributeNoreturn(true);
+            }
+            Token::eraseTokens(tok, tok->link()->next());
+            tok->deleteThis();
+        }
+    }
+}
+
 static const std::set<std::string> keywords = make_container< std::set<std::string> >()
         << "volatile"
         << "inline"
@@ -9808,24 +9828,6 @@ void Tokenizer::removeUnnecessaryQualification()
                     }
                 }
             }
-        }
-    }
-}
-
-void Tokenizer::simplifyCPP14Attribute()
-{
-    if (_settings->standards.cpp < Standards::CPP11 || isC())
-        return; // It is actually a C++14 feature, however, there seems to be nothing dangerous about removing it for C++11 as well
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->link() && Token::Match(tok, "[ [ deprecated|noreturn")) {
-            if (tok->strAt(2) == "noreturn") {
-                const Token * head = Token::findsimplematch(tok->tokAt(5), "(");
-                if (head && isFunctionHead(head, "{"))
-                    head->previous()->isAttributeNoreturn(true);
-            }
-            Token::eraseTokens(tok, tok->link()->next());
-            tok->deleteThis();
         }
     }
 }

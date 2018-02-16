@@ -4118,12 +4118,28 @@ private:
     }
 
     void noreturnAttributeFunction() {
-        GET_SYMBOL_DB("template <class T> [[noreturn]] void func() { }");
+        GET_SYMBOL_DB("[[noreturn]] void func1();\n"
+                      "void func1() { }\n"
+                      "[[noreturn]] void func2();\n"
+                      "[[noreturn]] void func3() { }\n"
+                      "template <class T> [[noreturn]] void func4() { }");
         ASSERT_EQUALS("", errout.str());
         ASSERT_EQUALS(true,  db != nullptr); // not null
 
         if (db) {
-            const Function *func = findFunctionByName("func", &db->scopeList.front());
+            const Function *func = findFunctionByName("func1", &db->scopeList.front());
+            ASSERT_EQUALS(true, func != nullptr);
+            if (func)
+                ASSERT_EQUALS(true, func->isAttributeNoreturn());
+            func = findFunctionByName("func2", &db->scopeList.front());
+            ASSERT_EQUALS(true, func != nullptr);
+            if (func)
+                ASSERT_EQUALS(true, func->isAttributeNoreturn());
+            func = findFunctionByName("func3", &db->scopeList.front());
+            ASSERT_EQUALS(true, func != nullptr);
+            if (func)
+                ASSERT_EQUALS(true, func->isAttributeNoreturn());
+            func = findFunctionByName("func4", &db->scopeList.front());
             ASSERT_EQUALS(true, func != nullptr);
             if (func)
                 ASSERT_EQUALS(true, func->isAttributeNoreturn());
