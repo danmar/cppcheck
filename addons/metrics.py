@@ -6,13 +6,25 @@
 import cppcheckdata
 import sys
 
-class FunctionMetrics:
-    lines = 0
-    complexity = 0
+def getNumberOfComments(rawtokens):
+    numberOfComments = 0
+    file = None
+    comment = False
+    for tok in rawtokens:
+        if file is None:
+            file = tok.file
+        if tok.file != file:
+            continue
+        if tok.str.startswith('//') or tok.str.startswith('/*'):
+            if not comment:
+                numberOfComments += 1
+                comment = True
+        else:
+            comment = False
+    return numberOfComments
 
 def getMetrics(data):
-    variables = {}
-    functions = {}
+    print('number of comments:' + str(getNumberOfComments(data.rawTokens)))
     for cfg in data.configurations:
         for func in cfg.functions:
             if func.tokenDef is None:
