@@ -365,6 +365,8 @@ void ResultsView::updateDetails(const QModelIndex &index)
     QStandardItemModel *model = qobject_cast<QStandardItemModel*>(mUI.mTree->model());
     QStandardItem *item = model->itemFromIndex(index);
 
+    mUI.mCode->setPlainText(QString());
+
     if (!item) {
         mUI.mDetails->setText(QString());
         return;
@@ -395,6 +397,19 @@ void ResultsView::updateDetails(const QModelIndex &index)
     if (mUI.mTree->showIdColumn())
         formattedMsg.prepend(tr("Id") + ": " + data["id"].toString() + "\n");
     mUI.mDetails->setText(formattedMsg);
+
+    const int lineNumber = data["line"].toInt();
+
+    QString filepath = data["file"].toString();
+    if (!QFileInfo(filepath).exists() && QFileInfo(mUI.mTree->getCheckDirectory() + '/' + filepath).exists())
+        filepath = mUI.mTree->getCheckDirectory() + '/' + filepath;
+
+    QFile file(filepath);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&file);
+        mUI.mCode->setPlainText(in.readAll());
+        mUI.mCode->setErrorLine(lineNumber);
+    }
 }
 
 void ResultsView::log(const QString &str)

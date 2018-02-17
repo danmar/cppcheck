@@ -89,6 +89,7 @@ HEADERS += aboutdialog.h \
            applicationlist.h \
            checkstatistics.h \
            checkthread.h \
+           codeeditor.h \
            common.h \
            csvreport.h \
            erroritem.h \
@@ -123,6 +124,7 @@ SOURCES += aboutdialog.cpp \
            applicationlist.cpp \
            checkstatistics.cpp \
            checkthread.cpp \
+           codeeditor.cpp \
            common.cpp \
            csvreport.cpp \
            erroritem.cpp \
