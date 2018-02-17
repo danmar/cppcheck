@@ -1053,10 +1053,17 @@ def loadRuleTexts(filename):
             continue
 
 def loadRuleTextsFromPdf(filename):
+    if not os.path.isfile(filename):
+        print('Fatal error: PDF file is not found: ' + filename)
+        sys.exit(1)
     f = tempfile.NamedTemporaryFile(delete=False)
     f.close()
     #print('tempfile:' + f.name)
-    subprocess.call(['pdftotext', filename, f.name])
+    try:
+        subprocess.call(['pdftotext', filename, f.name])
+    except OSError as err:
+        print('Fatal error: Failed to execute pdftotext: ' + str(err))
+        sys.exit(1)
     loadRuleTexts(f.name)
     try:
         os.remove(f.name)
@@ -1105,9 +1112,16 @@ for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
     elif arg.startswith('--rule-texts='):
-        loadRuleTexts(arg[13:])
+        filename = arg[13:]
+        if not os.path.isfile(filename):
+            print('Fatal error: file is not found: ' + filename)
+            sys.exit(1)
+        loadRuleTexts(filename)
     elif arg.startswith('--misra-pdf='):
         loadRuleTextsFromPdf(arg[12:])
+    else:
+        print('Fatal error: unhandled argument ' + arg)
+        sys.exit(1)
 
 for arg in sys.argv[1:]:
     if not arg.endswith('.dump'):
