@@ -1,8 +1,10 @@
 #ifndef CODEEDITOR_H
 #define CODEEDITOR_H
 
+#include <QSyntaxHighlighter>
 #include <QPlainTextEdit>
 #include <QObject>
+#include <QRegularExpression>
 
 class QPaintEvent;
 class QResizeEvent;
@@ -12,14 +14,43 @@ class QWidget;
 class LineNumberArea;
 
 
+class Highlighter : public QSyntaxHighlighter {
+    Q_OBJECT
+
+public:
+    explicit Highlighter(QTextDocument *parent);
+
+protected:
+    void highlightBlock(const QString &text) override;
+
+private:
+    struct HighlightingRule {
+        QRegularExpression pattern;
+        QTextCharFormat format;
+    };
+    QVector<HighlightingRule> highlightingRules;
+
+    QRegularExpression commentStartExpression;
+    QRegularExpression commentEndExpression;
+
+    QTextCharFormat keywordFormat;
+    QTextCharFormat classFormat;
+    QTextCharFormat singleLineCommentFormat;
+    QTextCharFormat multiLineCommentFormat;
+    QTextCharFormat quotationFormat;
+    QTextCharFormat functionFormat;
+};
+
 class CodeEditor : public QPlainTextEdit {
     Q_OBJECT
 
 public:
-    explicit CodeEditor(QWidget *parent = 0);
+    explicit CodeEditor(QWidget *parent);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+
+    void setErrorLine(int errorLine);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -31,6 +62,8 @@ private slots:
 
 private:
     QWidget *lineNumberArea;
+    Highlighter *highlighter;
+    int mErrorPosition;
 };
 
 
