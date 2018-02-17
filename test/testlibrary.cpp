@@ -62,6 +62,7 @@ private:
         TEST_CASE(podtype);
         TEST_CASE(container);
         TEST_CASE(version);
+        TEST_CASE(loadLibErrors);
     }
 
     static Library::Error readLibrary(Library& library, const char* xmldata) {
@@ -71,10 +72,10 @@ private:
     }
 
     void empty() const {
+        // Reading an empty library file is considered to be OK
         const char xmldata[] = "<?xml version=\"1.0\"?>\n<def/>";
-
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT(library.functions.empty());
     }
 
@@ -92,7 +93,7 @@ private:
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT_EQUALS(library.functions.size(), 1U);
         ASSERT(library.functions.at("foo").argumentChecks.empty());
         ASSERT(library.isnotnoreturn(tokenList.front()));
@@ -107,8 +108,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
-
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         {
             TokenList tokenList(nullptr);
             std::istringstream istr("fred.foo(123);"); // <- wrong scope, not library function
@@ -116,7 +116,6 @@ private:
 
             ASSERT(library.isNotLibraryFunction(tokenList.front()->tokAt(2)));
         }
-
         {
             TokenList tokenList(nullptr);
             std::istringstream istr("Fred::foo(123);"); // <- wrong scope, not library function
@@ -141,7 +140,7 @@ private:
         tokenList.createAst();
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT(library.isNotLibraryFunction(tokenList.front()));
     }
 
@@ -155,7 +154,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
 
         {
             TokenList tokenList(nullptr);
@@ -210,7 +209,7 @@ private:
         tokenList.front()->next()->varId(1);
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT(library.isNotLibraryFunction(tokenList.front()->next()));
     }
 
@@ -227,7 +226,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[1].notuninit);
         ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[2].notnull);
         ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[3].formatstr);
@@ -246,7 +245,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[-1].notuninit);
     }
 
@@ -260,7 +259,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[-1].notuninit);
 
         TokenList tokenList(nullptr);
@@ -287,7 +286,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
 
         TokenList tokenList(nullptr);
         std::istringstream istr("foo(a,b,c,d,e);");
@@ -338,7 +337,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
 
         TokenList tokenList(nullptr);
         std::istringstream istr("foo(a,b,c);");
@@ -375,7 +374,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT_EQUALS(library.functions.size(), 2U);
         ASSERT(library.functions.at("Foo::foo").argumentChecks.empty());
         ASSERT(library.functions.at("bar").argumentChecks.empty());
@@ -404,7 +403,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT_EQUALS(library.functions.size(), 1U);
 
         {
@@ -431,7 +430,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
 
         {
             Tokenizer tokenizer(&settings, nullptr);
@@ -460,7 +459,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
 
         TokenList tokenList(nullptr);
         std::istringstream istr("a(); b();");
@@ -494,7 +493,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT(library.functions.empty());
 
         ASSERT(Library::ismemory(library.alloc("CreateX")));
@@ -537,7 +536,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT(library.functions.empty());
 
         const Library::AllocFunc* af = library.alloc("CreateX");
@@ -558,7 +557,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT(library.functions.empty());
 
         ASSERT(Library::isresource(library.allocId("CreateX")));
@@ -566,16 +565,58 @@ private:
     }
 
     void podtype() const {
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <podtype name=\"s16\" size=\"2\"/>\n"
-                               "</def>";
-        Library library;
-        readLibrary(library, xmldata);
-
-        const struct Library::PodType *type = library.podtype("s16");
-        ASSERT_EQUALS(2U,   type ? type->size : 0U);
-        ASSERT_EQUALS((char)0,    type ? type->sign : '?');
+        {
+            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <podtype name=\"s8\" sign=\"s\" size=\"1\"/>\n"
+                                   "  <podtype name=\"u8\" sign=\"u\" size=\"1\"/>\n"
+                                   "  <podtype name=\"u16\" sign=\"u\" size=\"2\"/>\n"
+                                   "  <podtype name=\"s16\" sign=\"s\" size=\"2\"/>\n"
+                                   "</def>";
+            Library library;
+            ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
+            // s8
+            {
+                const struct Library::PodType * const type = library.podtype("s8");
+                ASSERT_EQUALS(true, type != 0);
+                if (type) {
+                    ASSERT_EQUALS(1U, type->size);
+                    ASSERT_EQUALS('s', type->sign);
+                }
+            }
+            // u8
+            {
+                const struct Library::PodType * const type = library.podtype("u8");
+                ASSERT_EQUALS(true, type != 0);
+                if (type) {
+                    ASSERT_EQUALS(1U, type->size);
+                    ASSERT_EQUALS('u', type->sign);
+                }
+            }
+            // u16
+            {
+                const struct Library::PodType * const type = library.podtype("u16");
+                ASSERT_EQUALS(true, type != 0);
+                if (type) {
+                    ASSERT_EQUALS(2U, type->size);
+                    ASSERT_EQUALS('u', type->sign);
+                }
+            }
+            // s16
+            {
+                const struct Library::PodType * const type = library.podtype("s16");
+                ASSERT_EQUALS(true, type != 0);
+                if (type) {
+                    ASSERT_EQUALS(2U, type->size);
+                    ASSERT_EQUALS('s', type->sign);
+                }
+            }
+            // robustness test: provide cfg without PodType
+            {
+                const struct Library::PodType * const type = library.podtype("nonExistingPodType");
+                ASSERT_EQUALS(true, type == 0);
+            }
+        }
     }
 
     void container() const {
@@ -611,7 +652,7 @@ private:
                                "</def>";
 
         Library library;
-        readLibrary(library, xmldata);
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
 
         Library::Container& A = library.containers["A"];
         Library::Container& B = library.containers["B"];
@@ -662,7 +703,7 @@ private:
                                     "<def>\n"
                                     "</def>";
             Library library;
-            Library::Error err = readLibrary(library, xmldata);
+            const Library::Error err = readLibrary(library, xmldata);
             ASSERT_EQUALS(err.errorcode, Library::OK);
         }
         {
@@ -670,7 +711,7 @@ private:
                                     "<def format=\"1\">\n"
                                     "</def>";
             Library library;
-            Library::Error err = readLibrary(library, xmldata);
+            const Library::Error err = readLibrary(library, xmldata);
             ASSERT_EQUALS(err.errorcode, Library::OK);
         }
         {
@@ -678,8 +719,58 @@ private:
                                     "<def format=\"42\">\n"
                                     "</def>";
             Library library;
-            Library::Error err = readLibrary(library, xmldata);
+            const Library::Error err = readLibrary(library, xmldata);
             ASSERT_EQUALS(err.errorcode, Library::UNSUPPORTED_FORMAT);
+        }
+    }
+
+    void loadLibErrors() const {
+        // UNKNOWN_ELEMENT
+        {
+            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
+                                    "<def>\n"
+                                    "   <X name=\"uint8_t,std::uint8_t\" size=\"1\"/>\n"
+                                    "</def>";
+            Library library;
+            ASSERT_EQUALS(Library::UNKNOWN_ELEMENT, readLibrary(library, xmldata).errorcode);
+        }
+        // MISSING_ATTRIBUTE
+        {
+            // #define without attributes
+            {
+                const char xmldata [] = "<?xml version=\"1.0\"?>\n"
+                                        "<def>\n"
+                                        "  <define />\n" // no attributes provided at all
+                                        "</def>";
+                Library library;
+                ASSERT_EQUALS(Library::MISSING_ATTRIBUTE, readLibrary(library, xmldata).errorcode);
+            }
+            // #define with name but without value
+            {
+                const char xmldata [] = "<?xml version=\"1.0\"?>\n"
+                                        "<def>\n"
+                                        "  <define name=\"foo\" />\n" // no value provided
+                                        "</def>";
+                Library library;
+                ASSERT_EQUALS(Library::MISSING_ATTRIBUTE, readLibrary(library, xmldata).errorcode);
+            }
+            // #define with value but without a name
+            {
+                const char xmldata [] = "<?xml version=\"1.0\"?>\n"
+                                        "<def>\n"
+                                        "  <define value=\"1\" />\n" // no name provided
+                                        "</def>";
+                Library library;
+                ASSERT_EQUALS(Library::MISSING_ATTRIBUTE, readLibrary(library, xmldata).errorcode);
+            }
+        }
+        // UNSUPPORTED_FORMAT
+        {
+            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
+                                    "<X>\n"
+                                    "</X>";
+            Library library;
+            ASSERT_EQUALS(Library::UNSUPPORTED_FORMAT, readLibrary(library, xmldata).errorcode);
         }
     }
 };
