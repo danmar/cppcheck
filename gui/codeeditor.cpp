@@ -49,15 +49,31 @@ Highlighter::Highlighter(QTextDocument *parent)
     rule.format = singleLineCommentFormat;
     highlightingRules.append(rule);
 
+    highlightingRulesWithSymbols = highlightingRules;
+
     multiLineCommentFormat.setForeground(Qt::gray);
+
+    symbolFormat.setForeground(Qt::red);
+    symbolFormat.setBackground(QColor(220,220,255));
 
     commentStartExpression = QRegularExpression("/\\*");
     commentEndExpression = QRegularExpression("\\*/");
 }
 
+void Highlighter::setSymbols(const QStringList &symbols)
+{
+    highlightingRulesWithSymbols = highlightingRules;
+    foreach (const QString &sym, symbols) {
+        HighlightingRule rule;
+        rule.pattern = QRegularExpression("\\b" + sym + "\\b");
+        rule.format = symbolFormat;
+        highlightingRulesWithSymbols.append(rule);
+    }
+}
+
 void Highlighter::highlightBlock(const QString &text)
 {
-    foreach (const HighlightingRule &rule, highlightingRules) {
+    foreach (const HighlightingRule &rule, highlightingRulesWithSymbols) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();
@@ -94,6 +110,8 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     highlighter = new Highlighter(this->document());
     mErrorPosition = -1;
 
+    setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
@@ -103,19 +121,25 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
 static int getPos(const QString &fileData, int lineNumber)
 {
+    if (lineNumber <= 1)
+        return 0;
     for (int pos = 0, line = 1; pos < fileData.size(); ++pos) {
         if (fileData[pos] != '\n')
             continue;
         ++line;
-        if (line == lineNumber)
+        if (line >= lineNumber)
             return pos + 1;
     }
     return fileData.size();
 }
 
-void CodeEditor::setErrorLine(int errorLine)
+void CodeEditor::setError(const QString &code, int errorLine, const QStringList &symbols)
 {
-    mErrorPosition = getPos(toPlainText(), errorLine);
+    highlighter->setSymbols(symbols);
+
+    setPlainText(code);
+
+    mErrorPosition = getPos(code, errorLine);
     QTextCursor tc = textCursor();
     tc.setPosition(mErrorPosition);
     setTextCursor(tc);

@@ -20,6 +20,8 @@ class Highlighter : public QSyntaxHighlighter {
 public:
     explicit Highlighter(QTextDocument *parent);
 
+    void setSymbols(const QStringList &symbols);
+
 protected:
     void highlightBlock(const QString &text) override;
 
@@ -29,6 +31,7 @@ private:
         QTextCharFormat format;
     };
     QVector<HighlightingRule> highlightingRules;
+    QVector<HighlightingRule> highlightingRulesWithSymbols;
 
     QRegularExpression commentStartExpression;
     QRegularExpression commentEndExpression;
@@ -39,6 +42,7 @@ private:
     QTextCharFormat multiLineCommentFormat;
     QTextCharFormat quotationFormat;
     QTextCharFormat functionFormat;
+    QTextCharFormat symbolFormat;
 };
 
 class CodeEditor : public QPlainTextEdit {
@@ -50,7 +54,7 @@ public:
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
 
-    void setErrorLine(int errorLine);
+    void setError(const QString &code, int errorLine, const QStringList &symbols);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

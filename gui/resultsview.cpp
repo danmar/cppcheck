@@ -406,9 +406,16 @@ void ResultsView::updateDetails(const QModelIndex &index)
 
     QFile file(filepath);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QStringList symbols;
+        QRegularExpression re(".*: ([A-Za-z_][A-Za-z0-9_]*)$");
+        const QString errorMessage = data["message"].toString();
+        QRegularExpressionMatch match = re.match(errorMessage);
+        if (match.hasMatch()) {
+            symbols << match.captured(1);
+        }
+
         QTextStream in(&file);
-        mUI.mCode->setPlainText(in.readAll());
-        mUI.mCode->setErrorLine(lineNumber);
+        mUI.mCode->setError(in.readAll(), lineNumber, symbols);
     }
 }
 
