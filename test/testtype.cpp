@@ -65,28 +65,142 @@ private:
         Settings settings;
         settings.platform(Settings::Unix32);
 
-        check("char foo(char x) {\n"
-              "   return x << 32;\n"
-              "}",&settings);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Shifting 8-bit value by 32 bits is undefined behaviour\n", errout.str());
+        // 8 bit width types
+        {
+            // unsigned char
+            check("unsigned char foo(unsigned char x) { return x << 8; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 8-bit value by 8 bits is undefined behaviour\n", errout.str());
+            check("unsigned char f(int x) { return (x = (unsigned char)x << 8); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 8-bit value by 8 bits is undefined behaviour\n", errout.str());
+            check("unsigned char foo(unsigned char x) { return x << 7; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+            // [unsigned] char
+            check("char foo(char x) { return x << 8; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 8-bit value by 8 bits is undefined behaviour\n", errout.str());
+            check("char f(int x) { return (x = (char)x << 8); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 8-bit value by 8 bits is undefined behaviour\n", errout.str());
+            check("char foo(char x) { return x << 7; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+            // signed char
+            check("signed char foo(signed char x) { return x << 8; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 8-bit value by 8 bits is undefined behaviour\n", errout.str());
+            check("signed char f(int x) { return (x = (signed char)x << 8); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 8-bit value by 8 bits is undefined behaviour\n", errout.str());
+            check("signed char foo(signed char x) { return x << 7; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 8-bit value by 7 bits is undefined behaviour\n", errout.str());
+            check("signed char foo(signed char x) { return x << 6; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+        }
+        // 16 bit width types
+        {
+            // unsigned short
+            check("unsigned short foo(unsigned short x) { return x << 16; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 16-bit value by 16 bits is undefined behaviour\n", errout.str());
+            check("unsigned short f(int x) { return (x = (unsigned short)x << 31); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 16-bit value by 31 bits is undefined behaviour\n", errout.str());
+            check("unsigned short foo(unsigned short x) { return x << 15; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+            // [signed] short
+            check("short foo(short x) { return x << 16; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 16-bit value by 16 bits is undefined behaviour\n", errout.str());
+            check("short f(int x) { return (x = (short)x << 31); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 16-bit value by 31 bits is undefined behaviour\n", errout.str());
+            check("short foo(short x) { return x << 15; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 16-bit value by 15 bits is undefined behaviour\n", errout.str());
+            check("short foo(short x) { return x << 14; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+            // signed short
+            check("signed short foo(signed short x) { return x << 16; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 16-bit value by 16 bits is undefined behaviour\n", errout.str());
+            check("signed short f(int x) { return (x = (signed short)x << 31); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 16-bit value by 31 bits is undefined behaviour\n", errout.str());
+            check("signed short foo(signed short x) { return x << 15; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 16-bit value by 15 bits is undefined behaviour\n", errout.str());
+            check("signed short foo(signed short x) { return x << 14; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+        }
+        // 32 bit width types
+        {
+            // unsigned int
+            check("unsigned int foo(unsigned int x) { return x << 32; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("unsigned int f(int x) { return (x = (unsigned int)x << 32); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("unsigned int f(unsigned int x) { return x << 31; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+            // [signed] int
+            check("int foo(int x) { return x << 32; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("int f(int x) { return (x = (int)x << 32); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("int f(int x) { return x << 31; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 32-bit value by 31 bits is undefined behaviour\n", errout.str());
+            check("int f(int x) { return x << 30; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+            // signed int
+            check("signed int foo(signed int x) { return x << 32; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("signed int f(int x) { return (x = (signed int)x << 32); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("signed int f(signed int x) { return x << 31; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 32-bit value by 31 bits is undefined behaviour\n", errout.str());
+            check("signed int f(signed int x) { return x << 30; }",&settings);
+            ASSERT_EQUALS("", errout.str());
 
-        check("int foo(unsigned int x) {\n"
-              "   return x << 32;\n"
-              "}",&settings);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
-
-        check("x = (short)x << 31;",&settings);
-        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 32-bit value by 31 bits is undefined behaviour\n", errout.str());
-
-        check("int foo(int x) {\n"
-              "   return x << 2;\n"
-              "}",&settings);
-        ASSERT_EQUALS("", errout.str());
-
-        check("int foo(int x) {\n"
-              "   return (long long)x << 40;\n"
-              "}",&settings);
-        ASSERT_EQUALS("", errout.str());
+            // unsigned long
+            check("unsigned long foo(unsigned long x) { return x << 32; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("unsigned long f(long x) { return (x = (unsigned long)x << 32); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("unsigned long f(unsigned long x) { return x << 31; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+            // [signed] long
+            check("long foo(long x) { return x << 32; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("long f(long x) { return (x = (long)x << 32); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("long f(long x) { return x << 31; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 32-bit value by 31 bits is undefined behaviour\n", errout.str());
+            check("long f(long x) { return x << 30; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+            // signed long
+            check("signed long foo(signed long x) { return x << 32; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("signed long f(long x) { return (x = (signed long)x << 32); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
+            check("signed long f(signed long x) { return x << 31; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 32-bit value by 31 bits is undefined behaviour\n", errout.str());
+            check("signed long f(signed long x) { return x << 30; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+        }
+        // 64 bit width types
+        {
+            // unsigned long long
+            check("unsigned long long foo(unsigned long long x) { return x << 64; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            check("unsigned long long f(int x) { return (x = (unsigned long long)x << 64); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            check("unsigned long long f(unsigned long long x) { return x << 63; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+            // [signed] long long
+            check("long long foo(long long x) { return x << 64; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            check("long long f(int x) { return (x = (long long)x << 64); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            check("long long f(long long x) { return x << 63; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 64-bit value by 63 bits is undefined behaviour\n", errout.str());
+            check("long long f(long long x) { return x << 62; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+            // signed long long
+            check("signed long long foo(signed long long x) { return x << 64; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            check("signed long long f(long long x) { return (x = (signed long long)x << 64); }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout.str());
+            check("signed long long f(signed long long x) { return x << 63; }",&settings);
+            ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 64-bit value by 63 bits is undefined behaviour\n", errout.str());
+            check("signed long long f(signed long long x) { return x << 62; }",&settings);
+            ASSERT_EQUALS("", errout.str());
+        }
 
         check("void foo() {\n"
               "  QList<int> someList;\n"

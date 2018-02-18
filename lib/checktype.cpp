@@ -75,7 +75,9 @@ void CheckType::checkTooBigBitwiseShift()
         int lhsbits = 0;
         if (lhstype->type == ValueType::Type::CHAR)
             lhsbits = _settings->char_bit;
-        else if (lhstype->type <= ValueType::Type::INT)
+        else if (lhstype->type == ValueType::Type::SHORT)
+            lhsbits = _settings->short_bit;
+        else if (lhstype->type == ValueType::Type::INT)
             lhsbits = _settings->int_bit;
         else if (lhstype->type == ValueType::Type::LONG)
             lhsbits = _settings->long_bit;
@@ -85,7 +87,7 @@ void CheckType::checkTooBigBitwiseShift()
             continue;
 
         // Get biggest rhs value. preferably a value which doesn't have 'condition'.
-        const ValueFlow::Value *value = tok->astOperand2()->getValueGE(lhsbits, _settings);
+        const ValueFlow::Value * value = tok->astOperand2()->getValueGE(lhsbits, _settings);
         if (value && _settings->isEnabled(value, false))
             tooBigBitwiseShiftError(tok, lhsbits, *value);
         else if (lhstype->sign == ValueType::Sign::SIGNED) {
