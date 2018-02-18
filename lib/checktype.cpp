@@ -69,11 +69,13 @@ void CheckType::checkTooBigBitwiseShift()
             continue;
 
         // get number of bits of lhs
-        const ValueType *lhstype = tok->astOperand1()->valueType();
+        const ValueType * const lhstype = tok->astOperand1()->valueType();
         if (!lhstype || !lhstype->isIntegral() || lhstype->pointer >= 1U)
             continue;
         int lhsbits = 0;
-        if (lhstype->type <= ValueType::Type::INT)
+        if (lhstype->type == ValueType::Type::CHAR)
+            lhsbits = _settings->char_bit;
+        else if (lhstype->type <= ValueType::Type::INT)
             lhsbits = _settings->int_bit;
         else if (lhstype->type == ValueType::Type::LONG)
             lhsbits = _settings->long_bit;

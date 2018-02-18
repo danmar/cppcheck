@@ -804,7 +804,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 {
     Settings& settings = cppcheck.settings();
     _settings = &settings;
-    bool std = tryLoadLibrary(settings.library, argv[0], "std.cfg");
+    const bool std = tryLoadLibrary(settings.library, argv[0], "std.cfg");
     bool posix = true;
     if (settings.standards.posix)
         posix = tryLoadLibrary(settings.library, argv[0], "posix.cfg");

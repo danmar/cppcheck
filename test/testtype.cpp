@@ -65,6 +65,11 @@ private:
         Settings settings;
         settings.platform(Settings::Unix32);
 
+        check("char foo(char x) {\n"
+              "   return x << 32;\n"
+              "}",&settings);
+        ASSERT_EQUALS("[test.cpp:2]: (error) Shifting 8-bit value by 32 bits is undefined behaviour\n", errout.str());
+
         check("int foo(unsigned int x) {\n"
               "   return x << 32;\n"
               "}",&settings);
