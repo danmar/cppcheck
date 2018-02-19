@@ -23,7 +23,6 @@
 #include "tokenize.h"
 
 #include <string>
-#include <cinttypes> // for uint8_t
 
 class TestType : public TestFixture {
 public:
@@ -70,7 +69,7 @@ private:
         // and unsigned types having already a size of 4 bytes
         {
             const std::string type[6] = {"unsigned char", /*[unsigned]*/"char", "bool", "unsigned short", "unsigned int", "unsigned long"};
-            for (uint8_t i = 0; i < 6U; ++i) {
+            for (short i = 0; i < 6U; ++i) {
                 check((type[i] + " f(" + type[i] +" x) { return x << 33; }").c_str(),&settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout.str());
                 check((type[i] + " f(int x) { return (x = (" + type[i] + ")x << 32); }").c_str(),&settings);
@@ -83,7 +82,7 @@ private:
         // and signed types having already a size of 4 bytes
         {
             const std::string type[7] = {"signed char", "signed short", /*[signed]*/"short", /*[signed]*/"int", "signed int", /*[signed]*/"long", "signed long"};
-            for (uint8_t i = 0; i < 7U; ++i) {
+            for (short i = 0; i < 7U; ++i) {
                 check((type[i] + " f(" + type[i] +" x) { return x << 33; }").c_str(),&settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout.str());
                 check((type[i] + " f(int x) { return (x = (" + type[i] + ")x << 32); }").c_str(),&settings);
