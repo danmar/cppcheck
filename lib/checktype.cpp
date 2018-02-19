@@ -72,12 +72,14 @@ void CheckType::checkTooBigBitwiseShift()
         const ValueType * const lhstype = tok->astOperand1()->valueType();
         if (!lhstype || !lhstype->isIntegral() || lhstype->pointer >= 1U)
             continue;
-        int lhsbits = 0;
-        if (lhstype->type == ValueType::Type::CHAR)
-            lhsbits = _settings->char_bit;
-        else if (lhstype->type == ValueType::Type::SHORT)
-            lhsbits = _settings->short_bit;
-        else if (lhstype->type == ValueType::Type::INT)
+        // C11 Standard, section 6.5.7 Bitwise shift operators, states:
+        //   The integer promotions are performed on each of the operands.
+        //   The type of the result is that of the promoted left operand.
+        int lhsbits;
+        if ((lhstype->type == ValueType::Type::CHAR) ||
+            (lhstype->type == ValueType::Type::SHORT) ||
+            (lhstype->type == ValueType::Type::BOOL) ||
+            (lhstype->type == ValueType::Type::INT))
             lhsbits = _settings->int_bit;
         else if (lhstype->type == ValueType::Type::LONG)
             lhsbits = _settings->long_bit;
