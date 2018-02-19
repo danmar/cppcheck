@@ -23,6 +23,7 @@
 #include "tokenize.h"
 
 #include <string>
+#include <cinttypes> // for uint8_t
 
 class TestType : public TestFixture {
 public:
