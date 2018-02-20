@@ -808,19 +808,50 @@ void ResultsTree::startApplication(QStandardItem *target, int application)
 
 QString ResultsTree::askFileDir(const QString &file)
 {
-    QString text = tr("Could not find file:\n%1\nPlease select the directory where file is located.").arg(file);
+    QString text = tr("Could not find file:") + '\n' + file + '\n';
+    QString title;
+    if (file.indexOf('/')) {
+        QString folderName = file.mid(0, file.indexOf('/'));
+        text += tr("Please select the folder '%1'").arg(folderName);
+        title = tr("Select Directory '%1'").arg(folderName);
+    } else {
+        text += tr("Please select the directory where file is located.");
+        title = tr("Select Directory");
+    }
+
     QMessageBox msgbox(this);
     msgbox.setWindowTitle("Cppcheck");
     msgbox.setText(text);
     msgbox.setIcon(QMessageBox::Warning);
     msgbox.exec();
 
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory"),
+    QString dir = QFileDialog::getExistingDirectory(this, title,
                   getPath(SETTINGS_LAST_SOURCE_PATH),
                   QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    mCheckPath = dir;
-    setPath(SETTINGS_LAST_SOURCE_PATH, dir);
-    return dir;
+
+    if (dir.isEmpty())
+        return QString();
+
+    // User selected root path
+    if (QFileInfo(dir + '/' + file).exists())
+        mCheckPath = dir;
+
+    // user selected checked folder
+    else if (file.indexOf('/') > 0) {
+        dir += '/';
+        QString folderName = file.mid(0, file.indexOf('/'));
+        if (dir.indexOf('/' + folderName + '/'))
+            dir = dir.mid(0, dir.lastIndexOf('/' + folderName + '/'));
+        if (QFileInfo(dir + '/' + file).exists())
+            mCheckPath = dir;
+    }
+
+    // Otherwise; return
+    else
+        return QString();
+
+    setPath(SETTINGS_LAST_SOURCE_PATH, mCheckPath);
+    return mCheckPath;
 }
 
 void ResultsTree::copyFilename()
