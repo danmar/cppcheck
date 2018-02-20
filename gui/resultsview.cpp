@@ -461,14 +461,15 @@ void ResultsView::logCopyComplete()
 
 void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
 {
-    if (mUI.mListLog->count() > 0) {
-        QPoint globalPos = mUI.mListLog->mapToGlobal(pos);
+    if (mUI.mListLog->count() <= 0)
+        return;
 
-        QMenu contextMenu;
-        contextMenu.addAction(tr("Clear Log"), this, SLOT(logClear()));
-        contextMenu.addAction(tr("Copy this Log entry"), this, SLOT(logCopyEntry()));
-        contextMenu.addAction(tr("Copy complete Log"), this, SLOT(logCopyComplete()));
+    const QPoint globalPos = mUI.mListLog->mapToGlobal(pos);
 
-        contextMenu.exec(globalPos);
-    }
+    QMenu contextMenu;
+    contextMenu.addAction(tr("Clear Log"), this, SLOT(logClear()));
+    contextMenu.addAction(tr("Copy this Log entry"), this, SLOT(logCopyEntry()));
+    contextMenu.addAction(tr("Copy complete Log"), this, SLOT(logCopyComplete()));
+
+    contextMenu.exec(globalPos);
 }
