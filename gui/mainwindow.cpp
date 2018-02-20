@@ -1106,16 +1106,16 @@ void MainWindow::openResults()
 
 void MainWindow::loadResults(const QString selectedFile)
 {
-    if (!selectedFile.isEmpty()) {
-        if (mProjectFile)
-            closeProjectFile();
-        mIsLogfileLoaded = true;
-        mUI.mResults->clear(true);
-        mUI.mActionReanalyzeModified->setEnabled(false);
-        mUI.mActionReanalyzeAll->setEnabled(false);
-        mUI.mResults->readErrorsXml(selectedFile);
-        setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
-    }
+    if (selectedFile.isEmpty())
+        return;
+    if (mProjectFile)
+        closeProjectFile();
+    mIsLogfileLoaded = true;
+    mUI.mResults->clear(true);
+    mUI.mActionReanalyzeModified->setEnabled(false);
+    mUI.mActionReanalyzeAll->setEnabled(false);
+    mUI.mResults->readErrorsXml(selectedFile);
+    setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
 }
 
 void MainWindow::loadResults(const QString selectedFile, const QString sourceDirectory)
