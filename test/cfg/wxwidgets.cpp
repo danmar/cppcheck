@@ -1,8 +1,8 @@
 
-// Test library configuration for windows.cfg
+// Test library configuration for wxwidgets.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=windows --enable=information --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/windows.cpp
+// $ ./cppcheck --check-library --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr '--template="{file}:{line}:{severity}:{id}:{message}"' --inconclusive --library=wxwidgets -f test/cfg/wxwidgets.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -17,6 +17,7 @@
 #include <wx/icon.h>
 #include <wx/bitmap.h>
 #include <wx/dataview.h>
+#include <wx/memory.h>
 
 void validCode()
 {
@@ -91,7 +92,8 @@ void deprecatedFunctions(wxApp &a,
                          const wxString &s,
                          wxArtProvider *artProvider,
                          wxCalendarCtrl &calenderCtrl,
-                         wxComboCtrl &comboCtrl)
+                         wxComboCtrl &comboCtrl,
+                         wxChar * path)
 {
 #ifdef __WXOSX__
     // cppcheck-suppress MacOpenFileCalled
@@ -120,6 +122,19 @@ void deprecatedFunctions(wxApp &a,
 
     // cppcheck-suppress SetTextIndentCalled
     comboCtrl.SetTextIndent(0);
+
+    // cppcheck-suppress GetLevelCalled
+    // cppcheck-suppress ignoredReturnValue
+    wxDebugContext::GetLevel();
+    // cppcheck-suppress SetLevelCalled
+    wxDebugContext::SetLevel(42);
+
+    // cppcheck-suppress wxDos2UnixFilenameCalled
+    wxDos2UnixFilename(path);
+
+    // cppcheck-suppress wxFileNameFromPathCalled
+    // cppcheck-suppress ignoredReturnValue
+    wxFileNameFromPath(wxT("../test.c"));
 #endif
 
 #if defined(__WXMSW__) || defined(__WXGTK__)
