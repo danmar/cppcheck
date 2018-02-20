@@ -346,18 +346,21 @@ void ResultsView::readErrorsXml(const QString &filename)
         }
         delete report;
         report = NULL;
-    } else {
-        QMessageBox msgBox;
-        msgBox.setText(tr("Failed to read the report."));
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
     }
 
     ErrorItem item;
     foreach (item, errors) {
         mUI.mTree->addErrorItem(item);
     }
-    mUI.mTree->setCheckDirectory(QString());
+
+    QString dir;
+    if (!errors.isEmpty() && !errors[0].errorPath.isEmpty()) {
+        QString relativePath = QFileInfo(filename).canonicalPath();
+        if (QFileInfo(relativePath + '/' + errors[0].errorPath[0].file).exists())
+            dir = relativePath;
+    }
+
+    mUI.mTree->setCheckDirectory(dir);
 }
 
 void ResultsView::updateDetails(const QModelIndex &index)
