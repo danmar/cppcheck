@@ -54,11 +54,11 @@ General Public License version 3</translation>
     </message>
     <message>
         <source>&amp;Executable:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Exécutable : </translation>
     </message>
     <message>
         <source>&amp;Parameters:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Paramètres : </translation>
     </message>
     <message>
         <source>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
@@ -72,15 +72,25 @@ The following texts in parameters are replaced with appropriate values when appl
 Example opening a file with Kate and make Kate scroll to the correct line:
 Executable: kate
 Parameters: -l(line) (file)</source>
-        <translation type="unfinished"></translation>
+        <translation>Vous pouvez ajouter une application capable d'ouvrir les fichiers d'erreurs. Spécifiez le nom de l'application, la commande à exécuter, ainsi que les paramètres de la commande
+
+Les textes en paramètres sont remplacés par les valeurs appropriées lorsque l'application est exécutée :
+(fichier) - Fichier contenant l&apos;erreur
+(ligne) - Numéro de ligne contenant l&apos;erreur
+(message) - Message d&apos;erreur
+(sévérité) - Sévérité de l&apos;erreur
+
+Exemple pour ouvrir un fichier avec Kate et se déplacer vers une ligne spécifique :
+Exécutable : kate
+Paramètres : -l(ligne) (fichier)</translation>
     </message>
     <message>
         <source>&amp;Name:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Nom : </translation>
     </message>
     <message>
         <source>You must specify a name, a path and optionally parameters for the application!</source>
-        <translation type="unfinished"></translation>
+        <translation>Vous devez spécifier un nom, un chemin, et eventuellement des paramètres en option à l&apos;application !</translation>
     </message>
 </context>
 <context>
@@ -102,15 +112,15 @@ Parameters: -l(line) (file)</source>
     <name>LibraryAddFunctionDialog</name>
     <message>
         <source>Add function</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter une fonction</translation>
     </message>
     <message>
         <source>Function name(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom(s) de la fonction</translation>
     </message>
     <message>
         <source>Number of arguments</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre d'arguments</translation>
     </message>
 </context>
 <context>
@@ -592,7 +602,7 @@ Parameters: -l(line) (file)</source>
 
 Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="obsolete">Vérification en cours.
-		
+
 Voulez-vous arrêter la vérification et quitter CppCheck ?</translation>
     </message>
     <message>
@@ -678,7 +688,7 @@ Do you want to remove the file from the recently used projects -list?</source>
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
         <translation>Les résultats courant seront effacés.
-		
+
 L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vous confirmar l&apos;opération ?</translation>
     </message>
     <message>
@@ -1436,7 +1446,7 @@ Please select the default editor application in preferences/Applications.</sourc
     <message>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
-        <translation>Des erreurs ont été trouvées mais sont configurées pour rester cachées
+        <translation>Des erreurs ont été trouvées mais sont configurées pour rester cachées.
 Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</translation>
     </message>
     <message>
