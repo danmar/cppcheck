@@ -123,18 +123,20 @@ void deprecatedFunctions(wxApp &a,
     // cppcheck-suppress SetTextIndentCalled
     comboCtrl.SetTextIndent(0);
 
+#if wxUSE_DEBUG_CONTEXT==1
     // cppcheck-suppress GetLevelCalled
     // cppcheck-suppress ignoredReturnValue
     wxDebugContext::GetLevel();
     // cppcheck-suppress SetLevelCalled
     wxDebugContext::SetLevel(42);
+#endif
 
     // cppcheck-suppress wxDos2UnixFilenameCalled
     wxDos2UnixFilename(path);
 
     // cppcheck-suppress wxFileNameFromPathCalled
     // cppcheck-suppress ignoredReturnValue
-    wxFileNameFromPath(wxT("../test.c"));
+    wxFileNameFromPath(wxT_2("../test.c"));
 #endif
 
 #if defined(__WXMSW__) || defined(__WXGTK__)
