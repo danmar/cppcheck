@@ -144,6 +144,8 @@ void CodeEditor::setError(const QString &code, int errorLine, const QStringList 
     tc.setPosition(mErrorPosition);
     setTextCursor(tc);
     centerCursor();
+
+    highlightErrorLine();
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -182,12 +184,8 @@ void CodeEditor::resizeEvent(QResizeEvent *event)
     lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
-void CodeEditor::highlightCurrentLine()
+void CodeEditor::highlightErrorLine()
 {
-    QTextCursor tc = textCursor();
-    tc.setPosition(mErrorPosition);
-    setTextCursor(tc);
-
     QList<QTextEdit::ExtraSelection> extraSelections;
 
     QTextEdit::ExtraSelection selection;
@@ -196,7 +194,8 @@ void CodeEditor::highlightCurrentLine()
 
     selection.format.setBackground(lineColor);
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-    selection.cursor = textCursor();
+    selection.cursor = QTextCursor(document());
+    selection.cursor.setPosition(mErrorPosition);
     selection.cursor.clearSelection();
     extraSelections.append(selection);
 

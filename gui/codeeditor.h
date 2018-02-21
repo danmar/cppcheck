@@ -61,7 +61,7 @@ protected:
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
-    void highlightCurrentLine();
+    void highlightErrorLine();
     void updateLineNumberArea(const QRect &, int);
 
 private:
