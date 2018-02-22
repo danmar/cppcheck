@@ -217,10 +217,12 @@ void uninitvar(int fd)
     // cppcheck-suppress uninitvar
     regcomp(&reg, pattern, cflags);
     regerror(0, &reg, 0, 0);
+#ifndef __CYGWIN__
     // cppcheck-suppress uninitvar
     // cppcheck-suppress unreadVariable
     // cppcheck-suppress ecvtCalled
     char *buffer = ecvt(d, 11, &decimal, &sign);
+#endif
     // cppcheck-suppress gcvtCalled
     gcvt(3.141, 2, buf);
 
