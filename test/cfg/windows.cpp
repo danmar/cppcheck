@@ -116,6 +116,21 @@ void validCode()
     _stprintf(bufTC, _countof(bufTC), TEXT("%d"), 2);
     _tprintf(TEXT("%s"), bufTC);
 
+    DWORD dwordInit = 0;
+    GetUserName(NULL, &dwordInit);
+    dwordInit = 10;
+    GetUserName(bufTC, _countof(bufTC));
+
+    WSADATA wsaData = {0};
+    WSAStartup(2, &wsaData);
+    SOCKET sock = socket(1, 2, 3);
+    u_long ulongInit = 0;
+    ioctlsocket(sock, FIONBIO, &ulongInit);
+    if (sock != INVALID_SOCKET) {
+        closesocket(sock);
+    }
+    WSACleanup();
+
     // Valid Library usage, no leaks, valid arguments
     HINSTANCE hInstLib = LoadLibrary(L"My.dll");
     FreeLibrary(hInstLib);
@@ -194,6 +209,31 @@ void nullPointer()
     GetSystemTime(NULL);
     // cppcheck-suppress nullPointer
     GetLocalTime(NULL);
+
+    // TODO: error message: arg1 must not be nullptr if variable pointed to by arg2 is not 0
+    DWORD dwordInit = 10;
+    GetUserName(NULL, &dwordInit);
+    TCHAR bufTC[10];
+    // cppcheck-suppress nullPointer
+    GetUserName(bufTC, NULL);
+
+    SOCKET socketInit = {0};
+    sockaddr sockaddrUninit;
+    int intInit = 0;
+    int *pIntNull = NULL;
+    char charArray[] = "test";
+    // cppcheck-suppress nullPointer
+    WSAStartup(1, NULL);
+    // cppcheck-suppress nullPointer
+    bind(socketInit, NULL, 5);
+    // cppcheck-suppress nullPointer
+    getpeername(socketInit, NULL, &intInit);
+    // cppcheck-suppress nullPointer
+    getpeername(socketInit, &sockaddrUninit, pIntNull);
+    // cppcheck-suppress nullPointer
+    getsockopt(sockInit, 1, 2, NULL, &intInit);
+    // cppcheck-suppress nullPointer
+    getsockopt(sockInit, 1, 2, charArray, pIntNull);
 }
 
 void memleak_malloca()
@@ -303,6 +343,14 @@ void resourceLeak_OpenEventW()
     // cppcheck-suppress resourceLeak
 }
 
+void resourceLeak_socket()
+{
+    SOCKET sock;
+    // cppcheck-suppress unreadVariable
+    sock = socket(1, 2, 3);
+    // cppcheck-suppress resourceLeak
+}
+
 void ignoredReturnValue()
 {
     // cppcheck-suppress leakReturnValNotUsed
@@ -350,6 +398,12 @@ void ignoredReturnValue()
     HeapAlloc(GetProcessHeap(), 0, 10);
     // cppcheck-suppress leakReturnValNotUsed
     HeapReAlloc(GetProcessHeap(), 0, 1, 0);
+
+    // cppcheck-suppress leakReturnValNotUsed
+    socket(1, 2, 3);
+
+    // cppcheck-suppress ignoredReturnValue
+    _fileno(stdio);
 }
 
 void invalidFunctionArg()
@@ -435,6 +489,15 @@ void uninitvar()
     DWORD dwordUninit;
     // cppcheck-suppress uninitvar
     SetLastError(dwordUninit);
+
+    DWORD dwordUninit;
+    // cppcheck-suppress uninitvar
+    GetUserName(NULL, &dwordUninit);
+
+    FILE *pFileUninit;
+    // cppcheck-suppress uninitvar
+    // cppcheck-suppress ignoredReturnValue
+    _fileno(pFileUninit);
 }
 
 void errorPrintf()
