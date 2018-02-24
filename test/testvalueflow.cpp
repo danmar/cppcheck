@@ -707,6 +707,16 @@ private:
                "    if (x == 123) {}\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        // after loop
+        code = "void f(struct X *x) {\n"
+               "  do {\n"
+               "    if (!x)\n"
+               "      break;\n"
+               "  } while (x->a);\n"
+               "  if (x) {}\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
     }
 
     void valueFlowBeforeConditionAssignIncDec() {  // assignment / increment

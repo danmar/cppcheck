@@ -1126,6 +1126,36 @@ static void valueFlowReverse(TokenList *tokenlist,
                 continue;
             }
 
+            // do-while condition, break in the loop body
+            {
+                const Token *parent = tok2->astParent();
+                while (parent && !Token::simpleMatch(parent->previous(), "while ("))
+                    parent = parent->astParent();
+                if (parent && Token::simpleMatch(parent->tokAt(-2), "} while (") && Token::simpleMatch(parent->linkAt(-2)->previous(), "do {")) {
+                    bool breakBailout = false;
+                    for (const Token *iftok = parent->linkAt(-2); iftok != parent; iftok = iftok->next()) {
+                        if (!Token::simpleMatch(iftok, "if ("))
+                            continue;
+                        if (!Token::Match(iftok->linkAt(1), ") { break"))
+                            continue;
+                        ProgramMemory programMemory;
+                        programMemory.setIntValue(varid, num);
+                        if (conditionIsTrue(iftok->next()->astOperand2(), programMemory)) {
+                            breakBailout = true;
+                            break;
+                        }
+                    }
+                    if (breakBailout) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist,
+                                    errorLogger,
+                                    tok2,
+                                    "no simplification of " + tok2->str() + " in do-while condition since there is a break in the loop body");
+                        break;
+                    }
+                }
+            }
+
             setTokenValue(tok2, val, settings);
             if (val2.condition)
                 setTokenValue(tok2,val2, settings);
