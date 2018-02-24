@@ -1136,7 +1136,7 @@ static void valueFlowReverse(TokenList *tokenlist,
                     for (const Token *iftok = parent->linkAt(-2); iftok != parent; iftok = iftok->next()) {
                         if (!Token::simpleMatch(iftok, "if ("))
                             continue;
-                        if (!Token::Match(iftok->linkAt(1), ") { break"))
+                        if (!Token::simpleMatch(iftok->linkAt(1), ") { break"))
                             continue;
                         ProgramMemory programMemory;
                         programMemory.setIntValue(varid, num);
