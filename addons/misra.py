@@ -1119,6 +1119,8 @@ for arg in sys.argv[1:]:
         loadRuleTexts(filename)
     elif arg.startswith('--misra-pdf='):
         loadRuleTextsFromPdf(arg[12:])
+    elif ".dump" in arg:
+        continue
     else:
         print('Fatal error: unhandled argument ' + arg)
         sys.exit(1)
