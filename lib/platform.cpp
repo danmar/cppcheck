@@ -161,7 +161,7 @@ bool cppcheck::Platform::platformFile(const char exename[], const std::string &f
     if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_SUCCESS) {
         std::vector<std::string> filenames;
         filenames.push_back(filename + ".xml");
-        if (exename && (strchr(exename, '/') || strchr(exename, '\\'))) {
+        if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
             filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
             filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
         }
