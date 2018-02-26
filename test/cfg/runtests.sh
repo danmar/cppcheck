@@ -53,7 +53,7 @@ if [ $WXCONFIG_RETURNCODE -ne 0 ]; then
     echo "wx-config does not work, skipping syntax check for wxWidgets tests."
 else
     set +e
-    echo -e "#include <wx/filefn.h>\n#include <wx/app.h>\n#include <wx/artprov.h>\n" | ${CXX} ${CXX_OPT} ${WXCONFIG} -x c++ -
+    echo -e "#include <wx/filefn.h>\n#include <wx/app.h>\n#include <wx/artprov.h>\n#include <wx/version.h>\n#if wxVERSION_NUMBER<2950\n#error \"Old version\"\n#endif" | ${CXX} ${CXX_OPT} ${WXCONFIG} -x c++ -
     WXCHECK_RETURNCODE=$?
     set -e
     if [ $WXCHECK_RETURNCODE -ne 0 ]; then
