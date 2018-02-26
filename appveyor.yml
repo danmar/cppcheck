@@ -44,3 +44,7 @@ build_script:
 test_script:
   - IF "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
   - IF "%CONFIGURATION%" == "Release" bin\testrunner.exe
+
+artifacts:
+  - path: cli.zip
+    name: bin
