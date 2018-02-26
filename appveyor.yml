@@ -46,5 +46,6 @@ test_script:
   - IF "%CONFIGURATION%" == "Release" bin\testrunner.exe
 
 artifacts:
-  - path: cli.zip
-    name: bin
+  - path: bin
+  - name: CLI binaries
+  - type: zip
