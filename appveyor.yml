@@ -47,5 +47,5 @@ test_script:
 
 artifacts:
   - path: bin
-  - name: CLI binaries
-  - type: zip
+    name: CLI binaries
+    type: zip
