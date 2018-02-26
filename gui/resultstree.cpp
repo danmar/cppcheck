@@ -616,6 +616,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             QAction *copypath               = new QAction(tr("Copy full path"), &menu);
             QAction *copymessage            = new QAction(tr("Copy message"), &menu);
             QAction *copymessageid          = new QAction(tr("Copy message id"), &menu);
+            QAction *copylinenr             = new QAction(tr("Copy line nr"), &menu);
             QAction *hide                   = new QAction(tr("Hide"), &menu);
             QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
             QAction *suppress               = new QAction(tr("Suppress selected id(s)"), &menu);
@@ -626,6 +627,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 copypath->setDisabled(true);
                 copymessage->setDisabled(true);
                 copymessageid->setDisabled(true);
+                copylinenr->setDisabled(true);
                 hideallid->setDisabled(true);
                 opencontainingfolder->setDisabled(true);
             }
@@ -640,6 +642,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(copypath);
             menu.addAction(copymessage);
             menu.addAction(copymessageid);
+            menu.addAction(copylinenr);
             menu.addSeparator();
             menu.addAction(hide);
             menu.addAction(hideallid);
@@ -652,6 +655,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             connect(copypath, SIGNAL(triggered()), this, SLOT(copyFullPath()));
             connect(copymessage, SIGNAL(triggered()), this, SLOT(copyMessage()));
             connect(copymessageid, SIGNAL(triggered()), this, SLOT(copyMessageId()));
+            connect(copylinenr, SIGNAL(triggered()), this, SLOT(copyLineNr()));
             connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
             connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
             connect(suppress, SIGNAL(triggered()), this, SLOT(suppressSelectedIds()));
@@ -897,6 +901,22 @@ void ResultsTree::copyMessageId()
 
         QClipboard *clipboard = QApplication::clipboard();
         clipboard->setText(messageId);
+    }
+}
+
+void ResultsTree::copyLineNr()
+{
+    if (mContextItem) {
+        // Make sure we are working with the first column
+        if (mContextItem->column() != 0)
+            mContextItem = mContextItem->parent()->child(mContextItem->row(), 0);
+
+        QVariantMap data = mContextItem->data().toMap();
+
+        QString linenr = data["line"].toString();
+
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(linenr);
     }
 }
 
