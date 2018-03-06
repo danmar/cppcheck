@@ -547,6 +547,10 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     mUI.mResults->checkingStarted(1);
     cppcheck.check(filename.toStdString(), code.toStdString());
     analysisDone();
+
+    // Expand results
+    if(mUI.mResults->hasVisibleResults())
+       mUI.mResults->expandAllResults();
 }
 
 QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
