@@ -276,6 +276,12 @@ protected slots:
     void copyMessageId();
 
     /**
+    * @brief Slot for context menu item to copy the current error line nr to clipboard
+    *
+    */
+    void copyLineNr();
+
+    /**
     * @brief Slot for context menu item to hide the current error message
     *
     */
