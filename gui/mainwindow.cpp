@@ -1464,10 +1464,9 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
         ImportProject p;
         QString prjfile;
 
-        if(QFileInfo(projectFile->getImportProject()).isAbsolute()) {
+        if (QFileInfo(projectFile->getImportProject()).isAbsolute()) {
             prjfile = projectFile->getImportProject();
-        }
-        else {
+        } else {
             prjfile = inf.canonicalPath() + '/' + projectFile->getImportProject();
         }
         try {
