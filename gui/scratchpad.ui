@@ -15,6 +15,13 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QLabel" name="label_sourcecode">
+     <property name="text">
+      <string>Copy or write some C/C++ code here:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QPlainTextEdit" name="plainTextEdit">
      <property name="font">
       <font>
@@ -22,13 +29,10 @@
        <pointsize>10</pointsize>
       </font>
      </property>
-     <property name="placeholderText">
-      <string>Copy or write some C/C++ code here</string>
-     </property>
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="label_filename">
      <property name="text">
       <string>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</string>
      </property>
