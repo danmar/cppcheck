@@ -4770,6 +4770,24 @@ private:
         //ticket #8477
         ASSERT_EQUALS("void foo ( ) { enum Anonymous0 : int { Six = 6 } ; return Six ; }",
                       tokenizeAndStringify("void foo () { enum : int { Six = 6 } ; return Six ; }"));
+        // ticket #8281
+        tokenizeAndStringify("void lzma_decode(int i) { "
+                             "  bool state; "
+                             "  switch (i) "
+                             "  while (true) { "
+                             "     state=false; "
+                             "   case 1: "
+                             "      ; "
+                             "  }"
+                             "}");
+        // ticket #8417
+        tokenizeAndStringify("void printOwnedAttributes(int mode) { "
+                             "  switch(mode) case 0: { break; } "
+                             "}");
+        ASSERT_THROW(tokenizeAndStringify("void printOwnedAttributes(int mode) { "
+                                          "  switch(mode) case 0: { break; } case 1: ; "
+                                          "}"),
+                     InternalError);
     }
 
     void simplifyPointerToStandardType() {
