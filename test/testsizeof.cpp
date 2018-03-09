@@ -137,6 +137,16 @@ private:
         check("sizeof(--foo)");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
 
+        check("class Foo\n"
+              "{\n"
+              "    int bar() { return 1; };\n"
+              "}\n"
+              "int a,sizeof(Foo().bar())");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Found calculation inside sizeof().\n", errout.str());
+
+        check("int foo() { return 1; }; int a,sizeof(foo())");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
+
         // #6888
         checkP("#define SIZEOF1   sizeof(i != 2)\n"
                "#define SIZEOF2   ((sizeof(i != 2)))\n"

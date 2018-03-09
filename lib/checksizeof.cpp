@@ -305,7 +305,9 @@ void CheckSizeof::sizeofCalculation()
             }
 
             const Token *argument = tok->next()->astOperand2();
-            if (argument && argument->isCalculation() && (!argument->isExpandedMacro() || printInconclusive))
+            if (argument && 
+               (argument->isCalculation() || (argument->previous()->str() != "sizeof" && argument->str() == "(")) && 
+               (!argument->isExpandedMacro() || printInconclusive))
                 sizeofCalculationError(argument, argument->isExpandedMacro());
         }
     }
