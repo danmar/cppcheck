@@ -8363,6 +8363,8 @@ private:
         ASSERT_EQUALS("ab.++", testAst("a.b++;"));
         ASSERT_EQUALS("ab::++", testAst("a::b++;"));
         ASSERT_EQUALS("c5[--*", testAst("*c[5]--;"));
+        ASSERT_EQUALS("xreturn", testAst("return x;"));
+        ASSERT_EQUALS("x(throw", testAst(";throw x();"));
         ASSERT_EQUALS("a*bc:?return", testAst("return *a ? b : c;"));
 
         // Unary :: operator
