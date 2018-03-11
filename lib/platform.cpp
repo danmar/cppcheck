@@ -154,7 +154,7 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
     return false;
 }
 
-bool cppcheck::Platform::platformFile(const char exename[], const std::string &filename)
+bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::string &filename)
 {
     // open file..
     tinyxml2::XMLDocument doc;

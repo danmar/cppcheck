@@ -100,8 +100,13 @@ namespace cppcheck {
         /** set the platform type for predefined platforms */
         bool platform(PlatformType type);
 
-        /** set the platform type for user specified platforms */
-        bool platformFile(const char exename[], const std::string &filename);
+        /**
+         * load platform file
+         * @param exename application path
+         * @param filename platform filename
+         * @return returns true if file was loaded successfully
+         */
+        bool loadPlatformFile(const char exename[], const std::string &filename);
 
         /** load platform from xml document, primarily for testing */
         bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
