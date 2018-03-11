@@ -40,6 +40,7 @@ private:
 
         TEST_CASE(sizeofsizeof);
         TEST_CASE(sizeofCalculation);
+        TEST_CASE(sizeofFunction);
         TEST_CASE(checkPointerSizeof);
         TEST_CASE(checkPointerSizeofStruct);
         TEST_CASE(sizeofDivisionMemset);
@@ -142,10 +143,10 @@ private:
               "    int bar() { return 1; };\n"
               "}\n"
               "int a,sizeof(Foo().bar())");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Found calculation inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
 
         check("int foo() { return 1; }; int a,sizeof(foo())");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
 
         // #6888
         checkP("#define SIZEOF1   sizeof(i != 2)\n"
@@ -170,6 +171,18 @@ private:
                "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Found calculation inside sizeof().\n"
                       "[test.cpp:5]: (warning, inconclusive) Found calculation inside sizeof().\n", errout.str());
+    }
+
+    void sizeofFunction() {
+        check("class Foo\n"
+              "{\n"
+              "    int bar() { return 1; };\n"
+              "}\n"
+              "int a,sizeof(Foo().bar())");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
+
+        check("int foo() { return 1; }; int a,sizeof(foo())");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
     }
 
     void sizeofForArrayParameter() {
