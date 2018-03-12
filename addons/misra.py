@@ -796,10 +796,13 @@ def misra_16_2(data):
 
 
 def misra_16_3(rawTokens):
-    # state: 0=no, 1=break is seen but not its ';', 2=after 'break;', 'comment', '{'
+    # state:
+    # 0 => default state
+    # 1 => break/attribute is seen but not its ';'
+    # 2 => a case/default is allowed (we have seen 'break;'/'comment'/'{'/attribute)
     state = 0
     for token in rawTokens:
-        if token.str == 'break':
+        if token.str == 'break' or token.str == 'return' or token.str == 'throw':
             state = 1
         elif token.str == ';':
             if state == 1:
@@ -813,8 +816,12 @@ def misra_16_3(rawTokens):
             state = 1
         elif token.str == '{':
             state = 2
-        elif token.str == 'case' and state != 2:
-            reportError(token, 16, 3)
+        elif token.str == '}':
+            state = 0
+        elif token.str == 'case' or token.str == 'default':
+            if state != 2:
+                reportError(token, 16, 3)
+            state = 2
 
 
 def misra_16_4(data):
