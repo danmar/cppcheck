@@ -232,7 +232,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 }
 
 
-static bool isOperatorFunction(const std::string & funcName) {
+static bool isOperatorFunction(const std::string & funcName)
+{
     /* Operator functions are invalid function names for C, so no need to check
      * this in here. As result the returned error function might be incorrect.
      *
@@ -271,10 +272,10 @@ static bool isOperatorFunction(const std::string & funcName) {
     }
 
     const std::vector<std::string> additionalOperators = make_container< std::vector<std::string> >()
-        << "new"
-        << "new[]"
-        << "delete"
-        << "delete[]";
+            << "new"
+            << "new[]"
+            << "delete"
+            << "delete[]";
 
 
     return std::find(additionalOperators.begin(), additionalOperators.end(), funcName.substr(operatorPrefix.length())) != additionalOperators.end();;
@@ -298,9 +299,9 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
                 continue;
             std::string filename;
             if (func.filename != "+")
-                 filename = func.filename;
-             unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
-             errors = true;
+                filename = func.filename;
+            unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
+            errors = true;
         } else if (! func.usedOtherFile) {
             /** @todo add error message "function is only used in <file> it can be static" */
             /*
