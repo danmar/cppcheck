@@ -515,7 +515,8 @@ void CheckNullPointer::arithmetic()
                 tok->valueType()->pointer
             )
             {
-                for(const ValueFlow::Value *value:{tok->astOperand1()->getValue(0), tok->astOperand2()->getValue(0)}) {
+                const ValueFlow::Value *values[] = {tok->astOperand1()->getValue(0), tok->astOperand2()->getValue(0)};
+                for(const ValueFlow::Value *value:values) {
                     if (!value)
                         continue;
                     if (!_settings->inconclusive && value->isInconclusive())
