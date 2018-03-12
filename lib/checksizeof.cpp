@@ -293,7 +293,7 @@ void CheckSizeof::sizeofCalculation()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "sizeof ("))
-			continue;
+            continue;
 
         // ignore if the `sizeof` result is cast to void inside a macro, i.e. the calculation is
         // expected to be parsed but skipped, such as in a disabled custom ASSERT() macro
