@@ -220,6 +220,12 @@ void misra_16_3() {
       // fallthrough
     case 5:
       break;
+    case 7:
+      a=3;
+      [[fallthrough]];
+    case 8:
+      a=4;
+      break;
     default: break;
   }
 }

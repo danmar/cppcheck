@@ -809,6 +809,8 @@ def misra_16_3(rawTokens):
         elif token.str.startswith('/*') or token.str.startswith('//'):
             if 'fallthrough' in token.str.lower():
                 state = 2
+        elif simpleMatch(token, '[ [ fallthrough ] ] ;'):
+            state = 1
         elif token.str == '{':
             state = 2
         elif token.str == 'case' and state != 2:
