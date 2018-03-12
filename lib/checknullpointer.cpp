@@ -509,20 +509,22 @@ void CheckNullPointer::arithmetic()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!tok->astOperand2() || tok->str() != "-")
-                continue;
-            // pointer subtraction
-            if (!tok->valueType() || !tok->valueType()->pointer)
-                continue;
-            // Can LHS be NULL?
-            const ValueFlow::Value *value = tok->astOperand1()->getValue(0);
-            if (!value)
-                continue;
-            if (!_settings->inconclusive && value->isInconclusive())
-                continue;
-            if (value->condition && !_settings->isEnabled(Settings::WARNING))
-                continue;
-            arithmeticError(tok,value);
+            if (tok->astOperand2() &&
+                (tok->str() == "-" || tok->str() == "+") &&
+                tok->valueType() &&
+                tok->valueType()->pointer
+            )
+            {
+                for(const ValueFlow::Value *value:{tok->astOperand1()->getValue(0), tok->astOperand2()->getValue(0)}) {
+                    if (!value)
+                        continue;
+                    if (!_settings->inconclusive && value->isInconclusive())
+                        continue;
+                    if (value->condition && !_settings->isEnabled(Settings::WARNING))
+                        continue;
+                    arithmeticError(tok,value);
+                }
+            }
         }
     }
 }
@@ -530,10 +532,17 @@ void CheckNullPointer::arithmetic()
 void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value *value)
 {
     std::string errmsg;
-    if (value && value->condition)
-        errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is overflow in pointer subtraction.";
-    else
-        errmsg = "Overflow in pointer arithmetic, NULL pointer is subtracted.";
+    if (tok && tok->str() == "-") {
+        if (value && value->condition)
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is overflow in pointer subtraction.";
+        else
+            errmsg = "Overflow in pointer arithmetic, NULL pointer is subtracted.";
+    } else {
+        if (value && value->condition)
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is pointer arithmetic with NULL pointer.";
+        else
+            errmsg = "Pointer arithmetic with NULL pointer.";
+    }
 
     std::list<const Token*> callstack;
     callstack.push_back(tok);

@@ -105,6 +105,7 @@ private:
         TEST_CASE(nullpointer_internal_error); // #5080
         TEST_CASE(ticket6505);
         TEST_CASE(subtract);
+        TEST_CASE(addNull);
     }
 
     void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp") {
@@ -2571,6 +2572,32 @@ private:
               "  p = s - 20;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is overflow in pointer subtraction.\n", errout.str());
+    }
+
+    void addNull() {
+        check("void foo(char *s) {\n"
+              "  char * p = s + 20;\n"
+              "}\n"
+              "void bar() { foo(0); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Pointer arithmetic with NULL pointer.\n", errout.str());
+
+        check("void foo(char *s) {\n"
+              "  if (!s) {}\n"
+              "  char * p = s + 20;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is pointer arithmetic with NULL pointer.\n", errout.str());
+
+        check("void foo(char *s) {\n"
+              "  char * p = 20 + s;\n"
+              "}\n"
+              "void bar() { foo(0); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Pointer arithmetic with NULL pointer.\n", errout.str());
+
+        check("void foo(char *s) {\n"
+              "  if (!s) {}\n"
+              "  char * p = 20 + s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is pointer arithmetic with NULL pointer.\n", errout.str());
     }
 };
 
