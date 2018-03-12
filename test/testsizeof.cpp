@@ -193,6 +193,14 @@ private:
         check("int foo() { return 1; }; int a,sizeof(foo())");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
 
+        check("#define M(x) sizeof(x)\n"
+              "int foo() { return 1; }; int a,M(foo())");
+        ASSERT_EQUALS("", errout.str());
+
+        check("#define M sizeof(foo())\n"
+              "int foo() { return 1; }; int a,M");
+        ASSERT_EQUALS("", errout.str());
+
         check("int foo() { return 1; }; sizeof(decltype(foo()))");
         ASSERT_EQUALS("", errout.str());
 
@@ -206,6 +214,22 @@ private:
         ASSERT_EQUALS("", errout.str());
         
         check("int foo(int) { return 1; }; char buf[1024]; int a,sizeof(buf), foo(0)");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class T>\n"
+              "struct A\n"
+              "{\n"
+              "    static B f(const B &);\n"
+              "    static A f(const A &);\n"
+              "    static A &g();\n"
+              "    static T &h();\n"
+              "\n"
+              "    enum {\n"
+              "        X = sizeof(f(g() >> h())) == sizeof(A),\n"
+              "        Y = sizeof(f(g() << h())) == sizeof(A),\n"
+              "        Z = X & Y\n"
+              "    };\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

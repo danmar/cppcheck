@@ -358,6 +358,8 @@ void CheckSizeof::sizeofFunction()
                     } else {
                         errorTok = tok;
                     }
+                } else if (argument->tokType() == Token::eName) {
+                    break;
                 }
             }
             if (errorTok) sizeofFunctionError(errorTok, false);
