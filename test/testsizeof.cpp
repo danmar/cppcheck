@@ -138,16 +138,6 @@ private:
         check("sizeof(--foo)");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
 
-        check("class Foo\n"
-              "{\n"
-              "    int bar() { return 1; };\n"
-              "}\n"
-              "int a,sizeof(Foo().bar())");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
-
-        check("int foo() { return 1; }; int a,sizeof(foo())");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
-
         // #6888
         checkP("#define SIZEOF1   sizeof(i != 2)\n"
                "#define SIZEOF2   ((sizeof(i != 2)))\n"
@@ -174,15 +164,43 @@ private:
     }
 
     void sizeofFunction() {
+        // check("class Foo\n"
+        //       "{\n"
+        //       "    int bar() { return 1; };\n"
+        //       "}\n"
+        //       "int a,sizeof(Foo().bar())");
+        // ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
+
         check("class Foo\n"
               "{\n"
               "    int bar() { return 1; };\n"
               "}\n"
-              "int a,sizeof(Foo().bar())");
+              "Foo f;int a,sizeof(f.bar())");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
+
+        check("class Foo\n"
+              "{\n"
+              "    int bar() { return 1; };\n"
+              "    int bar() const { return 1; };\n"
+              "}\n"
+              "Foo f;int a,sizeof(f.bar())");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Foo\n"
+              "{\n"
+              "    int bar() { return 1; };\n"
+              "}\n"
+              "Foo * fp;int a,sizeof(fp->bar())");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
 
         check("int foo() { return 1; }; int a,sizeof(foo())");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
+
+        check("int foo(int) { return 1; }; int a,sizeof(foo(0))");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
+
+        check("int foo(int) { return 1; }; int foo(...) { return 1; }; int a,sizeof(foo(0))");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sizeofForArrayParameter() {

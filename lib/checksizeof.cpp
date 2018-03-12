@@ -339,11 +339,21 @@ void CheckSizeof::sizeofFunction()
                 }
             }
 
-            const Token *argument = tok->next()->astOperand2();
-            if (argument && 
-               (argument->previous()->str() != "sizeof" && argument->str() == "(") && 
-               (!argument->isExpandedMacro() || printInconclusive))
-                sizeofFunctionError(argument, argument->isExpandedMacro());
+            const Token *errorTok = nullptr;
+            for (const Token *argument = tok->next(); argument; argument = argument->next()) {
+                if (argument->str() == "sizeof") {
+                    break;
+                } else if (const Function * fun = argument->function()) {
+                    if (fun->nestedIn->functionMap.count(argument->str()) > 1) {
+                        // If the function is overloaded then dont error
+                        errorTok = nullptr;
+                        break;
+                    } else {
+                        errorTok = tok;
+                    }
+                }
+            }
+            if (errorTok) sizeofFunctionError(errorTok, false);
         }
     }
 }
