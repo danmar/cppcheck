@@ -324,8 +324,6 @@ void CheckSizeof::sizeofFunction()
     if (!_settings->isEnabled(Settings::WARNING))
         return;
 
-    const bool printInconclusive = _settings->inconclusive;
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
 
