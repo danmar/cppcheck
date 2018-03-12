@@ -1239,11 +1239,13 @@ for arg in sys.argv[1:]:
         misra_21_11(cfg)
 
     if VERIFY:
+        exitCode = 0
         for expected in VERIFY_EXPECTED:
             if expected not in VERIFY_ACTUAL:
                 print('Expected but not seen: ' + expected)
-                sys.exit(1)
+                exitCode = 1
         for actual in VERIFY_ACTUAL:
             if actual not in VERIFY_EXPECTED:
                 print('Not expected: ' + actual)
-                sys.exit(1)
+                exitCode = 1
+        sys.exit(exitCode)
