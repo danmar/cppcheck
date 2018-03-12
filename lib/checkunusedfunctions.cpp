@@ -29,6 +29,7 @@
 #include "tokenlist.h"
 
 #include <tinyxml2.h>
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <istream>
@@ -231,6 +232,54 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 }
 
 
+static bool isOperatorFunction(const std::string & funcName) {
+    /* Operator functions are invalid function names for C, so no need to check
+     * this in here. As result the returned error function might be incorrect.
+     *
+     * List of valid operators can be found at:
+     * http://en.cppreference.com/w/cpp/language/operators
+     *
+     * Conversion functions must be a member function (at least for gcc), so no
+     * need to cover them for unused functions.
+     *
+     * To speed up the comparision, not the whole list of operators is used.
+     * Instead only the character after the operator prefix is checked to be a
+     * none alpa numeric value, but the '_', to cover function names like
+     * "operator_unused". In addition the following valid operators are checked:
+     * - new
+     * - new[]
+     * - delete
+     * - delete[]
+     */
+    const std::string operatorPrefix = "operator";
+    if (funcName.compare(0, operatorPrefix.length(), operatorPrefix) != 0) {
+        return false;
+    }
+
+    // Taking care of funcName == "operator", which is no valid operator
+    if (funcName.length() == operatorPrefix.length()) {
+        return false;
+    }
+
+    const char firstOperatorChar = funcName[operatorPrefix.length()];
+    if (firstOperatorChar == '_') {
+        return false;
+    }
+
+    if (!std::isalnum(firstOperatorChar)) {
+        return true;
+    }
+
+    const std::vector<std::string> additionalOperators = make_container< std::vector<std::string> >()
+        << "new"
+        << "new[]"
+        << "delete"
+        << "delete[]";
+
+
+    return std::find(additionalOperators.begin(), additionalOperators.end(), funcName.substr(operatorPrefix.length())) != additionalOperators.end();;
+}
+
 
 
 bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings)
@@ -245,11 +294,13 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
             it->first == "if")
             continue;
         if (!func.usedSameFile) {
+            if (isOperatorFunction(it->first))
+                continue;
             std::string filename;
             if (func.filename != "+")
-                filename = func.filename;
-            unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
-            errors = true;
+                 filename = func.filename;
+             unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
+             errors = true;
         } else if (! func.usedOtherFile) {
             /** @todo add error message "function is only used in <file> it can be static" */
             /*
@@ -381,7 +432,7 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
             functionName == "if")
             continue;
 
-        if (calls.find(functionName) == calls.end()) {
+        if (calls.find(functionName) == calls.end() && !isOperatorFunction(functionName)) {
             const Location &loc = decl->second;
             unusedFunctionError(errorLogger, loc.fileName, loc.lineNumber, functionName);
         }
