@@ -698,7 +698,7 @@ def misra_14_4(data):
     for token in data.tokenlist:
         if token.str != '(':
             continue
-        if not token.astOperand1 or not (token.astOperand1.str in {'if', 'while'}):
+        if not token.astOperand1 or not (token.astOperand1.str in ['if', 'while']):
             continue
         if not isBoolExpression(token.astOperand2):
             reportError(token, 14, 4)
