@@ -160,7 +160,7 @@
          <item>
           <widget class="QLineEdit" name="mEditDefines">
            <property name="toolTip">
-            <string>Defines must be separated by a semicolon ';'</string>
+            <string>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</string>
            </property>
           </widget>
          </item>
