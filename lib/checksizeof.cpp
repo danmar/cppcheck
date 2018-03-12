@@ -338,7 +338,9 @@ void CheckSizeof::sizeofFunction()
             }
 
             const Token *errorTok = nullptr;
-            for (const Token *argument = tok->next(); argument && argument->str() != ")"; argument = argument->next()) {
+            const Token *start = tok->next();
+            const Token *end = start->link();
+            for (const Token *argument = start; argument != end; argument = argument->next()) {
                 // Dont report an error if there is a nested sizeof
                 if (argument->str() == "sizeof") {
                     errorTok = nullptr;

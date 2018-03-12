@@ -108,9 +108,6 @@ private:
               "    int i = sizeof (sizeof (p));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout.str());
-
-        check("int foo() { return 1; }; int a,sizeof(sizeof(foo()))");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout.str());
     }
 
     void sizeofCalculation() {
