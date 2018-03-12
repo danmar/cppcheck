@@ -108,6 +108,9 @@ private:
               "    int i = sizeof (sizeof (p));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout.str());
+
+        check("int foo() { return 1; }; int a,sizeof(sizeof(foo()))");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout.str());
     }
 
     void sizeofCalculation() {
@@ -199,7 +202,13 @@ private:
         check("int foo(int) { return 1; }; int a,sizeof(foo(0))");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
 
-        check("int foo(int) { return 1; }; int foo(...) { return 1; }; int a,sizeof(foo(0))");
+        check("char * buf; int a,sizeof(*buf)");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int a,sizeof(foo())");
+        ASSERT_EQUALS("", errout.str());
+        
+        check("int foo(int) { return 1; }; char buf[1024]; int a,sizeof(buf), foo(0)");
         ASSERT_EQUALS("", errout.str());
     }
 

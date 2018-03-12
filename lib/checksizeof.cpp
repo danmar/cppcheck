@@ -338,16 +338,19 @@ void CheckSizeof::sizeofFunction()
             }
 
             const Token *errorTok = nullptr;
-            for (const Token *argument = tok->next(); argument; argument = argument->next()) {
+            for (const Token *argument = tok->next(); argument && argument->str() != ")"; argument = argument->next()) {
+                // Dont report an error if there is a nested sizeof
                 if (argument->str() == "sizeof") {
+                    errorTok = nullptr;
                     break;
+                // Dont report error if using decltype
                 } else if (argument->str() == "decltype") {
                     errorTok = nullptr;
                     break;
                 }
                 else if (const Function * fun = argument->function()) {
+                    // Dont report error if the function is overloaded
                     if (fun->nestedIn->functionMap.count(argument->str()) > 1) {
-                        // If the function is overloaded then dont error
                         errorTok = nullptr;
                         break;
                     } else {
