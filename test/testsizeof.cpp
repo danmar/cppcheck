@@ -164,13 +164,6 @@ private:
     }
 
     void sizeofFunction() {
-        // check("class Foo\n"
-        //       "{\n"
-        //       "    int bar() { return 1; };\n"
-        //       "}\n"
-        //       "int a,sizeof(Foo().bar())");
-        // ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
-
         check("class Foo\n"
               "{\n"
               "    int bar() { return 1; };\n"
@@ -193,8 +186,15 @@ private:
               "Foo * fp;int a,sizeof(fp->bar())");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
 
+        check("#define foo() int\n"
+              "int a,sizeof(foo())");
+        ASSERT_EQUALS("", errout.str());
+
         check("int foo() { return 1; }; int a,sizeof(foo())");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
+
+        check("int foo() { return 1; }; sizeof(decltype(foo()))");
+        ASSERT_EQUALS("", errout.str());
 
         check("int foo(int) { return 1; }; int a,sizeof(foo(0))");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());

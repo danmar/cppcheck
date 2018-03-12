@@ -343,7 +343,11 @@ void CheckSizeof::sizeofFunction()
             for (const Token *argument = tok->next(); argument; argument = argument->next()) {
                 if (argument->str() == "sizeof") {
                     break;
-                } else if (const Function * fun = argument->function()) {
+                } else if (argument->str() == "decltype") {
+                    errorTok = nullptr;
+                    break;
+                }
+                else if (const Function * fun = argument->function()) {
                     if (fun->nestedIn->functionMap.count(argument->str()) > 1) {
                         // If the function is overloaded then dont error
                         errorTok = nullptr;
