@@ -509,21 +509,29 @@ void CheckNullPointer::arithmetic()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->astOperand2() &&
-                (tok->str() == "-" || tok->str() == "+") &&
-                tok->valueType() &&
-                tok->valueType()->pointer
-            )
+            if (tok->str() == "-" || tok->str() == "+" || tok->str() == "+=" || tok->str() == "-=")
             {
-                const ValueFlow::Value *values[] = {tok->astOperand1()->getValue(0), tok->astOperand2()->getValue(0)};
-                for(const ValueFlow::Value *value:values) {
-                    if (!value)
-                        continue;
-                    if (!_settings->inconclusive && value->isInconclusive())
-                        continue;
-                    if (value->condition && !_settings->isEnabled(Settings::WARNING))
-                        continue;
-                    arithmeticError(tok,value);
+                const Token *arguments[] = {tok->astOperand1(), tok->astOperand2()};
+                for(const Token *argument:arguments) {
+                    if(argument && argument->valueType() && argument->valueType()->pointer) {
+                        long checkValue = 0;
+                        // When using an assign op, the value read from
+                        // valueflow has already been updated, so instead of
+                        // checking for zero we check that the value is equal
+                        // to RHS
+                        if (tok->astOperand2()->hasKnownIntValue()) {
+                            if (tok->str() == "-=") checkValue -= tok->astOperand2()->values().front().intvalue;
+                            else if (tok->str() == "+=") checkValue = tok->astOperand2()->values().front().intvalue;
+                        }
+                        const ValueFlow::Value *value = argument->getValue(checkValue);
+                        if (!value)
+                            continue;
+                        if (!_settings->inconclusive && value->isInconclusive())
+                            continue;
+                        if (value->condition && !_settings->isEnabled(Settings::WARNING))
+                            continue;
+                        arithmeticError(tok,value);
+                    }
                 }
             }
         }
@@ -533,7 +541,7 @@ void CheckNullPointer::arithmetic()
 void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value *value)
 {
     std::string errmsg;
-    if (tok && tok->str() == "-") {
+    if (tok && tok->str().front() == '-') {
         if (value && value->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is overflow in pointer subtraction.";
         else
