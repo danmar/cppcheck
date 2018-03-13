@@ -1807,6 +1807,8 @@ void Variable::evaluate(const Library* lib)
         } else if (tok->str() == "&&") { // Before simplification, && isn't split up
             setFlag(fIsRValueRef, true);
             setFlag(fIsReference, true); // Set also fIsReference
+        } else if (tok->str() == "&=") { // Taking care of anonymous variables
+            setFlag(fIsReference, true);
         }
 
         if (tok->str() == "<" && tok->link())
