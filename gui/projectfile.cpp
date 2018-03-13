@@ -50,6 +50,7 @@ static const char ExcludePathName[] = "path";
 static const char ExcludePathNameAttrib[] = "name";
 static const char LibrariesElementName[] = "libraries";
 static const char LibraryElementName[] = "library";
+static const char PlatformElementName[] = "platform";
 static const char SuppressionsElementName[] = "suppressions";
 static const char SuppressionElementName[] = "suppression";
 static const char AddonElementName[] = "addon";
@@ -84,6 +85,7 @@ void ProjectFile::clear()
     mPaths.clear();
     mExcludedPaths.clear();
     mLibraries.clear();
+    mPlatform.clear();
     mSuppressions.clear();
     mAddons.clear();
     mClangAnalyzer = mClangTidy = false;
@@ -148,6 +150,9 @@ bool ProjectFile::read(const QString &filename)
             // Find libraries list from inside project element
             if (insideProject && xmlReader.name() == LibrariesElementName)
                 readStringList(mLibraries, xmlReader,LibraryElementName);
+
+            if (insideProject && xmlReader.name() == PlatformElementName)
+                readPlatform(xmlReader);
 
             // Find suppressions list from inside project element
             if (insideProject && xmlReader.name() == SuppressionsElementName)
@@ -434,6 +439,30 @@ void ProjectFile::readExcludes(QXmlStreamReader &reader)
     } while (!allRead);
 }
 
+void ProjectFile::readPlatform(QXmlStreamReader &reader)
+{
+    do {
+        const QXmlStreamReader::TokenType type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::Characters:
+            mPlatform = reader.text().toString();
+        case QXmlStreamReader::EndElement:
+            return;
+        // Not handled
+        case QXmlStreamReader::StartElement:
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (1);
+}
+
 
 void ProjectFile::readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[])
 {
@@ -498,6 +527,11 @@ void ProjectFile::setLibraries(const QStringList &libraries)
     mLibraries = libraries;
 }
 
+void ProjectFile::setPlatform(const QString &platform)
+{
+    mPlatform = platform;
+}
+
 void ProjectFile::setSuppressions(const QStringList &suppressions)
 {
     mSuppressions = suppressions;
@@ -532,6 +566,12 @@ bool ProjectFile::write(const QString &filename)
     if (!mBuildDir.isEmpty()) {
         xmlWriter.writeStartElement(BuildDirElementName);
         xmlWriter.writeCharacters(mBuildDir);
+        xmlWriter.writeEndElement();
+    }
+
+    if (!mPlatform.isEmpty()) {
+        xmlWriter.writeStartElement(PlatformElementName);
+        xmlWriter.writeCharacters(mPlatform);
         xmlWriter.writeEndElement();
     }
 

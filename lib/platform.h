@@ -122,7 +122,11 @@ namespace cppcheck {
         }
 
         const char *platformString() const {
-            switch (platformType) {
+            return platformString(platformType);
+        }
+
+        static const char *platformString(PlatformType pt) {
+            switch (pt) {
             case Unspecified:
                 return "Unspecified";
             case Native:

@@ -107,6 +107,14 @@ public:
     }
 
     /**
+     * @brief Get platform.
+     * @return Current platform. If it ends with .xml then it is a file. Otherwise it must match one of the return values from @sa cppcheck::Platform::platformString() ("win32A", "unix32", ..)
+     */
+    QString getPlatform() const {
+        return mPlatform;
+    }
+
+    /**
     * @brief Get list suppressions.
     * @return list of suppressions.
     */
@@ -207,6 +215,12 @@ public:
     void setLibraries(const QStringList &libraries);
 
     /**
+     * @brief Set platform.
+     * @param platform platform.
+     */
+    void setPlatform(const QString &platform);
+
+    /**
      * @brief Set list of suppressions.
      * @param suppressions List of suppressions.
      */
@@ -281,6 +295,12 @@ protected:
      * @param reader XML stream reader.
      */
     void readExcludes(QXmlStreamReader &reader);
+
+    /**
+     * @brief Read platform text.
+     * @param reader XML stream reader.
+     */
+    void readPlatform(QXmlStreamReader &reader);
 
     /**
       * @brief Read string list
@@ -358,6 +378,11 @@ private:
      * @brief List of libraries.
      */
     QStringList mLibraries;
+
+    /**
+     * @brief Platform
+     */
+    QString mPlatform;
 
     /**
      * @brief List of suppressions.
