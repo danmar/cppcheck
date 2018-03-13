@@ -92,6 +92,18 @@ inline static int caseInsensitiveStringCompare(const std::string &lhs, const std
     return 0;
 }
 
+template< class T, std::size_t N >
+T* begin( T (&array)[N] )
+{
+    return array;
+}
+
+template< class T, std::size_t N >
+T* end( T (&array)[N] )
+{
+    return array+N;
+}
+
 #define UNUSED(x) (void)(x)
 
 #endif
