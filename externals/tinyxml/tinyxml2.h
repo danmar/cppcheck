@@ -47,15 +47,15 @@ distribution.
 */
 /*
 	gcc:
-        g++ -Wall -DDEBUG tinyxml2.cpp xmltest.cpp -o gccxmltest.exe
+        g++ -Wall -DTINYXML2_DEBUG tinyxml2.cpp xmltest.cpp -o gccxmltest.exe
 
     Formatting, Artistic Style:
         AStyle.exe --style=1tbs --indent-switches --break-closing-brackets --indent-preprocessor tinyxml2.cpp tinyxml2.h
 */
 
 #if defined( _DEBUG ) || defined (__DEBUG__)
-#   ifndef DEBUG
-#       define DEBUG
+#   ifndef TINYXML2_DEBUG
+#       define TINYXML2_DEBUG
 #   endif
 #endif
 
@@ -79,7 +79,7 @@ distribution.
 #endif
 
 
-#if defined(DEBUG)
+#if defined(TINYXML2_DEBUG)
 #   if defined(_MSC_VER)
 #       // "(void)0," is for suppressing C4127 warning in "assert(false)", "assert(true)" and the like
 #       define TIXMLASSERT( x )           if ( !((void)0,(x))) { __debugbreak(); }
@@ -395,7 +395,7 @@ public:
         }
         --_currentAllocs;
         Item* item = static_cast<Item*>( mem );
-#ifdef DEBUG
+#ifdef TINYXML2_DEBUG
         memset( item, 0xfe, sizeof( *item ) );
 #endif
         item->next = _root;
