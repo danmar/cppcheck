@@ -511,28 +511,30 @@ void CheckNullPointer::arithmetic()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (!Token::Match(tok, "-|+|+=|-="))
                 continue;
-            const Token *arguments[] = {tok->astOperand1(), tok->astOperand2()};
-            for(const Token **argument_it = begin(arguments); argument_it != end(arguments);argument_it++) {
-                const Token *argument = *argument_it;
-                if(argument && argument->valueType() && argument->valueType()->pointer) {
-                    long checkValue = 0;
-                    // When using an assign op, the value read from
-                    // valueflow has already been updated, so instead of
-                    // checking for zero we check that the value is equal
-                    // to RHS
-                    if (tok->astOperand2()->hasKnownIntValue()) {
-                        if (tok->str() == "-=") checkValue -= tok->astOperand2()->values().front().intvalue;
-                        else if (tok->str() == "+=") checkValue = tok->astOperand2()->values().front().intvalue;
-                    }
-                    const ValueFlow::Value *value = argument->getValue(checkValue);
-                    if (!value)
-                        continue;
-                    if (!_settings->inconclusive && value->isInconclusive())
-                        continue;
-                    if (value->condition && !_settings->isEnabled(Settings::WARNING))
-                        continue;
-                    arithmeticError(tok,value);
+            const Token *operands[] = {tok->astOperand1(), tok->astOperand2()};
+            for(const Token **operand_it = begin(operands); operand_it != end(operands);operand_it++) {
+                const Token *operand = *operand_it;
+                if(!(operand && operand->valueType() && operand->valueType()->pointer)) 
+                    continue;
+                long checkValue = 0;
+                // When using an assign op, the value read from
+                // valueflow has already been updated, so instead of
+                // checking for zero we check that the value is equal
+                // to RHS
+                if (tok->astOperand2()->hasKnownIntValue()) {
+                    if (tok->str() == "-=") 
+                        checkValue -= tok->astOperand2()->values().front().intvalue;
+                    else if (tok->str() == "+=") 
+                        checkValue = tok->astOperand2()->values().front().intvalue;
                 }
+                const ValueFlow::Value *value = operand->getValue(checkValue);
+                if (!value)
+                    continue;
+                if (!_settings->inconclusive && value->isInconclusive())
+                    continue;
+                if (value->condition && !_settings->isEnabled(Settings::WARNING))
+                    continue;
+                arithmeticError(tok,value);
             }
         }
     }
