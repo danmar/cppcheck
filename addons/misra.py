@@ -796,32 +796,31 @@ def misra_16_2(data):
 
 
 def misra_16_3(rawTokens):
-    # state:
-    # 0 => default state
-    # 1 => break/attribute is seen but not its ';'
-    # 2 => a case/default is allowed (we have seen 'break;'/'comment'/'{'/attribute)
-    state = 0
+    STATE_NONE = 0   # default state, not in switch case/default block
+    STATE_BREAK = 1  # break/comment is seen but not its ';'
+    STATE_OK = 2     # a case/default is allowed (we have seen 'break;'/'comment'/'{'/attribute)
+    state = STATE_NONE
     for token in rawTokens:
         if token.str == 'break' or token.str == 'return' or token.str == 'throw':
-            state = 1
+            state = STATE_BREAK
         elif token.str == ';':
-            if state == 1:
-                state = 2
+            if state == STATE_BREAK:
+                state = STATE_OK
             else:
-                state = 0
+                state = STATE_NONE
         elif token.str.startswith('/*') or token.str.startswith('//'):
             if 'fallthrough' in token.str.lower():
-                state = 2
+                state = STATE_OK
         elif simpleMatch(token, '[ [ fallthrough ] ] ;'):
-            state = 1
+            state = STATE_BREAK
         elif token.str == '{':
-            state = 2
+            state = STATE_OK
         elif token.str == '}':
-            state = 0
+            state = STATE_NONE
         elif token.str == 'case' or token.str == 'default':
-            if state != 2:
+            if state != STATE_OK:
                 reportError(token, 16, 3)
-            state = 2
+            state = STATE_OK
 
 
 def misra_16_4(data):
