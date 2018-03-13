@@ -46,6 +46,21 @@ def simpleMatch(token, pattern):
         token = token.next
     return True
 
+def rawlink(rawtoken):
+    if rawtoken.str == '}':
+        indent = 0
+        while rawtoken:
+            if rawtoken.str == '}':
+                indent = indent + 1
+            elif rawtoken.str == '{':
+                indent = indent - 1
+                if indent == 0:
+                    break
+            rawtoken = rawtoken.previous
+    else:
+        rawtoken = None
+    return rawtoken
+
 KEYWORDS = {
     'auto',
     'break',
@@ -747,12 +762,27 @@ def misra_15_6(rawTokens):
     indent = 0
     tok1 = None
     for token in rawTokens:
-        if token.str in {'if', 'for', 'while'}:
+        if token.str in ['if', 'for', 'while']:
             if simpleMatch(token.previous, '# if'):
                 continue
             if simpleMatch(token.previous, "} while"):
-                continue
+                # is there a 'do { .. } while'?
+                start = rawlink(token.previous)
+                if start and simpleMatch(start.previous, 'do {'):
+                    continue
+            if state == 2:
+                reportError(tok1, 15, 6)
             state = 1
+            indent = 0
+            tok1 = token
+        elif token.str == 'else':
+            if simpleMatch(token.previous, '# else'):
+                continue
+            if simpleMatch(token, 'else if'):
+                continue
+            if state == 2:
+                reportError(tok1, 15, 6)
+            state = 2
             indent = 0
             tok1 = token
         elif state == 1:
