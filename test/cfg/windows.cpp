@@ -146,6 +146,11 @@ void validCode()
     SecureZeroMemory(byteBuf, sizeof(byteBuf));
     RtlFillMemory(byteBuf, sizeof(byteBuf), 0xff);
 
+    // Intrinsics
+    __noop();
+    __noop(1, "test", NULL);
+    __nop();
+
     // Valid Library usage, no leaks, valid arguments
     HINSTANCE hInstLib = LoadLibrary(L"My.dll");
     FreeLibrary(hInstLib);
