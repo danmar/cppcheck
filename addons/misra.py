@@ -920,6 +920,8 @@ def misra_17_1(data):
     for token in data.tokenlist:
         if isFunctionCall(token) and token.astOperand1.str in {'va_list', 'va_arg', 'va_start', 'va_end', 'va_copy'}:
             reportError(token, 17, 1)
+        elif token.str == 'va_list':
+            reportError(token, 17, 1)
 
 
 def misra_17_6(rawTokens):
