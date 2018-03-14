@@ -2584,6 +2584,12 @@ private:
               "  s -= 20;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is overflow in pointer subtraction.\n", errout.str());
+
+        check("int* f8() { int *x = NULL; return --x; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n", errout.str());
+        
+        check("int* f9() { int *x = NULL; return x--; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n", errout.str());
     }
 
     void addNull() {
@@ -2622,6 +2628,12 @@ private:
               "  s += 20;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is pointer arithmetic with NULL pointer.\n", errout.str());
+
+        check("int* f7() { int *x = NULL; return ++x; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Pointer arithmetic with NULL pointer.\n", errout.str());
+        
+        check("int* f10() { int *x = NULL; return x++; } ");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Pointer arithmetic with NULL pointer.\n", errout.str());
     }
 };
 

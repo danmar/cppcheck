@@ -509,7 +509,7 @@ void CheckNullPointer::arithmetic()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "-|+|+=|-="))
+            if (!Token::Match(tok, "-|+|+=|-=|++|--"))
                 continue;
             const Token *operands[] = {tok->astOperand1(), tok->astOperand2()};
             for(const Token **operand_it = begin(operands); operand_it != end(operands);operand_it++) {
@@ -521,7 +521,7 @@ void CheckNullPointer::arithmetic()
                 // valueflow has already been updated, so instead of
                 // checking for zero we check that the value is equal
                 // to RHS
-                if (tok->astOperand2()->hasKnownIntValue()) {
+                if (tok->astOperand2() && tok->astOperand2()->hasKnownIntValue()) {
                     if (tok->str() == "-=") 
                         checkValue -= tok->astOperand2()->values().front().intvalue;
                     else if (tok->str() == "+=") 
