@@ -1069,8 +1069,15 @@ def loadRuleTexts(filename):
     num1 = 0
     num2 = 0
     appendixA = False
+    ruleText = False
     for line in open(filename, 'rt'):
         line = line.replace('\r', '').replace('\n', '')
+        if len(line) == 0:
+            if ruleText:
+                num1 = 0
+                num2 = 0
+            ruleText = False
+            continue
         if not appendixA:
             if line.find('Appendix A') >= 0 and line.find('Summary of guidelines') >= 10:
                 appendixA = True
@@ -1081,15 +1088,21 @@ def loadRuleTexts(filename):
         if res:
             num1 = int(res.group(1))
             num2 = int(res.group(2))
+            ruleText = False
             continue
-        res = re.match(r'^[ ]*(Advisory|Required|Mandatory)$', line)
-        if res:
-            continue
-        res = re.match(r'^[ ]*([#A-Z].*)', line)
-        if res:
+        if re.match(r'^[ ]*(Advisory|Required|Mandatory)$', line):
+            ruleText = False
+        elif re.match(r'^[#A-Z].*', line):
+            if ruleText:
+                num2 = num2 + 1
+            num = num1 * 100 + num2
             global ruleTexts
-            ruleTexts[num1*100+num2] = res.group(1)
-            num2 = num2 + 1
+            ruleTexts[num] = line
+            ruleText = True
+        elif ruleText and re.match(r'^[a-z].*', line):
+            global ruleTexts
+            num = num1 * 100 + num2
+            ruleTexts[num] = ruleTexts[num] + ' ' + line
             continue
 
 def loadRuleTextsFromPdf(filename):
