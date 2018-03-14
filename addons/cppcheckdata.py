@@ -345,6 +345,7 @@ class Variable:
         isArgument      Is this variable a function argument?
         isArray         Is this variable an array?
         isClass         Is this variable a class or struct?
+        isConst         Is this variable a const variable?
         isExtern        Is this variable an extern variable?
         isLocal         Is this variable a local variable?
         isPointer       Is this variable a pointer
@@ -362,6 +363,7 @@ class Variable:
     isArgument = False
     isArray = False
     isClass = False
+    isConst = False
     isExtern = False
     isLocal = False
     isPointer = False
@@ -379,6 +381,7 @@ class Variable:
         self.isArgument = element.get('isArgument') == 'true'
         self.isArray = element.get('isArray') == 'true'
         self.isClass = element.get('isClass') == 'true'
+        self.isConst = element.get('isConst') == 'true'
         self.isExtern = element.get('isExtern') == 'true'
         self.isLocal = element.get('isLocal') == 'true'
         self.isPointer = element.get('isPointer') == 'true'

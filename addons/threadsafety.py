@@ -15,8 +15,16 @@ def reportError(token, severity, msg, id):
 
 def checkstatic(data):
     for var in data.variables:
-        if var.isStatic and var.isLocal and var.isClass:
-            reportError(var.typeStartToken, 'warning', ('Local static object: ' + var.nameToken.str), 'threadsafety')
+        if var.isStatic and var.isLocal:
+            type = None
+            if var.isClass:
+                type = 'object'
+            else:
+                type = 'variable'
+            if var.isConst:
+                reportError(var.typeStartToken, 'warning', 'Local constant static ' + type + ' \'' + var.nameToken.str + '\', dangerous if it is initialized in parallell threads', 'threadsafety')
+            else:
+                reportError(var.typeStartToken, 'warning', 'Local static ' + type + ': ' + var.nameToken.str, 'threadsafety')
 
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
