@@ -55,7 +55,7 @@ public:
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
-        m_timerResults = tr;
+        _timerResults = tr;
     }
 
     /** Is the code C. Used for bailouts */
@@ -845,6 +845,9 @@ private:
     /** variable count */
     unsigned int _varId;
 
+    /** unnamed count "Unnamed0", "Unnamed1", "Unnamed2", .. */
+    unsigned int _unnamedCount;
+
     /**
      * was there any templates? templates that are "unused" are
      * removed from the token list
@@ -854,7 +857,7 @@ private:
     /**
      * TimerResults
      */
-    TimerResults *m_timerResults;
+    TimerResults *_timerResults;
 
 #ifdef MAXTIME
     /** Tokenizer maxtime */

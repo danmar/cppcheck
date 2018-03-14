@@ -147,8 +147,9 @@ Tokenizer::Tokenizer() :
     _errorLogger(nullptr),
     _symbolDatabase(nullptr),
     _varId(0),
+    _unnamedCount(0),
     _codeWithTemplates(false), //is there any templates?
-    m_timerResults(nullptr)
+    _timerResults(nullptr)
 #ifdef MAXTIME
     ,maxtime(std::time(0) + MAXTIME)
 #endif
@@ -161,8 +162,9 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     _errorLogger(errorLogger),
     _symbolDatabase(nullptr),
     _varId(0),
+    _unnamedCount(0),
     _codeWithTemplates(false), //is there any templates?
-    m_timerResults(nullptr)
+    _timerResults(nullptr)
 #ifdef MAXTIME
     ,maxtime(std::time(0) + MAXTIME)
 #endif
@@ -402,7 +404,7 @@ namespace {
     };
 }
 
-static Token *splitDefinitionFromTypedef(Token *tok)
+static Token *splitDefinitionFromTypedef(Token *tok, unsigned int *unnamedCount)
 {
     Token *tok1;
     std::string name;
@@ -420,10 +422,8 @@ static Token *splitDefinitionFromTypedef(Token *tok)
             // use typedef name if available
             if (Token::Match(tok1->next(), "%type%"))
                 name = tok1->next()->str();
-            else { // create a unique name
-                static unsigned int count = 0;
-                name = "Unnamed" + MathLib::toString(count++);
-            }
+            else // create a unique name
+                name = "Unnamed" + MathLib::toString((*unnamedCount)++);
             tok->next()->insertToken(name);
         } else
             return nullptr;
@@ -587,7 +587,7 @@ void Tokenizer::simplifyTypedef()
         // pull struct, union, enum or class definition out of typedef
         // use typedef name for unnamed struct, union, enum or class
         if (Token::Match(tok->next(), "const| struct|enum|union|class %type%| {")) {
-            Token *tok1 = splitDefinitionFromTypedef(tok);
+            Token *tok1 = splitDefinitionFromTypedef(tok, &_unnamedCount);
             if (!tok1)
                 continue;
             tok = tok1;
@@ -596,7 +596,7 @@ void Tokenizer::simplifyTypedef()
             while (tok1 && tok1->str() != ";" && tok1->str() != "{")
                 tok1 = tok1->next();
             if (tok1 && tok1->str() == "{") {
-                tok1 = splitDefinitionFromTypedef(tok);
+                tok1 = splitDefinitionFromTypedef(tok, &_unnamedCount);
                 if (!tok1)
                     continue;
                 tok = tok1;
@@ -3559,8 +3559,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyAsm();
 
     // Bail out if code is garbage
-    if (m_timerResults) {
-        Timer t("Tokenizer::tokenize::findGarbageCode", _settings->showtime, m_timerResults);
+    if (_timerResults) {
+        Timer t("Tokenizer::tokenize::findGarbageCode", _settings->showtime, _timerResults);
         findGarbageCode();
     } else {
         findGarbageCode();
@@ -3723,8 +3723,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyVarDecl(false);
 
     // typedef..
-    if (m_timerResults) {
-        Timer t("Tokenizer::tokenize::simplifyTypedef", _settings->showtime, m_timerResults);
+    if (_timerResults) {
+        Timer t("Tokenizer::tokenize::simplifyTypedef", _settings->showtime, _timerResults);
         simplifyTypedef();
     } else {
         simplifyTypedef();
@@ -3841,8 +3841,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     validate(); // #6772 "segmentation fault (invalid code) in Tokenizer::setVarId"
 
-    if (m_timerResults) {
-        Timer t("Tokenizer::tokenize::setVarId", _settings->showtime, m_timerResults);
+    if (_timerResults) {
+        Timer t("Tokenizer::tokenize::setVarId", _settings->showtime, _timerResults);
         setVarId();
     } else {
         setVarId();
