@@ -516,7 +516,7 @@ void CheckNullPointer::arithmetic()
                 const Token *operand = *operand_it;
                 if(!(operand && operand->valueType() && operand->valueType()->pointer)) 
                     continue;
-                long checkValue = 0;
+                MathLib::bigint checkValue = 0;
                 // When using an assign op, the value read from
                 // valueflow has already been updated, so instead of
                 // checking for zero we check that the value is equal
