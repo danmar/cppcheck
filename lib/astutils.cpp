@@ -238,6 +238,22 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     return commutativeEquals;
 }
 
+bool isEmptyCond(const Token * const cond)
+{
+    return Token::simpleMatch(cond, "( )") && 
+        cond->astOperand1() && 
+        cond->astOperand1()->str() == "." && 
+        cond->previous()->str() == "empty";
+}
+
+bool isSizeCond(const Token * const cond)
+{
+    return Token::simpleMatch(cond, "( )") && 
+        cond->astOperand1() && 
+        cond->astOperand1()->str() == "." && 
+        cond->previous()->str() == "size";
+}
+
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure)
 {
     if (!cond1 || !cond2)
@@ -255,6 +271,23 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
 
     if (cond2->str() == "!")
         return isOppositeCond(isNot, cpp, cond2, cond1, library, pure);
+
+    if(!isNot) {
+        if (cond1->str() == "==" && cond2->str() == "==") {
+            if(isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure))
+                return !isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure);
+            if(isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure))
+                return !isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure);
+        }
+    }
+
+    if(isEmptyCond(cond1) && isSizeCond(cond2->astOperand1())) {
+        return !(cond2->str() == "==" && cond2->astOperand2()->getValue(0));
+    }
+
+    if(isEmptyCond(cond2) && isSizeCond(cond1->astOperand1())) {
+        return !(cond1->str() == "==" && cond1->astOperand2()->getValue(0));
+    }
 
     if (!cond1->isComparisonOp() || !cond2->isComparisonOp())
         return false;
