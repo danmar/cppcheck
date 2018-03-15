@@ -1184,7 +1184,24 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f12(const int * const p) { if (*p==4) if(*p==2) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());        
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
+        check("struct foo {\n"
+              "    int a;\n"
+              "    int b;\n"
+              "};\n"
+              "void f(foo x) { if(x.a==4) if(x.b==2) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct foo {\n"
+              "    int a;\n"
+              "    int b;\n"
+              "};\n"
+              "void f(foo x) { if(x.a==4) if(x.b==4) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f3(char a, char b) { if(a==b) if(a==0) {}} ");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectLogicOperator9() { //  #6069 "False positive incorrectLogicOperator due to dynamic_cast"
