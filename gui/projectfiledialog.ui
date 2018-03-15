@@ -532,7 +532,7 @@
          <property name="title">
           <string>External tools</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout">
+         <layout class="QVBoxLayout" name="verticalLayout_1">
           <item>
            <widget class="QCheckBox" name="mToolClangTidy">
             <property name="text">
