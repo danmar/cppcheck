@@ -344,17 +344,17 @@ void CheckSizeof::sizeofFunction()
                 const Function * fun = checkToken->function();
                 // Dont report error if the function is overloaded
                 if (fun && fun->nestedIn->functionMap.count(checkToken->str()) == 1) {
-                    sizeofFunctionError(tok, false);
+                    sizeofFunctionError(tok);
                 }
             }
         }
     }
 }
 
-void CheckSizeof::sizeofFunctionError(const Token *tok, bool inconclusive)
+void CheckSizeof::sizeofFunctionError(const Token *tok)
 {
     reportError(tok, Severity::warning,
-                "sizeofFunction", "Found function call inside sizeof().", CWE682, inconclusive);
+                "sizeofFunctionCall", "Found function call inside sizeof().", CWE682, false);
 }
 
 //-----------------------------------------------------------------------------

@@ -168,7 +168,7 @@ private:
               "{\n"
               "    int bar() { return 1; };\n"
               "}\n"
-              "Foo f;int a,sizeof(f.bar())");
+              "Foo f;int a=sizeof(f.bar());");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
 
         check("class Foo\n"
@@ -176,44 +176,35 @@ private:
               "    int bar() { return 1; };\n"
               "    int bar() const { return 1; };\n"
               "}\n"
-              "Foo f;int a,sizeof(f.bar())");
+              "Foo f;int a=sizeof(f.bar());");
         ASSERT_EQUALS("", errout.str());
 
         check("class Foo\n"
               "{\n"
               "    int bar() { return 1; };\n"
               "}\n"
-              "Foo * fp;int a,sizeof(fp->bar())");
+              "Foo * fp;int a=sizeof(fp->bar());");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
 
-        check("#define foo() int\n"
-              "int a,sizeof(foo())");
+        check("int a=sizeof(foo());");
         ASSERT_EQUALS("", errout.str());
 
-        check("int foo() { return 1; }; int a,sizeof(foo())");
+        check("int foo() { return 1; }; int a=sizeof(foo());");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
 
-        check("#define M(x) sizeof(x)\n"
-              "int foo() { return 1; }; int a,M(foo())");
+        check("int foo() { return 1; }; sizeof(decltype(foo()));");
         ASSERT_EQUALS("", errout.str());
 
-        check("#define M sizeof(foo())\n"
-              "int foo() { return 1; }; int a,M");
-        ASSERT_EQUALS("", errout.str());
-
-        check("int foo() { return 1; }; sizeof(decltype(foo()))");
-        ASSERT_EQUALS("", errout.str());
-
-        check("int foo(int) { return 1; }; int a,sizeof(foo(0))");
+        check("int foo(int) { return 1; }; int a=sizeof(foo(0))");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
 
-        check("char * buf; int a,sizeof(*buf)");
+        check("char * buf; int a=sizeof(*buf);");
         ASSERT_EQUALS("", errout.str());
 
-        check("int a,sizeof(foo())");
+        check("int a=sizeof(foo())");
         ASSERT_EQUALS("", errout.str());
         
-        check("int foo(int) { return 1; }; char buf[1024]; int a,sizeof(buf), foo(0)");
+        check("int foo(int) { return 1; }; char buf[1024]; int a=sizeof(buf), foo(0)");
         ASSERT_EQUALS("", errout.str());
 
         check("template<class T>\n"

@@ -96,7 +96,7 @@ private:
     // Error messages..
     void sizeofsizeofError(const Token* tok);
     void sizeofCalculationError(const Token* tok, bool inconclusive);
-    void sizeofFunctionError(const Token* tok, bool inconclusive);
+    void sizeofFunctionError(const Token* tok);
     void multiplySizeofError(const Token* tok);
     void divideSizeofError(const Token* tok);
     void sizeofForArrayParameterError(const Token* tok);
@@ -116,7 +116,7 @@ private:
         c.sizeofForNumericParameterError(nullptr);
         c.sizeofsizeofError(nullptr);
         c.sizeofCalculationError(nullptr, false);
-        c.sizeofFunctionError(nullptr, false);
+        c.sizeofFunctionError(nullptr);
         c.multiplySizeofError(nullptr);
         c.divideSizeofError(nullptr);
         c.sizeofVoidError(nullptr);
