@@ -238,20 +238,23 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     return commutativeEquals;
 }
 
-bool isEmptyCond(const Token * const cond)
+bool isContainerYield(const Token * const cond, Library::Container::Yield y, std::string name)
 {
-    return Token::simpleMatch(cond, "( )") && 
-        cond->astOperand1() && 
-        cond->astOperand1()->str() == "." && 
-        cond->previous()->str() == "empty";
-}
-
-bool isSizeCond(const Token * const cond)
-{
-    return Token::simpleMatch(cond, "( )") && 
-        cond->astOperand1() && 
-        cond->astOperand1()->str() == "." && 
-        cond->previous()->str() == "size";
+    if (cond->str() == "(") {
+        const Token* tok = cond->astOperand1();
+        if(tok && tok->str() == ".") {
+            if(tok->astOperand1() && tok->astOperand1()->valueType()) {
+                const Library::Container *container = tok->astOperand1()->valueType()->container;
+                if(container) {
+                    return y == container->getYield(tok->astOperand2()->str());
+                }
+            }
+            else if(!name.empty()) {
+                return Token::simpleMatch(cond, "( )") && cond->previous()->str() == name;
+            }
+        }
+    }
+    return false;
 }
 
 bool equalTokValue(const Token * const tok1, const Token * const tok2)
@@ -288,11 +291,11 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
         }
     }
 
-    if(isEmptyCond(cond1) && isSizeCond(cond2->astOperand1())) {
+    if(isContainerYield(cond1, Library::Container::EMPTY, "empty") && isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size")) {
         return !(cond2->str() == "==" && cond2->astOperand2()->getValue(0));
     }
 
-    if(isEmptyCond(cond2) && isSizeCond(cond1->astOperand1())) {
+    if(isContainerYield(cond2, Library::Container::EMPTY, "empty") && isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size")) {
         return !(cond1->str() == "==" && cond1->astOperand2()->getValue(0));
     }
 

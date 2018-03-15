@@ -25,7 +25,8 @@
 #include <string>
 #include <vector>
 
-class Library;
+#include "library.h"
+
 class Settings;
 class Token;
 
@@ -56,8 +57,7 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure);
 
-bool isEmptyCond(const Token * const cond);
-bool isSizeCond(const Token * const cond);
+bool isContainerYield(const Token * const cond, Library::Container::Yield y, std::string name="");
 
 bool equalTokValue(const Token * const tok1, const Token * const tok2);
 
