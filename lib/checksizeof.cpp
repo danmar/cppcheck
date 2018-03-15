@@ -337,7 +337,7 @@ void CheckSizeof::sizeofFunction()
                 }
             }
 
-            for (const Token *argument = tok->next()->astOperand2(); argument; argument = argument->astOperand2()) {
+            if (const Token *argument = tok->next()->astOperand2()) {
                 const Token *checkToken = argument->previous();
                 if (checkToken->tokType() == Token::eName)
                     break;
