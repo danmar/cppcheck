@@ -123,7 +123,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
             const QString platformFile = item.fileName();
 
             cppcheck::Platform p;
-            if (!p.loadPlatformFile(appPath.toStdString().c_str(), platformFile.toStdString()))
+            if (!p.loadPlatformFile(applicationFilePath.toStdString().c_str(), platformFile.toStdString()))
                 continue;
 
             if (platformFiles.indexOf(platformFile) == -1)
