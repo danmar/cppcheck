@@ -203,7 +203,7 @@ private:
 
         check("int a=sizeof(foo())");
         ASSERT_EQUALS("", errout.str());
-        
+
         check("int foo(int) { return 1; }; char buf[1024]; int a=sizeof(buf), foo(0)");
         ASSERT_EQUALS("", errout.str());
 

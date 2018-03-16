@@ -1899,6 +1899,7 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             // Skip conditional expressions..
+            const Token * const questionToken = tok2;
             while (tok2->astOperand1() || tok2->astOperand2()) {
                 if (tok2->astOperand2())
                     tok2 = const_cast<Token*>(tok2->astOperand2());
@@ -1908,6 +1909,14 @@ static bool valueFlowForward(Token * const               startToken,
                     break;
             }
             tok2 = tok2->next();
+
+            if (isVariableChanged(questionToken, questionToken->astOperand2(), varid, false, settings) &&
+                isVariableChanged(questionToken->astOperand2(), tok2, varid, false, settings)) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in condition");
+                return false;
+
+            }
         }
 
         else if (tok2->varId() == varid) {

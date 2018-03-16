@@ -80,6 +80,7 @@ private:
         TEST_CASE(valueFlowForwardCompoundAssign);
         TEST_CASE(valueFlowForwardCorrelatedVariables);
         TEST_CASE(valueFlowForwardFunction);
+        TEST_CASE(valueFlowForwardTernary);
         TEST_CASE(valueFlowForwardLambda);
 
         TEST_CASE(valueFlowSwitchVariable);
@@ -1835,6 +1836,18 @@ private:
                "  return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 8U, 1));
+    }
+
+    void valueFlowForwardTernary() {
+        const char *code;
+
+        code = "int f() {\n"
+               "  int x=5;\n"
+               "  a = b ? init1(&x) : init2(&x);\n"
+               "  return 1 + x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 5));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 5));
     }
 
     void valueFlowForwardLambda() {
