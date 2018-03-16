@@ -10,6 +10,8 @@
 # Limitations: This addon is released as open source. Rule texts can't be freely
 # distributed. https://www.misra.org.uk/forum/viewtopic.php?f=56&t=1189
 #
+# The MISRA standard documents may be obtained from https://www.misra.org.uk
+#
 # Total number of rules: 153
 
 import cppcheckdata

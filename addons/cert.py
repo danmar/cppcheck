@@ -3,6 +3,7 @@
 # Cert: Some extra CERT checkers
 #
 # Cppcheck itself handles many CERT rules. Cppcheck warns when there is undefined behaviour.
+# CERT Homepage: https://www.cert.org/secure-coding/
 #
 # Example usage of this addon (scan a sourcefile main.cpp)
 # cppcheck --dump main.cpp
