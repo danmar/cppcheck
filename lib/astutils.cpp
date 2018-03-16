@@ -240,6 +240,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
 
 bool isContainerYield(const Token * const cond, Library::Container::Yield y, std::string name)
 {
+    if(!cond)
+        return false;
     if (cond->str() == "(") {
         const Token* tok = cond->astOperand1();
         if(tok && tok->str() == ".") {
