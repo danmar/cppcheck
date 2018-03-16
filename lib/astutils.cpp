@@ -244,9 +244,8 @@ bool isContainerYield(const Token * const cond, Library::Container::Yield y, std
         const Token* tok = cond->astOperand1();
         if(tok && tok->str() == ".") {
             if(tok->astOperand1() && tok->astOperand1()->valueType()) {
-                const Library::Container *container = tok->astOperand1()->valueType()->container;
-                if(container) {
-                    return y == container->getYield(tok->astOperand2()->str());
+                if(const Library::Container *container = tok->astOperand1()->valueType()->container) {
+                    return tok->astOperand2() && y == container->getYield(tok->astOperand2()->str());
                 }
             }
             else if(!name.empty()) {
