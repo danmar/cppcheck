@@ -27,6 +27,7 @@
 #include "token.h"
 #include "tokenize.h"
 #include "utils.h"
+#include "astutils.h"
 
 #include <algorithm>
 #include <cctype>
@@ -426,6 +427,19 @@ void CheckNullPointer::nullConstantDereference()
                 }
             } else if (Token::Match(tok, "std :: string|wstring ( 0|NULL|nullptr )"))
                 nullPointerError(tok);
+
+            else if (Token::Match(tok->previous(), "::|. %name% (")) {
+                std::vector<const Token *> args = getArguments(tok);
+                for (int argnr = 0; argnr < args.size(); ++argnr) {
+                    const Token *argtok = args[argnr];
+                    if (!argtok->hasKnownIntValue())
+                        continue;
+                    if (argtok->values().front().intvalue != 0)
+                        continue;
+                    if (_settings->library.isnullargbad(tok, argnr+1))
+                        nullPointerError(argtok);
+                }
+            }
 
             else if (Token::Match(tok->previous(), ">> 0|NULL|nullptr")) { // Only checking input stream operations is safe here, because otherwise 0 can be an integer as well
                 const Token* tok2 = tok->previous(); // Find start of statement
