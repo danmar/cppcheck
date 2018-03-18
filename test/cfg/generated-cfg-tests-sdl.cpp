@@ -21,8 +21,9 @@ void test__SDL_mutexP__arg1__notbool() {
 }
 
 void test__SDL_mutexP__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  SDL_mutexP(NULL);
+  SDL_mutexP(p);
 }
 
 void test__SDL_mutexV__noreturn() {
@@ -38,8 +39,9 @@ void test__SDL_mutexV__arg1__notbool() {
 }
 
 void test__SDL_mutexV__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  SDL_mutexV(NULL);
+  SDL_mutexV(p);
 }
 
 void test__SDL_RWsize__noreturn() {
@@ -55,8 +57,9 @@ void test__SDL_RWsize__arg1__notbool() {
 }
 
 void test__SDL_RWsize__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  SDL_RWsize(NULL);
+  SDL_RWsize(p);
 }
 
 void test__SDL_RWread__noreturn() {
@@ -72,8 +75,9 @@ void test__SDL_RWread__arg1__notbool() {
 }
 
 void test__SDL_RWread__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  SDL_RWread(NULL, arg2);
+  SDL_RWread(p, arg2);
 }
 
 void test__SDL_RWread__arg2__notbool() {
@@ -82,8 +86,9 @@ void test__SDL_RWread__arg2__notbool() {
 }
 
 void test__SDL_RWread__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  SDL_RWread(arg1, NULL);
+  SDL_RWread(arg1, p);
 }
 
 void test__IMG_isPNG__noreturn() {
@@ -99,8 +104,9 @@ void test__IMG_isPNG__arg1__notbool() {
 }
 
 void test__IMG_isPNG__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  IMG_isPNG(NULL);
+  IMG_isPNG(p);
 }
 
 void test__IMG_isJPG__noreturn() {
@@ -116,7 +122,8 @@ void test__IMG_isJPG__arg1__notbool() {
 }
 
 void test__IMG_isJPG__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  IMG_isJPG(NULL);
+  IMG_isJPG(p);
 }
 

@@ -162,8 +162,9 @@ void test__sf__String__find__leakignore() {
 }
 
 void test__sf__String__find__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  sf::String::find(NULL, arg2);
+  sf::String::find(p, arg2);
 }
 
 void test__sf__String__find__arg1__notuninit() {
@@ -1501,8 +1502,9 @@ void test__sf__Window__setIcon__arg2__notuninit() {
 }
 
 void test__sf__Window__setIcon__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  sf::Window::setIcon(arg1, arg2, NULL);
+  sf::Window::setIcon(arg1, arg2, p);
 }
 
 void test__sf__Window__setIcon__arg3__notuninit() {
@@ -1537,8 +1539,9 @@ void test__sf__RenderWindow__setIcon__arg2__notuninit() {
 }
 
 void test__sf__RenderWindow__setIcon__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  sf::RenderWindow::setIcon(arg1, arg2, NULL);
+  sf::RenderWindow::setIcon(arg1, arg2, p);
 }
 
 void test__sf__RenderWindow__setIcon__arg3__notuninit() {

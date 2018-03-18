@@ -27,8 +27,9 @@ void test__wxString__Format__arg1__notbool() {
 }
 
 void test__wxString__Format__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxString::Format(NULL);
+  wxString::Format(p);
 }
 
 void test__wxString__Format__arg1__notuninit() {
@@ -56,8 +57,9 @@ void test__wxString__Printf__arg1__notbool() {
 }
 
 void test__wxString__Printf__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxString::Printf(NULL);
+  wxString::Printf(p);
 }
 
 void test__wxString__Printf__arg1__notuninit() {
@@ -350,8 +352,9 @@ void test__wxLogMessage__arg1__notbool() {
 }
 
 void test__wxLogMessage__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxLogMessage(NULL);
+  wxLogMessage(p);
 }
 
 void test__wxLogMessage__arg1__notuninit() {
@@ -379,8 +382,9 @@ void test__wxLogVerbose__arg1__notbool() {
 }
 
 void test__wxLogVerbose__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxLogVerbose(NULL);
+  wxLogVerbose(p);
 }
 
 void test__wxLogVerbose__arg1__notuninit() {
@@ -408,8 +412,9 @@ void test__wxLogWarning__arg1__notbool() {
 }
 
 void test__wxLogWarning__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxLogWarning(NULL);
+  wxLogWarning(p);
 }
 
 void test__wxLogWarning__arg1__notuninit() {
@@ -437,8 +442,9 @@ void test__wxLogFatalError__arg1__notbool() {
 }
 
 void test__wxLogFatalError__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxLogFatalError(NULL);
+  wxLogFatalError(p);
 }
 
 void test__wxLogFatalError__arg1__notuninit() {
@@ -466,8 +472,9 @@ void test__wxLogError__arg1__notbool() {
 }
 
 void test__wxLogError__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxLogError(NULL);
+  wxLogError(p);
 }
 
 void test__wxLogError__arg1__notuninit() {
@@ -495,8 +502,9 @@ void test__wxLogTrace__arg2__notbool() {
 }
 
 void test__wxLogTrace__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxLogTrace(arg1, NULL);
+  wxLogTrace(arg1, p);
 }
 
 void test__wxLogTrace__arg2__notuninit() {
@@ -524,8 +532,9 @@ void test__wxLogDebug__arg1__notbool() {
 }
 
 void test__wxLogDebug__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxLogDebug(NULL);
+  wxLogDebug(p);
 }
 
 void test__wxLogDebug__arg1__notuninit() {
@@ -553,8 +562,9 @@ void test__wxLogSysError__arg1__notbool() {
 }
 
 void test__wxLogSysError__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxLogSysError(NULL);
+  wxLogSysError(p);
 }
 
 void test__wxLogSysError__arg1__notuninit() {
@@ -588,8 +598,9 @@ void test__wxLogGeneric__arg2__notbool() {
 }
 
 void test__wxLogGeneric__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxLogGeneric(arg1, NULL);
+  wxLogGeneric(arg1, p);
 }
 
 void test__wxLogGeneric__arg2__notuninit() {
@@ -617,8 +628,9 @@ void test__wxLogInfo__arg1__notbool() {
 }
 
 void test__wxLogInfo__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxLogInfo(NULL);
+  wxLogInfo(p);
 }
 
 void test__wxLogInfo__arg1__notuninit() {
@@ -1179,8 +1191,9 @@ void test__wxTimer__SetOwner__leakignore() {
 }
 
 void test__wxTimer__SetOwner__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxTimer::SetOwner(NULL, arg2);
+  wxTimer::SetOwner(p, arg2);
 }
 
 void test__wxTimer__SetOwner__arg1__notuninit() {
@@ -2582,8 +2595,9 @@ void test__wxArtProvider__Insert__leakignore() {
 }
 
 void test__wxArtProvider__Insert__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxArtProvider::Insert(NULL);
+  wxArtProvider::Insert(p);
 }
 
 void test__wxArtProvider__Insert__arg1__notuninit() {
@@ -2700,8 +2714,9 @@ void test__wxDataViewCustomRenderer__Activate__arg1__notuninit() {
 }
 
 void test__wxDataViewCustomRenderer__Activate__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxDataViewCustomRenderer::Activate(arg1, NULL, arg3, arg4);
+  wxDataViewCustomRenderer::Activate(arg1, p, arg3, arg4);
 }
 
 void test__wxDataViewCustomRenderer__Activate__arg3__notuninit() {
@@ -2742,8 +2757,9 @@ void test__wxDataViewCustomRenderer__LeftClick__arg2__notuninit() {
 }
 
 void test__wxDataViewCustomRenderer__LeftClick__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxDataViewCustomRenderer::LeftClick(arg1, arg2, NULL, arg4, arg5);
+  wxDataViewCustomRenderer::LeftClick(arg1, arg2, p, arg4, arg5);
 }
 
 void test__wxDataViewCustomRenderer__LeftClick__arg4__notuninit() {
@@ -2809,8 +2825,9 @@ void test__wxDos2UnixFilename__leakignore() {
 }
 
 void test__wxDos2UnixFilename__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxDos2UnixFilename(NULL);
+  wxDos2UnixFilename(p);
 }
 
 void test__wxDos2UnixFilename__arg1__notuninit() {
@@ -2857,8 +2874,9 @@ void test__wxSizerItem__SetWindow__leakignore() {
 }
 
 void test__wxSizerItem__SetWindow__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxSizerItem::SetWindow(NULL);
+  wxSizerItem::SetWindow(p);
 }
 
 void test__wxSizerItem__SetWindow__arg1__notuninit() {
@@ -2881,8 +2899,9 @@ void test__wxSizerItem__SetSizer__leakignore() {
 }
 
 void test__wxSizerItem__SetSizer__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wxSizerItem::SetSizer(NULL);
+  wxSizerItem::SetSizer(p);
 }
 
 void test__wxSizerItem__SetSizer__arg1__notuninit() {

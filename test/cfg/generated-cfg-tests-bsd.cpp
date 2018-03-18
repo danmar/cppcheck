@@ -28,8 +28,9 @@ void test__fts_open__arg2__notuninit() {
 }
 
 void test__fts_open__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  fts_open(arg1, arg2, NULL);
+  fts_open(arg1, arg2, p);
 }
 
 void test__fts_open__arg3__notuninit() {
@@ -46,8 +47,9 @@ void test__fts_read__noreturn() {
 }
 
 void test__fts_read__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  fts_read(NULL);
+  fts_read(p);
 }
 
 void test__fts_read__arg1__notuninit() {
@@ -178,13 +180,15 @@ void test__readpassphrase__arg1__notuninit() {
 }
 
 void test__readpassphrase__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  readpassphrase(arg1, NULL, arg3, arg4);
+  readpassphrase(arg1, p, arg3, arg4);
 }
 
 void test__readpassphrase__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  readpassphrase(arg1, arg2, NULL, arg4);
+  readpassphrase(arg1, arg2, p, arg4);
 }
 
 void test__readpassphrase__arg3__notuninit() {
@@ -226,8 +230,9 @@ void test__strtonum__leakignore() {
 }
 
 void test__strtonum__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strtonum(NULL, arg2, arg3, arg4);
+  strtonum(p, arg2, arg3, arg4);
 }
 
 void test__strtonum__arg1__notuninit() {

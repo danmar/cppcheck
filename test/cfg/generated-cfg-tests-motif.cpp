@@ -125,8 +125,9 @@ void test__XmStringCreateLocalized__leakignore() {
 }
 
 void test__XmStringCreateLocalized__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = XmStringCreateLocalized(NULL);
+  result = XmStringCreateLocalized(p);
 }
 
 void test__XmStringCreateLocalized__arg1__notuninit() {
@@ -154,8 +155,9 @@ void test__XmStringCreateSimple__leakignore() {
 }
 
 void test__XmStringCreateSimple__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = XmStringCreateSimple(NULL);
+  result = XmStringCreateSimple(p);
 }
 
 void test__XmStringCreateSimple__arg1__notuninit() {
@@ -229,8 +231,9 @@ void test__XmTextGetStringWcs__arg1__notuninit() {
 }
 
 void test__XtAsprintf__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  XtAsprintf(arg1, NULL);
+  XtAsprintf(arg1, p);
 }
 
 void test__XtAsprintf__arg2__notuninit() {

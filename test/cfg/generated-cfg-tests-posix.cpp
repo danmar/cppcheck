@@ -27,8 +27,9 @@ void test__a64l__leakignore() {
 }
 
 void test__a64l__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = a64l(NULL);
+  result = a64l(p);
 }
 
 void test__a64l__arg1__notuninit() {
@@ -111,8 +112,9 @@ void test__access__leakignore() {
 }
 
 void test__access__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = access(NULL, arg2);
+  result = access(p, arg2);
 }
 
 void test__access__arg1__notuninit() {
@@ -204,8 +206,9 @@ void test__FD_CLR__arg1__notuninit() {
 }
 
 void test__FD_CLR__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  FD_CLR(arg1, NULL);
+  FD_CLR(arg1, p);
 }
 
 void test__FD_ISSET__noreturn() {
@@ -228,8 +231,9 @@ void test__FD_ISSET__arg1__notuninit() {
 }
 
 void test__FD_ISSET__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  FD_ISSET(arg1, NULL);
+  FD_ISSET(arg1, p);
 }
 
 void test__FD_SET__noreturn() {
@@ -252,8 +256,9 @@ void test__FD_SET__arg1__notuninit() {
 }
 
 void test__FD_SET__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  FD_SET(arg1, NULL);
+  FD_SET(arg1, p);
 }
 
 void test__FD_ZERO__noreturn() {
@@ -270,8 +275,9 @@ void test__FD_ZERO__leakignore() {
 }
 
 void test__FD_ZERO__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  FD_ZERO(NULL);
+  FD_ZERO(p);
 }
 
 void test__fdatasync__noreturn() {
@@ -317,8 +323,9 @@ void test__fnmatch__leakignore() {
 }
 
 void test__fnmatch__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = fnmatch(NULL, arg2, arg3);
+  result = fnmatch(p, arg2, arg3);
 }
 
 void test__fnmatch__arg1__notuninit() {
@@ -328,8 +335,9 @@ void test__fnmatch__arg1__notuninit() {
 }
 
 void test__fnmatch__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = fnmatch(arg1, NULL, arg3);
+  result = fnmatch(arg1, p, arg3);
 }
 
 void test__fnmatch__arg2__notuninit() {
@@ -377,8 +385,9 @@ void test__truncate__leakignore() {
 }
 
 void test__truncate__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  truncate(NULL, arg2);
+  truncate(p, arg2);
 }
 
 void test__truncate__arg1__notuninit() {
@@ -457,8 +466,9 @@ void test__symlink__leakignore() {
 }
 
 void test__symlink__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  symlink(NULL, arg2);
+  symlink(p, arg2);
 }
 
 void test__symlink__arg1__notuninit() {
@@ -468,8 +478,9 @@ void test__symlink__arg1__notuninit() {
 }
 
 void test__symlink__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  symlink(arg1, NULL);
+  symlink(arg1, p);
 }
 
 void test__symlink__arg2__notuninit() {
@@ -486,8 +497,9 @@ void test__open__noreturn() {
 }
 
 void test__open__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  open(NULL, arg2, arg3);
+  open(p, arg2, arg3);
 }
 
 void test__open__arg1__notuninit() {
@@ -521,8 +533,9 @@ void test__creat__useretval() {
 }
 
 void test__creat__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = creat(NULL, arg2);
+  result = creat(p, arg2);
 }
 
 void test__creat__arg1__notuninit() {
@@ -612,8 +625,9 @@ void test__faccessat__arg1__notuninit() {
 }
 
 void test__faccessat__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  faccessat(arg1, NULL, arg3, arg4);
+  faccessat(arg1, p, arg3, arg4);
 }
 
 void test__faccessat__arg2__notuninit() {
@@ -709,8 +723,9 @@ void test__getrpcbyname__leakignore() {
 }
 
 void test__getrpcbyname__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = getrpcbyname(NULL);
+  result = getrpcbyname(p);
 }
 
 void test__getrpcbyname__arg1__notuninit() {
@@ -780,8 +795,9 @@ void test__getprotobyname__leakignore() {
 }
 
 void test__getprotobyname__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = getprotobyname(NULL);
+  result = getprotobyname(p);
 }
 
 void test__getprotobyname__arg1__notuninit() {
@@ -851,8 +867,9 @@ void test__getservbyname__leakignore() {
 }
 
 void test__getservbyname__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = getservbyname(NULL, arg2);
+  result = getservbyname(p, arg2);
 }
 
 void test__getservbyname__arg1__notuninit() {
@@ -934,8 +951,9 @@ void test__getnetbyname__leakignore() {
 }
 
 void test__getnetbyname__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = getnetbyname(NULL);
+  result = getnetbyname(p);
 }
 
 void test__getnetbyname__arg1__notuninit() {
@@ -1011,8 +1029,9 @@ void test__gethostbyname__leakignore() {
 }
 
 void test__gethostbyname__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = gethostbyname(NULL);
+  result = gethostbyname(p);
 }
 
 void test__gethostbyname__arg1__notuninit() {
@@ -1040,8 +1059,9 @@ void test__gethostbyname2__leakignore() {
 }
 
 void test__gethostbyname2__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = gethostbyname2(NULL, arg2);
+  result = gethostbyname2(p, arg2);
 }
 
 void test__gethostbyname2__arg1__notuninit() {
@@ -1075,8 +1095,9 @@ void test__gethostbyaddr__leakignore() {
 }
 
 void test__gethostbyaddr__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = gethostbyaddr(NULL, arg2, arg3);
+  result = gethostbyaddr(p, arg2, arg3);
 }
 
 void test__gethostbyaddr__arg1__notuninit() {
@@ -1111,8 +1132,9 @@ void test__brk__leakignore() {
 }
 
 void test__brk__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  brk(NULL);
+  brk(p);
 }
 
 void test__sbrk__noreturn() {
@@ -1147,8 +1169,9 @@ void test__closedir__arg1__notbool() {
 }
 
 void test__closedir__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  closedir(NULL);
+  closedir(p);
 }
 
 void test__closedir__arg1__notuninit() {
@@ -1165,8 +1188,9 @@ void test__strfry__noreturn() {
 }
 
 void test__strfry__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strfry(NULL);
+  strfry(p);
 }
 
 void test__strsep__noreturn() {
@@ -1183,8 +1207,9 @@ void test__strsep__leakignore() {
 }
 
 void test__strsep__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strsep(NULL, arg2);
+  strsep(p, arg2);
 }
 
 void test__strsep__arg1__notuninit() {
@@ -1194,8 +1219,9 @@ void test__strsep__arg1__notuninit() {
 }
 
 void test__strsep__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strsep(arg1, NULL);
+  strsep(arg1, p);
 }
 
 void test__strsep__arg2__notuninit() {
@@ -1212,8 +1238,9 @@ void test__strdup__noreturn() {
 }
 
 void test__strdup__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strdup(NULL);
+  strdup(p);
 }
 
 void test__strdup__arg1__notuninit() {
@@ -1230,8 +1257,9 @@ void test__strndup__noreturn() {
 }
 
 void test__strndup__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strndup(NULL, arg2);
+  strndup(p, arg2);
 }
 
 void test__strndup__arg1__notuninit() {
@@ -1254,8 +1282,9 @@ void test__wcsdup__noreturn() {
 }
 
 void test__wcsdup__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wcsdup(NULL);
+  wcsdup(p);
 }
 
 void test__wcsdup__arg1__notuninit() {
@@ -1278,8 +1307,9 @@ void test__mkstemp__leakignore() {
 }
 
 void test__mkstemp__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  mkstemp(NULL);
+  mkstemp(p);
 }
 
 void test__mkstemp__arg1__notuninit() {
@@ -1302,8 +1332,9 @@ void test__mkdtemp__leakignore() {
 }
 
 void test__mkdtemp__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  mkdtemp(NULL);
+  mkdtemp(p);
 }
 
 void test__mkdtemp__arg1__notuninit() {
@@ -1331,8 +1362,9 @@ void test__mktemp__leakignore() {
 }
 
 void test__mktemp__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = mktemp(NULL);
+  result = mktemp(p);
 }
 
 void test__mktemp__arg1__notuninit() {
@@ -1380,8 +1412,9 @@ void test__mkdir__leakignore() {
 }
 
 void test__mkdir__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  mkdir(NULL, arg2);
+  mkdir(p, arg2);
 }
 
 void test__mkdir__arg1__notuninit() {
@@ -1410,8 +1443,9 @@ void test__rmdir__leakignore() {
 }
 
 void test__rmdir__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  rmdir(NULL);
+  rmdir(p);
 }
 
 void test__rmdir__arg1__notuninit() {
@@ -1434,8 +1468,9 @@ void test__chdir__leakignore() {
 }
 
 void test__chdir__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  chdir(NULL);
+  chdir(p);
 }
 
 void test__chdir__arg1__notuninit() {
@@ -1458,8 +1493,9 @@ void test__chroot__leakignore() {
 }
 
 void test__chroot__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  chroot(NULL);
+  chroot(p);
 }
 
 void test__chroot__arg1__notuninit() {
@@ -1482,8 +1518,9 @@ void test__link__leakignore() {
 }
 
 void test__link__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  link(NULL, arg2);
+  link(p, arg2);
 }
 
 void test__link__arg1__notuninit() {
@@ -1493,8 +1530,9 @@ void test__link__arg1__notuninit() {
 }
 
 void test__link__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  link(arg1, NULL);
+  link(arg1, p);
 }
 
 void test__link__arg2__notuninit() {
@@ -1517,8 +1555,9 @@ void test__unlink__leakignore() {
 }
 
 void test__unlink__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  unlink(NULL);
+  unlink(p);
 }
 
 void test__unlink__arg1__notuninit() {
@@ -1541,8 +1580,9 @@ void test__rename__leakignore() {
 }
 
 void test__rename__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  rename(NULL);
+  rename(p);
 }
 
 void test__rename__arg1__notuninit() {
@@ -1565,8 +1605,9 @@ void test__stat__leakignore() {
 }
 
 void test__stat__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  stat(NULL, arg2);
+  stat(p, arg2);
 }
 
 void test__stat__arg1__notuninit() {
@@ -1576,8 +1617,9 @@ void test__stat__arg1__notuninit() {
 }
 
 void test__stat__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  stat(arg1, NULL);
+  stat(arg1, p);
 }
 
 void test__lstat__noreturn() {
@@ -1594,8 +1636,9 @@ void test__lstat__leakignore() {
 }
 
 void test__lstat__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  lstat(NULL, arg2);
+  lstat(p, arg2);
 }
 
 void test__lstat__arg1__notuninit() {
@@ -1605,8 +1648,9 @@ void test__lstat__arg1__notuninit() {
 }
 
 void test__lstat__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  lstat(arg1, NULL);
+  lstat(arg1, p);
 }
 
 void test__fstat__noreturn() {
@@ -1629,8 +1673,9 @@ void test__fstat__arg1__notuninit() {
 }
 
 void test__fstat__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  fstat(arg1, NULL);
+  fstat(arg1, p);
 }
 
 void test__chmod__noreturn() {
@@ -1647,8 +1692,9 @@ void test__chmod__leakignore() {
 }
 
 void test__chmod__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  chmod(NULL, arg2);
+  chmod(p, arg2);
 }
 
 void test__chmod__arg1__notuninit() {
@@ -1702,8 +1748,9 @@ void test__chown__leakignore() {
 }
 
 void test__chown__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  chown(NULL, arg2, arg3);
+  chown(p, arg2, arg3);
 }
 
 void test__chown__arg1__notuninit() {
@@ -1738,8 +1785,9 @@ void test__lchown__leakignore() {
 }
 
 void test__lchown__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  lchown(NULL, arg2, arg3);
+  lchown(p, arg2, arg3);
 }
 
 void test__lchown__arg1__notuninit() {
@@ -1824,8 +1872,9 @@ void test__utime__leakignore() {
 }
 
 void test__utime__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  utime(NULL, arg2);
+  utime(p, arg2);
 }
 
 void test__utime__arg1__notuninit() {
@@ -1854,8 +1903,9 @@ void test__utimes__leakignore() {
 }
 
 void test__utimes__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  utimes(NULL, arg2);
+  utimes(p, arg2);
 }
 
 void test__utimes__arg1__notuninit() {
@@ -1883,8 +1933,9 @@ void test__opendir__useretval() {
 }
 
 void test__opendir__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = opendir(NULL);
+  result = opendir(p);
 }
 
 void test__opendir__arg1__notuninit() {
@@ -1948,8 +1999,9 @@ void test__popen__useretval() {
 }
 
 void test__popen__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = popen(NULL, arg2);
+  result = popen(p, arg2);
 }
 
 void test__popen__arg1__notuninit() {
@@ -1959,8 +2011,9 @@ void test__popen__arg1__notuninit() {
 }
 
 void test__popen__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = popen(arg1, NULL);
+  result = popen(arg1, p);
 }
 
 void test__popen__arg2__notuninit() {
@@ -1977,8 +2030,9 @@ void test__pclose__noreturn() {
 }
 
 void test__pclose__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  pclose(NULL);
+  pclose(p);
 }
 
 void test__pclose__arg1__notuninit() {
@@ -2127,8 +2181,9 @@ void test__pathconf__leakignore() {
 }
 
 void test__pathconf__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  pathconf(NULL, arg2);
+  pathconf(p, arg2);
 }
 
 void test__pathconf__arg1__notuninit() {
@@ -2181,8 +2236,9 @@ void test__fdopen__arg1__notuninit() {
 }
 
 void test__fdopen__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = fdopen(arg1, NULL);
+  result = fdopen(arg1, p);
 }
 
 void test__fdopen__arg2__notuninit() {
@@ -2224,8 +2280,9 @@ void test__rewinddir__leakignore() {
 }
 
 void test__rewinddir__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  rewinddir(NULL);
+  rewinddir(p);
 }
 
 void test__rewinddir__arg1__notuninit() {
@@ -2248,8 +2305,9 @@ void test__seekdir__leakignore() {
 }
 
 void test__seekdir__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  seekdir(NULL, arg2);
+  seekdir(p, arg2);
 }
 
 void test__seekdir__arg1__notuninit() {
@@ -2278,8 +2336,9 @@ void test__rand_r__leakignore() {
 }
 
 void test__rand_r__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  rand_r(NULL);
+  rand_r(p);
 }
 
 void test__strcasecmp__noreturn() {
@@ -2301,8 +2360,9 @@ void test__strcasecmp__leakignore() {
 }
 
 void test__strcasecmp__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strcasecmp(NULL, arg2);
+  strcasecmp(p, arg2);
 }
 
 void test__strcasecmp__arg1__notuninit() {
@@ -2312,8 +2372,9 @@ void test__strcasecmp__arg1__notuninit() {
 }
 
 void test__strcasecmp__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strcasecmp(arg1, NULL);
+  strcasecmp(arg1, p);
 }
 
 void test__strcasecmp__arg2__notuninit() {
@@ -2341,8 +2402,9 @@ void test__strncasecmp__leakignore() {
 }
 
 void test__strncasecmp__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strncasecmp(NULL, arg2, arg3);
+  strncasecmp(p, arg2, arg3);
 }
 
 void test__strncasecmp__arg1__notuninit() {
@@ -2352,8 +2414,9 @@ void test__strncasecmp__arg1__notuninit() {
 }
 
 void test__strncasecmp__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strncasecmp(arg1, NULL, arg3);
+  strncasecmp(arg1, p, arg3);
 }
 
 void test__strncasecmp__arg2__notuninit() {
@@ -2634,8 +2697,9 @@ void test__munmap__noreturn() {
 }
 
 void test__munmap__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  munmap(NULL, arg2);
+  munmap(p, arg2);
 }
 
 void test__munmap__arg1__notuninit() {
@@ -3157,8 +3221,9 @@ void test__getwd__leakignore() {
 }
 
 void test__getwd__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  getwd(NULL);
+  getwd(p);
 }
 
 void test__htonl__noreturn() {
@@ -3247,8 +3312,9 @@ void test__mq_notify__noreturn() {
 }
 
 void test__mq_notify__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  mq_notify(NULL, arg2);
+  mq_notify(p, arg2);
 }
 
 void test__mq_notify__arg1__notuninit() {
@@ -3337,8 +3403,9 @@ void test__mq_unlink__noreturn() {
 }
 
 void test__mq_unlink__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  mq_unlink(NULL);
+  mq_unlink(p);
 }
 
 void test__mq_unlink__arg1__notuninit() {
@@ -3355,8 +3422,9 @@ void test__dbm_clearerr__noreturn() {
 }
 
 void test__dbm_clearerr__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  dbm_clearerr(NULL);
+  dbm_clearerr(p);
 }
 
 void test__dbm_clearerr__arg1__notuninit() {
@@ -3373,8 +3441,9 @@ void test__dbm_close__noreturn() {
 }
 
 void test__dbm_close__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  dbm_close(NULL);
+  dbm_close(p);
 }
 
 void test__dbm_close__arg1__notuninit() {
@@ -3391,8 +3460,9 @@ void test__dbm_delete__noreturn() {
 }
 
 void test__dbm_delete__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  dbm_delete(NULL, arg2);
+  dbm_delete(p, arg2);
 }
 
 void test__dbm_delete__arg1__notuninit() {
@@ -3420,8 +3490,9 @@ void test__dbm_error__useretval() {
 }
 
 void test__dbm_error__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = dbm_error(NULL);
+  result = dbm_error(p);
 }
 
 void test__dbm_error__arg1__notuninit() {
@@ -3443,8 +3514,9 @@ void test__dbm_fetch__useretval() {
 }
 
 void test__dbm_fetch__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = dbm_fetch(NULL, arg2);
+  result = dbm_fetch(p, arg2);
 }
 
 void test__dbm_fetch__arg1__notuninit() {
@@ -3472,8 +3544,9 @@ void test__dbm_firstkey__useretval() {
 }
 
 void test__dbm_firstkey__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = dbm_firstkey(NULL);
+  result = dbm_firstkey(p);
 }
 
 void test__dbm_firstkey__arg1__notuninit() {
@@ -3495,8 +3568,9 @@ void test__dbm_nextkey__useretval() {
 }
 
 void test__dbm_nextkey__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = dbm_nextkey(NULL);
+  result = dbm_nextkey(p);
 }
 
 void test__dbm_nextkey__arg1__notuninit() {
@@ -3513,8 +3587,9 @@ void test__dbm_open__noreturn() {
 }
 
 void test__dbm_open__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  dbm_open(NULL, arg2, arg3);
+  dbm_open(p, arg2, arg3);
 }
 
 void test__dbm_open__arg1__notuninit() {
@@ -3543,8 +3618,9 @@ void test__dbm_store__noreturn() {
 }
 
 void test__dbm_store__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  dbm_store(NULL, arg2, arg3, arg4);
+  dbm_store(p, arg2, arg3, arg4);
 }
 
 void test__dbm_store__arg1__notuninit() {
@@ -3579,8 +3655,9 @@ void test__freeaddrinfo__noreturn() {
 }
 
 void test__freeaddrinfo__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  freeaddrinfo(NULL);
+  freeaddrinfo(p);
 }
 
 void test__freeaddrinfo__arg1__notuninit() {
@@ -3648,8 +3725,9 @@ void test__uname__noreturn() {
 }
 
 void test__uname__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  uname(NULL);
+  uname(p);
 }
 
 void test__endpwent__noreturn() {
@@ -3714,8 +3792,9 @@ void test__strtok_r__arg1__notuninit() {
 }
 
 void test__strtok_r__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strtok_r(arg1, NULL, arg3);
+  strtok_r(arg1, p, arg3);
 }
 
 void test__strtok_r__arg2__notuninit() {
@@ -3725,8 +3804,9 @@ void test__strtok_r__arg2__notuninit() {
 }
 
 void test__strtok_r__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  strtok_r(arg1, arg2, NULL);
+  strtok_r(arg1, arg2, p);
 }
 
 void test__getpwnam_r__noreturn() {
@@ -3854,8 +3934,9 @@ void test__catopen__noreturn() {
 }
 
 void test__catopen__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  catopen(NULL, arg2);
+  catopen(p, arg2);
 }
 
 void test__catopen__arg1__notuninit() {
@@ -3903,8 +3984,9 @@ void test__regcomp__noreturn() {
 }
 
 void test__regcomp__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  regcomp(NULL, arg2, arg3);
+  regcomp(p, arg2, arg3);
 }
 
 void test__regcomp__arg2__notuninit() {
@@ -3952,8 +4034,9 @@ void test__regexec__noreturn() {
 }
 
 void test__regexec__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  regexec(NULL, arg2, arg3, arg4, arg5);
+  regexec(p, arg2, arg3, arg4, arg5);
 }
 
 void test__regexec__arg1__notuninit() {
@@ -3963,8 +4046,9 @@ void test__regexec__arg1__notuninit() {
 }
 
 void test__regexec__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  regexec(arg1, NULL, arg3, arg4, arg5);
+  regexec(arg1, p, arg3, arg4, arg5);
 }
 
 void test__regexec__arg2__notuninit() {
@@ -3999,8 +4083,9 @@ void test__regfree__noreturn() {
 }
 
 void test__regfree__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  regfree(NULL);
+  regfree(p);
 }
 
 void test__regfree__arg1__notuninit() {
@@ -4049,8 +4134,9 @@ void test__sched_getparam__arg1__notuninit() {
 }
 
 void test__sched_getparam__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  sched_getparam(arg1, NULL);
+  sched_getparam(arg1, p);
 }
 
 void test__sched_getscheduler__noreturn() {
@@ -4080,8 +4166,9 @@ void test__sched_rr_get_interval__arg1__notuninit() {
 }
 
 void test__sched_rr_get_interval__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  sched_rr_get_interval(arg1, NULL);
+  sched_rr_get_interval(arg1, p);
 }
 
 void test__sched_setparam__noreturn() {
@@ -4155,13 +4242,15 @@ void test__ecvt__arg2__notuninit() {
 }
 
 void test__ecvt__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  ecvt(arg1, arg2, NULL, arg4);
+  ecvt(arg1, arg2, p, arg4);
 }
 
 void test__ecvt__arg4__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  ecvt(arg1, arg2, arg3, NULL);
+  ecvt(arg1, arg2, arg3, p);
 }
 
 void test__fcvt__noreturn() {
@@ -4184,13 +4273,15 @@ void test__fcvt__arg2__notuninit() {
 }
 
 void test__fcvt__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  fcvt(arg1, arg2, NULL, arg4);
+  fcvt(arg1, arg2, p, arg4);
 }
 
 void test__fcvt__arg4__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  fcvt(arg1, arg2, arg3, NULL);
+  fcvt(arg1, arg2, arg3, p);
 }
 
 void test__gcvt__noreturn() {
@@ -4213,8 +4304,9 @@ void test__gcvt__arg2__notuninit() {
 }
 
 void test__gcvt__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  gcvt(arg1, arg2, NULL);
+  gcvt(arg1, arg2, p);
 }
 
 void test__lseek__noreturn() {
@@ -4262,8 +4354,9 @@ void test__nanosleep__leakignore() {
 }
 
 void test__nanosleep__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  nanosleep(NULL, arg2);
+  nanosleep(p, arg2);
 }
 
 void test__setkey__noreturn() {
@@ -4280,8 +4373,9 @@ void test__setkey__leakignore() {
 }
 
 void test__setkey__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  setkey(NULL);
+  setkey(p);
 }
 
 void test__setkey__arg1__notuninit() {
@@ -4304,8 +4398,9 @@ void test__getpass__leakignore() {
 }
 
 void test__getpass__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  getpass(NULL);
+  getpass(p);
 }
 
 void test__drand48__noreturn() {
@@ -4328,8 +4423,9 @@ void test__putenv__noreturn() {
 }
 
 void test__putenv__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  putenv(NULL);
+  putenv(p);
 }
 
 void test__putenv__arg1__notuninit() {
@@ -4346,8 +4442,9 @@ void test__setenv__noreturn() {
 }
 
 void test__setenv__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  setenv(NULL, arg2, arg3);
+  setenv(p, arg2, arg3);
 }
 
 void test__setenv__arg1__notuninit() {
@@ -4357,8 +4454,9 @@ void test__setenv__arg1__notuninit() {
 }
 
 void test__setenv__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  setenv(arg1, NULL, arg3);
+  setenv(arg1, p, arg3);
 }
 
 void test__setenv__arg2__notuninit() {
@@ -4381,8 +4479,9 @@ void test__unsetenv__noreturn() {
 }
 
 void test__unsetenv__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  unsetenv(NULL);
+  unsetenv(p);
 }
 
 void test__unsetenv__arg1__notuninit() {
@@ -4405,8 +4504,9 @@ void test__localtime__leakignore() {
 }
 
 void test__localtime__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  localtime(NULL);
+  localtime(p);
 }
 
 void test__localtime__arg1__notuninit() {
@@ -4429,8 +4529,9 @@ void test__std__localtime__leakignore() {
 }
 
 void test__std__localtime__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  std::localtime(NULL);
+  std::localtime(p);
 }
 
 void test__std__localtime__arg1__notuninit() {
@@ -4453,8 +4554,9 @@ void test__localtime_r__leakignore() {
 }
 
 void test__localtime_r__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  localtime_r(NULL, arg2);
+  localtime_r(p, arg2);
 }
 
 void test__localtime_r__arg1__notuninit() {
@@ -4464,8 +4566,9 @@ void test__localtime_r__arg1__notuninit() {
 }
 
 void test__localtime_r__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  localtime_r(arg1, NULL);
+  localtime_r(arg1, p);
 }
 
 void test__readdir__noreturn() {
@@ -4482,8 +4585,9 @@ void test__readdir__leakignore() {
 }
 
 void test__readdir__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  readdir(NULL);
+  readdir(p);
 }
 
 void test__readdir__arg1__notuninit() {
@@ -4506,8 +4610,9 @@ void test__readdir_r__leakignore() {
 }
 
 void test__readdir_r__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  readdir_r(NULL, arg2, arg3);
+  readdir_r(p, arg2, arg3);
 }
 
 void test__readdir_r__arg1__notuninit() {
@@ -4517,13 +4622,15 @@ void test__readdir_r__arg1__notuninit() {
 }
 
 void test__readdir_r__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  readdir_r(arg1, NULL, arg3);
+  readdir_r(arg1, p, arg3);
 }
 
 void test__readdir_r__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  readdir_r(arg1, arg2, NULL);
+  readdir_r(arg1, arg2, p);
 }
 
 void test__readlink__noreturn() {
@@ -4540,8 +4647,9 @@ void test__readlink__leakignore() {
 }
 
 void test__readlink__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  readlink(NULL, arg2, arg3);
+  readlink(p, arg2, arg3);
 }
 
 void test__readlink__arg1__notuninit() {
@@ -4551,8 +4659,9 @@ void test__readlink__arg1__notuninit() {
 }
 
 void test__readlink__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  readlink(arg1, NULL, arg3);
+  readlink(arg1, p, arg3);
 }
 
 void test__readlink__arg3__notuninit() {
@@ -4581,8 +4690,9 @@ void test__readlinkat__arg1__notuninit() {
 }
 
 void test__readlinkat__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  readlinkat(arg1, NULL, arg3, arg4);
+  readlinkat(arg1, p, arg3, arg4);
 }
 
 void test__readlinkat__arg2__notuninit() {
@@ -4592,8 +4702,9 @@ void test__readlinkat__arg2__notuninit() {
 }
 
 void test__readlinkat__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  readlinkat(arg1, arg2, NULL, arg4);
+  readlinkat(arg1, arg2, p, arg4);
 }
 
 void test__readlinkat__arg4__notuninit() {
@@ -4616,8 +4727,9 @@ void test__asctime_r__leakignore() {
 }
 
 void test__asctime_r__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  asctime_r(NULL, arg2);
+  asctime_r(p, arg2);
 }
 
 void test__asctime_r__arg1__notuninit() {
@@ -4627,8 +4739,9 @@ void test__asctime_r__arg1__notuninit() {
 }
 
 void test__asctime_r__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  asctime_r(arg1, NULL);
+  asctime_r(arg1, p);
 }
 
 void test__ctime_r__noreturn() {
@@ -4645,8 +4758,9 @@ void test__ctime_r__leakignore() {
 }
 
 void test__ctime_r__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  ctime_r(NULL, arg2);
+  ctime_r(p, arg2);
 }
 
 void test__ctime_r__arg1__notuninit() {
@@ -4656,8 +4770,9 @@ void test__ctime_r__arg1__notuninit() {
 }
 
 void test__ctime_r__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  ctime_r(arg1, NULL);
+  ctime_r(arg1, p);
 }
 
 void test__gmtime_r__noreturn() {
@@ -4674,8 +4789,9 @@ void test__gmtime_r__leakignore() {
 }
 
 void test__gmtime_r__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  gmtime_r(NULL, arg2);
+  gmtime_r(p, arg2);
 }
 
 void test__gmtime_r__arg1__notuninit() {
@@ -4685,8 +4801,9 @@ void test__gmtime_r__arg1__notuninit() {
 }
 
 void test__gmtime_r__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  gmtime_r(arg1, NULL);
+  gmtime_r(arg1, p);
 }
 
 void test__gmtime__noreturn() {
@@ -4708,8 +4825,9 @@ void test__gmtime__leakignore() {
 }
 
 void test__gmtime__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = gmtime(NULL);
+  result = gmtime(p);
 }
 
 void test__gmtime__arg1__notuninit() {
@@ -4789,8 +4907,9 @@ void test__clock_gettime__arg1__notuninit() {
 }
 
 void test__clock_gettime__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  clock_gettime(arg1, NULL);
+  clock_gettime(arg1, p);
 }
 
 void test__clock_getres__noreturn() {
@@ -4858,13 +4977,15 @@ void test__makecontext__leakignore() {
 }
 
 void test__makecontext__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  makecontext(NULL, arg2, arg3);
+  makecontext(p, arg2, arg3);
 }
 
 void test__makecontext__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  makecontext(arg1, NULL, arg3);
+  makecontext(arg1, p, arg3);
 }
 
 void test__makecontext__arg2__notuninit() {
@@ -4893,13 +5014,15 @@ void test__swapcontext__leakignore() {
 }
 
 void test__swapcontext__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  swapcontext(NULL, arg2);
+  swapcontext(p, arg2);
 }
 
 void test__swapcontext__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  swapcontext(arg1, NULL);
+  swapcontext(arg1, p);
 }
 
 void test__getcontext__noreturn() {
@@ -4916,8 +5039,9 @@ void test__getcontext__leakignore() {
 }
 
 void test__getcontext__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  getcontext(NULL);
+  getcontext(p);
 }
 
 void test__ualarm__noreturn() {
@@ -4989,8 +5113,9 @@ void test__bcopy__leakignore() {
 }
 
 void test__bcopy__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  bcopy(NULL, arg2, arg3);
+  bcopy(p, arg2, arg3);
 }
 
 void test__bcopy__arg1__notuninit() {
@@ -5000,8 +5125,9 @@ void test__bcopy__arg1__notuninit() {
 }
 
 void test__bcopy__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  bcopy(arg1, NULL, arg3);
+  bcopy(arg1, p, arg3);
 }
 
 void test__bcopy__arg3__notuninit() {
@@ -5029,8 +5155,9 @@ void test__bcmp__leakignore() {
 }
 
 void test__bcmp__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = bcmp(NULL, arg2, arg3);
+  result = bcmp(p, arg2, arg3);
 }
 
 void test__bcmp__arg1__notuninit() {
@@ -5040,8 +5167,9 @@ void test__bcmp__arg1__notuninit() {
 }
 
 void test__bcmp__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = bcmp(arg1, NULL, arg3);
+  result = bcmp(arg1, p, arg3);
 }
 
 void test__bcmp__arg2__notuninit() {
@@ -5070,8 +5198,9 @@ void test__bzero__leakignore() {
 }
 
 void test__bzero__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  bzero(NULL, arg2);
+  bzero(p, arg2);
 }
 
 void test__bzero__arg2__notuninit() {
@@ -5118,8 +5247,9 @@ void test__wcswcs__leakignore() {
 }
 
 void test__wcswcs__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = wcswcs(NULL, arg2);
+  result = wcswcs(p, arg2);
 }
 
 void test__wcswcs__arg1__notuninit() {
@@ -5129,8 +5259,9 @@ void test__wcswcs__arg1__notuninit() {
 }
 
 void test__wcswcs__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = wcswcs(arg1, NULL);
+  result = wcswcs(arg1, p);
 }
 
 void test__wcswcs__arg2__notuninit() {
@@ -5153,13 +5284,15 @@ void test__stpcpy__leakignore() {
 }
 
 void test__stpcpy__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  stpcpy(NULL, arg2);
+  stpcpy(p, arg2);
 }
 
 void test__stpcpy__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  stpcpy(arg1, NULL);
+  stpcpy(arg1, p);
 }
 
 void test__stpcpy__arg2__notuninit() {
@@ -5187,8 +5320,9 @@ void test__index__leakignore() {
 }
 
 void test__index__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = index(NULL, arg2);
+  result = index(p, arg2);
 }
 
 void test__index__arg1__notuninit() {
@@ -5222,8 +5356,9 @@ void test__rindex__leakignore() {
 }
 
 void test__rindex__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = rindex(NULL, arg2);
+  result = rindex(p, arg2);
 }
 
 void test__rindex__arg1__notuninit() {
@@ -5310,13 +5445,15 @@ void test__pthread_create__noreturn() {
 }
 
 void test__pthread_create__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  pthread_create(NULL, arg2, arg3, arg4);
+  pthread_create(p, arg2, arg3, arg4);
 }
 
 void test__pthread_create__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  pthread_create(arg1, arg2, NULL, arg4);
+  pthread_create(arg1, arg2, p, arg4);
 }
 
 void test__pthread_detach__noreturn() {
@@ -5415,8 +5552,9 @@ void test__pthread_attr_destroy__noreturn() {
 }
 
 void test__pthread_attr_destroy__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  pthread_attr_destroy(NULL);
+  pthread_attr_destroy(p);
 }
 
 void test__pthread_attr_init__noreturn() {
@@ -5427,8 +5565,9 @@ void test__pthread_attr_init__noreturn() {
 }
 
 void test__pthread_attr_init__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  pthread_attr_init(NULL);
+  pthread_attr_init(p);
 }
 
 void test__pthread_attr_setstackaddr__noreturn() {
@@ -5445,8 +5584,9 @@ void test__pthread_attr_setstackaddr__leakignore() {
 }
 
 void test__pthread_attr_setstackaddr__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  pthread_attr_setstackaddr(NULL, arg2);
+  pthread_attr_setstackaddr(p, arg2);
 }
 
 void test__pthread_attr_setstackaddr__arg1__notuninit() {
@@ -5456,8 +5596,9 @@ void test__pthread_attr_setstackaddr__arg1__notuninit() {
 }
 
 void test__pthread_attr_setstackaddr__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  pthread_attr_setstackaddr(arg1, NULL);
+  pthread_attr_setstackaddr(arg1, p);
 }
 
 void test__pthread_attr_setstackaddr__arg2__notuninit() {
@@ -5480,8 +5621,9 @@ void test__pthread_attr_getstackaddr__leakignore() {
 }
 
 void test__pthread_attr_getstackaddr__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  pthread_attr_getstackaddr(NULL, arg2);
+  pthread_attr_getstackaddr(p, arg2);
 }
 
 void test__pthread_attr_getstackaddr__arg1__notuninit() {
@@ -5491,8 +5633,9 @@ void test__pthread_attr_getstackaddr__arg1__notuninit() {
 }
 
 void test__pthread_attr_getstackaddr__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  pthread_attr_getstackaddr(arg1, NULL);
+  pthread_attr_getstackaddr(arg1, p);
 }
 
 void test__tempnam__noreturn() {
@@ -5544,8 +5687,9 @@ void test__crypt__leakignore() {
 }
 
 void test__crypt__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = crypt(NULL, arg2);
+  result = crypt(p, arg2);
 }
 
 void test__crypt__arg1__notuninit() {
@@ -5555,8 +5699,9 @@ void test__crypt__arg1__notuninit() {
 }
 
 void test__crypt__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = crypt(arg1, NULL);
+  result = crypt(arg1, p);
 }
 
 void test__crypt__arg2__notuninit() {
@@ -5608,8 +5753,9 @@ void test__getspnam__leakignore() {
 }
 
 void test__getspnam__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = getspnam(NULL);
+  result = getspnam(p);
 }
 
 void test__getspnam__arg1__notuninit() {
@@ -5655,8 +5801,9 @@ void test__fgetspent__leakignore() {
 }
 
 void test__fgetspent__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = fgetspent(NULL);
+  result = fgetspent(p);
 }
 
 void test__fgetspent__arg1__notuninit() {
@@ -5684,8 +5831,9 @@ void test__sgetspent__leakignore() {
 }
 
 void test__sgetspent__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = sgetspent(NULL);
+  result = sgetspent(p);
 }
 
 void test__sgetspent__arg1__notuninit() {
@@ -5713,8 +5861,9 @@ void test__fgetpwent__leakignore() {
 }
 
 void test__fgetpwent__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = fgetpwent(NULL);
+  result = fgetpwent(p);
 }
 
 void test__fgetpwent__arg1__notuninit() {
@@ -5790,8 +5939,9 @@ void test__fgetgrent__leakignore() {
 }
 
 void test__fgetgrent__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = fgetgrent(NULL);
+  result = fgetgrent(p);
 }
 
 void test__fgetgrent__arg1__notuninit() {
@@ -5814,18 +5964,21 @@ void test__getnetgrent__leakignore() {
 }
 
 void test__getnetgrent__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  getnetgrent(NULL, arg2, arg3);
+  getnetgrent(p, arg2, arg3);
 }
 
 void test__getnetgrent__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  getnetgrent(arg1, NULL, arg3);
+  getnetgrent(arg1, p, arg3);
 }
 
 void test__getnetgrent__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  getnetgrent(arg1, arg2, NULL);
+  getnetgrent(arg1, arg2, p);
 }
 
 void test__getgrnam__noreturn() {
@@ -5847,8 +6000,9 @@ void test__getgrnam__leakignore() {
 }
 
 void test__getgrnam__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = getgrnam(NULL);
+  result = getgrnam(p);
 }
 
 void test__getgrnam__arg1__notuninit() {
@@ -5926,8 +6080,9 @@ void test__realpath__leakignore() {
 }
 
 void test__realpath__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  realpath(NULL, arg2);
+  realpath(p, arg2);
 }
 
 void test__realpath__arg1__notuninit() {
@@ -5950,8 +6105,9 @@ void test__remove__leakignore() {
 }
 
 void test__remove__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  remove(NULL);
+  remove(p);
 }
 
 void test__remove__arg1__notuninit() {
@@ -5979,8 +6135,9 @@ void test__fileno__leakignore() {
 }
 
 void test__fileno__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = fileno(NULL);
+  result = fileno(p);
 }
 
 void test__fileno__arg1__notuninit() {
@@ -6003,8 +6160,9 @@ void test__fseeko__leakignore() {
 }
 
 void test__fseeko__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  fseeko(NULL, arg2, arg3);
+  fseeko(p, arg2, arg3);
 }
 
 void test__fseeko__arg1__notuninit() {
@@ -6044,8 +6202,9 @@ void test__ftello__leakignore() {
 }
 
 void test__ftello__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = ftello(NULL);
+  result = ftello(p);
 }
 
 void test__ftello__arg1__notuninit() {
@@ -6068,8 +6227,9 @@ void test__execv__leakignore() {
 }
 
 void test__execv__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  execv(NULL, arg2);
+  execv(p, arg2);
 }
 
 void test__execv__arg1__notuninit() {
@@ -6098,8 +6258,9 @@ void test__execvp__leakignore() {
 }
 
 void test__execvp__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  execvp(NULL, arg2);
+  execvp(p, arg2);
 }
 
 void test__execvp__arg1__notuninit() {
@@ -6171,8 +6332,9 @@ void test__strnlen__leakignore() {
 }
 
 void test__strnlen__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = strnlen(NULL, arg2);
+  result = strnlen(p, arg2);
 }
 
 void test__strnlen__arg1__notuninit() {
@@ -6206,8 +6368,9 @@ void test__wcsnlen__leakignore() {
 }
 
 void test__wcsnlen__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = wcsnlen(NULL, arg2);
+  result = wcsnlen(p, arg2);
 }
 
 void test__wcsnlen__arg1__notuninit() {
@@ -6360,8 +6523,9 @@ void test__getrlimit__arg1__notuninit() {
 }
 
 void test__getrlimit__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  getrlimit(arg1, NULL);
+  getrlimit(arg1, p);
 }
 
 void test__setrlimit__noreturn() {
@@ -6384,8 +6548,9 @@ void test__setrlimit__arg1__notuninit() {
 }
 
 void test__setrlimit__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  setrlimit(arg1, NULL);
+  setrlimit(arg1, p);
 }
 
 void test__setrlimit__arg2__notuninit() {
@@ -6402,8 +6567,9 @@ void test__glob__noreturn() {
 }
 
 void test__glob__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  glob(NULL, arg2, arg3, arg4);
+  glob(p, arg2, arg3, arg4);
 }
 
 void test__glob__arg1__notuninit() {
@@ -6425,8 +6591,9 @@ void test__glob__arg3__notuninit() {
 }
 
 void test__glob__arg4__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  glob(arg1, arg2, arg3, NULL);
+  glob(arg1, arg2, arg3, p);
 }
 
 void test__globfree__noreturn() {
@@ -6437,8 +6604,9 @@ void test__globfree__noreturn() {
 }
 
 void test__globfree__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  globfree(NULL);
+  globfree(p);
 }
 
 void test__globfree__arg1__notuninit() {
@@ -6461,13 +6629,15 @@ void test__wcpncpy__leakignore() {
 }
 
 void test__wcpncpy__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wcpncpy(NULL, arg2, arg3);
+  wcpncpy(p, arg2, arg3);
 }
 
 void test__wcpncpy__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  wcpncpy(arg1, NULL, arg3);
+  wcpncpy(arg1, p, arg3);
 }
 
 void test__wcpncpy__arg2__notuninit() {
@@ -6501,13 +6671,15 @@ void test__stpncpy__leakignore() {
 }
 
 void test__stpncpy__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  stpncpy(NULL, arg2, arg3);
+  stpncpy(p, arg2, arg3);
 }
 
 void test__stpncpy__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  stpncpy(arg1, NULL, arg3);
+  stpncpy(arg1, p, arg3);
 }
 
 void test__stpncpy__arg2__notuninit() {
@@ -6541,13 +6713,15 @@ void test__memccpy__leakignore() {
 }
 
 void test__memccpy__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  memccpy(NULL, arg2, arg3, arg4);
+  memccpy(p, arg2, arg3, arg4);
 }
 
 void test__memccpy__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  memccpy(arg1, NULL, arg3, arg4);
+  memccpy(arg1, p, arg3, arg4);
 }
 
 void test__memccpy__arg2__notuninit() {
@@ -6588,8 +6762,9 @@ void test__getopt__arg1__notuninit() {
 }
 
 void test__getopt__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  getopt(arg1, NULL, arg3);
+  getopt(arg1, p, arg3);
 }
 
 void test__getopt__arg2__notuninit() {
@@ -6599,8 +6774,9 @@ void test__getopt__arg2__notuninit() {
 }
 
 void test__getopt__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  getopt(arg1, arg2, NULL);
+  getopt(arg1, arg2, p);
 }
 
 void test__getopt__arg3__notuninit() {
@@ -6629,8 +6805,9 @@ void test__getitimer__arg1__notuninit() {
 }
 
 void test__getitimer__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  getitimer(arg1, NULL);
+  getitimer(arg1, p);
 }
 
 void test__getitimer__arg2__notuninit() {
@@ -6786,8 +6963,9 @@ void test__sigsuspend__leakignore() {
 }
 
 void test__sigsuspend__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  sigsuspend(NULL);
+  sigsuspend(p);
 }
 
 void test__pthread_sigmask__noreturn() {
@@ -6860,8 +7038,9 @@ void test__getrusage__arg1__notuninit() {
 }
 
 void test__getrusage__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  getrusage(arg1, NULL);
+  getrusage(arg1, p);
 }
 
 void test__sigemptyset__noreturn() {
@@ -6878,8 +7057,9 @@ void test__sigemptyset__leakignore() {
 }
 
 void test__sigemptyset__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  sigemptyset(NULL);
+  sigemptyset(p);
 }
 
 void test__sigfillset__noreturn() {
@@ -6896,8 +7076,9 @@ void test__sigfillset__leakignore() {
 }
 
 void test__sigfillset__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  sigfillset(NULL);
+  sigfillset(p);
 }
 
 void test__sigaddset__noreturn() {
@@ -6914,8 +7095,9 @@ void test__sigaddset__leakignore() {
 }
 
 void test__sigaddset__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  sigaddset(NULL, arg2);
+  sigaddset(p, arg2);
 }
 
 void test__sigaddset__arg2__notuninit() {
@@ -6938,8 +7120,9 @@ void test__sigdelset__leakignore() {
 }
 
 void test__sigdelset__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  sigdelset(NULL, arg2);
+  sigdelset(p, arg2);
 }
 
 void test__sigdelset__arg2__notuninit() {
@@ -6962,8 +7145,9 @@ void test__sigismember__leakignore() {
 }
 
 void test__sigismember__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  sigismember(NULL, arg2);
+  sigismember(p, arg2);
 }
 
 void test__sigismember__arg2__notuninit() {
@@ -7073,8 +7257,9 @@ void test__msgrcv__arg1__notuninit() {
 }
 
 void test__msgrcv__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  msgrcv(arg1, NULL, arg3, arg4, arg5);
+  msgrcv(arg1, p, arg3, arg4, arg5);
 }
 
 void test__msgrcv__arg3__notuninit() {
@@ -7115,8 +7300,9 @@ void test__msgsnd__arg1__notuninit() {
 }
 
 void test__msgsnd__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  msgsnd(arg1, NULL, arg3, arg4);
+  msgsnd(arg1, p, arg3, arg4);
 }
 
 void test__msgsnd__arg3__notuninit() {
@@ -7201,8 +7387,9 @@ void test__tcsendbreak__arg1__notuninit() {
 }
 
 void test__tcsendbreak__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  tcsendbreak(arg1, NULL);
+  tcsendbreak(arg1, p);
 }
 
 void test__tcgetattr__noreturn() {
@@ -7225,8 +7412,9 @@ void test__tcgetattr__arg1__notuninit() {
 }
 
 void test__tcgetattr__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  tcgetattr(arg1, NULL);
+  tcgetattr(arg1, p);
 }
 
 void test__tcsetattr__noreturn() {
@@ -7255,8 +7443,9 @@ void test__tcsetattr__arg2__notuninit() {
 }
 
 void test__tcsetattr__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  tcsetattr(arg1, arg2, NULL);
+  tcsetattr(arg1, arg2, p);
 }
 
 void test__tcsetattr__arg3__notuninit() {
@@ -7279,8 +7468,9 @@ void test__cfsetospeed__leakignore() {
 }
 
 void test__cfsetospeed__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  cfsetospeed(NULL, arg2);
+  cfsetospeed(p, arg2);
 }
 
 void test__cfsetospeed__arg1__notuninit() {
@@ -7309,8 +7499,9 @@ void test__cfsetispeed__leakignore() {
 }
 
 void test__cfsetispeed__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  cfsetispeed(NULL, arg2);
+  cfsetispeed(p, arg2);
 }
 
 void test__cfsetispeed__arg1__notuninit() {

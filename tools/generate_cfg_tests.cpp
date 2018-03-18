@@ -192,7 +192,7 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
             }
 
             if (notnull) {
-                std::cout << testFunctionArg(functionName, useretval, "notnull", argNr, numberOfArgs, "", "nullPointer", "NULL") << std::endl << std::endl;
+                std::cout << testFunctionArg(functionName, useretval, "notnull", argNr, numberOfArgs, "const char *p = NULL;", "nullPointer", "p") << std::endl << std::endl;
             }
 
             if (notuninit) {

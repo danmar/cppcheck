@@ -35,8 +35,9 @@ void test__vfprintf_P__leakignore() {
 }
 
 void test__vfprintf_P__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  vfprintf_P(NULL, arg2);
+  vfprintf_P(p, arg2);
 }
 
 void test__vfprintf_P__arg1__notuninit() {
@@ -124,8 +125,9 @@ void test__fprintf_P__leakignore() {
 }
 
 void test__fprintf_P__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  fprintf_P(NULL, arg2);
+  fprintf_P(p, arg2);
 }
 
 void test__fprintf_P__arg1__notuninit() {
@@ -148,8 +150,9 @@ void test__fputs_P__leakignore() {
 }
 
 void test__fputs_P__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  fputs_P(NULL, arg2);
+  fputs_P(p, arg2);
 }
 
 void test__fputs_P__arg1__notuninit() {
@@ -159,8 +162,9 @@ void test__fputs_P__arg1__notuninit() {
 }
 
 void test__fputs_P__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  fputs_P(arg1, NULL);
+  fputs_P(arg1, p);
 }
 
 void test__fputs_P__arg2__notuninit() {
@@ -188,8 +192,9 @@ void test__puts_P__arg1__notbool() {
 }
 
 void test__puts_P__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  puts_P(NULL);
+  puts_P(p);
 }
 
 void test__puts_P__arg1__notuninit() {
@@ -257,8 +262,9 @@ void test__fdevopen__noreturn() {
 }
 
 void test__fdevopen__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  fdevopen(NULL, arg2);
+  fdevopen(p, arg2);
 }
 
 void test__fdevopen__arg1__notuninit() {
@@ -268,8 +274,9 @@ void test__fdevopen__arg1__notuninit() {
 }
 
 void test__fdevopen__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  fdevopen(arg1, NULL);
+  fdevopen(arg1, p);
 }
 
 void test__fdevopen__arg2__notuninit() {
@@ -298,8 +305,9 @@ void test__ltoa__arg1__notuninit() {
 }
 
 void test__ltoa__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  ltoa(arg1, NULL, arg3);
+  ltoa(arg1, p, arg3);
 }
 
 void test__ltoa__arg2__notuninit() {
@@ -309,8 +317,9 @@ void test__ltoa__arg2__notuninit() {
 }
 
 void test__ltoa__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  ltoa(arg1, arg2, NULL);
+  ltoa(arg1, arg2, p);
 }
 
 void test__ltoa__arg3__notuninit() {
@@ -339,8 +348,9 @@ void test__utoa__arg1__notuninit() {
 }
 
 void test__utoa__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  utoa(arg1, NULL, arg3);
+  utoa(arg1, p, arg3);
 }
 
 void test__utoa__arg2__notuninit() {
@@ -350,8 +360,9 @@ void test__utoa__arg2__notuninit() {
 }
 
 void test__utoa__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  utoa(arg1, arg2, NULL);
+  utoa(arg1, arg2, p);
 }
 
 void test__utoa__arg3__notuninit() {
@@ -380,8 +391,9 @@ void test__ultoa__arg1__notuninit() {
 }
 
 void test__ultoa__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  ultoa(arg1, NULL, arg3);
+  ultoa(arg1, p, arg3);
 }
 
 void test__ultoa__arg2__notuninit() {
@@ -391,8 +403,9 @@ void test__ultoa__arg2__notuninit() {
 }
 
 void test__ultoa__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  ultoa(arg1, arg2, NULL);
+  ultoa(arg1, arg2, p);
 }
 
 void test__ultoa__arg3__notuninit() {
@@ -428,8 +441,9 @@ void test__random_r__leakignore() {
 }
 
 void test__random_r__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  random_r(NULL);
+  random_r(p);
 }
 
 void test__srandom__noreturn() {
@@ -471,8 +485,9 @@ void test__dtostre__arg1__notuninit() {
 }
 
 void test__dtostre__arg2__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  dtostre(arg1, NULL);
+  dtostre(arg1, p);
 }
 
 void test__dtostrf__noreturn() {
@@ -507,8 +522,9 @@ void test__dtostrf__arg3__notuninit() {
 }
 
 void test__dtostrf__arg4__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  dtostrf(arg1, arg2, arg3, NULL);
+  dtostrf(arg1, arg2, arg3, p);
 }
 
 void test__ffs__noreturn() {
@@ -582,8 +598,9 @@ void test__memccpy__leakignore() {
 }
 
 void test__memccpy__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  memccpy(NULL, arg2, arg3, arg4);
+  memccpy(p, arg2, arg3, arg4);
 }
 
 void test__memccpy__arg2__notuninit() {

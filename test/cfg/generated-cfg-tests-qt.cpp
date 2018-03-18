@@ -16,8 +16,9 @@ void test__connect__noreturn() {
 }
 
 void test__connect__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  connect(NULL, arg2, arg3, arg4);
+  connect(p, arg2, arg3, arg4);
 }
 
 void test__connect__arg1__notuninit() {
@@ -33,8 +34,9 @@ void test__connect__arg2__notuninit() {
 }
 
 void test__connect__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  connect(arg1, arg2, NULL, arg4);
+  connect(arg1, arg2, p, arg4);
 }
 
 void test__connect__arg3__notuninit() {
@@ -57,8 +59,9 @@ void test__disconnect__noreturn() {
 }
 
 void test__disconnect__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  disconnect(NULL, arg2, arg3, arg4);
+  disconnect(p, arg2, arg3, arg4);
 }
 
 void test__disconnect__arg1__notuninit() {
@@ -74,8 +77,9 @@ void test__disconnect__arg2__notuninit() {
 }
 
 void test__disconnect__arg3__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  disconnect(arg1, arg2, NULL, arg4);
+  disconnect(arg1, arg2, p, arg4);
 }
 
 void test__disconnect__arg3__notuninit() {
@@ -109,8 +113,9 @@ void test__tr__leakignore() {
 }
 
 void test__tr__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = tr(NULL, arg2, arg3);
+  result = tr(p, arg2, arg3);
 }
 
 void test__tr__arg1__notuninit() {
@@ -150,8 +155,9 @@ void test__QObject__tr__leakignore() {
 }
 
 void test__QObject__tr__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = QObject::tr(NULL, arg2, arg3);
+  result = QObject::tr(p, arg2, arg3);
 }
 
 void test__QObject__tr__arg1__notuninit() {
@@ -186,8 +192,9 @@ void test__QSettings__setValue__leakignore() {
 }
 
 void test__QSettings__setValue__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  QSettings::setValue(NULL, arg2);
+  QSettings::setValue(p, arg2);
 }
 
 void test__QSettings__setValue__arg1__notuninit() {
@@ -215,8 +222,9 @@ void test__QSettings__value__useretval() {
 }
 
 void test__QSettings__value__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  result = QSettings::value(NULL, arg2);
+  result = QSettings::value(p, arg2);
 }
 
 void test__QSettings__value__arg1__notuninit() {
@@ -1521,8 +1529,9 @@ void test__QMetaObject__connectSlotsByName__leakignore() {
 }
 
 void test__QMetaObject__connectSlotsByName__arg1__notnull() {
+  const char *p = NULL;
   // cppcheck-suppress nullPointer
-  QMetaObject::connectSlotsByName(NULL);
+  QMetaObject::connectSlotsByName(p);
 }
 
 void test__QDir__fromNativeSeparators__noreturn() {
