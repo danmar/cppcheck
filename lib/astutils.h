@@ -25,8 +25,7 @@
 #include <string>
 #include <vector>
 
-#include "library.h"
-
+class Library;
 class Settings;
 class Token;
 

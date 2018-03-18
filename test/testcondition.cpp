@@ -37,6 +37,8 @@ private:
     Settings settings1;
 
     void run() {
+        LOAD_LIB_2(settings0.library, "qt.cfg");
+
         settings0.addEnabled("style");
         settings0.addEnabled("warning");
 
@@ -1153,6 +1155,12 @@ private:
 
         check("void f2(const std::wstring &s) { if(s.empty()) if(s.size() > 42) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
+        check("void f1(QString s) { if(s.isEmpty()) if(s.length() > 42) {}} ");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
+        check("void f1(const std::string &s) { if(s.empty()) if(s.size() == 0) {}} ");
+        ASSERT_EQUALS("", errout.str());
 
         check("void f3(char c) { if(c=='x') if(c=='y') {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
