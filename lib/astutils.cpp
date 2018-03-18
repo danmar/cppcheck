@@ -238,26 +238,6 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     return commutativeEquals;
 }
 
-bool isContainerYield(const Token * const cond, Library::Container::Yield y, std::string name)
-{
-    if(!cond)
-        return false;
-    if (cond->str() == "(") {
-        const Token* tok = cond->astOperand1();
-        if(tok && tok->str() == ".") {
-            if(tok->astOperand1() && tok->astOperand1()->valueType()) {
-                if(const Library::Container *container = tok->astOperand1()->valueType()->container) {
-                    return tok->astOperand2() && y == container->getYield(tok->astOperand2()->str());
-                }
-            }
-            else if(!name.empty()) {
-                return Token::simpleMatch(cond, "( )") && cond->previous()->str() == name;
-            }
-        }
-    }
-    return false;
-}
-
 bool equalTokValue(const Token * const tok1, const Token * const tok2)
 {
     return !tok1->values().empty() && !tok2->values().empty() && std::find_first_of(
@@ -292,11 +272,11 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
         }
     }
 
-    if(isContainerYield(cond1, Library::Container::EMPTY, "empty") && isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size")) {
+    if(Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size")) {
         return !(cond2->str() == "==" && cond2->astOperand2()->getValue(0));
     }
 
-    if(isContainerYield(cond2, Library::Container::EMPTY, "empty") && isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size")) {
+    if(Library::isContainerYield(cond2, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size")) {
         return !(cond1->str() == "==" && cond1->astOperand2()->getValue(0));
     }
 
