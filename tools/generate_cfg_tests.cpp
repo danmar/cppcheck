@@ -43,10 +43,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
-	std::string testfile(cfgfile);
-	if (testfile.find('/') != std::string::npos)
-		testfile = testfile.substr(testfile.rfind('/')+1);
-	testfile = "generated-cfg-tests-" + testfile.substr(0,testfile.find('.')) + ".cpp";
+    std::string testfile(cfgfile);
+    if (testfile.find('/') != std::string::npos)
+        testfile = testfile.substr(testfile.rfind('/')+1);
+    testfile = "generated-cfg-tests-" + testfile.substr(0,testfile.find('.')) + ".cpp";
 
     std::cout << "// auto generated tests from " << cfgfile << std::endl;
     std::cout << "//" << std::endl;
@@ -192,7 +192,7 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
             }
 
             if (notnull) {
-                std::cout << testFunctionArg(functionName, useretval, "notnull", argNr, numberOfArgs, "const char *p = NULL;", "nullPointer", "p") << std::endl << std::endl;
+                std::cout << testFunctionArg(functionName, useretval, "notnull", argNr, numberOfArgs, "", "nullPointer", "NULL") << std::endl << std::endl;
             }
 
             if (notuninit) {
