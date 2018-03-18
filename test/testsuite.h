@@ -99,7 +99,7 @@ extern std::ostringstream output;
 #ifdef _WIN32
 #define LOAD_LIB_2( LIB, NAME ) { if (((LIB).load("./testrunner", "../cfg/" NAME).errorcode != Library::OK) && ((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::OK)) { complainMissingLib(NAME); return; } }
 #else
-#define LOAD_LIB_2( LIB, NAME ) { if ((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::OK) { complainMissingLib(NAME); return; } }
+#define LOAD_LIB_2( LIB, NAME ) { if (((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::OK) && ((LIB).load("./bin/testrunner", "bin/cfg/" NAME).errorcode != Library::OK)) { complainMissingLib(NAME); return; } }
 #endif
 
 #endif
