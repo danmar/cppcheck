@@ -16,7 +16,7 @@ void test__toascii__noreturn() {
 }
 
 void test__toascii__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   toascii(p);
   // cppcheck-suppress memleak
 }
@@ -29,7 +29,7 @@ void test__vfprintf_P__noreturn() {
 }
 
 void test__vfprintf_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vfprintf_P(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -54,7 +54,7 @@ void test__printf_P__noreturn() {
 }
 
 void test__printf_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   printf_P(p);
   // cppcheck-suppress memleak
 }
@@ -67,7 +67,7 @@ void test__sprintf_P__noreturn() {
 }
 
 void test__sprintf_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   sprintf_P(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -80,7 +80,7 @@ void test__snprintf_P__noreturn() {
 }
 
 void test__snprintf_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   snprintf_P(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -93,7 +93,7 @@ void test__vsprintf_P__noreturn() {
 }
 
 void test__vsprintf_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vsprintf_P(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -106,7 +106,7 @@ void test__vsnprintf_P__noreturn() {
 }
 
 void test__vsnprintf_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vsnprintf_P(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -119,7 +119,7 @@ void test__fprintf_P__noreturn() {
 }
 
 void test__fprintf_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fprintf_P(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -144,7 +144,7 @@ void test__fputs_P__noreturn() {
 }
 
 void test__fputs_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fputs_P(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -181,7 +181,7 @@ void test__puts_P__noreturn() {
 }
 
 void test__puts_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   puts_P(p);
   // cppcheck-suppress memleak
 }
@@ -211,7 +211,7 @@ void test__scanf_P__noreturn() {
 }
 
 void test__scanf_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   scanf_P(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -230,7 +230,7 @@ void test__fscanf_P__noreturn() {
 }
 
 void test__fscanf_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fscanf_P(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -249,7 +249,7 @@ void test__sscanf_P__noreturn() {
 }
 
 void test__sscanf_P__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   sscanf_P(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -293,7 +293,7 @@ void test__ltoa__noreturn() {
 }
 
 void test__ltoa__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   ltoa(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -336,7 +336,7 @@ void test__utoa__noreturn() {
 }
 
 void test__utoa__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   utoa(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -379,7 +379,7 @@ void test__ultoa__noreturn() {
 }
 
 void test__ultoa__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   ultoa(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -422,7 +422,7 @@ void test__random__noreturn() {
 }
 
 void test__random__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   random();
   // cppcheck-suppress memleak
 }
@@ -435,7 +435,7 @@ void test__random_r__noreturn() {
 }
 
 void test__random_r__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   random_r(p);
   // cppcheck-suppress memleak
 }
@@ -454,7 +454,7 @@ void test__srandom__noreturn() {
 }
 
 void test__srandom__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   srandom(p);
   // cppcheck-suppress memleak
 }
@@ -473,7 +473,7 @@ void test__dtostre__noreturn() {
 }
 
 void test__dtostre__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   dtostre(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -498,7 +498,7 @@ void test__dtostrf__noreturn() {
 }
 
 void test__dtostrf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   dtostrf(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -535,7 +535,7 @@ void test__ffs__noreturn() {
 }
 
 void test__ffs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   ffs(p);
   // cppcheck-suppress memleak
 }
@@ -554,7 +554,7 @@ void test__ffsl__noreturn() {
 }
 
 void test__ffsl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   ffsl(p);
   // cppcheck-suppress memleak
 }
@@ -573,7 +573,7 @@ void test__ffsll__noreturn() {
 }
 
 void test__ffsll__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   ffsll(p);
   // cppcheck-suppress memleak
 }
@@ -592,7 +592,7 @@ void test__memccpy__noreturn() {
 }
 
 void test__memccpy__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   memccpy(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }

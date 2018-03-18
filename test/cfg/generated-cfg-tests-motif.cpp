@@ -119,7 +119,7 @@ void test__XmStringCreateLocalized__useretval() {
 }
 
 void test__XmStringCreateLocalized__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = XmStringCreateLocalized(p);
   // cppcheck-suppress memleak
 }
@@ -149,7 +149,7 @@ void test__XmStringCreateSimple__useretval() {
 }
 
 void test__XmStringCreateSimple__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = XmStringCreateSimple(p);
   // cppcheck-suppress memleak
 }
@@ -187,7 +187,7 @@ void test__XmStringGenerate__noreturn() {
 }
 
 void test__XmStringGenerate__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   XmStringGenerate(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -200,7 +200,7 @@ void test__XmTextGetString__noreturn() {
 }
 
 void test__XmTextGetString__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   XmTextGetString(p);
   // cppcheck-suppress memleak
 }
@@ -219,7 +219,7 @@ void test__XmTextGetStringWcs__noreturn() {
 }
 
 void test__XmTextGetStringWcs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   XmTextGetStringWcs(p);
   // cppcheck-suppress memleak
 }
@@ -263,7 +263,7 @@ void test__XtSetValues__noreturn() {
 }
 
 void test__XtSetValues__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   XtSetValues(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -276,7 +276,7 @@ void test__XtGetValues__noreturn() {
 }
 
 void test__XtGetValues__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   XtGetValues(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -289,7 +289,7 @@ void test__XtSetSubvalues__noreturn() {
 }
 
 void test__XtSetSubvalues__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   XtSetSubvalues(p, arg2, arg3, arg4, arg5);
   // cppcheck-suppress memleak
 }
@@ -302,7 +302,7 @@ void test__XtGetSubvalues__noreturn() {
 }
 
 void test__XtGetSubvalues__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   XtGetSubvalues(p, arg2, arg3, arg4, arg5);
   // cppcheck-suppress memleak
 }
@@ -393,7 +393,7 @@ void test__XOpenDisplay__noreturn() {
 }
 
 void test__XOpenDisplay__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   XOpenDisplay(p);
   // cppcheck-suppress memleak
 }
@@ -412,7 +412,7 @@ void test__XCloseDisplay__noreturn() {
 }
 
 void test__XCloseDisplay__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   XCloseDisplay(p);
   // cppcheck-suppress memleak
 }
@@ -431,7 +431,7 @@ void test__XtDatabase__noreturn() {
 }
 
 void test__XtDatabase__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   XtDatabase(p);
   // cppcheck-suppress memleak
 }
@@ -450,7 +450,7 @@ void test__XtScreenDatabase__noreturn() {
 }
 
 void test__XtScreenDatabase__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   XtScreenDatabase(p);
   // cppcheck-suppress memleak
 }

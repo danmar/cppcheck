@@ -15,12 +15,6 @@ void test__wxString__Format__noreturn() {
   x = 1 << x;
 }
 
-void test__wxString__Format__leakignore() {
-  char *p = strdup(str);
-  wxString::Format(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxString__Format__arg1__notbool() {
   // cppcheck-suppress invalidFunctionArgBool
   wxString::Format(!x);
@@ -43,12 +37,6 @@ void test__wxString__Printf__noreturn() {
   if (cond) { x=100; wxString::Printf(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxString__Printf__leakignore() {
-  char *p = strdup(str);
-  wxString::Printf(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxString__Printf__arg1__notbool() {
@@ -80,12 +68,6 @@ void test__wxString__IsEmpty__useretval() {
   wxString::IsEmpty();
 }
 
-void test__wxString__IsEmpty__leakignore() {
-  char *p = strdup(str);
-  result = wxString::IsEmpty();
-  // cppcheck-suppress memleak
-}
-
 void test__wxString__IsNull__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxString::IsNull(); }
@@ -96,12 +78,6 @@ void test__wxString__IsNull__noreturn() {
 void test__wxString__IsNull__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxString::IsNull();
-}
-
-void test__wxString__IsNull__leakignore() {
-  char *p = strdup(str);
-  result = wxString::IsNull();
-  // cppcheck-suppress memleak
 }
 
 void test__wxString__IsNumber__noreturn() {
@@ -116,12 +92,6 @@ void test__wxString__IsNumber__useretval() {
   wxString::IsNumber();
 }
 
-void test__wxString__IsNumber__leakignore() {
-  char *p = strdup(str);
-  result = wxString::IsNumber();
-  // cppcheck-suppress memleak
-}
-
 void test__wxString__IsAscii__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxString::IsAscii(); }
@@ -132,12 +102,6 @@ void test__wxString__IsAscii__noreturn() {
 void test__wxString__IsAscii__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxString::IsAscii();
-}
-
-void test__wxString__IsAscii__leakignore() {
-  char *p = strdup(str);
-  result = wxString::IsAscii();
-  // cppcheck-suppress memleak
 }
 
 void test__wxString__IsWord__noreturn() {
@@ -152,12 +116,6 @@ void test__wxString__IsWord__useretval() {
   wxString::IsWord();
 }
 
-void test__wxString__IsWord__leakignore() {
-  char *p = strdup(str);
-  result = wxString::IsWord();
-  // cppcheck-suppress memleak
-}
-
 void test__wxString__Len__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxString::Len(); }
@@ -168,12 +126,6 @@ void test__wxString__Len__noreturn() {
 void test__wxString__Len__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxString::Len();
-}
-
-void test__wxString__Len__leakignore() {
-  char *p = strdup(str);
-  result = wxString::Len();
-  // cppcheck-suppress memleak
 }
 
 void test__wxString__length__noreturn() {
@@ -188,12 +140,6 @@ void test__wxString__length__useretval() {
   wxString::length();
 }
 
-void test__wxString__length__leakignore() {
-  char *p = strdup(str);
-  result = wxString::length();
-  // cppcheck-suppress memleak
-}
-
 void test__wxString__Length__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxString::Length(); }
@@ -204,12 +150,6 @@ void test__wxString__Length__noreturn() {
 void test__wxString__Length__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxString::Length();
-}
-
-void test__wxString__Length__leakignore() {
-  char *p = strdup(str);
-  result = wxString::Length();
-  // cppcheck-suppress memleak
 }
 
 void test__wxString__Lower__noreturn() {
@@ -224,12 +164,6 @@ void test__wxString__Lower__useretval() {
   wxString::Lower();
 }
 
-void test__wxString__Lower__leakignore() {
-  char *p = strdup(str);
-  result = wxString::Lower();
-  // cppcheck-suppress memleak
-}
-
 void test__wxString__MakeCapitalized__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxString::MakeCapitalized(); }
@@ -240,12 +174,6 @@ void test__wxString__MakeCapitalized__noreturn() {
 void test__wxString__MakeCapitalized__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxString::MakeCapitalized();
-}
-
-void test__wxString__MakeCapitalized__leakignore() {
-  char *p = strdup(str);
-  result = wxString::MakeCapitalized();
-  // cppcheck-suppress memleak
 }
 
 void test__wxString__MakeLower__noreturn() {
@@ -260,12 +188,6 @@ void test__wxString__MakeLower__useretval() {
   wxString::MakeLower();
 }
 
-void test__wxString__MakeLower__leakignore() {
-  char *p = strdup(str);
-  result = wxString::MakeLower();
-  // cppcheck-suppress memleak
-}
-
 void test__wxString__MakeUpper__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxString::MakeUpper(); }
@@ -276,12 +198,6 @@ void test__wxString__MakeUpper__noreturn() {
 void test__wxString__MakeUpper__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxString::MakeUpper();
-}
-
-void test__wxString__MakeUpper__leakignore() {
-  char *p = strdup(str);
-  result = wxString::MakeUpper();
-  // cppcheck-suppress memleak
 }
 
 void test__wxString__Matches__noreturn() {
@@ -296,12 +212,6 @@ void test__wxString__Matches__useretval() {
   wxString::Matches(arg1);
 }
 
-void test__wxString__Matches__leakignore() {
-  char *p = strdup(str);
-  result = wxString::Matches(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxString__Matches__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -313,12 +223,6 @@ void test__wxString__LowerCase__noreturn() {
   if (cond) { x=100; wxString::LowerCase(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxString__LowerCase__leakignore() {
-  char *p = strdup(str);
-  wxString::LowerCase();
-  // cppcheck-suppress memleak
 }
 
 void test__wxSysErrorCode__noreturn() {
@@ -341,7 +245,7 @@ void test__wxLogMessage__noreturn() {
 }
 
 void test__wxLogMessage__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxLogMessage(p);
   // cppcheck-suppress memleak
 }
@@ -371,7 +275,7 @@ void test__wxLogVerbose__noreturn() {
 }
 
 void test__wxLogVerbose__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxLogVerbose(p);
   // cppcheck-suppress memleak
 }
@@ -401,7 +305,7 @@ void test__wxLogWarning__noreturn() {
 }
 
 void test__wxLogWarning__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxLogWarning(p);
   // cppcheck-suppress memleak
 }
@@ -431,7 +335,7 @@ void test__wxLogFatalError__noreturn() {
 }
 
 void test__wxLogFatalError__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxLogFatalError(p);
   // cppcheck-suppress memleak
 }
@@ -461,7 +365,7 @@ void test__wxLogError__noreturn() {
 }
 
 void test__wxLogError__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxLogError(p);
   // cppcheck-suppress memleak
 }
@@ -491,7 +395,7 @@ void test__wxLogTrace__noreturn() {
 }
 
 void test__wxLogTrace__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxLogTrace(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -521,7 +425,7 @@ void test__wxLogDebug__noreturn() {
 }
 
 void test__wxLogDebug__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxLogDebug(p);
   // cppcheck-suppress memleak
 }
@@ -551,7 +455,7 @@ void test__wxLogSysError__noreturn() {
 }
 
 void test__wxLogSysError__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxLogSysError(p);
   // cppcheck-suppress memleak
 }
@@ -581,7 +485,7 @@ void test__wxLogGeneric__noreturn() {
 }
 
 void test__wxLogGeneric__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxLogGeneric(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -617,7 +521,7 @@ void test__wxLogInfo__noreturn() {
 }
 
 void test__wxLogInfo__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxLogInfo(p);
   // cppcheck-suppress memleak
 }
@@ -651,12 +555,6 @@ void test__wxSpinCtrl__GetMax__useretval() {
   wxSpinCtrl::GetMax();
 }
 
-void test__wxSpinCtrl__GetMax__leakignore() {
-  char *p = strdup(str);
-  result = wxSpinCtrl::GetMax();
-  // cppcheck-suppress memleak
-}
-
 void test__wxSpinCtrl__GetMin__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxSpinCtrl::GetMin(); }
@@ -667,12 +565,6 @@ void test__wxSpinCtrl__GetMin__noreturn() {
 void test__wxSpinCtrl__GetMin__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxSpinCtrl::GetMin();
-}
-
-void test__wxSpinCtrl__GetMin__leakignore() {
-  char *p = strdup(str);
-  result = wxSpinCtrl::GetMin();
-  // cppcheck-suppress memleak
 }
 
 void test__wxSpinCtrl__GetBase__noreturn() {
@@ -687,12 +579,6 @@ void test__wxSpinCtrl__GetBase__useretval() {
   wxSpinCtrl::GetBase();
 }
 
-void test__wxSpinCtrl__GetBase__leakignore() {
-  char *p = strdup(str);
-  result = wxSpinCtrl::GetBase();
-  // cppcheck-suppress memleak
-}
-
 void test__wxSpinCtrl__GetValue__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxSpinCtrl::GetValue(); }
@@ -705,12 +591,6 @@ void test__wxSpinCtrl__GetValue__useretval() {
   wxSpinCtrl::GetValue();
 }
 
-void test__wxSpinCtrl__GetValue__leakignore() {
-  char *p = strdup(str);
-  result = wxSpinCtrl::GetValue();
-  // cppcheck-suppress memleak
-}
-
 void test__wxSpinCtrl__SetBase__noreturn() {
   int x = 1;
   if (cond) { x=100; wxSpinCtrl::SetBase(arg1); }
@@ -721,12 +601,6 @@ void test__wxSpinCtrl__SetBase__noreturn() {
 void test__wxSpinCtrl__SetBase__pure(int arg1) {
   // cppcheck-suppress incorrectLogicOperator
   if ((wxSpinCtrl::SetBase(arg1) > 10) || (wxSpinCtrl::SetBase(arg1) < 100)) {}
-}
-
-void test__wxSpinCtrl__SetBase__leakignore() {
-  char *p = strdup(str);
-  wxSpinCtrl::SetBase(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxSpinCtrl__SetBase__arg1__notbool() {
@@ -752,12 +626,6 @@ void test__wxSpinCtrlDouble__GetDigits__useretval() {
   wxSpinCtrlDouble::GetDigits();
 }
 
-void test__wxSpinCtrlDouble__GetDigits__leakignore() {
-  char *p = strdup(str);
-  result = wxSpinCtrlDouble::GetDigits();
-  // cppcheck-suppress memleak
-}
-
 void test__wxSpinCtrlDouble__GetIncrement__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxSpinCtrlDouble::GetIncrement(); }
@@ -768,12 +636,6 @@ void test__wxSpinCtrlDouble__GetIncrement__noreturn() {
 void test__wxSpinCtrlDouble__GetIncrement__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxSpinCtrlDouble::GetIncrement();
-}
-
-void test__wxSpinCtrlDouble__GetIncrement__leakignore() {
-  char *p = strdup(str);
-  result = wxSpinCtrlDouble::GetIncrement();
-  // cppcheck-suppress memleak
 }
 
 void test__wxSpinCtrlDouble__GetMax__noreturn() {
@@ -788,12 +650,6 @@ void test__wxSpinCtrlDouble__GetMax__useretval() {
   wxSpinCtrlDouble::GetMax();
 }
 
-void test__wxSpinCtrlDouble__GetMax__leakignore() {
-  char *p = strdup(str);
-  result = wxSpinCtrlDouble::GetMax();
-  // cppcheck-suppress memleak
-}
-
 void test__wxSpinCtrlDouble__GetMin__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxSpinCtrlDouble::GetMin(); }
@@ -804,12 +660,6 @@ void test__wxSpinCtrlDouble__GetMin__noreturn() {
 void test__wxSpinCtrlDouble__GetMin__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxSpinCtrlDouble::GetMin();
-}
-
-void test__wxSpinCtrlDouble__GetMin__leakignore() {
-  char *p = strdup(str);
-  result = wxSpinCtrlDouble::GetMin();
-  // cppcheck-suppress memleak
 }
 
 void test__wxSpinCtrlDouble__GetValue__noreturn() {
@@ -824,23 +674,11 @@ void test__wxSpinCtrlDouble__GetValue__useretval() {
   wxSpinCtrlDouble::GetValue();
 }
 
-void test__wxSpinCtrlDouble__GetValue__leakignore() {
-  char *p = strdup(str);
-  result = wxSpinCtrlDouble::GetValue();
-  // cppcheck-suppress memleak
-}
-
 void test__wxSpinCtrlDouble__SetDigits__noreturn() {
   int x = 1;
   if (cond) { x=100; wxSpinCtrlDouble::SetDigits(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxSpinCtrlDouble__SetDigits__leakignore() {
-  char *p = strdup(str);
-  wxSpinCtrlDouble::SetDigits(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxSpinCtrlDouble__SetDigits__arg1__notuninit() {
@@ -856,12 +694,6 @@ void test__wxSpinCtrlDouble__SetIncrement__noreturn() {
   x = 1 << x;
 }
 
-void test__wxSpinCtrlDouble__SetIncrement__leakignore() {
-  char *p = strdup(str);
-  wxSpinCtrlDouble::SetIncrement(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxSpinCtrlDouble__SetIncrement__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -873,12 +705,6 @@ void test__wxSpinCtrlDouble__SetRange__noreturn() {
   if (cond) { x=100; wxSpinCtrlDouble::SetRange(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxSpinCtrlDouble__SetRange__leakignore() {
-  char *p = strdup(str);
-  wxSpinCtrlDouble::SetRange(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__wxSpinCtrlDouble__SetRange__arg1__notuninit() {
@@ -900,12 +726,6 @@ void test__wxSpinCtrlDouble__SetValue__noreturn() {
   x = 1 << x;
 }
 
-void test__wxSpinCtrlDouble__SetValue__leakignore() {
-  char *p = strdup(str);
-  wxSpinCtrlDouble::SetValue(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxSpinCtrlDouble__SetValue__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -924,12 +744,6 @@ void test__wxSlider__GetLineSize__useretval() {
   wxSlider::GetLineSize();
 }
 
-void test__wxSlider__GetLineSize__leakignore() {
-  char *p = strdup(str);
-  result = wxSlider::GetLineSize();
-  // cppcheck-suppress memleak
-}
-
 void test__wxSlider__GetMax__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxSlider::GetMax(); }
@@ -940,12 +754,6 @@ void test__wxSlider__GetMax__noreturn() {
 void test__wxSlider__GetMax__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxSlider::GetMax();
-}
-
-void test__wxSlider__GetMax__leakignore() {
-  char *p = strdup(str);
-  result = wxSlider::GetMax();
-  // cppcheck-suppress memleak
 }
 
 void test__wxSlider__GetMin__noreturn() {
@@ -960,12 +768,6 @@ void test__wxSlider__GetMin__useretval() {
   wxSlider::GetMin();
 }
 
-void test__wxSlider__GetMin__leakignore() {
-  char *p = strdup(str);
-  result = wxSlider::GetMin();
-  // cppcheck-suppress memleak
-}
-
 void test__wxSlider__GetPageSize__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxSlider::GetPageSize(); }
@@ -976,12 +778,6 @@ void test__wxSlider__GetPageSize__noreturn() {
 void test__wxSlider__GetPageSize__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxSlider::GetPageSize();
-}
-
-void test__wxSlider__GetPageSize__leakignore() {
-  char *p = strdup(str);
-  result = wxSlider::GetPageSize();
-  // cppcheck-suppress memleak
 }
 
 void test__wxSlider__GetSelEnd__noreturn() {
@@ -996,12 +792,6 @@ void test__wxSlider__GetSelEnd__useretval() {
   wxSlider::GetSelEnd();
 }
 
-void test__wxSlider__GetSelEnd__leakignore() {
-  char *p = strdup(str);
-  result = wxSlider::GetSelEnd();
-  // cppcheck-suppress memleak
-}
-
 void test__wxSlider__GetSelStart__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxSlider::GetSelStart(); }
@@ -1012,12 +802,6 @@ void test__wxSlider__GetSelStart__noreturn() {
 void test__wxSlider__GetSelStart__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxSlider::GetSelStart();
-}
-
-void test__wxSlider__GetSelStart__leakignore() {
-  char *p = strdup(str);
-  result = wxSlider::GetSelStart();
-  // cppcheck-suppress memleak
 }
 
 void test__wxSlider__GetThumbLength__noreturn() {
@@ -1032,12 +816,6 @@ void test__wxSlider__GetThumbLength__useretval() {
   wxSlider::GetThumbLength();
 }
 
-void test__wxSlider__GetThumbLength__leakignore() {
-  char *p = strdup(str);
-  result = wxSlider::GetThumbLength();
-  // cppcheck-suppress memleak
-}
-
 void test__wxSlider__GetTickFreq__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxSlider::GetTickFreq(); }
@@ -1048,12 +826,6 @@ void test__wxSlider__GetTickFreq__noreturn() {
 void test__wxSlider__GetTickFreq__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxSlider::GetTickFreq();
-}
-
-void test__wxSlider__GetTickFreq__leakignore() {
-  char *p = strdup(str);
-  result = wxSlider::GetTickFreq();
-  // cppcheck-suppress memleak
 }
 
 void test__wxSlider__GetValue__noreturn() {
@@ -1068,12 +840,6 @@ void test__wxSlider__GetValue__useretval() {
   wxSlider::GetValue();
 }
 
-void test__wxSlider__GetValue__leakignore() {
-  char *p = strdup(str);
-  result = wxSlider::GetValue();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTimer__GetId__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxTimer::GetId(); }
@@ -1084,12 +850,6 @@ void test__wxTimer__GetId__noreturn() {
 void test__wxTimer__GetId__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxTimer::GetId();
-}
-
-void test__wxTimer__GetId__leakignore() {
-  char *p = strdup(str);
-  result = wxTimer::GetId();
-  // cppcheck-suppress memleak
 }
 
 void test__wxTimer__GetInterval__noreturn() {
@@ -1104,12 +864,6 @@ void test__wxTimer__GetInterval__useretval() {
   wxTimer::GetInterval();
 }
 
-void test__wxTimer__GetInterval__leakignore() {
-  char *p = strdup(str);
-  result = wxTimer::GetInterval();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTimer__GetOwner__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxTimer::GetOwner(); }
@@ -1120,12 +874,6 @@ void test__wxTimer__GetOwner__noreturn() {
 void test__wxTimer__GetOwner__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxTimer::GetOwner();
-}
-
-void test__wxTimer__GetOwner__leakignore() {
-  char *p = strdup(str);
-  result = wxTimer::GetOwner();
-  // cppcheck-suppress memleak
 }
 
 void test__wxTimer__IsOneShot__noreturn() {
@@ -1140,12 +888,6 @@ void test__wxTimer__IsOneShot__useretval() {
   wxTimer::IsOneShot();
 }
 
-void test__wxTimer__IsOneShot__leakignore() {
-  char *p = strdup(str);
-  result = wxTimer::IsOneShot();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTimer__IsRunning__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxTimer::IsRunning(); }
@@ -1158,12 +900,6 @@ void test__wxTimer__IsRunning__useretval() {
   wxTimer::IsRunning();
 }
 
-void test__wxTimer__IsRunning__leakignore() {
-  char *p = strdup(str);
-  result = wxTimer::IsRunning();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTimer__Notify__noreturn() {
   int x = 1;
   if (cond) { x=100; wxTimer::Notify(); }
@@ -1171,23 +907,11 @@ void test__wxTimer__Notify__noreturn() {
   x = 1 << x;
 }
 
-void test__wxTimer__Notify__leakignore() {
-  char *p = strdup(str);
-  wxTimer::Notify();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTimer__SetOwner__noreturn() {
   int x = 1;
   if (cond) { x=100; wxTimer::SetOwner(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxTimer__SetOwner__leakignore() {
-  char *p = strdup(str);
-  wxTimer::SetOwner(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__wxTimer__SetOwner__arg1__notnull() {
@@ -1215,12 +939,6 @@ void test__wxTimer__Start__noreturn() {
   x = 1 << x;
 }
 
-void test__wxTimer__Start__leakignore() {
-  char *p = strdup(str);
-  wxTimer::Start(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__wxTimer__Start__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1240,12 +958,6 @@ void test__wxTimer__StartOnce__noreturn() {
   x = 1 << x;
 }
 
-void test__wxTimer__StartOnce__leakignore() {
-  char *p = strdup(str);
-  wxTimer::StartOnce(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxTimer__StartOnce__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1259,23 +971,11 @@ void test__wxTimer__Stop__noreturn() {
   x = 1 << x;
 }
 
-void test__wxTimer__Stop__leakignore() {
-  char *p = strdup(str);
-  wxTimer::Stop();
-  // cppcheck-suppress memleak
-}
-
 void test__wxRadioBox__Enable__noreturn() {
   int x = 1;
   if (cond) { x=100; wxRadioBox::Enable(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxRadioBox__Enable__leakignore() {
-  char *p = strdup(str);
-  wxRadioBox::Enable(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__wxRadioBox__Enable__arg1__notuninit() {
@@ -1295,12 +995,6 @@ void test__wxRadioBox__FindString__noreturn() {
   if (cond) { x=100; wxRadioBox::FindString(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxRadioBox__FindString__leakignore() {
-  char *p = strdup(str);
-  wxRadioBox::FindString(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__wxRadioBox__FindString__arg1__notuninit() {
@@ -1327,12 +1021,6 @@ void test__wxRadioBox__GetColumnCount__useretval() {
   wxRadioBox::GetColumnCount();
 }
 
-void test__wxRadioBox__GetColumnCount__leakignore() {
-  char *p = strdup(str);
-  result = wxRadioBox::GetColumnCount();
-  // cppcheck-suppress memleak
-}
-
 void test__wxRadioBox__GetItemFromPoint__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxRadioBox::GetItemFromPoint(arg1); }
@@ -1343,12 +1031,6 @@ void test__wxRadioBox__GetItemFromPoint__noreturn() {
 void test__wxRadioBox__GetItemFromPoint__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxRadioBox::GetItemFromPoint(arg1);
-}
-
-void test__wxRadioBox__GetItemFromPoint__leakignore() {
-  char *p = strdup(str);
-  result = wxRadioBox::GetItemFromPoint(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxRadioBox__GetItemFromPoint__arg1__notuninit() {
@@ -1369,12 +1051,6 @@ void test__wxRadioBox__GetItemHelpText__useretval() {
   wxRadioBox::GetItemHelpText(arg1);
 }
 
-void test__wxRadioBox__GetItemHelpText__leakignore() {
-  char *p = strdup(str);
-  result = wxRadioBox::GetItemHelpText(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxRadioBox__GetItemHelpText__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1393,12 +1069,6 @@ void test__wxRadioBox__GetItemToolTip__useretval() {
   wxRadioBox::GetItemToolTip(arg1);
 }
 
-void test__wxRadioBox__GetItemToolTip__leakignore() {
-  char *p = strdup(str);
-  result = wxRadioBox::GetItemToolTip(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxRadioBox__GetItemToolTip__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1412,12 +1082,6 @@ void test__wxRadioBox__GetRowCount__noreturn() {
   x = 1 << x;
 }
 
-void test__wxRadioBox__GetRowCount__leakignore() {
-  char *p = strdup(str);
-  wxRadioBox::GetRowCount();
-  // cppcheck-suppress memleak
-}
-
 void test__wxRadioBox__IsItemEnabled__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxRadioBox::IsItemEnabled(arg1); }
@@ -1428,12 +1092,6 @@ void test__wxRadioBox__IsItemEnabled__noreturn() {
 void test__wxRadioBox__IsItemEnabled__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxRadioBox::IsItemEnabled(arg1);
-}
-
-void test__wxRadioBox__IsItemEnabled__leakignore() {
-  char *p = strdup(str);
-  result = wxRadioBox::IsItemEnabled(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxRadioBox__IsItemEnabled__arg1__notuninit() {
@@ -1454,12 +1112,6 @@ void test__wxRadioBox__IsItemShown__useretval() {
   wxRadioBox::IsItemShown(arg1);
 }
 
-void test__wxRadioBox__IsItemShown__leakignore() {
-  char *p = strdup(str);
-  result = wxRadioBox::IsItemShown(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxRadioBox__IsItemShown__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1471,12 +1123,6 @@ void test__wxRadioBox__SetItemHelpText__noreturn() {
   if (cond) { x=100; wxRadioBox::SetItemHelpText(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxRadioBox__SetItemHelpText__leakignore() {
-  char *p = strdup(str);
-  wxRadioBox::SetItemHelpText(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__wxRadioBox__SetItemHelpText__arg1__notuninit() {
@@ -1498,12 +1144,6 @@ void test__wxRadioBox__SetItemToolTip__noreturn() {
   x = 1 << x;
 }
 
-void test__wxRadioBox__SetItemToolTip__leakignore() {
-  char *p = strdup(str);
-  wxRadioBox::SetItemToolTip(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__wxRadioBox__SetItemToolTip__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1523,12 +1163,6 @@ void test__wxRadioBox__SetSelection__noreturn() {
   x = 1 << x;
 }
 
-void test__wxRadioBox__SetSelection__leakignore() {
-  char *p = strdup(str);
-  wxRadioBox::SetSelection(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxRadioBox__SetSelection__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1540,12 +1174,6 @@ void test__wxRadioBox__Show__noreturn() {
   if (cond) { x=100; wxRadioBox::Show(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxRadioBox__Show__leakignore() {
-  char *p = strdup(str);
-  wxRadioBox::Show(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__wxRadioBox__Show__arg1__notuninit() {
@@ -1572,12 +1200,6 @@ void test__wxRadioBox__GetCount__useretval() {
   wxRadioBox::GetCount();
 }
 
-void test__wxRadioBox__GetCount__leakignore() {
-  char *p = strdup(str);
-  result = wxRadioBox::GetCount();
-  // cppcheck-suppress memleak
-}
-
 void test__wxRadioBox__GetString__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxRadioBox::GetString(arg1); }
@@ -1588,12 +1210,6 @@ void test__wxRadioBox__GetString__noreturn() {
 void test__wxRadioBox__GetString__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxRadioBox::GetString(arg1);
-}
-
-void test__wxRadioBox__GetString__leakignore() {
-  char *p = strdup(str);
-  result = wxRadioBox::GetString(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxRadioBox__GetString__arg1__notuninit() {
@@ -1607,12 +1223,6 @@ void test__wxRadioBox__SetString__noreturn() {
   if (cond) { x=100; wxRadioBox::SetString(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxRadioBox__SetString__leakignore() {
-  char *p = strdup(str);
-  wxRadioBox::SetString(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__wxRadioBox__SetString__arg1__notuninit() {
@@ -1639,12 +1249,6 @@ void test__wxRadioBox__GetSelection__useretval() {
   wxRadioBox::GetSelection();
 }
 
-void test__wxRadioBox__GetSelection__leakignore() {
-  char *p = strdup(str);
-  result = wxRadioBox::GetSelection();
-  // cppcheck-suppress memleak
-}
-
 void test__wxButton__GetAuthNeeded__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxButton::GetAuthNeeded(); }
@@ -1655,12 +1259,6 @@ void test__wxButton__GetAuthNeeded__noreturn() {
 void test__wxButton__GetAuthNeeded__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxButton::GetAuthNeeded();
-}
-
-void test__wxButton__GetAuthNeeded__leakignore() {
-  char *p = strdup(str);
-  result = wxButton::GetAuthNeeded();
-  // cppcheck-suppress memleak
 }
 
 void test__wxButton__GetLabel__noreturn() {
@@ -1675,23 +1273,11 @@ void test__wxButton__GetLabel__useretval() {
   wxButton::GetLabel();
 }
 
-void test__wxButton__GetLabel__leakignore() {
-  char *p = strdup(str);
-  result = wxButton::GetLabel();
-  // cppcheck-suppress memleak
-}
-
 void test__wxButton__SetAuthNeeded__noreturn() {
   int x = 1;
   if (cond) { x=100; wxButton::SetAuthNeeded(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxButton__SetAuthNeeded__leakignore() {
-  char *p = strdup(str);
-  wxButton::SetAuthNeeded(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxButton__SetAuthNeeded__arg1__notuninit() {
@@ -1707,23 +1293,11 @@ void test__wxButton__SetDefault__noreturn() {
   x = 1 << x;
 }
 
-void test__wxButton__SetDefault__leakignore() {
-  char *p = strdup(str);
-  wxButton::SetDefault();
-  // cppcheck-suppress memleak
-}
-
 void test__wxButton__SetLabel__noreturn() {
   int x = 1;
   if (cond) { x=100; wxButton::SetLabel(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxButton__SetLabel__leakignore() {
-  char *p = strdup(str);
-  wxButton::SetLabel(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxButton__SetLabel__arg1__notuninit() {
@@ -1744,12 +1318,6 @@ void test__wxColour__Alpha__useretval() {
   wxColour::Alpha();
 }
 
-void test__wxColour__Alpha__leakignore() {
-  char *p = strdup(str);
-  result = wxColour::Alpha();
-  // cppcheck-suppress memleak
-}
-
 void test__wxColour__Blue__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxColour::Blue(); }
@@ -1760,12 +1328,6 @@ void test__wxColour__Blue__noreturn() {
 void test__wxColour__Blue__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxColour::Blue();
-}
-
-void test__wxColour__Blue__leakignore() {
-  char *p = strdup(str);
-  result = wxColour::Blue();
-  // cppcheck-suppress memleak
 }
 
 void test__wxColour__Green__noreturn() {
@@ -1780,12 +1342,6 @@ void test__wxColour__Green__useretval() {
   wxColour::Green();
 }
 
-void test__wxColour__Green__leakignore() {
-  char *p = strdup(str);
-  result = wxColour::Green();
-  // cppcheck-suppress memleak
-}
-
 void test__wxColour__Red__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxColour::Red(); }
@@ -1798,23 +1354,11 @@ void test__wxColour__Red__useretval() {
   wxColour::Red();
 }
 
-void test__wxColour__Red__leakignore() {
-  char *p = strdup(str);
-  result = wxColour::Red();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__AddLine__noreturn() {
   int x = 1;
   if (cond) { x=100; wxTextFile::AddLine(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxTextFile__AddLine__leakignore() {
-  char *p = strdup(str);
-  wxTextFile::AddLine(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__wxTextFile__AddLine__arg1__notuninit() {
@@ -1836,12 +1380,6 @@ void test__wxTextFile__Clear__noreturn() {
   x = 1 << x;
 }
 
-void test__wxTextFile__Clear__leakignore() {
-  char *p = strdup(str);
-  wxTextFile::Clear();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__Close__noreturn() {
   int x = 1;
   if (cond) { x=100; wxTextFile::Close(); }
@@ -1849,23 +1387,11 @@ void test__wxTextFile__Close__noreturn() {
   x = 1 << x;
 }
 
-void test__wxTextFile__Close__leakignore() {
-  char *p = strdup(str);
-  wxTextFile::Close();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__Create__noreturn() {
   int x = 1;
   if (cond) { x=100; wxTextFile::Create(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxTextFile__Create__leakignore() {
-  char *p = strdup(str);
-  wxTextFile::Create(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxTextFile__Create__arg1__notuninit() {
@@ -1886,12 +1412,6 @@ void test__wxTextFile__Eof__useretval() {
   wxTextFile::Eof();
 }
 
-void test__wxTextFile__Eof__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::Eof();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__Exists__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxTextFile::Exists(); }
@@ -1902,12 +1422,6 @@ void test__wxTextFile__Exists__noreturn() {
 void test__wxTextFile__Exists__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxTextFile::Exists();
-}
-
-void test__wxTextFile__Exists__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::Exists();
-  // cppcheck-suppress memleak
 }
 
 void test__wxTextFile__GetCurrentLine__noreturn() {
@@ -1922,12 +1436,6 @@ void test__wxTextFile__GetCurrentLine__useretval() {
   wxTextFile::GetCurrentLine();
 }
 
-void test__wxTextFile__GetCurrentLine__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::GetCurrentLine();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__GetFirstLine__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxTextFile::GetFirstLine(); }
@@ -1938,12 +1446,6 @@ void test__wxTextFile__GetFirstLine__noreturn() {
 void test__wxTextFile__GetFirstLine__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxTextFile::GetFirstLine();
-}
-
-void test__wxTextFile__GetFirstLine__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::GetFirstLine();
-  // cppcheck-suppress memleak
 }
 
 void test__wxTextFile__GetLastLine__noreturn() {
@@ -1958,12 +1460,6 @@ void test__wxTextFile__GetLastLine__useretval() {
   wxTextFile::GetLastLine();
 }
 
-void test__wxTextFile__GetLastLine__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::GetLastLine();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__GetLineCount__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxTextFile::GetLineCount(); }
@@ -1974,12 +1470,6 @@ void test__wxTextFile__GetLineCount__noreturn() {
 void test__wxTextFile__GetLineCount__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxTextFile::GetLineCount();
-}
-
-void test__wxTextFile__GetLineCount__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::GetLineCount();
-  // cppcheck-suppress memleak
 }
 
 void test__wxTextFile__GetLineType__noreturn() {
@@ -1994,12 +1484,6 @@ void test__wxTextFile__GetLineType__useretval() {
   wxTextFile::GetLineType();
 }
 
-void test__wxTextFile__GetLineType__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::GetLineType();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__GetName__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxTextFile::GetName(); }
@@ -2010,12 +1494,6 @@ void test__wxTextFile__GetName__noreturn() {
 void test__wxTextFile__GetName__useretval() {
   // cppcheck-suppress ignoredReturnValue
   wxTextFile::GetName();
-}
-
-void test__wxTextFile__GetName__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::GetName();
-  // cppcheck-suppress memleak
 }
 
 void test__wxTextFile__GetNextLine__noreturn() {
@@ -2030,12 +1508,6 @@ void test__wxTextFile__GetNextLine__useretval() {
   wxTextFile::GetNextLine();
 }
 
-void test__wxTextFile__GetNextLine__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::GetNextLine();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__GetPrevLine__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxTextFile::GetPrevLine(); }
@@ -2048,23 +1520,11 @@ void test__wxTextFile__GetPrevLine__useretval() {
   wxTextFile::GetPrevLine();
 }
 
-void test__wxTextFile__GetPrevLine__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::GetPrevLine();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__GoToLine__noreturn() {
   int x = 1;
   if (cond) { x=100; wxTextFile::GoToLine(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxTextFile__GoToLine__leakignore() {
-  char *p = strdup(str);
-  wxTextFile::GoToLine(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxTextFile__GoToLine__arg1__notuninit() {
@@ -2085,23 +1545,11 @@ void test__wxTextFile__GuessType__useretval() {
   wxTextFile::GuessType();
 }
 
-void test__wxTextFile__GuessType__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::GuessType();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__InsertLine__noreturn() {
   int x = 1;
   if (cond) { x=100; wxTextFile::InsertLine(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxTextFile__InsertLine__leakignore() {
-  char *p = strdup(str);
-  wxTextFile::InsertLine(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__wxTextFile__InsertLine__arg1__notuninit() {
@@ -2134,23 +1582,11 @@ void test__wxTextFile__IsOpened__useretval() {
   wxTextFile::IsOpened();
 }
 
-void test__wxTextFile__IsOpened__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::IsOpened();
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__RemoveLine__noreturn() {
   int x = 1;
   if (cond) { x=100; wxTextFile::RemoveLine(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxTextFile__RemoveLine__leakignore() {
-  char *p = strdup(str);
-  wxTextFile::RemoveLine(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxTextFile__RemoveLine__arg1__notuninit() {
@@ -2171,12 +1607,6 @@ void test__wxTextFile__GetLine__useretval() {
   wxTextFile::GetLine(arg1);
 }
 
-void test__wxTextFile__GetLine__leakignore() {
-  char *p = strdup(str);
-  result = wxTextFile::GetLine(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxTextFile__GetLine__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2188,12 +1618,6 @@ void test__wxSizer__AddSpacer__noreturn() {
   if (cond) { x=100; wxSizer::AddSpacer(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxSizer__AddSpacer__leakignore() {
-  char *p = strdup(str);
-  wxSizer::AddSpacer(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxSizer__AddSpacer__arg1__notuninit() {
@@ -2209,12 +1633,6 @@ void test__wxBoxSizer__AddSpacer__noreturn() {
   x = 1 << x;
 }
 
-void test__wxBoxSizer__AddSpacer__leakignore() {
-  char *p = strdup(str);
-  wxBoxSizer::AddSpacer(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxBoxSizer__AddSpacer__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2226,12 +1644,6 @@ void test__wxBoxSizer__CalcMin__noreturn() {
   if (cond) { x=100; wxBoxSizer::CalcMin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxBoxSizer__CalcMin__leakignore() {
-  char *p = strdup(str);
-  wxBoxSizer::CalcMin();
-  // cppcheck-suppress memleak
 }
 
 void test__wxBoxSizer__GetOrientation__noreturn() {
@@ -2246,12 +1658,6 @@ void test__wxBoxSizer__GetOrientation__useretval() {
   wxBoxSizer::GetOrientation();
 }
 
-void test__wxBoxSizer__GetOrientation__leakignore() {
-  char *p = strdup(str);
-  result = wxBoxSizer::GetOrientation();
-  // cppcheck-suppress memleak
-}
-
 void test__wxBoxSizer__RecalcSizes__noreturn() {
   int x = 1;
   if (cond) { x=100; wxBoxSizer::RecalcSizes(); }
@@ -2259,23 +1665,11 @@ void test__wxBoxSizer__RecalcSizes__noreturn() {
   x = 1 << x;
 }
 
-void test__wxBoxSizer__RecalcSizes__leakignore() {
-  char *p = strdup(str);
-  wxBoxSizer::RecalcSizes();
-  // cppcheck-suppress memleak
-}
-
 void test__wxBoxSizer__SetOrientation__noreturn() {
   int x = 1;
   if (cond) { x=100; wxBoxSizer::SetOrientation(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxBoxSizer__SetOrientation__leakignore() {
-  char *p = strdup(str);
-  wxBoxSizer::SetOrientation(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxBoxSizer__SetOrientation__arg1__notuninit() {
@@ -2291,12 +1685,6 @@ void test__wxStaticBoxSizer__CalcMin__noreturn() {
   x = 1 << x;
 }
 
-void test__wxStaticBoxSizer__CalcMin__leakignore() {
-  char *p = strdup(str);
-  wxStaticBoxSizer::CalcMin();
-  // cppcheck-suppress memleak
-}
-
 void test__wxStaticBoxSizer__GetStaticBox__noreturn() {
   int x = 1;
   if (cond) { x=100; result = wxStaticBoxSizer::GetStaticBox(); }
@@ -2309,12 +1697,6 @@ void test__wxStaticBoxSizer__GetStaticBox__useretval() {
   wxStaticBoxSizer::GetStaticBox();
 }
 
-void test__wxStaticBoxSizer__GetStaticBox__leakignore() {
-  char *p = strdup(str);
-  result = wxStaticBoxSizer::GetStaticBox();
-  // cppcheck-suppress memleak
-}
-
 void test__wxStaticBoxSizer__RecalcSizes__noreturn() {
   int x = 1;
   if (cond) { x=100; wxStaticBoxSizer::RecalcSizes(); }
@@ -2322,23 +1704,11 @@ void test__wxStaticBoxSizer__RecalcSizes__noreturn() {
   x = 1 << x;
 }
 
-void test__wxStaticBoxSizer__RecalcSizes__leakignore() {
-  char *p = strdup(str);
-  wxStaticBoxSizer::RecalcSizes();
-  // cppcheck-suppress memleak
-}
-
 void test__wxMenu__Append__noreturn() {
   int x = 1;
   if (cond) { x=100; wxMenu::Append(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxMenu__Append__leakignore() {
-  char *p = strdup(str);
-  wxMenu::Append(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
 }
 
 void test__wxMenu__Append__arg1__notuninit() {
@@ -2361,7 +1731,7 @@ void test__wxLaunchDefaultBrowser__noreturn() {
 }
 
 void test__wxLaunchDefaultBrowser__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxLaunchDefaultBrowser(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -2391,7 +1761,7 @@ void test__wxDirExists__useretval() {
 }
 
 void test__wxDirExists__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wxDirExists(p);
   // cppcheck-suppress memleak
 }
@@ -2415,7 +1785,7 @@ void test__wxFileExists__useretval() {
 }
 
 void test__wxFileExists__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wxFileExists(p);
   // cppcheck-suppress memleak
 }
@@ -2459,7 +1829,7 @@ void test__wxSetWorkingDirectory__noreturn() {
 }
 
 void test__wxSetWorkingDirectory__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxSetWorkingDirectory(p);
   // cppcheck-suppress memleak
 }
@@ -2478,7 +1848,7 @@ void test__wxMkdir__noreturn() {
 }
 
 void test__wxMkdir__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxMkdir(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -2503,7 +1873,7 @@ void test__wxRmdir__noreturn() {
 }
 
 void test__wxRmdir__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxRmdir(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -2533,7 +1903,7 @@ void test__wxGetTranslation__useretval() {
 }
 
 void test__wxGetTranslation__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wxGetTranslation(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -2569,12 +1939,6 @@ void test__wxApp__MacOpenFile__noreturn() {
   x = 1 << x;
 }
 
-void test__wxApp__MacOpenFile__leakignore() {
-  char *p = strdup(str);
-  wxApp::MacOpenFile(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxApp__MacOpenFile__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2586,12 +1950,6 @@ void test__wxArtProvider__Insert__noreturn() {
   if (cond) { x=100; wxArtProvider::Insert(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxArtProvider__Insert__leakignore() {
-  char *p = strdup(str);
-  wxArtProvider::Insert(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxArtProvider__Insert__arg1__notnull() {
@@ -2613,12 +1971,6 @@ void test__wxCalendarCtrl__EnableYearChange__noreturn() {
   x = 1 << x;
 }
 
-void test__wxCalendarCtrl__EnableYearChange__leakignore() {
-  char *p = strdup(str);
-  wxCalendarCtrl::EnableYearChange(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxCalendarCtrl__EnableYearChange__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2637,23 +1989,11 @@ void test__wxComboCtrl__GetTextIndent__useretval() {
   wxComboCtrl::GetTextIndent();
 }
 
-void test__wxComboCtrl__GetTextIndent__leakignore() {
-  char *p = strdup(str);
-  result = wxComboCtrl::GetTextIndent();
-  // cppcheck-suppress memleak
-}
-
 void test__wxComboCtrl__HidePopup__noreturn() {
   int x = 1;
   if (cond) { x=100; wxComboCtrl::HidePopup(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxComboCtrl__HidePopup__leakignore() {
-  char *p = strdup(str);
-  wxComboCtrl::HidePopup(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxComboCtrl__HidePopup__arg1__notuninit() {
@@ -2669,23 +2009,11 @@ void test__wxComboCtrl__ShowPopup__noreturn() {
   x = 1 << x;
 }
 
-void test__wxComboCtrl__ShowPopup__leakignore() {
-  char *p = strdup(str);
-  wxComboCtrl::ShowPopup();
-  // cppcheck-suppress memleak
-}
-
 void test__wxComboCtrl__SetTextIndent__noreturn() {
   int x = 1;
   if (cond) { x=100; wxComboCtrl::SetTextIndent(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxComboCtrl__SetTextIndent__leakignore() {
-  char *p = strdup(str);
-  wxComboCtrl::SetTextIndent(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxComboCtrl__SetTextIndent__arg1__notuninit() {
@@ -2699,12 +2027,6 @@ void test__wxDataViewCustomRenderer__Activate__noreturn() {
   if (cond) { x=100; wxDataViewCustomRenderer::Activate(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxDataViewCustomRenderer__Activate__leakignore() {
-  char *p = strdup(str);
-  wxDataViewCustomRenderer::Activate(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
 }
 
 void test__wxDataViewCustomRenderer__Activate__arg1__notuninit() {
@@ -2736,12 +2058,6 @@ void test__wxDataViewCustomRenderer__LeftClick__noreturn() {
   if (cond) { x=100; wxDataViewCustomRenderer::LeftClick(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxDataViewCustomRenderer__LeftClick__leakignore() {
-  char *p = strdup(str);
-  wxDataViewCustomRenderer::LeftClick(p, arg2, arg3, arg4, arg5);
-  // cppcheck-suppress memleak
 }
 
 void test__wxDataViewCustomRenderer__LeftClick__arg1__notuninit() {
@@ -2786,23 +2102,11 @@ void test__wxDebugContext__GetLevel__useretval() {
   wxDebugContext::GetLevel();
 }
 
-void test__wxDebugContext__GetLevel__leakignore() {
-  char *p = strdup(str);
-  result = wxDebugContext::GetLevel();
-  // cppcheck-suppress memleak
-}
-
 void test__wxDebugContext__SetLevel__noreturn() {
   int x = 1;
   if (cond) { x=100; wxDebugContext::SetLevel(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxDebugContext__SetLevel__leakignore() {
-  char *p = strdup(str);
-  wxDebugContext::SetLevel(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxDebugContext__SetLevel__arg1__notuninit() {
@@ -2819,7 +2123,7 @@ void test__wxDos2UnixFilename__noreturn() {
 }
 
 void test__wxDos2UnixFilename__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wxDos2UnixFilename(p);
   // cppcheck-suppress memleak
 }
@@ -2849,7 +2153,7 @@ void test__wxFileNameFromPath__useretval() {
 }
 
 void test__wxFileNameFromPath__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wxFileNameFromPath(p);
   // cppcheck-suppress memleak
 }
@@ -2865,12 +2169,6 @@ void test__wxSizerItem__SetWindow__noreturn() {
   if (cond) { x=100; wxSizerItem::SetWindow(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxSizerItem__SetWindow__leakignore() {
-  char *p = strdup(str);
-  wxSizerItem::SetWindow(p);
-  // cppcheck-suppress memleak
 }
 
 void test__wxSizerItem__SetWindow__arg1__notnull() {
@@ -2892,12 +2190,6 @@ void test__wxSizerItem__SetSizer__noreturn() {
   x = 1 << x;
 }
 
-void test__wxSizerItem__SetSizer__leakignore() {
-  char *p = strdup(str);
-  wxSizerItem::SetSizer(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxSizerItem__SetSizer__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -2917,12 +2209,6 @@ void test__wxSizerItem__SetSpacer__noreturn() {
   x = 1 << x;
 }
 
-void test__wxSizerItem__SetSpacer__leakignore() {
-  char *p = strdup(str);
-  wxSizerItem::SetSpacer(p);
-  // cppcheck-suppress memleak
-}
-
 void test__wxSizerItem__SetSpacer__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2934,12 +2220,6 @@ void test__wxGrid__SetCellAlignment__noreturn() {
   if (cond) { x=100; wxGrid::SetCellAlignment(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxGrid__SetCellAlignment__leakignore() {
-  char *p = strdup(str);
-  wxGrid::SetCellAlignment(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__wxGrid__SetCellAlignment__arg1__notuninit() {
@@ -2965,12 +2245,6 @@ void test__wxGrid__SetCellTextColour__noreturn() {
   if (cond) { x=100; wxGrid::SetCellTextColour(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__wxGrid__SetCellTextColour__leakignore() {
-  char *p = strdup(str);
-  wxGrid::SetCellTextColour(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__wxGrid__SetCellTextColour__arg1__notuninit() {

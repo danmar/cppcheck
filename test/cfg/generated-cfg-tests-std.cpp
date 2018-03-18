@@ -40,7 +40,7 @@ void test__abs__pure(int arg1) {
 }
 
 void test__abs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = abs(p);
   // cppcheck-suppress memleak
 }
@@ -73,12 +73,6 @@ void test__std__abs__pure(int arg1) {
   if ((std::abs(arg1) > 10) || (std::abs(arg1) < 100)) {}
 }
 
-void test__std__abs__leakignore() {
-  char *p = strdup(str);
-  result = std::abs(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__abs__arg1__notbool() {
   // cppcheck-suppress invalidFunctionArgBool
   result = std::abs(!x);
@@ -108,7 +102,7 @@ void test__imaxabs__pure(int arg1) {
 }
 
 void test__imaxabs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = imaxabs(p);
   // cppcheck-suppress memleak
 }
@@ -136,12 +130,6 @@ void test__std__imaxabs__pure(int arg1) {
   if ((std::imaxabs(arg1) > 10) || (std::imaxabs(arg1) < 100)) {}
 }
 
-void test__std__imaxabs__leakignore() {
-  char *p = strdup(str);
-  result = std::imaxabs(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__imaxabs__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -163,12 +151,6 @@ void test__std__proj__useretval() {
 void test__std__proj__pure(int arg1) {
   // cppcheck-suppress incorrectLogicOperator
   if ((std::proj(arg1) > 10) || (std::proj(arg1) < 100)) {}
-}
-
-void test__std__proj__leakignore() {
-  char *p = strdup(str);
-  result = std::proj(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__proj__arg1__notuninit() {
@@ -195,7 +177,7 @@ void test__cproj__pure(int arg1) {
 }
 
 void test__cproj__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cproj(p);
   // cppcheck-suppress memleak
 }
@@ -224,7 +206,7 @@ void test__cprojf__pure(int arg1) {
 }
 
 void test__cprojf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cprojf(p);
   // cppcheck-suppress memleak
 }
@@ -253,7 +235,7 @@ void test__cprojl__pure(int arg1) {
 }
 
 void test__cprojl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cprojl(p);
   // cppcheck-suppress memleak
 }
@@ -282,7 +264,7 @@ void test__creal__pure(int arg1) {
 }
 
 void test__creal__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = creal(p);
   // cppcheck-suppress memleak
 }
@@ -311,7 +293,7 @@ void test__crealf__pure(int arg1) {
 }
 
 void test__crealf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = crealf(p);
   // cppcheck-suppress memleak
 }
@@ -340,7 +322,7 @@ void test__creall__pure(int arg1) {
 }
 
 void test__creall__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = creall(p);
   // cppcheck-suppress memleak
 }
@@ -369,7 +351,7 @@ void test__acos__pure(int arg1) {
 }
 
 void test__acos__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = acos(p);
   // cppcheck-suppress memleak
 }
@@ -397,12 +379,6 @@ void test__std__acos__pure(int arg1) {
   if ((std::acos(arg1) > 10) || (std::acos(arg1) < 100)) {}
 }
 
-void test__std__acos__leakignore() {
-  char *p = strdup(str);
-  result = std::acos(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__acos__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -427,7 +403,7 @@ void test__acosf__pure(int arg1) {
 }
 
 void test__acosf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = acosf(p);
   // cppcheck-suppress memleak
 }
@@ -455,12 +431,6 @@ void test__std__acosf__pure(int arg1) {
   if ((std::acosf(arg1) > 10) || (std::acosf(arg1) < 100)) {}
 }
 
-void test__std__acosf__leakignore() {
-  char *p = strdup(str);
-  result = std::acosf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__acosf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -485,7 +455,7 @@ void test__acosl__pure(int arg1) {
 }
 
 void test__acosl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = acosl(p);
   // cppcheck-suppress memleak
 }
@@ -513,12 +483,6 @@ void test__std__acosl__pure(int arg1) {
   if ((std::acosl(arg1) > 10) || (std::acosl(arg1) < 100)) {}
 }
 
-void test__std__acosl__leakignore() {
-  char *p = strdup(str);
-  result = std::acosl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__acosl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -543,7 +507,7 @@ void test__acosh__pure(int arg1) {
 }
 
 void test__acosh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = acosh(p);
   // cppcheck-suppress memleak
 }
@@ -571,12 +535,6 @@ void test__std__acosh__pure(int arg1) {
   if ((std::acosh(arg1) > 10) || (std::acosh(arg1) < 100)) {}
 }
 
-void test__std__acosh__leakignore() {
-  char *p = strdup(str);
-  result = std::acosh(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__acosh__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -601,7 +559,7 @@ void test__acoshf__pure(int arg1) {
 }
 
 void test__acoshf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = acoshf(p);
   // cppcheck-suppress memleak
 }
@@ -629,12 +587,6 @@ void test__std__acoshf__pure(int arg1) {
   if ((std::acoshf(arg1) > 10) || (std::acoshf(arg1) < 100)) {}
 }
 
-void test__std__acoshf__leakignore() {
-  char *p = strdup(str);
-  result = std::acoshf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__acoshf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -659,7 +611,7 @@ void test__acoshl__pure(int arg1) {
 }
 
 void test__acoshl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = acoshl(p);
   // cppcheck-suppress memleak
 }
@@ -687,12 +639,6 @@ void test__std__acoshl__pure(int arg1) {
   if ((std::acoshl(arg1) > 10) || (std::acoshl(arg1) < 100)) {}
 }
 
-void test__std__acoshl__leakignore() {
-  char *p = strdup(str);
-  result = std::acoshl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__acoshl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -712,7 +658,7 @@ void test__asctime__useretval() {
 }
 
 void test__asctime__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = asctime(p);
   // cppcheck-suppress memleak
 }
@@ -741,12 +687,6 @@ void test__std__asctime__useretval() {
   std::asctime(arg1);
 }
 
-void test__std__asctime__leakignore() {
-  char *p = strdup(str);
-  result = std::asctime(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__asctime__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -760,7 +700,7 @@ void test__std__asctime__arg1__notuninit() {
 }
 
 void test__assert__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   assert(p);
   // cppcheck-suppress memleak
 }
@@ -789,7 +729,7 @@ void test__sqrt__pure(int arg1) {
 }
 
 void test__sqrt__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = sqrt(p);
   // cppcheck-suppress memleak
 }
@@ -817,12 +757,6 @@ void test__std__sqrt__pure(int arg1) {
   if ((std::sqrt(arg1) > 10) || (std::sqrt(arg1) < 100)) {}
 }
 
-void test__std__sqrt__leakignore() {
-  char *p = strdup(str);
-  result = std::sqrt(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__sqrt__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -847,7 +781,7 @@ void test__sqrtf__pure(int arg1) {
 }
 
 void test__sqrtf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = sqrtf(p);
   // cppcheck-suppress memleak
 }
@@ -875,12 +809,6 @@ void test__std__sqrtf__pure(int arg1) {
   if ((std::sqrtf(arg1) > 10) || (std::sqrtf(arg1) < 100)) {}
 }
 
-void test__std__sqrtf__leakignore() {
-  char *p = strdup(str);
-  result = std::sqrtf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__sqrtf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -905,7 +833,7 @@ void test__sqrtl__pure(int arg1) {
 }
 
 void test__sqrtl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = sqrtl(p);
   // cppcheck-suppress memleak
 }
@@ -933,12 +861,6 @@ void test__std__sqrtl__pure(int arg1) {
   if ((std::sqrtl(arg1) > 10) || (std::sqrtl(arg1) < 100)) {}
 }
 
-void test__std__sqrtl__leakignore() {
-  char *p = strdup(str);
-  result = std::sqrtl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__sqrtl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -963,7 +885,7 @@ void test__csqrt__pure(int arg1) {
 }
 
 void test__csqrt__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = csqrt(p);
   // cppcheck-suppress memleak
 }
@@ -992,7 +914,7 @@ void test__csqrtf__pure(int arg1) {
 }
 
 void test__csqrtf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = csqrtf(p);
   // cppcheck-suppress memleak
 }
@@ -1021,7 +943,7 @@ void test__csqrtl__pure(int arg1) {
 }
 
 void test__csqrtl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = csqrtl(p);
   // cppcheck-suppress memleak
 }
@@ -1050,7 +972,7 @@ void test__sinh__pure(int arg1) {
 }
 
 void test__sinh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = sinh(p);
   // cppcheck-suppress memleak
 }
@@ -1078,12 +1000,6 @@ void test__std__sinh__pure(int arg1) {
   if ((std::sinh(arg1) > 10) || (std::sinh(arg1) < 100)) {}
 }
 
-void test__std__sinh__leakignore() {
-  char *p = strdup(str);
-  result = std::sinh(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__sinh__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1108,7 +1024,7 @@ void test__sinhf__pure(int arg1) {
 }
 
 void test__sinhf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = sinhf(p);
   // cppcheck-suppress memleak
 }
@@ -1136,12 +1052,6 @@ void test__std__sinhf__pure(int arg1) {
   if ((std::sinhf(arg1) > 10) || (std::sinhf(arg1) < 100)) {}
 }
 
-void test__std__sinhf__leakignore() {
-  char *p = strdup(str);
-  result = std::sinhf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__sinhf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1166,7 +1076,7 @@ void test__sinhl__pure(int arg1) {
 }
 
 void test__sinhl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = sinhl(p);
   // cppcheck-suppress memleak
 }
@@ -1194,12 +1104,6 @@ void test__std__sinhl__pure(int arg1) {
   if ((std::sinhl(arg1) > 10) || (std::sinhl(arg1) < 100)) {}
 }
 
-void test__std__sinhl__leakignore() {
-  char *p = strdup(str);
-  result = std::sinhl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__sinhl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1224,7 +1128,7 @@ void test__sin__pure(int arg1) {
 }
 
 void test__sin__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = sin(p);
   // cppcheck-suppress memleak
 }
@@ -1252,12 +1156,6 @@ void test__std__sin__pure(int arg1) {
   if ((std::sin(arg1) > 10) || (std::sin(arg1) < 100)) {}
 }
 
-void test__std__sin__leakignore() {
-  char *p = strdup(str);
-  result = std::sin(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__sin__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1282,7 +1180,7 @@ void test__sinf__pure(int arg1) {
 }
 
 void test__sinf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = sinf(p);
   // cppcheck-suppress memleak
 }
@@ -1310,12 +1208,6 @@ void test__std__sinf__pure(int arg1) {
   if ((std::sinf(arg1) > 10) || (std::sinf(arg1) < 100)) {}
 }
 
-void test__std__sinf__leakignore() {
-  char *p = strdup(str);
-  result = std::sinf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__sinf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1340,7 +1232,7 @@ void test__sinl__pure(int arg1) {
 }
 
 void test__sinl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = sinl(p);
   // cppcheck-suppress memleak
 }
@@ -1368,12 +1260,6 @@ void test__std__sinl__pure(int arg1) {
   if ((std::sinl(arg1) > 10) || (std::sinl(arg1) < 100)) {}
 }
 
-void test__std__sinl__leakignore() {
-  char *p = strdup(str);
-  result = std::sinl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__sinl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1398,7 +1284,7 @@ void test__csin__pure(int arg1) {
 }
 
 void test__csin__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = csin(p);
   // cppcheck-suppress memleak
 }
@@ -1427,7 +1313,7 @@ void test__csinf__pure(int arg1) {
 }
 
 void test__csinf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = csinf(p);
   // cppcheck-suppress memleak
 }
@@ -1456,7 +1342,7 @@ void test__csinl__pure(int arg1) {
 }
 
 void test__csinl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = csinl(p);
   // cppcheck-suppress memleak
 }
@@ -1485,7 +1371,7 @@ void test__csinh__pure(int arg1) {
 }
 
 void test__csinh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = csinh(p);
   // cppcheck-suppress memleak
 }
@@ -1514,7 +1400,7 @@ void test__csinhf__pure(int arg1) {
 }
 
 void test__csinhf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = csinhf(p);
   // cppcheck-suppress memleak
 }
@@ -1543,7 +1429,7 @@ void test__csinhl__pure(int arg1) {
 }
 
 void test__csinhl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = csinhl(p);
   // cppcheck-suppress memleak
 }
@@ -1572,7 +1458,7 @@ void test__asin__pure(int arg1) {
 }
 
 void test__asin__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = asin(p);
   // cppcheck-suppress memleak
 }
@@ -1600,12 +1486,6 @@ void test__std__asin__pure(int arg1) {
   if ((std::asin(arg1) > 10) || (std::asin(arg1) < 100)) {}
 }
 
-void test__std__asin__leakignore() {
-  char *p = strdup(str);
-  result = std::asin(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__asin__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1630,7 +1510,7 @@ void test__asinf__pure(int arg1) {
 }
 
 void test__asinf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = asinf(p);
   // cppcheck-suppress memleak
 }
@@ -1658,12 +1538,6 @@ void test__std__asinf__pure(int arg1) {
   if ((std::asinf(arg1) > 10) || (std::asinf(arg1) < 100)) {}
 }
 
-void test__std__asinf__leakignore() {
-  char *p = strdup(str);
-  result = std::asinf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__asinf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1688,7 +1562,7 @@ void test__asinl__pure(int arg1) {
 }
 
 void test__asinl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = asinl(p);
   // cppcheck-suppress memleak
 }
@@ -1716,12 +1590,6 @@ void test__std__asinl__pure(int arg1) {
   if ((std::asinl(arg1) > 10) || (std::asinl(arg1) < 100)) {}
 }
 
-void test__std__asinl__leakignore() {
-  char *p = strdup(str);
-  result = std::asinl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__asinl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1746,7 +1614,7 @@ void test__casin__pure(int arg1) {
 }
 
 void test__casin__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = casin(p);
   // cppcheck-suppress memleak
 }
@@ -1775,7 +1643,7 @@ void test__casinf__pure(int arg1) {
 }
 
 void test__casinf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = casinf(p);
   // cppcheck-suppress memleak
 }
@@ -1804,7 +1672,7 @@ void test__casinl__pure(int arg1) {
 }
 
 void test__casinl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = casinl(p);
   // cppcheck-suppress memleak
 }
@@ -1833,7 +1701,7 @@ void test__asinh__pure(int arg1) {
 }
 
 void test__asinh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = asinh(p);
   // cppcheck-suppress memleak
 }
@@ -1861,12 +1729,6 @@ void test__std__asinh__pure(int arg1) {
   if ((std::asinh(arg1) > 10) || (std::asinh(arg1) < 100)) {}
 }
 
-void test__std__asinh__leakignore() {
-  char *p = strdup(str);
-  result = std::asinh(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__asinh__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1891,7 +1753,7 @@ void test__asinhf__pure(int arg1) {
 }
 
 void test__asinhf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = asinhf(p);
   // cppcheck-suppress memleak
 }
@@ -1919,12 +1781,6 @@ void test__std__asinhf__pure(int arg1) {
   if ((std::asinhf(arg1) > 10) || (std::asinhf(arg1) < 100)) {}
 }
 
-void test__std__asinhf__leakignore() {
-  char *p = strdup(str);
-  result = std::asinhf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__asinhf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1949,7 +1805,7 @@ void test__asinhl__pure(int arg1) {
 }
 
 void test__asinhl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = asinhl(p);
   // cppcheck-suppress memleak
 }
@@ -1977,12 +1833,6 @@ void test__std__asinhl__pure(int arg1) {
   if ((std::asinhl(arg1) > 10) || (std::asinhl(arg1) < 100)) {}
 }
 
-void test__std__asinhl__leakignore() {
-  char *p = strdup(str);
-  result = std::asinhl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__asinhl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2007,7 +1857,7 @@ void test__casinh__pure(int arg1) {
 }
 
 void test__casinh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = casinh(p);
   // cppcheck-suppress memleak
 }
@@ -2036,7 +1886,7 @@ void test__casinhf__pure(int arg1) {
 }
 
 void test__casinhf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = casinhf(p);
   // cppcheck-suppress memleak
 }
@@ -2065,7 +1915,7 @@ void test__casinhl__pure(int arg1) {
 }
 
 void test__casinhl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = casinhl(p);
   // cppcheck-suppress memleak
 }
@@ -2089,7 +1939,7 @@ void test__wcsftime__pure(int arg1,int arg2,int arg3,int arg4) {
 }
 
 void test__wcsftime__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcsftime(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -2140,12 +1990,6 @@ void test__std__wcsftime__noreturn() {
 void test__std__wcsftime__pure(int arg1,int arg2,int arg3,int arg4) {
   // cppcheck-suppress incorrectLogicOperator
   if ((std::wcsftime(arg1, arg2, arg3, arg4) > 10) || (std::wcsftime(arg1, arg2, arg3, arg4) < 100)) {}
-}
-
-void test__std__wcsftime__leakignore() {
-  char *p = strdup(str);
-  std::wcsftime(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wcsftime__arg1__notnull() {
@@ -2202,7 +2046,7 @@ void test__tan__pure(int arg1) {
 }
 
 void test__tan__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = tan(p);
   // cppcheck-suppress memleak
 }
@@ -2230,12 +2074,6 @@ void test__std__tan__pure(int arg1) {
   if ((std::tan(arg1) > 10) || (std::tan(arg1) < 100)) {}
 }
 
-void test__std__tan__leakignore() {
-  char *p = strdup(str);
-  result = std::tan(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__tan__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2260,7 +2098,7 @@ void test__tanf__pure(int arg1) {
 }
 
 void test__tanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = tanf(p);
   // cppcheck-suppress memleak
 }
@@ -2288,12 +2126,6 @@ void test__std__tanf__pure(int arg1) {
   if ((std::tanf(arg1) > 10) || (std::tanf(arg1) < 100)) {}
 }
 
-void test__std__tanf__leakignore() {
-  char *p = strdup(str);
-  result = std::tanf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__tanf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2318,7 +2150,7 @@ void test__tanl__pure(int arg1) {
 }
 
 void test__tanl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = tanl(p);
   // cppcheck-suppress memleak
 }
@@ -2346,12 +2178,6 @@ void test__std__tanl__pure(int arg1) {
   if ((std::tanl(arg1) > 10) || (std::tanl(arg1) < 100)) {}
 }
 
-void test__std__tanl__leakignore() {
-  char *p = strdup(str);
-  result = std::tanl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__tanl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2376,7 +2202,7 @@ void test__ctan__pure(int arg1) {
 }
 
 void test__ctan__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ctan(p);
   // cppcheck-suppress memleak
 }
@@ -2405,7 +2231,7 @@ void test__ctanf__pure(int arg1) {
 }
 
 void test__ctanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ctanf(p);
   // cppcheck-suppress memleak
 }
@@ -2434,7 +2260,7 @@ void test__ctanl__pure(int arg1) {
 }
 
 void test__ctanl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ctanl(p);
   // cppcheck-suppress memleak
 }
@@ -2463,7 +2289,7 @@ void test__tanh__pure(int arg1) {
 }
 
 void test__tanh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = tanh(p);
   // cppcheck-suppress memleak
 }
@@ -2491,12 +2317,6 @@ void test__std__tanh__pure(int arg1) {
   if ((std::tanh(arg1) > 10) || (std::tanh(arg1) < 100)) {}
 }
 
-void test__std__tanh__leakignore() {
-  char *p = strdup(str);
-  result = std::tanh(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__tanh__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2521,7 +2341,7 @@ void test__tanhf__pure(int arg1) {
 }
 
 void test__tanhf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = tanhf(p);
   // cppcheck-suppress memleak
 }
@@ -2549,12 +2369,6 @@ void test__std__tanhf__pure(int arg1) {
   if ((std::tanhf(arg1) > 10) || (std::tanhf(arg1) < 100)) {}
 }
 
-void test__std__tanhf__leakignore() {
-  char *p = strdup(str);
-  result = std::tanhf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__tanhf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2579,7 +2393,7 @@ void test__tanhl__pure(int arg1) {
 }
 
 void test__tanhl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = tanhl(p);
   // cppcheck-suppress memleak
 }
@@ -2607,12 +2421,6 @@ void test__std__tanhl__pure(int arg1) {
   if ((std::tanhl(arg1) > 10) || (std::tanhl(arg1) < 100)) {}
 }
 
-void test__std__tanhl__leakignore() {
-  char *p = strdup(str);
-  result = std::tanhl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__tanhl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2637,7 +2445,7 @@ void test__ctanh__pure(int arg1) {
 }
 
 void test__ctanh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ctanh(p);
   // cppcheck-suppress memleak
 }
@@ -2666,7 +2474,7 @@ void test__ctanhf__pure(int arg1) {
 }
 
 void test__ctanhf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ctanhf(p);
   // cppcheck-suppress memleak
 }
@@ -2695,7 +2503,7 @@ void test__ctanhl__pure(int arg1) {
 }
 
 void test__ctanhl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ctanhl(p);
   // cppcheck-suppress memleak
 }
@@ -2719,7 +2527,7 @@ void test__feclearexcept__pure(int arg1) {
 }
 
 void test__feclearexcept__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   feclearexcept(p);
   // cppcheck-suppress memleak
 }
@@ -2742,12 +2550,6 @@ void test__std__feclearexcept__pure(int arg1) {
   if ((std::feclearexcept(arg1) > 10) || (std::feclearexcept(arg1) < 100)) {}
 }
 
-void test__std__feclearexcept__leakignore() {
-  char *p = strdup(str);
-  std::feclearexcept(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__feclearexcept__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2762,7 +2564,7 @@ void test__fegetenv__noreturn() {
 }
 
 void test__fegetenv__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fegetenv(p);
   // cppcheck-suppress memleak
 }
@@ -2780,12 +2582,6 @@ void test__std__fegetenv__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fegetenv__leakignore() {
-  char *p = strdup(str);
-  std::fegetenv(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fegetenv__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -2800,7 +2596,7 @@ void test__fegetexceptflag__noreturn() {
 }
 
 void test__fegetexceptflag__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fegetexceptflag(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -2822,12 +2618,6 @@ void test__std__fegetexceptflag__noreturn() {
   if (cond) { x=100; std::fegetexceptflag(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__fegetexceptflag__leakignore() {
-  char *p = strdup(str);
-  std::fegetexceptflag(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__fegetexceptflag__arg1__notnull() {
@@ -2860,7 +2650,7 @@ void test__fegetround__pure() {
 }
 
 void test__fegetround__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fegetround();
   // cppcheck-suppress memleak
 }
@@ -2882,12 +2672,6 @@ void test__std__fegetround__pure() {
   if ((std::fegetround() > 10) || (std::fegetround() < 100)) {}
 }
 
-void test__std__fegetround__leakignore() {
-  char *p = strdup(str);
-  result = std::fegetround();
-  // cppcheck-suppress memleak
-}
-
 void test__feholdexcept__noreturn() {
   int x = 1;
   if (cond) { x=100; feholdexcept(arg1); }
@@ -2896,7 +2680,7 @@ void test__feholdexcept__noreturn() {
 }
 
 void test__feholdexcept__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   feholdexcept(p);
   // cppcheck-suppress memleak
 }
@@ -2914,12 +2698,6 @@ void test__std__feholdexcept__noreturn() {
   x = 1 << x;
 }
 
-void test__std__feholdexcept__leakignore() {
-  char *p = strdup(str);
-  std::feholdexcept(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__feholdexcept__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -2934,7 +2712,7 @@ void test__feraiseexcept__noreturn() {
 }
 
 void test__feraiseexcept__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   feraiseexcept(p);
   // cppcheck-suppress memleak
 }
@@ -2952,12 +2730,6 @@ void test__std__feraiseexcept__noreturn() {
   x = 1 << x;
 }
 
-void test__std__feraiseexcept__leakignore() {
-  char *p = strdup(str);
-  std::feraiseexcept(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__feraiseexcept__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2972,7 +2744,7 @@ void test__fesetenv__noreturn() {
 }
 
 void test__fesetenv__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fesetenv(p);
   // cppcheck-suppress memleak
 }
@@ -2996,12 +2768,6 @@ void test__std__fesetenv__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fesetenv__leakignore() {
-  char *p = strdup(str);
-  std::fesetenv(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fesetenv__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -3022,7 +2788,7 @@ void test__fesetexceptflag__noreturn() {
 }
 
 void test__fesetexceptflag__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fesetexceptflag(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -3052,12 +2818,6 @@ void test__std__fesetexceptflag__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fesetexceptflag__leakignore() {
-  char *p = strdup(str);
-  std::fesetexceptflag(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fesetexceptflag__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -3084,7 +2844,7 @@ void test__fesetround__noreturn() {
 }
 
 void test__fesetround__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fesetround(p);
   // cppcheck-suppress memleak
 }
@@ -3102,12 +2862,6 @@ void test__std__fesetround__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fesetround__leakignore() {
-  char *p = strdup(str);
-  std::fesetround(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fesetround__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3122,7 +2876,7 @@ void test__fetestexcept__noreturn() {
 }
 
 void test__fetestexcept__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fetestexcept(p);
   // cppcheck-suppress memleak
 }
@@ -3140,12 +2894,6 @@ void test__std__fetestexcept__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fetestexcept__leakignore() {
-  char *p = strdup(str);
-  std::fetestexcept(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fetestexcept__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3160,7 +2908,7 @@ void test__feupdateenv__noreturn() {
 }
 
 void test__feupdateenv__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   feupdateenv(p);
   // cppcheck-suppress memleak
 }
@@ -3182,12 +2930,6 @@ void test__std__feupdateenv__noreturn() {
   if (cond) { x=100; std::feupdateenv(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__feupdateenv__leakignore() {
-  char *p = strdup(str);
-  std::feupdateenv(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__feupdateenv__arg1__notnull() {
@@ -3220,7 +2962,7 @@ void test__atan__pure(int arg1) {
 }
 
 void test__atan__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atan(p);
   // cppcheck-suppress memleak
 }
@@ -3248,12 +2990,6 @@ void test__std__atan__pure(int arg1) {
   if ((std::atan(arg1) > 10) || (std::atan(arg1) < 100)) {}
 }
 
-void test__std__atan__leakignore() {
-  char *p = strdup(str);
-  result = std::atan(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atan__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3278,7 +3014,7 @@ void test__atanf__pure(int arg1) {
 }
 
 void test__atanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atanf(p);
   // cppcheck-suppress memleak
 }
@@ -3306,12 +3042,6 @@ void test__std__atanf__pure(int arg1) {
   if ((std::atanf(arg1) > 10) || (std::atanf(arg1) < 100)) {}
 }
 
-void test__std__atanf__leakignore() {
-  char *p = strdup(str);
-  result = std::atanf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atanf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3336,7 +3066,7 @@ void test__atanl__pure(int arg1) {
 }
 
 void test__atanl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atanl(p);
   // cppcheck-suppress memleak
 }
@@ -3364,12 +3094,6 @@ void test__std__atanl__pure(int arg1) {
   if ((std::atanl(arg1) > 10) || (std::atanl(arg1) < 100)) {}
 }
 
-void test__std__atanl__leakignore() {
-  char *p = strdup(str);
-  result = std::atanl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atanl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3394,7 +3118,7 @@ void test__catan__pure(int arg1) {
 }
 
 void test__catan__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = catan(p);
   // cppcheck-suppress memleak
 }
@@ -3423,7 +3147,7 @@ void test__catanf__pure(int arg1) {
 }
 
 void test__catanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = catanf(p);
   // cppcheck-suppress memleak
 }
@@ -3452,7 +3176,7 @@ void test__catanl__pure(int arg1) {
 }
 
 void test__catanl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = catanl(p);
   // cppcheck-suppress memleak
 }
@@ -3481,7 +3205,7 @@ void test__tgamma__pure(int arg1) {
 }
 
 void test__tgamma__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = tgamma(p);
   // cppcheck-suppress memleak
 }
@@ -3509,12 +3233,6 @@ void test__std__tgamma__pure(int arg1) {
   if ((std::tgamma(arg1) > 10) || (std::tgamma(arg1) < 100)) {}
 }
 
-void test__std__tgamma__leakignore() {
-  char *p = strdup(str);
-  result = std::tgamma(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__tgamma__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3539,7 +3257,7 @@ void test__tgammaf__pure(int arg1) {
 }
 
 void test__tgammaf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = tgammaf(p);
   // cppcheck-suppress memleak
 }
@@ -3567,12 +3285,6 @@ void test__std__tgammaf__pure(int arg1) {
   if ((std::tgammaf(arg1) > 10) || (std::tgammaf(arg1) < 100)) {}
 }
 
-void test__std__tgammaf__leakignore() {
-  char *p = strdup(str);
-  result = std::tgammaf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__tgammaf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3597,7 +3309,7 @@ void test__tgammal__pure(int arg1) {
 }
 
 void test__tgammal__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = tgammal(p);
   // cppcheck-suppress memleak
 }
@@ -3625,12 +3337,6 @@ void test__std__tgammal__pure(int arg1) {
   if ((std::tgammal(arg1) > 10) || (std::tgammal(arg1) < 100)) {}
 }
 
-void test__std__tgammal__leakignore() {
-  char *p = strdup(str);
-  result = std::tgammal(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__tgammal__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3655,7 +3361,7 @@ void test__trunc__pure(int arg1) {
 }
 
 void test__trunc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = trunc(p);
   // cppcheck-suppress memleak
 }
@@ -3683,12 +3389,6 @@ void test__std__trunc__pure(int arg1) {
   if ((std::trunc(arg1) > 10) || (std::trunc(arg1) < 100)) {}
 }
 
-void test__std__trunc__leakignore() {
-  char *p = strdup(str);
-  result = std::trunc(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__trunc__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3713,7 +3413,7 @@ void test__truncf__pure(int arg1) {
 }
 
 void test__truncf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = truncf(p);
   // cppcheck-suppress memleak
 }
@@ -3741,12 +3441,6 @@ void test__std__truncf__pure(int arg1) {
   if ((std::truncf(arg1) > 10) || (std::truncf(arg1) < 100)) {}
 }
 
-void test__std__truncf__leakignore() {
-  char *p = strdup(str);
-  result = std::truncf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__truncf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3771,7 +3465,7 @@ void test__truncl__pure(int arg1) {
 }
 
 void test__truncl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = truncl(p);
   // cppcheck-suppress memleak
 }
@@ -3799,12 +3493,6 @@ void test__std__truncl__pure(int arg1) {
   if ((std::truncl(arg1) > 10) || (std::truncl(arg1) < 100)) {}
 }
 
-void test__std__truncl__leakignore() {
-  char *p = strdup(str);
-  result = std::truncl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__truncl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3829,7 +3517,7 @@ void test__atanh__pure(int arg1) {
 }
 
 void test__atanh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atanh(p);
   // cppcheck-suppress memleak
 }
@@ -3857,12 +3545,6 @@ void test__std__atanh__pure(int arg1) {
   if ((std::atanh(arg1) > 10) || (std::atanh(arg1) < 100)) {}
 }
 
-void test__std__atanh__leakignore() {
-  char *p = strdup(str);
-  result = std::atanh(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atanh__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3887,7 +3569,7 @@ void test__atanhf__pure(int arg1) {
 }
 
 void test__atanhf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atanhf(p);
   // cppcheck-suppress memleak
 }
@@ -3915,12 +3597,6 @@ void test__std__atanhf__pure(int arg1) {
   if ((std::atanhf(arg1) > 10) || (std::atanhf(arg1) < 100)) {}
 }
 
-void test__std__atanhf__leakignore() {
-  char *p = strdup(str);
-  result = std::atanhf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atanhf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3945,7 +3621,7 @@ void test__atanhl__pure(int arg1) {
 }
 
 void test__atanhl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atanhl(p);
   // cppcheck-suppress memleak
 }
@@ -3973,12 +3649,6 @@ void test__std__atanhl__pure(int arg1) {
   if ((std::atanhl(arg1) > 10) || (std::atanhl(arg1) < 100)) {}
 }
 
-void test__std__atanhl__leakignore() {
-  char *p = strdup(str);
-  result = std::atanhl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atanhl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4003,7 +3673,7 @@ void test__catanh__pure(int arg1) {
 }
 
 void test__catanh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = catanh(p);
   // cppcheck-suppress memleak
 }
@@ -4032,7 +3702,7 @@ void test__catanhf__pure(int arg1) {
 }
 
 void test__catanhf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = catanhf(p);
   // cppcheck-suppress memleak
 }
@@ -4061,7 +3731,7 @@ void test__catanhl__pure(int arg1) {
 }
 
 void test__catanhl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = catanhl(p);
   // cppcheck-suppress memleak
 }
@@ -4090,7 +3760,7 @@ void test__atan2__pure(int arg1,int arg2) {
 }
 
 void test__atan2__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atan2(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -4124,12 +3794,6 @@ void test__std__atan2__pure(int arg1,int arg2) {
   if ((std::atan2(arg1, arg2) > 10) || (std::atan2(arg1, arg2) < 100)) {}
 }
 
-void test__std__atan2__leakignore() {
-  char *p = strdup(str);
-  result = std::atan2(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atan2__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4160,7 +3824,7 @@ void test__atan2f__pure(int arg1,int arg2) {
 }
 
 void test__atan2f__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atan2f(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -4194,12 +3858,6 @@ void test__std__atan2f__pure(int arg1,int arg2) {
   if ((std::atan2f(arg1, arg2) > 10) || (std::atan2f(arg1, arg2) < 100)) {}
 }
 
-void test__std__atan2f__leakignore() {
-  char *p = strdup(str);
-  result = std::atan2f(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atan2f__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4230,7 +3888,7 @@ void test__atan2l__pure(int arg1,int arg2) {
 }
 
 void test__atan2l__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atan2l(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -4264,12 +3922,6 @@ void test__std__atan2l__pure(int arg1,int arg2) {
   if ((std::atan2l(arg1, arg2) > 10) || (std::atan2l(arg1, arg2) < 100)) {}
 }
 
-void test__std__atan2l__leakignore() {
-  char *p = strdup(str);
-  result = std::atan2l(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atan2l__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4295,7 +3947,7 @@ void test__atexit__pure(int arg1) {
 }
 
 void test__atexit__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   atexit(p);
   // cppcheck-suppress memleak
 }
@@ -4316,12 +3968,6 @@ void test__std__atexit__noreturn() {
 void test__std__atexit__pure(int arg1) {
   // cppcheck-suppress incorrectLogicOperator
   if ((std::atexit(arg1) > 10) || (std::atexit(arg1) < 100)) {}
-}
-
-void test__std__atexit__leakignore() {
-  char *p = strdup(str);
-  std::atexit(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__atexit__arg1__notnull() {
@@ -4348,7 +3994,7 @@ void test__atoi__pure(int arg1) {
 }
 
 void test__atoi__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atoi(p);
   // cppcheck-suppress memleak
 }
@@ -4382,12 +4028,6 @@ void test__std__atoi__pure(int arg1) {
   if ((std::atoi(arg1) > 10) || (std::atoi(arg1) < 100)) {}
 }
 
-void test__std__atoi__leakignore() {
-  char *p = strdup(str);
-  result = std::atoi(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atoi__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -4418,7 +4058,7 @@ void test__atol__pure(int arg1) {
 }
 
 void test__atol__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atol(p);
   // cppcheck-suppress memleak
 }
@@ -4452,12 +4092,6 @@ void test__std__atol__pure(int arg1) {
   if ((std::atol(arg1) > 10) || (std::atol(arg1) < 100)) {}
 }
 
-void test__std__atol__leakignore() {
-  char *p = strdup(str);
-  result = std::atol(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atol__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -4488,7 +4122,7 @@ void test__atoll__pure(int arg1) {
 }
 
 void test__atoll__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atoll(p);
   // cppcheck-suppress memleak
 }
@@ -4522,12 +4156,6 @@ void test__std__atoll__pure(int arg1) {
   if ((std::atoll(arg1) > 10) || (std::atoll(arg1) < 100)) {}
 }
 
-void test__std__atoll__leakignore() {
-  char *p = strdup(str);
-  result = std::atoll(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__atoll__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -4558,7 +4186,7 @@ void test__atof__pure(int arg1) {
 }
 
 void test__atof__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = atof(p);
   // cppcheck-suppress memleak
 }
@@ -4590,12 +4218,6 @@ void test__std__atof__useretval() {
 void test__std__atof__pure(int arg1) {
   // cppcheck-suppress incorrectLogicOperator
   if ((std::atof(arg1) > 10) || (std::atof(arg1) < 100)) {}
-}
-
-void test__std__atof__leakignore() {
-  char *p = strdup(str);
-  result = std::atof(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__atof__arg1__notnull() {
@@ -4652,7 +4274,7 @@ void test__ceil__pure(int arg1) {
 }
 
 void test__ceil__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ceil(p);
   // cppcheck-suppress memleak
 }
@@ -4680,12 +4302,6 @@ void test__std__ceil__pure(int arg1) {
   if ((std::ceil(arg1) > 10) || (std::ceil(arg1) < 100)) {}
 }
 
-void test__std__ceil__leakignore() {
-  char *p = strdup(str);
-  result = std::ceil(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ceil__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4710,7 +4326,7 @@ void test__ceilf__pure(int arg1) {
 }
 
 void test__ceilf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ceilf(p);
   // cppcheck-suppress memleak
 }
@@ -4738,12 +4354,6 @@ void test__std__ceilf__pure(int arg1) {
   if ((std::ceilf(arg1) > 10) || (std::ceilf(arg1) < 100)) {}
 }
 
-void test__std__ceilf__leakignore() {
-  char *p = strdup(str);
-  result = std::ceilf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ceilf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4768,7 +4378,7 @@ void test__ceill__pure(int arg1) {
 }
 
 void test__ceill__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ceill(p);
   // cppcheck-suppress memleak
 }
@@ -4796,12 +4406,6 @@ void test__std__ceill__pure(int arg1) {
   if ((std::ceill(arg1) > 10) || (std::ceill(arg1) < 100)) {}
 }
 
-void test__std__ceill__leakignore() {
-  char *p = strdup(str);
-  result = std::ceill(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ceill__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4826,7 +4430,7 @@ void test__copysign__pure(int arg1,int arg2) {
 }
 
 void test__copysign__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = copysign(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -4860,12 +4464,6 @@ void test__std__copysign__pure(int arg1,int arg2) {
   if ((std::copysign(arg1, arg2) > 10) || (std::copysign(arg1, arg2) < 100)) {}
 }
 
-void test__std__copysign__leakignore() {
-  char *p = strdup(str);
-  result = std::copysign(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__copysign__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4896,7 +4494,7 @@ void test__copysignf__pure(int arg1,int arg2) {
 }
 
 void test__copysignf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = copysignf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -4930,12 +4528,6 @@ void test__std__copysignf__pure(int arg1,int arg2) {
   if ((std::copysignf(arg1, arg2) > 10) || (std::copysignf(arg1, arg2) < 100)) {}
 }
 
-void test__std__copysignf__leakignore() {
-  char *p = strdup(str);
-  result = std::copysignf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__copysignf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4966,7 +4558,7 @@ void test__copysignl__pure(int arg1,int arg2) {
 }
 
 void test__copysignl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = copysignl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -5000,12 +4592,6 @@ void test__std__copysignl__pure(int arg1,int arg2) {
   if ((std::copysignl(arg1, arg2) > 10) || (std::copysignl(arg1, arg2) < 100)) {}
 }
 
-void test__std__copysignl__leakignore() {
-  char *p = strdup(str);
-  result = std::copysignl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__copysignl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5026,7 +4612,7 @@ void test__clearerr__noreturn() {
 }
 
 void test__clearerr__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   clearerr(p);
   // cppcheck-suppress memleak
 }
@@ -5048,12 +4634,6 @@ void test__std__clearerr__noreturn() {
   if (cond) { x=100; std::clearerr(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__clearerr__leakignore() {
-  char *p = strdup(str);
-  std::clearerr(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__clearerr__arg1__notnull() {
@@ -5081,7 +4661,7 @@ void test__clock__useretval() {
 }
 
 void test__clock__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = clock();
   // cppcheck-suppress memleak
 }
@@ -5104,7 +4684,7 @@ void test__cbrt__pure(int arg1) {
 }
 
 void test__cbrt__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cbrt(p);
   // cppcheck-suppress memleak
 }
@@ -5132,12 +4712,6 @@ void test__std__cbrt__pure(int arg1) {
   if ((std::cbrt(arg1) > 10) || (std::cbrt(arg1) < 100)) {}
 }
 
-void test__std__cbrt__leakignore() {
-  char *p = strdup(str);
-  result = std::cbrt(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__cbrt__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5162,7 +4736,7 @@ void test__cbrtf__pure(int arg1) {
 }
 
 void test__cbrtf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cbrtf(p);
   // cppcheck-suppress memleak
 }
@@ -5190,12 +4764,6 @@ void test__std__cbrtf__pure(int arg1) {
   if ((std::cbrtf(arg1) > 10) || (std::cbrtf(arg1) < 100)) {}
 }
 
-void test__std__cbrtf__leakignore() {
-  char *p = strdup(str);
-  result = std::cbrtf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__cbrtf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5220,7 +4788,7 @@ void test__cbrtl__pure(int arg1) {
 }
 
 void test__cbrtl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cbrtl(p);
   // cppcheck-suppress memleak
 }
@@ -5248,12 +4816,6 @@ void test__std__cbrtl__pure(int arg1) {
   if ((std::cbrtl(arg1) > 10) || (std::cbrtl(arg1) < 100)) {}
 }
 
-void test__std__cbrtl__leakignore() {
-  char *p = strdup(str);
-  result = std::cbrtl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__cbrtl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5278,7 +4840,7 @@ void test__cos__pure(int arg1) {
 }
 
 void test__cos__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cos(p);
   // cppcheck-suppress memleak
 }
@@ -5306,12 +4868,6 @@ void test__std__cos__pure(int arg1) {
   if ((std::cos(arg1) > 10) || (std::cos(arg1) < 100)) {}
 }
 
-void test__std__cos__leakignore() {
-  char *p = strdup(str);
-  result = std::cos(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__cos__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5336,7 +4892,7 @@ void test__cosf__pure(int arg1) {
 }
 
 void test__cosf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cosf(p);
   // cppcheck-suppress memleak
 }
@@ -5364,12 +4920,6 @@ void test__std__cosf__pure(int arg1) {
   if ((std::cosf(arg1) > 10) || (std::cosf(arg1) < 100)) {}
 }
 
-void test__std__cosf__leakignore() {
-  char *p = strdup(str);
-  result = std::cosf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__cosf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5394,7 +4944,7 @@ void test__cosl__pure(int arg1) {
 }
 
 void test__cosl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cosl(p);
   // cppcheck-suppress memleak
 }
@@ -5422,12 +4972,6 @@ void test__std__cosl__pure(int arg1) {
   if ((std::cosl(arg1) > 10) || (std::cosl(arg1) < 100)) {}
 }
 
-void test__std__cosl__leakignore() {
-  char *p = strdup(str);
-  result = std::cosl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__cosl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5452,7 +4996,7 @@ void test__ccos__pure(int arg1) {
 }
 
 void test__ccos__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ccos(p);
   // cppcheck-suppress memleak
 }
@@ -5481,7 +5025,7 @@ void test__ccosf__pure(int arg1) {
 }
 
 void test__ccosf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ccosf(p);
   // cppcheck-suppress memleak
 }
@@ -5510,7 +5054,7 @@ void test__ccosl__pure(int arg1) {
 }
 
 void test__ccosl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ccosl(p);
   // cppcheck-suppress memleak
 }
@@ -5539,7 +5083,7 @@ void test__cosh__pure(int arg1) {
 }
 
 void test__cosh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cosh(p);
   // cppcheck-suppress memleak
 }
@@ -5567,12 +5111,6 @@ void test__std__cosh__pure(int arg1) {
   if ((std::cosh(arg1) > 10) || (std::cosh(arg1) < 100)) {}
 }
 
-void test__std__cosh__leakignore() {
-  char *p = strdup(str);
-  result = std::cosh(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__cosh__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5597,7 +5135,7 @@ void test__coshf__pure(int arg1) {
 }
 
 void test__coshf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = coshf(p);
   // cppcheck-suppress memleak
 }
@@ -5625,12 +5163,6 @@ void test__std__coshf__pure(int arg1) {
   if ((std::coshf(arg1) > 10) || (std::coshf(arg1) < 100)) {}
 }
 
-void test__std__coshf__leakignore() {
-  char *p = strdup(str);
-  result = std::coshf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__coshf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5655,7 +5187,7 @@ void test__coshl__pure(int arg1) {
 }
 
 void test__coshl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = coshl(p);
   // cppcheck-suppress memleak
 }
@@ -5683,12 +5215,6 @@ void test__std__coshl__pure(int arg1) {
   if ((std::coshl(arg1) > 10) || (std::coshl(arg1) < 100)) {}
 }
 
-void test__std__coshl__leakignore() {
-  char *p = strdup(str);
-  result = std::coshl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__coshl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5713,7 +5239,7 @@ void test__ccosh__pure(int arg1) {
 }
 
 void test__ccosh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ccosh(p);
   // cppcheck-suppress memleak
 }
@@ -5742,7 +5268,7 @@ void test__ccoshf__pure(int arg1) {
 }
 
 void test__ccoshf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ccoshf(p);
   // cppcheck-suppress memleak
 }
@@ -5771,7 +5297,7 @@ void test__ccoshl__pure(int arg1) {
 }
 
 void test__ccoshl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ccoshl(p);
   // cppcheck-suppress memleak
 }
@@ -5795,7 +5321,7 @@ void test__ctime__useretval() {
 }
 
 void test__ctime__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ctime(p);
   // cppcheck-suppress memleak
 }
@@ -5824,12 +5350,6 @@ void test__std__ctime__useretval() {
   std::ctime(arg1);
 }
 
-void test__std__ctime__leakignore() {
-  char *p = strdup(str);
-  result = std::ctime(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ctime__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -5855,7 +5375,7 @@ void test__difftime__useretval() {
 }
 
 void test__difftime__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = difftime(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -5884,12 +5404,6 @@ void test__std__difftime__useretval() {
   std::difftime(arg1, arg2);
 }
 
-void test__std__difftime__leakignore() {
-  char *p = strdup(str);
-  result = std::difftime(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__difftime__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5915,7 +5429,7 @@ void test__div__pure(int arg1,int arg2) {
 }
 
 void test__div__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   div(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -5944,12 +5458,6 @@ void test__std__div__pure(int arg1,int arg2) {
   if ((std::div(arg1, arg2) > 10) || (std::div(arg1, arg2) < 100)) {}
 }
 
-void test__std__div__leakignore() {
-  char *p = strdup(str);
-  std::div(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__div__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5975,7 +5483,7 @@ void test__imaxdiv__pure(int arg1,int arg2) {
 }
 
 void test__imaxdiv__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   imaxdiv(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -6002,12 +5510,6 @@ void test__std__imaxdiv__noreturn() {
 void test__std__imaxdiv__pure(int arg1,int arg2) {
   // cppcheck-suppress incorrectLogicOperator
   if ((std::imaxdiv(arg1, arg2) > 10) || (std::imaxdiv(arg1, arg2) < 100)) {}
-}
-
-void test__std__imaxdiv__leakignore() {
-  char *p = strdup(str);
-  std::imaxdiv(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__imaxdiv__arg1__notuninit() {
@@ -6066,7 +5568,7 @@ void test__erf__pure(int arg1) {
 }
 
 void test__erf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = erf(p);
   // cppcheck-suppress memleak
 }
@@ -6094,12 +5596,6 @@ void test__std__erf__pure(int arg1) {
   if ((std::erf(arg1) > 10) || (std::erf(arg1) < 100)) {}
 }
 
-void test__std__erf__leakignore() {
-  char *p = strdup(str);
-  result = std::erf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__erf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6124,7 +5620,7 @@ void test__erff__pure(int arg1) {
 }
 
 void test__erff__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = erff(p);
   // cppcheck-suppress memleak
 }
@@ -6152,12 +5648,6 @@ void test__std__erff__pure(int arg1) {
   if ((std::erff(arg1) > 10) || (std::erff(arg1) < 100)) {}
 }
 
-void test__std__erff__leakignore() {
-  char *p = strdup(str);
-  result = std::erff(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__erff__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6182,7 +5672,7 @@ void test__erfl__pure(int arg1) {
 }
 
 void test__erfl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = erfl(p);
   // cppcheck-suppress memleak
 }
@@ -6210,12 +5700,6 @@ void test__std__erfl__pure(int arg1) {
   if ((std::erfl(arg1) > 10) || (std::erfl(arg1) < 100)) {}
 }
 
-void test__std__erfl__leakignore() {
-  char *p = strdup(str);
-  result = std::erfl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__erfl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6240,7 +5724,7 @@ void test__erfc__pure(int arg1) {
 }
 
 void test__erfc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = erfc(p);
   // cppcheck-suppress memleak
 }
@@ -6268,12 +5752,6 @@ void test__std__erfc__pure(int arg1) {
   if ((std::erfc(arg1) > 10) || (std::erfc(arg1) < 100)) {}
 }
 
-void test__std__erfc__leakignore() {
-  char *p = strdup(str);
-  result = std::erfc(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__erfc__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6298,7 +5776,7 @@ void test__erfcf__pure(int arg1) {
 }
 
 void test__erfcf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = erfcf(p);
   // cppcheck-suppress memleak
 }
@@ -6326,12 +5804,6 @@ void test__std__erfcf__pure(int arg1) {
   if ((std::erfcf(arg1) > 10) || (std::erfcf(arg1) < 100)) {}
 }
 
-void test__std__erfcf__leakignore() {
-  char *p = strdup(str);
-  result = std::erfcf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__erfcf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6356,7 +5828,7 @@ void test__erfcl__pure(int arg1) {
 }
 
 void test__erfcl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = erfcl(p);
   // cppcheck-suppress memleak
 }
@@ -6384,12 +5856,6 @@ void test__std__erfcl__pure(int arg1) {
   if ((std::erfcl(arg1) > 10) || (std::erfcl(arg1) < 100)) {}
 }
 
-void test__std__erfcl__leakignore() {
-  char *p = strdup(str);
-  result = std::erfcl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__erfcl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6414,7 +5880,7 @@ void test__carg__pure(int arg1) {
 }
 
 void test__carg__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = carg(p);
   // cppcheck-suppress memleak
 }
@@ -6443,7 +5909,7 @@ void test__cargf__pure(int arg1) {
 }
 
 void test__cargf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cargf(p);
   // cppcheck-suppress memleak
 }
@@ -6472,7 +5938,7 @@ void test__cargl__pure(int arg1) {
 }
 
 void test__cargl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cargl(p);
   // cppcheck-suppress memleak
 }
@@ -6501,7 +5967,7 @@ void test__exp__pure(int arg1) {
 }
 
 void test__exp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = exp(p);
   // cppcheck-suppress memleak
 }
@@ -6529,12 +5995,6 @@ void test__std__exp__pure(int arg1) {
   if ((std::exp(arg1) > 10) || (std::exp(arg1) < 100)) {}
 }
 
-void test__std__exp__leakignore() {
-  char *p = strdup(str);
-  result = std::exp(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__exp__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6559,7 +6019,7 @@ void test__expf__pure(int arg1) {
 }
 
 void test__expf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = expf(p);
   // cppcheck-suppress memleak
 }
@@ -6587,12 +6047,6 @@ void test__std__expf__pure(int arg1) {
   if ((std::expf(arg1) > 10) || (std::expf(arg1) < 100)) {}
 }
 
-void test__std__expf__leakignore() {
-  char *p = strdup(str);
-  result = std::expf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__expf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6617,7 +6071,7 @@ void test__expl__pure(int arg1) {
 }
 
 void test__expl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = expl(p);
   // cppcheck-suppress memleak
 }
@@ -6645,12 +6099,6 @@ void test__std__expl__pure(int arg1) {
   if ((std::expl(arg1) > 10) || (std::expl(arg1) < 100)) {}
 }
 
-void test__std__expl__leakignore() {
-  char *p = strdup(str);
-  result = std::expl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__expl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6675,7 +6123,7 @@ void test__cexp__pure(int arg1) {
 }
 
 void test__cexp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cexp(p);
   // cppcheck-suppress memleak
 }
@@ -6704,7 +6152,7 @@ void test__cexpf__pure(int arg1) {
 }
 
 void test__cexpf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cexpf(p);
   // cppcheck-suppress memleak
 }
@@ -6733,7 +6181,7 @@ void test__cexpl__pure(int arg1) {
 }
 
 void test__cexpl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cexpl(p);
   // cppcheck-suppress memleak
 }
@@ -6762,7 +6210,7 @@ void test__cimag__pure(int arg1) {
 }
 
 void test__cimag__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cimag(p);
   // cppcheck-suppress memleak
 }
@@ -6791,7 +6239,7 @@ void test__cimagf__pure(int arg1) {
 }
 
 void test__cimagf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cimagf(p);
   // cppcheck-suppress memleak
 }
@@ -6820,7 +6268,7 @@ void test__cimagl__pure(int arg1) {
 }
 
 void test__cimagl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cimagl(p);
   // cppcheck-suppress memleak
 }
@@ -6849,7 +6297,7 @@ void test__exp2__pure(int arg1) {
 }
 
 void test__exp2__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = exp2(p);
   // cppcheck-suppress memleak
 }
@@ -6877,12 +6325,6 @@ void test__std__exp2__pure(int arg1) {
   if ((std::exp2(arg1) > 10) || (std::exp2(arg1) < 100)) {}
 }
 
-void test__std__exp2__leakignore() {
-  char *p = strdup(str);
-  result = std::exp2(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__exp2__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6907,7 +6349,7 @@ void test__exp2f__pure(int arg1) {
 }
 
 void test__exp2f__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = exp2f(p);
   // cppcheck-suppress memleak
 }
@@ -6935,12 +6377,6 @@ void test__std__exp2f__pure(int arg1) {
   if ((std::exp2f(arg1) > 10) || (std::exp2f(arg1) < 100)) {}
 }
 
-void test__std__exp2f__leakignore() {
-  char *p = strdup(str);
-  result = std::exp2f(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__exp2f__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6965,7 +6401,7 @@ void test__exp2l__pure(int arg1) {
 }
 
 void test__exp2l__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = exp2l(p);
   // cppcheck-suppress memleak
 }
@@ -6993,12 +6429,6 @@ void test__std__exp2l__pure(int arg1) {
   if ((std::exp2l(arg1) > 10) || (std::exp2l(arg1) < 100)) {}
 }
 
-void test__std__exp2l__leakignore() {
-  char *p = strdup(str);
-  result = std::exp2l(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__exp2l__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7023,7 +6453,7 @@ void test__expm1__pure(int arg1) {
 }
 
 void test__expm1__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = expm1(p);
   // cppcheck-suppress memleak
 }
@@ -7051,12 +6481,6 @@ void test__std__expm1__pure(int arg1) {
   if ((std::expm1(arg1) > 10) || (std::expm1(arg1) < 100)) {}
 }
 
-void test__std__expm1__leakignore() {
-  char *p = strdup(str);
-  result = std::expm1(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__expm1__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7081,7 +6505,7 @@ void test__expm1f__pure(int arg1) {
 }
 
 void test__expm1f__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = expm1f(p);
   // cppcheck-suppress memleak
 }
@@ -7109,12 +6533,6 @@ void test__std__expm1f__pure(int arg1) {
   if ((std::expm1f(arg1) > 10) || (std::expm1f(arg1) < 100)) {}
 }
 
-void test__std__expm1f__leakignore() {
-  char *p = strdup(str);
-  result = std::expm1f(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__expm1f__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7139,7 +6557,7 @@ void test__expm1l__pure(int arg1) {
 }
 
 void test__expm1l__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = expm1l(p);
   // cppcheck-suppress memleak
 }
@@ -7165,12 +6583,6 @@ void test__std__expm1l__useretval() {
 void test__std__expm1l__pure(int arg1) {
   // cppcheck-suppress incorrectLogicOperator
   if ((std::expm1l(arg1) > 10) || (std::expm1l(arg1) < 100)) {}
-}
-
-void test__std__expm1l__leakignore() {
-  char *p = strdup(str);
-  result = std::expm1l(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__expm1l__arg1__notuninit() {
@@ -7223,7 +6635,7 @@ void test__fabs__pure(int arg1) {
 }
 
 void test__fabs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fabs(p);
   // cppcheck-suppress memleak
 }
@@ -7251,12 +6663,6 @@ void test__std__fabs__pure(int arg1) {
   if ((std::fabs(arg1) > 10) || (std::fabs(arg1) < 100)) {}
 }
 
-void test__std__fabs__leakignore() {
-  char *p = strdup(str);
-  result = std::fabs(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fabs__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7281,7 +6687,7 @@ void test__fabsf__pure(int arg1) {
 }
 
 void test__fabsf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fabsf(p);
   // cppcheck-suppress memleak
 }
@@ -7309,12 +6715,6 @@ void test__std__fabsf__pure(int arg1) {
   if ((std::fabsf(arg1) > 10) || (std::fabsf(arg1) < 100)) {}
 }
 
-void test__std__fabsf__leakignore() {
-  char *p = strdup(str);
-  result = std::fabsf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fabsf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7339,7 +6739,7 @@ void test__fabsl__pure(int arg1) {
 }
 
 void test__fabsl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fabsl(p);
   // cppcheck-suppress memleak
 }
@@ -7367,12 +6767,6 @@ void test__std__fabsl__pure(int arg1) {
   if ((std::fabsl(arg1) > 10) || (std::fabsl(arg1) < 100)) {}
 }
 
-void test__std__fabsl__leakignore() {
-  char *p = strdup(str);
-  result = std::fabsl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fabsl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7397,7 +6791,7 @@ void test__fdim__pure(int arg1,int arg2) {
 }
 
 void test__fdim__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fdim(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -7431,12 +6825,6 @@ void test__std__fdim__pure(int arg1,int arg2) {
   if ((std::fdim(arg1, arg2) > 10) || (std::fdim(arg1, arg2) < 100)) {}
 }
 
-void test__std__fdim__leakignore() {
-  char *p = strdup(str);
-  result = std::fdim(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fdim__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7467,7 +6855,7 @@ void test__fdimf__pure(int arg1,int arg2) {
 }
 
 void test__fdimf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fdimf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -7501,12 +6889,6 @@ void test__std__fdimf__pure(int arg1,int arg2) {
   if ((std::fdimf(arg1, arg2) > 10) || (std::fdimf(arg1, arg2) < 100)) {}
 }
 
-void test__std__fdimf__leakignore() {
-  char *p = strdup(str);
-  result = std::fdimf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fdimf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7537,7 +6919,7 @@ void test__fdiml__pure(int arg1,int arg2) {
 }
 
 void test__fdiml__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fdiml(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -7569,12 +6951,6 @@ void test__std__fdiml__useretval() {
 void test__std__fdiml__pure(int arg1,int arg2) {
   // cppcheck-suppress incorrectLogicOperator
   if ((std::fdiml(arg1, arg2) > 10) || (std::fdiml(arg1, arg2) < 100)) {}
-}
-
-void test__std__fdiml__leakignore() {
-  char *p = strdup(str);
-  result = std::fdiml(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__fdiml__arg1__notuninit() {
@@ -7640,7 +7016,7 @@ void test__feof__useretval() {
 }
 
 void test__feof__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = feof(p);
   // cppcheck-suppress memleak
 }
@@ -7669,12 +7045,6 @@ void test__std__feof__useretval() {
   std::feof(arg1);
 }
 
-void test__std__feof__leakignore() {
-  char *p = strdup(str);
-  result = std::feof(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__feof__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -7700,7 +7070,7 @@ void test__ferror__useretval() {
 }
 
 void test__ferror__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ferror(p);
   // cppcheck-suppress memleak
 }
@@ -7729,12 +7099,6 @@ void test__std__ferror__useretval() {
   std::ferror(arg1);
 }
 
-void test__std__ferror__leakignore() {
-  char *p = strdup(str);
-  result = std::ferror(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ferror__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -7755,7 +7119,7 @@ void test__fflush__noreturn() {
 }
 
 void test__fflush__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fflush(p);
   // cppcheck-suppress memleak
 }
@@ -7773,12 +7137,6 @@ void test__std__fflush__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fflush__leakignore() {
-  char *p = strdup(str);
-  std::fflush(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fflush__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7793,7 +7151,7 @@ void test__fgetc__noreturn() {
 }
 
 void test__fgetc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fgetc(p);
   // cppcheck-suppress memleak
 }
@@ -7817,12 +7175,6 @@ void test__std__fgetc__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fgetc__leakignore() {
-  char *p = strdup(str);
-  std::fgetc(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fgetc__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -7843,7 +7195,7 @@ void test__getc__noreturn() {
 }
 
 void test__getc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   getc(p);
   // cppcheck-suppress memleak
 }
@@ -7867,12 +7219,6 @@ void test__std__getc__noreturn() {
   x = 1 << x;
 }
 
-void test__std__getc__leakignore() {
-  char *p = strdup(str);
-  std::getc(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__getc__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -7893,7 +7239,7 @@ void test__fgetwc__noreturn() {
 }
 
 void test__fgetwc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fgetwc(p);
   // cppcheck-suppress memleak
 }
@@ -7917,12 +7263,6 @@ void test__std__fgetwc__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fgetwc__leakignore() {
-  char *p = strdup(str);
-  std::fgetwc(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fgetwc__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -7943,7 +7283,7 @@ void test__getwc__noreturn() {
 }
 
 void test__getwc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   getwc(p);
   // cppcheck-suppress memleak
 }
@@ -7967,12 +7307,6 @@ void test__std__getwc__noreturn() {
   x = 1 << x;
 }
 
-void test__std__getwc__leakignore() {
-  char *p = strdup(str);
-  std::getwc(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__getwc__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -7993,7 +7327,7 @@ void test__fgetpos__noreturn() {
 }
 
 void test__fgetpos__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fgetpos(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -8021,12 +7355,6 @@ void test__std__fgetpos__noreturn() {
   if (cond) { x=100; std::fgetpos(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__fgetpos__leakignore() {
-  char *p = strdup(str);
-  std::fgetpos(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__fgetpos__arg1__notnull() {
@@ -8065,7 +7393,7 @@ void test__floor__pure(int arg1) {
 }
 
 void test__floor__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = floor(p);
   // cppcheck-suppress memleak
 }
@@ -8093,12 +7421,6 @@ void test__std__floor__pure(int arg1) {
   if ((std::floor(arg1) > 10) || (std::floor(arg1) < 100)) {}
 }
 
-void test__std__floor__leakignore() {
-  char *p = strdup(str);
-  result = std::floor(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__floor__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8123,7 +7445,7 @@ void test__floorf__pure(int arg1) {
 }
 
 void test__floorf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = floorf(p);
   // cppcheck-suppress memleak
 }
@@ -8151,12 +7473,6 @@ void test__std__floorf__pure(int arg1) {
   if ((std::floorf(arg1) > 10) || (std::floorf(arg1) < 100)) {}
 }
 
-void test__std__floorf__leakignore() {
-  char *p = strdup(str);
-  result = std::floorf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__floorf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8181,7 +7497,7 @@ void test__floorl__pure(int arg1) {
 }
 
 void test__floorl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = floorl(p);
   // cppcheck-suppress memleak
 }
@@ -8209,12 +7525,6 @@ void test__std__floorl__pure(int arg1) {
   if ((std::floorl(arg1) > 10) || (std::floorl(arg1) < 100)) {}
 }
 
-void test__std__floorl__leakignore() {
-  char *p = strdup(str);
-  result = std::floorl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__floorl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8239,7 +7549,7 @@ void test__fma__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__fma__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fma(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -8279,12 +7589,6 @@ void test__std__fma__pure(int arg1,int arg2,int arg3) {
   if ((std::fma(arg1, arg2, arg3) > 10) || (std::fma(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__fma__leakignore() {
-  char *p = strdup(str);
-  result = std::fma(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fma__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8321,7 +7625,7 @@ void test__fmaf__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__fmaf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fmaf(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -8361,12 +7665,6 @@ void test__std__fmaf__pure(int arg1,int arg2,int arg3) {
   if ((std::fmaf(arg1, arg2, arg3) > 10) || (std::fmaf(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__fmaf__leakignore() {
-  char *p = strdup(str);
-  result = std::fmaf(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fmaf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8403,7 +7701,7 @@ void test__fmal__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__fmal__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fmal(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -8443,12 +7741,6 @@ void test__std__fmal__pure(int arg1,int arg2,int arg3) {
   if ((std::fmal(arg1, arg2, arg3) > 10) || (std::fmal(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__fmal__leakignore() {
-  char *p = strdup(str);
-  result = std::fmal(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fmal__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8485,7 +7777,7 @@ void test__fmax__pure(int arg1,int arg2) {
 }
 
 void test__fmax__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fmax(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -8519,12 +7811,6 @@ void test__std__fmax__pure(int arg1,int arg2) {
   if ((std::fmax(arg1, arg2) > 10) || (std::fmax(arg1, arg2) < 100)) {}
 }
 
-void test__std__fmax__leakignore() {
-  char *p = strdup(str);
-  result = std::fmax(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fmax__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8555,7 +7841,7 @@ void test__fmaxf__pure(int arg1,int arg2) {
 }
 
 void test__fmaxf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fmaxf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -8589,12 +7875,6 @@ void test__std__fmaxf__pure(int arg1,int arg2) {
   if ((std::fmaxf(arg1, arg2) > 10) || (std::fmaxf(arg1, arg2) < 100)) {}
 }
 
-void test__std__fmaxf__leakignore() {
-  char *p = strdup(str);
-  result = std::fmaxf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fmaxf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8625,7 +7905,7 @@ void test__fmaxl__pure(int arg1,int arg2) {
 }
 
 void test__fmaxl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fmaxl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -8659,12 +7939,6 @@ void test__std__fmaxl__pure(int arg1,int arg2) {
   if ((std::fmaxl(arg1, arg2) > 10) || (std::fmaxl(arg1, arg2) < 100)) {}
 }
 
-void test__std__fmaxl__leakignore() {
-  char *p = strdup(str);
-  result = std::fmaxl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fmaxl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8695,7 +7969,7 @@ void test__fmin__pure(int arg1,int arg2) {
 }
 
 void test__fmin__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fmin(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -8729,12 +8003,6 @@ void test__std__fmin__pure(int arg1,int arg2) {
   if ((std::fmin(arg1, arg2) > 10) || (std::fmin(arg1, arg2) < 100)) {}
 }
 
-void test__std__fmin__leakignore() {
-  char *p = strdup(str);
-  result = std::fmin(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fmin__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8765,7 +8033,7 @@ void test__fminf__pure(int arg1,int arg2) {
 }
 
 void test__fminf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fminf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -8799,12 +8067,6 @@ void test__std__fminf__pure(int arg1,int arg2) {
   if ((std::fminf(arg1, arg2) > 10) || (std::fminf(arg1, arg2) < 100)) {}
 }
 
-void test__std__fminf__leakignore() {
-  char *p = strdup(str);
-  result = std::fminf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fminf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8835,7 +8097,7 @@ void test__fminl__pure(int arg1,int arg2) {
 }
 
 void test__fminl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fminl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -8869,12 +8131,6 @@ void test__std__fminl__pure(int arg1,int arg2) {
   if ((std::fminl(arg1, arg2) > 10) || (std::fminl(arg1, arg2) < 100)) {}
 }
 
-void test__std__fminl__leakignore() {
-  char *p = strdup(str);
-  result = std::fminl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fminl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8905,7 +8161,7 @@ void test__fmod__pure(int arg1,int arg2) {
 }
 
 void test__fmod__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fmod(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -8939,12 +8195,6 @@ void test__std__fmod__pure(int arg1,int arg2) {
   if ((std::fmod(arg1, arg2) > 10) || (std::fmod(arg1, arg2) < 100)) {}
 }
 
-void test__std__fmod__leakignore() {
-  char *p = strdup(str);
-  result = std::fmod(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fmod__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -8975,7 +8225,7 @@ void test__fmodf__pure(int arg1,int arg2) {
 }
 
 void test__fmodf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fmodf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -9009,12 +8259,6 @@ void test__std__fmodf__pure(int arg1,int arg2) {
   if ((std::fmodf(arg1, arg2) > 10) || (std::fmodf(arg1, arg2) < 100)) {}
 }
 
-void test__std__fmodf__leakignore() {
-  char *p = strdup(str);
-  result = std::fmodf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fmodf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -9045,7 +8289,7 @@ void test__fmodl__pure(int arg1,int arg2) {
 }
 
 void test__fmodl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fmodl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -9077,12 +8321,6 @@ void test__std__fmodl__useretval() {
 void test__std__fmodl__pure(int arg1,int arg2) {
   // cppcheck-suppress incorrectLogicOperator
   if ((std::fmodl(arg1, arg2) > 10) || (std::fmodl(arg1, arg2) < 100)) {}
-}
-
-void test__std__fmodl__leakignore() {
-  char *p = strdup(str);
-  result = std::fmodl(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__fmodl__arg1__notuninit() {
@@ -9214,7 +8452,7 @@ void test__fprintf__noreturn() {
 }
 
 void test__fprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fprintf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -9244,12 +8482,6 @@ void test__std__fprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fprintf__leakignore() {
-  char *p = strdup(str);
-  std::fprintf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fprintf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -9276,7 +8508,7 @@ void test__vfprintf__noreturn() {
 }
 
 void test__vfprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vfprintf(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -9306,12 +8538,6 @@ void test__std__vfprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vfprintf__leakignore() {
-  char *p = strdup(str);
-  std::vfprintf(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vfprintf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -9338,7 +8564,7 @@ void test__vfwprintf__noreturn() {
 }
 
 void test__vfwprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vfwprintf(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -9368,12 +8594,6 @@ void test__std__vfwprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vfwprintf__leakignore() {
-  char *p = strdup(str);
-  std::vfwprintf(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vfwprintf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -9400,7 +8620,7 @@ void test__fputc__noreturn() {
 }
 
 void test__fputc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fputc(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -9435,12 +8655,6 @@ void test__std__fputc__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fputc__leakignore() {
-  char *p = strdup(str);
-  std::fputc(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fputc__arg1__notbool() {
   // cppcheck-suppress invalidFunctionArgBool
   std::fputc(!x, arg2);
@@ -9472,7 +8686,7 @@ void test__fputwc__noreturn() {
 }
 
 void test__fputwc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fputwc(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -9507,12 +8721,6 @@ void test__std__fputwc__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fputwc__leakignore() {
-  char *p = strdup(str);
-  std::fputwc(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fputwc__arg1__notbool() {
   // cppcheck-suppress invalidFunctionArgBool
   std::fputwc(!x, arg2);
@@ -9544,7 +8752,7 @@ void test__fputs__noreturn() {
 }
 
 void test__fputs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fputs(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -9580,12 +8788,6 @@ void test__std__fputs__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fputs__leakignore() {
-  char *p = strdup(str);
-  std::fputs(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fputs__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -9618,7 +8820,7 @@ void test__fputws__noreturn() {
 }
 
 void test__fputws__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fputws(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -9654,12 +8856,6 @@ void test__std__fputws__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fputws__leakignore() {
-  char *p = strdup(str);
-  std::fputws(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fputws__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -9692,7 +8888,7 @@ void test__fread__noreturn() {
 }
 
 void test__fread__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fread(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -9732,12 +8928,6 @@ void test__std__fread__noreturn() {
   if (cond) { x=100; std::fread(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__fread__leakignore() {
-  char *p = strdup(str);
-  std::fread(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
 }
 
 void test__std__fread__arg1__notnull() {
@@ -9936,7 +9126,7 @@ void test__frexp__noreturn() {
 }
 
 void test__frexp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   frexp(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -9960,12 +9150,6 @@ void test__std__frexp__noreturn() {
   x = 1 << x;
 }
 
-void test__std__frexp__leakignore() {
-  char *p = strdup(str);
-  std::frexp(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__frexp__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -9986,7 +9170,7 @@ void test__frexpf__noreturn() {
 }
 
 void test__frexpf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   frexpf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -10010,12 +9194,6 @@ void test__std__frexpf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__frexpf__leakignore() {
-  char *p = strdup(str);
-  std::frexpf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__frexpf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -10036,7 +9214,7 @@ void test__frexpl__noreturn() {
 }
 
 void test__frexpl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   frexpl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -10058,12 +9236,6 @@ void test__std__frexpl__noreturn() {
   if (cond) { x=100; std::frexpl(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__frexpl__leakignore() {
-  char *p = strdup(str);
-  std::frexpl(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__frexpl__arg1__notuninit() {
@@ -10096,7 +9268,7 @@ void test__hypot__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__hypot__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = hypot(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -10136,12 +9308,6 @@ void test__std__hypot__pure(int arg1,int arg2,int arg3) {
   if ((std::hypot(arg1, arg2, arg3) > 10) || (std::hypot(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__hypot__leakignore() {
-  char *p = strdup(str);
-  result = std::hypot(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__hypot__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -10178,7 +9344,7 @@ void test__hypotf__pure(int arg1,int arg2) {
 }
 
 void test__hypotf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = hypotf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -10212,12 +9378,6 @@ void test__std__hypotf__pure(int arg1,int arg2) {
   if ((std::hypotf(arg1, arg2) > 10) || (std::hypotf(arg1, arg2) < 100)) {}
 }
 
-void test__std__hypotf__leakignore() {
-  char *p = strdup(str);
-  result = std::hypotf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__hypotf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -10248,7 +9408,7 @@ void test__hypotl__pure(int arg1,int arg2) {
 }
 
 void test__hypotl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = hypotl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -10282,12 +9442,6 @@ void test__std__hypotl__pure(int arg1,int arg2) {
   if ((std::hypotl(arg1, arg2) > 10) || (std::hypotl(arg1, arg2) < 100)) {}
 }
 
-void test__std__hypotl__leakignore() {
-  char *p = strdup(str);
-  result = std::hypotl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__hypotl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -10308,7 +9462,7 @@ void test__fscanf__noreturn() {
 }
 
 void test__fscanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fscanf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -10332,12 +9486,6 @@ void test__std__fscanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fscanf__leakignore() {
-  char *p = strdup(str);
-  std::fscanf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fscanf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -10358,7 +9506,7 @@ void test__vfscanf__noreturn() {
 }
 
 void test__vfscanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vfscanf(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -10382,12 +9530,6 @@ void test__std__vfscanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vfscanf__leakignore() {
-  char *p = strdup(str);
-  std::vfscanf(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vfscanf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -10408,7 +9550,7 @@ void test__vfwscanf__noreturn() {
 }
 
 void test__vfwscanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vfwscanf(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -10438,12 +9580,6 @@ void test__std__vfwscanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vfwscanf__leakignore() {
-  char *p = strdup(str);
-  std::vfwscanf(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vfwscanf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -10470,7 +9606,7 @@ void test__fseek__noreturn() {
 }
 
 void test__fseek__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fseek(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -10506,12 +9642,6 @@ void test__std__fseek__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fseek__leakignore() {
-  char *p = strdup(str);
-  std::fseek(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fseek__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -10544,7 +9674,7 @@ void test__fsetpos__noreturn() {
 }
 
 void test__fsetpos__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fsetpos(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -10580,12 +9710,6 @@ void test__std__fsetpos__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fsetpos__leakignore() {
-  char *p = strdup(str);
-  std::fsetpos(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fsetpos__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -10618,7 +9742,7 @@ void test__fgets__noreturn() {
 }
 
 void test__fgets__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fgets(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -10659,12 +9783,6 @@ void test__std__fgets__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fgets__leakignore() {
-  char *p = strdup(str);
-  std::fgets(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fgets__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -10702,7 +9820,7 @@ void test__fgetws__noreturn() {
 }
 
 void test__fgetws__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fgetws(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -10741,12 +9859,6 @@ void test__std__fgetws__noreturn() {
   if (cond) { x=100; std::fgetws(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__fgetws__leakignore() {
-  char *p = strdup(str);
-  std::fgetws(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__fgetws__arg1__notnull() {
@@ -10791,7 +9903,7 @@ void test__ftell__useretval() {
 }
 
 void test__ftell__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ftell(p);
   // cppcheck-suppress memleak
 }
@@ -10820,12 +9932,6 @@ void test__std__ftell__useretval() {
   std::ftell(arg1);
 }
 
-void test__std__ftell__leakignore() {
-  char *p = strdup(str);
-  result = std::ftell(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ftell__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -10846,7 +9952,7 @@ void test__fwide__noreturn() {
 }
 
 void test__fwide__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fwide(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -10876,12 +9982,6 @@ void test__std__fwide__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fwide__leakignore() {
-  char *p = strdup(str);
-  std::fwide(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fwide__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -10908,7 +10008,7 @@ void test__fwrite__noreturn() {
 }
 
 void test__fwrite__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fwrite(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -10956,12 +10056,6 @@ void test__std__fwrite__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fwrite__leakignore() {
-  char *p = strdup(str);
-  std::fwrite(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fwrite__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -11006,7 +10100,7 @@ void test__mblen__noreturn() {
 }
 
 void test__mblen__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   mblen(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -11030,12 +10124,6 @@ void test__std__mblen__noreturn() {
   x = 1 << x;
 }
 
-void test__std__mblen__leakignore() {
-  char *p = strdup(str);
-  std::mblen(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__mblen__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -11056,7 +10144,7 @@ void test__mbtowc__noreturn() {
 }
 
 void test__mbtowc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   mbtowc(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -11080,12 +10168,6 @@ void test__std__mbtowc__noreturn() {
   x = 1 << x;
 }
 
-void test__std__mbtowc__leakignore() {
-  char *p = strdup(str);
-  std::mbtowc(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__mbtowc__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -11106,7 +10188,7 @@ void test__mbrlen__noreturn() {
 }
 
 void test__mbrlen__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   mbrlen(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -11140,12 +10222,6 @@ void test__std__mbrlen__noreturn() {
   if (cond) { x=100; std::mbrlen(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__mbrlen__leakignore() {
-  char *p = strdup(str);
-  std::mbrlen(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__mbrlen__arg1__notnull() {
@@ -11190,7 +10266,7 @@ void test__btowc__pure(int arg1) {
 }
 
 void test__btowc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = btowc(p);
   // cppcheck-suppress memleak
 }
@@ -11218,12 +10294,6 @@ void test__std__btowc__pure(int arg1) {
   if ((std::btowc(arg1) > 10) || (std::btowc(arg1) < 100)) {}
 }
 
-void test__std__btowc__leakignore() {
-  char *p = strdup(str);
-  result = std::btowc(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__btowc__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -11238,7 +10308,7 @@ void test__mbsinit__noreturn() {
 }
 
 void test__mbsinit__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   mbsinit(p);
   // cppcheck-suppress memleak
 }
@@ -11256,12 +10326,6 @@ void test__std__mbsinit__noreturn() {
   x = 1 << x;
 }
 
-void test__std__mbsinit__leakignore() {
-  char *p = strdup(str);
-  std::mbsinit(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__mbsinit__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -11276,7 +10340,7 @@ void test__getwchar__noreturn() {
 }
 
 void test__getwchar__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   getwchar();
   // cppcheck-suppress memleak
 }
@@ -11289,7 +10353,7 @@ void test__mbstowcs__noreturn() {
 }
 
 void test__mbstowcs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   mbstowcs(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -11319,12 +10383,6 @@ void test__std__mbstowcs__noreturn() {
   x = 1 << x;
 }
 
-void test__std__mbstowcs__leakignore() {
-  char *p = strdup(str);
-  std::mbstowcs(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__mbstowcs__arg2__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -11351,7 +10409,7 @@ void test__mbsrtowcs__noreturn() {
 }
 
 void test__mbsrtowcs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   mbsrtowcs(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -11385,12 +10443,6 @@ void test__std__mbsrtowcs__noreturn() {
   if (cond) { x=100; std::mbsrtowcs(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__mbsrtowcs__leakignore() {
-  char *p = strdup(str);
-  std::mbsrtowcs(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
 }
 
 void test__std__mbsrtowcs__arg2__notnull() {
@@ -11435,7 +10487,7 @@ void test__wctob__pure(int arg1) {
 }
 
 void test__wctob__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wctob(p);
   // cppcheck-suppress memleak
 }
@@ -11463,12 +10515,6 @@ void test__std__wctob__pure(int arg1) {
   if ((std::wctob(arg1) > 10) || (std::wctob(arg1) < 100)) {}
 }
 
-void test__std__wctob__leakignore() {
-  char *p = strdup(str);
-  result = std::wctob(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wctob__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -11483,7 +10529,7 @@ void test__wctomb__noreturn() {
 }
 
 void test__wctomb__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wctomb(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -11507,12 +10553,6 @@ void test__std__wctomb__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wctomb__leakignore() {
-  char *p = strdup(str);
-  std::wctomb(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wctomb__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -11533,7 +10573,7 @@ void test__wcstombs__noreturn() {
 }
 
 void test__wcstombs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcstombs(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -11563,12 +10603,6 @@ void test__std__wcstombs__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wcstombs__leakignore() {
-  char *p = strdup(str);
-  std::wcstombs(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcstombs__arg2__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -11595,7 +10629,7 @@ void test__getchar__noreturn() {
 }
 
 void test__getchar__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   getchar();
   // cppcheck-suppress memleak
 }
@@ -11608,7 +10642,7 @@ void test__ungetc__noreturn() {
 }
 
 void test__ungetc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   ungetc(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -11638,12 +10672,6 @@ void test__std__ungetc__noreturn() {
   x = 1 << x;
 }
 
-void test__std__ungetc__leakignore() {
-  char *p = strdup(str);
-  std::ungetc(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ungetc__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -11670,7 +10698,7 @@ void test__ungetwc__noreturn() {
 }
 
 void test__ungetwc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   ungetwc(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -11698,12 +10726,6 @@ void test__std__ungetwc__noreturn() {
   if (cond) { x=100; std::ungetwc(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__ungetwc__leakignore() {
-  char *p = strdup(str);
-  std::ungetwc(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__ungetwc__arg1__notuninit() {
@@ -11737,7 +10759,7 @@ void test__getenv__useretval() {
 }
 
 void test__getenv__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = getenv(p);
   // cppcheck-suppress memleak
 }
@@ -11766,12 +10788,6 @@ void test__std__getenv__useretval() {
   std::getenv(arg1);
 }
 
-void test__std__getenv__leakignore() {
-  char *p = strdup(str);
-  result = std::getenv(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__getenv__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -11792,7 +10808,7 @@ void test__gets__noreturn() {
 }
 
 void test__gets__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   gets(p);
   // cppcheck-suppress memleak
 }
@@ -11810,12 +10826,6 @@ void test__std__gets__noreturn() {
   x = 1 << x;
 }
 
-void test__std__gets__leakignore() {
-  char *p = strdup(str);
-  std::gets(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__gets__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -11830,7 +10840,7 @@ void test__gets_s__noreturn() {
 }
 
 void test__gets_s__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   gets_s(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -11857,12 +10867,6 @@ void test__std__gets_s__noreturn() {
   if (cond) { x=100; std::gets_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__gets_s__leakignore() {
-  char *p = strdup(str);
-  std::gets_s(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__gets_s__arg1__notnull() {
@@ -11900,7 +10904,7 @@ void test__gmtime__pure(int arg1) {
 }
 
 void test__gmtime__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = gmtime(p);
   // cppcheck-suppress memleak
 }
@@ -11934,12 +10938,6 @@ void test__std__gmtime__pure(int arg1) {
   if ((std::gmtime(arg1) > 10) || (std::gmtime(arg1) < 100)) {}
 }
 
-void test__std__gmtime__leakignore() {
-  char *p = strdup(str);
-  result = std::gmtime(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__gmtime__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -11970,7 +10968,7 @@ void test__isalnum__pure(int arg1) {
 }
 
 void test__isalnum__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isalnum(p);
   // cppcheck-suppress memleak
 }
@@ -11998,12 +10996,6 @@ void test__std__isalnum__pure(int arg1) {
   if ((std::isalnum(arg1) > 10) || (std::isalnum(arg1) < 100)) {}
 }
 
-void test__std__isalnum__leakignore() {
-  char *p = strdup(str);
-  result = std::isalnum(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isalnum__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12028,7 +11020,7 @@ void test__iswalnum__pure(int arg1) {
 }
 
 void test__iswalnum__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswalnum(p);
   // cppcheck-suppress memleak
 }
@@ -12056,12 +11048,6 @@ void test__std__iswalnum__pure(int arg1) {
   if ((std::iswalnum(arg1) > 10) || (std::iswalnum(arg1) < 100)) {}
 }
 
-void test__std__iswalnum__leakignore() {
-  char *p = strdup(str);
-  result = std::iswalnum(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswalnum__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12086,7 +11072,7 @@ void test__isalpha__pure(int arg1) {
 }
 
 void test__isalpha__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isalpha(p);
   // cppcheck-suppress memleak
 }
@@ -12114,12 +11100,6 @@ void test__std__isalpha__pure(int arg1) {
   if ((std::isalpha(arg1) > 10) || (std::isalpha(arg1) < 100)) {}
 }
 
-void test__std__isalpha__leakignore() {
-  char *p = strdup(str);
-  result = std::isalpha(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isalpha__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12144,7 +11124,7 @@ void test__iswalpha__pure(int arg1) {
 }
 
 void test__iswalpha__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswalpha(p);
   // cppcheck-suppress memleak
 }
@@ -12172,12 +11152,6 @@ void test__std__iswalpha__pure(int arg1) {
   if ((std::iswalpha(arg1) > 10) || (std::iswalpha(arg1) < 100)) {}
 }
 
-void test__std__iswalpha__leakignore() {
-  char *p = strdup(str);
-  result = std::iswalpha(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswalpha__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12202,7 +11176,7 @@ void test__isblank__pure(int arg1) {
 }
 
 void test__isblank__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isblank(p);
   // cppcheck-suppress memleak
 }
@@ -12230,12 +11204,6 @@ void test__std__isblank__pure(int arg1) {
   if ((std::isblank(arg1) > 10) || (std::isblank(arg1) < 100)) {}
 }
 
-void test__std__isblank__leakignore() {
-  char *p = strdup(str);
-  result = std::isblank(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isblank__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12260,7 +11228,7 @@ void test__iswblank__pure(int arg1) {
 }
 
 void test__iswblank__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswblank(p);
   // cppcheck-suppress memleak
 }
@@ -12288,12 +11256,6 @@ void test__std__iswblank__pure(int arg1) {
   if ((std::iswblank(arg1) > 10) || (std::iswblank(arg1) < 100)) {}
 }
 
-void test__std__iswblank__leakignore() {
-  char *p = strdup(str);
-  result = std::iswblank(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswblank__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12318,7 +11280,7 @@ void test__iscntrl__pure(int arg1) {
 }
 
 void test__iscntrl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iscntrl(p);
   // cppcheck-suppress memleak
 }
@@ -12346,12 +11308,6 @@ void test__std__iscntrl__pure(int arg1) {
   if ((std::iscntrl(arg1) > 10) || (std::iscntrl(arg1) < 100)) {}
 }
 
-void test__std__iscntrl__leakignore() {
-  char *p = strdup(str);
-  result = std::iscntrl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iscntrl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12376,7 +11332,7 @@ void test__iswcntrl__pure(int arg1) {
 }
 
 void test__iswcntrl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswcntrl(p);
   // cppcheck-suppress memleak
 }
@@ -12404,12 +11360,6 @@ void test__std__iswcntrl__pure(int arg1) {
   if ((std::iswcntrl(arg1) > 10) || (std::iswcntrl(arg1) < 100)) {}
 }
 
-void test__std__iswcntrl__leakignore() {
-  char *p = strdup(str);
-  result = std::iswcntrl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswcntrl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12434,7 +11384,7 @@ void test__iswctype__pure(int arg1,int arg2) {
 }
 
 void test__iswctype__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswctype(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -12468,12 +11418,6 @@ void test__std__iswctype__pure(int arg1,int arg2) {
   if ((std::iswctype(arg1, arg2) > 10) || (std::iswctype(arg1, arg2) < 100)) {}
 }
 
-void test__std__iswctype__leakignore() {
-  char *p = strdup(str);
-  result = std::iswctype(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswctype__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12504,7 +11448,7 @@ void test__isdigit__pure(int arg1) {
 }
 
 void test__isdigit__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isdigit(p);
   // cppcheck-suppress memleak
 }
@@ -12532,12 +11476,6 @@ void test__std__isdigit__pure(int arg1) {
   if ((std::isdigit(arg1) > 10) || (std::isdigit(arg1) < 100)) {}
 }
 
-void test__std__isdigit__leakignore() {
-  char *p = strdup(str);
-  result = std::isdigit(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isdigit__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12562,7 +11500,7 @@ void test__iswdigit__pure(int arg1) {
 }
 
 void test__iswdigit__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswdigit(p);
   // cppcheck-suppress memleak
 }
@@ -12590,12 +11528,6 @@ void test__std__iswdigit__pure(int arg1) {
   if ((std::iswdigit(arg1) > 10) || (std::iswdigit(arg1) < 100)) {}
 }
 
-void test__std__iswdigit__leakignore() {
-  char *p = strdup(str);
-  result = std::iswdigit(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswdigit__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12620,7 +11552,7 @@ void test__isgraph__pure(int arg1) {
 }
 
 void test__isgraph__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isgraph(p);
   // cppcheck-suppress memleak
 }
@@ -12648,12 +11580,6 @@ void test__std__isgraph__pure(int arg1) {
   if ((std::isgraph(arg1) > 10) || (std::isgraph(arg1) < 100)) {}
 }
 
-void test__std__isgraph__leakignore() {
-  char *p = strdup(str);
-  result = std::isgraph(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isgraph__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12678,7 +11604,7 @@ void test__iswgraph__pure(int arg1) {
 }
 
 void test__iswgraph__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswgraph(p);
   // cppcheck-suppress memleak
 }
@@ -12706,12 +11632,6 @@ void test__std__iswgraph__pure(int arg1) {
   if ((std::iswgraph(arg1) > 10) || (std::iswgraph(arg1) < 100)) {}
 }
 
-void test__std__iswgraph__leakignore() {
-  char *p = strdup(str);
-  result = std::iswgraph(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswgraph__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12736,7 +11656,7 @@ void test__islower__pure(int arg1) {
 }
 
 void test__islower__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = islower(p);
   // cppcheck-suppress memleak
 }
@@ -12764,12 +11684,6 @@ void test__std__islower__pure(int arg1) {
   if ((std::islower(arg1) > 10) || (std::islower(arg1) < 100)) {}
 }
 
-void test__std__islower__leakignore() {
-  char *p = strdup(str);
-  result = std::islower(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__islower__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12794,7 +11708,7 @@ void test__iswlower__pure(int arg1) {
 }
 
 void test__iswlower__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswlower(p);
   // cppcheck-suppress memleak
 }
@@ -12822,12 +11736,6 @@ void test__std__iswlower__pure(int arg1) {
   if ((std::iswlower(arg1) > 10) || (std::iswlower(arg1) < 100)) {}
 }
 
-void test__std__iswlower__leakignore() {
-  char *p = strdup(str);
-  result = std::iswlower(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswlower__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12852,7 +11760,7 @@ void test__isprint__pure(int arg1) {
 }
 
 void test__isprint__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isprint(p);
   // cppcheck-suppress memleak
 }
@@ -12880,12 +11788,6 @@ void test__std__isprint__pure(int arg1) {
   if ((std::isprint(arg1) > 10) || (std::isprint(arg1) < 100)) {}
 }
 
-void test__std__isprint__leakignore() {
-  char *p = strdup(str);
-  result = std::isprint(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isprint__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12910,7 +11812,7 @@ void test__iswprint__pure(int arg1) {
 }
 
 void test__iswprint__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswprint(p);
   // cppcheck-suppress memleak
 }
@@ -12938,12 +11840,6 @@ void test__std__iswprint__pure(int arg1) {
   if ((std::iswprint(arg1) > 10) || (std::iswprint(arg1) < 100)) {}
 }
 
-void test__std__iswprint__leakignore() {
-  char *p = strdup(str);
-  result = std::iswprint(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswprint__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -12968,7 +11864,7 @@ void test__ispunct__pure(int arg1) {
 }
 
 void test__ispunct__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ispunct(p);
   // cppcheck-suppress memleak
 }
@@ -12996,12 +11892,6 @@ void test__std__ispunct__pure(int arg1) {
   if ((std::ispunct(arg1) > 10) || (std::ispunct(arg1) < 100)) {}
 }
 
-void test__std__ispunct__leakignore() {
-  char *p = strdup(str);
-  result = std::ispunct(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ispunct__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -13026,7 +11916,7 @@ void test__iswpunct__pure(int arg1) {
 }
 
 void test__iswpunct__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswpunct(p);
   // cppcheck-suppress memleak
 }
@@ -13054,12 +11944,6 @@ void test__std__iswpunct__pure(int arg1) {
   if ((std::iswpunct(arg1) > 10) || (std::iswpunct(arg1) < 100)) {}
 }
 
-void test__std__iswpunct__leakignore() {
-  char *p = strdup(str);
-  result = std::iswpunct(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswpunct__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -13084,7 +11968,7 @@ void test__isspace__pure(int arg1) {
 }
 
 void test__isspace__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isspace(p);
   // cppcheck-suppress memleak
 }
@@ -13112,12 +11996,6 @@ void test__std__isspace__pure(int arg1) {
   if ((std::isspace(arg1) > 10) || (std::isspace(arg1) < 100)) {}
 }
 
-void test__std__isspace__leakignore() {
-  char *p = strdup(str);
-  result = std::isspace(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isspace__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -13142,7 +12020,7 @@ void test__iswspace__pure(int arg1) {
 }
 
 void test__iswspace__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswspace(p);
   // cppcheck-suppress memleak
 }
@@ -13170,12 +12048,6 @@ void test__std__iswspace__pure(int arg1) {
   if ((std::iswspace(arg1) > 10) || (std::iswspace(arg1) < 100)) {}
 }
 
-void test__std__iswspace__leakignore() {
-  char *p = strdup(str);
-  result = std::iswspace(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswspace__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -13200,7 +12072,7 @@ void test__isupper__pure(int arg1) {
 }
 
 void test__isupper__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isupper(p);
   // cppcheck-suppress memleak
 }
@@ -13228,12 +12100,6 @@ void test__std__isupper__pure(int arg1) {
   if ((std::isupper(arg1) > 10) || (std::isupper(arg1) < 100)) {}
 }
 
-void test__std__isupper__leakignore() {
-  char *p = strdup(str);
-  result = std::isupper(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isupper__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -13258,7 +12124,7 @@ void test__iswupper__pure(int arg1) {
 }
 
 void test__iswupper__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswupper(p);
   // cppcheck-suppress memleak
 }
@@ -13286,12 +12152,6 @@ void test__std__iswupper__pure(int arg1) {
   if ((std::iswupper(arg1) > 10) || (std::iswupper(arg1) < 100)) {}
 }
 
-void test__std__iswupper__leakignore() {
-  char *p = strdup(str);
-  result = std::iswupper(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswupper__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -13316,7 +12176,7 @@ void test__isxdigit__pure(int arg1) {
 }
 
 void test__isxdigit__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isxdigit(p);
   // cppcheck-suppress memleak
 }
@@ -13344,12 +12204,6 @@ void test__std__isxdigit__pure(int arg1) {
   if ((std::isxdigit(arg1) > 10) || (std::isxdigit(arg1) < 100)) {}
 }
 
-void test__std__isxdigit__leakignore() {
-  char *p = strdup(str);
-  result = std::isxdigit(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isxdigit__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -13374,7 +12228,7 @@ void test__iswxdigit__pure(int arg1) {
 }
 
 void test__iswxdigit__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = iswxdigit(p);
   // cppcheck-suppress memleak
 }
@@ -13402,12 +12256,6 @@ void test__std__iswxdigit__pure(int arg1) {
   if ((std::iswxdigit(arg1) > 10) || (std::iswxdigit(arg1) < 100)) {}
 }
 
-void test__std__iswxdigit__leakignore() {
-  char *p = strdup(str);
-  result = std::iswxdigit(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__iswxdigit__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -13432,7 +12280,7 @@ void test__towctrans__pure(int arg1,int arg2) {
 }
 
 void test__towctrans__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = towctrans(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -13466,12 +12314,6 @@ void test__std__towctrans__pure(int arg1,int arg2) {
   if ((std::towctrans(arg1, arg2) > 10) || (std::towctrans(arg1, arg2) < 100)) {}
 }
 
-void test__std__towctrans__leakignore() {
-  char *p = strdup(str);
-  result = std::towctrans(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__towctrans__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -13502,7 +12344,7 @@ void test__towlower__pure(int arg1) {
 }
 
 void test__towlower__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = towlower(p);
   // cppcheck-suppress memleak
 }
@@ -13530,12 +12372,6 @@ void test__std__towlower__pure(int arg1) {
   if ((std::towlower(arg1) > 10) || (std::towlower(arg1) < 100)) {}
 }
 
-void test__std__towlower__leakignore() {
-  char *p = strdup(str);
-  result = std::towlower(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__towlower__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -13560,7 +12396,7 @@ void test__towupper__pure(int arg1) {
 }
 
 void test__towupper__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = towupper(p);
   // cppcheck-suppress memleak
 }
@@ -13588,12 +12424,6 @@ void test__std__towupper__pure(int arg1) {
   if ((std::towupper(arg1) > 10) || (std::towupper(arg1) < 100)) {}
 }
 
-void test__std__towupper__leakignore() {
-  char *p = strdup(str);
-  result = std::towupper(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__towupper__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -13618,7 +12448,7 @@ void test__wctrans__pure(int arg1) {
 }
 
 void test__wctrans__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wctrans(p);
   // cppcheck-suppress memleak
 }
@@ -13652,12 +12482,6 @@ void test__std__wctrans__pure(int arg1) {
   if ((std::wctrans(arg1) > 10) || (std::wctrans(arg1) < 100)) {}
 }
 
-void test__std__wctrans__leakignore() {
-  char *p = strdup(str);
-  result = std::wctrans(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wctrans__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -13688,7 +12512,7 @@ void test__wctype__pure(int arg1) {
 }
 
 void test__wctype__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wctype(p);
   // cppcheck-suppress memleak
 }
@@ -13722,12 +12546,6 @@ void test__std__wctype__pure(int arg1) {
   if ((std::wctype(arg1) > 10) || (std::wctype(arg1) < 100)) {}
 }
 
-void test__std__wctype__leakignore() {
-  char *p = strdup(str);
-  result = std::wctype(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wctype__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -13758,7 +12576,7 @@ void test__cabs__pure(int arg1) {
 }
 
 void test__cabs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cabs(p);
   // cppcheck-suppress memleak
 }
@@ -13787,7 +12605,7 @@ void test__cabsf__pure(int arg1) {
 }
 
 void test__cabsf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cabsf(p);
   // cppcheck-suppress memleak
 }
@@ -13816,7 +12634,7 @@ void test__cabsl__pure(int arg1) {
 }
 
 void test__cabsl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cabsl(p);
   // cppcheck-suppress memleak
 }
@@ -13845,7 +12663,7 @@ void test__cacos__pure(int arg1) {
 }
 
 void test__cacos__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cacos(p);
   // cppcheck-suppress memleak
 }
@@ -13874,7 +12692,7 @@ void test__cacosf__pure(int arg1) {
 }
 
 void test__cacosf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cacosf(p);
   // cppcheck-suppress memleak
 }
@@ -13903,7 +12721,7 @@ void test__cacosl__pure(int arg1) {
 }
 
 void test__cacosl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cacosl(p);
   // cppcheck-suppress memleak
 }
@@ -13932,7 +12750,7 @@ void test__cacosh__pure(int arg1) {
 }
 
 void test__cacosh__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cacosh(p);
   // cppcheck-suppress memleak
 }
@@ -13961,7 +12779,7 @@ void test__cacoshf__pure(int arg1) {
 }
 
 void test__cacoshf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cacoshf(p);
   // cppcheck-suppress memleak
 }
@@ -13990,7 +12808,7 @@ void test__cacoshl__pure(int arg1) {
 }
 
 void test__cacoshl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cacoshl(p);
   // cppcheck-suppress memleak
 }
@@ -14019,7 +12837,7 @@ void test__labs__pure(int arg1) {
 }
 
 void test__labs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = labs(p);
   // cppcheck-suppress memleak
 }
@@ -14047,12 +12865,6 @@ void test__std__labs__pure(int arg1) {
   if ((std::labs(arg1) > 10) || (std::labs(arg1) < 100)) {}
 }
 
-void test__std__labs__leakignore() {
-  char *p = strdup(str);
-  result = std::labs(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__labs__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14077,7 +12889,7 @@ void test__llabs__pure(int arg1) {
 }
 
 void test__llabs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = llabs(p);
   // cppcheck-suppress memleak
 }
@@ -14105,12 +12917,6 @@ void test__std__llabs__pure(int arg1) {
   if ((std::llabs(arg1) > 10) || (std::llabs(arg1) < 100)) {}
 }
 
-void test__std__llabs__leakignore() {
-  char *p = strdup(str);
-  result = std::llabs(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__llabs__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14135,7 +12941,7 @@ void test__ldexp__pure(int arg1,int arg2) {
 }
 
 void test__ldexp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ldexp(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -14169,12 +12975,6 @@ void test__std__ldexp__pure(int arg1,int arg2) {
   if ((std::ldexp(arg1, arg2) > 10) || (std::ldexp(arg1, arg2) < 100)) {}
 }
 
-void test__std__ldexp__leakignore() {
-  char *p = strdup(str);
-  result = std::ldexp(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ldexp__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14205,7 +13005,7 @@ void test__ldexpf__pure(int arg1,int arg2) {
 }
 
 void test__ldexpf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ldexpf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -14239,12 +13039,6 @@ void test__std__ldexpf__pure(int arg1,int arg2) {
   if ((std::ldexpf(arg1, arg2) > 10) || (std::ldexpf(arg1, arg2) < 100)) {}
 }
 
-void test__std__ldexpf__leakignore() {
-  char *p = strdup(str);
-  result = std::ldexpf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ldexpf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14275,7 +13069,7 @@ void test__ldexpl__pure(int arg1,int arg2) {
 }
 
 void test__ldexpl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ldexpl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -14309,12 +13103,6 @@ void test__std__ldexpl__pure(int arg1,int arg2) {
   if ((std::ldexpl(arg1, arg2) > 10) || (std::ldexpl(arg1, arg2) < 100)) {}
 }
 
-void test__std__ldexpl__leakignore() {
-  char *p = strdup(str);
-  result = std::ldexpl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ldexpl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14345,7 +13133,7 @@ void test__lgamma__pure(int arg1) {
 }
 
 void test__lgamma__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = lgamma(p);
   // cppcheck-suppress memleak
 }
@@ -14373,12 +13161,6 @@ void test__std__lgamma__pure(int arg1) {
   if ((std::lgamma(arg1) > 10) || (std::lgamma(arg1) < 100)) {}
 }
 
-void test__std__lgamma__leakignore() {
-  char *p = strdup(str);
-  result = std::lgamma(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__lgamma__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14403,7 +13185,7 @@ void test__lgammaf__pure(int arg1) {
 }
 
 void test__lgammaf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = lgammaf(p);
   // cppcheck-suppress memleak
 }
@@ -14431,12 +13213,6 @@ void test__std__lgammaf__pure(int arg1) {
   if ((std::lgammaf(arg1) > 10) || (std::lgammaf(arg1) < 100)) {}
 }
 
-void test__std__lgammaf__leakignore() {
-  char *p = strdup(str);
-  result = std::lgammaf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__lgammaf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14461,7 +13237,7 @@ void test__lgammal__pure(int arg1) {
 }
 
 void test__lgammal__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = lgammal(p);
   // cppcheck-suppress memleak
 }
@@ -14489,12 +13265,6 @@ void test__std__lgammal__pure(int arg1) {
   if ((std::lgammal(arg1) > 10) || (std::lgammal(arg1) < 100)) {}
 }
 
-void test__std__lgammal__leakignore() {
-  char *p = strdup(str);
-  result = std::lgammal(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__lgammal__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14519,7 +13289,7 @@ void test__rint__pure(int arg1) {
 }
 
 void test__rint__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = rint(p);
   // cppcheck-suppress memleak
 }
@@ -14547,12 +13317,6 @@ void test__std__rint__pure(int arg1) {
   if ((std::rint(arg1) > 10) || (std::rint(arg1) < 100)) {}
 }
 
-void test__std__rint__leakignore() {
-  char *p = strdup(str);
-  result = std::rint(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__rint__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14577,7 +13341,7 @@ void test__rintf__pure(int arg1) {
 }
 
 void test__rintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = rintf(p);
   // cppcheck-suppress memleak
 }
@@ -14605,12 +13369,6 @@ void test__std__rintf__pure(int arg1) {
   if ((std::rintf(arg1) > 10) || (std::rintf(arg1) < 100)) {}
 }
 
-void test__std__rintf__leakignore() {
-  char *p = strdup(str);
-  result = std::rintf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__rintf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14635,7 +13393,7 @@ void test__rintl__pure(int arg1) {
 }
 
 void test__rintl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = rintl(p);
   // cppcheck-suppress memleak
 }
@@ -14663,12 +13421,6 @@ void test__std__rintl__pure(int arg1) {
   if ((std::rintl(arg1) > 10) || (std::rintl(arg1) < 100)) {}
 }
 
-void test__std__rintl__leakignore() {
-  char *p = strdup(str);
-  result = std::rintl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__rintl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14693,7 +13445,7 @@ void test__lrint__pure(int arg1) {
 }
 
 void test__lrint__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = lrint(p);
   // cppcheck-suppress memleak
 }
@@ -14721,12 +13473,6 @@ void test__std__lrint__pure(int arg1) {
   if ((std::lrint(arg1) > 10) || (std::lrint(arg1) < 100)) {}
 }
 
-void test__std__lrint__leakignore() {
-  char *p = strdup(str);
-  result = std::lrint(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__lrint__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14751,7 +13497,7 @@ void test__lrintf__pure(int arg1) {
 }
 
 void test__lrintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = lrintf(p);
   // cppcheck-suppress memleak
 }
@@ -14779,12 +13525,6 @@ void test__std__lrintf__pure(int arg1) {
   if ((std::lrintf(arg1) > 10) || (std::lrintf(arg1) < 100)) {}
 }
 
-void test__std__lrintf__leakignore() {
-  char *p = strdup(str);
-  result = std::lrintf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__lrintf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14809,7 +13549,7 @@ void test__lrintl__pure(int arg1) {
 }
 
 void test__lrintl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = lrintl(p);
   // cppcheck-suppress memleak
 }
@@ -14837,12 +13577,6 @@ void test__std__lrintl__pure(int arg1) {
   if ((std::lrintl(arg1) > 10) || (std::lrintl(arg1) < 100)) {}
 }
 
-void test__std__lrintl__leakignore() {
-  char *p = strdup(str);
-  result = std::lrintl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__lrintl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14867,7 +13601,7 @@ void test__llrint__pure(int arg1) {
 }
 
 void test__llrint__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = llrint(p);
   // cppcheck-suppress memleak
 }
@@ -14895,12 +13629,6 @@ void test__std__llrint__pure(int arg1) {
   if ((std::llrint(arg1) > 10) || (std::llrint(arg1) < 100)) {}
 }
 
-void test__std__llrint__leakignore() {
-  char *p = strdup(str);
-  result = std::llrint(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__llrint__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14925,7 +13653,7 @@ void test__llrintf__pure(int arg1) {
 }
 
 void test__llrintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = llrintf(p);
   // cppcheck-suppress memleak
 }
@@ -14953,12 +13681,6 @@ void test__std__llrintf__pure(int arg1) {
   if ((std::llrintf(arg1) > 10) || (std::llrintf(arg1) < 100)) {}
 }
 
-void test__std__llrintf__leakignore() {
-  char *p = strdup(str);
-  result = std::llrintf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__llrintf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -14983,7 +13705,7 @@ void test__llrintl__pure(int arg1) {
 }
 
 void test__llrintl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = llrintl(p);
   // cppcheck-suppress memleak
 }
@@ -15011,12 +13733,6 @@ void test__std__llrintl__pure(int arg1) {
   if ((std::llrintl(arg1) > 10) || (std::llrintl(arg1) < 100)) {}
 }
 
-void test__std__llrintl__leakignore() {
-  char *p = strdup(str);
-  result = std::llrintl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__llrintl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15041,7 +13757,7 @@ void test__llround__pure(int arg1) {
 }
 
 void test__llround__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = llround(p);
   // cppcheck-suppress memleak
 }
@@ -15069,12 +13785,6 @@ void test__std__llround__pure(int arg1) {
   if ((std::llround(arg1) > 10) || (std::llround(arg1) < 100)) {}
 }
 
-void test__std__llround__leakignore() {
-  char *p = strdup(str);
-  result = std::llround(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__llround__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15099,7 +13809,7 @@ void test__llroundf__pure(int arg1) {
 }
 
 void test__llroundf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = llroundf(p);
   // cppcheck-suppress memleak
 }
@@ -15127,12 +13837,6 @@ void test__std__llroundf__pure(int arg1) {
   if ((std::llroundf(arg1) > 10) || (std::llroundf(arg1) < 100)) {}
 }
 
-void test__std__llroundf__leakignore() {
-  char *p = strdup(str);
-  result = std::llroundf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__llroundf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15157,7 +13861,7 @@ void test__llroundl__pure(int arg1) {
 }
 
 void test__llroundl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = llroundl(p);
   // cppcheck-suppress memleak
 }
@@ -15185,12 +13889,6 @@ void test__std__llroundl__pure(int arg1) {
   if ((std::llroundl(arg1) > 10) || (std::llroundl(arg1) < 100)) {}
 }
 
-void test__std__llroundl__leakignore() {
-  char *p = strdup(str);
-  result = std::llroundl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__llroundl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15215,7 +13913,7 @@ void test__lround__pure(int arg1) {
 }
 
 void test__lround__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = lround(p);
   // cppcheck-suppress memleak
 }
@@ -15243,12 +13941,6 @@ void test__std__lround__pure(int arg1) {
   if ((std::lround(arg1) > 10) || (std::lround(arg1) < 100)) {}
 }
 
-void test__std__lround__leakignore() {
-  char *p = strdup(str);
-  result = std::lround(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__lround__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15273,7 +13965,7 @@ void test__lroundf__pure(int arg1) {
 }
 
 void test__lroundf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = lroundf(p);
   // cppcheck-suppress memleak
 }
@@ -15301,12 +13993,6 @@ void test__std__lroundf__pure(int arg1) {
   if ((std::lroundf(arg1) > 10) || (std::lroundf(arg1) < 100)) {}
 }
 
-void test__std__lroundf__leakignore() {
-  char *p = strdup(str);
-  result = std::lroundf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__lroundf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15331,7 +14017,7 @@ void test__lroundl__pure(int arg1) {
 }
 
 void test__lroundl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = lroundl(p);
   // cppcheck-suppress memleak
 }
@@ -15359,12 +14045,6 @@ void test__std__lroundl__pure(int arg1) {
   if ((std::lroundl(arg1) > 10) || (std::lroundl(arg1) < 100)) {}
 }
 
-void test__std__lroundl__leakignore() {
-  char *p = strdup(str);
-  result = std::lroundl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__lroundl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15384,7 +14064,7 @@ void test__rand__useretval() {
 }
 
 void test__rand__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = rand();
   // cppcheck-suppress memleak
 }
@@ -15397,7 +14077,7 @@ void test__srand__noreturn() {
 }
 
 void test__srand__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   srand(p);
   // cppcheck-suppress memleak
 }
@@ -15413,12 +14093,6 @@ void test__std__srand__noreturn() {
   if (cond) { x=100; std::srand(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__srand__leakignore() {
-  char *p = strdup(str);
-  std::srand(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__srand__arg1__notuninit() {
@@ -15440,7 +14114,7 @@ void test__ldiv__pure(int arg1,int arg2) {
 }
 
 void test__ldiv__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   ldiv(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -15469,12 +14143,6 @@ void test__std__ldiv__pure(int arg1,int arg2) {
   if ((std::ldiv(arg1, arg2) > 10) || (std::ldiv(arg1, arg2) < 100)) {}
 }
 
-void test__std__ldiv__leakignore() {
-  char *p = strdup(str);
-  std::ldiv(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ldiv__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15500,7 +14168,7 @@ void test__lldiv__pure(int arg1,int arg2) {
 }
 
 void test__lldiv__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   lldiv(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -15529,12 +14197,6 @@ void test__std__lldiv__pure(int arg1,int arg2) {
   if ((std::lldiv(arg1, arg2) > 10) || (std::lldiv(arg1, arg2) < 100)) {}
 }
 
-void test__std__lldiv__leakignore() {
-  char *p = strdup(str);
-  std::lldiv(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__lldiv__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15555,7 +14217,7 @@ void test__localtime__noreturn() {
 }
 
 void test__localtime__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   localtime(p);
   // cppcheck-suppress memleak
 }
@@ -15579,12 +14241,6 @@ void test__std__localtime__noreturn() {
   x = 1 << x;
 }
 
-void test__std__localtime__leakignore() {
-  char *p = strdup(str);
-  std::localtime(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__localtime__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -15605,7 +14261,7 @@ void test__localtime_s__noreturn() {
 }
 
 void test__localtime_s__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   localtime_s(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -15627,12 +14283,6 @@ void test__std__localtime_s__noreturn() {
   if (cond) { x=100; std::localtime_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__localtime_s__leakignore() {
-  char *p = strdup(str);
-  std::localtime_s(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__localtime_s__arg1__notnull() {
@@ -15660,7 +14310,7 @@ void test__log__useretval() {
 }
 
 void test__log__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = log(p);
   // cppcheck-suppress memleak
 }
@@ -15683,12 +14333,6 @@ void test__std__log__useretval() {
   std::log(arg1);
 }
 
-void test__std__log__leakignore() {
-  char *p = strdup(str);
-  result = std::log(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__log__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15708,7 +14352,7 @@ void test__logf__useretval() {
 }
 
 void test__logf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = logf(p);
   // cppcheck-suppress memleak
 }
@@ -15731,12 +14375,6 @@ void test__std__logf__useretval() {
   std::logf(arg1);
 }
 
-void test__std__logf__leakignore() {
-  char *p = strdup(str);
-  result = std::logf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__logf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15756,7 +14394,7 @@ void test__logl__useretval() {
 }
 
 void test__logl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = logl(p);
   // cppcheck-suppress memleak
 }
@@ -15779,12 +14417,6 @@ void test__std__logl__useretval() {
   std::logl(arg1);
 }
 
-void test__std__logl__leakignore() {
-  char *p = strdup(str);
-  result = std::logl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__logl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -15804,7 +14436,7 @@ void test__clog__useretval() {
 }
 
 void test__clog__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = clog(p);
   // cppcheck-suppress memleak
 }
@@ -15828,7 +14460,7 @@ void test__clogf__useretval() {
 }
 
 void test__clogf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = clogf(p);
   // cppcheck-suppress memleak
 }
@@ -15852,7 +14484,7 @@ void test__clogl__useretval() {
 }
 
 void test__clogl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = clogl(p);
   // cppcheck-suppress memleak
 }
@@ -15876,7 +14508,7 @@ void test__conj__useretval() {
 }
 
 void test__conj__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = conj(p);
   // cppcheck-suppress memleak
 }
@@ -15900,7 +14532,7 @@ void test__conjf__useretval() {
 }
 
 void test__conjf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = conjf(p);
   // cppcheck-suppress memleak
 }
@@ -15924,7 +14556,7 @@ void test__conjl__useretval() {
 }
 
 void test__conjl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = conjl(p);
   // cppcheck-suppress memleak
 }
@@ -15953,7 +14585,7 @@ void test__fpclassify__pure(int arg1) {
 }
 
 void test__fpclassify__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = fpclassify(p);
   // cppcheck-suppress memleak
 }
@@ -15981,12 +14613,6 @@ void test__std__fpclassify__pure(int arg1) {
   if ((std::fpclassify(arg1) > 10) || (std::fpclassify(arg1) < 100)) {}
 }
 
-void test__std__fpclassify__leakignore() {
-  char *p = strdup(str);
-  result = std::fpclassify(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fpclassify__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16011,7 +14637,7 @@ void test__isfinite__pure(int arg1) {
 }
 
 void test__isfinite__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isfinite(p);
   // cppcheck-suppress memleak
 }
@@ -16039,12 +14665,6 @@ void test__std__isfinite__pure(int arg1) {
   if ((std::isfinite(arg1) > 10) || (std::isfinite(arg1) < 100)) {}
 }
 
-void test__std__isfinite__leakignore() {
-  char *p = strdup(str);
-  result = std::isfinite(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isfinite__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16069,7 +14689,7 @@ void test__isgreater__pure(int arg1,int arg2) {
 }
 
 void test__isgreater__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isgreater(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -16103,12 +14723,6 @@ void test__std__isgreater__pure(int arg1,int arg2) {
   if ((std::isgreater(arg1, arg2) > 10) || (std::isgreater(arg1, arg2) < 100)) {}
 }
 
-void test__std__isgreater__leakignore() {
-  char *p = strdup(str);
-  result = std::isgreater(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isgreater__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16139,7 +14753,7 @@ void test__isgreaterequal__pure(int arg1,int arg2) {
 }
 
 void test__isgreaterequal__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isgreaterequal(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -16173,12 +14787,6 @@ void test__std__isgreaterequal__pure(int arg1,int arg2) {
   if ((std::isgreaterequal(arg1, arg2) > 10) || (std::isgreaterequal(arg1, arg2) < 100)) {}
 }
 
-void test__std__isgreaterequal__leakignore() {
-  char *p = strdup(str);
-  result = std::isgreaterequal(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isgreaterequal__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16209,7 +14817,7 @@ void test__isinf__pure(int arg1) {
 }
 
 void test__isinf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isinf(p);
   // cppcheck-suppress memleak
 }
@@ -16237,12 +14845,6 @@ void test__std__isinf__pure(int arg1) {
   if ((std::isinf(arg1) > 10) || (std::isinf(arg1) < 100)) {}
 }
 
-void test__std__isinf__leakignore() {
-  char *p = strdup(str);
-  result = std::isinf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isinf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16267,7 +14869,7 @@ void test__logb__pure(int arg1) {
 }
 
 void test__logb__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = logb(p);
   // cppcheck-suppress memleak
 }
@@ -16295,12 +14897,6 @@ void test__std__logb__pure(int arg1) {
   if ((std::logb(arg1) > 10) || (std::logb(arg1) < 100)) {}
 }
 
-void test__std__logb__leakignore() {
-  char *p = strdup(str);
-  result = std::logb(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__logb__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16325,7 +14921,7 @@ void test__logbf__pure(int arg1) {
 }
 
 void test__logbf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = logbf(p);
   // cppcheck-suppress memleak
 }
@@ -16353,12 +14949,6 @@ void test__std__logbf__pure(int arg1) {
   if ((std::logbf(arg1) > 10) || (std::logbf(arg1) < 100)) {}
 }
 
-void test__std__logbf__leakignore() {
-  char *p = strdup(str);
-  result = std::logbf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__logbf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16383,7 +14973,7 @@ void test__logbl__pure(int arg1) {
 }
 
 void test__logbl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = logbl(p);
   // cppcheck-suppress memleak
 }
@@ -16411,12 +15001,6 @@ void test__std__logbl__pure(int arg1) {
   if ((std::logbl(arg1) > 10) || (std::logbl(arg1) < 100)) {}
 }
 
-void test__std__logbl__leakignore() {
-  char *p = strdup(str);
-  result = std::logbl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__logbl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16441,7 +15025,7 @@ void test__isless__pure(int arg1,int arg2) {
 }
 
 void test__isless__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isless(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -16475,12 +15059,6 @@ void test__std__isless__pure(int arg1,int arg2) {
   if ((std::isless(arg1, arg2) > 10) || (std::isless(arg1, arg2) < 100)) {}
 }
 
-void test__std__isless__leakignore() {
-  char *p = strdup(str);
-  result = std::isless(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isless__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16511,7 +15089,7 @@ void test__islessequal__pure(int arg1,int arg2) {
 }
 
 void test__islessequal__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = islessequal(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -16545,12 +15123,6 @@ void test__std__islessequal__pure(int arg1,int arg2) {
   if ((std::islessequal(arg1, arg2) > 10) || (std::islessequal(arg1, arg2) < 100)) {}
 }
 
-void test__std__islessequal__leakignore() {
-  char *p = strdup(str);
-  result = std::islessequal(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__islessequal__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16581,7 +15153,7 @@ void test__islessgreater__pure(int arg1,int arg2) {
 }
 
 void test__islessgreater__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = islessgreater(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -16615,12 +15187,6 @@ void test__std__islessgreater__pure(int arg1,int arg2) {
   if ((std::islessgreater(arg1, arg2) > 10) || (std::islessgreater(arg1, arg2) < 100)) {}
 }
 
-void test__std__islessgreater__leakignore() {
-  char *p = strdup(str);
-  result = std::islessgreater(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__islessgreater__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16651,7 +15217,7 @@ void test__nan__pure(int arg1) {
 }
 
 void test__nan__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nan(p);
   // cppcheck-suppress memleak
 }
@@ -16685,12 +15251,6 @@ void test__std__nan__pure(int arg1) {
   if ((std::nan(arg1) > 10) || (std::nan(arg1) < 100)) {}
 }
 
-void test__std__nan__leakignore() {
-  char *p = strdup(str);
-  result = std::nan(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nan__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -16721,7 +15281,7 @@ void test__nanf__pure(int arg1) {
 }
 
 void test__nanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nanf(p);
   // cppcheck-suppress memleak
 }
@@ -16755,12 +15315,6 @@ void test__std__nanf__pure(int arg1) {
   if ((std::nanf(arg1) > 10) || (std::nanf(arg1) < 100)) {}
 }
 
-void test__std__nanf__leakignore() {
-  char *p = strdup(str);
-  result = std::nanf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nanf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -16791,7 +15345,7 @@ void test__nanl__pure(int arg1) {
 }
 
 void test__nanl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nanl(p);
   // cppcheck-suppress memleak
 }
@@ -16825,12 +15379,6 @@ void test__std__nanl__pure(int arg1) {
   if ((std::nanl(arg1) > 10) || (std::nanl(arg1) < 100)) {}
 }
 
-void test__std__nanl__leakignore() {
-  char *p = strdup(str);
-  result = std::nanl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nanl__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -16861,7 +15409,7 @@ void test__isnan__pure(int arg1) {
 }
 
 void test__isnan__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isnan(p);
   // cppcheck-suppress memleak
 }
@@ -16889,12 +15437,6 @@ void test__std__isnan__pure(int arg1) {
   if ((std::isnan(arg1) > 10) || (std::isnan(arg1) < 100)) {}
 }
 
-void test__std__isnan__leakignore() {
-  char *p = strdup(str);
-  result = std::isnan(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isnan__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16919,7 +15461,7 @@ void test__isnormal__pure(int arg1) {
 }
 
 void test__isnormal__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isnormal(p);
   // cppcheck-suppress memleak
 }
@@ -16947,12 +15489,6 @@ void test__std__isnormal__pure(int arg1) {
   if ((std::isnormal(arg1) > 10) || (std::isnormal(arg1) < 100)) {}
 }
 
-void test__std__isnormal__leakignore() {
-  char *p = strdup(str);
-  result = std::isnormal(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isnormal__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -16977,7 +15513,7 @@ void test__isunordered__pure(int arg1,int arg2) {
 }
 
 void test__isunordered__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = isunordered(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -17011,12 +15547,6 @@ void test__std__isunordered__pure(int arg1,int arg2) {
   if ((std::isunordered(arg1, arg2) > 10) || (std::isunordered(arg1, arg2) < 100)) {}
 }
 
-void test__std__isunordered__leakignore() {
-  char *p = strdup(str);
-  result = std::isunordered(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__isunordered__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17047,7 +15577,7 @@ void test__ilogb__pure(int arg1) {
 }
 
 void test__ilogb__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ilogb(p);
   // cppcheck-suppress memleak
 }
@@ -17075,12 +15605,6 @@ void test__std__ilogb__pure(int arg1) {
   if ((std::ilogb(arg1) > 10) || (std::ilogb(arg1) < 100)) {}
 }
 
-void test__std__ilogb__leakignore() {
-  char *p = strdup(str);
-  result = std::ilogb(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ilogb__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17105,7 +15629,7 @@ void test__ilogbf__pure(int arg1) {
 }
 
 void test__ilogbf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ilogbf(p);
   // cppcheck-suppress memleak
 }
@@ -17133,12 +15657,6 @@ void test__std__ilogbf__pure(int arg1) {
   if ((std::ilogbf(arg1) > 10) || (std::ilogbf(arg1) < 100)) {}
 }
 
-void test__std__ilogbf__leakignore() {
-  char *p = strdup(str);
-  result = std::ilogbf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ilogbf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17163,7 +15681,7 @@ void test__ilogbl__pure(int arg1) {
 }
 
 void test__ilogbl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = ilogbl(p);
   // cppcheck-suppress memleak
 }
@@ -17191,12 +15709,6 @@ void test__std__ilogbl__pure(int arg1) {
   if ((std::ilogbl(arg1) > 10) || (std::ilogbl(arg1) < 100)) {}
 }
 
-void test__std__ilogbl__leakignore() {
-  char *p = strdup(str);
-  result = std::ilogbl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ilogbl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17221,7 +15733,7 @@ void test__log10__pure(int arg1) {
 }
 
 void test__log10__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = log10(p);
   // cppcheck-suppress memleak
 }
@@ -17249,12 +15761,6 @@ void test__std__log10__pure(int arg1) {
   if ((std::log10(arg1) > 10) || (std::log10(arg1) < 100)) {}
 }
 
-void test__std__log10__leakignore() {
-  char *p = strdup(str);
-  result = std::log10(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__log10__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17279,7 +15785,7 @@ void test__log10f__pure(int arg1) {
 }
 
 void test__log10f__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = log10f(p);
   // cppcheck-suppress memleak
 }
@@ -17307,12 +15813,6 @@ void test__std__log10f__pure(int arg1) {
   if ((std::log10f(arg1) > 10) || (std::log10f(arg1) < 100)) {}
 }
 
-void test__std__log10f__leakignore() {
-  char *p = strdup(str);
-  result = std::log10f(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__log10f__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17337,7 +15837,7 @@ void test__log10l__pure(int arg1) {
 }
 
 void test__log10l__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = log10l(p);
   // cppcheck-suppress memleak
 }
@@ -17365,12 +15865,6 @@ void test__std__log10l__pure(int arg1) {
   if ((std::log10l(arg1) > 10) || (std::log10l(arg1) < 100)) {}
 }
 
-void test__std__log10l__leakignore() {
-  char *p = strdup(str);
-  result = std::log10l(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__log10l__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17395,7 +15889,7 @@ void test__log1p__pure(int arg1) {
 }
 
 void test__log1p__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = log1p(p);
   // cppcheck-suppress memleak
 }
@@ -17423,12 +15917,6 @@ void test__std__log1p__pure(int arg1) {
   if ((std::log1p(arg1) > 10) || (std::log1p(arg1) < 100)) {}
 }
 
-void test__std__log1p__leakignore() {
-  char *p = strdup(str);
-  result = std::log1p(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__log1p__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17453,7 +15941,7 @@ void test__log1pf__pure(int arg1) {
 }
 
 void test__log1pf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = log1pf(p);
   // cppcheck-suppress memleak
 }
@@ -17481,12 +15969,6 @@ void test__std__log1pf__pure(int arg1) {
   if ((std::log1pf(arg1) > 10) || (std::log1pf(arg1) < 100)) {}
 }
 
-void test__std__log1pf__leakignore() {
-  char *p = strdup(str);
-  result = std::log1pf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__log1pf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17511,7 +15993,7 @@ void test__log1pl__pure(int arg1) {
 }
 
 void test__log1pl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = log1pl(p);
   // cppcheck-suppress memleak
 }
@@ -17539,12 +16021,6 @@ void test__std__log1pl__pure(int arg1) {
   if ((std::log1pl(arg1) > 10) || (std::log1pl(arg1) < 100)) {}
 }
 
-void test__std__log1pl__leakignore() {
-  char *p = strdup(str);
-  result = std::log1pl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__log1pl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17569,7 +16045,7 @@ void test__log2__pure(int arg1) {
 }
 
 void test__log2__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = log2(p);
   // cppcheck-suppress memleak
 }
@@ -17597,12 +16073,6 @@ void test__std__log2__pure(int arg1) {
   if ((std::log2(arg1) > 10) || (std::log2(arg1) < 100)) {}
 }
 
-void test__std__log2__leakignore() {
-  char *p = strdup(str);
-  result = std::log2(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__log2__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17627,7 +16097,7 @@ void test__log2f__pure(int arg1) {
 }
 
 void test__log2f__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = log2f(p);
   // cppcheck-suppress memleak
 }
@@ -17655,12 +16125,6 @@ void test__std__log2f__pure(int arg1) {
   if ((std::log2f(arg1) > 10) || (std::log2f(arg1) < 100)) {}
 }
 
-void test__std__log2f__leakignore() {
-  char *p = strdup(str);
-  result = std::log2f(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__log2f__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17685,7 +16149,7 @@ void test__log2l__pure(int arg1) {
 }
 
 void test__log2l__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = log2l(p);
   // cppcheck-suppress memleak
 }
@@ -17713,12 +16177,6 @@ void test__std__log2l__pure(int arg1) {
   if ((std::log2l(arg1) > 10) || (std::log2l(arg1) < 100)) {}
 }
 
-void test__std__log2l__leakignore() {
-  char *p = strdup(str);
-  result = std::log2l(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__log2l__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17743,7 +16201,7 @@ void test__nearbyint__pure(int arg1) {
 }
 
 void test__nearbyint__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nearbyint(p);
   // cppcheck-suppress memleak
 }
@@ -17771,12 +16229,6 @@ void test__std__nearbyint__pure(int arg1) {
   if ((std::nearbyint(arg1) > 10) || (std::nearbyint(arg1) < 100)) {}
 }
 
-void test__std__nearbyint__leakignore() {
-  char *p = strdup(str);
-  result = std::nearbyint(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nearbyint__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17801,7 +16253,7 @@ void test__nearbyintf__pure(int arg1) {
 }
 
 void test__nearbyintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nearbyintf(p);
   // cppcheck-suppress memleak
 }
@@ -17829,12 +16281,6 @@ void test__std__nearbyintf__pure(int arg1) {
   if ((std::nearbyintf(arg1) > 10) || (std::nearbyintf(arg1) < 100)) {}
 }
 
-void test__std__nearbyintf__leakignore() {
-  char *p = strdup(str);
-  result = std::nearbyintf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nearbyintf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17859,7 +16305,7 @@ void test__nearbyintl__pure(int arg1) {
 }
 
 void test__nearbyintl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nearbyintl(p);
   // cppcheck-suppress memleak
 }
@@ -17887,12 +16333,6 @@ void test__std__nearbyintl__pure(int arg1) {
   if ((std::nearbyintl(arg1) > 10) || (std::nearbyintl(arg1) < 100)) {}
 }
 
-void test__std__nearbyintl__leakignore() {
-  char *p = strdup(str);
-  result = std::nearbyintl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nearbyintl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17917,7 +16357,7 @@ void test__nextafter__pure(int arg1,int arg2) {
 }
 
 void test__nextafter__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nextafter(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -17951,12 +16391,6 @@ void test__std__nextafter__pure(int arg1,int arg2) {
   if ((std::nextafter(arg1, arg2) > 10) || (std::nextafter(arg1, arg2) < 100)) {}
 }
 
-void test__std__nextafter__leakignore() {
-  char *p = strdup(str);
-  result = std::nextafter(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nextafter__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -17987,7 +16421,7 @@ void test__nextafterf__pure(int arg1,int arg2) {
 }
 
 void test__nextafterf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nextafterf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -18021,12 +16455,6 @@ void test__std__nextafterf__pure(int arg1,int arg2) {
   if ((std::nextafterf(arg1, arg2) > 10) || (std::nextafterf(arg1, arg2) < 100)) {}
 }
 
-void test__std__nextafterf__leakignore() {
-  char *p = strdup(str);
-  result = std::nextafterf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nextafterf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -18057,7 +16485,7 @@ void test__nextafterl__pure(int arg1,int arg2) {
 }
 
 void test__nextafterl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nextafterl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -18091,12 +16519,6 @@ void test__std__nextafterl__pure(int arg1,int arg2) {
   if ((std::nextafterl(arg1, arg2) > 10) || (std::nextafterl(arg1, arg2) < 100)) {}
 }
 
-void test__std__nextafterl__leakignore() {
-  char *p = strdup(str);
-  result = std::nextafterl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nextafterl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -18127,7 +16549,7 @@ void test__nexttoward__pure(int arg1,int arg2) {
 }
 
 void test__nexttoward__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nexttoward(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -18161,12 +16583,6 @@ void test__std__nexttoward__pure(int arg1,int arg2) {
   if ((std::nexttoward(arg1, arg2) > 10) || (std::nexttoward(arg1, arg2) < 100)) {}
 }
 
-void test__std__nexttoward__leakignore() {
-  char *p = strdup(str);
-  result = std::nexttoward(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nexttoward__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -18197,7 +16613,7 @@ void test__nexttowardf__pure(int arg1,int arg2) {
 }
 
 void test__nexttowardf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nexttowardf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -18231,12 +16647,6 @@ void test__std__nexttowardf__pure(int arg1,int arg2) {
   if ((std::nexttowardf(arg1, arg2) > 10) || (std::nexttowardf(arg1, arg2) < 100)) {}
 }
 
-void test__std__nexttowardf__leakignore() {
-  char *p = strdup(str);
-  result = std::nexttowardf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nexttowardf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -18267,7 +16677,7 @@ void test__nexttowardl__pure(int arg1,int arg2) {
 }
 
 void test__nexttowardl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = nexttowardl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -18301,12 +16711,6 @@ void test__std__nexttowardl__pure(int arg1,int arg2) {
   if ((std::nexttowardl(arg1, arg2) > 10) || (std::nexttowardl(arg1, arg2) < 100)) {}
 }
 
-void test__std__nexttowardl__leakignore() {
-  char *p = strdup(str);
-  result = std::nexttowardl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__nexttowardl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -18327,7 +16731,7 @@ void test__longjmp__noreturn() {
 }
 
 void test__longjmp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   longjmp(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -18349,12 +16753,6 @@ void test__std__longjmp__noreturn() {
   if (cond) { x=100; std::longjmp(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__longjmp__leakignore() {
-  char *p = strdup(str);
-  std::longjmp(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__longjmp__arg1__notuninit() {
@@ -18441,7 +16839,7 @@ void test__memchr__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__memchr__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = memchr(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -18497,12 +16895,6 @@ void test__std__memchr__pure(int arg1,int arg2,int arg3) {
   if ((std::memchr(arg1, arg2, arg3) > 10) || (std::memchr(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__memchr__leakignore() {
-  char *p = strdup(str);
-  result = std::memchr(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__memchr__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -18555,7 +16947,7 @@ void test__wmemchr__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__wmemchr__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wmemchr(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -18611,12 +17003,6 @@ void test__std__wmemchr__pure(int arg1,int arg2,int arg3) {
   if ((std::wmemchr(arg1, arg2, arg3) > 10) || (std::wmemchr(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__wmemchr__leakignore() {
-  char *p = strdup(str);
-  result = std::wmemchr(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wmemchr__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -18669,7 +17055,7 @@ void test__memcmp__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__memcmp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = memcmp(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -18726,12 +17112,6 @@ void test__std__memcmp__pure(int arg1,int arg2,int arg3) {
   if ((std::memcmp(arg1, arg2, arg3) > 10) || (std::memcmp(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__memcmp__leakignore() {
-  char *p = strdup(str);
-  result = std::memcmp(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__memcmp__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -18785,7 +17165,7 @@ void test__wmemcmp__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__wmemcmp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wmemcmp(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -18842,12 +17222,6 @@ void test__std__wmemcmp__pure(int arg1,int arg2,int arg3) {
   if ((std::wmemcmp(arg1, arg2, arg3) > 10) || (std::wmemcmp(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__wmemcmp__leakignore() {
-  char *p = strdup(str);
-  result = std::wmemcmp(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wmemcmp__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -18891,7 +17265,7 @@ void test__memcpy__noreturn() {
 }
 
 void test__memcpy__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   memcpy(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -18932,12 +17306,6 @@ void test__std__memcpy__noreturn() {
   x = 1 << x;
 }
 
-void test__std__memcpy__leakignore() {
-  char *p = strdup(str);
-  std::memcpy(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__memcpy__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -18975,7 +17343,7 @@ void test__wmemcpy__noreturn() {
 }
 
 void test__wmemcpy__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wmemcpy(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -19016,12 +17384,6 @@ void test__std__wmemcpy__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wmemcpy__leakignore() {
-  char *p = strdup(str);
-  std::wmemcpy(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wmemcpy__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -19059,7 +17421,7 @@ void test__memcpy_s__noreturn() {
 }
 
 void test__memcpy_s__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   memcpy_s(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -19112,7 +17474,7 @@ void test__wmemcpy_s__noreturn() {
 }
 
 void test__wmemcpy_s__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wmemcpy_s(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -19165,7 +17527,7 @@ void test__memmove__noreturn() {
 }
 
 void test__memmove__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   memmove(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -19206,12 +17568,6 @@ void test__std__memmove__noreturn() {
   x = 1 << x;
 }
 
-void test__std__memmove__leakignore() {
-  char *p = strdup(str);
-  std::memmove(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__memmove__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -19249,7 +17605,7 @@ void test__wmemmove__noreturn() {
 }
 
 void test__wmemmove__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wmemmove(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -19290,12 +17646,6 @@ void test__std__wmemmove__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wmemmove__leakignore() {
-  char *p = strdup(str);
-  std::wmemmove(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wmemmove__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -19333,7 +17683,7 @@ void test__memset_s__noreturn() {
 }
 
 void test__memset_s__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   memset_s(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -19370,7 +17720,7 @@ void test__memset__noreturn() {
 }
 
 void test__memset__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   memset(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -19405,12 +17755,6 @@ void test__std__memset__noreturn() {
   x = 1 << x;
 }
 
-void test__std__memset__leakignore() {
-  char *p = strdup(str);
-  std::memset(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__memset__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -19442,7 +17786,7 @@ void test__wmemset__noreturn() {
 }
 
 void test__wmemset__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wmemset(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -19477,12 +17821,6 @@ void test__std__wmemset__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wmemset__leakignore() {
-  char *p = strdup(str);
-  std::wmemset(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wmemset__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -19514,7 +17852,7 @@ void test__mktime__noreturn() {
 }
 
 void test__mktime__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   mktime(p);
   // cppcheck-suppress memleak
 }
@@ -19538,12 +17876,6 @@ void test__std__mktime__noreturn() {
   x = 1 << x;
 }
 
-void test__std__mktime__leakignore() {
-  char *p = strdup(str);
-  std::mktime(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__mktime__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -19564,7 +17896,7 @@ void test__mkxtime__noreturn() {
 }
 
 void test__mkxtime__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   mkxtime(p);
   // cppcheck-suppress memleak
 }
@@ -19589,7 +17921,7 @@ void test__modf__noreturn() {
 }
 
 void test__modf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   modf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -19613,12 +17945,6 @@ void test__std__modf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__modf__leakignore() {
-  char *p = strdup(str);
-  std::modf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__modf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -19639,7 +17965,7 @@ void test__modff__noreturn() {
 }
 
 void test__modff__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   modff(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -19663,12 +17989,6 @@ void test__std__modff__noreturn() {
   x = 1 << x;
 }
 
-void test__std__modff__leakignore() {
-  char *p = strdup(str);
-  std::modff(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__modff__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -19689,7 +18009,7 @@ void test__modfl__noreturn() {
 }
 
 void test__modfl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   modfl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -19713,12 +18033,6 @@ void test__std__modfl__noreturn() {
   x = 1 << x;
 }
 
-void test__std__modfl__leakignore() {
-  char *p = strdup(str);
-  std::modfl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__modfl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -19739,7 +18053,7 @@ void test__perror__noreturn() {
 }
 
 void test__perror__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   perror(p);
   // cppcheck-suppress memleak
 }
@@ -19755,12 +18069,6 @@ void test__std__perror__noreturn() {
   if (cond) { x=100; std::perror(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__perror__leakignore() {
-  char *p = strdup(str);
-  std::perror(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__perror__arg1__notuninit() {
@@ -19787,7 +18095,7 @@ void test__pow__pure(int arg1,int arg2) {
 }
 
 void test__pow__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = pow(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -19821,12 +18129,6 @@ void test__std__pow__pure(int arg1,int arg2) {
   if ((std::pow(arg1, arg2) > 10) || (std::pow(arg1, arg2) < 100)) {}
 }
 
-void test__std__pow__leakignore() {
-  char *p = strdup(str);
-  result = std::pow(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__pow__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -19857,7 +18159,7 @@ void test__powf__pure(int arg1,int arg2) {
 }
 
 void test__powf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = powf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -19891,12 +18193,6 @@ void test__std__powf__pure(int arg1,int arg2) {
   if ((std::powf(arg1, arg2) > 10) || (std::powf(arg1, arg2) < 100)) {}
 }
 
-void test__std__powf__leakignore() {
-  char *p = strdup(str);
-  result = std::powf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__powf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -19927,7 +18223,7 @@ void test__powl__pure(int arg1,int arg2) {
 }
 
 void test__powl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = powl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -19961,12 +18257,6 @@ void test__std__powl__pure(int arg1,int arg2) {
   if ((std::powl(arg1, arg2) > 10) || (std::powl(arg1, arg2) < 100)) {}
 }
 
-void test__std__powl__leakignore() {
-  char *p = strdup(str);
-  result = std::powl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__powl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -19997,7 +18287,7 @@ void test__cpow__pure(int arg1,int arg2) {
 }
 
 void test__cpow__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cpow(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -20032,7 +18322,7 @@ void test__cpowf__pure(int arg1,int arg2) {
 }
 
 void test__cpowf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cpowf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -20067,7 +18357,7 @@ void test__cpowl__pure(int arg1,int arg2) {
 }
 
 void test__cpowl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = cpowl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -20102,7 +18392,7 @@ void test__remainder__pure(int arg1,int arg2) {
 }
 
 void test__remainder__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = remainder(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -20136,12 +18426,6 @@ void test__std__remainder__pure(int arg1,int arg2) {
   if ((std::remainder(arg1, arg2) > 10) || (std::remainder(arg1, arg2) < 100)) {}
 }
 
-void test__std__remainder__leakignore() {
-  char *p = strdup(str);
-  result = std::remainder(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__remainder__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -20172,7 +18456,7 @@ void test__remainderf__pure(int arg1,int arg2) {
 }
 
 void test__remainderf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = remainderf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -20206,12 +18490,6 @@ void test__std__remainderf__pure(int arg1,int arg2) {
   if ((std::remainderf(arg1, arg2) > 10) || (std::remainderf(arg1, arg2) < 100)) {}
 }
 
-void test__std__remainderf__leakignore() {
-  char *p = strdup(str);
-  result = std::remainderf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__remainderf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -20242,7 +18520,7 @@ void test__remainderl__pure(int arg1,int arg2) {
 }
 
 void test__remainderl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = remainderl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -20276,12 +18554,6 @@ void test__std__remainderl__pure(int arg1,int arg2) {
   if ((std::remainderl(arg1, arg2) > 10) || (std::remainderl(arg1, arg2) < 100)) {}
 }
 
-void test__std__remainderl__leakignore() {
-  char *p = strdup(str);
-  result = std::remainderl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__remainderl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -20312,7 +18584,7 @@ void test__remquo__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__remquo__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = remquo(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -20352,12 +18624,6 @@ void test__std__remquo__pure(int arg1,int arg2,int arg3) {
   if ((std::remquo(arg1, arg2, arg3) > 10) || (std::remquo(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__remquo__leakignore() {
-  char *p = strdup(str);
-  result = std::remquo(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__remquo__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -20394,7 +18660,7 @@ void test__remquof__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__remquof__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = remquof(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -20434,12 +18700,6 @@ void test__std__remquof__pure(int arg1,int arg2,int arg3) {
   if ((std::remquof(arg1, arg2, arg3) > 10) || (std::remquof(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__remquof__leakignore() {
-  char *p = strdup(str);
-  result = std::remquof(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__remquof__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -20476,7 +18736,7 @@ void test__remquol__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__remquol__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = remquol(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -20516,12 +18776,6 @@ void test__std__remquol__pure(int arg1,int arg2,int arg3) {
   if ((std::remquol(arg1, arg2, arg3) > 10) || (std::remquol(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__remquol__leakignore() {
-  char *p = strdup(str);
-  result = std::remquol(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__remquol__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -20548,7 +18802,7 @@ void test__printf__noreturn() {
 }
 
 void test__printf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   printf(p);
   // cppcheck-suppress memleak
 }
@@ -20566,12 +18820,6 @@ void test__std__printf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__printf__leakignore() {
-  char *p = strdup(str);
-  std::printf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__printf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -20586,7 +18834,7 @@ void test__vprintf__noreturn() {
 }
 
 void test__vprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vprintf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -20604,12 +18852,6 @@ void test__std__vprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vprintf__leakignore() {
-  char *p = strdup(str);
-  std::vprintf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vprintf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -20624,7 +18866,7 @@ void test__vwprintf__noreturn() {
 }
 
 void test__vwprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vwprintf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -20640,12 +18882,6 @@ void test__std__vwprintf__noreturn() {
   if (cond) { x=100; std::vwprintf(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__vwprintf__leakignore() {
-  char *p = strdup(str);
-  std::vwprintf(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__vwprintf__arg1__notuninit() {
@@ -20672,7 +18908,7 @@ void test__bsearch__pure(int arg1,int arg2,int arg3,int arg4,int arg5) {
 }
 
 void test__bsearch__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = bsearch(p, arg2, arg3, arg4, arg5);
   // cppcheck-suppress memleak
 }
@@ -20742,12 +18978,6 @@ void test__std__bsearch__pure(int arg1,int arg2,int arg3,int arg4,int arg5) {
   if ((std::bsearch(arg1, arg2, arg3, arg4, arg5) > 10) || (std::bsearch(arg1, arg2, arg3, arg4, arg5) < 100)) {}
 }
 
-void test__std__bsearch__leakignore() {
-  char *p = strdup(str);
-  result = std::bsearch(p, arg2, arg3, arg4, arg5);
-  // cppcheck-suppress memleak
-}
-
 void test__std__bsearch__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -20804,7 +19034,7 @@ void test__qsort__noreturn() {
 }
 
 void test__qsort__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   qsort(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -20852,12 +19082,6 @@ void test__std__qsort__noreturn() {
   x = 1 << x;
 }
 
-void test__std__qsort__leakignore() {
-  char *p = strdup(str);
-  std::qsort(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
-}
-
 void test__std__qsort__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -20902,7 +19126,7 @@ void test__putc__noreturn() {
 }
 
 void test__putc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   putc(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -20937,12 +19161,6 @@ void test__std__putc__noreturn() {
   x = 1 << x;
 }
 
-void test__std__putc__leakignore() {
-  char *p = strdup(str);
-  std::putc(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__putc__arg1__notbool() {
   // cppcheck-suppress invalidFunctionArgBool
   std::putc(!x, arg2);
@@ -20974,7 +19192,7 @@ void test__putwc__noreturn() {
 }
 
 void test__putwc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   putwc(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -21004,12 +19222,6 @@ void test__std__putwc__noreturn() {
   x = 1 << x;
 }
 
-void test__std__putwc__leakignore() {
-  char *p = strdup(str);
-  std::putwc(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__putwc__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -21036,7 +19248,7 @@ void test__putchar__noreturn() {
 }
 
 void test__putchar__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   putchar(p);
   // cppcheck-suppress memleak
 }
@@ -21059,12 +19271,6 @@ void test__std__putchar__noreturn() {
   x = 1 << x;
 }
 
-void test__std__putchar__leakignore() {
-  char *p = strdup(str);
-  std::putchar(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__putchar__arg1__notbool() {
   // cppcheck-suppress invalidFunctionArgBool
   std::putchar(!x);
@@ -21084,7 +19290,7 @@ void test__putwchar__noreturn() {
 }
 
 void test__putwchar__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   putwchar(p);
   // cppcheck-suppress memleak
 }
@@ -21102,12 +19308,6 @@ void test__std__putwchar__noreturn() {
   x = 1 << x;
 }
 
-void test__std__putwchar__leakignore() {
-  char *p = strdup(str);
-  std::putwchar(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__putwchar__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -21122,7 +19322,7 @@ void test__puts__noreturn() {
 }
 
 void test__puts__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   puts(p);
   // cppcheck-suppress memleak
 }
@@ -21149,12 +19349,6 @@ void test__std__puts__noreturn() {
   if (cond) { x=100; std::puts(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__puts__leakignore() {
-  char *p = strdup(str);
-  std::puts(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__puts__arg1__notbool() {
@@ -21220,7 +19414,7 @@ void test__remove__noreturn() {
 }
 
 void test__remove__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   remove(p);
   // cppcheck-suppress memleak
 }
@@ -21244,12 +19438,6 @@ void test__std__remove__noreturn() {
   x = 1 << x;
 }
 
-void test__std__remove__leakignore() {
-  char *p = strdup(str);
-  std::remove(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__remove__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -21270,7 +19458,7 @@ void test__rename__noreturn() {
 }
 
 void test__rename__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   rename(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -21306,12 +19494,6 @@ void test__std__rename__noreturn() {
   x = 1 << x;
 }
 
-void test__std__rename__leakignore() {
-  char *p = strdup(str);
-  std::rename(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__rename__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -21344,7 +19526,7 @@ void test__rewind__noreturn() {
 }
 
 void test__rewind__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   rewind(p);
   // cppcheck-suppress memleak
 }
@@ -21366,12 +19548,6 @@ void test__std__rewind__noreturn() {
   if (cond) { x=100; std::rewind(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__rewind__leakignore() {
-  char *p = strdup(str);
-  std::rewind(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__rewind__arg1__notnull() {
@@ -21404,7 +19580,7 @@ void test__round__pure(int arg1) {
 }
 
 void test__round__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = round(p);
   // cppcheck-suppress memleak
 }
@@ -21432,12 +19608,6 @@ void test__std__round__pure(int arg1) {
   if ((std::round(arg1) > 10) || (std::round(arg1) < 100)) {}
 }
 
-void test__std__round__leakignore() {
-  char *p = strdup(str);
-  result = std::round(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__round__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -21462,7 +19632,7 @@ void test__roundf__pure(int arg1) {
 }
 
 void test__roundf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = roundf(p);
   // cppcheck-suppress memleak
 }
@@ -21490,12 +19660,6 @@ void test__std__roundf__pure(int arg1) {
   if ((std::roundf(arg1) > 10) || (std::roundf(arg1) < 100)) {}
 }
 
-void test__std__roundf__leakignore() {
-  char *p = strdup(str);
-  result = std::roundf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__roundf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -21520,7 +19684,7 @@ void test__roundl__pure(int arg1) {
 }
 
 void test__roundl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = roundl(p);
   // cppcheck-suppress memleak
 }
@@ -21548,12 +19712,6 @@ void test__std__roundl__pure(int arg1) {
   if ((std::roundl(arg1) > 10) || (std::roundl(arg1) < 100)) {}
 }
 
-void test__std__roundl__leakignore() {
-  char *p = strdup(str);
-  result = std::roundl(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__roundl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -21578,7 +19736,7 @@ void test__scalbn__pure(int arg1,int arg2) {
 }
 
 void test__scalbn__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = scalbn(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -21612,12 +19770,6 @@ void test__std__scalbn__pure(int arg1,int arg2) {
   if ((std::scalbn(arg1, arg2) > 10) || (std::scalbn(arg1, arg2) < 100)) {}
 }
 
-void test__std__scalbn__leakignore() {
-  char *p = strdup(str);
-  result = std::scalbn(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__scalbn__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -21648,7 +19800,7 @@ void test__scalbnf__pure(int arg1,int arg2) {
 }
 
 void test__scalbnf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = scalbnf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -21682,12 +19834,6 @@ void test__std__scalbnf__pure(int arg1,int arg2) {
   if ((std::scalbnf(arg1, arg2) > 10) || (std::scalbnf(arg1, arg2) < 100)) {}
 }
 
-void test__std__scalbnf__leakignore() {
-  char *p = strdup(str);
-  result = std::scalbnf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__scalbnf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -21718,7 +19864,7 @@ void test__scalbnl__pure(int arg1,int arg2) {
 }
 
 void test__scalbnl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = scalbnl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -21752,12 +19898,6 @@ void test__std__scalbnl__pure(int arg1,int arg2) {
   if ((std::scalbnl(arg1, arg2) > 10) || (std::scalbnl(arg1, arg2) < 100)) {}
 }
 
-void test__std__scalbnl__leakignore() {
-  char *p = strdup(str);
-  result = std::scalbnl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__scalbnl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -21788,7 +19928,7 @@ void test__scalbln__pure(int arg1,int arg2) {
 }
 
 void test__scalbln__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = scalbln(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -21822,12 +19962,6 @@ void test__std__scalbln__pure(int arg1,int arg2) {
   if ((std::scalbln(arg1, arg2) > 10) || (std::scalbln(arg1, arg2) < 100)) {}
 }
 
-void test__std__scalbln__leakignore() {
-  char *p = strdup(str);
-  result = std::scalbln(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__scalbln__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -21858,7 +19992,7 @@ void test__scalblnf__pure(int arg1,int arg2) {
 }
 
 void test__scalblnf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = scalblnf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -21892,12 +20026,6 @@ void test__std__scalblnf__pure(int arg1,int arg2) {
   if ((std::scalblnf(arg1, arg2) > 10) || (std::scalblnf(arg1, arg2) < 100)) {}
 }
 
-void test__std__scalblnf__leakignore() {
-  char *p = strdup(str);
-  result = std::scalblnf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__scalblnf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -21928,7 +20056,7 @@ void test__scalblnl__pure(int arg1,int arg2) {
 }
 
 void test__scalblnl__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = scalblnl(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -21962,12 +20090,6 @@ void test__std__scalblnl__pure(int arg1,int arg2) {
   if ((std::scalblnl(arg1, arg2) > 10) || (std::scalblnl(arg1, arg2) < 100)) {}
 }
 
-void test__std__scalblnl__leakignore() {
-  char *p = strdup(str);
-  result = std::scalblnl(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__scalblnl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -21998,7 +20120,7 @@ void test__signbit__pure(int arg1) {
 }
 
 void test__signbit__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = signbit(p);
   // cppcheck-suppress memleak
 }
@@ -22024,12 +20146,6 @@ void test__std__signbit__useretval() {
 void test__std__signbit__pure(int arg1) {
   // cppcheck-suppress incorrectLogicOperator
   if ((std::signbit(arg1) > 10) || (std::signbit(arg1) < 100)) {}
-}
-
-void test__std__signbit__leakignore() {
-  char *p = strdup(str);
-  result = std::signbit(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__signbit__arg1__notuninit() {
@@ -22098,7 +20214,7 @@ void test__scanf__noreturn() {
 }
 
 void test__scanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   scanf(p);
   // cppcheck-suppress memleak
 }
@@ -22122,12 +20238,6 @@ void test__std__scanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__scanf__leakignore() {
-  char *p = strdup(str);
-  std::scanf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__scanf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -22148,7 +20258,7 @@ void test__vsscanf__noreturn() {
 }
 
 void test__vsscanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vsscanf(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -22184,12 +20294,6 @@ void test__std__vsscanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vsscanf__leakignore() {
-  char *p = strdup(str);
-  std::vsscanf(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vsscanf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -22222,7 +20326,7 @@ void test__vswscanf__noreturn() {
 }
 
 void test__vswscanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vswscanf(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -22258,12 +20362,6 @@ void test__std__vswscanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vswscanf__leakignore() {
-  char *p = strdup(str);
-  std::vswscanf(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vswscanf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -22296,7 +20394,7 @@ void test__vscanf__noreturn() {
 }
 
 void test__vscanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vscanf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -22320,12 +20418,6 @@ void test__std__vscanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vscanf__leakignore() {
-  char *p = strdup(str);
-  std::vscanf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vscanf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -22346,7 +20438,7 @@ void test__vwscanf__noreturn() {
 }
 
 void test__vwscanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vwscanf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -22364,12 +20456,6 @@ void test__std__vwscanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vwscanf__leakignore() {
-  char *p = strdup(str);
-  std::vwscanf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vwscanf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -22384,7 +20470,7 @@ void test__setbuf__noreturn() {
 }
 
 void test__setbuf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   setbuf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -22413,12 +20499,6 @@ void test__std__setbuf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__setbuf__leakignore() {
-  char *p = strdup(str);
-  std::setbuf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__setbuf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -22444,7 +20524,7 @@ void test__setvbuf__noreturn() {
 }
 
 void test__setvbuf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   setvbuf(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -22486,12 +20566,6 @@ void test__std__setvbuf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__setvbuf__leakignore() {
-  char *p = strdup(str);
-  std::setvbuf(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
-}
-
 void test__std__setvbuf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -22530,7 +20604,7 @@ void test__setjmp__noreturn() {
 }
 
 void test__setjmp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   setjmp(p);
   // cppcheck-suppress memleak
 }
@@ -22543,7 +20617,7 @@ void test__strcat__noreturn() {
 }
 
 void test__strcat__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strcat(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -22579,12 +20653,6 @@ void test__std__strcat__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strcat__leakignore() {
-  char *p = strdup(str);
-  std::strcat(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strcat__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -22617,7 +20685,7 @@ void test__wcscat__noreturn() {
 }
 
 void test__wcscat__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcscat(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -22647,12 +20715,6 @@ void test__std__wcscat__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wcscat__leakignore() {
-  char *p = strdup(str);
-  std::wcscat(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcscat__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -22679,7 +20741,7 @@ void test__wcrtomb__noreturn() {
 }
 
 void test__wcrtomb__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcrtomb(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -22695,12 +20757,6 @@ void test__std__wcrtomb__noreturn() {
   if (cond) { x=100; std::wcrtomb(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__wcrtomb__leakignore() {
-  char *p = strdup(str);
-  std::wcrtomb(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wcrtomb__arg2__notuninit() {
@@ -22722,7 +20778,7 @@ void test__strchr__useretval() {
 }
 
 void test__strchr__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = strchr(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -22757,12 +20813,6 @@ void test__std__strchr__useretval() {
   std::strchr(arg1, arg2);
 }
 
-void test__std__strchr__leakignore() {
-  char *p = strdup(str);
-  result = std::strchr(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strchr__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -22794,7 +20844,7 @@ void test__wcschr__useretval() {
 }
 
 void test__wcschr__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcschr(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -22827,12 +20877,6 @@ void test__std__wcschr__noreturn() {
 void test__std__wcschr__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::wcschr(arg1, arg2);
-}
-
-void test__std__wcschr__leakignore() {
-  char *p = strdup(str);
-  result = std::wcschr(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wcschr__arg1__notnull() {
@@ -22871,7 +20915,7 @@ void test__strcmp__pure(int arg1,int arg2) {
 }
 
 void test__strcmp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = strcmp(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -22917,12 +20961,6 @@ void test__std__strcmp__pure(int arg1,int arg2) {
   if ((std::strcmp(arg1, arg2) > 10) || (std::strcmp(arg1, arg2) < 100)) {}
 }
 
-void test__std__strcmp__leakignore() {
-  char *p = strdup(str);
-  result = std::strcmp(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strcmp__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -22965,7 +21003,7 @@ void test__wcscmp__pure(int arg1,int arg2) {
 }
 
 void test__wcscmp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcscmp(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -23011,12 +21049,6 @@ void test__std__wcscmp__pure(int arg1,int arg2) {
   if ((std::wcscmp(arg1, arg2) > 10) || (std::wcscmp(arg1, arg2) < 100)) {}
 }
 
-void test__std__wcscmp__leakignore() {
-  char *p = strdup(str);
-  result = std::wcscmp(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcscmp__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -23049,7 +21081,7 @@ void test__strcpy__noreturn() {
 }
 
 void test__strcpy__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strcpy(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -23079,12 +21111,6 @@ void test__std__strcpy__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strcpy__leakignore() {
-  char *p = strdup(str);
-  std::strcpy(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strcpy__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -23111,7 +21137,7 @@ void test__wcscpy__noreturn() {
 }
 
 void test__wcscpy__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcscpy(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -23141,12 +21167,6 @@ void test__std__wcscpy__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wcscpy__leakignore() {
-  char *p = strdup(str);
-  std::wcscpy(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcscpy__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -23173,7 +21193,7 @@ void test__strftime__noreturn() {
 }
 
 void test__strftime__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strftime(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -23221,12 +21241,6 @@ void test__std__strftime__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strftime__leakignore() {
-  char *p = strdup(str);
-  std::strftime(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strftime__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -23271,7 +21285,7 @@ void test__strfxtime__noreturn() {
 }
 
 void test__strfxtime__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strfxtime(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -23330,7 +21344,7 @@ void test__strlen__pure(int arg1) {
 }
 
 void test__strlen__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = strlen(p);
   // cppcheck-suppress memleak
 }
@@ -23364,12 +21378,6 @@ void test__std__strlen__pure(int arg1) {
   if ((std::strlen(arg1) > 10) || (std::strlen(arg1) < 100)) {}
 }
 
-void test__std__strlen__leakignore() {
-  char *p = strdup(str);
-  result = std::strlen(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strlen__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -23400,7 +21408,7 @@ void test__wcslen__pure(int arg1) {
 }
 
 void test__wcslen__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcslen(p);
   // cppcheck-suppress memleak
 }
@@ -23434,12 +21442,6 @@ void test__std__wcslen__pure(int arg1) {
   if ((std::wcslen(arg1) > 10) || (std::wcslen(arg1) < 100)) {}
 }
 
-void test__std__wcslen__leakignore() {
-  char *p = strdup(str);
-  result = std::wcslen(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcslen__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -23460,7 +21462,7 @@ void test__strncpy__noreturn() {
 }
 
 void test__strncpy__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strncpy(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -23499,12 +21501,6 @@ void test__std__strncpy__noreturn() {
   if (cond) { x=100; std::strncpy(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__strncpy__leakignore() {
-  char *p = strdup(str);
-  std::strncpy(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__strncpy__arg1__notnull() {
@@ -23549,7 +21545,7 @@ void test__strpbrk__useretval() {
 }
 
 void test__strpbrk__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = strpbrk(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -23590,12 +21586,6 @@ void test__std__strpbrk__useretval() {
   std::strpbrk(arg1, arg2);
 }
 
-void test__std__strpbrk__leakignore() {
-  char *p = strdup(str);
-  result = std::strpbrk(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strpbrk__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -23628,7 +21618,7 @@ void test__strncat__noreturn() {
 }
 
 void test__strncat__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strncat(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -23675,12 +21665,6 @@ void test__std__strncat__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strncat__leakignore() {
-  char *p = strdup(str);
-  std::strncat(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strncat__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -23724,7 +21708,7 @@ void test__wcsncat__noreturn() {
 }
 
 void test__wcsncat__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcsncat(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -23769,12 +21753,6 @@ void test__std__wcsncat__noreturn() {
   if (cond) { x=100; std::wcsncat(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__wcsncat__leakignore() {
-  char *p = strdup(str);
-  std::wcsncat(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wcsncat__arg1__notnull() {
@@ -23830,7 +21808,7 @@ void test__strncmp__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__strncmp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = strncmp(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -23887,12 +21865,6 @@ void test__std__strncmp__pure(int arg1,int arg2,int arg3) {
   if ((std::strncmp(arg1, arg2, arg3) > 10) || (std::strncmp(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__strncmp__leakignore() {
-  char *p = strdup(str);
-  result = std::strncmp(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strncmp__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -23946,7 +21918,7 @@ void test__wcsncmp__pure(int arg1,int arg2,int arg3) {
 }
 
 void test__wcsncmp__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcsncmp(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -24003,12 +21975,6 @@ void test__std__wcsncmp__pure(int arg1,int arg2,int arg3) {
   if ((std::wcsncmp(arg1, arg2, arg3) > 10) || (std::wcsncmp(arg1, arg2, arg3) < 100)) {}
 }
 
-void test__std__wcsncmp__leakignore() {
-  char *p = strdup(str);
-  result = std::wcsncmp(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcsncmp__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -24057,7 +22023,7 @@ void test__strstr__useretval() {
 }
 
 void test__strstr__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = strstr(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -24096,12 +22062,6 @@ void test__std__strstr__noreturn() {
 void test__std__strstr__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::strstr(arg1, arg2);
-}
-
-void test__std__strstr__leakignore() {
-  char *p = strdup(str);
-  result = std::strstr(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__strstr__arg1__notnull() {
@@ -24146,7 +22106,7 @@ void test__wcsstr__pure(int arg1,int arg2) {
 }
 
 void test__wcsstr__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcsstr(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -24192,12 +22152,6 @@ void test__std__wcsstr__pure(int arg1,int arg2) {
   if ((std::wcsstr(arg1, arg2) > 10) || (std::wcsstr(arg1, arg2) < 100)) {}
 }
 
-void test__std__wcsstr__leakignore() {
-  char *p = strdup(str);
-  result = std::wcsstr(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcsstr__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -24235,7 +22189,7 @@ void test__strspn__useretval() {
 }
 
 void test__strspn__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = strspn(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -24276,12 +22230,6 @@ void test__std__strspn__useretval() {
   std::strspn(arg1, arg2);
 }
 
-void test__std__strspn__leakignore() {
-  char *p = strdup(str);
-  result = std::strspn(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strspn__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -24314,7 +22262,7 @@ void test__strxfrm__noreturn() {
 }
 
 void test__strxfrm__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strxfrm(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -24344,12 +22292,6 @@ void test__std__strxfrm__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strxfrm__leakignore() {
-  char *p = strdup(str);
-  std::strxfrm(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strxfrm__arg2__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -24376,7 +22318,7 @@ void test__wcsxfrm__noreturn() {
 }
 
 void test__wcsxfrm__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcsxfrm(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -24404,12 +22346,6 @@ void test__std__wcsxfrm__noreturn() {
   if (cond) { x=100; std::wcsxfrm(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__wcsxfrm__leakignore() {
-  char *p = strdup(str);
-  std::wcsxfrm(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wcsxfrm__arg2__notnull() {
@@ -24448,7 +22384,7 @@ void test__wcsspn__pure(int arg1,int arg2) {
 }
 
 void test__wcsspn__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcsspn(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -24494,12 +22430,6 @@ void test__std__wcsspn__pure(int arg1,int arg2) {
   if ((std::wcsspn(arg1, arg2) > 10) || (std::wcsspn(arg1, arg2) < 100)) {}
 }
 
-void test__std__wcsspn__leakignore() {
-  char *p = strdup(str);
-  result = std::wcsspn(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcsspn__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -24537,7 +22467,7 @@ void test__localeconv__useretval() {
 }
 
 void test__localeconv__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = localeconv();
   // cppcheck-suppress memleak
 }
@@ -24554,12 +22484,6 @@ void test__std__localeconv__useretval() {
   std::localeconv();
 }
 
-void test__std__localeconv__leakignore() {
-  char *p = strdup(str);
-  result = std::localeconv();
-  // cppcheck-suppress memleak
-}
-
 void test__std__locale__global__noreturn() {
   int x = 1;
   if (cond) { x=100; result = std::locale::global(arg1); }
@@ -24570,12 +22494,6 @@ void test__std__locale__global__noreturn() {
 void test__std__locale__global__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::locale::global(arg1);
-}
-
-void test__std__locale__global__leakignore() {
-  char *p = strdup(str);
-  result = std::locale::global(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__locale__global__arg1__notuninit() {
@@ -24596,12 +22514,6 @@ void test__std__locale__classic__useretval() {
   std::locale::classic();
 }
 
-void test__std__locale__classic__leakignore() {
-  char *p = strdup(str);
-  result = std::locale::classic();
-  // cppcheck-suppress memleak
-}
-
 void test__setlocale__noreturn() {
   int x = 1;
   if (cond) { x=100; setlocale(arg1, arg2); }
@@ -24610,7 +22522,7 @@ void test__setlocale__noreturn() {
 }
 
 void test__setlocale__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   setlocale(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -24632,12 +22544,6 @@ void test__std__setlocale__noreturn() {
   if (cond) { x=100; std::setlocale(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__setlocale__leakignore() {
-  char *p = strdup(str);
-  std::setlocale(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__setlocale__arg1__notuninit() {
@@ -24665,7 +22571,7 @@ void test__strerror__useretval() {
 }
 
 void test__strerror__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = strerror(p);
   // cppcheck-suppress memleak
 }
@@ -24686,12 +22592,6 @@ void test__std__strerror__noreturn() {
 void test__std__strerror__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::strerror(arg1);
-}
-
-void test__std__strerror__leakignore() {
-  char *p = strdup(str);
-  result = std::strerror(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__strerror__arg1__notuninit() {
@@ -24718,7 +22618,7 @@ void test__strcspn__pure(int arg1,int arg2) {
 }
 
 void test__strcspn__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = strcspn(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -24764,12 +22664,6 @@ void test__std__strcspn__pure(int arg1,int arg2) {
   if ((std::strcspn(arg1, arg2) > 10) || (std::strcspn(arg1, arg2) < 100)) {}
 }
 
-void test__std__strcspn__leakignore() {
-  char *p = strdup(str);
-  result = std::strcspn(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strcspn__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -24812,7 +22706,7 @@ void test__wcscspn__pure(int arg1,int arg2) {
 }
 
 void test__wcscspn__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcscspn(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -24858,12 +22752,6 @@ void test__std__wcscspn__pure(int arg1,int arg2) {
   if ((std::wcscspn(arg1, arg2) > 10) || (std::wcscspn(arg1, arg2) < 100)) {}
 }
 
-void test__std__wcscspn__leakignore() {
-  char *p = strdup(str);
-  result = std::wcscspn(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcscspn__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -24901,7 +22789,7 @@ void test__wcspbrk__useretval() {
 }
 
 void test__wcspbrk__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcspbrk(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -24936,12 +22824,6 @@ void test__std__wcspbrk__useretval() {
   std::wcspbrk(arg1, arg2);
 }
 
-void test__std__wcspbrk__leakignore() {
-  char *p = strdup(str);
-  result = std::wcspbrk(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcspbrk__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -24968,7 +22850,7 @@ void test__wcsncpy__noreturn() {
 }
 
 void test__wcsncpy__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcsncpy(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -25007,12 +22889,6 @@ void test__std__wcsncpy__noreturn() {
   if (cond) { x=100; std::wcsncpy(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__wcsncpy__leakignore() {
-  char *p = strdup(str);
-  std::wcsncpy(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wcsncpy__arg1__notnull() {
@@ -25057,7 +22933,7 @@ void test__strcoll__useretval() {
 }
 
 void test__strcoll__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = strcoll(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -25098,12 +22974,6 @@ void test__std__strcoll__useretval() {
   std::strcoll(arg1, arg2);
 }
 
-void test__std__strcoll__leakignore() {
-  char *p = strdup(str);
-  result = std::strcoll(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strcoll__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25141,7 +23011,7 @@ void test__wcscoll__useretval() {
 }
 
 void test__wcscoll__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcscoll(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -25182,12 +23052,6 @@ void test__std__wcscoll__useretval() {
   std::wcscoll(arg1, arg2);
 }
 
-void test__std__wcscoll__leakignore() {
-  char *p = strdup(str);
-  result = std::wcscoll(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcscoll__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25225,7 +23089,7 @@ void test__strrchr__useretval() {
 }
 
 void test__strrchr__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = strrchr(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -25260,12 +23124,6 @@ void test__std__strrchr__useretval() {
   std::strrchr(arg1, arg2);
 }
 
-void test__std__strrchr__leakignore() {
-  char *p = strdup(str);
-  result = std::strrchr(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strrchr__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25297,7 +23155,7 @@ void test__wcsrchr__useretval() {
 }
 
 void test__wcsrchr__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcsrchr(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -25332,12 +23190,6 @@ void test__std__wcsrchr__useretval() {
   std::wcsrchr(arg1, arg2);
 }
 
-void test__std__wcsrchr__leakignore() {
-  char *p = strdup(str);
-  result = std::wcsrchr(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcsrchr__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25364,7 +23216,7 @@ void test__wcsrtombs__noreturn() {
 }
 
 void test__wcsrtombs__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcsrtombs(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -25398,12 +23250,6 @@ void test__std__wcsrtombs__noreturn() {
   if (cond) { x=100; std::wcsrtombs(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__wcsrtombs__leakignore() {
-  char *p = strdup(str);
-  std::wcsrtombs(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wcsrtombs__arg2__notnull() {
@@ -25443,7 +23289,7 @@ void test__strtok__pure(int arg1,int arg2) {
 }
 
 void test__strtok__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strtok(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -25478,12 +23324,6 @@ void test__std__strtok__pure(int arg1,int arg2) {
   if ((std::strtok(arg1, arg2) > 10) || (std::strtok(arg1, arg2) < 100)) {}
 }
 
-void test__std__strtok__leakignore() {
-  char *p = strdup(str);
-  std::strtok(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strtok__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -25510,7 +23350,7 @@ void test__strtof__noreturn() {
 }
 
 void test__strtof__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strtof(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -25534,12 +23374,6 @@ void test__std__strtof__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strtof__leakignore() {
-  char *p = strdup(str);
-  std::strtof(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strtof__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25560,7 +23394,7 @@ void test__strtod__noreturn() {
 }
 
 void test__strtod__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strtod(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -25584,12 +23418,6 @@ void test__std__strtod__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strtod__leakignore() {
-  char *p = strdup(str);
-  std::strtod(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strtod__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25610,7 +23438,7 @@ void test__strtold__noreturn() {
 }
 
 void test__strtold__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strtold(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -25634,12 +23462,6 @@ void test__std__strtold__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strtold__leakignore() {
-  char *p = strdup(str);
-  std::strtold(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strtold__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25660,7 +23482,7 @@ void test__strtol__noreturn() {
 }
 
 void test__strtol__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strtol(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -25690,12 +23512,6 @@ void test__std__strtol__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strtol__leakignore() {
-  char *p = strdup(str);
-  std::strtol(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strtol__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25722,7 +23538,7 @@ void test__strtoul__noreturn() {
 }
 
 void test__strtoul__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strtoul(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -25752,12 +23568,6 @@ void test__std__strtoul__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strtoul__leakignore() {
-  char *p = strdup(str);
-  std::strtoul(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strtoul__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25784,7 +23594,7 @@ void test__strtoll__noreturn() {
 }
 
 void test__strtoll__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strtoll(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -25814,12 +23624,6 @@ void test__std__strtoll__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strtoll__leakignore() {
-  char *p = strdup(str);
-  std::strtoll(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strtoll__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25846,7 +23650,7 @@ void test__strtoull__noreturn() {
 }
 
 void test__strtoull__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strtoull(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -25876,12 +23680,6 @@ void test__std__strtoull__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strtoull__leakignore() {
-  char *p = strdup(str);
-  std::strtoull(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strtoull__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25908,7 +23706,7 @@ void test__strtoimax__noreturn() {
 }
 
 void test__strtoimax__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strtoimax(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -25938,12 +23736,6 @@ void test__std__strtoimax__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strtoimax__leakignore() {
-  char *p = strdup(str);
-  std::strtoimax(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strtoimax__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -25970,7 +23762,7 @@ void test__strtoumax__noreturn() {
 }
 
 void test__strtoumax__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strtoumax(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -26000,12 +23792,6 @@ void test__std__strtoumax__noreturn() {
   x = 1 << x;
 }
 
-void test__std__strtoumax__leakignore() {
-  char *p = strdup(str);
-  std::strtoumax(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__strtoumax__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -26032,7 +23818,7 @@ void test__time__noreturn() {
 }
 
 void test__time__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   time(p);
   // cppcheck-suppress memleak
 }
@@ -26050,12 +23836,6 @@ void test__std__time__noreturn() {
   x = 1 << x;
 }
 
-void test__std__time__leakignore() {
-  char *p = strdup(str);
-  std::time(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__time__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -26070,7 +23850,7 @@ void test__tmpnam__noreturn() {
 }
 
 void test__tmpnam__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   tmpnam(p);
   // cppcheck-suppress memleak
 }
@@ -26088,12 +23868,6 @@ void test__std__tmpnam__noreturn() {
   x = 1 << x;
 }
 
-void test__std__tmpnam__leakignore() {
-  char *p = strdup(str);
-  std::tmpnam(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__tmpnam__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -26108,7 +23882,7 @@ void test__tmpnam_s__noreturn() {
 }
 
 void test__tmpnam_s__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   tmpnam_s(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -26150,7 +23924,7 @@ void test__tolower__useretval() {
 }
 
 void test__tolower__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = tolower(p);
   // cppcheck-suppress memleak
 }
@@ -26173,12 +23947,6 @@ void test__std__tolower__useretval() {
   std::tolower(arg1);
 }
 
-void test__std__tolower__leakignore() {
-  char *p = strdup(str);
-  result = std::tolower(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__tolower__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -26198,7 +23966,7 @@ void test__toupper__useretval() {
 }
 
 void test__toupper__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = toupper(p);
   // cppcheck-suppress memleak
 }
@@ -26219,12 +23987,6 @@ void test__std__toupper__noreturn() {
 void test__std__toupper__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::toupper(arg1);
-}
-
-void test__std__toupper__leakignore() {
-  char *p = strdup(str);
-  result = std::toupper(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__toupper__arg1__notuninit() {
@@ -26253,7 +24015,7 @@ void test__va_arg__noreturn() {
 }
 
 void test__va_arg__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   va_arg(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -26266,7 +24028,7 @@ void test__va_copy__noreturn() {
 }
 
 void test__va_copy__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   va_copy(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -26279,7 +24041,7 @@ void test__va_end__noreturn() {
 }
 
 void test__va_end__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   va_end(p);
   // cppcheck-suppress memleak
 }
@@ -26292,7 +24054,7 @@ void test__va_start__noreturn() {
 }
 
 void test__va_start__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   va_start(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -26310,7 +24072,7 @@ void test__wcstof__useretval() {
 }
 
 void test__wcstof__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcstof(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -26339,12 +24101,6 @@ void test__std__wcstof__useretval() {
   std::wcstof(arg1, arg2);
 }
 
-void test__std__wcstof__leakignore() {
-  char *p = strdup(str);
-  result = std::wcstof(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcstof__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -26370,7 +24126,7 @@ void test__wcstod__useretval() {
 }
 
 void test__wcstod__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcstod(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -26399,12 +24155,6 @@ void test__std__wcstod__useretval() {
   std::wcstod(arg1, arg2);
 }
 
-void test__std__wcstod__leakignore() {
-  char *p = strdup(str);
-  result = std::wcstod(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcstod__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -26430,7 +24180,7 @@ void test__wcstold__useretval() {
 }
 
 void test__wcstold__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcstold(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -26459,12 +24209,6 @@ void test__std__wcstold__useretval() {
   std::wcstold(arg1, arg2);
 }
 
-void test__std__wcstold__leakignore() {
-  char *p = strdup(str);
-  result = std::wcstold(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcstold__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -26490,7 +24234,7 @@ void test__stof__useretval() {
 }
 
 void test__stof__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = stof(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -26519,12 +24263,6 @@ void test__std__stof__useretval() {
   std::stof(arg1, arg2);
 }
 
-void test__std__stof__leakignore() {
-  char *p = strdup(str);
-  result = std::stof(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__stof__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -26550,7 +24288,7 @@ void test__stod__useretval() {
 }
 
 void test__stod__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = stod(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -26579,12 +24317,6 @@ void test__std__stod__useretval() {
   std::stod(arg1, arg2);
 }
 
-void test__std__stod__leakignore() {
-  char *p = strdup(str);
-  result = std::stod(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__stod__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -26610,7 +24342,7 @@ void test__stold__useretval() {
 }
 
 void test__stold__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = stold(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -26639,12 +24371,6 @@ void test__std__stold__useretval() {
   std::stold(arg1, arg2);
 }
 
-void test__std__stold__leakignore() {
-  char *p = strdup(str);
-  result = std::stold(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__stold__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -26670,7 +24396,7 @@ void test__stoi__useretval() {
 }
 
 void test__stoi__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = stoi(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -26705,12 +24431,6 @@ void test__std__stoi__useretval() {
   std::stoi(arg1, arg2, arg3);
 }
 
-void test__std__stoi__leakignore() {
-  char *p = strdup(str);
-  result = std::stoi(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__stoi__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -26742,7 +24462,7 @@ void test__stol__useretval() {
 }
 
 void test__stol__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = stol(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -26777,12 +24497,6 @@ void test__std__stol__useretval() {
   std::stol(arg1, arg2, arg3);
 }
 
-void test__std__stol__leakignore() {
-  char *p = strdup(str);
-  result = std::stol(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__stol__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -26814,7 +24528,7 @@ void test__stoll__useretval() {
 }
 
 void test__stoll__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = stoll(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -26849,12 +24563,6 @@ void test__std__stoll__useretval() {
   std::stoll(arg1, arg2, arg3);
 }
 
-void test__std__stoll__leakignore() {
-  char *p = strdup(str);
-  result = std::stoll(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__stoll__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -26886,7 +24594,7 @@ void test__stoul__useretval() {
 }
 
 void test__stoul__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = stoul(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -26921,12 +24629,6 @@ void test__std__stoul__useretval() {
   std::stoul(arg1, arg2, arg3);
 }
 
-void test__std__stoul__leakignore() {
-  char *p = strdup(str);
-  result = std::stoul(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__stoul__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -26958,7 +24660,7 @@ void test__stoull__useretval() {
 }
 
 void test__stoull__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = stoull(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -26993,12 +24695,6 @@ void test__std__stoull__useretval() {
   std::stoull(arg1, arg2, arg3);
 }
 
-void test__std__stoull__leakignore() {
-  char *p = strdup(str);
-  result = std::stoull(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__stoull__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -27029,12 +24725,6 @@ void test__std__to_string__useretval() {
   std::to_string(arg1);
 }
 
-void test__std__to_string__leakignore() {
-  char *p = strdup(str);
-  result = std::to_string(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__to_string__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -27046,12 +24736,6 @@ void test__std__string__resize__noreturn() {
   if (cond) { x=100; std::string::resize(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__string__resize__leakignore() {
-  char *p = strdup(str);
-  std::string::resize(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__string__resize__arg1__notuninit() {
@@ -27071,12 +24755,6 @@ void test__std__wstring__resize__noreturn() {
   if (cond) { x=100; std::wstring::resize(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__wstring__resize__leakignore() {
-  char *p = strdup(str);
-  std::wstring::resize(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wstring__resize__arg1__notuninit() {
@@ -27103,12 +24781,6 @@ void test__std__to_wstring__useretval() {
   std::to_wstring(arg1);
 }
 
-void test__std__to_wstring__leakignore() {
-  char *p = strdup(str);
-  result = std::to_wstring(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__to_wstring__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -27123,7 +24795,7 @@ void test__mbrtowc__noreturn() {
 }
 
 void test__mbrtowc__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   mbrtowc(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -27153,12 +24825,6 @@ void test__std__mbrtowc__noreturn() {
   x = 1 << x;
 }
 
-void test__std__mbrtowc__leakignore() {
-  char *p = strdup(str);
-  std::mbrtowc(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
-}
-
 void test__std__mbrtowc__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -27185,7 +24851,7 @@ void test__wcstok__noreturn() {
 }
 
 void test__wcstok__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcstok(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -27219,12 +24885,6 @@ void test__std__wcstok__noreturn() {
   if (cond) { x=100; std::wcstok(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__wcstok__leakignore() {
-  char *p = strdup(str);
-  std::wcstok(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wcstok__arg1__notuninit() {
@@ -27264,7 +24924,7 @@ void test__wcstoimax__useretval() {
 }
 
 void test__wcstoimax__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcstoimax(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -27299,12 +24959,6 @@ void test__std__wcstoimax__useretval() {
   std::wcstoimax(arg1, arg2, arg3);
 }
 
-void test__std__wcstoimax__leakignore() {
-  char *p = strdup(str);
-  result = std::wcstoimax(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcstoimax__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -27336,7 +24990,7 @@ void test__wcstoumax__useretval() {
 }
 
 void test__wcstoumax__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = wcstoumax(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -27371,12 +25025,6 @@ void test__std__wcstoumax__useretval() {
   std::wcstoumax(arg1, arg2, arg3);
 }
 
-void test__std__wcstoumax__leakignore() {
-  char *p = strdup(str);
-  result = std::wcstoumax(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcstoumax__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -27403,7 +25051,7 @@ void test__wcstol__noreturn() {
 }
 
 void test__wcstol__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcstol(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -27433,12 +25081,6 @@ void test__std__wcstol__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wcstol__leakignore() {
-  char *p = strdup(str);
-  std::wcstol(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcstol__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -27465,7 +25107,7 @@ void test__wcstoll__noreturn() {
 }
 
 void test__wcstoll__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcstoll(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -27495,12 +25137,6 @@ void test__std__wcstoll__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wcstoll__leakignore() {
-  char *p = strdup(str);
-  std::wcstoll(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcstoll__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -27527,7 +25163,7 @@ void test__wcstoul__noreturn() {
 }
 
 void test__wcstoul__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcstoul(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -27557,12 +25193,6 @@ void test__std__wcstoul__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wcstoul__leakignore() {
-  char *p = strdup(str);
-  std::wcstoul(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcstoul__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -27589,7 +25219,7 @@ void test__wcstoull__noreturn() {
 }
 
 void test__wcstoull__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wcstoull(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -27619,12 +25249,6 @@ void test__std__wcstoull__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wcstoull__leakignore() {
-  char *p = strdup(str);
-  std::wcstoull(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wcstoull__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -27651,7 +25275,7 @@ void test__wprintf__noreturn() {
 }
 
 void test__wprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wprintf(p);
   // cppcheck-suppress memleak
 }
@@ -27669,12 +25293,6 @@ void test__std__wprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wprintf__leakignore() {
-  char *p = strdup(str);
-  std::wprintf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wprintf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -27689,7 +25307,7 @@ void test__sprintf__noreturn() {
 }
 
 void test__sprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   sprintf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -27719,12 +25337,6 @@ void test__std__sprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__sprintf__leakignore() {
-  char *p = strdup(str);
-  std::sprintf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__sprintf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -27751,7 +25363,7 @@ void test__swprintf__noreturn() {
 }
 
 void test__swprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   swprintf(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -27787,12 +25399,6 @@ void test__std__swprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__swprintf__leakignore() {
-  char *p = strdup(str);
-  std::swprintf(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__swprintf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -27825,7 +25431,7 @@ void test__vsprintf__noreturn() {
 }
 
 void test__vsprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vsprintf(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -27855,12 +25461,6 @@ void test__std__vsprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vsprintf__leakignore() {
-  char *p = strdup(str);
-  std::vsprintf(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vsprintf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -27887,7 +25487,7 @@ void test__vswprintf__noreturn() {
 }
 
 void test__vswprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vswprintf(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -27923,12 +25523,6 @@ void test__std__vswprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vswprintf__leakignore() {
-  char *p = strdup(str);
-  std::vswprintf(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vswprintf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -27961,7 +25555,7 @@ void test__fwprintf__noreturn() {
 }
 
 void test__fwprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fwprintf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -27991,12 +25585,6 @@ void test__std__fwprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fwprintf__leakignore() {
-  char *p = strdup(str);
-  std::fwprintf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fwprintf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -28023,7 +25611,7 @@ void test__snprintf__noreturn() {
 }
 
 void test__snprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   snprintf(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -28053,12 +25641,6 @@ void test__std__snprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__snprintf__leakignore() {
-  char *p = strdup(str);
-  std::snprintf(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__snprintf__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28085,7 +25667,7 @@ void test__vsnprintf__noreturn() {
 }
 
 void test__vsnprintf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   vsnprintf(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -28121,12 +25703,6 @@ void test__std__vsnprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__vsnprintf__leakignore() {
-  char *p = strdup(str);
-  std::vsnprintf(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
-}
-
 void test__std__vsnprintf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28159,7 +25735,7 @@ void test__wscanf__noreturn() {
 }
 
 void test__wscanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   wscanf(p);
   // cppcheck-suppress memleak
 }
@@ -28183,12 +25759,6 @@ void test__std__wscanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wscanf__leakignore() {
-  char *p = strdup(str);
-  std::wscanf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wscanf__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -28209,7 +25779,7 @@ void test__sscanf__noreturn() {
 }
 
 void test__sscanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   sscanf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -28239,12 +25809,6 @@ void test__std__sscanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__sscanf__leakignore() {
-  char *p = strdup(str);
-  std::sscanf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__sscanf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28271,7 +25835,7 @@ void test__fwscanf__noreturn() {
 }
 
 void test__fwscanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   fwscanf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -28295,12 +25859,6 @@ void test__std__fwscanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fwscanf__leakignore() {
-  char *p = strdup(str);
-  std::fwscanf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fwscanf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28321,7 +25879,7 @@ void test__swscanf__noreturn() {
 }
 
 void test__swscanf__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   swscanf(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -28345,12 +25903,6 @@ void test__std__swscanf__noreturn() {
   x = 1 << x;
 }
 
-void test__std__swscanf__leakignore() {
-  char *p = strdup(str);
-  std::swscanf(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__swscanf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28371,7 +25923,7 @@ void test__system__noreturn() {
 }
 
 void test__system__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   system(p);
   // cppcheck-suppress memleak
 }
@@ -28389,12 +25941,6 @@ void test__std__system__noreturn() {
   x = 1 << x;
 }
 
-void test__std__system__leakignore() {
-  char *p = strdup(str);
-  std::system(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__system__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28409,7 +25955,7 @@ void test__setw__noreturn() {
 }
 
 void test__setw__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   setw(p);
   // cppcheck-suppress memleak
 }
@@ -28425,12 +25971,6 @@ void test__std__setw__noreturn() {
   if (cond) { x=100; std::setw(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__setw__leakignore() {
-  char *p = strdup(str);
-  std::setw(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__setw__arg1__notuninit() {
@@ -28452,7 +25992,7 @@ void test__min__useretval() {
 }
 
 void test__min__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = min(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -28481,12 +26021,6 @@ void test__std__min__useretval() {
   std::min(arg1, arg2);
 }
 
-void test__std__min__leakignore() {
-  char *p = strdup(str);
-  result = std::min(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__min__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28512,7 +26046,7 @@ void test__max__useretval() {
 }
 
 void test__max__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = max(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -28541,12 +26075,6 @@ void test__std__max__useretval() {
   std::max(arg1, arg2);
 }
 
-void test__std__max__leakignore() {
-  char *p = strdup(str);
-  result = std::max(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__max__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28567,7 +26095,7 @@ void test__setiosflags__noreturn() {
 }
 
 void test__setiosflags__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   setiosflags(p);
   // cppcheck-suppress memleak
 }
@@ -28585,12 +26113,6 @@ void test__std__setiosflags__noreturn() {
   x = 1 << x;
 }
 
-void test__std__setiosflags__leakignore() {
-  char *p = strdup(str);
-  std::setiosflags(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__setiosflags__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28605,7 +26127,7 @@ void test__resetiosflags__noreturn() {
 }
 
 void test__resetiosflags__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   resetiosflags(p);
   // cppcheck-suppress memleak
 }
@@ -28623,12 +26145,6 @@ void test__std__resetiosflags__noreturn() {
   x = 1 << x;
 }
 
-void test__std__resetiosflags__leakignore() {
-  char *p = strdup(str);
-  std::resetiosflags(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__resetiosflags__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28643,7 +26159,7 @@ void test__setfill__noreturn() {
 }
 
 void test__setfill__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   setfill(p);
   // cppcheck-suppress memleak
 }
@@ -28661,12 +26177,6 @@ void test__std__setfill__noreturn() {
   x = 1 << x;
 }
 
-void test__std__setfill__leakignore() {
-  char *p = strdup(str);
-  std::setfill(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__setfill__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28681,7 +26191,7 @@ void test__setprecision__noreturn() {
 }
 
 void test__setprecision__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   setprecision(p);
   // cppcheck-suppress memleak
 }
@@ -28699,12 +26209,6 @@ void test__std__setprecision__noreturn() {
   x = 1 << x;
 }
 
-void test__std__setprecision__leakignore() {
-  char *p = strdup(str);
-  std::setprecision(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__setprecision__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -28719,7 +26223,7 @@ void test__setbase__noreturn() {
 }
 
 void test__setbase__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   setbase(p);
   // cppcheck-suppress memleak
 }
@@ -28735,12 +26239,6 @@ void test__std__setbase__noreturn() {
   if (cond) { x=100; std::setbase(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__setbase__leakignore() {
-  char *p = strdup(str);
-  std::setbase(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__setbase__arg1__notuninit() {
@@ -28762,7 +26260,7 @@ void test__zonetime__useretval() {
 }
 
 void test__zonetime__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = zonetime(p, arg2);
   // cppcheck-suppress memleak
 }
@@ -28793,7 +26291,7 @@ void test__c16rtomb__noreturn() {
 }
 
 void test__c16rtomb__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   c16rtomb(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -28824,7 +26322,7 @@ void test__c32rtomb__noreturn() {
 }
 
 void test__c32rtomb__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   c32rtomb(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -28855,7 +26353,7 @@ void test__mbrtoc16__noreturn() {
 }
 
 void test__mbrtoc16__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   mbrtoc16(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -28892,7 +26390,7 @@ void test__mbrtoc32__noreturn() {
 }
 
 void test__mbrtoc32__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   mbrtoc32(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -30305,12 +27803,6 @@ void test__std__basic_string__find_last_not_of__useretval() {
   std::basic_string::find_last_not_of(arg1, arg2, arg3);
 }
 
-void test__std__basic_string__find_last_not_of__leakignore() {
-  char *p = strdup(str);
-  result = std::basic_string::find_last_not_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__basic_string__find_last_not_of__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -30345,12 +27837,6 @@ void test__std__string__find_last_not_of__noreturn() {
 void test__std__string__find_last_not_of__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::string::find_last_not_of(arg1, arg2, arg3);
-}
-
-void test__std__string__find_last_not_of__leakignore() {
-  char *p = strdup(str);
-  result = std::string::find_last_not_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__string__find_last_not_of__arg1__notnull() {
@@ -30389,12 +27875,6 @@ void test__std__wstring__find_last_not_of__useretval() {
   std::wstring::find_last_not_of(arg1, arg2, arg3);
 }
 
-void test__std__wstring__find_last_not_of__leakignore() {
-  char *p = strdup(str);
-  result = std::wstring::find_last_not_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wstring__find_last_not_of__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -30429,12 +27909,6 @@ void test__std__basic_string__find_first_not_of__noreturn() {
 void test__std__basic_string__find_first_not_of__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::basic_string::find_first_not_of(arg1, arg2, arg3);
-}
-
-void test__std__basic_string__find_first_not_of__leakignore() {
-  char *p = strdup(str);
-  result = std::basic_string::find_first_not_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__basic_string__find_first_not_of__arg1__notnull() {
@@ -30473,12 +27947,6 @@ void test__std__string__find_first_not_of__useretval() {
   std::string::find_first_not_of(arg1, arg2, arg3);
 }
 
-void test__std__string__find_first_not_of__leakignore() {
-  char *p = strdup(str);
-  result = std::string::find_first_not_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__string__find_first_not_of__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -30513,12 +27981,6 @@ void test__std__wstring__find_first_not_of__noreturn() {
 void test__std__wstring__find_first_not_of__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::wstring::find_first_not_of(arg1, arg2, arg3);
-}
-
-void test__std__wstring__find_first_not_of__leakignore() {
-  char *p = strdup(str);
-  result = std::wstring::find_first_not_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wstring__find_first_not_of__arg1__notnull() {
@@ -30557,12 +28019,6 @@ void test__std__string__find__useretval() {
   std::string::find(arg1, arg2, arg3);
 }
 
-void test__std__string__find__leakignore() {
-  char *p = strdup(str);
-  result = std::string::find(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__string__find__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -30597,12 +28053,6 @@ void test__std__string__rfind__noreturn() {
 void test__std__string__rfind__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::string::rfind(arg1, arg2, arg3);
-}
-
-void test__std__string__rfind__leakignore() {
-  char *p = strdup(str);
-  result = std::string::rfind(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__string__rfind__arg1__notnull() {
@@ -30641,12 +28091,6 @@ void test__std__wstring__find__useretval() {
   std::wstring::find(arg1, arg2, arg3);
 }
 
-void test__std__wstring__find__leakignore() {
-  char *p = strdup(str);
-  result = std::wstring::find(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wstring__find__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -30681,12 +28125,6 @@ void test__std__wstring__rfind__noreturn() {
 void test__std__wstring__rfind__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::wstring::rfind(arg1, arg2, arg3);
-}
-
-void test__std__wstring__rfind__leakignore() {
-  char *p = strdup(str);
-  result = std::wstring::rfind(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wstring__rfind__arg1__notnull() {
@@ -30725,12 +28163,6 @@ void test__std__basic_string__find__useretval() {
   std::basic_string::find(arg1, arg2, arg3);
 }
 
-void test__std__basic_string__find__leakignore() {
-  char *p = strdup(str);
-  result = std::basic_string::find(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__basic_string__find__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -30765,12 +28197,6 @@ void test__std__basic_string__rfind__noreturn() {
 void test__std__basic_string__rfind__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::basic_string::rfind(arg1, arg2, arg3);
-}
-
-void test__std__basic_string__rfind__leakignore() {
-  char *p = strdup(str);
-  result = std::basic_string::rfind(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__basic_string__rfind__arg1__notnull() {
@@ -30809,12 +28235,6 @@ void test__std__string__find_first_of__useretval() {
   std::string::find_first_of(arg1, arg2, arg3);
 }
 
-void test__std__string__find_first_of__leakignore() {
-  char *p = strdup(str);
-  result = std::string::find_first_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__string__find_first_of__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -30849,12 +28269,6 @@ void test__std__wstring__find_first_of__noreturn() {
 void test__std__wstring__find_first_of__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::wstring::find_first_of(arg1, arg2, arg3);
-}
-
-void test__std__wstring__find_first_of__leakignore() {
-  char *p = strdup(str);
-  result = std::wstring::find_first_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wstring__find_first_of__arg1__notnull() {
@@ -30893,12 +28307,6 @@ void test__std__basic_string__find_first_of__useretval() {
   std::basic_string::find_first_of(arg1, arg2, arg3);
 }
 
-void test__std__basic_string__find_first_of__leakignore() {
-  char *p = strdup(str);
-  result = std::basic_string::find_first_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__basic_string__find_first_of__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -30933,12 +28341,6 @@ void test__std__string__find_last_of__noreturn() {
 void test__std__string__find_last_of__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::string::find_last_of(arg1, arg2, arg3);
-}
-
-void test__std__string__find_last_of__leakignore() {
-  char *p = strdup(str);
-  result = std::string::find_last_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__string__find_last_of__arg1__notnull() {
@@ -30977,12 +28379,6 @@ void test__std__wstring__find_last_of__useretval() {
   std::wstring::find_last_of(arg1, arg2, arg3);
 }
 
-void test__std__wstring__find_last_of__leakignore() {
-  char *p = strdup(str);
-  result = std::wstring::find_last_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wstring__find_last_of__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -31017,12 +28413,6 @@ void test__std__basic_string__find_last_of__noreturn() {
 void test__std__basic_string__find_last_of__useretval() {
   // cppcheck-suppress ignoredReturnValue
   std::basic_string::find_last_of(arg1, arg2, arg3);
-}
-
-void test__std__basic_string__find_last_of__leakignore() {
-  char *p = strdup(str);
-  result = std::basic_string::find_last_of(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__basic_string__find_last_of__arg1__notnull() {
@@ -31176,12 +28566,6 @@ void test__std__ios__clear__noreturn() {
   x = 1 << x;
 }
 
-void test__std__ios__clear__leakignore() {
-  char *p = strdup(str);
-  std::ios::clear(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ios__clear__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -31195,12 +28579,6 @@ void test__std__fstream__clear__noreturn() {
   x = 1 << x;
 }
 
-void test__std__fstream__clear__leakignore() {
-  char *p = strdup(str);
-  std::fstream::clear(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__fstream__clear__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -31212,12 +28590,6 @@ void test__std__istream__read__noreturn() {
   if (cond) { x=100; std::istream::read(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__istream__read__leakignore() {
-  char *p = strdup(str);
-  std::istream::read(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__istream__read__arg1__notnull() {
@@ -31239,12 +28611,6 @@ void test__std__ifstream__read__noreturn() {
   x = 1 << x;
 }
 
-void test__std__ifstream__read__leakignore() {
-  char *p = strdup(str);
-  std::ifstream::read(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ifstream__read__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -31262,12 +28628,6 @@ void test__std__istream__readsome__noreturn() {
   if (cond) { x=100; std::istream::readsome(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__istream__readsome__leakignore() {
-  char *p = strdup(str);
-  std::istream::readsome(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__istream__readsome__arg1__notnull() {
@@ -31289,12 +28649,6 @@ void test__std__ifstream__readsome__noreturn() {
   x = 1 << x;
 }
 
-void test__std__ifstream__readsome__leakignore() {
-  char *p = strdup(str);
-  std::ifstream::readsome(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ifstream__readsome__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -31312,12 +28666,6 @@ void test__std__istream__getline__noreturn() {
   if (cond) { x=100; std::istream::getline(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__istream__getline__leakignore() {
-  char *p = strdup(str);
-  std::istream::getline(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__istream__getline__arg1__notnull() {
@@ -31345,12 +28693,6 @@ void test__std__ifstream__getline__noreturn() {
   x = 1 << x;
 }
 
-void test__std__ifstream__getline__leakignore() {
-  char *p = strdup(str);
-  std::ifstream::getline(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__ifstream__getline__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -31376,12 +28718,6 @@ void test__std__istream__get__noreturn() {
   x = 1 << x;
 }
 
-void test__std__istream__get__leakignore() {
-  char *p = strdup(str);
-  std::istream::get(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__std__istream__get__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -31405,12 +28741,6 @@ void test__std__ifstream__get__noreturn() {
   if (cond) { x=100; std::ifstream::get(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__ifstream__get__leakignore() {
-  char *p = strdup(str);
-  std::ifstream::get(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__std__ifstream__get__arg1__notnull() {
@@ -31439,7 +28769,7 @@ void test__itoa__noreturn() {
 }
 
 void test__itoa__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   itoa(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -31469,12 +28799,6 @@ void test__std__string__erase__noreturn() {
   x = 1 << x;
 }
 
-void test__std__string__erase__leakignore() {
-  char *p = strdup(str);
-  std::string::erase(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__string__erase__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -31492,12 +28816,6 @@ void test__std__wstring__erase__noreturn() {
   if (cond) { x=100; std::wstring::erase(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__wstring__erase__leakignore() {
-  char *p = strdup(str);
-  std::wstring::erase(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__std__wstring__erase__arg1__notuninit() {
@@ -31519,12 +28837,6 @@ void test__std__basic_string__erase__noreturn() {
   x = 1 << x;
 }
 
-void test__std__basic_string__erase__leakignore() {
-  char *p = strdup(str);
-  std::basic_string::erase(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__std__basic_string__erase__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -31544,12 +28856,6 @@ void test__std__string__reserve__noreturn() {
   x = 1 << x;
 }
 
-void test__std__string__reserve__leakignore() {
-  char *p = strdup(str);
-  std::string::reserve(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__string__reserve__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -31563,12 +28869,6 @@ void test__std__wstring__reserve__noreturn() {
   x = 1 << x;
 }
 
-void test__std__wstring__reserve__leakignore() {
-  char *p = strdup(str);
-  std::wstring::reserve(p);
-  // cppcheck-suppress memleak
-}
-
 void test__std__wstring__reserve__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -31580,12 +28880,6 @@ void test__std__basic_string__reserve__noreturn() {
   if (cond) { x=100; std::basic_string::reserve(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__std__basic_string__reserve__leakignore() {
-  char *p = strdup(str);
-  std::basic_string::reserve(p);
-  // cppcheck-suppress memleak
 }
 
 void test__std__basic_string__reserve__arg1__notuninit() {
@@ -32219,7 +29513,7 @@ void test__offsetof__useretval() {
 }
 
 void test__offsetof__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = offsetof(p, arg2);
   // cppcheck-suppress memleak
 }

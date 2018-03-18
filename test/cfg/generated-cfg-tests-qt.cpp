@@ -107,7 +107,7 @@ void test__tr__useretval() {
 }
 
 void test__tr__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   result = tr(p, arg2, arg3);
   // cppcheck-suppress memleak
 }
@@ -148,12 +148,6 @@ void test__QObject__tr__useretval() {
   QObject::tr(arg1, arg2, arg3);
 }
 
-void test__QObject__tr__leakignore() {
-  char *p = strdup(str);
-  result = QObject::tr(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__QObject__tr__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -183,12 +177,6 @@ void test__QSettings__setValue__noreturn() {
   if (cond) { x=100; QSettings::setValue(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__QSettings__setValue__leakignore() {
-  char *p = strdup(str);
-  QSettings::setValue(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__QSettings__setValue__arg1__notnull() {
@@ -246,12 +234,6 @@ void test__QString__sprintf__noreturn() {
   x = 1 << x;
 }
 
-void test__QString__sprintf__leakignore() {
-  char *p = strdup(str);
-  QString::sprintf(p);
-  // cppcheck-suppress memleak
-}
-
 void test__QString__sprintf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -263,12 +245,6 @@ void test__QString__asprintf__noreturn() {
   if (cond) { x=100; QString::asprintf(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__QString__asprintf__leakignore() {
-  char *p = strdup(str);
-  QString::asprintf(p);
-  // cppcheck-suppress memleak
 }
 
 void test__QString__asprintf__arg1__notuninit() {
@@ -740,12 +716,6 @@ void test__QString__compare__noreturn() {
 void test__QString__compare__useretval() {
   // cppcheck-suppress ignoredReturnValue
   QString::compare(arg1, arg2, arg3);
-}
-
-void test__QString__compare__leakignore() {
-  char *p = strdup(str);
-  result = QString::compare(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__QString__compare__arg1__notuninit() {
@@ -1366,12 +1336,6 @@ void test__QString__number__useretval() {
   QString::number();
 }
 
-void test__QString__number__leakignore() {
-  char *p = strdup(str);
-  result = QString::number();
-  // cppcheck-suppress memleak
-}
-
 void test__QString__right__noreturn() {
   int x = 1;
   if (cond) { x=100; result = QString::right(arg1); }
@@ -1382,12 +1346,6 @@ void test__QString__right__noreturn() {
 void test__QString__right__useretval() {
   // cppcheck-suppress ignoredReturnValue
   QString::right(arg1);
-}
-
-void test__QString__right__leakignore() {
-  char *p = strdup(str);
-  result = QString::right(p);
-  // cppcheck-suppress memleak
 }
 
 void test__QString__right__arg1__notbool() {
@@ -1413,12 +1371,6 @@ void test__QString__split__useretval() {
   QString::split(arg1);
 }
 
-void test__QString__split__leakignore() {
-  char *p = strdup(str);
-  result = QString::split(p);
-  // cppcheck-suppress memleak
-}
-
 void test__QString__split__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1435,12 +1387,6 @@ void test__QString__toInt__noreturn() {
 void test__QString__toInt__useretval() {
   // cppcheck-suppress ignoredReturnValue
   QString::toInt(arg1, arg2);
-}
-
-void test__QString__toInt__leakignore() {
-  char *p = strdup(str);
-  result = QString::toInt(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__QString__toInt__arg1__notuninit() {
@@ -1522,12 +1468,6 @@ void test__QMetaObject__connectSlotsByName__noreturn() {
   x = 1 << x;
 }
 
-void test__QMetaObject__connectSlotsByName__leakignore() {
-  char *p = strdup(str);
-  QMetaObject::connectSlotsByName(p);
-  // cppcheck-suppress memleak
-}
-
 void test__QMetaObject__connectSlotsByName__arg1__notnull() {
   const char *p = NULL;
   // cppcheck-suppress nullPointer
@@ -1577,12 +1517,6 @@ void test__QFile__open__noreturn() {
   x = 1 << x;
 }
 
-void test__QFile__open__leakignore() {
-  char *p = strdup(str);
-  QFile::open();
-  // cppcheck-suppress memleak
-}
-
 void test__QFile__remove__noreturn() {
   int x = 1;
   if (cond) { x=100; QFile::remove(); }
@@ -1590,23 +1524,11 @@ void test__QFile__remove__noreturn() {
   x = 1 << x;
 }
 
-void test__QFile__remove__leakignore() {
-  char *p = strdup(str);
-  QFile::remove();
-  // cppcheck-suppress memleak
-}
-
 void test__QFile__rename__noreturn() {
   int x = 1;
   if (cond) { x=100; QFile::rename(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__QFile__rename__leakignore() {
-  char *p = strdup(str);
-  QFile::rename();
-  // cppcheck-suppress memleak
 }
 
 void test__QFile__size__noreturn() {

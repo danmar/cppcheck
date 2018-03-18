@@ -157,9 +157,9 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
         std::cout << functionCall(functionName, false, -1, numberOfArgs, "") <<  " < 100)) {}" << std::endl;
         std::cout << "}" << std::endl << std::endl;
     }
-    if (leakignore) {
+    if (leakignore && functionName.find("::") == std::string::npos) {
         std::cout << "void test__" << replaceCharInString(functionName,':','_') << "__leakignore() {" << std::endl;
-        std::cout << "  char *p = strdup(str);" << std::endl;
+        std::cout << "  char *p = malloc(10); *p=0;" << std::endl;
         std::cout << "  " << functionCall(functionName, useretval, 1, numberOfArgs, "p") << ';' << std::endl;
         std::cout << "  // cppcheck-suppress memleak" << std::endl;
         std::cout << "}" << std::endl << std::endl;

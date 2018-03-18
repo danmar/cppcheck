@@ -168,7 +168,7 @@ void test__readpassphrase__noreturn() {
 }
 
 void test__readpassphrase__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   readpassphrase(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }
@@ -224,7 +224,7 @@ void test__strtonum__noreturn() {
 }
 
 void test__strtonum__leakignore() {
-  char *p = strdup(str);
+  char *p = malloc(10); *p=0;
   strtonum(p, arg2, arg3, arg4);
   // cppcheck-suppress memleak
 }

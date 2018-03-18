@@ -20,23 +20,11 @@ void test__sf__err__useretval() {
   sf::err();
 }
 
-void test__sf__err__leakignore() {
-  char *p = strdup(str);
-  result = sf::err();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__sleep__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::sleep(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__sleep__leakignore() {
-  char *p = strdup(str);
-  sf::sleep(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__sleep__arg1__notuninit() {
@@ -57,12 +45,6 @@ void test__sf__Time__asSeconds__useretval() {
   sf::Time::asSeconds();
 }
 
-void test__sf__Time__asSeconds__leakignore() {
-  char *p = strdup(str);
-  result = sf::Time::asSeconds();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Time__asMilliseconds__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::Time::asMilliseconds(); }
@@ -73,12 +55,6 @@ void test__sf__Time__asMilliseconds__noreturn() {
 void test__sf__Time__asMilliseconds__useretval() {
   // cppcheck-suppress ignoredReturnValue
   sf::Time::asMilliseconds();
-}
-
-void test__sf__Time__asMilliseconds__leakignore() {
-  char *p = strdup(str);
-  result = sf::Time::asMilliseconds();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Time__asMicroseconds__noreturn() {
@@ -93,23 +69,11 @@ void test__sf__Time__asMicroseconds__useretval() {
   sf::Time::asMicroseconds();
 }
 
-void test__sf__Time__asMicroseconds__leakignore() {
-  char *p = strdup(str);
-  result = sf::Time::asMicroseconds();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__String__clear__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::String::clear(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__String__clear__leakignore() {
-  char *p = strdup(str);
-  sf::String::clear();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__String__isEmpty__noreturn() {
@@ -124,12 +88,6 @@ void test__sf__String__isEmpty__useretval() {
   sf::String::isEmpty();
 }
 
-void test__sf__String__isEmpty__leakignore() {
-  char *p = strdup(str);
-  result = sf::String::isEmpty();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__String__getSize__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::String::getSize(); }
@@ -142,23 +100,11 @@ void test__sf__String__getSize__useretval() {
   sf::String::getSize();
 }
 
-void test__sf__String__getSize__leakignore() {
-  char *p = strdup(str);
-  result = sf::String::getSize();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__String__find__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::String::find(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__String__find__leakignore() {
-  char *p = strdup(str);
-  sf::String::find(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__String__find__arg1__notnull() {
@@ -191,12 +137,6 @@ void test__sf__String__substring__useretval() {
   sf::String::substring(arg1, arg2);
 }
 
-void test__sf__String__substring__leakignore() {
-  char *p = strdup(str);
-  result = sf::String::substring(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__String__substring__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -214,12 +154,6 @@ void test__sf__String__erase__noreturn() {
   if (cond) { x=100; sf::String::erase(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__String__erase__leakignore() {
-  char *p = strdup(str);
-  sf::String::erase(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__String__erase__arg1__notuninit() {
@@ -241,12 +175,6 @@ void test__sf__RenderTarget__clear__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderTarget__clear__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTarget::clear(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderTarget__clear__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -258,12 +186,6 @@ void test__sf__RenderWindow__clear__noreturn() {
   if (cond) { x=100; sf::RenderWindow::clear(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__clear__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::clear(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderWindow__clear__arg1__notuninit() {
@@ -279,12 +201,6 @@ void test__sf__RenderTexture__clear__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderTexture__clear__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTexture::clear(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderTexture__clear__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -296,12 +212,6 @@ void test__sf__RenderTarget__setView__noreturn() {
   if (cond) { x=100; sf::RenderTarget::setView(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderTarget__setView__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTarget::setView(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTarget__setView__arg1__notuninit() {
@@ -317,12 +227,6 @@ void test__sf__RenderWindow__setView__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderWindow__setView__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setView(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__setView__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -334,12 +238,6 @@ void test__sf__RenderTexture__setView__noreturn() {
   if (cond) { x=100; sf::RenderTexture::setView(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderTexture__setView__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTexture::setView(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTexture__setView__arg1__notuninit() {
@@ -360,12 +258,6 @@ void test__sf__RenderTarget__getView__useretval() {
   sf::RenderTarget::getView();
 }
 
-void test__sf__RenderTarget__getView__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTarget::getView();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderTarget__getDefaultView__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::RenderTarget::getDefaultView(); }
@@ -376,12 +268,6 @@ void test__sf__RenderTarget__getDefaultView__noreturn() {
 void test__sf__RenderTarget__getDefaultView__useretval() {
   // cppcheck-suppress ignoredReturnValue
   sf::RenderTarget::getDefaultView();
-}
-
-void test__sf__RenderTarget__getDefaultView__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTarget::getDefaultView();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderWindow__getView__noreturn() {
@@ -396,12 +282,6 @@ void test__sf__RenderWindow__getView__useretval() {
   sf::RenderWindow::getView();
 }
 
-void test__sf__RenderWindow__getView__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::getView();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__getDefaultView__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::RenderWindow::getDefaultView(); }
@@ -412,12 +292,6 @@ void test__sf__RenderWindow__getDefaultView__noreturn() {
 void test__sf__RenderWindow__getDefaultView__useretval() {
   // cppcheck-suppress ignoredReturnValue
   sf::RenderWindow::getDefaultView();
-}
-
-void test__sf__RenderWindow__getDefaultView__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::getDefaultView();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTexture__getView__noreturn() {
@@ -432,12 +306,6 @@ void test__sf__RenderTexture__getView__useretval() {
   sf::RenderTexture::getView();
 }
 
-void test__sf__RenderTexture__getView__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTexture::getView();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderTexture__getDefaultView__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::RenderTexture::getDefaultView(); }
@@ -450,12 +318,6 @@ void test__sf__RenderTexture__getDefaultView__useretval() {
   sf::RenderTexture::getDefaultView();
 }
 
-void test__sf__RenderTexture__getDefaultView__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTexture::getDefaultView();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderTarget__getViewport__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::RenderTarget::getViewport(arg1); }
@@ -466,12 +328,6 @@ void test__sf__RenderTarget__getViewport__noreturn() {
 void test__sf__RenderTarget__getViewport__useretval() {
   // cppcheck-suppress ignoredReturnValue
   sf::RenderTarget::getViewport(arg1);
-}
-
-void test__sf__RenderTarget__getViewport__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTarget::getViewport(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTarget__getViewport__arg1__notuninit() {
@@ -492,12 +348,6 @@ void test__sf__RenderWindow__getViewport__useretval() {
   sf::RenderWindow::getViewport(arg1);
 }
 
-void test__sf__RenderWindow__getViewport__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::getViewport(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__getViewport__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -516,12 +366,6 @@ void test__sf__RenderTexture__getViewport__useretval() {
   sf::RenderTexture::getViewport(arg1);
 }
 
-void test__sf__RenderTexture__getViewport__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTexture::getViewport(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderTexture__getViewport__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -538,12 +382,6 @@ void test__sf__RenderTarget__mapPixelToCoords__noreturn() {
 void test__sf__RenderTarget__mapPixelToCoords__useretval() {
   // cppcheck-suppress ignoredReturnValue
   sf::RenderTarget::mapPixelToCoords(arg1, arg2);
-}
-
-void test__sf__RenderTarget__mapPixelToCoords__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTarget::mapPixelToCoords(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTarget__mapPixelToCoords__arg1__notuninit() {
@@ -570,12 +408,6 @@ void test__sf__RenderTarget__mapCoordsToPixel__useretval() {
   sf::RenderTarget::mapCoordsToPixel(arg1, arg2);
 }
 
-void test__sf__RenderTarget__mapCoordsToPixel__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTarget::mapCoordsToPixel(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderTarget__mapCoordsToPixel__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -598,12 +430,6 @@ void test__sf__RenderWindow__mapPixelToCoords__noreturn() {
 void test__sf__RenderWindow__mapPixelToCoords__useretval() {
   // cppcheck-suppress ignoredReturnValue
   sf::RenderWindow::mapPixelToCoords(arg1, arg2);
-}
-
-void test__sf__RenderWindow__mapPixelToCoords__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::mapPixelToCoords(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderWindow__mapPixelToCoords__arg1__notuninit() {
@@ -630,12 +456,6 @@ void test__sf__RenderWindow__mapCoordsToPixel__useretval() {
   sf::RenderWindow::mapCoordsToPixel(arg1, arg2);
 }
 
-void test__sf__RenderWindow__mapCoordsToPixel__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::mapCoordsToPixel(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__mapCoordsToPixel__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -658,12 +478,6 @@ void test__sf__RenderTexture__mapPixelToCoords__noreturn() {
 void test__sf__RenderTexture__mapPixelToCoords__useretval() {
   // cppcheck-suppress ignoredReturnValue
   sf::RenderTexture::mapPixelToCoords(arg1, arg2);
-}
-
-void test__sf__RenderTexture__mapPixelToCoords__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTexture::mapPixelToCoords(p, arg2);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTexture__mapPixelToCoords__arg1__notuninit() {
@@ -690,12 +504,6 @@ void test__sf__RenderTexture__mapCoordsToPixel__useretval() {
   sf::RenderTexture::mapCoordsToPixel(arg1, arg2);
 }
 
-void test__sf__RenderTexture__mapCoordsToPixel__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTexture::mapCoordsToPixel(p, arg2);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderTexture__mapCoordsToPixel__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -713,12 +521,6 @@ void test__sf__RenderTarget__draw__noreturn() {
   if (cond) { x=100; sf::RenderTarget::draw(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderTarget__draw__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTarget::draw(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTarget__draw__arg1__notuninit() {
@@ -752,12 +554,6 @@ void test__sf__RenderWindow__draw__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderWindow__draw__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::draw(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__draw__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -787,12 +583,6 @@ void test__sf__RenderTexture__draw__noreturn() {
   if (cond) { x=100; sf::RenderTexture::draw(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderTexture__draw__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTexture::draw(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTexture__draw__arg1__notuninit() {
@@ -831,12 +621,6 @@ void test__sf__RenderTarget__getSize__useretval() {
   sf::RenderTarget::getSize();
 }
 
-void test__sf__RenderTarget__getSize__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTarget::getSize();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__getSize__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::RenderWindow::getSize(); }
@@ -847,12 +631,6 @@ void test__sf__RenderWindow__getSize__noreturn() {
 void test__sf__RenderWindow__getSize__useretval() {
   // cppcheck-suppress ignoredReturnValue
   sf::RenderWindow::getSize();
-}
-
-void test__sf__RenderWindow__getSize__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::getSize();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTexture__getSize__noreturn() {
@@ -867,23 +645,11 @@ void test__sf__RenderTexture__getSize__useretval() {
   sf::RenderTexture::getSize();
 }
 
-void test__sf__RenderTexture__getSize__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderTexture::getSize();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderTarget__setActive__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::RenderTarget::setActive(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderTarget__setActive__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTarget::setActive(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTarget__setActive__arg1__notuninit() {
@@ -899,12 +665,6 @@ void test__sf__RenderWindow__setActive__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderWindow__setActive__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setActive(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__setActive__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -916,12 +676,6 @@ void test__sf__RenderTexture__setActive__noreturn() {
   if (cond) { x=100; sf::RenderTexture::setActive(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderTexture__setActive__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTexture::setActive(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTexture__setActive__arg1__notuninit() {
@@ -937,12 +691,6 @@ void test__sf__Window__setActive__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__Window__setActive__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setActive(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Window__setActive__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -956,23 +704,11 @@ void test__sf__RenderTarget__pushGLStates__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderTarget__pushGLStates__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTarget::pushGLStates();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderTarget__popGLStates__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::RenderTarget::popGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderTarget__popGLStates__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTarget::popGLStates();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTarget__resetGLStates__noreturn() {
@@ -982,23 +718,11 @@ void test__sf__RenderTarget__resetGLStates__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderTarget__resetGLStates__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTarget::resetGLStates();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__pushGLStates__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::RenderWindow::pushGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__pushGLStates__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::pushGLStates();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderWindow__popGLStates__noreturn() {
@@ -1008,23 +732,11 @@ void test__sf__RenderWindow__popGLStates__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderWindow__popGLStates__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::popGLStates();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__resetGLStates__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::RenderWindow::resetGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__resetGLStates__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::resetGLStates();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTexture__pushGLStates__noreturn() {
@@ -1034,23 +746,11 @@ void test__sf__RenderTexture__pushGLStates__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderTexture__pushGLStates__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTexture::pushGLStates();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderTexture__popGLStates__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::RenderTexture::popGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderTexture__popGLStates__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTexture::popGLStates();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderTexture__resetGLStates__noreturn() {
@@ -1060,23 +760,11 @@ void test__sf__RenderTexture__resetGLStates__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderTexture__resetGLStates__leakignore() {
-  char *p = strdup(str);
-  sf::RenderTexture::resetGLStates();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Window__create__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::Window::create(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__Window__create__leakignore() {
-  char *p = strdup(str);
-  sf::Window::create(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__create__arg1__notuninit() {
@@ -1110,12 +798,6 @@ void test__sf__RenderWindow__create__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderWindow__create__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::create(p, arg2, arg3, arg4);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__create__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1147,23 +829,11 @@ void test__sf__Window__close__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__Window__close__leakignore() {
-  char *p = strdup(str);
-  sf::Window::close();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__close__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::RenderWindow::close(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__close__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::close();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__isOpen__noreturn() {
@@ -1178,12 +848,6 @@ void test__sf__Window__isOpen__useretval() {
   sf::Window::isOpen();
 }
 
-void test__sf__Window__isOpen__leakignore() {
-  char *p = strdup(str);
-  result = sf::Window::isOpen();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__isOpen__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::RenderWindow::isOpen(); }
@@ -1194,12 +858,6 @@ void test__sf__RenderWindow__isOpen__noreturn() {
 void test__sf__RenderWindow__isOpen__useretval() {
   // cppcheck-suppress ignoredReturnValue
   sf::RenderWindow::isOpen();
-}
-
-void test__sf__RenderWindow__isOpen__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::isOpen();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__getSettings__noreturn() {
@@ -1214,12 +872,6 @@ void test__sf__Window__getSettings__useretval() {
   sf::Window::getSettings();
 }
 
-void test__sf__Window__getSettings__leakignore() {
-  char *p = strdup(str);
-  result = sf::Window::getSettings();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__getSettings__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::RenderWindow::getSettings(); }
@@ -1232,23 +884,11 @@ void test__sf__RenderWindow__getSettings__useretval() {
   sf::RenderWindow::getSettings();
 }
 
-void test__sf__RenderWindow__getSettings__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::getSettings();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Window__pollEvent__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::Window::pollEvent(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__Window__pollEvent__leakignore() {
-  char *p = strdup(str);
-  sf::Window::pollEvent(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__waitEvent__noreturn() {
@@ -1258,12 +898,6 @@ void test__sf__Window__waitEvent__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__Window__waitEvent__leakignore() {
-  char *p = strdup(str);
-  sf::Window::waitEvent(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__pollEvent__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::RenderWindow::pollEvent(arg1); }
@@ -1271,23 +905,11 @@ void test__sf__RenderWindow__pollEvent__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderWindow__pollEvent__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::pollEvent(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__waitEvent__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::RenderWindow::waitEvent(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__waitEvent__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::waitEvent(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__getPosition__noreturn() {
@@ -1302,12 +924,6 @@ void test__sf__Window__getPosition__useretval() {
   sf::Window::getPosition();
 }
 
-void test__sf__Window__getPosition__leakignore() {
-  char *p = strdup(str);
-  result = sf::Window::getPosition();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__getPosition__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::RenderWindow::getPosition(); }
@@ -1320,23 +936,11 @@ void test__sf__RenderWindow__getPosition__useretval() {
   sf::RenderWindow::getPosition();
 }
 
-void test__sf__RenderWindow__getPosition__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::getPosition();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Window__setPosition__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::Window::setPosition(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__Window__setPosition__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setPosition(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__setPosition__arg1__notuninit() {
@@ -1350,12 +954,6 @@ void test__sf__RenderWindow__setPosition__noreturn() {
   if (cond) { x=100; sf::RenderWindow::setPosition(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__setPosition__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setPosition(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderWindow__setPosition__arg1__notuninit() {
@@ -1376,12 +974,6 @@ void test__sf__Window__getSize__useretval() {
   sf::Window::getSize();
 }
 
-void test__sf__Window__getSize__leakignore() {
-  char *p = strdup(str);
-  result = sf::Window::getSize();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__getSize__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::RenderWindow::getSize(); }
@@ -1394,23 +986,11 @@ void test__sf__RenderWindow__getSize__useretval() {
   sf::RenderWindow::getSize();
 }
 
-void test__sf__RenderWindow__getSize__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::getSize();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Window__setSize__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::Window::setSize(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__Window__setSize__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setSize(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__setSize__arg1__notuninit() {
@@ -1426,12 +1006,6 @@ void test__sf__RenderWindow__setSize__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderWindow__setSize__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setSize(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__setSize__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1443,12 +1017,6 @@ void test__sf__Window__setTitle__noreturn() {
   if (cond) { x=100; sf::Window::setTitle(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__Window__setTitle__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setTitle(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__setTitle__arg1__notuninit() {
@@ -1464,12 +1032,6 @@ void test__sf__RenderWindow__setTitle__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderWindow__setTitle__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setTitle(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__setTitle__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1481,12 +1043,6 @@ void test__sf__Window__setIcon__noreturn() {
   if (cond) { x=100; sf::Window::setIcon(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__Window__setIcon__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setIcon(p, arg2, arg3);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__setIcon__arg1__notuninit() {
@@ -1520,12 +1076,6 @@ void test__sf__RenderWindow__setIcon__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderWindow__setIcon__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setIcon(p, arg2, arg3);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__setIcon__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1557,12 +1107,6 @@ void test__sf__Window__setVisible__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__Window__setVisible__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setVisible(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Window__setVisible__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1574,12 +1118,6 @@ void test__sf__Window__setVerticalSyncEnabled__noreturn() {
   if (cond) { x=100; sf::Window::setVerticalSyncEnabled(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__Window__setVerticalSyncEnabled__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setVerticalSyncEnabled(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__setVerticalSyncEnabled__arg1__notuninit() {
@@ -1595,12 +1133,6 @@ void test__sf__Window__setMouseCursorVisible__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__Window__setMouseCursorVisible__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setMouseCursorVisible(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Window__setMouseCursorVisible__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1612,12 +1144,6 @@ void test__sf__Window__setMouseCursorGrabbed__noreturn() {
   if (cond) { x=100; sf::Window::setMouseCursorGrabbed(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__Window__setMouseCursorGrabbed__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setMouseCursorGrabbed(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__setMouseCursorGrabbed__arg1__notuninit() {
@@ -1633,12 +1159,6 @@ void test__sf__Window__setKeyRepeatEnabled__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__Window__setKeyRepeatEnabled__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setKeyRepeatEnabled(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Window__setKeyRepeatEnabled__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1650,12 +1170,6 @@ void test__sf__RenderWindow__setVisible__noreturn() {
   if (cond) { x=100; sf::RenderWindow::setVisible(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__setVisible__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setVisible(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderWindow__setVisible__arg1__notuninit() {
@@ -1671,12 +1185,6 @@ void test__sf__RenderWindow__setVerticalSyncEnabled__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderWindow__setVerticalSyncEnabled__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setVerticalSyncEnabled(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__setVerticalSyncEnabled__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1688,12 +1196,6 @@ void test__sf__RenderWindow__setMouseCursorVisible__noreturn() {
   if (cond) { x=100; sf::RenderWindow::setMouseCursorVisible(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__setMouseCursorVisible__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setMouseCursorVisible(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderWindow__setMouseCursorVisible__arg1__notuninit() {
@@ -1709,12 +1211,6 @@ void test__sf__RenderWindow__setMouseCursorGrabbed__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__RenderWindow__setMouseCursorGrabbed__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setMouseCursorGrabbed(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__setMouseCursorGrabbed__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1726,12 +1222,6 @@ void test__sf__RenderWindow__setKeyRepeatEnabled__noreturn() {
   if (cond) { x=100; sf::RenderWindow::setKeyRepeatEnabled(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__setKeyRepeatEnabled__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setKeyRepeatEnabled(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderWindow__setKeyRepeatEnabled__arg1__notuninit() {
@@ -1747,12 +1237,6 @@ void test__sf__Window__setFramerateLimit__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__Window__setFramerateLimit__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setFramerateLimit(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Window__setFramerateLimit__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1764,12 +1248,6 @@ void test__sf__RenderWindow__setFramerateLimit__noreturn() {
   if (cond) { x=100; sf::RenderWindow::setFramerateLimit(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__setFramerateLimit__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setFramerateLimit(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderWindow__setFramerateLimit__arg1__notuninit() {
@@ -1785,12 +1263,6 @@ void test__sf__Window__setJoystickThreshold__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__Window__setJoystickThreshold__leakignore() {
-  char *p = strdup(str);
-  sf::Window::setJoystickThreshold(p);
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Window__setJoystickThreshold__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1802,12 +1274,6 @@ void test__sf__RenderWindow__setJoystickThreshold__noreturn() {
   if (cond) { x=100; sf::RenderWindow::setJoystickThreshold(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__setJoystickThreshold__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::setJoystickThreshold(p);
-  // cppcheck-suppress memleak
 }
 
 void test__sf__RenderWindow__setJoystickThreshold__arg1__notuninit() {
@@ -1823,23 +1289,11 @@ void test__sf__Window__requestFocus__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__Window__requestFocus__leakignore() {
-  char *p = strdup(str);
-  sf::Window::requestFocus();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__requestFocus__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::RenderWindow::requestFocus(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__requestFocus__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::requestFocus();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__hasFocus__noreturn() {
@@ -1854,12 +1308,6 @@ void test__sf__Window__hasFocus__useretval() {
   sf::Window::hasFocus();
 }
 
-void test__sf__Window__hasFocus__leakignore() {
-  char *p = strdup(str);
-  result = sf::Window::hasFocus();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__hasFocus__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::RenderWindow::hasFocus(); }
@@ -1872,12 +1320,6 @@ void test__sf__RenderWindow__hasFocus__useretval() {
   sf::RenderWindow::hasFocus();
 }
 
-void test__sf__RenderWindow__hasFocus__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::hasFocus();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__Window__display__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::Window::display(); }
@@ -1885,23 +1327,11 @@ void test__sf__Window__display__noreturn() {
   x = 1 << x;
 }
 
-void test__sf__Window__display__leakignore() {
-  char *p = strdup(str);
-  sf::Window::display();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__display__noreturn() {
   int x = 1;
   if (cond) { x=100; sf::RenderWindow::display(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
-}
-
-void test__sf__RenderWindow__display__leakignore() {
-  char *p = strdup(str);
-  sf::RenderWindow::display();
-  // cppcheck-suppress memleak
 }
 
 void test__sf__Window__getSystemHandle__noreturn() {
@@ -1916,12 +1346,6 @@ void test__sf__Window__getSystemHandle__useretval() {
   sf::Window::getSystemHandle();
 }
 
-void test__sf__Window__getSystemHandle__leakignore() {
-  char *p = strdup(str);
-  result = sf::Window::getSystemHandle();
-  // cppcheck-suppress memleak
-}
-
 void test__sf__RenderWindow__getSystemHandle__noreturn() {
   int x = 1;
   if (cond) { x=100; result = sf::RenderWindow::getSystemHandle(); }
@@ -1932,11 +1356,5 @@ void test__sf__RenderWindow__getSystemHandle__noreturn() {
 void test__sf__RenderWindow__getSystemHandle__useretval() {
   // cppcheck-suppress ignoredReturnValue
   sf::RenderWindow::getSystemHandle();
-}
-
-void test__sf__RenderWindow__getSystemHandle__leakignore() {
-  char *p = strdup(str);
-  result = sf::RenderWindow::getSystemHandle();
-  // cppcheck-suppress memleak
 }
 
