@@ -2721,6 +2721,13 @@ private:
                "}"
                "void other() { foo(x); }\n";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 321));
+
+        code = "static int x = 1;\n" // compound assignment
+               "void f() {\n"
+               "  a = x;\n"
+               "}"
+               "void other() { x += b; }\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 1));
     }
 
     void valueFlowInlineAssembly() {

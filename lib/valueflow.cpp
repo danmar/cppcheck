@@ -989,7 +989,7 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
                 continue;
             if (Token::Match(tok->astParent(), "++|--|&") && !tok->astParent()->astOperand2())
                 vars.erase(tok->variable());
-            else if (tok->astParent()->str() == "=") {
+            else if (tok->astParent()->isAssignmentOp()) {
                 if (tok == tok->astParent()->astOperand1())
                     vars.erase(tok->variable());
                 else if (tokenList->isCPP() && Token::Match(tok->astParent()->tokAt(-2), "& %name% ="))
