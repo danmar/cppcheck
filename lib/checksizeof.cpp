@@ -292,6 +292,39 @@ void CheckSizeof::sizeofCalculation()
     const bool printInconclusive = _settings->inconclusive;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!Token::simpleMatch(tok, "sizeof ("))
+            continue;
+
+        // ignore if the `sizeof` result is cast to void inside a macro, i.e. the calculation is
+        // expected to be parsed but skipped, such as in a disabled custom ASSERT() macro
+        if (tok->isExpandedMacro() && tok->previous()) {
+            const Token *cast_end = (tok->previous()->str() == "(") ? tok->previous() : tok;
+            if (Token::simpleMatch(cast_end->tokAt(-3), "( void )") ||
+                Token::simpleMatch(cast_end->previous(), "static_cast<void>")) {
+                continue;
+            }
+        }
+
+        const Token *argument = tok->next()->astOperand2();
+        if (argument && argument->isCalculation() && (!argument->isExpandedMacro() || printInconclusive))
+            sizeofCalculationError(argument, argument->isExpandedMacro());
+    }
+}
+
+void CheckSizeof::sizeofCalculationError(const Token *tok, bool inconclusive)
+{
+    reportError(tok, Severity::warning,
+                "sizeofCalculation", "Found calculation inside sizeof().", CWE682, inconclusive);
+}
+
+//-----------------------------------------------------------------------------
+
+void CheckSizeof::sizeofFunction()
+{
+    if (!_settings->isEnabled(Settings::WARNING))
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
 
             // ignore if the `sizeof` result is cast to void inside a macro, i.e. the calculation is
@@ -304,17 +337,24 @@ void CheckSizeof::sizeofCalculation()
                 }
             }
 
-            const Token *argument = tok->next()->astOperand2();
-            if (argument && argument->isCalculation() && (!argument->isExpandedMacro() || printInconclusive))
-                sizeofCalculationError(argument, argument->isExpandedMacro());
+            if (const Token *argument = tok->next()->astOperand2()) {
+                const Token *checkToken = argument->previous();
+                if (checkToken->tokType() == Token::eName)
+                    break;
+                const Function * fun = checkToken->function();
+                // Dont report error if the function is overloaded
+                if (fun && fun->nestedIn->functionMap.count(checkToken->str()) == 1) {
+                    sizeofFunctionError(tok);
+                }
+            }
         }
     }
 }
 
-void CheckSizeof::sizeofCalculationError(const Token *tok, bool inconclusive)
+void CheckSizeof::sizeofFunctionError(const Token *tok)
 {
     reportError(tok, Severity::warning,
-                "sizeofCalculation", "Found calculation inside sizeof().", CWE682, inconclusive);
+                "sizeofFunctionCall", "Found function call inside sizeof().", CWE682, false);
 }
 
 //-----------------------------------------------------------------------------

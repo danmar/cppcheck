@@ -64,3 +64,36 @@ else
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets -f ${DIR}wxwidgets.cpp
+
+# gtk.c
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve GTK+ configuration is not available, skipping syntax check."
+else
+    set +e
+    GTKCONFIG=$(pkg-config --cflags gtk+-3.0)
+    GTKCONFIG_RETURNCODE=$?
+    set -e
+    if [ $GTKCONFIG_RETURNCODE -ne 0 ]; then
+        set +e
+        GTKCONFIG=$(pkg-config --cflags gtk+-2.0)
+        GTKCONFIG_RETURNCODE=$?
+        set -e
+    fi
+    if [ $GTKCONFIG_RETURNCODE -eq 0 ]; then
+        set +e
+        echo -e "#include <gtk/gtk.h>" | ${CC} ${CC_OPT} ${GTKCONFIG} -x c -
+        GTKCHECK_RETURNCODE=$?
+        set -e
+        if [ $GTKCHECK_RETURNCODE -ne 0 ]; then
+            echo "GTK+ not completely present or not working, skipping syntax check with ${CXX}."
+        else
+            echo "GTK+ found and working, checking syntax with ${CXX} now."
+            ${CC} ${CC_OPT} ${GTKCONFIG} ${DIR}gtk.c
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=gtk -f ${DIR}gtk.c

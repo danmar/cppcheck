@@ -160,7 +160,7 @@
          <item>
           <widget class="QLineEdit" name="mEditDefines">
            <property name="toolTip">
-            <string>Defines must be separated by a semicolon ';'</string>
+            <string>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</string>
            </property>
           </widget>
          </item>
@@ -268,35 +268,11 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="mTabProject">
+     <widget class="QWidget" name="mTabChecking">
       <attribute name="title">
-       <string>Project</string>
+       <string>Checking</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
-       <item>
-        <widget class="QGroupBox" name="groupBox">
-         <property name="title">
-          <string>Root path:</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_13">
-          <item>
-           <widget class="QLineEdit" name="mEditProjectRoot"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_5">
-         <property name="title">
-          <string>Warning tags (separated by semicolon)</string>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <widget class="QLineEdit" name="mEditTags"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
+      <layout class="QVBoxLayout" name="verticalLayout_15">
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
@@ -312,6 +288,18 @@
              <string>Browse...</string>
             </property>
            </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_6">
+         <property name="title">
+          <string>Platform</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_12">
+          <item>
+           <widget class="QComboBox" name="mComboBoxPlatform"/>
           </item>
          </layout>
         </widget>
@@ -339,6 +327,143 @@
         </widget>
        </item>
        <item>
+        <spacer name="verticalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>96</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="mTabWarningOptions">
+      <attribute name="title">
+       <string>Warning options</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Root path:</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_13">
+          <item>
+           <widget class="QLineEdit" name="mEditProjectRoot"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_5">
+         <property name="title">
+          <string>Warning tags (separated by semicolon)</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLineEdit" name="mEditTags"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_7">
+         <property name="title">
+          <string>Exclude paths</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QListWidget" name="mListExcludedPaths"/>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="layoutExcludePathButtons">
+            <item>
+             <widget class="QPushButton" name="mBtnAddIgnorePath">
+              <property name="text">
+               <string>Add...</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="mBtnEditIgnorePath">
+              <property name="text">
+               <string>Edit</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="mBtnRemoveIgnorePath">
+              <property name="text">
+               <string>Remove</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_4">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_8">
+         <property name="title">
+          <string>Suppressions</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QListWidget" name="mListSuppressions"/>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="QPushButton" name="mBtnAddSuppression">
+              <property name="text">
+               <string>Add</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="mBtnRemoveSuppression">
+              <property name="text">
+               <string>Remove</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_10">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_9">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -353,151 +478,76 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="mTabExclude">
+     <widget class="QWidget" name="mTabAddonsAndTools">
       <attribute name="title">
-       <string>Exclude</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_9">
-       <item>
-        <widget class="QLabel" name="labelExcludePaths">
-         <property name="text">
-          <string>Paths:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="layoutExcludePaths">
-         <item>
-          <widget class="QListWidget" name="mListExcludedPaths"/>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="layoutExcludePathButtons">
-           <item>
-            <widget class="QPushButton" name="mBtnAddIgnorePath">
-             <property name="text">
-              <string>Add...</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="mBtnEditIgnorePath">
-             <property name="text">
-              <string>Edit</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="mBtnRemoveIgnorePath">
-             <property name="text">
-              <string>Remove</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_4">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="mTabSuppressions">
-      <attribute name="title">
-       <string>Suppressions</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
-       <item>
-        <widget class="QLabel" name="labelSuppressions">
-         <property name="text">
-          <string>Suppression list:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QListWidget" name="mListSuppressions"/>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="layoutSuppressionButtons">
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="mBtnAddSuppression">
-           <property name="text">
-            <string>Add</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="mBtnRemoveSuppression">
-           <property name="text">
-            <string>Remove</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="mTabAddons">
-      <attribute name="title">
-       <string>Addons</string>
+       <string>Addons and tools</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>
-        <widget class="QCheckBox" name="mAddonY2038">
-         <property name="text">
-          <string>Y2038</string>
+        <widget class="QGroupBox" name="mGroupBoxAddons">
+         <property name="title">
+          <string>Addons</string>
          </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QCheckBox" name="mAddonY2038">
+            <property name="text">
+             <string>Y2038</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="mAddonThreadSafety">
+            <property name="text">
+             <string>Thread safety</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Coding standards</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="mAddonCert">
+            <property name="text">
+             <string>Cert</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="mAddonMisra">
+            <property name="text">
+             <string>MISRA C 2012</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="mAddonThreadSafety">
-         <property name="text">
-          <string>Thread safety</string>
+        <widget class="QGroupBox" name="mGroupBoxTools">
+         <property name="title">
+          <string>External tools</string>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Coding standards</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="mAddonCert">
-         <property name="text">
-          <string>Cert</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="mAddonMisra">
-         <property name="text">
-          <string>MISRA C 2012</string>
-         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_1">
+          <item>
+           <widget class="QCheckBox" name="mToolClangTidy">
+            <property name="text">
+             <string>Clang-tidy</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="mToolClangAnalyzer">
+            <property name="text">
+             <string>Clang analyzer</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
@@ -509,47 +559,6 @@
           <size>
            <width>20</width>
            <height>368</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="mTabTools">
-      <attribute name="title">
-       <string>Extra Tools</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_12">
-       <item>
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>It is common best practice to use several tools.</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="mToolClangAnalyzer">
-         <property name="text">
-          <string>Clang analyzer</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="mToolClangTidy">
-         <property name="text">
-          <string>Clang-tidy</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_7">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>310</height>
           </size>
          </property>
         </spacer>
@@ -572,10 +581,6 @@
  </widget>
  <tabstops>
   <tabstop>mButtons</tabstop>
-  <tabstop>mListExcludedPaths</tabstop>
-  <tabstop>mBtnAddIgnorePath</tabstop>
-  <tabstop>mBtnEditIgnorePath</tabstop>
-  <tabstop>mBtnRemoveIgnorePath</tabstop>
  </tabstops>
  <resources/>
  <connections>

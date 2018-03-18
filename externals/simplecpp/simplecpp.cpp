@@ -1676,8 +1676,13 @@ namespace simplecpp {
                 throw invalidHashHash(tok->location, name());
             if (!sameline(tok, tok->next) || !sameline(tok, tok->next->next))
                 throw invalidHashHash(tok->location, name());
+            if (!A->name && !A->number && A->op != ',' && !A->str.empty())
+                throw invalidHashHash(tok->location, name());
 
             Token *B = tok->next->next;
+            if (!B->name && !B->number && B->op && B->op != '#')
+                throw invalidHashHash(tok->location, name());
+
             std::string strAB;
 
             const bool varargs = variadic && args.size() >= 1U && B->str == args[args.size()-1U];
@@ -2343,6 +2348,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                     }
                     inc2.clear();
                     inc2.push_back(new Token(hdr, inc1.cfront()->location));
+                    inc2.front()->op = '<';
                 }
 
                 if (inc2.empty() || inc2.cfront()->str.size() <= 2U) {
@@ -2376,7 +2382,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                         simplecpp::Output out(files);
                         out.type = Output::MISSING_HEADER;
                         out.location = rawtok->location;
-                        out.msg = "Header not found: " + rawtok->next->str;
+                        out.msg = "Header not found: " + inctok->str;
                         outputList->push_back(out);
                     }
                 } else if (includetokenstack.size() >= 400) {

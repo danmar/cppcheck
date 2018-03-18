@@ -422,6 +422,24 @@ public:
     void isEnumType(bool value) {
         setFlag(fIsEnumType, value);
     }
+
+    /**
+     * @brief Is current token a template argument?
+     *
+     * Original code:
+     *
+     *     template<class C> struct S {
+     *         C x;
+     *     };
+     *     S<int> s;
+     *
+     * Resulting code:
+     *
+     *     struct S<int> {
+     *         int x ;  // <- "int" is a template argument
+     *     }
+     *     S<int> s;
+     */
     bool isTemplateArg() const {
         return getFlag(fIsTemplateArg);
     }

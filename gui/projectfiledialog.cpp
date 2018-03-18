@@ -33,6 +33,19 @@
 #include "library.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
+#include "platforms.h"
+
+/** Platforms shown in the platform combobox */
+static const cppcheck::Platform::PlatformType builtinPlatforms[] = {
+    cppcheck::Platform::Native,
+    cppcheck::Platform::Win32A,
+    cppcheck::Platform::Win32W,
+    cppcheck::Platform::Win64,
+    cppcheck::Platform::Unix32,
+    cppcheck::Platform::Unix64
+};
+
+static const int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
 
 ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     : QDialog(parent)
@@ -93,6 +106,32 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
         mUI.mLayoutLibraries->addWidget(checkbox);
         mLibraryCheckboxes << checkbox;
     }
+
+    // Platforms..
+    Platforms p;
+    for (int i = 0; i < numberOfBuiltinPlatforms; i++)
+        mUI.mComboBoxPlatform->addItem(p.get(builtinPlatforms[i]).mTitle);
+    QStringList platformFiles;
+    foreach (QString sp, searchPaths) {
+        if (sp.endsWith("/cfg"))
+            sp = sp.mid(0,sp.length()-3) + "platforms";
+        QDir dir(sp);
+        dir.setSorting(QDir::Name);
+        dir.setNameFilters(QStringList("*.xml"));
+        dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+        foreach (QFileInfo item, dir.entryInfoList()) {
+            const QString platformFile = item.fileName();
+
+            cppcheck::Platform p;
+            if (!p.loadPlatformFile(applicationFilePath.toStdString().c_str(), platformFile.toStdString()))
+                continue;
+
+            if (platformFiles.indexOf(platformFile) == -1)
+                platformFiles << platformFile;
+        }
+    }
+    qSort(platformFiles);
+    mUI.mComboBoxPlatform->addItems(platformFiles);
 
     mUI.mEditTags->setValidator(new QRegExpValidator(QRegExp("[a-zA-Z0-9 ;]*"),this));
 
@@ -156,6 +195,33 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mChkAllVsConfigs->setChecked(projectFile->getAnalyzeAllVsConfigs());
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
+    const QString platform = projectFile->getPlatform();
+    if (platform.endsWith(".xml")) {
+        int i;
+        for (i = numberOfBuiltinPlatforms; i < mUI.mComboBoxPlatform->count(); ++i) {
+            if (mUI.mComboBoxPlatform->itemText(i) == platform)
+                break;
+        }
+        if (i < mUI.mComboBoxPlatform->count())
+            mUI.mComboBoxPlatform->setCurrentIndex(i);
+        else {
+            mUI.mComboBoxPlatform->addItem(platform);
+            mUI.mComboBoxPlatform->setCurrentIndex(i);
+        }
+    } else {
+        int i;
+        for (i = 0; i < numberOfBuiltinPlatforms; ++i) {
+            const cppcheck::Platform::PlatformType p = builtinPlatforms[i];
+            if (platform == cppcheck::Platform::platformString(p))
+                break;
+        }
+        if (i < numberOfBuiltinPlatforms)
+            mUI.mComboBoxPlatform->setCurrentIndex(i);
+        else
+            mUI.mComboBoxPlatform->setCurrentIndex(-1);
+    }
+
+    mUI.mComboBoxPlatform->setCurrentText(projectFile->getPlatform());
     setSuppressions(projectFile->getSuppressions());
 
     QSettings settings;
@@ -193,6 +259,15 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setCheckPaths(getCheckPaths());
     projectFile->setExcludedPaths(getExcludedPaths());
     projectFile->setLibraries(getLibraries());
+    if (mUI.mComboBoxPlatform->currentText().endsWith(".xml"))
+        projectFile->setPlatform(mUI.mComboBoxPlatform->currentText());
+    else {
+        int i = mUI.mComboBoxPlatform->currentIndex();
+        if (i < numberOfBuiltinPlatforms)
+            projectFile->setPlatform(cppcheck::Platform::platformString(builtinPlatforms[i]));
+        else
+            projectFile->setPlatform(QString());
+    }
     projectFile->setSuppressions(getSuppressions());
     QStringList list;
     if (mUI.mAddonThreadSafety->isChecked())

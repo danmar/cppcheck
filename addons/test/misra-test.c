@@ -1,5 +1,5 @@
 // To test:
-// ~/cppcheck/cppcheck --dump misra-test.c && python misra.py -verify misra-test.c.dump
+// ~/cppcheck/cppcheck --dump misra-test.c && python ../misra.py -verify misra-test.c.dump
 
 #include "path\file.h" // 20.2
 #include /*abc*/ "file.h" // 20.3
@@ -220,6 +220,19 @@ void misra_16_3() {
       // fallthrough
     case 5:
       break;
+    case 7:
+      a=3;
+      [[fallthrough]];
+    case 8:
+      a=4;
+      break;
+    case 9:
+      if (a==b) {
+        break;
+      }
+    case 10:  // 16.3
+      return; // 15.5
+    case 11:
     default: break;
   }
 }
@@ -251,9 +264,9 @@ void misra_16_6() {
   }
 
   switch (x) {
-  case 1: {break;}
-  case 2: {break;}
-  default: {break;}
+  case 1: break;
+  case 2: break;
+  default: break;
   }
 }
 

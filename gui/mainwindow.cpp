@@ -850,6 +850,21 @@ Settings MainWindow::getCppcheckSettings()
                 result.buildDir = (prjpath + '/' + buildDir).toStdString();
             }
         }
+
+        const QString platform = mProjectFile->getPlatform();
+        if (platform.endsWith(".xml")) {
+            const QString applicationFilePath = QCoreApplication::applicationFilePath();
+            const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
+            result.loadPlatformFile(appPath.toStdString().c_str(), platform.toStdString());
+        } else {
+            for (int i = cppcheck::Platform::Native; i <= cppcheck::Platform::Unix64; i++) {
+                const cppcheck::Platform::PlatformType p = (cppcheck::Platform::PlatformType)i;
+                if (platform == cppcheck::Platform::platformString(p)) {
+                    result.platform(p);
+                    break;
+                }
+            }
+        }
     }
 
     // Include directories (and files) are searched in listed order.
@@ -878,7 +893,8 @@ Settings MainWindow::getCppcheckSettings()
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
-    result.platformType = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+    if (result.platformType == cppcheck::Platform::Unspecified)
+        result.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
     if (mSettings->value(SETTINGS_STD_CPP03, false).toBool())
         result.standards.cpp = Standards::CPP03;
     else if (mSettings->value(SETTINGS_STD_CPP11, false).toBool())
@@ -894,7 +910,7 @@ Settings MainWindow::getCppcheckSettings()
     if (result.standards.posix)
         posix = tryLoadLibrary(&result.library, "posix.cfg");
     bool windows = true;
-    if (result.platformType == Settings::Win32A || result.platformType == Settings::Win32W || result.platformType == Settings::Win64)
+    if (result.isWindowsPlatform())
         windows = tryLoadLibrary(&result.library, "windows.cfg");
 
     if (!std || !posix || !windows)

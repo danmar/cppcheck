@@ -760,7 +760,7 @@ XMLNode::~XMLNode()
     }
 }
 
-const char* XMLNode::Value() const 
+const char* XMLNode::Value() const
 {
     // Edge case: XMLDocuments don't have a Value. Return null.
     if ( this->ToDocument() )
@@ -1329,12 +1329,12 @@ bool XMLUnknown::Accept( XMLVisitor* visitor ) const
 
 // --------- XMLAttribute ---------- //
 
-const char* XMLAttribute::Name() const 
+const char* XMLAttribute::Name() const
 {
     return _name.GetStr();
 }
 
-const char* XMLAttribute::Value() const 
+const char* XMLAttribute::Value() const
 {
     return _value.GetStr();
 }
@@ -1521,42 +1521,42 @@ const char* XMLElement::Attribute( const char* name, const char* value ) const
     return 0;
 }
 
-int XMLElement::IntAttribute(const char* name, int defaultValue) const 
+int XMLElement::IntAttribute(const char* name, int defaultValue) const
 {
 	int i = defaultValue;
 	QueryIntAttribute(name, &i);
 	return i;
 }
 
-unsigned XMLElement::UnsignedAttribute(const char* name, unsigned defaultValue) const 
+unsigned XMLElement::UnsignedAttribute(const char* name, unsigned defaultValue) const
 {
 	unsigned i = defaultValue;
 	QueryUnsignedAttribute(name, &i);
 	return i;
 }
 
-int64_t XMLElement::Int64Attribute(const char* name, int64_t defaultValue) const 
+int64_t XMLElement::Int64Attribute(const char* name, int64_t defaultValue) const
 {
 	int64_t i = defaultValue;
 	QueryInt64Attribute(name, &i);
 	return i;
 }
 
-bool XMLElement::BoolAttribute(const char* name, bool defaultValue) const 
+bool XMLElement::BoolAttribute(const char* name, bool defaultValue) const
 {
 	bool b = defaultValue;
 	QueryBoolAttribute(name, &b);
 	return b;
 }
 
-double XMLElement::DoubleAttribute(const char* name, double defaultValue) const 
+double XMLElement::DoubleAttribute(const char* name, double defaultValue) const
 {
 	double d = defaultValue;
 	QueryDoubleAttribute(name, &d);
 	return d;
 }
 
-float XMLElement::FloatAttribute(const char* name, float defaultValue) const 
+float XMLElement::FloatAttribute(const char* name, float defaultValue) const
 {
 	float f = defaultValue;
 	QueryFloatAttribute(name, &f);
@@ -1583,7 +1583,7 @@ void	XMLElement::SetText( const char* inText )
 }
 
 
-void XMLElement::SetText( int v ) 
+void XMLElement::SetText( int v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1591,7 +1591,7 @@ void XMLElement::SetText( int v )
 }
 
 
-void XMLElement::SetText( unsigned v ) 
+void XMLElement::SetText( unsigned v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1615,7 +1615,7 @@ void XMLElement::SetText( bool v )
 }
 
 
-void XMLElement::SetText( float v ) 
+void XMLElement::SetText( float v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1623,7 +1623,7 @@ void XMLElement::SetText( float v )
 }
 
 
-void XMLElement::SetText( double v ) 
+void XMLElement::SetText( double v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -2037,7 +2037,7 @@ void XMLDocument::Clear()
 		DeleteNode(_unlinked[0]);	// Will remove from _unlinked as part of delete.
 	}
 
-#ifdef DEBUG
+#ifdef TINYXML2_DEBUG
     const bool hadError = Error();
 #endif
     ClearError();
@@ -2051,8 +2051,8 @@ void XMLDocument::Clear()
     _commentPool.Trace( "comment" );
     _attributePool.Trace( "attribute" );
 #endif
-    
-#ifdef DEBUG
+
+#ifdef TINYXML2_DEBUG
     if ( !hadError ) {
         TIXMLASSERT( _elementPool.CurrentAllocs()   == _elementPool.Untracked() );
         TIXMLASSERT( _attributePool.CurrentAllocs() == _attributePool.Untracked() );
@@ -2130,7 +2130,7 @@ static FILE* callfopen( const char* filepath, const char* mode )
 #endif
     return fp;
 }
-    
+
 void XMLDocument::DeleteNode( XMLNode* node )	{
     TIXMLASSERT( node );
     TIXMLASSERT(node->_document == this );
@@ -2151,10 +2151,16 @@ void XMLDocument::DeleteNode( XMLNode* node )	{
 
 XMLError XMLDocument::LoadFile( const char* filename )
 {
+    if ( !filename ) {
+        TIXMLASSERT( false );
+        SetError( XML_ERROR_FILE_COULD_NOT_BE_OPENED, 0, "filename=<null>" );
+        return _errorID;
+    }
+
     Clear();
     FILE* fp = callfopen( filename, "rb" );
     if ( !fp ) {
-        SetError( XML_ERROR_FILE_NOT_FOUND, 0, "filename=%s", filename ? filename : "<null>");
+        SetError( XML_ERROR_FILE_NOT_FOUND, 0, "filename=%s", filename );
         return _errorID;
     }
     LoadFile( fp );
@@ -2233,9 +2239,15 @@ XMLError XMLDocument::LoadFile( FILE* fp )
 
 XMLError XMLDocument::SaveFile( const char* filename, bool compact )
 {
+    if ( !filename ) {
+        TIXMLASSERT( false );
+        SetError( XML_ERROR_FILE_COULD_NOT_BE_OPENED, 0, "filename=<null>" );
+        return _errorID;
+    }
+
     FILE* fp = callfopen( filename, "w" );
     if ( !fp ) {
-        SetError( XML_ERROR_FILE_COULD_NOT_BE_OPENED, 0, "filename=%s", filename ? filename : "<null>");
+        SetError( XML_ERROR_FILE_COULD_NOT_BE_OPENED, 0, "filename=%s", filename );
         return _errorID;
     }
     SaveFile(fp, compact);
@@ -2333,7 +2345,7 @@ void XMLDocument::SetError( XMLError error, int lineNum, const char* format, ...
     return errorName;
 }
 
-const char* XMLDocument::ErrorStr() const 
+const char* XMLDocument::ErrorStr() const
 {
 	return _errorStr.Empty() ? "" : _errorStr.GetStr();
 }
@@ -2791,4 +2803,3 @@ bool XMLPrinter::Visit( const XMLUnknown& unknown )
 }
 
 }   // namespace tinyxml2
-

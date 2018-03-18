@@ -131,6 +131,26 @@ void validCode()
     }
     WSACleanup();
 
+    bool boolVar;
+    uint8_t byteBuf[5] = {0};
+    uint8_t byteBuf2[10] = {0};
+    boolVar = RtlEqualMemory(byteBuf, byteBuf2, sizeof(byteBuf));
+    if (boolVar) {}
+    boolVar = RtlCompareMemory(byteBuf, byteBuf2, sizeof(byteBuf));
+    if (boolVar) {}
+    RtlMoveMemory(byteBuf, byteBuf2, sizeof(byteBuf));
+    RtlCopyMemory(byteBuf, byteBuf2, sizeof(byteBuf));
+    RtlZeroMemory(byteBuf, sizeof(byteBuf));
+    ZeroMemory(byteBuf, sizeof(byteBuf));
+    RtlSecureZeroMemory(byteBuf, sizeof(byteBuf));
+    SecureZeroMemory(byteBuf, sizeof(byteBuf));
+    RtlFillMemory(byteBuf, sizeof(byteBuf), 0xff);
+
+    // Intrinsics
+    __noop();
+    __noop(1, "test", NULL);
+    __nop();
+
     // Valid Library usage, no leaks, valid arguments
     HINSTANCE hInstLib = LoadLibrary(L"My.dll");
     FreeLibrary(hInstLib);
@@ -157,6 +177,38 @@ void bufferAccessOutOfBounds()
         // cppcheck-suppress arrayIndexOutOfBounds
         buf[i] = L'\0';
     }
+
+    uint8_t byteBuf[5] = {0};
+    uint8_t byteBuf2[10] = {0};
+    // TODO ticket #8412 cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress bufferAccessOutOfBounds
+    RtlEqualMemory(byteBuf, byteBuf2, 20);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress bufferAccessOutOfBounds
+    RtlCompareMemory(byteBuf, byteBuf2, 20);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    RtlMoveMemory(byteBuf, byteBuf2, 20);
+    // cppcheck-suppress redundantCopy
+    // cppcheck-suppress bufferAccessOutOfBounds
+    MoveMemory(byteBuf, byteBuf2, 20);
+    // cppcheck-suppress redundantCopy
+    // cppcheck-suppress bufferAccessOutOfBounds
+    RtlCopyMemory(byteBuf, byteBuf2, 20);
+    // cppcheck-suppress redundantCopy
+    // cppcheck-suppress bufferAccessOutOfBounds
+    CopyMemory(byteBuf, byteBuf2, 20);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    RtlZeroMemory(byteBuf, sizeof(byteBuf)+1);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    ZeroMemory(byteBuf, sizeof(byteBuf)+1);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    RtlSecureZeroMemory(byteBuf, sizeof(byteBuf)+1);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    SecureZeroMemory(byteBuf, sizeof(byteBuf)+1);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    RtlFillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    FillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
 }
 
 void nullPointer()

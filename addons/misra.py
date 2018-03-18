@@ -10,6 +10,8 @@
 # Limitations: This addon is released as open source. Rule texts can't be freely
 # distributed. https://www.misra.org.uk/forum/viewtopic.php?f=56&t=1189
 #
+# The MISRA standard documents may be obtained from https://www.misra.org.uk
+#
 # Total number of rules: 153
 
 import cppcheckdata
@@ -45,6 +47,21 @@ def simpleMatch(token, pattern):
             return False
         token = token.next
     return True
+
+def rawlink(rawtoken):
+    if rawtoken.str == '}':
+        indent = 0
+        while rawtoken:
+            if rawtoken.str == '}':
+                indent = indent + 1
+            elif rawtoken.str == '{':
+                indent = indent - 1
+                if indent == 0:
+                    break
+            rawtoken = rawtoken.previous
+    else:
+        rawtoken = None
+    return rawtoken
 
 KEYWORDS = {
     'auto',
@@ -196,7 +213,7 @@ def hasSideEffectsRecursive(expr):
 
 
 def isBoolExpression(expr):
-    return expr and expr.str in {'!', '==', '!=', '<', '<=', '>', '>=', '&&', '||'}
+    return expr and expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||', '0', '1']
 
 
 def isConstantExpression(expr):
@@ -698,7 +715,7 @@ def misra_14_4(data):
     for token in data.tokenlist:
         if token.str != '(':
             continue
-        if not token.astOperand1 or not (token.astOperand1.str in {'if', 'while'}):
+        if not token.astOperand1 or not (token.astOperand1.str in ['if', 'while']):
             continue
         if not isBoolExpression(token.astOperand2):
             reportError(token, 14, 4)
@@ -747,12 +764,27 @@ def misra_15_6(rawTokens):
     indent = 0
     tok1 = None
     for token in rawTokens:
-        if token.str in {'if', 'for', 'while'}:
+        if token.str in ['if', 'for', 'while']:
             if simpleMatch(token.previous, '# if'):
                 continue
             if simpleMatch(token.previous, "} while"):
-                continue
+                # is there a 'do { .. } while'?
+                start = rawlink(token.previous)
+                if start and simpleMatch(start.previous, 'do {'):
+                    continue
+            if state == 2:
+                reportError(tok1, 15, 6)
             state = 1
+            indent = 0
+            tok1 = token
+        elif token.str == 'else':
+            if simpleMatch(token.previous, '# else'):
+                continue
+            if simpleMatch(token, 'else if'):
+                continue
+            if state == 2:
+                reportError(tok1, 15, 6)
+            state = 2
             indent = 0
             tok1 = token
         elif state == 1:
@@ -796,23 +828,31 @@ def misra_16_2(data):
 
 
 def misra_16_3(rawTokens):
-    # state: 0=no, 1=break is seen but not its ';', 2=after 'break;', 'comment', '{'
-    state = 0
+    STATE_NONE = 0   # default state, not in switch case/default block
+    STATE_BREAK = 1  # break/comment is seen but not its ';'
+    STATE_OK = 2     # a case/default is allowed (we have seen 'break;'/'comment'/'{'/attribute)
+    state = STATE_NONE
     for token in rawTokens:
-        if token.str == 'break':
-            state = 1
+        if token.str == 'break' or token.str == 'return' or token.str == 'throw':
+            state = STATE_BREAK
         elif token.str == ';':
-            if state == 1:
-                state = 2
+            if state == STATE_BREAK:
+                state = STATE_OK
             else:
-                state = 0
+                state = STATE_NONE
         elif token.str.startswith('/*') or token.str.startswith('//'):
             if 'fallthrough' in token.str.lower():
-                state = 2
+                state = STATE_OK
+        elif simpleMatch(token, '[ [ fallthrough ] ] ;'):
+            state = STATE_BREAK
         elif token.str == '{':
-            state = 2
-        elif token.str == 'case' and state != 2:
-            reportError(token, 16, 3)
+            state = STATE_OK
+        elif token.str == '}':
+            state = STATE_NONE
+        elif token.str == 'case' or token.str == 'default':
+            if state != STATE_OK:
+                reportError(token, 16, 3)
+            state = STATE_OK
 
 
 def misra_16_4(data):
@@ -881,6 +921,8 @@ def misra_16_7(data):
 def misra_17_1(data):
     for token in data.tokenlist:
         if isFunctionCall(token) and token.astOperand1.str in {'va_list', 'va_arg', 'va_start', 'va_end', 'va_copy'}:
+            reportError(token, 17, 1)
+        elif token.str == 'va_list':
             reportError(token, 17, 1)
 
 
@@ -1029,8 +1071,15 @@ def loadRuleTexts(filename):
     num1 = 0
     num2 = 0
     appendixA = False
+    ruleText = False
     for line in open(filename, 'rt'):
         line = line.replace('\r', '').replace('\n', '')
+        if len(line) == 0:
+            if ruleText:
+                num1 = 0
+                num2 = 0
+            ruleText = False
+            continue
         if not appendixA:
             if line.find('Appendix A') >= 0 and line.find('Summary of guidelines') >= 10:
                 appendixA = True
@@ -1041,15 +1090,21 @@ def loadRuleTexts(filename):
         if res:
             num1 = int(res.group(1))
             num2 = int(res.group(2))
+            ruleText = False
             continue
-        res = re.match(r'^[ ]*(Advisory|Required|Mandatory)$', line)
-        if res:
-            continue
-        res = re.match(r'^[ ]*([#A-Z].*)', line)
-        if res:
+        if re.match(r'^[ ]*(Advisory|Required|Mandatory)$', line):
+            ruleText = False
+        elif re.match(r'^[#A-Z].*', line):
+            if ruleText:
+                num2 = num2 + 1
+            num = num1 * 100 + num2
             global ruleTexts
-            ruleTexts[num1*100+num2] = res.group(1)
-            num2 = num2 + 1
+            ruleTexts[num] = line
+            ruleText = True
+        elif ruleText and re.match(r'^[a-z].*', line):
+            global ruleTexts
+            num = num1 * 100 + num2
+            ruleTexts[num] = ruleTexts[num] + ' ' + line
             continue
 
 def loadRuleTextsFromPdf(filename):
@@ -1230,11 +1285,13 @@ for arg in sys.argv[1:]:
         misra_21_11(cfg)
 
     if VERIFY:
+        exitCode = 0
         for expected in VERIFY_EXPECTED:
             if expected not in VERIFY_ACTUAL:
                 print('Expected but not seen: ' + expected)
-                sys.exit(1)
+                exitCode = 1
         for actual in VERIFY_ACTUAL:
             if actual not in VERIFY_EXPECTED:
                 print('Not expected: ' + actual)
-                sys.exit(1)
+                exitCode = 1
+        sys.exit(exitCode)

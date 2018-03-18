@@ -40,6 +40,7 @@ private:
 
         TEST_CASE(sizeofsizeof);
         TEST_CASE(sizeofCalculation);
+        TEST_CASE(sizeofFunction);
         TEST_CASE(checkPointerSizeof);
         TEST_CASE(checkPointerSizeofStruct);
         TEST_CASE(sizeofDivisionMemset);
@@ -160,6 +161,67 @@ private:
                "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Found calculation inside sizeof().\n"
                       "[test.cpp:5]: (warning, inconclusive) Found calculation inside sizeof().\n", errout.str());
+    }
+
+    void sizeofFunction() {
+        check("class Foo\n"
+              "{\n"
+              "    int bar() { return 1; };\n"
+              "}\n"
+              "Foo f;int a=sizeof(f.bar());");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
+
+        check("class Foo\n"
+              "{\n"
+              "    int bar() { return 1; };\n"
+              "    int bar() const { return 1; };\n"
+              "}\n"
+              "Foo f;int a=sizeof(f.bar());");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Foo\n"
+              "{\n"
+              "    int bar() { return 1; };\n"
+              "}\n"
+              "Foo * fp;int a=sizeof(fp->bar());");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Found function call inside sizeof().\n", errout.str());
+
+        check("int a=sizeof(foo());");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo() { return 1; }; int a=sizeof(foo());");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
+
+        check("int foo() { return 1; }; sizeof(decltype(foo()));");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int) { return 1; }; int a=sizeof(foo(0))");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found function call inside sizeof().\n", errout.str());
+
+        check("char * buf; int a=sizeof(*buf);");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int a=sizeof(foo())");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int) { return 1; }; char buf[1024]; int a=sizeof(buf), foo(0)");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class T>\n"
+              "struct A\n"
+              "{\n"
+              "    static B f(const B &);\n"
+              "    static A f(const A &);\n"
+              "    static A &g();\n"
+              "    static T &h();\n"
+              "\n"
+              "    enum {\n"
+              "        X = sizeof(f(g() >> h())) == sizeof(A),\n"
+              "        Y = sizeof(f(g() << h())) == sizeof(A),\n"
+              "        Z = X & Y\n"
+              "    };\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sizeofForArrayParameter() {

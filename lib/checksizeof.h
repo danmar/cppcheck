@@ -56,6 +56,7 @@ public:
         // Checks
         checkSizeof.sizeofsizeof();
         checkSizeof.sizeofCalculation();
+        checkSizeof.sizeofFunction();
         checkSizeof.suspiciousSizeofCalculation();
         checkSizeof.checkSizeofForArrayParameter();
         checkSizeof.checkSizeofForPointerSize();
@@ -72,6 +73,9 @@ public:
 
     /** @brief %Check for calculations inside sizeof */
     void sizeofCalculation();
+
+    /** @brief %Check for function call inside sizeof */
+    void sizeofFunction();
 
     /** @brief %Check for suspicious calculations with sizeof results */
     void suspiciousSizeofCalculation();
@@ -92,6 +96,7 @@ private:
     // Error messages..
     void sizeofsizeofError(const Token* tok);
     void sizeofCalculationError(const Token* tok, bool inconclusive);
+    void sizeofFunctionError(const Token* tok);
     void multiplySizeofError(const Token* tok);
     void divideSizeofError(const Token* tok);
     void sizeofForArrayParameterError(const Token* tok);
@@ -111,6 +116,7 @@ private:
         c.sizeofForNumericParameterError(nullptr);
         c.sizeofsizeofError(nullptr);
         c.sizeofCalculationError(nullptr, false);
+        c.sizeofFunctionError(nullptr);
         c.multiplySizeofError(nullptr);
         c.divideSizeofError(nullptr);
         c.sizeofVoidError(nullptr);
@@ -129,6 +135,7 @@ private:
                "- using sizeof(pointer) instead of the size of pointed data\n"
                "- look for 'sizeof sizeof ..'\n"
                "- look for calculations inside sizeof()\n"
+               "- look for function calls inside sizeof()\n"
                "- look for suspicious calculations with sizeof()\n"
                "- using 'sizeof(void)' which is undefined\n";
     }

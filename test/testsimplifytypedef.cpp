@@ -432,13 +432,13 @@ private:
         const char expected[] =
             "union t { int a ; float b ; } ; "
             "union U { int a ; float b ; } ; "
-            "union Unnamed1 { int a ; float b ; } ; "
+            "union Unnamed0 { int a ; float b ; } ; "
             "union s s ; "
             "union s * ps ; "
             "union t t ; "
             "union t * tp ; "
             "union U u ; "
-            "union Unnamed1 * v ;";
+            "union Unnamed0 * v ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -594,10 +594,10 @@ private:
                                 "C c;";
 
             const char expected[] =
-                "struct Unnamed2 { } ; "
-                "struct Unnamed2 * * * * * * * * * * a ; "
-                "struct Unnamed2 * b ; "
-                "struct Unnamed2 c ;";
+                "struct Unnamed0 { } ; "
+                "struct Unnamed0 * * * * * * * * * * a ; "
+                "struct Unnamed0 * b ; "
+                "struct Unnamed0 c ;";
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
