@@ -621,9 +621,9 @@ def misra_12_2(data):
 
 def misra_12_3(data):
     for token in data.tokenlist:
-        if token.str != ',' or token.scope.type == 'Enum':
+        if token.str != ',' or token.scope.type == 'Enum' or token.scope.type == 'Class' or token.scope.type == 'Global':
             continue
-        if token.astParent and token.astParent.str in {'(', ',', '{'}:
+        if token.astParent and token.astParent.str in ['(', ',', '{']:
             continue
         reportError(token, 12, 3)
 
@@ -1072,6 +1072,7 @@ def loadRuleTexts(filename):
     num2 = 0
     appendixA = False
     ruleText = False
+    global ruleTexts
     for line in open(filename, 'rt'):
         line = line.replace('\r', '').replace('\n', '')
         if len(line) == 0:
@@ -1098,11 +1099,9 @@ def loadRuleTexts(filename):
             if ruleText:
                 num2 = num2 + 1
             num = num1 * 100 + num2
-            global ruleTexts
             ruleTexts[num] = line
             ruleText = True
         elif ruleText and re.match(r'^[a-z].*', line):
-            global ruleTexts
             num = num1 * 100 + num2
             ruleTexts[num] = ruleTexts[num] + ' ' + line
             continue
