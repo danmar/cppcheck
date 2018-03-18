@@ -381,6 +381,8 @@ int main(int argc, char **argv)
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
+    fout << "generate_cfg_tests: tools/generate_cfg_tests.o $(EXTOBJ)\n";
+    fout << "\tg++ -Iexternals/tinyxml -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)\n";
     fout << "reduce:\ttools/reduce.o $(LIBOBJ) $(EXTOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "clean:\n";

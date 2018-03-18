@@ -271,6 +271,8 @@ dmake:	tools/dmake.o cli/filelister.o $(SRCDIR)/pathmatch.o $(SRCDIR)/path.o ext
 run-dmake: dmake
 	./dmake
 
+generate_cfg_tests: tools/generate_cfg_tests.o $(EXTOBJ)
+	g++ -Iexternals/tinyxml -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)
 reduce:	tools/reduce.o $(LIBOBJ) $(EXTOBJ)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
 
@@ -651,6 +653,9 @@ externals/tinyxml/tinyxml2.o: externals/tinyxml/tinyxml2.cpp lib/cxx11emu.h exte
 
 tools/dmake.o: tools/dmake.cpp lib/cxx11emu.h cli/filelister.h lib/pathmatch.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/dmake.o tools/dmake.cpp
+
+tools/generate_cfg_tests.o: tools/generate_cfg_tests.cpp lib/cxx11emu.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/generate_cfg_tests.o tools/generate_cfg_tests.cpp
 
 tools/reduce.o: tools/reduce.cpp lib/cxx11emu.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/reduce.o tools/reduce.cpp
