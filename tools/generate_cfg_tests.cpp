@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     std::cout << "// " << argv[0] << ' ' << cfgfile << " > " << testfile << std::endl;
     std::cout << "//" << std::endl;
     std::cout << "// Recommended cppcheck command line:" << std::endl;
-    std::cout << "// $ cppcheck --enable=warning,information --inline-suppr " << testfile << std::endl;
+    std::cout << "// $ cppcheck --enable=warning,information --inline-suppr --platform=unix64 " << testfile << std::endl;
     std::cout << "// => 'unmatched suppression' warnings are false negatives." << std::endl;
     std::cout << "//" << std::endl << std::endl ;
 
@@ -135,8 +135,8 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
 
     if (noreturn) {
         std::cout << "void test__" << replaceCharInString(functionName,':','_') << "__noreturn() {" << std::endl;
-        std::cout << "  int x = 100;" << std::endl;
-        std::cout << "  if (cond) x=1; else " << functionCall(functionName, useretval, -1, numberOfArgs, "") << ';' << std::endl;
+        std::cout << "  int x = 1;" << std::endl;
+        std::cout << "  if (cond) { x=100; " << functionCall(functionName, useretval, -1, numberOfArgs, "") << "; }" << std::endl;
         std::cout << "  // cppcheck-suppress shiftTooManyBits" << std::endl;
         std::cout << "  x = 1 << x;" << std::endl;
         std::cout << "}" << std::endl << std::endl;

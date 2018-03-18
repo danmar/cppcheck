@@ -4,13 +4,13 @@
 // ./generate_cfg_tests cfg/motif.cfg > generated-cfg-tests-motif.cpp
 //
 // Recommended cppcheck command line:
-// $ cppcheck --enable=warning,information --inline-suppr generated-cfg-tests-motif.cpp
+// $ cppcheck --enable=warning,information --inline-suppr --platform=unix64 generated-cfg-tests-motif.cpp
 // => 'unmatched suppression' warnings are false negatives.
 //
 
 void test__MrmCloseHierarchy__noreturn() {
-  int x = 100;
-  if (cond) x=1; else MrmCloseHierarchy(arg1);
+  int x = 1;
+  if (cond) { x=100; MrmCloseHierarchy(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -22,8 +22,8 @@ void test__MrmCloseHierarchy__arg1__notuninit() {
 }
 
 void test__MrmOpenHierarchy__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = MrmOpenHierarchy(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = MrmOpenHierarchy(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -34,8 +34,8 @@ void test__MrmOpenHierarchy__useretval() {
 }
 
 void test__MrmOpenHierarchyPerDisplay__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = MrmOpenHierarchyPerDisplay(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; result = MrmOpenHierarchyPerDisplay(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -46,8 +46,8 @@ void test__MrmOpenHierarchyPerDisplay__useretval() {
 }
 
 void test__XmFontListEntryFree__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XmFontListEntryFree(arg1);
+  int x = 1;
+  if (cond) { x=100; XmFontListEntryFree(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -59,8 +59,8 @@ void test__XmFontListEntryFree__arg1__notuninit() {
 }
 
 void test__XmFontListCreate__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = XmFontListCreate(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = XmFontListCreate(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -83,8 +83,8 @@ void test__XmFontListCreate__arg2__notuninit() {
 }
 
 void test__XmFontListAppendEntry__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = XmFontListAppendEntry(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = XmFontListAppendEntry(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -107,8 +107,8 @@ void test__XmFontListAppendEntry__arg2__notuninit() {
 }
 
 void test__XmStringCreateLocalized__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = XmStringCreateLocalized(arg1);
+  int x = 1;
+  if (cond) { x=100; result = XmStringCreateLocalized(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -136,8 +136,8 @@ void test__XmStringCreateLocalized__arg1__notuninit() {
 }
 
 void test__XmStringCreateSimple__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = XmStringCreateSimple(arg1);
+  int x = 1;
+  if (cond) { x=100; result = XmStringCreateSimple(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -165,8 +165,8 @@ void test__XmStringCreateSimple__arg1__notuninit() {
 }
 
 void test__XmStringFree__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XmStringFree(arg1);
+  int x = 1;
+  if (cond) { x=100; XmStringFree(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -178,8 +178,8 @@ void test__XmStringFree__arg1__notuninit() {
 }
 
 void test__XmStringGenerate__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XmStringGenerate(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; XmStringGenerate(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -191,8 +191,8 @@ void test__XmStringGenerate__leakignore() {
 }
 
 void test__XmTextGetString__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XmTextGetString(arg1);
+  int x = 1;
+  if (cond) { x=100; XmTextGetString(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -210,8 +210,8 @@ void test__XmTextGetString__arg1__notuninit() {
 }
 
 void test__XmTextGetStringWcs__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XmTextGetStringWcs(arg1);
+  int x = 1;
+  if (cond) { x=100; XmTextGetStringWcs(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -240,8 +240,8 @@ void test__XtAsprintf__arg2__notuninit() {
 }
 
 void test__XtFree__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XtFree(arg1);
+  int x = 1;
+  if (cond) { x=100; XtFree(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -253,8 +253,8 @@ void test__XtFree__arg1__notuninit() {
 }
 
 void test__XtSetValues__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XtSetValues(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; XtSetValues(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -266,8 +266,8 @@ void test__XtSetValues__leakignore() {
 }
 
 void test__XtGetValues__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XtGetValues(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; XtGetValues(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -279,8 +279,8 @@ void test__XtGetValues__leakignore() {
 }
 
 void test__XtSetSubvalues__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XtSetSubvalues(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; XtSetSubvalues(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -292,8 +292,8 @@ void test__XtSetSubvalues__leakignore() {
 }
 
 void test__XtGetSubvalues__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XtGetSubvalues(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; XtGetSubvalues(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -305,8 +305,8 @@ void test__XtGetSubvalues__leakignore() {
 }
 
 void test__XtMalloc__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = XtMalloc(arg1);
+  int x = 1;
+  if (cond) { x=100; result = XtMalloc(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -323,8 +323,8 @@ void test__XtMalloc__arg1__notuninit() {
 }
 
 void test__XtNew__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = XtNew(arg1);
+  int x = 1;
+  if (cond) { x=100; result = XtNew(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -341,8 +341,8 @@ void test__XtNew__arg1__notuninit() {
 }
 
 void test__XtNewString__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = XtNewString(arg1);
+  int x = 1;
+  if (cond) { x=100; result = XtNewString(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -359,8 +359,8 @@ void test__XtNewString__arg1__notuninit() {
 }
 
 void test__XtCalloc__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = XtCalloc(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = XtCalloc(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -383,8 +383,8 @@ void test__XtCalloc__arg2__notuninit() {
 }
 
 void test__XOpenDisplay__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XOpenDisplay(arg1);
+  int x = 1;
+  if (cond) { x=100; XOpenDisplay(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -402,8 +402,8 @@ void test__XOpenDisplay__arg1__notuninit() {
 }
 
 void test__XCloseDisplay__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XCloseDisplay(arg1);
+  int x = 1;
+  if (cond) { x=100; XCloseDisplay(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -421,8 +421,8 @@ void test__XCloseDisplay__arg1__notuninit() {
 }
 
 void test__XtDatabase__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XtDatabase(arg1);
+  int x = 1;
+  if (cond) { x=100; XtDatabase(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -440,8 +440,8 @@ void test__XtDatabase__arg1__notuninit() {
 }
 
 void test__XtScreenDatabase__noreturn() {
-  int x = 100;
-  if (cond) x=1; else XtScreenDatabase(arg1);
+  int x = 1;
+  if (cond) { x=100; XtScreenDatabase(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }

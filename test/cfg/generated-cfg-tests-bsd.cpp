@@ -4,13 +4,13 @@
 // ./generate_cfg_tests cfg/bsd.cfg > generated-cfg-tests-bsd.cpp
 //
 // Recommended cppcheck command line:
-// $ cppcheck --enable=warning,information --inline-suppr generated-cfg-tests-bsd.cpp
+// $ cppcheck --enable=warning,information --inline-suppr --platform=unix64 generated-cfg-tests-bsd.cpp
 // => 'unmatched suppression' warnings are false negatives.
 //
 
 void test__fts_open__noreturn() {
-  int x = 100;
-  if (cond) x=1; else fts_open(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; fts_open(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -39,8 +39,8 @@ void test__fts_open__arg3__notuninit() {
 }
 
 void test__fts_read__noreturn() {
-  int x = 100;
-  if (cond) x=1; else fts_read(arg1);
+  int x = 1;
+  if (cond) { x=100; fts_read(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -57,8 +57,8 @@ void test__fts_read__arg1__notuninit() {
 }
 
 void test__readpassphrase__noreturn() {
-  int x = 100;
-  if (cond) x=1; else readpassphrase(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; readpassphrase(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -76,8 +76,8 @@ void test__readpassphrase__arg2__notuninit() {
 }
 
 void test__fts_set__noreturn() {
-  int x = 100;
-  if (cond) x=1; else fts_set(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; fts_set(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -101,8 +101,8 @@ void test__fts_set__arg3__notuninit() {
 }
 
 void test__fts_set_clientptr__noreturn() {
-  int x = 100;
-  if (cond) x=1; else fts_set_clientptr(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; fts_set_clientptr(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -120,8 +120,8 @@ void test__fts_set_clientptr__arg2__notuninit() {
 }
 
 void test__fts_get_clientptr__noreturn() {
-  int x = 100;
-  if (cond) x=1; else fts_get_clientptr(arg1);
+  int x = 1;
+  if (cond) { x=100; fts_get_clientptr(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -133,8 +133,8 @@ void test__fts_get_clientptr__arg1__notuninit() {
 }
 
 void test__fts_get_stream__noreturn() {
-  int x = 100;
-  if (cond) x=1; else fts_get_stream(arg1);
+  int x = 1;
+  if (cond) { x=100; fts_get_stream(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -146,8 +146,8 @@ void test__fts_get_stream__arg1__notuninit() {
 }
 
 void test__fts_close__noreturn() {
-  int x = 100;
-  if (cond) x=1; else fts_close(arg1);
+  int x = 1;
+  if (cond) { x=100; fts_close(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -159,8 +159,8 @@ void test__fts_close__arg1__notuninit() {
 }
 
 void test__readpassphrase__noreturn() {
-  int x = 100;
-  if (cond) x=1; else readpassphrase(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; readpassphrase(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -200,8 +200,8 @@ void test__readpassphrase__arg4__notuninit() {
 }
 
 void test__setfib__noreturn() {
-  int x = 100;
-  if (cond) x=1; else setfib(arg1);
+  int x = 1;
+  if (cond) { x=100; setfib(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -213,8 +213,8 @@ void test__setfib__arg1__notuninit() {
 }
 
 void test__strtonum__noreturn() {
-  int x = 100;
-  if (cond) x=1; else strtonum(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; strtonum(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }

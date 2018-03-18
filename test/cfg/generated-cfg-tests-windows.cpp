@@ -4,13 +4,13 @@
 // ./generate_cfg_tests cfg/windows.cfg > generated-cfg-tests-windows.cpp
 //
 // Recommended cppcheck command line:
-// $ cppcheck --enable=warning,information --inline-suppr generated-cfg-tests-windows.cpp
+// $ cppcheck --enable=warning,information --inline-suppr --platform=unix64 generated-cfg-tests-windows.cpp
 // => 'unmatched suppression' warnings are false negatives.
 //
 
 void test__RtlCompareMemory__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = RtlCompareMemory(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = RtlCompareMemory(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -54,8 +54,8 @@ void test__RtlCompareMemory__arg3__notbool() {
 }
 
 void test__RtlCopyBytes__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RtlCopyBytes(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; RtlCopyBytes(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -88,8 +88,8 @@ void test__RtlCopyBytes__arg3__notbool() {
 }
 
 void test__RtlFillBytes__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RtlFillBytes(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; RtlFillBytes(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -117,8 +117,8 @@ void test__RtlFillBytes__arg3__notuninit() {
 }
 
 void test__RtlSecureZeroMemory__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RtlSecureZeroMemory(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; RtlSecureZeroMemory(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -140,8 +140,8 @@ void test__RtlSecureZeroMemory__arg2__notbool() {
 }
 
 void test__RtlZeroBytes__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RtlZeroBytes(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; RtlZeroBytes(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -163,22 +163,22 @@ void test__RtlZeroBytes__arg2__notbool() {
 }
 
 void test__KeBugCheck__noreturn() {
-  int x = 100;
-  if (cond) x=1; else KeBugCheck();
+  int x = 1;
+  if (cond) { x=100; KeBugCheck(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__KeBugCheckEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else KeBugCheckEx();
+  int x = 1;
+  if (cond) { x=100; KeBugCheckEx(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__CString__Format__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CString::Format(arg1);
+  int x = 1;
+  if (cond) { x=100; CString::Format(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -196,8 +196,8 @@ void test__CString__Format__arg1__notuninit() {
 }
 
 void test__CString__AppendFormat__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CString::AppendFormat(arg1);
+  int x = 1;
+  if (cond) { x=100; CString::AppendFormat(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -215,8 +215,8 @@ void test__CString__AppendFormat__arg1__notuninit() {
 }
 
 void test__printf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else printf_s(arg1);
+  int x = 1;
+  if (cond) { x=100; printf_s(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -239,8 +239,8 @@ void test__printf_s__arg1__notuninit() {
 }
 
 void test__wprintf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else wprintf_s(arg1);
+  int x = 1;
+  if (cond) { x=100; wprintf_s(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -263,8 +263,8 @@ void test__wprintf_s__arg1__notuninit() {
 }
 
 void test__fprintf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else fprintf_s(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; fprintf_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -287,8 +287,8 @@ void test__fprintf_s__arg2__notuninit() {
 }
 
 void test__fwprintf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else fwprintf_s(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; fwprintf_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -311,8 +311,8 @@ void test__fwprintf_s__arg2__notuninit() {
 }
 
 void test___snprintf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _snprintf_s(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _snprintf_s(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -335,8 +335,8 @@ void test___snprintf_s__arg4__notuninit() {
 }
 
 void test___snwprintf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _snwprintf_s(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _snwprintf_s(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -359,8 +359,8 @@ void test___snwprintf_s__arg4__notuninit() {
 }
 
 void test__DbgPrint__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DbgPrint(arg1);
+  int x = 1;
+  if (cond) { x=100; DbgPrint(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -383,8 +383,8 @@ void test__DbgPrint__arg1__notuninit() {
 }
 
 void test__DbgPrintEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DbgPrintEx(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; DbgPrintEx(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -407,8 +407,8 @@ void test__DbgPrintEx__arg3__notuninit() {
 }
 
 void test__vDbgPrintEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else vDbgPrintEx(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; vDbgPrintEx(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -431,8 +431,8 @@ void test__vDbgPrintEx__arg3__notuninit() {
 }
 
 void test__vDbgPrintExWithPrefix__noreturn() {
-  int x = 100;
-  if (cond) x=1; else vDbgPrintExWithPrefix(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; vDbgPrintExWithPrefix(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -455,8 +455,8 @@ void test__vDbgPrintExWithPrefix__arg4__notuninit() {
 }
 
 void test__scanf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else scanf_s(arg1);
+  int x = 1;
+  if (cond) { x=100; scanf_s(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -473,8 +473,8 @@ void test__scanf_s__arg1__notuninit() {
 }
 
 void test__wscanf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else wscanf_s(arg1);
+  int x = 1;
+  if (cond) { x=100; wscanf_s(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -491,8 +491,8 @@ void test__wscanf_s__arg1__notuninit() {
 }
 
 void test__sscanf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sscanf_s(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; sscanf_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -509,8 +509,8 @@ void test__sscanf_s__arg2__notuninit() {
 }
 
 void test__fscanf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else fscanf_s(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; fscanf_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -527,8 +527,8 @@ void test__fscanf_s__arg2__notuninit() {
 }
 
 void test__fwscanf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else fwscanf_s(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; fwscanf_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -545,8 +545,8 @@ void test__fwscanf_s__arg2__notuninit() {
 }
 
 void test__swscanf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else swscanf_s(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; swscanf_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -563,8 +563,8 @@ void test__swscanf_s__arg2__notuninit() {
 }
 
 void test__CloseHandle__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CloseHandle(arg1);
+  int x = 1;
+  if (cond) { x=100; CloseHandle(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -576,8 +576,8 @@ void test__CloseHandle__arg1__notuninit() {
 }
 
 void test__OpenFile__noreturn() {
-  int x = 100;
-  if (cond) x=1; else OpenFile(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; OpenFile(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -600,8 +600,8 @@ void test__OpenFile__arg3__notuninit() {
 }
 
 void test__BuildCommDCB__noreturn() {
-  int x = 100;
-  if (cond) x=1; else BuildCommDCB(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; BuildCommDCB(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -613,8 +613,8 @@ void test__BuildCommDCB__arg1__notuninit() {
 }
 
 void test__BuildCommDCBAndTimeouts__noreturn() {
-  int x = 100;
-  if (cond) x=1; else BuildCommDCBAndTimeouts(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; BuildCommDCBAndTimeouts(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -626,8 +626,8 @@ void test__BuildCommDCBAndTimeouts__arg1__notuninit() {
 }
 
 void test__WriteFile__noreturn() {
-  int x = 100;
-  if (cond) x=1; else WriteFile(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; WriteFile(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -651,8 +651,8 @@ void test__WriteFile__arg3__notuninit() {
 }
 
 void test__ReadFile__noreturn() {
-  int x = 100;
-  if (cond) x=1; else ReadFile(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; ReadFile(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -675,8 +675,8 @@ void test__ReadFile__arg3__notuninit() {
 }
 
 void test__CreateFile__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateFile(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+  int x = 1;
+  if (cond) { x=100; CreateFile(arg1, arg2, arg3, arg4, arg5, arg6, arg7); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -724,8 +724,8 @@ void test__CreateFile__arg7__notuninit() {
 }
 
 void test__SetCommTimeouts__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetCommTimeouts(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetCommTimeouts(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -743,8 +743,8 @@ void test__SetCommTimeouts__arg2__notuninit() {
 }
 
 void test__SetCommState__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetCommState(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetCommState(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -762,8 +762,8 @@ void test__SetCommState__arg2__notuninit() {
 }
 
 void test___mbstok__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mbstok(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _mbstok(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -797,8 +797,8 @@ void test___mbstok__arg2__notuninit() {
 }
 
 void test___tcstok__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tcstok(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _tcstok(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -832,8 +832,8 @@ void test___tcstok__arg2__notuninit() {
 }
 
 void test___mbstok_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mbstok_l(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _mbstok_l(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -873,8 +873,8 @@ void test___mbstok_l__arg3__notuninit() {
 }
 
 void test___strtok_s_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _strtok_s_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _strtok_s_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -919,8 +919,8 @@ void test___strtok_s_l__arg4__notuninit() {
 }
 
 void test___wcstok_s_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wcstok_s_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _wcstok_s_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -965,8 +965,8 @@ void test___wcstok_s_l__arg4__notuninit() {
 }
 
 void test___mbstok_s_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mbstok_s_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _mbstok_s_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1011,8 +1011,8 @@ void test___mbstok_s_l__arg4__notuninit() {
 }
 
 void test___tcstok_s_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tcstok_s_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _tcstok_s_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1057,8 +1057,8 @@ void test___tcstok_s_l__arg4__notuninit() {
 }
 
 void test__strtok_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else strtok_s(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; strtok_s(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1097,8 +1097,8 @@ void test__strtok_s__arg3__notnull() {
 }
 
 void test__wcstok_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else wcstok_s(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; wcstok_s(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1137,8 +1137,8 @@ void test__wcstok_s__arg3__notnull() {
 }
 
 void test___mbstok_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mbstok_s(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _mbstok_s(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1177,8 +1177,8 @@ void test___mbstok_s__arg3__notnull() {
 }
 
 void test___tcstok_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tcstok_s(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _tcstok_s(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1217,8 +1217,8 @@ void test___tcstok_s__arg3__notnull() {
 }
 
 void test___getcwd__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _getcwd(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _getcwd(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1242,8 +1242,8 @@ void test___getcwd__arg2__notuninit() {
 }
 
 void test___wgetcwd__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wgetcwd(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _wgetcwd(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1267,8 +1267,8 @@ void test___wgetcwd__arg2__notuninit() {
 }
 
 void test__SHGetFolderPath__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SHGetFolderPath(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; SHGetFolderPath(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1309,8 +1309,8 @@ void test__SHGetFolderPath__arg5__notnull() {
 }
 
 void test__SHGetFolderPathA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SHGetFolderPathA(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; SHGetFolderPathA(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1351,8 +1351,8 @@ void test__SHGetFolderPathA__arg5__notnull() {
 }
 
 void test__SHGetFolderPathW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SHGetFolderPathW(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; SHGetFolderPathW(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1393,8 +1393,8 @@ void test__SHGetFolderPathW__arg5__notnull() {
 }
 
 void test__RegQueryValueEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegQueryValueEx(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; RegQueryValueEx(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1424,8 +1424,8 @@ void test__RegQueryValueEx__arg4__notuninit() {
 }
 
 void test__RegQueryValueExA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegQueryValueExA(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; RegQueryValueExA(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1455,8 +1455,8 @@ void test__RegQueryValueExA__arg4__notuninit() {
 }
 
 void test__RegQueryValueExW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegQueryValueExW(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; RegQueryValueExW(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1486,8 +1486,8 @@ void test__RegQueryValueExW__arg4__notuninit() {
 }
 
 void test__RegCloseKey__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegCloseKey(arg1);
+  int x = 1;
+  if (cond) { x=100; RegCloseKey(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1505,8 +1505,8 @@ void test__RegCloseKey__arg1__notuninit() {
 }
 
 void test___stricmp_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _stricmp_l(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _stricmp_l(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1546,8 +1546,8 @@ void test___stricmp_l__arg3__notuninit() {
 }
 
 void test___wcsicmp_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wcsicmp_l(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _wcsicmp_l(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1587,8 +1587,8 @@ void test___wcsicmp_l__arg3__notuninit() {
 }
 
 void test___mbsicmp_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mbsicmp_l(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _mbsicmp_l(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1628,8 +1628,8 @@ void test___mbsicmp_l__arg3__notuninit() {
 }
 
 void test__stricmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else stricmp(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; stricmp(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1663,8 +1663,8 @@ void test__stricmp__arg2__notuninit() {
 }
 
 void test___stricmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _stricmp(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _stricmp(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1698,8 +1698,8 @@ void test___stricmp__arg2__notuninit() {
 }
 
 void test__wcsicmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else wcsicmp(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; wcsicmp(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1733,8 +1733,8 @@ void test__wcsicmp__arg2__notuninit() {
 }
 
 void test___wcsicmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wcsicmp(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _wcsicmp(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1768,8 +1768,8 @@ void test___wcsicmp__arg2__notuninit() {
 }
 
 void test___mbsicmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mbsicmp(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _mbsicmp(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1803,8 +1803,8 @@ void test___mbsicmp__arg2__notuninit() {
 }
 
 void test___tcsicmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tcsicmp(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _tcsicmp(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1838,8 +1838,8 @@ void test___tcsicmp__arg2__notuninit() {
 }
 
 void test__GetFileAttributes__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetFileAttributes(arg1);
+  int x = 1;
+  if (cond) { x=100; GetFileAttributes(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1857,8 +1857,8 @@ void test__GetFileAttributes__arg1__notuninit() {
 }
 
 void test__GetFileAttributesA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetFileAttributesA(arg1);
+  int x = 1;
+  if (cond) { x=100; GetFileAttributesA(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1876,8 +1876,8 @@ void test__GetFileAttributesA__arg1__notuninit() {
 }
 
 void test__GetFileAttributesW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetFileAttributesW(arg1);
+  int x = 1;
+  if (cond) { x=100; GetFileAttributesW(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1895,8 +1895,8 @@ void test__GetFileAttributesW__arg1__notuninit() {
 }
 
 void test__RegOpenKeyEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegOpenKeyEx(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; RegOpenKeyEx(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1926,8 +1926,8 @@ void test__RegOpenKeyEx__arg4__notuninit() {
 }
 
 void test__RegOpenKeyExA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegOpenKeyExA(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; RegOpenKeyExA(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1957,8 +1957,8 @@ void test__RegOpenKeyExA__arg4__notuninit() {
 }
 
 void test__RegOpenKeyExW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegOpenKeyExW(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; RegOpenKeyExW(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1988,8 +1988,8 @@ void test__RegOpenKeyExW__arg4__notuninit() {
 }
 
 void test__wsprintf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else wsprintf(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; wsprintf(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2018,8 +2018,8 @@ void test__wsprintf__arg2__notuninit() {
 }
 
 void test__wsprintfA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else wsprintfA(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; wsprintfA(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2048,8 +2048,8 @@ void test__wsprintfA__arg2__notuninit() {
 }
 
 void test__wsprintfW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else wsprintfW(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; wsprintfW(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2078,8 +2078,8 @@ void test__wsprintfW__arg2__notuninit() {
 }
 
 void test__sprintf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sprintf_s();
+  int x = 1;
+  if (cond) { x=100; sprintf_s(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2091,8 +2091,8 @@ void test__sprintf_s__leakignore() {
 }
 
 void test__swprintf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else swprintf_s();
+  int x = 1;
+  if (cond) { x=100; swprintf_s(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2104,8 +2104,8 @@ void test__swprintf_s__leakignore() {
 }
 
 void test___sprintf_s_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _sprintf_s_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _sprintf_s_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2140,8 +2140,8 @@ void test___sprintf_s_l__arg4__notuninit() {
 }
 
 void test___swprintf_s_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _swprintf_s_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _swprintf_s_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2176,8 +2176,8 @@ void test___swprintf_s_l__arg4__notuninit() {
 }
 
 void test__RegEnumKeyEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegEnumKeyEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+  int x = 1;
+  if (cond) { x=100; RegEnumKeyEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2201,8 +2201,8 @@ void test__RegEnumKeyEx__arg2__notuninit() {
 }
 
 void test__RegEnumKeyExA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegEnumKeyExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+  int x = 1;
+  if (cond) { x=100; RegEnumKeyExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2226,8 +2226,8 @@ void test__RegEnumKeyExA__arg2__notuninit() {
 }
 
 void test__RegEnumKeyExW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegEnumKeyExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+  int x = 1;
+  if (cond) { x=100; RegEnumKeyExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2251,15 +2251,15 @@ void test__RegEnumKeyExW__arg2__notuninit() {
 }
 
 void test__CreateFont__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateFont(arg1);
+  int x = 1;
+  if (cond) { x=100; CreateFont(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__CaptureStackBackTrace__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CaptureStackBackTrace(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CaptureStackBackTrace(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2277,8 +2277,8 @@ void test__CaptureStackBackTrace__arg2__notuninit() {
 }
 
 void test___vsnprintf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _vsnprintf(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _vsnprintf(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2313,8 +2313,8 @@ void test___vsnprintf__arg3__notuninit() {
 }
 
 void test___vsnwprintf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _vsnwprintf(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _vsnwprintf(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2349,8 +2349,8 @@ void test___vsnwprintf__arg3__notuninit() {
 }
 
 void test___vsnprintf_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _vsnprintf_l(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; _vsnprintf_l(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2391,8 +2391,8 @@ void test___vsnprintf_l__arg4__notuninit() {
 }
 
 void test___vsnwprintf_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _vsnwprintf_l(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; _vsnwprintf_l(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2433,8 +2433,8 @@ void test___vsnwprintf_l__arg4__notuninit() {
 }
 
 void test___vswprintf_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _vswprintf_l(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; _vswprintf_l(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2475,8 +2475,8 @@ void test___vswprintf_l__arg4__notuninit() {
 }
 
 void test__vsnprintf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else vsnprintf_s(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; vsnprintf_s(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2517,8 +2517,8 @@ void test__vsnprintf_s__arg4__notuninit() {
 }
 
 void test___vsnprintf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _vsnprintf_s(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; _vsnprintf_s(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2559,8 +2559,8 @@ void test___vsnprintf_s__arg4__notuninit() {
 }
 
 void test___vsnwprintf_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _vsnwprintf_s(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; _vsnwprintf_s(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2601,8 +2601,8 @@ void test___vsnwprintf_s__arg4__notuninit() {
 }
 
 void test___vsnprintf_s_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _vsnprintf_s_l(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; _vsnprintf_s_l(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2649,8 +2649,8 @@ void test___vsnprintf_s_l__arg5__notuninit() {
 }
 
 void test___vsnwprintf_s_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _vsnwprintf_s_l(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; _vsnwprintf_s_l(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2697,8 +2697,8 @@ void test___vsnwprintf_s_l__arg5__notuninit() {
 }
 
 void test___vsprintf_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _vsprintf_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _vsprintf_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2726,8 +2726,8 @@ void test___vsprintf_l__arg3__notuninit() {
 }
 
 void test____vswprintf_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else __vswprintf_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; __vswprintf_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2755,8 +2755,8 @@ void test____vswprintf_l__arg3__notuninit() {
 }
 
 void test___strdup__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _strdup(arg1);
+  int x = 1;
+  if (cond) { x=100; _strdup(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2773,8 +2773,8 @@ void test___strdup__arg1__notuninit() {
 }
 
 void test___wcsdup__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wcsdup(arg1);
+  int x = 1;
+  if (cond) { x=100; _wcsdup(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2791,8 +2791,8 @@ void test___wcsdup__arg1__notuninit() {
 }
 
 void test___mbsdup__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mbsdup(arg1);
+  int x = 1;
+  if (cond) { x=100; _mbsdup(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2809,8 +2809,8 @@ void test___mbsdup__arg1__notuninit() {
 }
 
 void test___tcsdup__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tcsdup(arg1);
+  int x = 1;
+  if (cond) { x=100; _tcsdup(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2827,8 +2827,8 @@ void test___tcsdup__arg1__notuninit() {
 }
 
 void test___strdup_dbg__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _strdup_dbg(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _strdup_dbg(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2863,8 +2863,8 @@ void test___strdup_dbg__arg4__notuninit() {
 }
 
 void test___wcsdup_dbg__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wcsdup_dbg(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _wcsdup_dbg(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2899,8 +2899,8 @@ void test___wcsdup_dbg__arg4__notuninit() {
 }
 
 void test___tcsdup_dbg__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tcsdup_dbg(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _tcsdup_dbg(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2935,8 +2935,8 @@ void test___tcsdup_dbg__arg4__notuninit() {
 }
 
 void test___mbscmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbscmp(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _mbscmp(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -2980,8 +2980,8 @@ void test___mbscmp__arg2__notuninit() {
 }
 
 void test___tcscmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tcscmp(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _tcscmp(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3025,8 +3025,8 @@ void test___tcscmp__arg2__notuninit() {
 }
 
 void test___snprintf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _snprintf(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _snprintf(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3055,8 +3055,8 @@ void test___snprintf__arg3__notuninit() {
 }
 
 void test___snwprintf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _snwprintf(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _snwprintf(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3085,8 +3085,8 @@ void test___snwprintf__arg3__notuninit() {
 }
 
 void test___sntprintf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _sntprintf(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _sntprintf(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3115,8 +3115,8 @@ void test___sntprintf__arg3__notuninit() {
 }
 
 void test__strcpy_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else strcpy_s(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; strcpy_s(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3150,8 +3150,8 @@ void test__strcpy_s__arg3__notuninit() {
 }
 
 void test__wcscpy_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else wcscpy_s(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; wcscpy_s(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3185,8 +3185,8 @@ void test__wcscpy_s__arg3__notuninit() {
 }
 
 void test___mbscpy_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mbscpy_s(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _mbscpy_s(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3220,8 +3220,8 @@ void test___mbscpy_s__arg3__notuninit() {
 }
 
 void test___tcscpy_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tcscpy_s(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _tcscpy_s(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3255,8 +3255,8 @@ void test___tcscpy_s__arg3__notuninit() {
 }
 
 void test___CrtSetDbgFlag__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _CrtSetDbgFlag(arg1);
+  int x = 1;
+  if (cond) { x=100; _CrtSetDbgFlag(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3274,8 +3274,8 @@ void test___CrtSetDbgFlag__arg1__notuninit() {
 }
 
 void test___stat__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _stat(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _stat(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3303,8 +3303,8 @@ void test___stat__arg2__notnull() {
 }
 
 void test___tstat__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tstat(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _tstat(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3332,8 +3332,8 @@ void test___tstat__arg2__notnull() {
 }
 
 void test___stat32__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _stat32(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _stat32(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3361,8 +3361,8 @@ void test___stat32__arg2__notnull() {
 }
 
 void test___stat64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _stat64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _stat64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3390,8 +3390,8 @@ void test___stat64__arg2__notnull() {
 }
 
 void test___tstat64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tstat64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _tstat64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3419,8 +3419,8 @@ void test___tstat64__arg2__notnull() {
 }
 
 void test___stati64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _stati64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _stati64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3448,8 +3448,8 @@ void test___stati64__arg2__notnull() {
 }
 
 void test___tstati64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tstati64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _tstati64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3477,8 +3477,8 @@ void test___tstati64__arg2__notnull() {
 }
 
 void test___stat32i64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _stat32i64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _stat32i64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3506,8 +3506,8 @@ void test___stat32i64__arg2__notnull() {
 }
 
 void test___tstat32i64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tstat32i64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _tstat32i64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3535,8 +3535,8 @@ void test___tstat32i64__arg2__notnull() {
 }
 
 void test___stat64i32__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _stat64i32(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _stat64i32(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3564,8 +3564,8 @@ void test___stat64i32__arg2__notnull() {
 }
 
 void test___tstat64i32__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tstat64i32(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _tstat64i32(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3593,8 +3593,8 @@ void test___tstat64i32__arg2__notnull() {
 }
 
 void test___wstat__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wstat(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _wstat(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3622,8 +3622,8 @@ void test___wstat__arg2__notnull() {
 }
 
 void test___wstat32__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wstat32(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _wstat32(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3651,8 +3651,8 @@ void test___wstat32__arg2__notnull() {
 }
 
 void test___wstat64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wstat64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _wstat64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3680,8 +3680,8 @@ void test___wstat64__arg2__notnull() {
 }
 
 void test___wstati64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wstati64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _wstati64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3709,8 +3709,8 @@ void test___wstati64__arg2__notnull() {
 }
 
 void test___wstat32i64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wstat32i64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _wstat32i64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3738,8 +3738,8 @@ void test___wstat32i64__arg2__notnull() {
 }
 
 void test___wstat64i32__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wstat64i32(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _wstat64i32(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3767,8 +3767,8 @@ void test___wstat64i32__arg2__notnull() {
 }
 
 void test___fstat__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _fstat(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _fstat(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3791,8 +3791,8 @@ void test___fstat__arg2__notnull() {
 }
 
 void test___fstat32__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _fstat32(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _fstat32(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3815,8 +3815,8 @@ void test___fstat32__arg2__notnull() {
 }
 
 void test___fstat64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _fstat64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _fstat64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3839,8 +3839,8 @@ void test___fstat64__arg2__notnull() {
 }
 
 void test___fstati64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _fstati64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _fstati64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3863,8 +3863,8 @@ void test___fstati64__arg2__notnull() {
 }
 
 void test___fstat32i64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _fstat32i64(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _fstat32i64(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3887,8 +3887,8 @@ void test___fstat32i64__arg2__notnull() {
 }
 
 void test___fstat64i32__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _fstat64i32(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _fstat64i32(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3911,8 +3911,8 @@ void test___fstat64i32__arg2__notnull() {
 }
 
 void test___fseeki64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _fseeki64(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _fseeki64(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3947,8 +3947,8 @@ void test___fseeki64__arg3__notuninit() {
 }
 
 void test___ftelli64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _ftelli64(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _ftelli64(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -3976,8 +3976,8 @@ void test___ftelli64__arg1__notuninit() {
 }
 
 void test___ftell_nolock__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _ftell_nolock(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _ftell_nolock(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4005,8 +4005,8 @@ void test___ftell_nolock__arg1__notuninit() {
 }
 
 void test___ftelli64_nolock__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _ftelli64_nolock(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _ftelli64_nolock(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4034,8 +4034,8 @@ void test___ftelli64_nolock__arg1__notuninit() {
 }
 
 void test___wfopen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _wfopen(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _wfopen(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4068,8 +4068,8 @@ void test___wfopen__arg2__notuninit() {
 }
 
 void test___tfopen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tfopen(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _tfopen(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4102,8 +4102,8 @@ void test___tfopen__arg2__notuninit() {
 }
 
 void test__strnlen_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = strnlen_s(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = strnlen_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4137,8 +4137,8 @@ void test__strnlen_s__arg2__notuninit() {
 }
 
 void test__wcsnlen_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = wcsnlen_s(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = wcsnlen_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4172,8 +4172,8 @@ void test__wcsnlen_s__arg2__notuninit() {
 }
 
 void test___mbsnlen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbsnlen(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _mbsnlen(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4207,8 +4207,8 @@ void test___mbsnlen__arg2__notuninit() {
 }
 
 void test___mbstrnlen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbstrnlen(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _mbstrnlen(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4242,8 +4242,8 @@ void test___mbstrnlen__arg2__notuninit() {
 }
 
 void test___mbsnlen_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbsnlen_l(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _mbsnlen_l(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4283,8 +4283,8 @@ void test___mbsnlen_l__arg3__notuninit() {
 }
 
 void test___mbstrnlen_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbstrnlen_l(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _mbstrnlen_l(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4324,8 +4324,8 @@ void test___mbstrnlen_l__arg3__notuninit() {
 }
 
 void test__WideCharToMultiByte__noreturn() {
-  int x = 100;
-  if (cond) x=1; else WideCharToMultiByte(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+  int x = 1;
+  if (cond) { x=100; WideCharToMultiByte(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4373,8 +4373,8 @@ void test__WideCharToMultiByte__arg7__notuninit() {
 }
 
 void test__PathIsDirectory__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = PathIsDirectory(arg1);
+  int x = 1;
+  if (cond) { x=100; result = PathIsDirectory(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4397,8 +4397,8 @@ void test__PathIsDirectory__arg1__notuninit() {
 }
 
 void test__PathIsDirectoryA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = PathIsDirectoryA(arg1);
+  int x = 1;
+  if (cond) { x=100; result = PathIsDirectoryA(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4421,8 +4421,8 @@ void test__PathIsDirectoryA__arg1__notuninit() {
 }
 
 void test__PathIsDirectoryW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = PathIsDirectoryW(arg1);
+  int x = 1;
+  if (cond) { x=100; result = PathIsDirectoryW(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4445,8 +4445,8 @@ void test__PathIsDirectoryW__arg1__notuninit() {
 }
 
 void test__SetConsoleTextAttribute__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetConsoleTextAttribute(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetConsoleTextAttribute(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4470,8 +4470,8 @@ void test__SetConsoleTextAttribute__arg2__notuninit() {
 }
 
 void test___wfopen_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wfopen_s(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _wfopen_s(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4504,8 +4504,8 @@ void test___wfopen_s__arg3__notuninit() {
 }
 
 void test___tfopen_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tfopen_s(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _tfopen_s(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4538,8 +4538,8 @@ void test___tfopen_s__arg3__notuninit() {
 }
 
 void test__DeleteFile__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DeleteFile(arg1);
+  int x = 1;
+  if (cond) { x=100; DeleteFile(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4557,8 +4557,8 @@ void test__DeleteFile__arg1__notuninit() {
 }
 
 void test__DeleteFileA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DeleteFileA(arg1);
+  int x = 1;
+  if (cond) { x=100; DeleteFileA(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4576,8 +4576,8 @@ void test__DeleteFileA__arg1__notuninit() {
 }
 
 void test__DeleteFileW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DeleteFileW(arg1);
+  int x = 1;
+  if (cond) { x=100; DeleteFileW(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4595,8 +4595,8 @@ void test__DeleteFileW__arg1__notuninit() {
 }
 
 void test__GetStdHandle__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetStdHandle(arg1);
+  int x = 1;
+  if (cond) { x=100; result = GetStdHandle(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4619,8 +4619,8 @@ void test__GetStdHandle__arg1__notuninit() {
 }
 
 void test__SetStdHandle__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetStdHandle(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetStdHandle(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4644,8 +4644,8 @@ void test__SetStdHandle__arg2__notuninit() {
 }
 
 void test___access__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _access(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _access(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4674,8 +4674,8 @@ void test___access__arg2__notuninit() {
 }
 
 void test___waccess__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _waccess(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _waccess(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4704,8 +4704,8 @@ void test___waccess__arg2__notuninit() {
 }
 
 void test___taccess__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _taccess(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _taccess(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4734,8 +4734,8 @@ void test___taccess__arg2__notuninit() {
 }
 
 void test__PeekMessage__noreturn() {
-  int x = 100;
-  if (cond) x=1; else PeekMessage(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; PeekMessage(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4776,8 +4776,8 @@ void test__PeekMessage__arg5__notuninit() {
 }
 
 void test__PeekMessageA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else PeekMessageA(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; PeekMessageA(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4818,8 +4818,8 @@ void test__PeekMessageA__arg5__notuninit() {
 }
 
 void test__PeekMessageW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else PeekMessageW(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; PeekMessageW(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4860,8 +4860,8 @@ void test__PeekMessageW__arg5__notuninit() {
 }
 
 void test__GetMessage__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetMessage(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; GetMessage(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4896,8 +4896,8 @@ void test__GetMessage__arg4__notuninit() {
 }
 
 void test__GetMessageA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetMessageA(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; GetMessageA(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4932,8 +4932,8 @@ void test__GetMessageA__arg4__notuninit() {
 }
 
 void test__GetMessageW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetMessageW(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; GetMessageW(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4968,8 +4968,8 @@ void test__GetMessageW__arg4__notuninit() {
 }
 
 void test__TranslateMessage__noreturn() {
-  int x = 100;
-  if (cond) x=1; else TranslateMessage(arg1);
+  int x = 1;
+  if (cond) { x=100; TranslateMessage(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -4992,8 +4992,8 @@ void test__TranslateMessage__arg1__notuninit() {
 }
 
 void test__DispatchMessage__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DispatchMessage(arg1);
+  int x = 1;
+  if (cond) { x=100; DispatchMessage(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5016,8 +5016,8 @@ void test__DispatchMessage__arg1__notuninit() {
 }
 
 void test__DispatchMessageA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DispatchMessageA(arg1);
+  int x = 1;
+  if (cond) { x=100; DispatchMessageA(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5040,8 +5040,8 @@ void test__DispatchMessageA__arg1__notuninit() {
 }
 
 void test__DispatchMessageW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DispatchMessageW(arg1);
+  int x = 1;
+  if (cond) { x=100; DispatchMessageW(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5064,8 +5064,8 @@ void test__DispatchMessageW__arg1__notuninit() {
 }
 
 void test__SendMessage__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SendMessage(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; SendMessage(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5100,8 +5100,8 @@ void test__SendMessage__arg4__notuninit() {
 }
 
 void test__SendMessageA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SendMessageA(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; SendMessageA(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5136,8 +5136,8 @@ void test__SendMessageA__arg4__notuninit() {
 }
 
 void test__SendMessageW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SendMessageW(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; SendMessageW(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5172,8 +5172,8 @@ void test__SendMessageW__arg4__notuninit() {
 }
 
 void test__PostMessage__noreturn() {
-  int x = 100;
-  if (cond) x=1; else PostMessage(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; PostMessage(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5208,8 +5208,8 @@ void test__PostMessage__arg4__notuninit() {
 }
 
 void test__PostMessageA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else PostMessageA(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; PostMessageA(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5244,8 +5244,8 @@ void test__PostMessageA__arg4__notuninit() {
 }
 
 void test__PostMessageW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else PostMessageW(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; PostMessageW(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5280,8 +5280,8 @@ void test__PostMessageW__arg4__notuninit() {
 }
 
 void test__PostQuitMessage__noreturn() {
-  int x = 100;
-  if (cond) x=1; else PostQuitMessage(arg1);
+  int x = 1;
+  if (cond) { x=100; PostQuitMessage(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5299,8 +5299,8 @@ void test__PostQuitMessage__arg1__notuninit() {
 }
 
 void test__DefWindowProc__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DefWindowProc(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; DefWindowProc(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5341,8 +5341,8 @@ void test__DefWindowProc__arg4__notuninit() {
 }
 
 void test__DefWindowProcA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DefWindowProcA(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; DefWindowProcA(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5383,8 +5383,8 @@ void test__DefWindowProcA__arg4__notuninit() {
 }
 
 void test__DefWindowProcW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DefWindowProcW(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; DefWindowProcW(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5425,8 +5425,8 @@ void test__DefWindowProcW__arg4__notuninit() {
 }
 
 void test__GetPrivateProfileInt__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetPrivateProfileInt(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = GetPrivateProfileInt(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5482,8 +5482,8 @@ void test__GetPrivateProfileInt__arg4__notuninit() {
 }
 
 void test__GetPrivateProfileIntA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetPrivateProfileIntA(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = GetPrivateProfileIntA(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5539,8 +5539,8 @@ void test__GetPrivateProfileIntA__arg4__notuninit() {
 }
 
 void test__GetPrivateProfileIntW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetPrivateProfileIntW(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = GetPrivateProfileIntW(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5596,8 +5596,8 @@ void test__GetPrivateProfileIntW__arg4__notuninit() {
 }
 
 void test__GetPrivateProfileSection__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileSection(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileSection(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5642,8 +5642,8 @@ void test__GetPrivateProfileSection__arg4__notuninit() {
 }
 
 void test__GetPrivateProfileSectionA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileSectionA(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileSectionA(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5688,8 +5688,8 @@ void test__GetPrivateProfileSectionA__arg4__notuninit() {
 }
 
 void test__GetPrivateProfileSectionW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileSectionW(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileSectionW(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5734,8 +5734,8 @@ void test__GetPrivateProfileSectionW__arg4__notuninit() {
 }
 
 void test__GetPrivateProfileSectionNames__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileSectionNames(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileSectionNames(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5769,8 +5769,8 @@ void test__GetPrivateProfileSectionNames__arg3__notuninit() {
 }
 
 void test__GetPrivateProfileSectionNamesA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileSectionNamesA(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileSectionNamesA(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5804,8 +5804,8 @@ void test__GetPrivateProfileSectionNamesA__arg3__notuninit() {
 }
 
 void test__GetPrivateProfileSectionNamesW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileSectionNamesW(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileSectionNamesW(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5839,8 +5839,8 @@ void test__GetPrivateProfileSectionNamesW__arg3__notuninit() {
 }
 
 void test__GetPrivateProfileString__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileString(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileString(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5892,8 +5892,8 @@ void test__GetPrivateProfileString__arg6__notuninit() {
 }
 
 void test__GetPrivateProfileStringA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileStringA(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileStringA(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5945,8 +5945,8 @@ void test__GetPrivateProfileStringA__arg6__notuninit() {
 }
 
 void test__GetPrivateProfileStringW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileStringW(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileStringW(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -5998,8 +5998,8 @@ void test__GetPrivateProfileStringW__arg6__notuninit() {
 }
 
 void test__GetPrivateProfileStruct__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileStruct(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileStruct(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6055,8 +6055,8 @@ void test__GetPrivateProfileStruct__arg5__notuninit() {
 }
 
 void test__GetPrivateProfileStructA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileStructA(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileStructA(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6112,8 +6112,8 @@ void test__GetPrivateProfileStructA__arg5__notuninit() {
 }
 
 void test__GetPrivateProfileStructW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetPrivateProfileStructW(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; GetPrivateProfileStructW(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6169,8 +6169,8 @@ void test__GetPrivateProfileStructW__arg5__notuninit() {
 }
 
 void test__BeginPaint__noreturn() {
-  int x = 100;
-  if (cond) x=1; else BeginPaint(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; BeginPaint(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6193,8 +6193,8 @@ void test__BeginPaint__arg2__notnull() {
 }
 
 void test__EndPaint__noreturn() {
-  int x = 100;
-  if (cond) x=1; else EndPaint(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; EndPaint(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6217,8 +6217,8 @@ void test__EndPaint__arg2__notnull() {
 }
 
 void test__GetStockObject__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetStockObject(arg1);
+  int x = 1;
+  if (cond) { x=100; result = GetStockObject(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6246,8 +6246,8 @@ void test__GetStockObject__arg1__notuninit() {
 }
 
 void test__LoadIcon__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = LoadIcon(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = LoadIcon(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6281,8 +6281,8 @@ void test__LoadIcon__arg2__notuninit() {
 }
 
 void test__LoadIconA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = LoadIconA(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = LoadIconA(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6316,8 +6316,8 @@ void test__LoadIconA__arg2__notuninit() {
 }
 
 void test__LoadIconW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = LoadIconW(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = LoadIconW(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6351,8 +6351,8 @@ void test__LoadIconW__arg2__notuninit() {
 }
 
 void test__CreateSolidBrush__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = CreateSolidBrush(arg1);
+  int x = 1;
+  if (cond) { x=100; result = CreateSolidBrush(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6375,8 +6375,8 @@ void test__CreateSolidBrush__arg1__notuninit() {
 }
 
 void test__UpdateWindow__noreturn() {
-  int x = 100;
-  if (cond) x=1; else UpdateWindow(arg1);
+  int x = 1;
+  if (cond) { x=100; UpdateWindow(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6399,8 +6399,8 @@ void test__UpdateWindow__arg1__notuninit() {
 }
 
 void test__EnableWindow__noreturn() {
-  int x = 100;
-  if (cond) x=1; else EnableWindow(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; EnableWindow(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6429,8 +6429,8 @@ void test__EnableWindow__arg2__notuninit() {
 }
 
 void test__CreateWindow__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  int x = 1;
+  if (cond) { x=100; result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6513,8 +6513,8 @@ void test__CreateWindow__arg9__notuninit() {
 }
 
 void test__CreateWindowA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  int x = 1;
+  if (cond) { x=100; result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6597,8 +6597,8 @@ void test__CreateWindowA__arg9__notuninit() {
 }
 
 void test__CreateWindowW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  int x = 1;
+  if (cond) { x=100; result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6681,8 +6681,8 @@ void test__CreateWindowW__arg9__notuninit() {
 }
 
 void test__CreateWindowEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  int x = 1;
+  if (cond) { x=100; result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6771,8 +6771,8 @@ void test__CreateWindowEx__arg9__notuninit() {
 }
 
 void test__CreateWindowExA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  int x = 1;
+  if (cond) { x=100; result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6861,8 +6861,8 @@ void test__CreateWindowExA__arg9__notuninit() {
 }
 
 void test__CreateWindowExW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  int x = 1;
+  if (cond) { x=100; result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6951,8 +6951,8 @@ void test__CreateWindowExW__arg9__notuninit() {
 }
 
 void test__SetWindowText__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetWindowText(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetWindowText(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6986,8 +6986,8 @@ void test__SetWindowText__arg2__notuninit() {
 }
 
 void test__SetWindowTextA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetWindowTextA(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetWindowTextA(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7021,8 +7021,8 @@ void test__SetWindowTextA__arg2__notuninit() {
 }
 
 void test__SetWindowTextW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetWindowTextW(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetWindowTextW(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7056,8 +7056,8 @@ void test__SetWindowTextW__arg2__notuninit() {
 }
 
 void test__RegisterClass__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegisterClass(arg1);
+  int x = 1;
+  if (cond) { x=100; RegisterClass(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7080,8 +7080,8 @@ void test__RegisterClass__arg1__notuninit() {
 }
 
 void test__RegisterClassEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RegisterClassEx(arg1);
+  int x = 1;
+  if (cond) { x=100; RegisterClassEx(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7104,8 +7104,8 @@ void test__RegisterClassEx__arg1__notuninit() {
 }
 
 void test__UnregisterClass__noreturn() {
-  int x = 100;
-  if (cond) x=1; else UnregisterClass(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; UnregisterClass(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7123,8 +7123,8 @@ void test__UnregisterClass__arg2__notuninit() {
 }
 
 void test__UnregisterClassA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else UnregisterClassA(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; UnregisterClassA(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7142,8 +7142,8 @@ void test__UnregisterClassA__arg2__notuninit() {
 }
 
 void test__UnregisterClassW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else UnregisterClassW(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; UnregisterClassW(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7161,8 +7161,8 @@ void test__UnregisterClassW__arg2__notuninit() {
 }
 
 void test__MessageBox__noreturn() {
-  int x = 100;
-  if (cond) x=1; else MessageBox(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; MessageBox(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7198,8 +7198,8 @@ void test__MessageBox__arg4__notuninit() {
 }
 
 void test__MessageBoxA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else MessageBoxA(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; MessageBoxA(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7235,8 +7235,8 @@ void test__MessageBoxA__arg4__notuninit() {
 }
 
 void test__MessageBoxW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else MessageBoxW(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; MessageBoxW(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7272,8 +7272,8 @@ void test__MessageBoxW__arg4__notuninit() {
 }
 
 void test__GlobalLock__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GlobalLock(arg1);
+  int x = 1;
+  if (cond) { x=100; GlobalLock(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7296,8 +7296,8 @@ void test__GlobalLock__arg1__notuninit() {
 }
 
 void test__GlobalUnlock__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GlobalUnlock(arg1);
+  int x = 1;
+  if (cond) { x=100; GlobalUnlock(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7320,8 +7320,8 @@ void test__GlobalUnlock__arg1__notuninit() {
 }
 
 void test__OpenClipboard__noreturn() {
-  int x = 100;
-  if (cond) x=1; else OpenClipboard(arg1);
+  int x = 1;
+  if (cond) { x=100; OpenClipboard(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7339,8 +7339,8 @@ void test__OpenClipboard__arg1__notuninit() {
 }
 
 void test__EmptyClipboard__noreturn() {
-  int x = 100;
-  if (cond) x=1; else EmptyClipboard();
+  int x = 1;
+  if (cond) { x=100; EmptyClipboard(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7352,8 +7352,8 @@ void test__EmptyClipboard__leakignore() {
 }
 
 void test__CloseClipboard__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CloseClipboard();
+  int x = 1;
+  if (cond) { x=100; CloseClipboard(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7365,8 +7365,8 @@ void test__CloseClipboard__leakignore() {
 }
 
 void test__SetClipboardData__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetClipboardData(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetClipboardData(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7390,8 +7390,8 @@ void test__SetClipboardData__arg2__notuninit() {
 }
 
 void test___rmdir__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _rmdir(arg1);
+  int x = 1;
+  if (cond) { x=100; _rmdir(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7414,8 +7414,8 @@ void test___rmdir__arg1__notuninit() {
 }
 
 void test___wrmdir__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wrmdir(arg1);
+  int x = 1;
+  if (cond) { x=100; _wrmdir(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7438,8 +7438,8 @@ void test___wrmdir__arg1__notuninit() {
 }
 
 void test___mkdir__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mkdir(arg1);
+  int x = 1;
+  if (cond) { x=100; _mkdir(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7462,8 +7462,8 @@ void test___mkdir__arg1__notuninit() {
 }
 
 void test___wmkdir__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wmkdir(arg1);
+  int x = 1;
+  if (cond) { x=100; _wmkdir(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7486,8 +7486,8 @@ void test___wmkdir__arg1__notuninit() {
 }
 
 void test___abs64__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _abs64(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _abs64(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7520,8 +7520,8 @@ void test___abs64__arg1__notuninit() {
 }
 
 void test__CreateWaitableTimer__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = CreateWaitableTimer(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = CreateWaitableTimer(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7550,8 +7550,8 @@ void test__CreateWaitableTimer__arg3__notuninit() {
 }
 
 void test__SetWaitableTimer__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetWaitableTimer(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; SetWaitableTimer(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7604,8 +7604,8 @@ void test__SetWaitableTimer__arg6__notuninit() {
 }
 
 void test__WaitForSingleObject__noreturn() {
-  int x = 100;
-  if (cond) x=1; else WaitForSingleObject(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; WaitForSingleObject(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7629,8 +7629,8 @@ void test__WaitForSingleObject__arg2__notuninit() {
 }
 
 void test___pclose__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _pclose(arg1);
+  int x = 1;
+  if (cond) { x=100; _pclose(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7647,8 +7647,8 @@ void test___pclose__arg1__notuninit() {
 }
 
 void test___popen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _popen(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _popen(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7681,8 +7681,8 @@ void test___popen__arg2__notuninit() {
 }
 
 void test___wpopen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _wpopen(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _wpopen(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7715,8 +7715,8 @@ void test___wpopen__arg2__notuninit() {
 }
 
 void test___tpopen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tpopen(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _tpopen(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7749,8 +7749,8 @@ void test___tpopen__arg2__notuninit() {
 }
 
 void test___mktemp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mktemp(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _mktemp(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7778,8 +7778,8 @@ void test___mktemp__arg1__notuninit() {
 }
 
 void test___wmktemp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _wmktemp(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _wmktemp(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7807,8 +7807,8 @@ void test___wmktemp__arg1__notuninit() {
 }
 
 void test__FindFirstFileEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = FindFirstFileEx(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; result = FindFirstFileEx(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7853,8 +7853,8 @@ void test__FindFirstFileEx__arg6__notuninit() {
 }
 
 void test__FindFirstFileExA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = FindFirstFileExA(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; result = FindFirstFileExA(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7899,8 +7899,8 @@ void test__FindFirstFileExA__arg6__notuninit() {
 }
 
 void test__FindFirstFileExW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = FindFirstFileExW(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; result = FindFirstFileExW(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7945,8 +7945,8 @@ void test__FindFirstFileExW__arg6__notuninit() {
 }
 
 void test__FindFirstFile__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = FindFirstFile(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = FindFirstFile(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -7973,8 +7973,8 @@ void test__FindFirstFile__arg2__notnull() {
 }
 
 void test__FindFirstFileW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = FindFirstFileW(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = FindFirstFileW(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8001,8 +8001,8 @@ void test__FindFirstFileW__arg2__notnull() {
 }
 
 void test__FindFirstFileA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = FindFirstFileA(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = FindFirstFileA(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8029,8 +8029,8 @@ void test__FindFirstFileA__arg2__notnull() {
 }
 
 void test__FindClose__noreturn() {
-  int x = 100;
-  if (cond) x=1; else FindClose(arg1);
+  int x = 1;
+  if (cond) { x=100; FindClose(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8047,8 +8047,8 @@ void test__FindClose__arg1__notuninit() {
 }
 
 void test__CreateThread__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = CreateThread(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; result = CreateThread(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8089,8 +8089,8 @@ void test__CreateThread__arg5__notuninit() {
 }
 
 void test__FindNextFile__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = FindNextFile(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = FindNextFile(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8123,8 +8123,8 @@ void test__FindNextFile__arg2__notnull() {
 }
 
 void test__FindNextFileW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = FindNextFileW(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = FindNextFileW(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8157,8 +8157,8 @@ void test__FindNextFileW__arg2__notnull() {
 }
 
 void test__FindNextFileA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = FindNextFileA(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = FindNextFileA(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8191,8 +8191,8 @@ void test__FindNextFileA__arg2__notnull() {
 }
 
 void test__SetEnvironmentVariable__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetEnvironmentVariable(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetEnvironmentVariable(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8210,8 +8210,8 @@ void test__SetEnvironmentVariable__arg1__notuninit() {
 }
 
 void test__SetEnvironmentVariableW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetEnvironmentVariableW(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetEnvironmentVariableW(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8229,8 +8229,8 @@ void test__SetEnvironmentVariableW__arg1__notuninit() {
 }
 
 void test__SetEnvironmentVariableA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetEnvironmentVariableA(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetEnvironmentVariableA(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8248,8 +8248,8 @@ void test__SetEnvironmentVariableA__arg1__notuninit() {
 }
 
 void test__QueryDosDevice__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QueryDosDevice(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = QueryDosDevice(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8278,8 +8278,8 @@ void test__QueryDosDevice__arg3__notuninit() {
 }
 
 void test__QueryDosDeviceW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QueryDosDeviceW(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = QueryDosDeviceW(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8308,8 +8308,8 @@ void test__QueryDosDeviceW__arg3__notuninit() {
 }
 
 void test__QueryDosDeviceA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QueryDosDeviceA(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = QueryDosDeviceA(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8338,8 +8338,8 @@ void test__QueryDosDeviceA__arg3__notuninit() {
 }
 
 void test__GetDefaultCommConfig__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetDefaultCommConfig(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = GetDefaultCommConfig(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8367,8 +8367,8 @@ void test__GetDefaultCommConfig__arg2__notnull() {
 }
 
 void test__GetDefaultCommConfigW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetDefaultCommConfigW(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = GetDefaultCommConfigW(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8396,8 +8396,8 @@ void test__GetDefaultCommConfigW__arg2__notnull() {
 }
 
 void test__GetDefaultCommConfigA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetDefaultCommConfigA(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = GetDefaultCommConfigA(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8425,8 +8425,8 @@ void test__GetDefaultCommConfigA__arg2__notnull() {
 }
 
 void test__GetTempPath__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetTempPath(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; GetTempPath(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8444,8 +8444,8 @@ void test__GetTempPath__arg1__notuninit() {
 }
 
 void test__GetTempPathW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetTempPathW(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; GetTempPathW(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8463,8 +8463,8 @@ void test__GetTempPathW__arg1__notuninit() {
 }
 
 void test__GetTempPathA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetTempPathA(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; GetTempPathA(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8482,8 +8482,8 @@ void test__GetTempPathA__arg1__notuninit() {
 }
 
 void test__SetupDiDestroyDeviceInfoList__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetupDiDestroyDeviceInfoList(arg1);
+  int x = 1;
+  if (cond) { x=100; SetupDiDestroyDeviceInfoList(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8501,8 +8501,8 @@ void test__SetupDiDestroyDeviceInfoList__arg1__notuninit() {
 }
 
 void test__SetupDiGetDeviceInstanceId__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetupDiGetDeviceInstanceId(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; SetupDiGetDeviceInstanceId(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8532,8 +8532,8 @@ void test__SetupDiGetDeviceInstanceId__arg4__notuninit() {
 }
 
 void test__SetupDiEnumDeviceInfo__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetupDiEnumDeviceInfo(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; SetupDiEnumDeviceInfo(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8557,8 +8557,8 @@ void test__SetupDiEnumDeviceInfo__arg2__notuninit() {
 }
 
 void test__SetupDiGetClassDevs__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetupDiGetClassDevs(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; SetupDiGetClassDevs(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8588,8 +8588,8 @@ void test__SetupDiGetClassDevs__arg4__notuninit() {
 }
 
 void test___mbsstr__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbsstr(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _mbsstr(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8628,8 +8628,8 @@ void test___mbsstr__arg2__notuninit() {
 }
 
 void test___tcsstr__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tcsstr(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _tcsstr(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8668,8 +8668,8 @@ void test___tcsstr__arg2__notuninit() {
 }
 
 void test___mbsstr_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbsstr_l(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _mbsstr_l(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8714,8 +8714,8 @@ void test___mbsstr_l__arg3__notuninit() {
 }
 
 void test___memccpy__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _memccpy(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _memccpy(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8755,15 +8755,15 @@ void test___memccpy__arg4__notuninit() {
 }
 
 void test___fcloseall__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _fcloseall();
+  int x = 1;
+  if (cond) { x=100; _fcloseall(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test___open__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _open(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _open(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8797,8 +8797,8 @@ void test___open__arg3__notuninit() {
 }
 
 void test___wopen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _wopen(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _wopen(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8832,8 +8832,8 @@ void test___wopen__arg3__notuninit() {
 }
 
 void test___topen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _topen(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _topen(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8867,8 +8867,8 @@ void test___topen__arg3__notuninit() {
 }
 
 void test___close__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _close(arg1);
+  int x = 1;
+  if (cond) { x=100; _close(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8880,8 +8880,8 @@ void test___close__arg1__notuninit() {
 }
 
 void test___swab__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _swab(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _swab(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8920,8 +8920,8 @@ void test___swab__arg3__notuninit() {
 }
 
 void test___strnicmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _strnicmp(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _strnicmp(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -8971,8 +8971,8 @@ void test___strnicmp__arg3__notuninit() {
 }
 
 void test___wcsnicmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _wcsnicmp(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _wcsnicmp(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9022,8 +9022,8 @@ void test___wcsnicmp__arg3__notuninit() {
 }
 
 void test___mbsnicmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbsnicmp(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _mbsnicmp(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9073,8 +9073,8 @@ void test___mbsnicmp__arg3__notuninit() {
 }
 
 void test___tcsncicmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tcsncicmp(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _tcsncicmp(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9124,8 +9124,8 @@ void test___tcsncicmp__arg3__notuninit() {
 }
 
 void test___tcsnicmp__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tcsnicmp(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _tcsnicmp(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9175,8 +9175,8 @@ void test___tcsnicmp__arg3__notuninit() {
 }
 
 void test___strnicmp_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _strnicmp_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = _strnicmp_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9232,8 +9232,8 @@ void test___strnicmp_l__arg4__notuninit() {
 }
 
 void test___wcsnicmp_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _wcsnicmp_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = _wcsnicmp_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9289,8 +9289,8 @@ void test___wcsnicmp_l__arg4__notuninit() {
 }
 
 void test___mbsnicmp_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbsnicmp_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = _mbsnicmp_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9346,8 +9346,8 @@ void test___mbsnicmp_l__arg4__notuninit() {
 }
 
 void test___tcsncicmp_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tcsncicmp_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = _tcsncicmp_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9403,8 +9403,8 @@ void test___tcsncicmp_l__arg4__notuninit() {
 }
 
 void test___malloc_dbg__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _malloc_dbg(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = _malloc_dbg(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9439,8 +9439,8 @@ void test___malloc_dbg__arg4__notuninit() {
 }
 
 void test___aligned_malloc_dbg__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _aligned_malloc_dbg(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = _aligned_malloc_dbg(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9475,8 +9475,8 @@ void test___aligned_malloc_dbg__arg4__notuninit() {
 }
 
 void test___aligned_malloc__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _aligned_malloc(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _aligned_malloc(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9499,8 +9499,8 @@ void test___aligned_malloc__arg2__notuninit() {
 }
 
 void test___mbslen_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbslen_l(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _mbslen_l(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9539,8 +9539,8 @@ void test___mbslen_l__arg2__notuninit() {
 }
 
 void test___mbstrlen_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbstrlen_l(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _mbstrlen_l(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9579,8 +9579,8 @@ void test___mbstrlen_l__arg2__notuninit() {
 }
 
 void test___tcsclen_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tcsclen_l(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _tcsclen_l(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9619,8 +9619,8 @@ void test___tcsclen_l__arg2__notuninit() {
 }
 
 void test___mbslen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbslen(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _mbslen(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9653,8 +9653,8 @@ void test___mbslen__arg1__notuninit() {
 }
 
 void test___mbstrlen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbstrlen(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _mbstrlen(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9687,8 +9687,8 @@ void test___mbstrlen__arg1__notuninit() {
 }
 
 void test___tcslen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tcslen(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _tcslen(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9721,8 +9721,8 @@ void test___tcslen__arg1__notuninit() {
 }
 
 void test___tcsclen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tcsclen(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _tcsclen(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9755,8 +9755,8 @@ void test___tcsclen__arg1__notuninit() {
 }
 
 void test___mbsrchr_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbsrchr_l(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _mbsrchr_l(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9796,8 +9796,8 @@ void test___mbsrchr_l__arg3__notuninit() {
 }
 
 void test___mbsrchr__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _mbsrchr(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _mbsrchr(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9831,8 +9831,8 @@ void test___mbsrchr__arg2__notuninit() {
 }
 
 void test___tcsrchr__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tcsrchr(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _tcsrchr(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9866,8 +9866,8 @@ void test___tcsrchr__arg2__notuninit() {
 }
 
 void test___strftime_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _strftime_l(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; _strftime_l(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9918,8 +9918,8 @@ void test___strftime_l__arg5__notuninit() {
 }
 
 void test___wcsftime_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wcsftime_l(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; _wcsftime_l(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -9970,8 +9970,8 @@ void test___wcsftime_l__arg5__notuninit() {
 }
 
 void test___tcsftime__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tcsftime(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _tcsftime(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10016,8 +10016,8 @@ void test___tcsftime__arg4__notuninit() {
 }
 
 void test___wfreopen_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _wfreopen_s(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = _wfreopen_s(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10062,8 +10062,8 @@ void test___wfreopen_s__arg4__notuninit() {
 }
 
 void test___tfreopen_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tfreopen_s(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; result = _tfreopen_s(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10108,8 +10108,8 @@ void test___tfreopen_s__arg4__notuninit() {
 }
 
 void test___wfreopen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _wfreopen(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _wfreopen(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10148,8 +10148,8 @@ void test___wfreopen__arg3__notuninit() {
 }
 
 void test___tfreopen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tfreopen(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = _tfreopen(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10188,8 +10188,8 @@ void test___tfreopen__arg3__notuninit() {
 }
 
 void test___mbsncpy__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mbsncpy(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _mbsncpy(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10228,8 +10228,8 @@ void test___mbsncpy__arg3__notuninit() {
 }
 
 void test___mbsnbcpy__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mbsnbcpy(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _mbsnbcpy(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10268,8 +10268,8 @@ void test___mbsnbcpy__arg3__notuninit() {
 }
 
 void test___tcsncpy__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tcsncpy(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; _tcsncpy(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10308,8 +10308,8 @@ void test___tcsncpy__arg3__notuninit() {
 }
 
 void test___strncpy_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _strncpy_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _strncpy_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10354,8 +10354,8 @@ void test___strncpy_l__arg4__notuninit() {
 }
 
 void test___wcsncpy_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _wcsncpy_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _wcsncpy_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10400,8 +10400,8 @@ void test___wcsncpy_l__arg4__notuninit() {
 }
 
 void test___mbsncpy_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _mbsncpy_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _mbsncpy_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10446,8 +10446,8 @@ void test___mbsncpy_l__arg4__notuninit() {
 }
 
 void test___tcsncpy_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _tcsncpy_l(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; _tcsncpy_l(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10492,8 +10492,8 @@ void test___tcsncpy_l__arg4__notuninit() {
 }
 
 void test___localtime32_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _localtime32_s(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _localtime32_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10515,8 +10515,8 @@ void test___localtime32_s__arg2__notnull() {
 }
 
 void test___localtime64_s__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _localtime64_s(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; _localtime64_s(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10538,8 +10538,8 @@ void test___localtime64_s__arg2__notnull() {
 }
 
 void test__CreateDirectory__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateDirectory(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; CreateDirectory(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10563,8 +10563,8 @@ void test__CreateDirectory__arg2__notuninit() {
 }
 
 void test__CreateDirectoryA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateDirectoryA(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; CreateDirectoryA(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10588,8 +10588,8 @@ void test__CreateDirectoryA__arg2__notuninit() {
 }
 
 void test__CreateDirectoryW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateDirectoryW(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; CreateDirectoryW(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10613,8 +10613,8 @@ void test__CreateDirectoryW__arg2__notuninit() {
 }
 
 void test__RemoveDirectory__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RemoveDirectory(arg1);
+  int x = 1;
+  if (cond) { x=100; RemoveDirectory(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10632,8 +10632,8 @@ void test__RemoveDirectory__arg1__notuninit() {
 }
 
 void test__RemoveDirectoryA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RemoveDirectoryA(arg1);
+  int x = 1;
+  if (cond) { x=100; RemoveDirectoryA(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10651,8 +10651,8 @@ void test__RemoveDirectoryA__arg1__notuninit() {
 }
 
 void test__RemoveDirectoryW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else RemoveDirectoryW(arg1);
+  int x = 1;
+  if (cond) { x=100; RemoveDirectoryW(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10670,8 +10670,8 @@ void test__RemoveDirectoryW__arg1__notuninit() {
 }
 
 void test____isascii__noreturn() {
-  int x = 100;
-  if (cond) x=1; else __isascii(arg1);
+  int x = 1;
+  if (cond) { x=100; __isascii(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10689,8 +10689,8 @@ void test____isascii__arg1__notuninit() {
 }
 
 void test__iswascii__noreturn() {
-  int x = 100;
-  if (cond) x=1; else iswascii(arg1);
+  int x = 1;
+  if (cond) { x=100; iswascii(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10708,8 +10708,8 @@ void test__iswascii__arg1__notuninit() {
 }
 
 void test___getchar__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _getchar();
+  int x = 1;
+  if (cond) { x=100; _getchar(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10721,8 +10721,8 @@ void test___getchar__leakignore() {
 }
 
 void test___getch_nolock__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _getch_nolock();
+  int x = 1;
+  if (cond) { x=100; _getch_nolock(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10734,8 +10734,8 @@ void test___getch_nolock__leakignore() {
 }
 
 void test___getwch__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _getwch();
+  int x = 1;
+  if (cond) { x=100; _getwch(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10747,8 +10747,8 @@ void test___getwch__leakignore() {
 }
 
 void test___getwch_nolock__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _getwch_nolock();
+  int x = 1;
+  if (cond) { x=100; _getwch_nolock(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10760,8 +10760,8 @@ void test___getwch_nolock__leakignore() {
 }
 
 void test__Sleep__noreturn() {
-  int x = 100;
-  if (cond) x=1; else Sleep(arg1);
+  int x = 1;
+  if (cond) { x=100; Sleep(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10784,8 +10784,8 @@ void test__Sleep__arg1__notuninit() {
 }
 
 void test__SleepEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SleepEx(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SleepEx(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10814,8 +10814,8 @@ void test__SleepEx__arg2__notuninit() {
 }
 
 void test__LoadLibrary__noreturn() {
-  int x = 100;
-  if (cond) x=1; else LoadLibrary(arg1);
+  int x = 1;
+  if (cond) { x=100; LoadLibrary(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10832,8 +10832,8 @@ void test__LoadLibrary__arg1__notuninit() {
 }
 
 void test__LoadLibraryA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else LoadLibraryA(arg1);
+  int x = 1;
+  if (cond) { x=100; LoadLibraryA(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10850,8 +10850,8 @@ void test__LoadLibraryA__arg1__notuninit() {
 }
 
 void test__LoadLibraryW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else LoadLibraryW(arg1);
+  int x = 1;
+  if (cond) { x=100; LoadLibraryW(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10868,8 +10868,8 @@ void test__LoadLibraryW__arg1__notuninit() {
 }
 
 void test__LoadLibraryEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else LoadLibraryEx(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; LoadLibraryEx(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10887,8 +10887,8 @@ void test__LoadLibraryEx__arg3__notuninit() {
 }
 
 void test__LoadLibraryExA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else LoadLibraryExA(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; LoadLibraryExA(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10906,8 +10906,8 @@ void test__LoadLibraryExA__arg3__notuninit() {
 }
 
 void test__LoadLibraryExW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else LoadLibraryExW(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; LoadLibraryExW(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10925,8 +10925,8 @@ void test__LoadLibraryExW__arg3__notuninit() {
 }
 
 void test__GetModuleHandle__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetModuleHandle(arg1);
+  int x = 1;
+  if (cond) { x=100; result = GetModuleHandle(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10949,8 +10949,8 @@ void test__GetModuleHandle__arg1__notuninit() {
 }
 
 void test__GetModuleHandleA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetModuleHandleA(arg1);
+  int x = 1;
+  if (cond) { x=100; result = GetModuleHandleA(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10973,8 +10973,8 @@ void test__GetModuleHandleA__arg1__notuninit() {
 }
 
 void test__GetModuleHandleW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetModuleHandleW(arg1);
+  int x = 1;
+  if (cond) { x=100; result = GetModuleHandleW(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -10997,8 +10997,8 @@ void test__GetModuleHandleW__arg1__notuninit() {
 }
 
 void test__GetModuleHandleEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetModuleHandleEx(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; GetModuleHandleEx(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11021,8 +11021,8 @@ void test__GetModuleHandleEx__arg3__notnull() {
 }
 
 void test__GetModuleHandleExA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetModuleHandleExA(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; GetModuleHandleExA(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11045,8 +11045,8 @@ void test__GetModuleHandleExA__arg3__notnull() {
 }
 
 void test__GetModuleHandleExW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetModuleHandleExW(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; GetModuleHandleExW(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11069,8 +11069,8 @@ void test__GetModuleHandleExW__arg3__notnull() {
 }
 
 void test__FreeLibrary__noreturn() {
-  int x = 100;
-  if (cond) x=1; else FreeLibrary(arg1);
+  int x = 1;
+  if (cond) { x=100; FreeLibrary(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11087,8 +11087,8 @@ void test__FreeLibrary__arg1__notuninit() {
 }
 
 void test__FreeLibraryAndExitThread__noreturn() {
-  int x = 100;
-  if (cond) x=1; else FreeLibraryAndExitThread(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; FreeLibraryAndExitThread(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11116,8 +11116,8 @@ void test__FreeLibraryAndExitThread__arg2__notuninit() {
 }
 
 void test__GetProcAddress__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetProcAddress(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = GetProcAddress(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11156,8 +11156,8 @@ void test__GetProcAddress__arg2__notuninit() {
 }
 
 void test__CreateEvent__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateEvent(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateEvent(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11197,8 +11197,8 @@ void test__CreateEvent__arg4__notuninit() {
 }
 
 void test__CreateEventA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateEventA(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateEventA(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11238,8 +11238,8 @@ void test__CreateEventA__arg4__notuninit() {
 }
 
 void test__CreateEventW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateEventW(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateEventW(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11279,8 +11279,8 @@ void test__CreateEventW__arg4__notuninit() {
 }
 
 void test__CreateEventEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateEventEx(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateEventEx(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11330,8 +11330,8 @@ void test__CreateEventEx__arg4__notuninit() {
 }
 
 void test__CreateEventExA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateEventExA(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateEventExA(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11381,8 +11381,8 @@ void test__CreateEventExA__arg4__notuninit() {
 }
 
 void test__CreateEventExW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateEventExW(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateEventExW(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11432,8 +11432,8 @@ void test__CreateEventExW__arg4__notuninit() {
 }
 
 void test__OpenEvent__noreturn() {
-  int x = 100;
-  if (cond) x=1; else OpenEvent(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; OpenEvent(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11467,8 +11467,8 @@ void test__OpenEvent__arg3__notuninit() {
 }
 
 void test__OpenEventA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else OpenEventA(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; OpenEventA(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11502,8 +11502,8 @@ void test__OpenEventA__arg3__notuninit() {
 }
 
 void test__OpenEventW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else OpenEventW(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; OpenEventW(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11537,8 +11537,8 @@ void test__OpenEventW__arg3__notuninit() {
 }
 
 void test__PulseEvent__noreturn() {
-  int x = 100;
-  if (cond) x=1; else PulseEvent(arg1);
+  int x = 1;
+  if (cond) { x=100; PulseEvent(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11561,8 +11561,8 @@ void test__PulseEvent__arg1__notuninit() {
 }
 
 void test__ResetEvent__noreturn() {
-  int x = 100;
-  if (cond) x=1; else ResetEvent(arg1);
+  int x = 1;
+  if (cond) { x=100; ResetEvent(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11585,8 +11585,8 @@ void test__ResetEvent__arg1__notuninit() {
 }
 
 void test__SetEvent__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetEvent(arg1);
+  int x = 1;
+  if (cond) { x=100; SetEvent(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11609,8 +11609,8 @@ void test__SetEvent__arg1__notuninit() {
 }
 
 void test__InitializeCriticalSection__noreturn() {
-  int x = 100;
-  if (cond) x=1; else InitializeCriticalSection(arg1);
+  int x = 1;
+  if (cond) { x=100; InitializeCriticalSection(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11626,8 +11626,8 @@ void test__InitializeCriticalSection__arg1__notnull() {
 }
 
 void test__InitializeCriticalSectionAndSpinCount__noreturn() {
-  int x = 100;
-  if (cond) x=1; else InitializeCriticalSectionAndSpinCount(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; InitializeCriticalSectionAndSpinCount(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11654,8 +11654,8 @@ void test__InitializeCriticalSectionAndSpinCount__arg2__notuninit() {
 }
 
 void test__InitializeCriticalSectionEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else InitializeCriticalSectionEx(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; InitializeCriticalSectionEx(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11693,8 +11693,8 @@ void test__InitializeCriticalSectionEx__arg3__notuninit() {
 }
 
 void test__SetCriticalSectionSpinCount__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetCriticalSectionSpinCount(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; SetCriticalSectionSpinCount(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11727,8 +11727,8 @@ void test__SetCriticalSectionSpinCount__arg2__notuninit() {
 }
 
 void test__DeleteCriticalSection__noreturn() {
-  int x = 100;
-  if (cond) x=1; else DeleteCriticalSection(arg1);
+  int x = 1;
+  if (cond) { x=100; DeleteCriticalSection(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11750,8 +11750,8 @@ void test__DeleteCriticalSection__arg1__notuninit() {
 }
 
 void test__EnterCriticalSection__noreturn() {
-  int x = 100;
-  if (cond) x=1; else EnterCriticalSection(arg1);
+  int x = 1;
+  if (cond) { x=100; EnterCriticalSection(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11779,8 +11779,8 @@ void test__EnterCriticalSection__arg1__notuninit() {
 }
 
 void test__TryEnterCriticalSection__noreturn() {
-  int x = 100;
-  if (cond) x=1; else TryEnterCriticalSection(arg1);
+  int x = 1;
+  if (cond) { x=100; TryEnterCriticalSection(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11808,8 +11808,8 @@ void test__TryEnterCriticalSection__arg1__notuninit() {
 }
 
 void test__LeaveCriticalSection__noreturn() {
-  int x = 100;
-  if (cond) x=1; else LeaveCriticalSection(arg1);
+  int x = 1;
+  if (cond) { x=100; LeaveCriticalSection(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11837,8 +11837,8 @@ void test__LeaveCriticalSection__arg1__notuninit() {
 }
 
 void test__lstrcat__noreturn() {
-  int x = 100;
-  if (cond) x=1; else lstrcat(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; lstrcat(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11872,8 +11872,8 @@ void test__lstrcat__arg2__notuninit() {
 }
 
 void test__CreateSemaphore__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateSemaphore(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateSemaphore(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11908,8 +11908,8 @@ void test__CreateSemaphore__arg4__notuninit() {
 }
 
 void test__CreateSemaphoreA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateSemaphoreA(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateSemaphoreA(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11944,8 +11944,8 @@ void test__CreateSemaphoreA__arg4__notuninit() {
 }
 
 void test__CreateSemaphoreW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateSemaphoreW(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateSemaphoreW(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -11980,8 +11980,8 @@ void test__CreateSemaphoreW__arg4__notuninit() {
 }
 
 void test__CreateSemaphoreEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateSemaphoreEx(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; CreateSemaphoreEx(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12028,8 +12028,8 @@ void test__CreateSemaphoreEx__arg6__notuninit() {
 }
 
 void test__CreateSemaphoreExA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateSemaphoreExA(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; CreateSemaphoreExA(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12076,8 +12076,8 @@ void test__CreateSemaphoreExA__arg6__notuninit() {
 }
 
 void test__CreateSemaphoreExW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateSemaphoreExW(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; CreateSemaphoreExW(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12124,8 +12124,8 @@ void test__CreateSemaphoreExW__arg6__notuninit() {
 }
 
 void test__OpenSemaphore__noreturn() {
-  int x = 100;
-  if (cond) x=1; else OpenSemaphore(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; OpenSemaphore(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12159,8 +12159,8 @@ void test__OpenSemaphore__arg3__notuninit() {
 }
 
 void test__OpenSemaphoreA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else OpenSemaphoreA(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; OpenSemaphoreA(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12194,8 +12194,8 @@ void test__OpenSemaphoreA__arg3__notuninit() {
 }
 
 void test__OpenSemaphoreW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else OpenSemaphoreW(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; OpenSemaphoreW(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12229,8 +12229,8 @@ void test__OpenSemaphoreW__arg3__notuninit() {
 }
 
 void test__ReleaseSemaphore__noreturn() {
-  int x = 100;
-  if (cond) x=1; else ReleaseSemaphore(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; ReleaseSemaphore(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12269,8 +12269,8 @@ void test__ReleaseSemaphore__arg3__notuninit() {
 }
 
 void test__CreateMutex__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateMutex(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; CreateMutex(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12304,8 +12304,8 @@ void test__CreateMutex__arg3__notuninit() {
 }
 
 void test__CreateMutexA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateMutexA(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; CreateMutexA(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12339,8 +12339,8 @@ void test__CreateMutexA__arg3__notuninit() {
 }
 
 void test__CreateMutexW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateMutexW(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; CreateMutexW(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12374,8 +12374,8 @@ void test__CreateMutexW__arg3__notuninit() {
 }
 
 void test__CreateMutexEx__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateMutexEx(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateMutexEx(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12415,8 +12415,8 @@ void test__CreateMutexEx__arg4__notuninit() {
 }
 
 void test__CreateMutexExA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateMutexExA(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateMutexExA(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12456,8 +12456,8 @@ void test__CreateMutexExA__arg4__notuninit() {
 }
 
 void test__CreateMutexExW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else CreateMutexExW(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; CreateMutexExW(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12497,8 +12497,8 @@ void test__CreateMutexExW__arg4__notuninit() {
 }
 
 void test__OpenMutex__noreturn() {
-  int x = 100;
-  if (cond) x=1; else OpenMutex(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; OpenMutex(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12532,8 +12532,8 @@ void test__OpenMutex__arg3__notuninit() {
 }
 
 void test__OpenMutexA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else OpenMutexA(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; OpenMutexA(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12567,8 +12567,8 @@ void test__OpenMutexA__arg3__notuninit() {
 }
 
 void test__OpenMutexW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else OpenMutexW(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; OpenMutexW(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12602,8 +12602,8 @@ void test__OpenMutexW__arg3__notuninit() {
 }
 
 void test__ReleaseMutex__noreturn() {
-  int x = 100;
-  if (cond) x=1; else ReleaseMutex(arg1);
+  int x = 1;
+  if (cond) { x=100; ReleaseMutex(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12626,8 +12626,8 @@ void test__ReleaseMutex__arg1__notuninit() {
 }
 
 void test___malloca__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _malloca(arg1);
+  int x = 1;
+  if (cond) { x=100; _malloca(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12639,8 +12639,8 @@ void test___malloca__arg1__notuninit() {
 }
 
 void test___alloca__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _alloca(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _alloca(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12657,8 +12657,8 @@ void test___alloca__arg1__notuninit() {
 }
 
 void test___freea__noreturn() {
-  int x = 100;
-  if (cond) x=1; else _freea(arg1);
+  int x = 1;
+  if (cond) { x=100; _freea(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12670,8 +12670,8 @@ void test___freea__arg1__notuninit() {
 }
 
 void test__strlwr__noreturn() {
-  int x = 100;
-  if (cond) x=1; else strlwr(arg1);
+  int x = 1;
+  if (cond) { x=100; strlwr(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12688,8 +12688,8 @@ void test__strlwr__arg1__notuninit() {
 }
 
 void test__strupr__noreturn() {
-  int x = 100;
-  if (cond) x=1; else strupr(arg1);
+  int x = 1;
+  if (cond) { x=100; strupr(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12706,8 +12706,8 @@ void test__strupr__arg1__notuninit() {
 }
 
 void test__GetLocalTime__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetLocalTime(arg1);
+  int x = 1;
+  if (cond) { x=100; GetLocalTime(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12724,8 +12724,8 @@ void test__GetLocalTime__arg1__notnull() {
 }
 
 void test__GetSystemTime__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetSystemTime(arg1);
+  int x = 1;
+  if (cond) { x=100; GetSystemTime(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12742,8 +12742,8 @@ void test__GetSystemTime__arg1__notnull() {
 }
 
 void test__GetLastError__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetLastError();
+  int x = 1;
+  if (cond) { x=100; result = GetLastError(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12754,8 +12754,8 @@ void test__GetLastError__useretval() {
 }
 
 void test__SetLastError__noreturn() {
-  int x = 100;
-  if (cond) x=1; else SetLastError(arg1);
+  int x = 1;
+  if (cond) { x=100; SetLastError(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12773,8 +12773,8 @@ void test__SetLastError__arg1__notuninit() {
 }
 
 void test__AllocateAndInitializeSid__noreturn() {
-  int x = 100;
-  if (cond) x=1; else AllocateAndInitializeSid(arg1);
+  int x = 1;
+  if (cond) { x=100; AllocateAndInitializeSid(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12790,8 +12790,8 @@ void test__AllocateAndInitializeSid__arg1__notnull() {
 }
 
 void test__FreeSid__noreturn() {
-  int x = 100;
-  if (cond) x=1; else FreeSid(arg1);
+  int x = 1;
+  if (cond) { x=100; FreeSid(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12803,8 +12803,8 @@ void test__FreeSid__arg1__notuninit() {
 }
 
 void test__HeapAlloc__noreturn() {
-  int x = 100;
-  if (cond) x=1; else HeapAlloc(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; HeapAlloc(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12828,8 +12828,8 @@ void test__HeapAlloc__arg3__notuninit() {
 }
 
 void test__HeapReAlloc__noreturn() {
-  int x = 100;
-  if (cond) x=1; else HeapReAlloc(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; HeapReAlloc(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12864,8 +12864,8 @@ void test__HeapReAlloc__arg4__notuninit() {
 }
 
 void test__HeapFree__noreturn() {
-  int x = 100;
-  if (cond) x=1; else HeapFree(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; HeapFree(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12894,8 +12894,8 @@ void test__HeapFree__arg3__notuninit() {
 }
 
 void test__HeapSize__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = HeapSize(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = HeapSize(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12930,8 +12930,8 @@ void test__HeapSize__arg3__notuninit() {
 }
 
 void test__HeapValidate__noreturn() {
-  int x = 100;
-  if (cond) x=1; else HeapValidate(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; HeapValidate(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12961,8 +12961,8 @@ void test__HeapValidate__arg3__notuninit() {
 }
 
 void test__GetProcessHeap__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = GetProcessHeap();
+  int x = 1;
+  if (cond) { x=100; result = GetProcessHeap(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12973,8 +12973,8 @@ void test__GetProcessHeap__useretval() {
 }
 
 void test__GetUserName__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetUserName(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; GetUserName(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -12997,8 +12997,8 @@ void test__GetUserName__arg2__notuninit() {
 }
 
 void test__GetUserNameA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetUserNameA(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; GetUserNameA(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13021,8 +13021,8 @@ void test__GetUserNameA__arg2__notuninit() {
 }
 
 void test__GetUserNameW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetUserNameW(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; GetUserNameW(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13045,8 +13045,8 @@ void test__GetUserNameW__arg2__notuninit() {
 }
 
 void test__GetWindowText__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetWindowText(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; GetWindowText(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13074,8 +13074,8 @@ void test__GetWindowText__arg3__notuninit() {
 }
 
 void test__GetWindowTextA__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetWindowTextA(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; GetWindowTextA(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13103,8 +13103,8 @@ void test__GetWindowTextA__arg3__notuninit() {
 }
 
 void test__GetWindowTextW__noreturn() {
-  int x = 100;
-  if (cond) x=1; else GetWindowTextW(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; GetWindowTextW(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13132,8 +13132,8 @@ void test__GetWindowTextW__arg3__notuninit() {
 }
 
 void test__socket__noreturn() {
-  int x = 100;
-  if (cond) x=1; else socket(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; socket(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13157,8 +13157,8 @@ void test__socket__arg3__notuninit() {
 }
 
 void test__closesocket__noreturn() {
-  int x = 100;
-  if (cond) x=1; else closesocket(arg1);
+  int x = 1;
+  if (cond) { x=100; closesocket(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13170,8 +13170,8 @@ void test__closesocket__arg1__notuninit() {
 }
 
 void test__accept__noreturn() {
-  int x = 100;
-  if (cond) x=1; else accept(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; accept(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13201,8 +13201,8 @@ void test__accept__arg3__notuninit() {
 }
 
 void test__bind__noreturn() {
-  int x = 100;
-  if (cond) x=1; else bind(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; bind(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13231,8 +13231,8 @@ void test__bind__arg3__notuninit() {
 }
 
 void test__connect__noreturn() {
-  int x = 100;
-  if (cond) x=1; else connect(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; connect(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13261,8 +13261,8 @@ void test__connect__arg3__notuninit() {
 }
 
 void test__getpeername__noreturn() {
-  int x = 100;
-  if (cond) x=1; else getpeername(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; getpeername(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13296,8 +13296,8 @@ void test__getpeername__arg3__notuninit() {
 }
 
 void test__getsockname__noreturn() {
-  int x = 100;
-  if (cond) x=1; else getsockname(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; getsockname(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13331,8 +13331,8 @@ void test__getsockname__arg3__notuninit() {
 }
 
 void test__getsockopt__noreturn() {
-  int x = 100;
-  if (cond) x=1; else getsockopt(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; getsockopt(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13378,8 +13378,8 @@ void test__getsockopt__arg5__notuninit() {
 }
 
 void test__htonl__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = htonl(arg1);
+  int x = 1;
+  if (cond) { x=100; result = htonl(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13402,8 +13402,8 @@ void test__htonl__arg1__notuninit() {
 }
 
 void test__htons__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = htons(arg1);
+  int x = 1;
+  if (cond) { x=100; result = htons(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13426,8 +13426,8 @@ void test__htons__arg1__notuninit() {
 }
 
 void test__inet_addr__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = inet_addr(arg1);
+  int x = 1;
+  if (cond) { x=100; result = inet_addr(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13455,8 +13455,8 @@ void test__inet_addr__arg1__notuninit() {
 }
 
 void test__inet_ntoa__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = inet_ntoa(arg1);
+  int x = 1;
+  if (cond) { x=100; result = inet_ntoa(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13479,8 +13479,8 @@ void test__inet_ntoa__arg1__notuninit() {
 }
 
 void test__ioctlsocket__noreturn() {
-  int x = 100;
-  if (cond) x=1; else ioctlsocket(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; ioctlsocket(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13509,8 +13509,8 @@ void test__ioctlsocket__arg3__notnull() {
 }
 
 void test__listen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else listen(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; listen(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13534,8 +13534,8 @@ void test__listen__arg2__notuninit() {
 }
 
 void test__ntohl__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = ntohl(arg1);
+  int x = 1;
+  if (cond) { x=100; result = ntohl(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13558,8 +13558,8 @@ void test__ntohl__arg1__notuninit() {
 }
 
 void test__ntohs__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = ntohs(arg1);
+  int x = 1;
+  if (cond) { x=100; result = ntohs(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13582,8 +13582,8 @@ void test__ntohs__arg1__notuninit() {
 }
 
 void test__recv__noreturn() {
-  int x = 100;
-  if (cond) x=1; else recv(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; recv(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13618,8 +13618,8 @@ void test__recv__arg4__notuninit() {
 }
 
 void test__recvfrom__noreturn() {
-  int x = 100;
-  if (cond) x=1; else recvfrom(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; recvfrom(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13654,8 +13654,8 @@ void test__recvfrom__arg4__notuninit() {
 }
 
 void test__select__noreturn() {
-  int x = 100;
-  if (cond) x=1; else select(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; select(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13673,8 +13673,8 @@ void test__select__arg5__notuninit() {
 }
 
 void test__send__noreturn() {
-  int x = 100;
-  if (cond) x=1; else send(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; send(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13709,8 +13709,8 @@ void test__send__arg4__notuninit() {
 }
 
 void test__sendto__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sendto(arg1, arg2, arg3, arg4, arg5, arg6);
+  int x = 1;
+  if (cond) { x=100; sendto(arg1, arg2, arg3, arg4, arg5, arg6); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13757,8 +13757,8 @@ void test__sendto__arg6__notuninit() {
 }
 
 void test__setsockopt__noreturn() {
-  int x = 100;
-  if (cond) x=1; else setsockopt(arg1, arg2, arg3, arg4, arg5);
+  int x = 1;
+  if (cond) { x=100; setsockopt(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13799,8 +13799,8 @@ void test__setsockopt__arg5__notuninit() {
 }
 
 void test__shutdown__noreturn() {
-  int x = 100;
-  if (cond) x=1; else shutdown(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; shutdown(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13824,8 +13824,8 @@ void test__shutdown__arg2__notuninit() {
 }
 
 void test__WSAStartup__noreturn() {
-  int x = 100;
-  if (cond) x=1; else WSAStartup(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; WSAStartup(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13848,15 +13848,15 @@ void test__WSAStartup__arg2__notnull() {
 }
 
 void test__WSACleanup__noreturn() {
-  int x = 100;
-  if (cond) x=1; else WSACleanup();
+  int x = 1;
+  if (cond) { x=100; WSACleanup(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__WSAGetLastError__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = WSAGetLastError();
+  int x = 1;
+  if (cond) { x=100; result = WSAGetLastError(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13867,8 +13867,8 @@ void test__WSAGetLastError__useretval() {
 }
 
 void test__WSASetLastError__noreturn() {
-  int x = 100;
-  if (cond) x=1; else WSASetLastError(arg1);
+  int x = 1;
+  if (cond) { x=100; WSASetLastError(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13886,8 +13886,8 @@ void test__WSASetLastError__arg1__notuninit() {
 }
 
 void test___fileno__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _fileno(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _fileno(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13920,8 +13920,8 @@ void test___fileno__arg1__notuninit() {
 }
 
 void test___tolower__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tolower(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _tolower(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13944,8 +13944,8 @@ void test___tolower__arg1__notuninit() {
 }
 
 void test___tolower_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _tolower_l(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _tolower_l(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -13974,8 +13974,8 @@ void test___tolower_l__arg2__notuninit() {
 }
 
 void test___towlower_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _towlower_l(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _towlower_l(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -14004,8 +14004,8 @@ void test___towlower_l__arg2__notuninit() {
 }
 
 void test___toupper__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _toupper(arg1);
+  int x = 1;
+  if (cond) { x=100; result = _toupper(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -14028,8 +14028,8 @@ void test___toupper__arg1__notuninit() {
 }
 
 void test___toupper_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _toupper_l(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _toupper_l(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -14058,8 +14058,8 @@ void test___toupper_l__arg2__notuninit() {
 }
 
 void test___towupper_l__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = _towupper_l(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = _towupper_l(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -14088,8 +14088,8 @@ void test___towupper_l__arg2__notuninit() {
 }
 
 void test____noop__noreturn() {
-  int x = 100;
-  if (cond) x=1; else __noop();
+  int x = 1;
+  if (cond) { x=100; __noop(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -14101,8 +14101,8 @@ void test____noop__leakignore() {
 }
 
 void test____nop__noreturn() {
-  int x = 100;
-  if (cond) x=1; else __nop();
+  int x = 1;
+  if (cond) { x=100; __nop(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }

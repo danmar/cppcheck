@@ -4,13 +4,13 @@
 // ./generate_cfg_tests cfg/sfml.cfg > generated-cfg-tests-sfml.cpp
 //
 // Recommended cppcheck command line:
-// $ cppcheck --enable=warning,information --inline-suppr generated-cfg-tests-sfml.cpp
+// $ cppcheck --enable=warning,information --inline-suppr --platform=unix64 generated-cfg-tests-sfml.cpp
 // => 'unmatched suppression' warnings are false negatives.
 //
 
 void test__sf__err__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::err();
+  int x = 1;
+  if (cond) { x=100; result = sf::err(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -27,8 +27,8 @@ void test__sf__err__leakignore() {
 }
 
 void test__sf__sleep__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::sleep(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::sleep(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -46,8 +46,8 @@ void test__sf__sleep__arg1__notuninit() {
 }
 
 void test__sf__Time__asSeconds__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::Time::asSeconds();
+  int x = 1;
+  if (cond) { x=100; result = sf::Time::asSeconds(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -64,8 +64,8 @@ void test__sf__Time__asSeconds__leakignore() {
 }
 
 void test__sf__Time__asMilliseconds__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::Time::asMilliseconds();
+  int x = 1;
+  if (cond) { x=100; result = sf::Time::asMilliseconds(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -82,8 +82,8 @@ void test__sf__Time__asMilliseconds__leakignore() {
 }
 
 void test__sf__Time__asMicroseconds__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::Time::asMicroseconds();
+  int x = 1;
+  if (cond) { x=100; result = sf::Time::asMicroseconds(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -100,8 +100,8 @@ void test__sf__Time__asMicroseconds__leakignore() {
 }
 
 void test__sf__String__clear__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::String::clear();
+  int x = 1;
+  if (cond) { x=100; sf::String::clear(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -113,8 +113,8 @@ void test__sf__String__clear__leakignore() {
 }
 
 void test__sf__String__isEmpty__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::String::isEmpty();
+  int x = 1;
+  if (cond) { x=100; result = sf::String::isEmpty(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -131,8 +131,8 @@ void test__sf__String__isEmpty__leakignore() {
 }
 
 void test__sf__String__getSize__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::String::getSize();
+  int x = 1;
+  if (cond) { x=100; result = sf::String::getSize(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -149,8 +149,8 @@ void test__sf__String__getSize__leakignore() {
 }
 
 void test__sf__String__find__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::String::find(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; sf::String::find(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -179,8 +179,8 @@ void test__sf__String__find__arg2__notuninit() {
 }
 
 void test__sf__String__substring__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::String::substring(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = sf::String::substring(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -209,8 +209,8 @@ void test__sf__String__substring__arg2__notuninit() {
 }
 
 void test__sf__String__erase__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::String::erase(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; sf::String::erase(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -234,8 +234,8 @@ void test__sf__String__erase__arg2__notuninit() {
 }
 
 void test__sf__RenderTarget__clear__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTarget::clear(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderTarget::clear(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -253,8 +253,8 @@ void test__sf__RenderTarget__clear__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__clear__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::clear(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::clear(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -272,8 +272,8 @@ void test__sf__RenderWindow__clear__arg1__notuninit() {
 }
 
 void test__sf__RenderTexture__clear__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTexture::clear(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderTexture::clear(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -291,8 +291,8 @@ void test__sf__RenderTexture__clear__arg1__notuninit() {
 }
 
 void test__sf__RenderTarget__setView__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTarget::setView(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderTarget::setView(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -310,8 +310,8 @@ void test__sf__RenderTarget__setView__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setView__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setView(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setView(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -329,8 +329,8 @@ void test__sf__RenderWindow__setView__arg1__notuninit() {
 }
 
 void test__sf__RenderTexture__setView__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTexture::setView(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderTexture::setView(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -348,8 +348,8 @@ void test__sf__RenderTexture__setView__arg1__notuninit() {
 }
 
 void test__sf__RenderTarget__getView__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTarget::getView();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTarget::getView(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -366,8 +366,8 @@ void test__sf__RenderTarget__getView__leakignore() {
 }
 
 void test__sf__RenderTarget__getDefaultView__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTarget::getDefaultView();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTarget::getDefaultView(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -384,8 +384,8 @@ void test__sf__RenderTarget__getDefaultView__leakignore() {
 }
 
 void test__sf__RenderWindow__getView__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::getView();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::getView(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -402,8 +402,8 @@ void test__sf__RenderWindow__getView__leakignore() {
 }
 
 void test__sf__RenderWindow__getDefaultView__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::getDefaultView();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::getDefaultView(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -420,8 +420,8 @@ void test__sf__RenderWindow__getDefaultView__leakignore() {
 }
 
 void test__sf__RenderTexture__getView__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTexture::getView();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTexture::getView(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -438,8 +438,8 @@ void test__sf__RenderTexture__getView__leakignore() {
 }
 
 void test__sf__RenderTexture__getDefaultView__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTexture::getDefaultView();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTexture::getDefaultView(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -456,8 +456,8 @@ void test__sf__RenderTexture__getDefaultView__leakignore() {
 }
 
 void test__sf__RenderTarget__getViewport__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTarget::getViewport(arg1);
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTarget::getViewport(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -480,8 +480,8 @@ void test__sf__RenderTarget__getViewport__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__getViewport__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::getViewport(arg1);
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::getViewport(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -504,8 +504,8 @@ void test__sf__RenderWindow__getViewport__arg1__notuninit() {
 }
 
 void test__sf__RenderTexture__getViewport__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTexture::getViewport(arg1);
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTexture::getViewport(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -528,8 +528,8 @@ void test__sf__RenderTexture__getViewport__arg1__notuninit() {
 }
 
 void test__sf__RenderTarget__mapPixelToCoords__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTarget::mapPixelToCoords(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTarget::mapPixelToCoords(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -558,8 +558,8 @@ void test__sf__RenderTarget__mapPixelToCoords__arg2__notuninit() {
 }
 
 void test__sf__RenderTarget__mapCoordsToPixel__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTarget::mapCoordsToPixel(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTarget::mapCoordsToPixel(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -588,8 +588,8 @@ void test__sf__RenderTarget__mapCoordsToPixel__arg2__notuninit() {
 }
 
 void test__sf__RenderWindow__mapPixelToCoords__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::mapPixelToCoords(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::mapPixelToCoords(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -618,8 +618,8 @@ void test__sf__RenderWindow__mapPixelToCoords__arg2__notuninit() {
 }
 
 void test__sf__RenderWindow__mapCoordsToPixel__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::mapCoordsToPixel(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::mapCoordsToPixel(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -648,8 +648,8 @@ void test__sf__RenderWindow__mapCoordsToPixel__arg2__notuninit() {
 }
 
 void test__sf__RenderTexture__mapPixelToCoords__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTexture::mapPixelToCoords(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTexture::mapPixelToCoords(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -678,8 +678,8 @@ void test__sf__RenderTexture__mapPixelToCoords__arg2__notuninit() {
 }
 
 void test__sf__RenderTexture__mapCoordsToPixel__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTexture::mapCoordsToPixel(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTexture::mapCoordsToPixel(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -708,8 +708,8 @@ void test__sf__RenderTexture__mapCoordsToPixel__arg2__notuninit() {
 }
 
 void test__sf__RenderTarget__draw__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTarget::draw(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; sf::RenderTarget::draw(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -745,8 +745,8 @@ void test__sf__RenderTarget__draw__arg4__notuninit() {
 }
 
 void test__sf__RenderWindow__draw__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::draw(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::draw(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -782,8 +782,8 @@ void test__sf__RenderWindow__draw__arg4__notuninit() {
 }
 
 void test__sf__RenderTexture__draw__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTexture::draw(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; sf::RenderTexture::draw(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -819,8 +819,8 @@ void test__sf__RenderTexture__draw__arg4__notuninit() {
 }
 
 void test__sf__RenderTarget__getSize__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTarget::getSize();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTarget::getSize(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -837,8 +837,8 @@ void test__sf__RenderTarget__getSize__leakignore() {
 }
 
 void test__sf__RenderWindow__getSize__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::getSize();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::getSize(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -855,8 +855,8 @@ void test__sf__RenderWindow__getSize__leakignore() {
 }
 
 void test__sf__RenderTexture__getSize__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderTexture::getSize();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderTexture::getSize(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -873,8 +873,8 @@ void test__sf__RenderTexture__getSize__leakignore() {
 }
 
 void test__sf__RenderTarget__setActive__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTarget::setActive(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderTarget::setActive(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -892,8 +892,8 @@ void test__sf__RenderTarget__setActive__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setActive__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setActive(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setActive(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -911,8 +911,8 @@ void test__sf__RenderWindow__setActive__arg1__notuninit() {
 }
 
 void test__sf__RenderTexture__setActive__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTexture::setActive(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderTexture::setActive(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -930,8 +930,8 @@ void test__sf__RenderTexture__setActive__arg1__notuninit() {
 }
 
 void test__sf__Window__setActive__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setActive(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setActive(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -949,8 +949,8 @@ void test__sf__Window__setActive__arg1__notuninit() {
 }
 
 void test__sf__RenderTarget__pushGLStates__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTarget::pushGLStates();
+  int x = 1;
+  if (cond) { x=100; sf::RenderTarget::pushGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -962,8 +962,8 @@ void test__sf__RenderTarget__pushGLStates__leakignore() {
 }
 
 void test__sf__RenderTarget__popGLStates__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTarget::popGLStates();
+  int x = 1;
+  if (cond) { x=100; sf::RenderTarget::popGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -975,8 +975,8 @@ void test__sf__RenderTarget__popGLStates__leakignore() {
 }
 
 void test__sf__RenderTarget__resetGLStates__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTarget::resetGLStates();
+  int x = 1;
+  if (cond) { x=100; sf::RenderTarget::resetGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -988,8 +988,8 @@ void test__sf__RenderTarget__resetGLStates__leakignore() {
 }
 
 void test__sf__RenderWindow__pushGLStates__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::pushGLStates();
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::pushGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1001,8 +1001,8 @@ void test__sf__RenderWindow__pushGLStates__leakignore() {
 }
 
 void test__sf__RenderWindow__popGLStates__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::popGLStates();
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::popGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1014,8 +1014,8 @@ void test__sf__RenderWindow__popGLStates__leakignore() {
 }
 
 void test__sf__RenderWindow__resetGLStates__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::resetGLStates();
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::resetGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1027,8 +1027,8 @@ void test__sf__RenderWindow__resetGLStates__leakignore() {
 }
 
 void test__sf__RenderTexture__pushGLStates__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTexture::pushGLStates();
+  int x = 1;
+  if (cond) { x=100; sf::RenderTexture::pushGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1040,8 +1040,8 @@ void test__sf__RenderTexture__pushGLStates__leakignore() {
 }
 
 void test__sf__RenderTexture__popGLStates__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTexture::popGLStates();
+  int x = 1;
+  if (cond) { x=100; sf::RenderTexture::popGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1053,8 +1053,8 @@ void test__sf__RenderTexture__popGLStates__leakignore() {
 }
 
 void test__sf__RenderTexture__resetGLStates__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderTexture::resetGLStates();
+  int x = 1;
+  if (cond) { x=100; sf::RenderTexture::resetGLStates(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1066,8 +1066,8 @@ void test__sf__RenderTexture__resetGLStates__leakignore() {
 }
 
 void test__sf__Window__create__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::create(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; sf::Window::create(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1103,8 +1103,8 @@ void test__sf__Window__create__arg4__notuninit() {
 }
 
 void test__sf__RenderWindow__create__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::create(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::create(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1140,8 +1140,8 @@ void test__sf__RenderWindow__create__arg4__notuninit() {
 }
 
 void test__sf__Window__close__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::close();
+  int x = 1;
+  if (cond) { x=100; sf::Window::close(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1153,8 +1153,8 @@ void test__sf__Window__close__leakignore() {
 }
 
 void test__sf__RenderWindow__close__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::close();
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::close(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1166,8 +1166,8 @@ void test__sf__RenderWindow__close__leakignore() {
 }
 
 void test__sf__Window__isOpen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::Window::isOpen();
+  int x = 1;
+  if (cond) { x=100; result = sf::Window::isOpen(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1184,8 +1184,8 @@ void test__sf__Window__isOpen__leakignore() {
 }
 
 void test__sf__RenderWindow__isOpen__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::isOpen();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::isOpen(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1202,8 +1202,8 @@ void test__sf__RenderWindow__isOpen__leakignore() {
 }
 
 void test__sf__Window__getSettings__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::Window::getSettings();
+  int x = 1;
+  if (cond) { x=100; result = sf::Window::getSettings(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1220,8 +1220,8 @@ void test__sf__Window__getSettings__leakignore() {
 }
 
 void test__sf__RenderWindow__getSettings__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::getSettings();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::getSettings(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1238,8 +1238,8 @@ void test__sf__RenderWindow__getSettings__leakignore() {
 }
 
 void test__sf__Window__pollEvent__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::pollEvent(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::pollEvent(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1251,8 +1251,8 @@ void test__sf__Window__pollEvent__leakignore() {
 }
 
 void test__sf__Window__waitEvent__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::waitEvent(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::waitEvent(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1264,8 +1264,8 @@ void test__sf__Window__waitEvent__leakignore() {
 }
 
 void test__sf__RenderWindow__pollEvent__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::pollEvent(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::pollEvent(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1277,8 +1277,8 @@ void test__sf__RenderWindow__pollEvent__leakignore() {
 }
 
 void test__sf__RenderWindow__waitEvent__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::waitEvent(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::waitEvent(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1290,8 +1290,8 @@ void test__sf__RenderWindow__waitEvent__leakignore() {
 }
 
 void test__sf__Window__getPosition__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::Window::getPosition();
+  int x = 1;
+  if (cond) { x=100; result = sf::Window::getPosition(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1308,8 +1308,8 @@ void test__sf__Window__getPosition__leakignore() {
 }
 
 void test__sf__RenderWindow__getPosition__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::getPosition();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::getPosition(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1326,8 +1326,8 @@ void test__sf__RenderWindow__getPosition__leakignore() {
 }
 
 void test__sf__Window__setPosition__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setPosition(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setPosition(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1345,8 +1345,8 @@ void test__sf__Window__setPosition__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setPosition__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setPosition(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setPosition(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1364,8 +1364,8 @@ void test__sf__RenderWindow__setPosition__arg1__notuninit() {
 }
 
 void test__sf__Window__getSize__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::Window::getSize();
+  int x = 1;
+  if (cond) { x=100; result = sf::Window::getSize(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1382,8 +1382,8 @@ void test__sf__Window__getSize__leakignore() {
 }
 
 void test__sf__RenderWindow__getSize__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::getSize();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::getSize(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1400,8 +1400,8 @@ void test__sf__RenderWindow__getSize__leakignore() {
 }
 
 void test__sf__Window__setSize__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setSize(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setSize(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1419,8 +1419,8 @@ void test__sf__Window__setSize__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setSize__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setSize(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setSize(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1438,8 +1438,8 @@ void test__sf__RenderWindow__setSize__arg1__notuninit() {
 }
 
 void test__sf__Window__setTitle__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setTitle(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setTitle(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1457,8 +1457,8 @@ void test__sf__Window__setTitle__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setTitle__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setTitle(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setTitle(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1476,8 +1476,8 @@ void test__sf__RenderWindow__setTitle__arg1__notuninit() {
 }
 
 void test__sf__Window__setIcon__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setIcon(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setIcon(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1512,8 +1512,8 @@ void test__sf__Window__setIcon__arg3__notuninit() {
 }
 
 void test__sf__RenderWindow__setIcon__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setIcon(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setIcon(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1548,8 +1548,8 @@ void test__sf__RenderWindow__setIcon__arg3__notuninit() {
 }
 
 void test__sf__Window__setVisible__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setVisible(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setVisible(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1567,8 +1567,8 @@ void test__sf__Window__setVisible__arg1__notuninit() {
 }
 
 void test__sf__Window__setVerticalSyncEnabled__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setVerticalSyncEnabled(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setVerticalSyncEnabled(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1586,8 +1586,8 @@ void test__sf__Window__setVerticalSyncEnabled__arg1__notuninit() {
 }
 
 void test__sf__Window__setMouseCursorVisible__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setMouseCursorVisible(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setMouseCursorVisible(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1605,8 +1605,8 @@ void test__sf__Window__setMouseCursorVisible__arg1__notuninit() {
 }
 
 void test__sf__Window__setMouseCursorGrabbed__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setMouseCursorGrabbed(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setMouseCursorGrabbed(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1624,8 +1624,8 @@ void test__sf__Window__setMouseCursorGrabbed__arg1__notuninit() {
 }
 
 void test__sf__Window__setKeyRepeatEnabled__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setKeyRepeatEnabled(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setKeyRepeatEnabled(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1643,8 +1643,8 @@ void test__sf__Window__setKeyRepeatEnabled__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setVisible__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setVisible(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setVisible(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1662,8 +1662,8 @@ void test__sf__RenderWindow__setVisible__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setVerticalSyncEnabled__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setVerticalSyncEnabled(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setVerticalSyncEnabled(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1681,8 +1681,8 @@ void test__sf__RenderWindow__setVerticalSyncEnabled__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setMouseCursorVisible__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setMouseCursorVisible(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setMouseCursorVisible(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1700,8 +1700,8 @@ void test__sf__RenderWindow__setMouseCursorVisible__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setMouseCursorGrabbed__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setMouseCursorGrabbed(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setMouseCursorGrabbed(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1719,8 +1719,8 @@ void test__sf__RenderWindow__setMouseCursorGrabbed__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setKeyRepeatEnabled__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setKeyRepeatEnabled(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setKeyRepeatEnabled(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1738,8 +1738,8 @@ void test__sf__RenderWindow__setKeyRepeatEnabled__arg1__notuninit() {
 }
 
 void test__sf__Window__setFramerateLimit__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setFramerateLimit(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setFramerateLimit(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1757,8 +1757,8 @@ void test__sf__Window__setFramerateLimit__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setFramerateLimit__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setFramerateLimit(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setFramerateLimit(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1776,8 +1776,8 @@ void test__sf__RenderWindow__setFramerateLimit__arg1__notuninit() {
 }
 
 void test__sf__Window__setJoystickThreshold__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::setJoystickThreshold(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::Window::setJoystickThreshold(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1795,8 +1795,8 @@ void test__sf__Window__setJoystickThreshold__arg1__notuninit() {
 }
 
 void test__sf__RenderWindow__setJoystickThreshold__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::setJoystickThreshold(arg1);
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::setJoystickThreshold(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1814,8 +1814,8 @@ void test__sf__RenderWindow__setJoystickThreshold__arg1__notuninit() {
 }
 
 void test__sf__Window__requestFocus__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::requestFocus();
+  int x = 1;
+  if (cond) { x=100; sf::Window::requestFocus(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1827,8 +1827,8 @@ void test__sf__Window__requestFocus__leakignore() {
 }
 
 void test__sf__RenderWindow__requestFocus__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::requestFocus();
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::requestFocus(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1840,8 +1840,8 @@ void test__sf__RenderWindow__requestFocus__leakignore() {
 }
 
 void test__sf__Window__hasFocus__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::Window::hasFocus();
+  int x = 1;
+  if (cond) { x=100; result = sf::Window::hasFocus(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1858,8 +1858,8 @@ void test__sf__Window__hasFocus__leakignore() {
 }
 
 void test__sf__RenderWindow__hasFocus__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::hasFocus();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::hasFocus(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1876,8 +1876,8 @@ void test__sf__RenderWindow__hasFocus__leakignore() {
 }
 
 void test__sf__Window__display__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::Window::display();
+  int x = 1;
+  if (cond) { x=100; sf::Window::display(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1889,8 +1889,8 @@ void test__sf__Window__display__leakignore() {
 }
 
 void test__sf__RenderWindow__display__noreturn() {
-  int x = 100;
-  if (cond) x=1; else sf::RenderWindow::display();
+  int x = 1;
+  if (cond) { x=100; sf::RenderWindow::display(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1902,8 +1902,8 @@ void test__sf__RenderWindow__display__leakignore() {
 }
 
 void test__sf__Window__getSystemHandle__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::Window::getSystemHandle();
+  int x = 1;
+  if (cond) { x=100; result = sf::Window::getSystemHandle(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1920,8 +1920,8 @@ void test__sf__Window__getSystemHandle__leakignore() {
 }
 
 void test__sf__RenderWindow__getSystemHandle__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = sf::RenderWindow::getSystemHandle();
+  int x = 1;
+  if (cond) { x=100; result = sf::RenderWindow::getSystemHandle(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }

@@ -4,13 +4,13 @@
 // ./generate_cfg_tests cfg/qt.cfg > generated-cfg-tests-qt.cpp
 //
 // Recommended cppcheck command line:
-// $ cppcheck --enable=warning,information --inline-suppr generated-cfg-tests-qt.cpp
+// $ cppcheck --enable=warning,information --inline-suppr --platform=unix64 generated-cfg-tests-qt.cpp
 // => 'unmatched suppression' warnings are false negatives.
 //
 
 void test__connect__noreturn() {
-  int x = 100;
-  if (cond) x=1; else connect(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; connect(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -50,8 +50,8 @@ void test__connect__arg4__notuninit() {
 }
 
 void test__disconnect__noreturn() {
-  int x = 100;
-  if (cond) x=1; else disconnect(arg1, arg2, arg3, arg4);
+  int x = 1;
+  if (cond) { x=100; disconnect(arg1, arg2, arg3, arg4); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -91,8 +91,8 @@ void test__disconnect__arg4__notuninit() {
 }
 
 void test__tr__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = tr(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = tr(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -132,8 +132,8 @@ void test__tr__arg3__notuninit() {
 }
 
 void test__QObject__tr__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QObject::tr(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = QObject::tr(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -173,8 +173,8 @@ void test__QObject__tr__arg3__notuninit() {
 }
 
 void test__QSettings__setValue__noreturn() {
-  int x = 100;
-  if (cond) x=1; else QSettings::setValue(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; QSettings::setValue(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -203,8 +203,8 @@ void test__QSettings__setValue__arg2__notuninit() {
 }
 
 void test__QSettings__value__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QSettings::value(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = QSettings::value(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -232,8 +232,8 @@ void test__QSettings__value__arg2__notuninit() {
 }
 
 void test__QString__sprintf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else QString::sprintf(arg1);
+  int x = 1;
+  if (cond) { x=100; QString::sprintf(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -251,8 +251,8 @@ void test__QString__sprintf__arg1__notuninit() {
 }
 
 void test__QString__asprintf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else QString::asprintf(arg1);
+  int x = 1;
+  if (cond) { x=100; QString::asprintf(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -270,8 +270,8 @@ void test__QString__asprintf__arg1__notuninit() {
 }
 
 void test__QList__at__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::at(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QList::at(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -288,8 +288,8 @@ void test__QList__at__arg1__notuninit() {
 }
 
 void test__QString__at__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::at(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QString::at(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -306,8 +306,8 @@ void test__QString__at__arg1__notuninit() {
 }
 
 void test__QStringList__at__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::at(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QStringList::at(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -324,8 +324,8 @@ void test__QStringList__at__arg1__notuninit() {
 }
 
 void test__QString__capacity__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::capacity();
+  int x = 1;
+  if (cond) { x=100; result = QString::capacity(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -336,8 +336,8 @@ void test__QString__capacity__useretval() {
 }
 
 void test__QList__begin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::begin();
+  int x = 1;
+  if (cond) { x=100; result = QList::begin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -348,8 +348,8 @@ void test__QList__begin__useretval() {
 }
 
 void test__QList__end__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::end();
+  int x = 1;
+  if (cond) { x=100; result = QList::end(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -360,8 +360,8 @@ void test__QList__end__useretval() {
 }
 
 void test__QList__cbegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::cbegin();
+  int x = 1;
+  if (cond) { x=100; result = QList::cbegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -372,8 +372,8 @@ void test__QList__cbegin__useretval() {
 }
 
 void test__QList__cend__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::cend();
+  int x = 1;
+  if (cond) { x=100; result = QList::cend(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -384,8 +384,8 @@ void test__QList__cend__useretval() {
 }
 
 void test__QList__constBegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::constBegin();
+  int x = 1;
+  if (cond) { x=100; result = QList::constBegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -396,8 +396,8 @@ void test__QList__constBegin__useretval() {
 }
 
 void test__QList__constEnd__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::constEnd();
+  int x = 1;
+  if (cond) { x=100; result = QList::constEnd(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -408,8 +408,8 @@ void test__QList__constEnd__useretval() {
 }
 
 void test__QList__rbegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::rbegin();
+  int x = 1;
+  if (cond) { x=100; result = QList::rbegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -420,8 +420,8 @@ void test__QList__rbegin__useretval() {
 }
 
 void test__QList__rend__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::rend();
+  int x = 1;
+  if (cond) { x=100; result = QList::rend(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -432,8 +432,8 @@ void test__QList__rend__useretval() {
 }
 
 void test__QList__crbegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::crbegin();
+  int x = 1;
+  if (cond) { x=100; result = QList::crbegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -444,8 +444,8 @@ void test__QList__crbegin__useretval() {
 }
 
 void test__QList__crend__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::crend();
+  int x = 1;
+  if (cond) { x=100; result = QList::crend(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -456,8 +456,8 @@ void test__QList__crend__useretval() {
 }
 
 void test__QString__begin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::begin();
+  int x = 1;
+  if (cond) { x=100; result = QString::begin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -468,8 +468,8 @@ void test__QString__begin__useretval() {
 }
 
 void test__QString__end__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::end();
+  int x = 1;
+  if (cond) { x=100; result = QString::end(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -480,8 +480,8 @@ void test__QString__end__useretval() {
 }
 
 void test__QString__cbegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::cbegin();
+  int x = 1;
+  if (cond) { x=100; result = QString::cbegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -492,8 +492,8 @@ void test__QString__cbegin__useretval() {
 }
 
 void test__QString__cend__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::cend();
+  int x = 1;
+  if (cond) { x=100; result = QString::cend(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -504,8 +504,8 @@ void test__QString__cend__useretval() {
 }
 
 void test__QString__constBegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::constBegin();
+  int x = 1;
+  if (cond) { x=100; result = QString::constBegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -516,8 +516,8 @@ void test__QString__constBegin__useretval() {
 }
 
 void test__QString__constEnd__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::constEnd();
+  int x = 1;
+  if (cond) { x=100; result = QString::constEnd(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -528,8 +528,8 @@ void test__QString__constEnd__useretval() {
 }
 
 void test__QString__rbegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::rbegin();
+  int x = 1;
+  if (cond) { x=100; result = QString::rbegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -540,8 +540,8 @@ void test__QString__rbegin__useretval() {
 }
 
 void test__QString__rend__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::rend();
+  int x = 1;
+  if (cond) { x=100; result = QString::rend(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -552,8 +552,8 @@ void test__QString__rend__useretval() {
 }
 
 void test__QString__crbegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::crbegin();
+  int x = 1;
+  if (cond) { x=100; result = QString::crbegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -564,8 +564,8 @@ void test__QString__crbegin__useretval() {
 }
 
 void test__QString__crend__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::crend();
+  int x = 1;
+  if (cond) { x=100; result = QString::crend(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -576,8 +576,8 @@ void test__QString__crend__useretval() {
 }
 
 void test__QStringList__begin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::begin();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::begin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -588,8 +588,8 @@ void test__QStringList__begin__useretval() {
 }
 
 void test__QStringList__end__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::end();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::end(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -600,8 +600,8 @@ void test__QStringList__end__useretval() {
 }
 
 void test__QStringList__cbegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::cbegin();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::cbegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -612,8 +612,8 @@ void test__QStringList__cbegin__useretval() {
 }
 
 void test__QStringList__cend__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::cend();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::cend(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -624,8 +624,8 @@ void test__QStringList__cend__useretval() {
 }
 
 void test__QStringList__constBegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::constBegin();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::constBegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -636,8 +636,8 @@ void test__QStringList__constBegin__useretval() {
 }
 
 void test__QStringList__constEnd__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::constEnd();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::constEnd(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -648,8 +648,8 @@ void test__QStringList__constEnd__useretval() {
 }
 
 void test__QStringList__rbegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::rbegin();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::rbegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -660,8 +660,8 @@ void test__QStringList__rbegin__useretval() {
 }
 
 void test__QStringList__rend__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::rend();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::rend(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -672,8 +672,8 @@ void test__QStringList__rend__useretval() {
 }
 
 void test__QStringList__crbegin__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::crbegin();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::crbegin(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -684,8 +684,8 @@ void test__QStringList__crbegin__useretval() {
 }
 
 void test__QStringList__crend__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::crend();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::crend(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -696,8 +696,8 @@ void test__QStringList__crend__useretval() {
 }
 
 void test__QString__chop__noreturn() {
-  int x = 100;
-  if (cond) x=1; else QString::chop(arg1);
+  int x = 1;
+  if (cond) { x=100; QString::chop(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -709,22 +709,22 @@ void test__QString__chop__arg1__notuninit() {
 }
 
 void test__QList__clear__noreturn() {
-  int x = 100;
-  if (cond) x=1; else QList::clear();
+  int x = 1;
+  if (cond) { x=100; QList::clear(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__QString__clear__noreturn() {
-  int x = 100;
-  if (cond) x=1; else QString::clear();
+  int x = 1;
+  if (cond) { x=100; QString::clear(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__QString__compare__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::compare(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = QString::compare(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -759,8 +759,8 @@ void test__QString__compare__arg3__notuninit() {
 }
 
 void test__QList__contains__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::contains(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QList::contains(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -777,8 +777,8 @@ void test__QList__contains__arg1__notuninit() {
 }
 
 void test__QList__startsWith__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::startsWith(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QList::startsWith(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -795,8 +795,8 @@ void test__QList__startsWith__arg1__notuninit() {
 }
 
 void test__QList__endsWith__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::endsWith(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QList::endsWith(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -813,8 +813,8 @@ void test__QList__endsWith__arg1__notuninit() {
 }
 
 void test__QString__contains__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::contains(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = QString::contains(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -837,8 +837,8 @@ void test__QString__contains__arg2__notuninit() {
 }
 
 void test__QString__startsWith__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::startsWith(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = QString::startsWith(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -861,8 +861,8 @@ void test__QString__startsWith__arg2__notuninit() {
 }
 
 void test__QString__endsWith__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::endsWith(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = QString::endsWith(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -885,8 +885,8 @@ void test__QString__endsWith__arg2__notuninit() {
 }
 
 void test__QStringList__contains__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::contains(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QStringList::contains(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -903,8 +903,8 @@ void test__QStringList__contains__arg1__notuninit() {
 }
 
 void test__QStringList__startsWith__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::startsWith(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QStringList::startsWith(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -921,8 +921,8 @@ void test__QStringList__startsWith__arg1__notuninit() {
 }
 
 void test__QStringList__endsWith__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::endsWith(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QStringList::endsWith(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -939,8 +939,8 @@ void test__QStringList__endsWith__arg1__notuninit() {
 }
 
 void test__QList__count__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::count();
+  int x = 1;
+  if (cond) { x=100; result = QList::count(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -951,8 +951,8 @@ void test__QList__count__useretval() {
 }
 
 void test__QList__length__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::length();
+  int x = 1;
+  if (cond) { x=100; result = QList::length(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -963,8 +963,8 @@ void test__QList__length__useretval() {
 }
 
 void test__QList__size__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::size();
+  int x = 1;
+  if (cond) { x=100; result = QList::size(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -975,8 +975,8 @@ void test__QList__size__useretval() {
 }
 
 void test__QString__count__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::count();
+  int x = 1;
+  if (cond) { x=100; result = QString::count(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -987,8 +987,8 @@ void test__QString__count__useretval() {
 }
 
 void test__QString__length__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::length();
+  int x = 1;
+  if (cond) { x=100; result = QString::length(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -999,8 +999,8 @@ void test__QString__length__useretval() {
 }
 
 void test__QString__size__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::size();
+  int x = 1;
+  if (cond) { x=100; result = QString::size(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1011,8 +1011,8 @@ void test__QString__size__useretval() {
 }
 
 void test__QStringList__count__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::count();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::count(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1023,8 +1023,8 @@ void test__QStringList__count__useretval() {
 }
 
 void test__QStringList__length__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::length();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::length(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1035,8 +1035,8 @@ void test__QStringList__length__useretval() {
 }
 
 void test__QStringList__size__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::size();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::size(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1047,8 +1047,8 @@ void test__QStringList__size__useretval() {
 }
 
 void test__QList__empty__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::empty();
+  int x = 1;
+  if (cond) { x=100; result = QList::empty(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1059,8 +1059,8 @@ void test__QList__empty__useretval() {
 }
 
 void test__QList__isEmpty__QString__isEmpty__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::isEmpty::QString::isEmpty();
+  int x = 1;
+  if (cond) { x=100; result = QList::isEmpty::QString::isEmpty(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1071,8 +1071,8 @@ void test__QList__isEmpty__QString__isEmpty__useretval() {
 }
 
 void test__QString__isNull__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::isNull();
+  int x = 1;
+  if (cond) { x=100; result = QString::isNull(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1083,8 +1083,8 @@ void test__QString__isNull__useretval() {
 }
 
 void test__QStringList__empty__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::empty();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::empty(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1095,8 +1095,8 @@ void test__QStringList__empty__useretval() {
 }
 
 void test__QStringList__isEmpty____noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::isEmpty::();
+  int x = 1;
+  if (cond) { x=100; result = QStringList::isEmpty::(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1107,8 +1107,8 @@ void test__QStringList__isEmpty____useretval() {
 }
 
 void test__QString__fromStdString__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::fromStdString(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QString::fromStdString(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1119,8 +1119,8 @@ void test__QString__fromStdString__useretval() {
 }
 
 void test__QList__indexOf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::indexOf(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QList::indexOf(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1137,8 +1137,8 @@ void test__QList__indexOf__arg1__notuninit() {
 }
 
 void test__QStringList__indexOf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::indexOf(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QStringList::indexOf(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1155,8 +1155,8 @@ void test__QStringList__indexOf__arg1__notuninit() {
 }
 
 void test__QString__indexOf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::indexOf();
+  int x = 1;
+  if (cond) { x=100; result = QString::indexOf(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1167,8 +1167,8 @@ void test__QString__indexOf__useretval() {
 }
 
 void test__QString__isRightToLeft__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::isRightToLeft();
+  int x = 1;
+  if (cond) { x=100; result = QString::isRightToLeft(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1179,8 +1179,8 @@ void test__QString__isRightToLeft__useretval() {
 }
 
 void test__QList__lastIndexOf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::lastIndexOf(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = QList::lastIndexOf(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1203,8 +1203,8 @@ void test__QList__lastIndexOf__arg2__notuninit() {
 }
 
 void test__QStringList__lastIndexOf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::lastIndexOf(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = QStringList::lastIndexOf(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1227,8 +1227,8 @@ void test__QStringList__lastIndexOf__arg2__notuninit() {
 }
 
 void test__QString__lastIndexOf__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::lastIndexOf(arg1, arg2, arg3);
+  int x = 1;
+  if (cond) { x=100; result = QString::lastIndexOf(arg1, arg2, arg3); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1257,8 +1257,8 @@ void test__QString__lastIndexOf__arg3__notuninit() {
 }
 
 void test__QString__left__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::left(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QString::left(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1275,8 +1275,8 @@ void test__QString__left__arg1__notuninit() {
 }
 
 void test__QList__mid__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QList::mid(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = QList::mid(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1299,8 +1299,8 @@ void test__QList__mid__arg2__notuninit() {
 }
 
 void test__QString__mid__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::mid(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = QString::mid(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1323,8 +1323,8 @@ void test__QString__mid__arg2__notuninit() {
 }
 
 void test__QStringList__mid__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QStringList::mid(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = QStringList::mid(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1347,8 +1347,8 @@ void test__QStringList__mid__arg2__notuninit() {
 }
 
 void test__QString__number__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::number();
+  int x = 1;
+  if (cond) { x=100; result = QString::number(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1365,8 +1365,8 @@ void test__QString__number__leakignore() {
 }
 
 void test__QString__right__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::right(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QString::right(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1394,8 +1394,8 @@ void test__QString__right__arg1__notuninit() {
 }
 
 void test__QString__split__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::split(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QString::split(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1418,8 +1418,8 @@ void test__QString__split__arg1__notuninit() {
 }
 
 void test__QString__toInt__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::toInt(arg1, arg2);
+  int x = 1;
+  if (cond) { x=100; result = QString::toInt(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1448,8 +1448,8 @@ void test__QString__toInt__arg2__notuninit() {
 }
 
 void test__QString__toLower__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::toLower();
+  int x = 1;
+  if (cond) { x=100; result = QString::toLower(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1460,8 +1460,8 @@ void test__QString__toLower__useretval() {
 }
 
 void test__QString__toStdString__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::toStdString();
+  int x = 1;
+  if (cond) { x=100; result = QString::toStdString(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1472,8 +1472,8 @@ void test__QString__toStdString__useretval() {
 }
 
 void test__QString__toUpper__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::toUpper();
+  int x = 1;
+  if (cond) { x=100; result = QString::toUpper(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1484,8 +1484,8 @@ void test__QString__toUpper__useretval() {
 }
 
 void test__QString__toUtf8__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::toUtf8();
+  int x = 1;
+  if (cond) { x=100; result = QString::toUtf8(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1496,8 +1496,8 @@ void test__QString__toUtf8__useretval() {
 }
 
 void test__QString__trimmed__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QString::trimmed();
+  int x = 1;
+  if (cond) { x=100; result = QString::trimmed(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1508,8 +1508,8 @@ void test__QString__trimmed__useretval() {
 }
 
 void test__QMetaObject__connectSlotsByName__noreturn() {
-  int x = 100;
-  if (cond) x=1; else QMetaObject::connectSlotsByName(arg1);
+  int x = 1;
+  if (cond) { x=100; QMetaObject::connectSlotsByName(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1526,8 +1526,8 @@ void test__QMetaObject__connectSlotsByName__arg1__notnull() {
 }
 
 void test__QDir__fromNativeSeparators__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QDir::fromNativeSeparators(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QDir::fromNativeSeparators(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1544,8 +1544,8 @@ void test__QDir__fromNativeSeparators__arg1__notuninit() {
 }
 
 void test__QDir__toNativeSeparators__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QDir::toNativeSeparators(arg1);
+  int x = 1;
+  if (cond) { x=100; result = QDir::toNativeSeparators(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1562,8 +1562,8 @@ void test__QDir__toNativeSeparators__arg1__notuninit() {
 }
 
 void test__QFile__open__noreturn() {
-  int x = 100;
-  if (cond) x=1; else QFile::open();
+  int x = 1;
+  if (cond) { x=100; QFile::open(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1575,8 +1575,8 @@ void test__QFile__open__leakignore() {
 }
 
 void test__QFile__remove__noreturn() {
-  int x = 100;
-  if (cond) x=1; else QFile::remove();
+  int x = 1;
+  if (cond) { x=100; QFile::remove(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1588,8 +1588,8 @@ void test__QFile__remove__leakignore() {
 }
 
 void test__QFile__rename__noreturn() {
-  int x = 100;
-  if (cond) x=1; else QFile::rename();
+  int x = 1;
+  if (cond) { x=100; QFile::rename(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1601,8 +1601,8 @@ void test__QFile__rename__leakignore() {
 }
 
 void test__QFile__size__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QFile::size();
+  int x = 1;
+  if (cond) { x=100; result = QFile::size(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -1613,8 +1613,8 @@ void test__QFile__size__useretval() {
 }
 
 void test__QIODevice__size__noreturn() {
-  int x = 100;
-  if (cond) x=1; else result = QIODevice::size();
+  int x = 1;
+  if (cond) { x=100; result = QIODevice::size(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
