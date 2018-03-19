@@ -1028,16 +1028,28 @@ void test__QList__empty__useretval() {
   QList::empty();
 }
 
-void test__QList__isEmpty__QString__isEmpty__noreturn() {
+void test__QList__isEmpty__noreturn() {
   int x = 1;
-  if (cond) { x=100; result = QList::isEmpty::QString::isEmpty(); }
+  if (cond) { x=100; result = QList::isEmpty(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
-void test__QList__isEmpty__QString__isEmpty__useretval() {
+void test__QList__isEmpty__useretval() {
   // cppcheck-suppress ignoredReturnValue
-  QList::isEmpty::QString::isEmpty();
+  QList::isEmpty();
+}
+
+void test__QString__isEmpty__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::isEmpty(); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__isEmpty__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::isEmpty();
 }
 
 void test__QString__isNull__noreturn() {
@@ -1064,16 +1076,16 @@ void test__QStringList__empty__useretval() {
   QStringList::empty();
 }
 
-void test__QStringList__isEmpty____noreturn() {
+void test__QStringList__isEmpty__noreturn() {
   int x = 1;
-  if (cond) { x=100; result = QStringList::isEmpty::(); }
+  if (cond) { x=100; result = QStringList::isEmpty(); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
-void test__QStringList__isEmpty____useretval() {
+void test__QStringList__isEmpty__useretval() {
   // cppcheck-suppress ignoredReturnValue
-  QStringList::isEmpty::();
+  QStringList::isEmpty();
 }
 
 void test__QString__fromStdString__noreturn() {
