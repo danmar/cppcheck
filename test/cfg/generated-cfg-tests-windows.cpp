@@ -8885,15 +8885,15 @@ void test___swab__arg1__notnull() {
   _swab(NULL, arg2, arg3);
 }
 
+void test___swab__arg1__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  _swab(x, arg2, arg3);
+}
+
 void test___swab__arg2__notnull() {
   // cppcheck-suppress nullPointer
   _swab(arg1, NULL, arg3);
-}
-
-void test___swab__arg2__notuninit() {
-  int x[10];
-  // cppcheck-suppress uninitvar
-  _swab(arg1, x, arg3);
 }
 
 void test___swab__arg3__notbool() {
