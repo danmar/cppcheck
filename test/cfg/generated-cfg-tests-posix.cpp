@@ -7349,3 +7349,51 @@ void test__tcdrain__arg1__notuninit() {
   tcdrain(x);
 }
 
+void test__swab__noreturn() {
+  int x = 1;
+  if (cond) { x=100; swab(arg1, arg2, arg3); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__swab__leakignore() {
+  char *p = malloc(10); *p=0;
+  swab(p, arg2, arg3);
+  // cppcheck-suppress memleak
+}
+
+void test__swab__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  swab(x, arg2, arg3);
+}
+
+void test__swab__arg2__notnull() {
+  // cppcheck-suppress nullPointer
+  swab(arg1, NULL, arg3);
+}
+
+void test__swab__arg2__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  swab(arg1, x, arg3);
+}
+
+void test__swab__arg3__notnull() {
+  // cppcheck-suppress nullPointer
+  swab(arg1, arg2, NULL);
+}
+
+void test__swab__arg3__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  swab(arg1, arg2, x);
+}
+
+void test__sync__noreturn() {
+  int x = 1;
+  if (cond) { x=100; sync(); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
