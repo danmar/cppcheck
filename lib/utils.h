@@ -108,8 +108,7 @@ struct binary_negate {
 };
 
 template<class F>
-binary_negate<F> not2(F f)
-{
+binary_negate<F> not2(F f) {
     return binary_negate<F>(f);
 }
 
