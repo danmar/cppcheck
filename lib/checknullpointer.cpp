@@ -429,7 +429,7 @@ void CheckNullPointer::nullConstantDereference()
                 nullPointerError(tok);
 
             else if (Token::Match(tok->previous(), "::|. %name% (")) {
-                std::vector<const Token *> args = getArguments(tok);
+                const std::vector<const Token *> &args = getArguments(tok);
                 for (int argnr = 0; argnr < args.size(); ++argnr) {
                     const Token *argtok = args[argnr];
                     if (!argtok->hasKnownIntValue())
