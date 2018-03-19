@@ -97,7 +97,7 @@ inline static int caseInsensitiveStringCompare(const std::string &lhs, const std
 template<class F>
 struct binary_negate {
     F f;
-    binary_negate(F f_) 
+    explicit binary_negate(F f_) 
     : f(f_)
     {}
 
