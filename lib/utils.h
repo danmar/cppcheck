@@ -92,6 +92,27 @@ inline static int caseInsensitiveStringCompare(const std::string &lhs, const std
     return 0;
 }
 
+// Provide these wrappers here, because they are removed in C++17 and replaced
+// with not_fn
+template<class F>
+struct binary_negate {
+    F f;
+    binary_negate(F f_) 
+    : f(f_)
+    {}
+
+    template<class T, class U>
+    bool operator()(const T& x, const U& y) const {
+        return !f(x, y);
+    }
+};
+
+template<class F>
+binary_negate<F> not2(F f)
+{
+    return binary_negate<F>(f);
+}
+
 #define UNUSED(x) (void)(x)
 
 #endif

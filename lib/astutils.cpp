@@ -242,10 +242,10 @@ bool equalTokValue(const Token * const tok1, const Token * const tok2)
 {
     return std::find_first_of(
         tok1->values().begin(), tok1->values().end(), 
-        tok2->values().begin(), tok2->values().end(), std::not2(std::ptr_fun(&ValueFlow::Value::equalKnownValue))) == tok1->values().end() &&
+        tok2->values().begin(), tok2->values().end(), not2(&ValueFlow::Value::equalKnownValue)) == tok1->values().end() &&
     std::find_first_of(
         tok2->values().begin(), tok2->values().end(), 
-        tok1->values().begin(), tok1->values().end(), std::not2(std::ptr_fun(&ValueFlow::Value::equalKnownValue))) == tok2->values().end();
+        tok1->values().begin(), tok1->values().end(), not2(&ValueFlow::Value::equalKnownValue)) == tok2->values().end();
 }
 
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure)
