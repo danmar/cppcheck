@@ -77,6 +77,9 @@ script:
 # check test/cfg
   - make checkcfg
   - make validateCFG
+# generated cfg tests
+  - ./cppcheck --platform=unix32 --library=posix --inline-suppr --enable=warning,information test/cfg/generated-cfg-tests-posix.cpp 2>&1 | grep 'Unmatched suppression' ; test $? -eq 1
+  - ./cppcheck --platform=unix32 --library=windows --inline-suppr --enable=warning,information test/cfg/generated-cfg-tests-windows.cpp 2>&1 | grep 'Unmatched suppression' ; test $? -eq 1
   - cd ./gui
 # clean rebuild
   - git clean -dfx .
