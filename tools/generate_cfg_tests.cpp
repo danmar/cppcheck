@@ -110,8 +110,8 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
     for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
         if (std::strcmp(child->Name(), "arg") == 0) {
             const char *nr = child->Attribute("nr");
-            if (nr && *nr >= (numberOfArgs + '0') && *nr <= '9')
-                numberOfArgs = *nr - '0';
+            if (nr && std::isdigit(*nr) && std::atoi(nr) > numberOfArgs)
+                numberOfArgs = std::atoi(nr);
         }
     }
 
@@ -171,7 +171,7 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
             if (std::strcmp(child->Name(), "arg") != 0)
                 continue;
             const char *nrAttr = child->Attribute("nr");
-            if (!nrAttr || *nrAttr != (argNr + '0'))
+            if (!nrAttr || std::atoi(nrAttr) != argNr)
                 continue;
 
             bool notbool = false;

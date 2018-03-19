@@ -2240,7 +2240,7 @@ void test__RegEnumKeyExW__arg2__notuninit() {
 
 void test__CreateFont__noreturn() {
   int x = 1;
-  if (cond) { x=100; CreateFont(arg1); }
+  if (cond) { x=100; CreateFont(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
@@ -6418,524 +6418,524 @@ void test__EnableWindow__arg2__notuninit() {
 
 void test__CreateWindow__noreturn() {
   int x = 1;
-  if (cond) { x=100; result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
+  if (cond) { x=100; result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__CreateWindow__useretval() {
   // cppcheck-suppress ignoredReturnValue
-  CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindow__leakignore() {
   char *p = malloc(10); *p=0;
-  result = CreateWindow(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindow(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
   // cppcheck-suppress memleak
 }
 
 void test__CreateWindow__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindow(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindow__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindow(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindow__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindow(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindow(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindow__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindow(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindow(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindow__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindow(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindow(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindow__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindow(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindow(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindow__arg5__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindow(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9);
+  result = CreateWindow(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindow__arg6__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindow(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9);
+  result = CreateWindow(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindow__arg7__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9);
+  result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindow__arg8__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9);
+  result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9, arg10, arg11);
 }
 
 void test__CreateWindow__arg9__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x);
+  result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x, arg10, arg11);
+}
+
+void test__CreateWindow__arg10__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, x, arg11);
+}
+
+void test__CreateWindow__arg11__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindow(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, x);
 }
 
 void test__CreateWindowA__noreturn() {
   int x = 1;
-  if (cond) { x=100; result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
+  if (cond) { x=100; result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__CreateWindowA__useretval() {
   // cppcheck-suppress ignoredReturnValue
-  CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowA__leakignore() {
   char *p = malloc(10); *p=0;
-  result = CreateWindowA(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowA(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
   // cppcheck-suppress memleak
 }
 
 void test__CreateWindowA__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowA(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowA__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowA(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowA__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowA(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowA(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowA__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowA(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowA(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowA__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowA(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowA(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowA__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowA(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowA(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowA__arg5__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowA(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9);
+  result = CreateWindowA(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowA__arg6__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9);
+  result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowA__arg7__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9);
+  result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowA__arg8__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9);
+  result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9, arg10, arg11);
 }
 
 void test__CreateWindowA__arg9__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x);
+  result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x, arg10, arg11);
+}
+
+void test__CreateWindowA__arg10__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, x, arg11);
+}
+
+void test__CreateWindowA__arg11__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, x);
 }
 
 void test__CreateWindowW__noreturn() {
   int x = 1;
-  if (cond) { x=100; result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
+  if (cond) { x=100; result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__CreateWindowW__useretval() {
   // cppcheck-suppress ignoredReturnValue
-  CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowW__leakignore() {
   char *p = malloc(10); *p=0;
-  result = CreateWindowW(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowW(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
   // cppcheck-suppress memleak
 }
 
 void test__CreateWindowW__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowW(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowW__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowW(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowW__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowW(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowW(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowW__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowW(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowW(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowW__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowW(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowW(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowW__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowW(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowW(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowW__arg5__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowW(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9);
+  result = CreateWindowW(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowW__arg6__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9);
+  result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowW__arg7__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9);
+  result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9, arg10, arg11);
 }
 
 void test__CreateWindowW__arg8__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9);
+  result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9, arg10, arg11);
 }
 
 void test__CreateWindowW__arg9__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x);
+  result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x, arg10, arg11);
+}
+
+void test__CreateWindowW__arg10__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, x, arg11);
+}
+
+void test__CreateWindowW__arg11__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, x);
 }
 
 void test__CreateWindowEx__noreturn() {
   int x = 1;
-  if (cond) { x=100; result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
+  if (cond) { x=100; result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__CreateWindowEx__useretval() {
   // cppcheck-suppress ignoredReturnValue
-  CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowEx__leakignore() {
   char *p = malloc(10); *p=0;
-  result = CreateWindowEx(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowEx(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
   // cppcheck-suppress memleak
 }
 
 void test__CreateWindowEx__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowEx(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowEx__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowEx(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowEx__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowEx(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowEx__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowEx(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowEx(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowEx__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowEx(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowEx(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowEx__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowEx(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowEx(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowEx__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowEx(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowEx(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowEx__arg5__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowEx(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9);
+  result = CreateWindowEx(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowEx__arg6__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9);
+  result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowEx__arg7__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9);
+  result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowEx__arg8__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9);
+  result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowEx__arg9__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x);
+  result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x, arg10, arg11, arg12);
+}
+
+void test__CreateWindowEx__arg10__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, x, arg11, arg12);
+}
+
+void test__CreateWindowEx__arg11__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, x, arg12);
+}
+
+void test__CreateWindowEx__arg12__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowEx(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, x);
 }
 
 void test__CreateWindowExA__noreturn() {
   int x = 1;
-  if (cond) { x=100; result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
+  if (cond) { x=100; result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__CreateWindowExA__useretval() {
   // cppcheck-suppress ignoredReturnValue
-  CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExA__leakignore() {
   char *p = malloc(10); *p=0;
-  result = CreateWindowExA(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowExA(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
   // cppcheck-suppress memleak
 }
 
 void test__CreateWindowExA__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExA(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowExA__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowExA(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowExA__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowExA(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowExA__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowExA(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowExA(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExA__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExA(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowExA(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExA__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExA(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowExA(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExA__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExA(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowExA(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExA__arg5__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExA(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9);
+  result = CreateWindowExA(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExA__arg6__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9);
+  result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExA__arg7__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9);
+  result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExA__arg8__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9);
+  result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExA__arg9__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x);
+  result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x, arg10, arg11, arg12);
+}
+
+void test__CreateWindowExA__arg10__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, x, arg11, arg12);
+}
+
+void test__CreateWindowExA__arg11__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, x, arg12);
+}
+
+void test__CreateWindowExA__arg12__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowExA(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, x);
 }
 
 void test__CreateWindowExW__noreturn() {
   int x = 1;
-  if (cond) { x=100; result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
+  if (cond) { x=100; result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__CreateWindowExW__useretval() {
   // cppcheck-suppress ignoredReturnValue
-  CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExW__leakignore() {
   char *p = malloc(10); *p=0;
-  result = CreateWindowExW(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowExW(p, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
   // cppcheck-suppress memleak
 }
 
 void test__CreateWindowExW__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExW(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowExW__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowExW(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowExW__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowExW(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-}
-
-void test__CreateWindowExW__arg1__notuninit() {
-  int x;
-  // cppcheck-suppress uninitvar
-  result = CreateWindowExW(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowExW(x, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExW__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExW(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowExW(arg1, x, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExW__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExW(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowExW(arg1, arg2, x, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExW__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExW(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9);
+  result = CreateWindowExW(arg1, arg2, arg3, x, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExW__arg5__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExW(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9);
+  result = CreateWindowExW(arg1, arg2, arg3, arg4, x, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExW__arg6__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9);
+  result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, x, arg7, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExW__arg7__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9);
+  result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, x, arg8, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExW__arg8__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9);
+  result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, x, arg9, arg10, arg11, arg12);
 }
 
 void test__CreateWindowExW__arg9__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x);
+  result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, x, arg10, arg11, arg12);
+}
+
+void test__CreateWindowExW__arg10__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, x, arg11, arg12);
+}
+
+void test__CreateWindowExW__arg11__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, x, arg12);
+}
+
+void test__CreateWindowExW__arg12__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = CreateWindowExW(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, x);
 }
 
 void test__SetWindowText__noreturn() {
@@ -12762,19 +12762,19 @@ void test__SetLastError__arg1__notuninit() {
 
 void test__AllocateAndInitializeSid__noreturn() {
   int x = 1;
-  if (cond) { x=100; AllocateAndInitializeSid(arg1); }
+  if (cond) { x=100; AllocateAndInitializeSid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__AllocateAndInitializeSid__arg1__notnull() {
   // cppcheck-suppress nullPointer
-  AllocateAndInitializeSid(NULL);
+  AllocateAndInitializeSid(NULL, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 }
 
-void test__AllocateAndInitializeSid__arg1__notnull() {
+void test__AllocateAndInitializeSid__arg11__notnull() {
   // cppcheck-suppress nullPointer
-  AllocateAndInitializeSid(NULL);
+  AllocateAndInitializeSid(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, NULL);
 }
 
 void test__FreeSid__noreturn() {
