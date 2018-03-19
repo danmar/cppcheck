@@ -1527,41 +1527,6 @@ void test__unlink__arg1__notuninit() {
   unlink(x);
 }
 
-void test__rename__noreturn() {
-  int x = 1;
-  if (cond) { x=100; rename(arg1, arg2); }
-  // cppcheck-suppress shiftTooManyBits
-  x = 1 << x;
-}
-
-void test__rename__leakignore() {
-  char *p = malloc(10); *p=0;
-  rename(p, arg2);
-  // cppcheck-suppress memleak
-}
-
-void test__rename__arg1__notnull() {
-  // cppcheck-suppress nullPointer
-  rename(NULL, arg2);
-}
-
-void test__rename__arg1__notuninit() {
-  int x[10];
-  // cppcheck-suppress uninitvar
-  rename(x, arg2);
-}
-
-void test__rename__arg2__notnull() {
-  // cppcheck-suppress nullPointer
-  rename(arg1, NULL);
-}
-
-void test__rename__arg2__notuninit() {
-  int x[10];
-  // cppcheck-suppress uninitvar
-  rename(arg1, x);
-}
-
 void test__stat__noreturn() {
   int x = 1;
   if (cond) { x=100; stat(arg1, arg2); }
