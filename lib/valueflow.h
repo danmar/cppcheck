@@ -42,32 +42,40 @@ namespace ValueFlow {
         explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(nullptr), varId(0U), conditional(false), defaultArg(false), valueKind(ValueKind::Possible) {}
         Value(const Token *c, long long val);
 
-        bool operator==(const Value &rhs) const {
-            if (valueType != rhs.valueType)
+        static bool equalValue(const Value &a, const Value& b) {
+            if (a.valueType != b.valueType)
                 return false;
-            switch (valueType) {
+            switch (a.valueType) {
             case INT:
-                if (intvalue != rhs.intvalue)
+                if (a.intvalue != b.intvalue)
                     return false;
                 break;
             case TOK:
-                if (tokvalue != rhs.tokvalue)
+                if (a.tokvalue != b.tokvalue)
                     return false;
                 break;
             case FLOAT:
                 // TODO: Write some better comparison
-                if (floatValue > rhs.floatValue || floatValue < rhs.floatValue)
+                if (a.floatValue > b.floatValue || a.floatValue < b.floatValue)
                     return false;
                 break;
             case MOVED:
-                if (moveKind != rhs.moveKind)
+                if (a.moveKind != b.moveKind)
                     return false;
                 break;
             case UNINIT:
                 break;
             };
+            return true;
+        }
 
-            return varvalue == rhs.varvalue &&
+        static bool equalKnownValue(const Value &a, const Value& b) {
+            return a.isKnown() && b.isKnown() && equalValue(a, b);
+        }
+        
+        bool operator==(const Value &rhs) const {
+            return equalValue(*this, rhs) &&
+                   varvalue == rhs.varvalue &&
                    condition == rhs.condition &&
                    varId == rhs.varId &&
                    conditional == rhs.conditional &&
