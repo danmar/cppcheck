@@ -3039,13 +3039,13 @@ void ignoredReturnValue_abs(int i)
 
 void nullPointer_ifstream_read(std::ifstream &f)
 {
-    // TODO cppcheck-suppress nullPointer
+    // cppcheck-suppress nullPointer
     f.read(NULL, 10);
 }
 
 void nullPointer_istream_read(std::istream &f)
 {
-    // TODO cppcheck-suppress nullPointer
+    // cppcheck-suppress nullPointer
     f.read(NULL, 10);
 }
 
