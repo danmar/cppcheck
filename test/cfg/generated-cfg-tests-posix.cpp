@@ -5906,30 +5906,6 @@ void test__realpath__arg1__notuninit() {
   realpath(x, arg2);
 }
 
-void test__remove__noreturn() {
-  int x = 1;
-  if (cond) { x=100; remove(arg1); }
-  // cppcheck-suppress shiftTooManyBits
-  x = 1 << x;
-}
-
-void test__remove__leakignore() {
-  char *p = malloc(10); *p=0;
-  remove(p);
-  // cppcheck-suppress memleak
-}
-
-void test__remove__arg1__notnull() {
-  // cppcheck-suppress nullPointer
-  remove(NULL);
-}
-
-void test__remove__arg1__notuninit() {
-  int x[10];
-  // cppcheck-suppress uninitvar
-  remove(x);
-}
-
 void test__fileno__noreturn() {
   int x = 1;
   if (cond) { x=100; result = fileno(arg1); }
