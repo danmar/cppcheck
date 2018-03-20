@@ -1176,8 +1176,10 @@ Checking null.c...
 [null.c:3]: (error) Null pointer dereference</programlisting>
 
           <para>Note that this implies <literal>&lt;not-uninit&gt;</literal>
-          as far as values are concerned. Uninitialized memory might still be
-          passed to the function.</para>
+          as far as pointers are concerned. Uninitialized memory to which the
+          pointer points or uninitialized content of an array are considered
+          valid as long as no <literal>&lt;not-uninit&gt;</literal> is added
+          to the argument configuration.</para>
 
           <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
 
