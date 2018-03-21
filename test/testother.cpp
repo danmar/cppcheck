@@ -3900,6 +3900,13 @@ private:
               "    int j = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f();\n"
+              "void test() {\n"
+              "    int i = f() || f();\n"
+              "    int j = f() && f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkSignOfUnsignedVariable() {

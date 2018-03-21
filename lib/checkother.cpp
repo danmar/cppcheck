@@ -1951,9 +1951,8 @@ void CheckOther::checkDuplicateExpression()
                         var2->varId() != var1->varId() && 
                         !tok->next()->isLiteral() &&
                         !nextAssign->next()->isLiteral() &&
-                        isSameExpression(_tokenizer->isCPP(), true, tok->next(), nextAssign->next(), _settings->library, false)) {
-                        printf("var1: %i\n", var1->varId());
-                        printf("var2: %i\n", var2->varId());
+                        isSameExpression(_tokenizer->isCPP(), true, tok->next(), nextAssign->next(), _settings->library, false) &&
+                        isSameExpression(_tokenizer->isCPP(), true, tok->astOperand2(), nextAssign->astOperand2(), _settings->library, false)) {
                         duplicateAssignExpressionError(var1, var2);
                     }
                 }
