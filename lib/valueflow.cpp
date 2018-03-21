@@ -2339,7 +2339,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                     vartok = vartok->astOperand1();
                 if (!vartok->isName() || !numtok->hasKnownIntValue())
                     continue;
-            } else if (Token::Match(tok, ">")) {
+            } else if (Token::simpleMatch(tok, ">")) {
                 if (!tok->astOperand1() || !tok->astOperand2())
                     continue;
                 if (tok->astOperand1()->hasKnownIntValue()) {
@@ -2353,7 +2353,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                     vartok = vartok->astOperand1();
                 if (!vartok->isName() || !lowertok->hasKnownIntValue())
                     continue;
-            } else if (Token::Match(tok, "<")) {
+            } else if (Token::simpleMatch(tok, "<")) {
                 if (!tok->astOperand1() || !tok->astOperand2())
                     continue;
                 if (tok->astOperand1()->hasKnownIntValue()) {
