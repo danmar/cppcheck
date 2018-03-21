@@ -1934,7 +1934,7 @@ void CheckOther::checkDuplicateExpression()
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if(tok->str() == "=" && Token::Match(tok->astOperand1(), "%var%")) {
-                const Token * endStatement = Token::findmatch(tok, ";");
+                const Token * endStatement = Token::findsimplematch(tok, ";");
                 if(Token::Match(endStatement, "; %type% %var% ;")) {
                     endStatement = endStatement->tokAt(4);
                 }
