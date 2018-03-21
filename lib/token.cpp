@@ -543,14 +543,15 @@ int Token::multiCompare(const Token *tok, const char *haystack, unsigned int var
     return -1;
 }
 
-bool Token::simpleMatch(const Token *tok, const char pattern[])
+bool Token::simpleMatch(const Token *tok, const char pattern[], size_t patternLength)
 {
     if (!tok)
         return false; // shortcut
     const char *current  = pattern;
+    const char *patternEnd = pattern + patternLength;
     const char *next = std::strchr(pattern, ' ');
     if (!next)
-        next = pattern + std::strlen(pattern);
+        next = patternEnd;
 
     while (*current) {
         std::size_t length = next - current;
@@ -562,7 +563,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
         if (*next) {
             next = std::strchr(++current, ' ');
             if (!next)
-                next = current + std::strlen(current);
+                next = patternEnd;
         }
         tok = tok->next();
     }
@@ -585,17 +586,26 @@ bool Token::firstWordEquals(const char *str, const char *word)
     return true;
 }
 
-const char *Token::chrInFirstWord(const char *str, char c)
+/**
+ * Works almost like strchr(const char *str, ']') except
+ * if str has empty space &apos; &apos; character, that character is handled
+ * as if it were &apos;\\0&apos;
+ */
+static bool closingSquareBracketInFirstWord(const char *str)
 {
     for (;;) {
-        if (*str == ' ' || *str == 0)
-            return nullptr;
-
-        if (*str == c)
-            return str;
-
-        ++str;
+        switch (*str)
+        {
+            case ']':
+                return true;
+            case ' ':
+            case 0:
+                return false;
+            default:
+                ++str;
+        }
     }
+    return false;
 }
 
 bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
@@ -621,7 +631,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         }
 
         // [.. => search for a one-character token..
-        if (p[0] == '[' && chrInFirstWord(p, ']')) {
+        if (p[0] == '[' && closingSquareBracketInFirstWord(p)) {
             if (tok->str().length() != 1)
                 return false;
 
@@ -860,8 +870,9 @@ Token * Token::findClosingBracket()
 
 const Token *Token::findsimplematch(const Token * const startTok, const char pattern[])
 {
+    const size_t patternLen = std::strlen(pattern);
     for (const Token* tok = startTok; tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, pattern))
+        if (Token::simpleMatch(tok, pattern, patternLen))
             return tok;
     }
     return nullptr;
@@ -869,8 +880,9 @@ const Token *Token::findsimplematch(const Token * const startTok, const char pat
 
 const Token *Token::findsimplematch(const Token * const startTok, const char pattern[], const Token * const end)
 {
+    const size_t patternLen = std::strlen(pattern);
     for (const Token* tok = startTok; tok && tok != end; tok = tok->next()) {
-        if (Token::simpleMatch(tok, pattern))
+        if (Token::simpleMatch(tok, pattern, patternLen))
             return tok;
     }
     return nullptr;

@@ -661,8 +661,8 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<TokenAndName> 
         // iterate through all template instantiations
         for (std::list<TokenAndName>::const_iterator iter2 = templateInstantiations->begin(); iter2 != templateInstantiations->end(); ++iter2) {
             Token *tok = iter2->token;
-
-            if (!Token::simpleMatch(tok, (classname + " <").c_str()))
+            std::string pattern(classname + " <");
+            if (!Token::simpleMatch(tok, pattern))
                 continue;
 
             // count the parameters..
