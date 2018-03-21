@@ -130,6 +130,7 @@ private:
         TEST_CASE(duplicateExpression6); // ticket #4639
         TEST_CASE(duplicateExpressionTernary); // #6391
         TEST_CASE(duplicateExpressionTemplate); // #6930
+        TEST_CASE(duplicateVarExpression);
 
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
@@ -3882,6 +3883,22 @@ private:
               "}\n"
               "\n"
               "static auto a = f<0>();");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateVarExpression() {
+        check("int f();\n"
+              "void test() {\n"
+              "    int i = f();\n"
+              "    int j = f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+
+        check("int f();\n"
+              "void test() {\n"
+              "    int i = 0;\n"
+              "    int j = 0;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

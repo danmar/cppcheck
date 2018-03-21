@@ -1933,6 +1933,31 @@ void CheckOther::checkDuplicateExpression()
             continue;
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+            if(tok->str() == "=" && Token::Match(tok->astOperand1(), "%var%")) {
+                const Token * endStatement = Token::findmatch(tok, ";");
+                if(Token::Match(endStatement, "; %type% %var% ;")) {
+                    endStatement = endStatement->tokAt(4);
+                }
+                if(Token::Match(endStatement, "%var% %assign%")) {
+                    const Token * nextAssign = endStatement->tokAt(1);
+                    const Token * var1 = tok->astOperand1();
+                    const Token * var2 = nextAssign->astOperand1();
+                    if(Token::Match(var1->previous(), ";|{|} %var%") &&
+                        Token::Match(var2->previous(), ";|{|} %var%") &&
+                        var2->valueType() && var1->valueType() && 
+                        var2->valueType()->originalTypeName == var1->valueType()->originalTypeName &&
+                        var2->valueType()->pointer == var1->valueType()->pointer &&
+                        var2->valueType()->constness == var1->valueType()->constness &&
+                        var2->varId() != var1->varId() && 
+                        !tok->next()->isLiteral() &&
+                        !nextAssign->next()->isLiteral() &&
+                        isSameExpression(_tokenizer->isCPP(), true, tok->next(), nextAssign->next(), _settings->library, false)) {
+                        printf("var1: %i\n", var1->varId());
+                        printf("var2: %i\n", var2->varId());
+                        duplicateAssignExpressionError(var1, var2);
+                    }
+                }
+            }
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>|+=|*=|<<=|>>=")) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
@@ -1988,6 +2013,17 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
                 "Finding the same expression on both sides of an operator is suspicious and might "
                 "indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, false);
+}
+
+void CheckOther::duplicateAssignExpressionError(const Token *tok1, const Token *tok2)
+{
+    const std::list<const Token *> toks = make_container< std::list<const Token *> >() << tok2 << tok1;
+
+    reportError(toks, Severity::style, "duplicateAssignExpression", 
+        "Both variables '" + tok1->str() + "' and '" + tok2->str() + "' are assigned the same expression.\n"
+        "Finding two variables that are assigned the same expression is suspicious and might "
+        "indicate a cut and paste or logic error. Please examine this code carefully to "
+        "determine if it is correct.", CWE398, false);
 }
 
 void CheckOther::duplicateExpressionTernaryError(const Token *tok)
