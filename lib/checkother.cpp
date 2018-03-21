@@ -1951,6 +1951,10 @@ void CheckOther::checkDuplicateExpression()
                         var2->varId() != var1->varId() && 
                         !tok->next()->isLiteral() &&
                         !nextAssign->next()->isLiteral() &&
+                        tok->next()->tokType() != Token::eType &&
+                        nextAssign->next()->tokType() != Token::eType &&
+                        tok->next()->tokType() != Token::eName &&
+                        nextAssign->next()->tokType() != Token::eName &&
                         isSameExpression(_tokenizer->isCPP(), true, tok->next(), nextAssign->next(), _settings->library, false) &&
                         isSameExpression(_tokenizer->isCPP(), true, tok->astOperand2(), nextAssign->astOperand2(), _settings->library, false)) {
                         duplicateAssignExpressionError(var1, var2);

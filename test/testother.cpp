@@ -3896,8 +3896,34 @@ private:
 
         check("int f();\n"
               "void test() {\n"
+              "    int i = f() + f();\n"
+              "    int j = f() + f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+
+        check("int f(int);\n"
+              "void test() {\n"
+              "    int i = f(0);\n"
+              "    int j = f(0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+
+        check("void test() {\n"
               "    int i = 0;\n"
               "    int j = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test() {\n"
+              "    int i = -1;\n"
+              "    int j = -1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int);\n"
+              "void test() {\n"
+              "    int i = f(0);\n"
+              "    int j = f(1);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -3905,6 +3931,19 @@ private:
               "void test() {\n"
               "    int i = f() || f();\n"
               "    int j = f() && f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo {};\n"
+              "void test() {\n"
+              "    Foo i = Foo();\n"
+              "    Foo j = Foo();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test() {\n"
+              "    int i = f();\n"
+              "    int j = f();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
