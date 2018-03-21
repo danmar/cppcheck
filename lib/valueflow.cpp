@@ -2316,7 +2316,10 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
         const Scope * scope = symboldatabase->functionScopes[i];
         std::set<unsigned> aliased;
         for (Token* tok = const_cast<Token*>(scope->classStart); tok != scope->classEnd; tok = tok->next()) {
-            const Token *vartok, *numtok;
+            const Token * vartok = NULL;
+            const Token * numtok = NULL;
+            const Token * lowertok = NULL;
+            const Token * uppertok = NULL;
 
             if (Token::Match(tok, "= & %var% ;"))
                 aliased.insert(tok->tokAt(2)->varId());
@@ -2335,6 +2338,34 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                     vartok = vartok->astOperand1();
                 if (!vartok->isName() || !numtok->hasKnownIntValue())
+                    continue;
+            } else if (Token::Match(tok, ">")) {
+                if (!tok->astOperand1() || !tok->astOperand2())
+                    continue;
+                if (tok->astOperand1()->hasKnownIntValue()) {
+                    lowertok = tok->astOperand1();
+                    vartok = tok->astOperand2();
+                } else {
+                    lowertok = tok->astOperand2();
+                    vartok = tok->astOperand1();
+                }
+                if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
+                    vartok = vartok->astOperand1();
+                if (!vartok->isName() || !lowertok->hasKnownIntValue())
+                    continue;
+            } else if (Token::Match(tok, "<")) {
+                if (!tok->astOperand1() || !tok->astOperand2())
+                    continue;
+                if (tok->astOperand1()->hasKnownIntValue()) {
+                    uppertok = tok->astOperand1();
+                    vartok = tok->astOperand2();
+                } else {
+                    uppertok = tok->astOperand2();
+                    vartok = tok->astOperand1();
+                }
+                if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
+                    vartok = vartok->astOperand1();
+                if (!vartok->isName() || !uppertok->hasKnownIntValue())
                     continue;
             } else if (tok->str() == "!") {
                 vartok = tok->astOperand1();
@@ -2364,7 +2395,25 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 continue;
             }
             std::list<ValueFlow::Value> values;
-            values.push_back(ValueFlow::Value(tok, numtok ? numtok->values().front().intvalue : 0LL));
+            // TODO: We should add all known values
+            if(numtok) {
+                values.push_back(ValueFlow::Value(tok, numtok->values().front().intvalue));
+            } else if(lowertok) {
+                long long v = lowertok->values().front().intvalue;
+                values.push_back(ValueFlow::Value(tok, v+1));
+                if (v < 0)
+                    values.push_back(ValueFlow::Value(tok, 0LL));
+
+            } else if(uppertok) {
+                long long v = uppertok->values().front().intvalue;
+                values.push_back(ValueFlow::Value(tok, v-1));
+                if (v > 0)
+                    values.push_back(ValueFlow::Value(tok, 0LL));
+
+            } else {
+                values.push_back(ValueFlow::Value(tok, 0LL));
+
+            }
 
             if (Token::Match(tok->astParent(), "%oror%|&&")) {
                 Token *parent = const_cast<Token*>(tok->astParent());
@@ -2415,7 +2464,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
 
                 // based on the comparison, should we check the if or while?
                 int codeblock = 0;
-                if (Token::Match(tok, "==|>=|<=|!"))
+                if (Token::Match(tok, "==|>=|<=|!|>|<"))
                     codeblock = 1;
                 else if (Token::Match(tok, "%name%|!="))
                     codeblock = 2;
