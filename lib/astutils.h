@@ -58,6 +58,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
 
 bool equalTokValue(const Token * const tok1, const Token * const tok2);
 
+bool notEqualTokValue(const Token * const tok1, const Token * const tok2);
+
 /**
  * Are two conditions opposite
  * @param isNot  do you want to know if cond1 is !cond2 or if cond1 and cond2 are non-overlapping. true: cond1==!cond2  false: cond1==true => cond2==false
