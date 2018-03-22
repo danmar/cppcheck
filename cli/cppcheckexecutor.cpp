@@ -373,11 +373,11 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         fputs(signame, output);
         fputs(
 #ifdef NDEBUG
-        " - out of memory?\n",
+            " - out of memory?\n",
 #else
-        " - out of memory or assertion?\n",
+            " - out of memory or assertion?\n",
 #endif
-		output);
+            output);
         lowMem=true; // educated guess
         break;
     case SIGBUS:
