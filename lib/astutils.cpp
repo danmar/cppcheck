@@ -240,13 +240,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
 
 bool equalTokValue(const Token * const tok1, const Token * const tok2)
 {
-    return !tok1->values().empty() && !tok2->values().empty() &&
-    std::find_first_of(
-        tok1->values().begin(), tok1->values().end(), 
-        tok2->values().begin(), tok2->values().end(), not2(&ValueFlow::Value::equalKnownValue)) == tok1->values().end() &&
-    std::find_first_of(
-        tok2->values().begin(), tok2->values().end(), 
-        tok1->values().begin(), tok1->values().end(), not2(&ValueFlow::Value::equalKnownValue)) == tok2->values().end();
+    return tok1->values() == tok2->values() && tok1->values().size()==1U && tok1->values().front().isKnown();
 }
 
 bool notEqualTokValue(const Token * const tok1, const Token * const tok2)

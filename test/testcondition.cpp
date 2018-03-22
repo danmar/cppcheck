@@ -1213,6 +1213,10 @@ private:
 
         check("void f3(char a, char b) { if(a==b) if(a==0) {}} ");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) { if (x == 1) if (x != 1) {} }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
+                      "[test.cpp:1] -> [test.cpp:1]: (style) Condition 'x!=1' is always false\n", errout.str());
     }
 
     void incorrectLogicOperator9() { //  #6069 "False positive incorrectLogicOperator due to dynamic_cast"
