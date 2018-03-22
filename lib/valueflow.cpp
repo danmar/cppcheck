@@ -732,6 +732,22 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->tokAt(4)), value, settings);
             }
+        } else if (Token::Match(tok2, "%var% )")) {
+            const Variable *var = tok2->variable();
+            if (var &&
+                var->isArray() &&
+                var->dimensions().size() == 1 &&
+                var->dimensionKnown(0) &&
+                var->typeStartToken() == var->typeEndToken() &&
+                var->isEnumType()) {
+                size_t size = settings->sizeof_int;
+                if (var->type()->classScope && var->type()->classScope->enumType)
+                    size = getSizeOfType(var->type()->classScope->enumType, settings);
+                ValueFlow::Value value(var->dimension(0) * size);
+                if (settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            }
         } else if (!tok2->type()) {
             const ValueType &vt = ValueType::parseDecl(tok2,settings);
             if (vt.pointer) {

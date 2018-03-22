@@ -150,6 +150,7 @@ private:
         TEST_CASE(array_index_valueflow);
         TEST_CASE(array_index_valueflow_pointer);
         TEST_CASE(array_index_function_parameter);
+        TEST_CASE(array_index_enum_array); // #8439
 
         TEST_CASE(buffer_overrun_2_struct);
         TEST_CASE(buffer_overrun_3);
@@ -2166,6 +2167,15 @@ private:
               "  a[-1] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_enum_array() { // #8439
+        check("enum E : unsigned int { e1, e2 };\n"
+              "void f() {\n"
+              "    E arrE[] = { e1, e2 };\n"
+              "    arrE[sizeof(arrE)] = e1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'arrE[2]' accessed at index 8, which is out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_2_struct() {
