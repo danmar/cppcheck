@@ -661,6 +661,8 @@ static unsigned int getSizeOfType(const Token *typeTok, const Settings *settings
         return settings->sizeof_int;
     else if (typeStr == "long")
         return typeTok->isLong() ? settings->sizeof_long_long : settings->sizeof_long;
+    else if (typeStr == "wchar_t")
+        return settings->sizeof_wchar_t;
     else
         return 0;
 }
@@ -692,6 +694,13 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
         setTokenValue(const_cast<Token *>(tok), value, settings);
     } else if (Token::simpleMatch(tok, "sizeof (")) {
         const Token *tok2 = tok->tokAt(2);
+        // skip over tokens to find variable or type
+        while (Token::Match(tok2, "%name% ::|.|[")) {
+            if (tok2->next()->str() == "[")
+                tok2 = tok2->linkAt(1)->next();
+            else
+                tok2 = tok2->tokAt(2);
+        }
         if (tok2->enumerator() && tok2->enumerator()->scope) {
             long long size = settings->sizeof_int;
             const Token * type = tok2->enumerator()->scope->enumType;
@@ -731,6 +740,35 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->tokAt(4)), value, settings);
+            }
+        } else if (Token::Match(tok2, "%var% )")) {
+            const Variable *var = tok2->variable();
+            // only look for single token types (no pointers or references yet)
+            if (var && var->typeStartToken() == var->typeEndToken()) {
+                // find the size of the type
+                size_t size = 0;
+                if (var->isEnumType()) {
+                    size = settings->sizeof_int;
+                    if (var->type()->classScope && var->type()->classScope->enumType)
+                        size = getSizeOfType(var->type()->classScope->enumType, settings);
+                } else if (!var->type()) {
+                    size = getSizeOfType(var->typeStartToken(), settings);
+                }
+                // find the number of elements
+                size_t count = 1;
+                for (size_t i = 0; i < var->dimensions().size(); ++i) {
+                    if (var->dimensionKnown(i))
+                        count *= var->dimension(i);
+                    else
+                        count = 0;
+                }
+                if (size && count > 0) {
+                    ValueFlow::Value value(count * size);
+                    if (settings->platformType != cppcheck::Platform::Unspecified)
+                        value.setKnown();
+                    setTokenValue(const_cast<Token *>(tok), value, settings);
+                    setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+                }
             }
         } else if (!tok2->type()) {
             const ValueType &vt = ValueType::parseDecl(tok2,settings);
