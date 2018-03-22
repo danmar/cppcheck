@@ -238,14 +238,14 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     return commutativeEquals;
 }
 
-bool equalTokValue(const Token * const tok1, const Token * const tok2)
+bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
 {
-    return tok1->values() == tok2->values() && tok1->values().size()==1U && tok1->values().front().isKnown();
+    return tok1->hasKnownValue() && tok2->hasKnownValue() && tok1->values() == tok2->values();
 }
 
-bool notEqualTokValue(const Token * const tok1, const Token * const tok2)
+bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
 {
-    return !tok1->values().empty() && !tok2->values().empty() && !equalTokValue(tok1, tok2);
+    return tok1->hasKnownValue() && tok2->hasKnownValue() && tok1->values() != tok2->values();
 }
 
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure)
@@ -269,9 +269,9 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     if(!isNot) {
         if (cond1->str() == "==" && cond2->str() == "==") {
             if(isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure))
-                return notEqualTokValue(cond1->astOperand2(), cond2->astOperand2());
+                return isDifferentKnownValues(cond1->astOperand2(), cond2->astOperand2());
             if(isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure))
-                return notEqualTokValue(cond1->astOperand1(), cond2->astOperand1());
+                return isDifferentKnownValues(cond1->astOperand1(), cond2->astOperand1());
         }
     }
 

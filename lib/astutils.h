@@ -56,9 +56,9 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure);
 
-bool equalTokValue(const Token * const tok1, const Token * const tok2);
+bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
 
-bool notEqualTokValue(const Token * const tok1, const Token * const tok2);
+bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2);
 
 /**
  * Are two conditions opposite
