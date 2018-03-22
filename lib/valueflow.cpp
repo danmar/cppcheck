@@ -2401,14 +2401,10 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
             } else if(lowertok) {
                 long long v = lowertok->values().front().intvalue;
                 values.push_back(ValueFlow::Value(tok, v+1));
-                if (v < 0)
-                    values.push_back(ValueFlow::Value(tok, 0LL));
 
             } else if(uppertok) {
                 long long v = uppertok->values().front().intvalue;
                 values.push_back(ValueFlow::Value(tok, v-1));
-                if (v > 0)
-                    values.push_back(ValueFlow::Value(tok, 0LL));
 
             } else {
                 values.push_back(ValueFlow::Value(tok, 0LL));
