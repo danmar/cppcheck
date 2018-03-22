@@ -1455,6 +1455,8 @@ private:
     void garbageCode187() { // # 8152 - segfault in handling
         const std::string inp("0|\0|0>;\n", 8);
         ASSERT_THROW(checkCode(inp), InternalError);
+
+        checkCode("template<class T> struct S : A< B<T> || C<T> > {};"); // No syntax error: #8390
     }
 
     void garbageCode188() { // #8255
