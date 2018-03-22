@@ -11,6 +11,10 @@
 
 void validCode()
 {
+    DWORD dwordInit = 0;
+    WORD wordInit = 0;
+    BYTE byteInit = 0;
+
     // Valid Semaphore usage, no leaks, valid arguments
     HANDLE hSemaphore1;
     hSemaphore1 = CreateSemaphore(NULL, 0, 1, NULL);
@@ -116,7 +120,6 @@ void validCode()
     _stprintf(bufTC, _countof(bufTC), TEXT("%d"), 2);
     _tprintf(TEXT("%s"), bufTC);
 
-    DWORD dwordInit = 0;
     GetUserName(NULL, &dwordInit);
     dwordInit = 10;
     GetUserName(bufTC, _countof(bufTC));
@@ -130,6 +133,16 @@ void validCode()
         closesocket(sock);
     }
     WSACleanup();
+
+    wordInit = MAKEWORD(1, 2);
+    dwordInit = MAKELONG(1, 2);
+    // cppcheck-suppress redundantAssignment
+    wordInit = LOWORD(dwordInit);
+    byteInit = LOBYTE(wordInit);
+    wordInit = HIWORD(dwordInit);
+    // cppcheck-suppress redundantAssignment
+    byteInit = HIBYTE(wordInit);
+    if (byteInit) {}
 
     bool boolVar;
     uint8_t byteBuf[5] = {0};
