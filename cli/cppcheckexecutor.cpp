@@ -347,7 +347,7 @@ static const Signalmap_t listofsignals = make_container< Signalmap_t > ()
 static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 {
     int type = -1;
-    pid_t killid = getpid();
+    pid_t killid;
 #if defined(__linux__) && defined(REG_ERR)
     const ucontext_t* const uc = reinterpret_cast<const ucontext_t*>(context);
     killid = (pid_t) syscall(SYS_gettid);
@@ -356,13 +356,14 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     }
 #else
     UNUSED(context);
+    killid = getpid();
 #endif
 
     const Signalmap_t::const_iterator it=listofsignals.find(signo);
     const char * const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
     bool printCallstack=true; // try to print a callstack?
-    bool lowMem=false; // was low-memory condition detected?
-    bool unexpectedSignal=true; // unexpected indicates things didn't go as they should...
+    bool lowMem=false; // was low-memory condition detected? Be careful then! Avoid allocating much more memory then.
+    bool unexpectedSignal=true; // unexpected indicates program failure
     bool terminate=true; // exit process/thread
     const bool isAddressOnStack = IsAddressOnStack(info->si_addr);
     FILE* output = CppCheckExecutor::getExceptionOutput();
@@ -370,7 +371,13 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     case SIGABRT:
         fputs("Internal error: cppcheck received signal ", output);
         fputs(signame, output);
-        fputs(" - out of memory?\n", output);
+        fputs(
+#ifdef NDEBUG
+        " - out of memory?\n",
+#else
+        " - out of memory or assertion?\n",
+#endif
+		output);
         lowMem=true; // educated guess
         break;
     case SIGBUS:
