@@ -1457,6 +1457,7 @@ private:
         ASSERT_THROW(checkCode(inp), InternalError);
 
         checkCode("template<class T> struct S : A< B<T> || C<T> > {};"); // No syntax error: #8390
+        checkCode("static_assert(A<x> || B<x>, ab);");
     }
 
     void garbageCode188() { // #8255

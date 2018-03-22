@@ -8398,10 +8398,11 @@ void Tokenizer::findGarbageCode() const
         if (!templateEndToken) {
             if (tok->str() == "<" && isCPP())
                 templateEndToken = tok->findClosingBracket();
-        } else if (templateEndToken == tok) {
-            templateEndToken = nullptr;
-        } else if (Token::Match(tok, "> %cop%")) {
-            continue;
+        } else {
+            if (templateEndToken == tok)
+                templateEndToken = nullptr;
+            if (Token::Match(tok, "> %cop%"))
+                continue;
         }
         if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             syntaxError(tok);
