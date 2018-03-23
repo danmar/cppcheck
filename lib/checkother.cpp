@@ -1942,7 +1942,8 @@ void CheckOther::checkDuplicateExpression()
                     const Token * nextAssign = endStatement->tokAt(1);
                     const Token * var1 = tok->astOperand1();
                     const Token * var2 = nextAssign->astOperand1();
-                    if(Token::Match(var1->previous(), ";|{|} %var%") &&
+                    if(var1 && var2 &&
+                        Token::Match(var1->previous(), ";|{|} %var%") &&
                         Token::Match(var2->previous(), ";|{|} %var%") &&
                         var2->valueType() && var1->valueType() && 
                         var2->valueType()->originalTypeName == var1->valueType()->originalTypeName &&
