@@ -3896,6 +3896,13 @@ private:
 
         check("int f();\n"
               "void test() {\n"
+              "    int i = 1 + f();\n"
+              "    int j = 1 + f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+
+        check("int f();\n"
+              "void test() {\n"
               "    int i = f() + f();\n"
               "    int j = f() + f();\n"
               "}");
@@ -3907,6 +3914,19 @@ private:
               "    int j = f(0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+
+        check("void test(int * p) {\n"
+              "    int i = *p;\n"
+              "    int j = *p;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+
+        check("struct A { int x; };"
+              "void test(A a) {\n"
+              "    int i = a.x;\n"
+              "    int j = a.x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
 
         check("void test() {\n"
               "    int i = 0;\n"
@@ -3941,9 +3961,40 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct Foo {};\n"
+              "void test() {\n"
+              "    Foo i = Foo{};\n"
+              "    Foo j = Foo{};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void test() {\n"
               "    int i = f();\n"
               "    int j = f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test(int x) {\n"
+              "    int i = ++x;\n"
+              "    int j = ++x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test(int x) {\n"
+              "    int i = x++;\n"
+              "    int j = x++;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test(int x) {\n"
+              "    int i = --x;\n"
+              "    int j = --x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test(int x) {\n"
+              "    int i = x--;\n"
+              "    int j = x--;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

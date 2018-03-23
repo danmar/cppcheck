@@ -1948,13 +1948,13 @@ void CheckOther::checkDuplicateExpression()
                         var2->valueType()->originalTypeName == var1->valueType()->originalTypeName &&
                         var2->valueType()->pointer == var1->valueType()->pointer &&
                         var2->valueType()->constness == var1->valueType()->constness &&
-                        var2->varId() != var1->varId() && 
-                        !tok->next()->isLiteral() &&
-                        !nextAssign->next()->isLiteral() &&
+                        var2->varId() != var1->varId() && (
+                            tok->astOperand2()->isArithmeticalOp() ||
+                            tok->astOperand2()->str() == "." ||
+                            Token::Match(tok->astOperand2()->previous(), "%name% (")
+                        ) &&
                         tok->next()->tokType() != Token::eType &&
-                        nextAssign->next()->tokType() != Token::eType &&
                         tok->next()->tokType() != Token::eName &&
-                        nextAssign->next()->tokType() != Token::eName &&
                         isSameExpression(_tokenizer->isCPP(), true, tok->next(), nextAssign->next(), _settings->library, false) &&
                         isSameExpression(_tokenizer->isCPP(), true, tok->astOperand2(), nextAssign->astOperand2(), _settings->library, false)) {
                         duplicateAssignExpressionError(var1, var2);
