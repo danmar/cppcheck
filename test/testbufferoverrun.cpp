@@ -150,6 +150,7 @@ private:
         TEST_CASE(array_index_valueflow);
         TEST_CASE(array_index_valueflow_pointer);
         TEST_CASE(array_index_function_parameter);
+        TEST_CASE(array_index_enum_array); // #8439
 
         TEST_CASE(buffer_overrun_2_struct);
         TEST_CASE(buffer_overrun_3);
@@ -171,6 +172,7 @@ private:
         TEST_CASE(buffer_overrun_27); // #4444 (segmentation fault)
         TEST_CASE(buffer_overrun_28); // Out of bound char array access
         TEST_CASE(buffer_overrun_29); // #7083: false positive: typedef and initialization with strings
+        TEST_CASE(buffer_overrun_30); // #6367
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(buffer_overrun_function_array_argument);
         TEST_CASE(possible_buffer_overrun_1); // #3035
@@ -2168,6 +2170,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void array_index_enum_array() { // #8439
+        check("enum E : unsigned int { e1, e2 };\n"
+              "void f() {\n"
+              "    E arrE[] = { e1, e2 };\n"
+              "    arrE[sizeof(arrE)] = e1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'arrE[2]' accessed at index 8, which is out of bounds.\n", errout.str());
+    }
+
     void buffer_overrun_2_struct() {
         check("struct ABC\n"
               "{\n"
@@ -2530,6 +2541,19 @@ private:
               "} \n"
              );
         ASSERT_EQUALS("", errout.str());
+    }
+
+
+    // #6367
+    void buffer_overrun_30() {
+        check("struct S { int m[9]; };\n"
+              "int f(S * s) {\n"
+              "    return s->m[sizeof(s->m)];\n"
+              "}\n"
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 's->m[9]' accessed at index 36, which is out of bounds.\n"
+                      "[test.cpp:3]: (error) Array 's.m[9]' accessed at index 36, which is out of bounds.\n",
+                      errout.str());
     }
 
 
