@@ -273,15 +273,15 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             if(isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure))
                 return isDifferentKnownValues(cond1->astOperand1(), cond2->astOperand1());
         }
+        if(Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size")) {
+            return !(cond2->str() == "==" && cond2->astOperand2()->getValue(0));
+        }
+
+        if(Library::isContainerYield(cond2, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size")) {
+            return !(cond1->str() == "==" && cond1->astOperand2()->getValue(0));
+        }
     }
 
-    if(Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size")) {
-        return !(cond2->str() == "==" && cond2->astOperand2()->getValue(0));
-    }
-
-    if(Library::isContainerYield(cond2, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size")) {
-        return !(cond1->str() == "==" && cond1->astOperand2()->getValue(0));
-    }
 
     if (!cond1->isComparisonOp() || !cond2->isComparisonOp())
         return false;

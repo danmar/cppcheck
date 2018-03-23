@@ -1197,6 +1197,9 @@ private:
         check("void f12(const int * const p) { if (*p==4) if(*p==2) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
+        check("void f1(const std::string &s, bool b) { if(s.empty() || ((s.size() == 1) && b)) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct foo {\n"
               "    int a;\n"
               "    int b;\n"
