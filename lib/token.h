@@ -798,6 +798,10 @@ public:
         return _values && _values->size() == 1U && _values->front().isKnown() && _values->front().isIntValue();
     }
 
+    bool hasKnownValue() const {
+        return _values && _values->size() == 1U && _values->front().isKnown();
+    }
+
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         if (!_values)
             return nullptr;

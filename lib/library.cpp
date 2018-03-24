@@ -921,6 +921,26 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
     return nullptr;
 }
 
+bool Library::isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback)
+{
+    if(!cond)
+        return false;
+    if (cond->str() == "(") {
+        const Token* tok = cond->astOperand1();
+        if(tok && tok->str() == ".") {
+            if(tok->astOperand1() && tok->astOperand1()->valueType()) {
+                if(const Library::Container *container = tok->astOperand1()->valueType()->container) {
+                    return tok->astOperand2() && y == container->getYield(tok->astOperand2()->str());
+                }
+            }
+            else if(!fallback.empty()) {
+                return Token::simpleMatch(cond, "( )") && cond->previous()->str() == fallback;
+            }
+        }
+    }
+    return false;
+}
+
 // returns true if ftok is not a library function
 bool Library::isNotLibraryFunction(const Token *ftok) const
 {
