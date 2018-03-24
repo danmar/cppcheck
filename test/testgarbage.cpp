@@ -234,6 +234,8 @@ private:
         TEST_CASE(syntaxErrorLastToken); // Make sure syntax errors are detected and reported
         TEST_CASE(syntaxErrorCase);
         TEST_CASE(enumTrailingComma);
+
+        TEST_CASE(nonGarbageCode1); // #8346
     }
 
     std::string checkCode(const std::string &code, bool cpp = true) {
@@ -1548,6 +1550,19 @@ private:
 
     void enumTrailingComma() {
         ASSERT_THROW(checkCode("enum ssl_shutdown_t {ssl_shutdown_none = 0,ssl_shutdown_close_notify = , } ;"), InternalError); // #8079
+    }
+
+    void nonGarbageCode1() {
+        checkCode("template <class T> class List {\n"
+                  "public:\n"
+                  "   List();\n"
+                  "   virtual ~List();\n"
+                  "   template< class Predicate > u_int DeleteIf( const Predicate &pred );\n"
+                  "};\n"
+                  "template< class T >\n"
+                  "template< class Predicate > int\n"
+                  "List<T>::DeleteIf( const Predicate &pred )\n"
+                  "{}\n");
     }
 };
 
