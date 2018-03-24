@@ -266,18 +266,18 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     if (cond2->str() == "!")
         return isOppositeCond(isNot, cpp, cond2, cond1, library, pure);
 
-    if(!isNot) {
+    if (!isNot) {
         if (cond1->str() == "==" && cond2->str() == "==") {
-            if(isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure))
+            if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure))
                 return isDifferentKnownValues(cond1->astOperand2(), cond2->astOperand2());
-            if(isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure))
+            if (isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure))
                 return isDifferentKnownValues(cond1->astOperand1(), cond2->astOperand1());
         }
-        if(Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size")) {
+        if (Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size")) {
             return !(cond2->str() == "==" && cond2->astOperand2()->getValue(0));
         }
 
-        if(Library::isContainerYield(cond2, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size")) {
+        if (Library::isContainerYield(cond2, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size")) {
             return !(cond1->str() == "==" && cond1->astOperand2()->getValue(0));
         }
     }
