@@ -2375,13 +2375,13 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 }
                 if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                     vartok = vartok->astOperand1();
-                if (!vartok->isName() || !numtok->hasKnownIntValue())
+                if (!vartok->isName())
                     continue;
             } else if (Token::simpleMatch(tok, ">")) {
                 if (!tok->astOperand1() || !tok->astOperand2())
                     continue;
                 if (tok->astOperand1()->hasKnownIntValue()) {
-                    lowertok = tok->astOperand1();
+                    uppertok = tok->astOperand1();
                     vartok = tok->astOperand2();
                 } else {
                     lowertok = tok->astOperand2();
@@ -2389,13 +2389,13 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 }
                 if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                     vartok = vartok->astOperand1();
-                if (!vartok->isName() || !lowertok->hasKnownIntValue())
+                if (!vartok->isName())
                     continue;
             } else if (Token::simpleMatch(tok, "<")) {
                 if (!tok->astOperand1() || !tok->astOperand2())
                     continue;
                 if (tok->astOperand1()->hasKnownIntValue()) {
-                    uppertok = tok->astOperand1();
+                    lowertok = tok->astOperand1();
                     vartok = tok->astOperand2();
                 } else {
                     uppertok = tok->astOperand2();
@@ -2403,7 +2403,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 }
                 if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                     vartok = vartok->astOperand1();
-                if (!vartok->isName() || !uppertok->hasKnownIntValue())
+                if (!vartok->isName())
                     continue;
             } else if (tok->str() == "!") {
                 vartok = tok->astOperand1();
@@ -2420,6 +2420,13 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
             } else {
                 continue;
             }
+
+            if(numtok && !numtok->hasKnownIntValue())
+                continue;
+            if(lowertok && !lowertok->hasKnownIntValue())
+                continue;
+            if(uppertok && !uppertok->hasKnownIntValue())
+                continue;
 
             const unsigned int varid = vartok->varId();
             if (varid == 0U)
