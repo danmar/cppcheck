@@ -5,7 +5,6 @@
 # Example usage of this addon (scan a sourcefile main.cpp)
 # cppcheck --dump main.cpp
 # python misra.py --rule-texts=<path-to-rule-texts> main.cpp.dump
-# python misra.py --misra-pdf=<path-to-misra.pdf> main.cpp.dump
 #
 # Limitations: This addon is released as open source. Rule texts can't be freely
 # distributed. https://www.misra.org.uk/forum/viewtopic.php?f=56&t=1189
@@ -36,8 +35,10 @@ def reportError(location, num1, num2):
         id = 'misra-c2012-' + str(num1) + '.' + str(num2)
         if num in ruleTexts:
             errmsg = ruleTexts[num] + ' [' + id + ']'
+        elif len(ruleTexts) == 0:
+            errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
         else:
-            errmsg = 'misra violation (use --misra-pdf=<file> or --rule-texts=<file> to get proper output) [' + id + ']'
+            return
         sys.stderr.write('[' + location.file + ':' + str(location.linenr) + '] (style): ' + errmsg + '\n')
 
 
@@ -1106,24 +1107,6 @@ def loadRuleTexts(filename):
             ruleTexts[num] = ruleTexts[num] + ' ' + line
             continue
 
-def loadRuleTextsFromPdf(filename):
-    if not os.path.isfile(filename):
-        print('Fatal error: PDF file is not found: ' + filename)
-        sys.exit(1)
-    f = tempfile.NamedTemporaryFile(delete=False)
-    f.close()
-    #print('tempfile:' + f.name)
-    try:
-        subprocess.call(['pdftotext', filename, f.name])
-    except OSError as err:
-        print('Fatal error: Failed to execute pdftotext: ' + str(err))
-        sys.exit(1)
-    loadRuleTexts(f.name)
-    try:
-        os.remove(f.name)
-    except OSError as err:
-        print('Failed to remove temporary file ' + f.name)
-
 if len(sys.argv) == 1:
     print("""
 Syntax: misra.py [OPTIONS] <dumpfiles>
@@ -1132,33 +1115,25 @@ OPTIONS:
 
 --rule-texts=<file>   Load rule texts from plain text file.
 
-                      If you have the tool 'pdftotext' you can generate
-                      this textfile with such command:
+                      If you have the tool 'pdftotext' you might be able
+                      to generate this textfile with such command:
 
                           $ pdftotext MISRA_C_2012.pdf MISRA_C_2012.txt
 
                       Otherwise you can more or less copy/paste the chapter
                         Appendix A Summary of guidelines
-                      from the MISRA pdf.
+                      from the MISRA pdf. You can buy the MISRA pdf from
+                      http://www.misra.org.uk/
 
                       Format:
 
                         <..arbitrary text..>
                         Appendix A Summary of guidelines
-                        Dir 1.1
+                        Rule 1.1
                         Rule text for 1.1
-                        Dir 1.2
+                        Rule 1.2
                         Rule text for 1.2
                         <...>
-
---misra-pdf=<file>    Misra PDF file that rule texts will be extracted from.
-
-                      The tool 'pdftotext' from xpdf is used and must be installed.
-                      Debian:  sudo apt-get install xpdf
-                      Windows: http://gnuwin32.sourceforge.net/packages/xpdf.htm
-
-                      If you don't have 'pdftotext' and don't want to install it then
-                      you can use --rule-texts=<file>.
 """)
     sys.exit(1)
 
@@ -1171,8 +1146,6 @@ for arg in sys.argv[1:]:
             print('Fatal error: file is not found: ' + filename)
             sys.exit(1)
         loadRuleTexts(filename)
-    elif arg.startswith('--misra-pdf='):
-        loadRuleTextsFromPdf(arg[12:])
     elif ".dump" in arg:
         continue
     else:

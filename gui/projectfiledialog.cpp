@@ -152,6 +152,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     connect(mUI.mBtnIncludeDown, &QPushButton::clicked, this, &ProjectFileDialog::moveIncludePathDown);
     connect(mUI.mBtnAddSuppression, &QPushButton::clicked, this, &ProjectFileDialog::addSuppression);
     connect(mUI.mBtnRemoveSuppression, &QPushButton::clicked, this, &ProjectFileDialog::removeSuppression);
+    connect(mUI.mBtnBrowseMisraFile, &QPushButton::clicked, this, &ProjectFileDialog::browseMisraFile);
 
     loadFromProjectFile(projectFile);
 }
@@ -177,7 +178,8 @@ void ProjectFileDialog::saveSettings() const
 
 static void updateAddonCheckBox(QCheckBox *cb, const ProjectFile *projectFile, const QString &dataDir, const QString &addon)
 {
-    cb->setChecked(projectFile->getAddons().contains(addon));
+    if (projectFile)
+        cb->setChecked(projectFile->getAddons().contains(addon));
     if (CheckThread::getAddonFilePath(dataDir, addon + ".py").isEmpty()) {
         cb->setEnabled(false);
         cb->setText(cb->text() + QObject::tr(" (Not found)"));
@@ -230,6 +232,16 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     updateAddonCheckBox(mUI.mAddonY2038, projectFile, dataDir, "y2038");
     updateAddonCheckBox(mUI.mAddonCert, projectFile, dataDir, "cert");
     updateAddonCheckBox(mUI.mAddonMisra, projectFile, dataDir, "misra");
+
+    const QString &misraFile = settings.value(SETTINGS_MISRA_FILE, QString()).toString();
+    mUI.mEditMisraFile->setText(misraFile);
+    if (!mUI.mAddonMisra->isEnabled()) {
+        mUI.mEditMisraFile->setEnabled(false);
+        mUI.mBtnBrowseMisraFile->setEnabled(false);
+    } else if (misraFile.isEmpty()) {
+        mUI.mAddonMisra->setEnabled(false);
+        mUI.mAddonMisra->setText(mUI.mAddonMisra->text() + ' ' + tr("(no rule texts file)"));
+    }
 
     mUI.mToolClangAnalyzer->setChecked(projectFile->getClangAnalyzer());
     mUI.mToolClangTidy->setChecked(projectFile->getClangTidy());
@@ -657,4 +669,18 @@ void ProjectFileDialog::removeSuppression()
     const int row = mUI.mListSuppressions->currentRow();
     QListWidgetItem *item = mUI.mListSuppressions->takeItem(row);
     delete item;
+}
+
+void ProjectFileDialog::browseMisraFile()
+{
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("Select MISRA rule texts file"), QDir::homePath(), tr("Misra rule texts file (%1)").arg("*.txt"));
+    if (!fileName.isEmpty()) {
+        QSettings settings;
+        mUI.mEditMisraFile->setText(fileName);
+        settings.setValue(SETTINGS_MISRA_FILE, fileName);
+
+        mUI.mAddonMisra->setText("MISRA C 2012");
+        mUI.mAddonMisra->setEnabled(true);
+        updateAddonCheckBox(mUI.mAddonMisra, nullptr, settings.value("DATADIR", QString()).toString(), "misra");
+    }
 }
