@@ -230,6 +230,11 @@ protected slots:
     */
     void removeSuppression();
 
+    /**
+     * @brief Browse for misra file
+     */
+    void browseMisraFile();
+
 protected:
 
     /**

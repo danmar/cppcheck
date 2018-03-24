@@ -3272,13 +3272,14 @@ void Tokenizer::createLinks2()
             type.pop();
             Token * const top2 = type.empty() ? nullptr : type.top();
             type.push(top1);
-            if (token->str() == ">>" && (!top2 || top2->str() != "<"))
-                continue;
-            if (token->next() &&
-                !Token::Match(token->next(), "%name%|>|&|&&|*|::|,|(|)|{|}|;|[|:") &&
-                !Token::Match(token->next(), "&& %name% ="))
-                continue;
-
+            if (!top2 || top2->str() != "<") {
+                if (token->str() == ">>")
+                    continue;
+                if (token->next() &&
+                    !Token::Match(token->next(), "%name%|>|&|&&|*|::|,|(|)|{|}|;|[|:") &&
+                    !Token::Match(token->next(), "&& %name% ="))
+                    continue;
+            }
             // if > is followed by [ .. "new a<b>[" is expected
             if (token->strAt(1) == "[") {
                 Token *prev = type.top()->previous();
@@ -8392,7 +8393,17 @@ void Tokenizer::findGarbageCode() const
     }
 
     // Operators without operands..
+    const Token *templateEndToken = nullptr;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (!templateEndToken) {
+            if (tok->str() == "<" && isCPP())
+                templateEndToken = tok->findClosingBracket();
+        } else {
+            if (templateEndToken == tok)
+                templateEndToken = nullptr;
+            if (Token::Match(tok, "> %cop%"))
+                continue;
+        }
         if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             syntaxError(tok);
         if (Token::Match(tok, ";|(|[ %comp%"))

@@ -317,12 +317,16 @@
             <item>
              <widget class="QLabel" name="label_4">
               <property name="text">
-               <string>Misra PDF/Text file</string>
+               <string>Misra rule texts file</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="mEditMisraFile"/>
+             <widget class="QLineEdit" name="mEditMisraFile">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="mBtnBrowseMisraFile">
