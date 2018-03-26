@@ -5430,7 +5430,7 @@ private:
                       "vector<uninitialized_uint64> m_bits;");
         settings1.standards.cpp = original_std;
 
-        ASSERT(db);
+        ASSERT(db != nullptr);
         ASSERT_EQUALS("", errout.str());
     }
 };
