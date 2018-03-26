@@ -53,6 +53,19 @@ void bufferAccessOutOfBounds(void)
     strncpy(a,"a",6);
     // cppcheck-suppress redundantCopy
     strncpy(a,"abcdefgh",4);
+    // valid call
+    strncpy_s(a,5,"abcd",5);
+    // string will be truncated, error is returned, but no buffer overflow
+    strncpy_s(a,5,"abcde",6);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    strncpy_s(a,5,"a",6);
+    strncpy_s(a,5,"abcdefgh",4);
+    // valid call
+    strncat_s(a,5,"1",2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    strncat_s(a,10,"1",2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    strncat_s(a,5,"1",5);
     fread(a,1,5,stdin);
     // cppcheck-suppress bufferAccessOutOfBounds
     fread(a,1,6,stdin);
@@ -169,9 +182,17 @@ void nullpointer(int value)
     // cppcheck-suppress nullPointer
     strncpy(0,0,1);
     // cppcheck-suppress nullPointer
+    strncpy_s(0,1,1,1);
+    // cppcheck-suppress nullPointer
+    strncpy_s(1,1,0,1);
+    // cppcheck-suppress nullPointer
     wcsncpy(0,0,1);
     // cppcheck-suppress nullPointer
     strncat(0,0,1);
+    // cppcheck-suppress nullPointer
+    strncat_s(0,1,1,1);
+    // cppcheck-suppress nullPointer
+    strncat_s(1,1,0,1);
     // cppcheck-suppress nullPointer
     wcsncat(0,0,1);
     // cppcheck-suppress ignoredReturnValue
@@ -3022,6 +3043,28 @@ void uninivar_strncpy(void)
     (void)strncpy(s,ct,n);
 }
 
+void uninivar_strncpy_s(char *Ct, size_t N1, char *S, size_t N2)
+{
+    char *ct;
+    char *s;
+    size_t n1;
+    size_t n2;
+
+    // cppcheck-suppress uninitvar
+    (void)strncpy_s(ct,n1,s,n2);
+    // cppcheck-suppress uninitvar
+    (void)strncpy_s(ct,N1,S,N2);
+    // cppcheck-suppress uninitvar
+    (void)strncpy_s(Ct,n1,S,N2);
+    // cppcheck-suppress uninitvar
+    (void)strncpy_s(Ct,N1,s,N2);
+    // cppcheck-suppress uninitvar
+    (void)strncpy_s(Ct,N1,S,n2);
+
+    // no warning is expected for
+    (void)strncpy_s(Ct,N1,S,N2);
+}
+
 void uninivar_strpbrk(void)
 {
     char *cs;
@@ -3046,6 +3089,28 @@ void uninivar_strncat(char *Ct, char *S, size_t N)
 
     // no warning is expected for
     (void)strncat(Ct,S,N);
+}
+
+void uninivar_strncat_s(char *Ct, size_t N1, char *S, size_t N2)
+{
+    char *ct;
+    char *s;
+    size_t n1;
+    size_t n2;
+
+    // cppcheck-suppress uninitvar
+    (void)strncat_s(ct,n1,s,n2);
+    // cppcheck-suppress uninitvar
+    (void)strncat_s(ct,N1,S,N2);
+    // cppcheck-suppress uninitvar
+    (void)strncat_s(Ct,n1,S,N2);
+    // cppcheck-suppress uninitvar
+    (void)strncat_s(Ct,N1,s,N2);
+    // cppcheck-suppress uninitvar
+    (void)strncat_s(Ct,N1,S,n2);
+
+    // no warning is expected for
+    (void)strncat_s(Ct,N1,S,N2);
 }
 
 void uninivar_wcsncat(wchar_t *Ct, wchar_t *S, size_t N)
