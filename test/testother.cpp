@@ -3887,28 +3887,36 @@ private:
     }
 
     void duplicateVarExpression() {
-        check("int f();\n"
+        check("int f() __attribute__((pure));\n"
               "void test() {\n"
               "    int i = f();\n"
               "    int j = f();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
 
-        check("int f();\n"
+        check("struct Foo { int f() const; };\n"
+              "void test() {\n"
+              "    Foo f = Foo{};\n"
+              "    int i = f.f();\n"
+              "    int j = f.f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+
+        check("int f() __attribute__((pure));\n"
               "void test() {\n"
               "    int i = 1 + f();\n"
               "    int j = 1 + f();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
 
-        check("int f();\n"
+        check("int f() __attribute__((pure));\n"
               "void test() {\n"
               "    int i = f() + f();\n"
               "    int j = f() + f();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
 
-        check("int f(int);\n"
+        check("int f(int) __attribute__((pure));\n"
               "void test() {\n"
               "    int i = f(0);\n"
               "    int j = f(0);\n"
