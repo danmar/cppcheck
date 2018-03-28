@@ -588,9 +588,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<const st
     const int varcount = varname.empty() ? 0 : static_cast<int>((varname.size() - 1) * 2U);
 
     // ValueFlow array index..
-    if ((declarationId > 0 && Token::Match(tok, "%varid% [", declarationId)) ||
-        (declarationId == 0 && Token::simpleMatch(tok, (varnames + " [").c_str()))) {
-
+    bool doCheckFlowArrayIndex = declarationId > 0 && Token::Match(tok, "%varid% [", declarationId);
+    if (!doCheckFlowArrayIndex && declarationId == 0) {
+        std::string pattern = varnames + " [";
+        doCheckFlowArrayIndex = Token::simpleMatch(tok, pattern);
+    }
+    if (doCheckFlowArrayIndex) {
         const Token *tok2 = tok->next();
         while (tok2->str() != "[")
             tok2 = tok2->next();

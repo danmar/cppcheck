@@ -1120,7 +1120,7 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // check for typedef that can be substituted
-                else if (Token::simpleMatch(tok2, pattern.c_str()) ||
+                else if (Token::simpleMatch(tok2, pattern) ||
                          (inMemberFunc && tok2->str() == typeName->str())) {
                     // member function class variables don't need qualification
                     if (!(inMemberFunc && tok2->str() == typeName->str()) && pattern.find("::") != std::string::npos) { // has a "something ::"

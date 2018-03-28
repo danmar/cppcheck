@@ -146,7 +146,19 @@ public:
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool simpleMatch(const Token *tok, const char pattern[]);
+    template <size_t N>
+    static inline bool simpleMatch(const Token *tok, const char (&pattern)[N])
+    {
+        return simpleMatch(tok, pattern, N - 1);
+    }
+
+    // non-const ref in order to forbid implicit conversion from const char*
+    static inline bool simpleMatch(const Token *tok, std::string& pattern)
+    {
+        return simpleMatch(tok, pattern.c_str(), pattern.length());
+    }
+
+    static bool simpleMatch(const Token *tok, const char pattern[], size_t patternLength);
 
     /**
      * Match given token (or list of tokens) to a pattern list.
@@ -867,13 +879,6 @@ private:
      * as if it were &apos;\\0&apos;
      */
     static bool firstWordEquals(const char *str, const char *word);
-
-    /**
-     * Works almost like strchr() except
-     * if str has empty space &apos; &apos; character, that character is handled
-     * as if it were &apos;\\0&apos;
-     */
-    static const char *chrInFirstWord(const char *str, char c);
 
     std::string _str;
 

@@ -1982,7 +1982,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         else if (depth && Token::Match(first->next(), "%name%")) {
             std::string param = path + first->next()->str();
 
-            if (Token::simpleMatch(second->next(), param.c_str())) {
+            if (Token::simpleMatch(second->next(), param)) {
                 second = second->tokAt(int(depth) * 2);
             } else if (depth > 1) {
                 std::string short_path = path;
@@ -1996,7 +1996,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
                     short_path.resize(lastSpace+1);
 
                 param = short_path + first->next()->str();
-                if (Token::simpleMatch(second->next(), param.c_str())) {
+                if (Token::simpleMatch(second->next(), param)) {
                     second = second->tokAt((int(depth) - 1) * 2);
                 }
             }
