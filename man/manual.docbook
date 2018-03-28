@@ -644,11 +644,11 @@ cppcheck -DA --force file.c</programlisting>
         </varlistentry>
 
         <varlistentry>
-          <term><sgmltag>msg</sgmltag></term>
+          <term><sgmltag class="attribute">info</sgmltag></term>
 
           <listitem>
-            <para>this attribute doesn't exist yet. But in the future we may
-            add a short message for each location.</para>
+            <para>short information message for each location
+            (optional)</para>
           </listitem>
         </varlistentry>
       </variablelist>
