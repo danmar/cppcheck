@@ -27,6 +27,7 @@ tools/extracttests
 *.sdf
 *.suo
 *.user
+.vs/
 
 # VS build folders
 bin/
