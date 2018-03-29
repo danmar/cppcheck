@@ -499,7 +499,7 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
     return false;
 }
 
-void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage)
+void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage) const
 {
     if (!func.functionScope)
         throw InternalError(nullptr, "Internal Error: Invalid syntax"); // #5702
@@ -2205,7 +2205,7 @@ void CheckClass::checkPureVirtualFunctionCall()
 }
 
 const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Function & function,
-        std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap)
+        std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap) const
 {
     std::pair<std::map<const Function *, std::list<const Token *> >::iterator, bool > found =
         callsPureVirtualFunctionMap.insert(std::pair<const Function *, std::list< const Token *> >(&function, std::list<const Token *>()));
@@ -2267,7 +2267,7 @@ const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Func
 void CheckClass::getFirstPureVirtualFunctionCallStack(
     std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap,
     const Token & pureCall,
-    std::list<const Token *> & pureFuncStack)
+    std::list<const Token *> & pureFuncStack) const
 {
     if (isPureWithoutBody(*pureCall.function())) {
         pureFuncStack.push_back(pureCall.function()->token);

@@ -91,7 +91,7 @@ public:
     /**
      * negative index for array like containers
      */
-    void negativeIndex();
+    void negativeIndex() const;
 
     /**
      * Finds errors like this:
@@ -179,7 +179,7 @@ private:
     void string_c_strParam(const Token* tok, unsigned int number);
 
     void stlOutOfBoundsError(const Token* tok, const std::string& num, const std::string& var, bool at);
-    void negativeIndexError(const Token* tok, const ValueFlow::Value& index);
+    void negativeIndexError(const Token* tok, const ValueFlow::Value& index) const;
     void invalidIteratorError(const Token* tok, const std::string& iteratorName);
     void iteratorsError(const Token* tok, const std::string& container1, const std::string& container2);
     void mismatchingContainersError(const Token* tok);

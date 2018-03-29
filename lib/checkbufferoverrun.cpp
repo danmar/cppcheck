@@ -81,7 +81,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
     reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str(), CWE788, false);
 }
 
-void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index)
+void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index) const
 {
     bool inconclusive = false;
     const Token *condition = nullptr;
@@ -809,7 +809,7 @@ static std::vector<ValueFlow::Value> valueFlowGetArrayIndexes(const Token * cons
 }
 
 
-void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo)
+void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo) const
 {
     // Declaration in global scope or namespace?
     if (tok->scope()->type == Scope::eGlobal || tok->scope()->type == Scope::eNamespace)
@@ -1827,7 +1827,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, MathLib::bigint in
     reportError(tok, Severity::error, "negativeIndex", ostr.str(), CWE786, false);
 }
 
-void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::Value &index)
+void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::Value &index) const
 {
     const ErrorPath errorPath = getErrorPath(tok, &index, "Negative array index");
     std::ostringstream errmsg;

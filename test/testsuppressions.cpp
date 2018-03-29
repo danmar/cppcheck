@@ -203,7 +203,8 @@ private:
         return exitCode;
     }
 
-    void runChecks(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
+    void runChecks(unsigned int (TestSuppressions::*check)(const char[], const std::string &))
+    {
         // check to make sure the appropriate error is present
         (this->*check)("void f() {\n"
                        "    int a;\n"

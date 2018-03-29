@@ -89,7 +89,7 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
     return processFile(Path::simplifyPath(path), emptyString, iss);
 }
 
-unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
+unsigned int CppCheck::check(const ImportProject::FileSettings &fs) const
 {
     CppCheck temp(_errorLogger, _useGlobalSuppressions);
     temp._settings = _settings;
@@ -467,7 +467,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
     return exitcode;
 }
 
-void CppCheck::internalError(const std::string &filename, const std::string &msg)
+void CppCheck::internalError(const std::string &filename, const std::string &msg) const
 {
     const std::string fixedpath = Path::toNativeSeparators(filename);
     const std::string fullmsg("Bailing out from checking " + fixedpath + " since there was an internal error: " + msg);
@@ -553,7 +553,7 @@ void CppCheck::checkSimplifiedTokens(const Tokenizer &tokenizer)
         executeRules("simple", tokenizer);
 }
 
-void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer)
+void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer) const
 {
     (void)tokenlist;
     (void)tokenizer;

@@ -1,3 +1,5 @@
+#ifndef VERSION_H
+#define VERSION_H
 #define CPPCHECK_MAJOR 1
 #define CPPCHECK_MINOR 82
 #define CPPCHECK_DEVMINOR 82
@@ -12,3 +14,4 @@
 #define CPPCHECK_VERSION CPPCHECK_MAJOR,CPPCHECK_MINOR,99,0
 #endif
 #define LEGALCOPYRIGHT L"Copyright (C) 2007-2017 Cppcheck team."
+#endif // VERSION_H

@@ -1041,7 +1041,7 @@ std::string simplecpp::TokenList::lastLine(int maxsize) const
     return ret;
 }
 
-unsigned int simplecpp::TokenList::fileIndex(const std::string &filename)
+unsigned int simplecpp::TokenList::fileIndex(const std::string &filename) const
 {
     for (unsigned int i = 0; i < files.size(); ++i) {
         if (files[i] == filename)

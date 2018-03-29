@@ -72,7 +72,7 @@ public:
       *  settings()).
       */
     unsigned int check(const std::string &path);
-    unsigned int check(const ImportProject::FileSettings &fs);
+    unsigned int check(const ImportProject::FileSettings &fs) const;
 
     /**
       * @brief Check the file.
@@ -112,7 +112,8 @@ public:
     /**
      * @brief Terminate checking. The checking will be terminated as soon as possible.
      */
-    void terminate() {
+    void terminate() const
+    {
         _settings.terminate();
     }
 
@@ -146,7 +147,7 @@ public:
 private:
 
     /** @brief There has been an internal error => Report information message */
-    void internalError(const std::string &filename, const std::string &msg);
+    void internalError(const std::string &filename, const std::string &msg) const;
 
     /**
      * @brief Process one file.
@@ -180,7 +181,7 @@ private:
      * @param tokenlist token list to use (normal / simple)
      * @param tokenizer tokenizer
      */
-    void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer);
+    void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer) const;
 
     /**
      * @brief Errors and warnings are directed here.

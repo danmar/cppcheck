@@ -463,7 +463,7 @@ void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, con
         reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + "[" + num + "] is out of bounds.", CWE788, false);
 }
 
-void CheckStl::negativeIndex()
+void CheckStl::negativeIndex() const
 {
     // Negative index is out of bounds..
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -487,7 +487,7 @@ void CheckStl::negativeIndex()
     }
 }
 
-void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &index)
+void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &index) const
 {
     const ErrorPath errorPath = getErrorPath(tok, &index, "Negative array index");
     std::ostringstream errmsg;

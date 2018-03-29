@@ -97,7 +97,7 @@ public:
      * - (TODO) Same/Overlapping inner condition => always true
      * - same condition after early exit => always false
      **/
-    void multiCondition2();
+    void multiCondition2() const;
 
     /** @brief %Check for testing for mutual exclusion over ||*/
     void checkIncorrectLogicOperator();
@@ -109,7 +109,7 @@ public:
     void clarifyCondition();
 
     /** @brief Condition is always true/false */
-    void alwaysTrueFalse();
+    void alwaysTrueFalse() const;
 
     /** @brief %Check for invalid test for overflow 'x+100 < x' */
     void checkInvalidTestForOverflow();
@@ -131,9 +131,9 @@ private:
                          bool result);
     void multiConditionError(const Token *tok, unsigned int line1);
 
-    void oppositeInnerConditionError(const Token *tok1, const Token* tok2);
+    void oppositeInnerConditionError(const Token *tok1, const Token* tok2) const;
 
-    void identicalConditionAfterEarlyExitError(const Token *cond1, const Token *cond2);
+    void identicalConditionAfterEarlyExitError(const Token *cond1, const Token *cond2) const;
 
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive);
     void redundantConditionError(const Token *tok, const std::string &text, bool inconclusive);
@@ -142,7 +142,7 @@ private:
 
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
 
-    void alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value);
+    void alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value) const;
 
     void invalidTestForOverflow(const Token* tok, bool result);
     void pointerAdditionResultNotNullError(const Token *tok, const Token *calc);

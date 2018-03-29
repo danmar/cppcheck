@@ -2131,7 +2131,7 @@ static bool isNoArgument(const SymbolDatabase* symbolDatabase, unsigned int vari
     return var && !var->isArgument();
 }
 
-void CheckMemoryLeakInFunction::checkReallocUsage()
+void CheckMemoryLeakInFunction::checkReallocUsage() const
 {
     // only check functions
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -2421,7 +2421,7 @@ void CheckMemoryLeakInClass::publicAllocationError(const Token *tok, const std::
 }
 
 
-void CheckMemoryLeakStructMember::check()
+void CheckMemoryLeakStructMember::check() const
 {
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     for (unsigned int i = 1; i < symbolDatabase->getVariableListSize(); i++) {
@@ -2448,7 +2448,7 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
     return alloc;
 }
 
-void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const variable)
+void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const variable) const
 {
     // Is struct variable a pointer?
     if (variable->isPointer()) {

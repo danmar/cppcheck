@@ -732,7 +732,7 @@ public:
     /** Set the Value of an XML node.
     	@sa Value()
     */
-    void SetValue( const char* val, bool staticMem=false );
+    void SetValue( const char* val, bool staticMem=false ) const;
 
     /// Gets the line number the node is in, if the document was parsed from a file.
     int GetLineNum() const { return _parseLineNum; }
@@ -1199,19 +1199,19 @@ public:
     XMLError QueryFloatValue( float* value ) const;
 
     /// Set the attribute to a string value.
-    void SetAttribute( const char* value );
+    void SetAttribute( const char* value ) const;
     /// Set the attribute to value.
-    void SetAttribute( int value );
+    void SetAttribute( int value ) const;
     /// Set the attribute to value.
-    void SetAttribute( unsigned value );
+    void SetAttribute( unsigned value ) const;
 	/// Set the attribute to value.
-	void SetAttribute(int64_t value);
+	void SetAttribute(int64_t value) const;
 	/// Set the attribute to value.
-    void SetAttribute( bool value );
+    void SetAttribute( bool value ) const;
     /// Set the attribute to value.
-    void SetAttribute( double value );
+    void SetAttribute( double value ) const;
     /// Set the attribute to value.
-    void SetAttribute( float value );
+    void SetAttribute( float value ) const;
 
 private:
     enum { BUF_SIZE = 200 };
@@ -1221,9 +1221,9 @@ private:
 
     XMLAttribute( const XMLAttribute& );	// not supported
     void operator=( const XMLAttribute& );	// not supported
-    void SetName( const char* name );
+    void SetName( const char* name ) const;
 
-    char* ParseDeep( char* p, bool processEntities, int* curLineNumPtr );
+    char* ParseDeep( char* p, bool processEntities, int* curLineNumPtr ) const;
 
     mutable StrPair _name;
     mutable StrPair _value;
@@ -1625,7 +1625,7 @@ private:
     //void LinkAttribute( XMLAttribute* attrib );
     char* ParseAttributes( char* p, int* curLineNumPtr );
     static void DeleteAttribute( XMLAttribute* attribute );
-    XMLAttribute* CreateAttribute();
+    XMLAttribute* CreateAttribute() const;
 
     enum { BUF_SIZE = 200 };
     ElementClosingType _closingType;
@@ -1984,56 +1984,69 @@ public:
     }
 
     /// Get the first child of this handle.
-    XMLHandle FirstChild() 													{
+    XMLHandle FirstChild() const
+    {
         return XMLHandle( _node ? _node->FirstChild() : 0 );
     }
     /// Get the first child element of this handle.
-    XMLHandle FirstChildElement( const char* name = 0 )						{
+    XMLHandle FirstChildElement( const char* name = 0 ) const
+    {
         return XMLHandle( _node ? _node->FirstChildElement( name ) : 0 );
     }
     /// Get the last child of this handle.
-    XMLHandle LastChild()													{
+    XMLHandle LastChild() const
+    {
         return XMLHandle( _node ? _node->LastChild() : 0 );
     }
     /// Get the last child element of this handle.
-    XMLHandle LastChildElement( const char* name = 0 )						{
+    XMLHandle LastChildElement( const char* name = 0 ) const
+    {
         return XMLHandle( _node ? _node->LastChildElement( name ) : 0 );
     }
     /// Get the previous sibling of this handle.
-    XMLHandle PreviousSibling()												{
+    XMLHandle PreviousSibling() const
+    {
         return XMLHandle( _node ? _node->PreviousSibling() : 0 );
     }
     /// Get the previous sibling element of this handle.
-    XMLHandle PreviousSiblingElement( const char* name = 0 )				{
+    XMLHandle PreviousSiblingElement( const char* name = 0 ) const
+    {
         return XMLHandle( _node ? _node->PreviousSiblingElement( name ) : 0 );
     }
     /// Get the next sibling of this handle.
-    XMLHandle NextSibling()													{
+    XMLHandle NextSibling() const
+    {
         return XMLHandle( _node ? _node->NextSibling() : 0 );
     }
     /// Get the next sibling element of this handle.
-    XMLHandle NextSiblingElement( const char* name = 0 )					{
+    XMLHandle NextSiblingElement( const char* name = 0 ) const
+    {
         return XMLHandle( _node ? _node->NextSiblingElement( name ) : 0 );
     }
 
     /// Safe cast to XMLNode. This can return null.
-    XMLNode* ToNode()							{
+    XMLNode* ToNode() const
+    {
         return _node;
     }
     /// Safe cast to XMLElement. This can return null.
-    XMLElement* ToElement() 					{
+    XMLElement* ToElement() const
+    {
         return ( _node ? _node->ToElement() : 0 );
     }
     /// Safe cast to XMLText. This can return null.
-    XMLText* ToText() 							{
+    XMLText* ToText() const
+    {
         return ( _node ? _node->ToText() : 0 );
     }
     /// Safe cast to XMLUnknown. This can return null.
-    XMLUnknown* ToUnknown() 					{
+    XMLUnknown* ToUnknown() const
+    {
         return ( _node ? _node->ToUnknown() : 0 );
     }
     /// Safe cast to XMLDeclaration. This can return null.
-    XMLDeclaration* ToDeclaration() 			{
+    XMLDeclaration* ToDeclaration() const
+    {
         return ( _node ? _node->ToDeclaration() : 0 );
     }
 

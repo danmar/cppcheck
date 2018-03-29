@@ -150,7 +150,7 @@ public:
     /**
      * Create abstract syntax tree.
      */
-    void createAst();
+    void createAst() const;
 
     /**
      * Check abstract syntax tree.

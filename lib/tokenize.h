@@ -243,14 +243,14 @@ public:
      * \param only_k_r_fpar Only simplify K&R function parameters
      */
     void simplifyVarDecl(const bool only_k_r_fpar);
-    void simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar);
+    void simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar) const;
 
     /**
      * Simplify variable initialization
      * '; int *p(0);' => '; int *p = 0;'
      */
     void simplifyInitVar();
-    Token * initVar(Token * tok);
+    Token * initVar(Token * tok) const;
 
     /**
      * Convert platform dependent types to standard types.

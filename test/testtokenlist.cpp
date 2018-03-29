@@ -39,7 +39,8 @@ private:
     }
 
     // inspired by #5895
-    void testaddtoken1() {
+    void testaddtoken1() const
+    {
         const std::string code = "0x89504e470d0a1a0a";
         TokenList tokenlist(&settings);
         tokenlist.addtoken(code, 1, 1, false);

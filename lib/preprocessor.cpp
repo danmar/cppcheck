@@ -694,7 +694,7 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
     }
 }
 
-void Preprocessor::error(const std::string &filename, unsigned int linenr, const std::string &msg)
+void Preprocessor::error(const std::string &filename, unsigned int linenr, const std::string &msg) const
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
@@ -710,7 +710,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 }
 
 // Report that include is missing
-void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
+void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType) const
 {
     const std::string fname = Path::fromNativeSeparators(filename);
     if (_settings.nomsg.isSuppressed("missingInclude", fname, linenr))
@@ -772,7 +772,7 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
     return ret;
 }
 
-void Preprocessor::validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro)
+void Preprocessor::validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro) const
 {
     const std::string id = "ConfigurationNotChecked";
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;

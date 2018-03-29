@@ -768,7 +768,7 @@ const char* XMLNode::Value() const
     return _value.GetStr();
 }
 
-void XMLNode::SetValue( const char* str, bool staticMem )
+void XMLNode::SetValue( const char* str, bool staticMem ) const
 {
     if ( staticMem ) {
         _value.SetInternedStr( str );
@@ -1339,7 +1339,7 @@ const char* XMLAttribute::Value() const
     return _value.GetStr();
 }
 
-char* XMLAttribute::ParseDeep( char* p, bool processEntities, int* curLineNumPtr )
+char* XMLAttribute::ParseDeep( char* p, bool processEntities, int* curLineNumPtr ) const
 {
     // Parse using the name rules: bug fix, was using ParseText before
     p = _name.ParseName( p );
@@ -1367,7 +1367,7 @@ char* XMLAttribute::ParseDeep( char* p, bool processEntities, int* curLineNumPtr
 }
 
 
-void XMLAttribute::SetName( const char* n )
+void XMLAttribute::SetName( const char* n ) const
 {
     _name.SetStr( n );
 }
@@ -1427,13 +1427,13 @@ XMLError XMLAttribute::QueryDoubleValue( double* value ) const
 }
 
 
-void XMLAttribute::SetAttribute( const char* v )
+void XMLAttribute::SetAttribute( const char* v ) const
 {
     _value.SetStr( v );
 }
 
 
-void XMLAttribute::SetAttribute( int v )
+void XMLAttribute::SetAttribute( int v ) const
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1441,7 +1441,7 @@ void XMLAttribute::SetAttribute( int v )
 }
 
 
-void XMLAttribute::SetAttribute( unsigned v )
+void XMLAttribute::SetAttribute( unsigned v ) const
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1449,7 +1449,7 @@ void XMLAttribute::SetAttribute( unsigned v )
 }
 
 
-void XMLAttribute::SetAttribute(int64_t v)
+void XMLAttribute::SetAttribute(int64_t v) const
 {
 	char buf[BUF_SIZE];
 	XMLUtil::ToStr(v, buf, BUF_SIZE);
@@ -1458,21 +1458,21 @@ void XMLAttribute::SetAttribute(int64_t v)
 
 
 
-void XMLAttribute::SetAttribute( bool v )
+void XMLAttribute::SetAttribute( bool v ) const
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
     _value.SetStr( buf );
 }
 
-void XMLAttribute::SetAttribute( double v )
+void XMLAttribute::SetAttribute( double v ) const
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
     _value.SetStr( buf );
 }
 
-void XMLAttribute::SetAttribute( float v )
+void XMLAttribute::SetAttribute( float v ) const
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1867,7 +1867,7 @@ void XMLElement::DeleteAttribute( XMLAttribute* attribute )
     pool->Free( attribute );
 }
 
-XMLAttribute* XMLElement::CreateAttribute()
+XMLAttribute* XMLElement::CreateAttribute() const
 {
     TIXMLASSERT( sizeof( XMLAttribute ) == _document->_attributePool.ItemSize() );
     XMLAttribute* attrib = new (_document->_attributePool.Alloc() ) XMLAttribute();

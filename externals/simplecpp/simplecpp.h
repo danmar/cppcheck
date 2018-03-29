@@ -196,7 +196,8 @@ namespace simplecpp {
 
         void removeComments();
 
-        Token *front() {
+        Token *front() const
+        {
             return frontToken;
         }
 
@@ -204,7 +205,8 @@ namespace simplecpp {
             return frontToken;
         }
 
-        Token *back() {
+        Token *back() const
+        {
             return backToken;
         }
 
@@ -260,7 +262,7 @@ namespace simplecpp {
 
         std::string lastLine(int maxsize=10) const;
 
-        unsigned int fileIndex(const std::string &filename);
+        unsigned int fileIndex(const std::string &filename) const;
 
         Token *frontToken;
         Token *backToken;

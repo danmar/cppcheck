@@ -470,7 +470,7 @@ static bool isNonConstFunctionCall(const Token *ftok, const Library &library)
     return true;
 }
 
-void CheckCondition::multiCondition2()
+void CheckCondition::multiCondition2() const
 {
     if (!_settings->isEnabled(Settings::WARNING))
         return;
@@ -681,7 +681,7 @@ void CheckCondition::multiCondition2()
     }
 }
 
-void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2)
+void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2) const
 {
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
@@ -693,7 +693,7 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
     reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, false);
 }
 
-void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2)
+void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2) const
 {
     const std::string cond(cond1 ? cond1->expressionString() : "x");
     ErrorPath errorPath;
@@ -1169,7 +1169,7 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
 }
 
 
-void CheckCondition::alwaysTrueFalse()
+void CheckCondition::alwaysTrueFalse() const
 {
     if (!_settings->isEnabled(Settings::STYLE))
         return;
@@ -1267,7 +1267,7 @@ void CheckCondition::alwaysTrueFalse()
     }
 }
 
-void CheckCondition::alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value)
+void CheckCondition::alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value) const
 {
     const bool condvalue = value && (value->intvalue != 0);
     const std::string expr = tok ? tok->expressionString() : std::string("x");

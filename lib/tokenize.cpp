@@ -5571,7 +5571,7 @@ void Tokenizer::simplifyVarDecl(const bool only_k_r_fpar)
     simplifyVarDecl(list.front(), nullptr, only_k_r_fpar);
 }
 
-void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar)
+void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar) const
 {
     const bool isCPP11  = _settings->standards.cpp >= Standards::CPP11;
 
@@ -6267,7 +6267,7 @@ void Tokenizer::simplifyInitVar()
     }
 }
 
-Token * Tokenizer::initVar(Token * tok)
+Token * Tokenizer::initVar(Token * tok) const
 {
     // call constructor of class => no simplification
     if (Token::Match(tok, "class|struct|union")) {

@@ -188,7 +188,7 @@ void CheckType::checkIntegerOverflow()
     }
 }
 
-void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &value)
+void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &value) const
 {
     const std::string expr(tok ? tok->expressionString() : "");
 
@@ -409,7 +409,7 @@ void CheckType::checkFloatToIntegerOverflow()
     }
 }
 
-void CheckType::floatToIntegerOverflowError(const Token *tok, const ValueFlow::Value &value)
+void CheckType::floatToIntegerOverflowError(const Token *tok, const ValueFlow::Value &value) const
 {
     std::ostringstream errmsg;
     errmsg << "Undefined behaviour: float (" << value.floatValue << ") to integer conversion overflow.";

@@ -75,7 +75,7 @@ TestFixture::TestFixture(const char * const _name)
 }
 
 
-bool TestFixture::prepareTest(const char testname[])
+bool TestFixture::prepareTest(const char testname[]) const
 {
     // Check if tests should be executed
     if (testToRun.empty() || testToRun == testname) {

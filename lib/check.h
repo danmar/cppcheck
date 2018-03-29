@@ -151,7 +151,8 @@ protected:
             reportError(errmsg);
     }
 
-    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive) {
+    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive) const
+    {
         const ErrorLogger::ErrorMessage errmsg(errorPath, _tokenizer ? &_tokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
@@ -180,7 +181,7 @@ protected:
      * Use WRONG_DATA in checkers when you check for wrong data. That
      * will call this method
      */
-    bool wrongData(const Token *tok, bool condition, const char *str);
+    bool wrongData(const Token *tok, bool condition, const char *str) const;
 private:
     const std::string _name;
 

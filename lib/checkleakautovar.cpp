@@ -92,7 +92,7 @@ void VarInfo::possibleUsageAll(const std::string &functionName)
 }
 
 
-void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname, int type)
+void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname, int type) const
 {
     const CheckMemoryLeak checkmemleak(_tokenizer, _errorLogger, _settings);
     if (_settings->library.isresource(type))
@@ -101,14 +101,14 @@ void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname, i
         checkmemleak.memleakError(tok, varname);
 }
 
-void CheckLeakAutoVar::mismatchError(const Token *tok, const std::string &varname)
+void CheckLeakAutoVar::mismatchError(const Token *tok, const std::string &varname) const
 {
     const CheckMemoryLeak c(_tokenizer, _errorLogger, _settings);
     std::list<const Token *> callstack(1, tok);
     c.mismatchAllocDealloc(callstack, varname);
 }
 
-void CheckLeakAutoVar::deallocUseError(const Token *tok, const std::string &varname)
+void CheckLeakAutoVar::deallocUseError(const Token *tok, const std::string &varname) const
 {
     const CheckMemoryLeak c(_tokenizer, _errorLogger, _settings);
     c.deallocuseError(tok, varname);

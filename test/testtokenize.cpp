@@ -8015,7 +8015,8 @@ private:
         ASSERT_EQUALS("a ? ( std :: map < int , int > ( ) ) : 0 ;", tokenizeAndStringify("typedef std::map<int,int> mymap; a ? mymap() : 0;"));
     }
 
-    std::string testAst(const char code[],bool verbose=false) {
+    std::string testAst(const char code[],bool verbose=false) const
+    {
         // tokenize given code..
         Tokenizer tokenList(&settings0, nullptr);
         std::istringstream istr(code);
