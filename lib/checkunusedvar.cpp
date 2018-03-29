@@ -835,7 +835,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
 
         // templates
-        if (tok->isName() && tok->str().back() == '>') {
+        if (tok->isName() && endsWith(tok->str(), '>')) {
             // TODO: This is a quick fix to handle when constants are used
             // as template parameters. Try to handle this better, perhaps
             // only remove constants.
