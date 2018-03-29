@@ -23,22 +23,20 @@
 
 class TestForeach : public TestFixture {
 public:
-    TestForeach() 
-    : TestFixture("TestForeach"), getVectorOnceCount(0) 
+    TestForeach()
+        : TestFixture("TestForeach"), getVectorOnceCount(0)
     {}
 
 private:
 
     int getVectorOnceCount;
-    const std::vector<int>& getVectorOnce()
-    {
+    const std::vector<int>& getVectorOnce() {
         static std::vector<int> v(5, 2);
         getVectorOnceCount++;
         return v;
     }
 
-    std::vector<int> getVector()
-    {
+    std::vector<int> getVector() {
         std::vector<int> v(5, 2);
         return v;
     }

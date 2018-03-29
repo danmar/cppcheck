@@ -59,13 +59,13 @@ typename Range::const_iterator range_end(const Range& r)
 }
 
 template< class T, std::size_t N >
-T* range_begin( T (&array)[N] )
+T* range_begin(T(&array)[N])
 {
     return array;
 }
 
 template< class T, std::size_t N >
-T* range_end( T (&array)[N] )
+T* range_end(T(&array)[N])
 {
     return array+N;
 }
