@@ -1868,15 +1868,13 @@ namespace simplecpp {
         if (path.empty())
             return path;
 
-        std::string::size_type pos;
-
-        // replace backslash separators
+      // replace backslash separators
         std::replace(path.begin(), path.end(), '\\', '/');
 
         const bool unc(path.compare(0,2,"//") == 0);
 
         // replace "//" with "/"
-        pos = 0;
+        std::string::size_type pos = 0;
         while ((pos = path.find("//",pos)) != std::string::npos) {
             path.erase(pos,1);
         }

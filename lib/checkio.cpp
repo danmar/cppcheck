@@ -1593,8 +1593,7 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
     } else if (variableInfo->type()) {
         const Scope * classScope = variableInfo->type()->classScope;
         if (classScope) {
-            std::list<Function>::const_iterator functions;
-            for (functions = classScope->functionList.begin();
+          for (std::list<Function>::const_iterator functions = classScope->functionList.begin();
                  functions != classScope->functionList.end(); ++functions) {
                 if (functions->name() == "operator[]") {
                     if (Token::Match(functions->retDef, "%type% &")) {

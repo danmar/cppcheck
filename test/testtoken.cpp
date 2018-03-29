@@ -598,8 +598,8 @@ private:
         append_vector(test_ops, logicalOps);
         append_vector(test_ops, assignmentOps);
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
-        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
+        std::vector<std::string>::const_iterator test_ops_end = test_ops.end();
+        for (std::vector<std::string>::const_iterator test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
             ASSERT_EQUALS(true, Match(*test_op, "%op%"));
         }
 
@@ -607,8 +607,8 @@ private:
         std::vector<std::string> other_ops;
         append_vector(other_ops, extendedOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
-        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+        std::vector<std::string>::const_iterator other_ops_end = other_ops.end();
+        for (std::vector<std::string>::const_iterator other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
             ASSERT_EQUALS_MSG(false, Match(*other_op, "%op%"), "Failing other operator: " + *other_op);
         }
     }
@@ -620,8 +620,8 @@ private:
         append_vector(test_ops, comparisonOps);
         append_vector(test_ops, logicalOps);
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
-        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
+        std::vector<std::string>::const_iterator test_ops_end = test_ops.end();
+        for (std::vector<std::string>::const_iterator test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
             ASSERT_EQUALS(true, Match(*test_op, "%cop%"));
         }
 
@@ -630,16 +630,16 @@ private:
         append_vector(other_ops, extendedOps);
         append_vector(other_ops, assignmentOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
-        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+        std::vector<std::string>::const_iterator other_ops_end = other_ops.end();
+        for (std::vector<std::string>::const_iterator other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
             ASSERT_EQUALS_MSG(false, Match(*other_op, "%cop%"), "Failing other operator: " + *other_op);
         }
     }
 
 
     void isArithmeticalOp() const {
-        std::vector<std::string>::const_iterator test_op, test_ops_end = arithmeticalOps.end();
-        for (test_op = arithmeticalOps.begin(); test_op != test_ops_end; ++test_op) {
+        std::vector<std::string>::const_iterator test_ops_end = arithmeticalOps.end();
+        for (std::vector<std::string>::const_iterator test_op = arithmeticalOps.begin(); test_op != test_ops_end; ++test_op) {
             Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isArithmeticalOp());
@@ -653,8 +653,8 @@ private:
         append_vector(other_ops, extendedOps);
         append_vector(other_ops, assignmentOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
-        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+        std::vector<std::string>::const_iterator other_ops_end = other_ops.end();
+        for (std::vector<std::string>::const_iterator other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
             Token tok(nullptr);
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isArithmeticalOp(), "Failing arithmetical operator: " + *other_op);
@@ -669,8 +669,8 @@ private:
         append_vector(test_ops, logicalOps);
         append_vector(test_ops, assignmentOps);
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
-        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
+        std::vector<std::string>::const_iterator test_ops_end = test_ops.end();
+        for (std::vector<std::string>::const_iterator test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
             Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isOp());
@@ -680,8 +680,8 @@ private:
         std::vector<std::string> other_ops;
         append_vector(other_ops, extendedOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
-        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+        std::vector<std::string>::const_iterator other_ops_end = other_ops.end();
+        for (std::vector<std::string>::const_iterator other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
             Token tok(nullptr);
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isOp(), "Failing normal operator: " + *other_op);
@@ -695,8 +695,8 @@ private:
         append_vector(test_ops, comparisonOps);
         append_vector(test_ops, logicalOps);
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
-        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
+        std::vector<std::string>::const_iterator test_ops_end = test_ops.end();
+        for (std::vector<std::string>::const_iterator test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
             Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isConstOp());
@@ -707,8 +707,8 @@ private:
         append_vector(other_ops, extendedOps);
         append_vector(other_ops, assignmentOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
-        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+        std::vector<std::string>::const_iterator other_ops_end = other_ops.end();
+        for (std::vector<std::string>::const_iterator other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
             Token tok(nullptr);
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isConstOp(), "Failing normal operator: " + *other_op);
@@ -723,16 +723,16 @@ private:
         append_vector(test_ops, logicalOps);
         append_vector(test_ops, extendedOps);
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
-        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
+        std::vector<std::string>::const_iterator test_ops_end = test_ops.end();
+        for (std::vector<std::string>::const_iterator test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
             Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isExtendedOp());
         }
 
         // Negative test against assignment operators
-        std::vector<std::string>::const_iterator other_op, other_ops_end = assignmentOps.end();
-        for (other_op = assignmentOps.begin(); other_op != other_ops_end; ++other_op) {
+        std::vector<std::string>::const_iterator other_ops_end = assignmentOps.end();
+        for (std::vector<std::string>::const_iterator other_op = assignmentOps.begin(); other_op != other_ops_end; ++other_op) {
             Token tok(nullptr);
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isExtendedOp(), "Failing assignment operator: " + *other_op);
@@ -740,8 +740,8 @@ private:
     }
 
     void isAssignmentOp() const {
-        std::vector<std::string>::const_iterator test_op, test_ops_end = assignmentOps.end();
-        for (test_op = assignmentOps.begin(); test_op != test_ops_end; ++test_op) {
+        std::vector<std::string>::const_iterator test_ops_end = assignmentOps.end();
+        for (std::vector<std::string>::const_iterator test_op = assignmentOps.begin(); test_op != test_ops_end; ++test_op) {
             Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isAssignmentOp());
@@ -755,8 +755,8 @@ private:
         append_vector(other_ops, logicalOps);
         append_vector(other_ops, extendedOps);
 
-        std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
-        for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
+        std::vector<std::string>::const_iterator other_ops_end = other_ops.end();
+        for (std::vector<std::string>::const_iterator other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
             Token tok(nullptr);
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isAssignmentOp(), "Failing assignment operator: " + *other_op);
@@ -822,8 +822,8 @@ private:
         standard_types.push_back("double");
         standard_types.push_back("size_t");
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = standard_types.end();
-        for (test_op = standard_types.begin(); test_op != test_ops_end; ++test_op) {
+        std::vector<std::string>::const_iterator test_ops_end = standard_types.end();
+        for (std::vector<std::string>::const_iterator test_op = standard_types.begin(); test_op != test_ops_end; ++test_op) {
             Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS_MSG(true, tok.isStandardType(), "Failing standard type: " + *test_op);

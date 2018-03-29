@@ -81,9 +81,7 @@ private:
     }
 
     static const Scope *findFunctionScopeByToken(const SymbolDatabase * db, const Token *tok) {
-        std::list<Scope>::const_iterator scope;
-
-        for (scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
+      for (std::list<Scope>::const_iterator scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
             if (scope->type == Scope::eFunction) {
                 if (scope->classDef == tok)
                     return &(*scope);

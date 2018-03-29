@@ -351,9 +351,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 _tokenizer.setTimerResults(&S_timerResults);
 
             try {
-                bool result;
-
-                // Create tokens, skip rest of iteration if failed
+              // Create tokens, skip rest of iteration if failed
                 Timer timer("Tokenizer::createTokens", _settings.showtime, &S_timerResults);
                 const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, cfg, files);
                 _tokenizer.createTokens(&tokensP);
@@ -370,7 +368,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
                 // Simplify tokens into normal form, skip rest of iteration if failed
                 Timer timer2("Tokenizer::simplifyTokens1", _settings.showtime, &S_timerResults);
-                result = _tokenizer.simplifyTokens1(cfg);
+                bool result = _tokenizer.simplifyTokens1(cfg);
                 timer2.Stop();
                 if (!result)
                     continue;

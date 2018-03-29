@@ -499,8 +499,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 }
                 platform_types[type_name] = type;
             } else {
-                std::set<std::string>::const_iterator it;
-                for (it = platform.begin(); it != platform.end(); ++it) {
+              for (std::set<std::string>::const_iterator it = platform.begin(); it != platform.end(); ++it) {
                     const PlatformType * const type_ptr = platform_type(type_name, *it);
                     if (type_ptr) {
                         if (*type_ptr == type)

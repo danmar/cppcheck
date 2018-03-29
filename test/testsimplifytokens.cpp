@@ -864,14 +864,12 @@ private:
 
 
     void sizeof_array() {
-        const char *code;
-
-        code = "void foo()\n"
-               "{\n"
-               "    int i[4];\n"
-               "    sizeof(i);\n"
-               "    sizeof(*i);\n"
-               "}\n";
+      const char *code = "void foo()\n"
+        "{\n"
+        "    int i[4];\n"
+        "    sizeof(i);\n"
+        "    sizeof(*i);\n"
+        "}\n";
         ASSERT_EQUALS("void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }", tok(code));
 
         code = "static int i[4];\n"

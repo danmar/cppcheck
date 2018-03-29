@@ -1426,8 +1426,7 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
     if (!_values)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = _values->begin(); it != _values->end(); ++it) {
+  for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
         if (it->isIntValue() && it->intvalue <= val) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
@@ -1449,8 +1448,7 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     if (!_values)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = _values->begin(); it != _values->end(); ++it) {
+  for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
         if (it->isIntValue() && it->intvalue >= val) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
@@ -1472,8 +1470,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, unsigned int 
     if (!_values || !settings)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = _values->begin(); it != _values->end(); ++it) {
+  for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
         if (it->isIntValue() && !settings->library.isargvalid(ftok, argnr, it->intvalue)) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
@@ -1496,8 +1493,7 @@ const Token *Token::getValueTokenMinStrSize() const
         return nullptr;
     const Token *ret = nullptr;
     std::size_t minsize = ~0U;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = _values->begin(); it != _values->end(); ++it) {
+  for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             std::size_t size = getStrSize(it->tokvalue);
             if (!ret || size < minsize) {
@@ -1515,8 +1511,7 @@ const Token *Token::getValueTokenMaxStrLength() const
         return nullptr;
     const Token *ret = nullptr;
     std::size_t maxlength = 0U;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = _values->begin(); it != _values->end(); ++it) {
+  for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             std::size_t length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
@@ -1539,8 +1534,7 @@ const Token *Token::getValueTokenDeadPointer() const
 {
     const Scope * const functionscope = getfunctionscope(this->scope());
 
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = values().begin(); it != values().end(); ++it) {
+  for (std::list<ValueFlow::Value>::const_iterator it = values().begin(); it != values().end(); ++it) {
         // Is this a pointer alias?
         if (!it->isTokValue() || (it->tokvalue && it->tokvalue->str() != "&"))
             continue;

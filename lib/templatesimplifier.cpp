@@ -739,8 +739,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<TokenAndName> 
 
 void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::TokenAndName> *templateInstantiations)
 {
-    std::list<TemplateSimplifier::TokenAndName>::iterator it1, it2;
-    for (it1 = templateInstantiations->begin(); it1 != templateInstantiations->end();) {
+  for (std::list<TemplateSimplifier::TokenAndName>::iterator it1 = templateInstantiations->begin(); it1 != templateInstantiations->end();) {
         TemplateSimplifier::TokenAndName &templateAlias = *it1;
         ++it1;
         Token *startToken = templateAlias.token;
@@ -767,7 +766,7 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
 
         // Look for alias usages..
         const Token *endToken = nullptr;
-        for (it2 = it1; it2 != templateInstantiations->end(); ++it2) {
+        for (std::list<TemplateSimplifier::TokenAndName>::iterator it2 = it1; it2 != templateInstantiations->end(); ++it2) {
             TemplateSimplifier::TokenAndName &aliasUsage = *it2;
             if (aliasUsage.name != aliasName)
                 continue;
@@ -1710,8 +1709,7 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
             }
             for (Token *tok = nameTok1->next(); tok != tok2; tok = tok->next()) {
                 if (tok->isName()) {
-                    std::list<TokenAndName>::iterator ti;
-                    for (ti = templateInstantiations.begin(); ti != templateInstantiations.end();) {
+                  for (std::list<TokenAndName>::iterator ti = templateInstantiations.begin(); ti != templateInstantiations.end();) {
                         if (ti->token == tok)
                             templateInstantiations.erase(ti++);
                         else

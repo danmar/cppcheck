@@ -897,9 +897,7 @@ void SymbolDatabase::createSymbolDatabaseVariableInfo()
 
     // fill in function arguments
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        std::list<Function>::iterator func;
-
-        for (func = it->functionList.begin(); func != it->functionList.end(); ++func) {
+      for (std::list<Function>::iterator func = it->functionList.begin(); func != it->functionList.end(); ++func) {
             // add arguments
             func->addArguments(this, &*it);
         }
@@ -913,8 +911,7 @@ void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
         if (!scope->isClassOrStruct())
             continue;
 
-        std::list<Function>::iterator func;
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+      for (std::list<Function>::iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (!func->isConstructor() || func->minArgCount() != 1)
                 continue;
 
@@ -955,9 +952,7 @@ void SymbolDatabase::createSymbolDatabaseFunctionReturnTypes()
 {
     // fill in function return types
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        std::list<Function>::iterator func;
-
-        for (func = it->functionList.begin(); func != it->functionList.end(); ++func) {
+      for (std::list<Function>::iterator func = it->functionList.begin(); func != it->functionList.end(); ++func) {
             // add return types
             if (func->retDef) {
                 const Token *type = func->retDef;
@@ -1002,9 +997,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     // check for default constructor
                     bool hasDefaultConstructor = false;
 
-                    std::list<Function>::const_iterator func;
-
-                    for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+                  for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
                         if (func->type == Function::eConstructor) {
                             // check for no arguments: func ( )
                             if (func->argCount() == 0) {
@@ -1031,8 +1024,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                         bool needInitialization = false;
                         bool unknown = false;
 
-                        std::list<Variable>::const_iterator var;
-                        for (var = scope->varlist.begin(); var != scope->varlist.end() && !needInitialization; ++var) {
+                      for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end() && !needInitialization; ++var) {
                             if (var->isClass()) {
                                 if (var->type()) {
                                     // does this type need initialization?
@@ -2162,18 +2154,15 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
         path_length++;
     }
 
-    std::list<Scope>::iterator it1;
-
-    // search for match
-    for (it1 = scopeList.begin(); it1 != scopeList.end(); ++it1) {
+  // search for match
+    for (std::list<Scope>::iterator it1 = scopeList.begin(); it1 != scopeList.end(); ++it1) {
         Scope *scope1 = &(*it1);
 
         bool match = false;
 
         // check in namespace if using found
         if (*scope == scope1 && !scope1->usingList.empty()) {
-            std::list<Scope::UsingInfo>::const_iterator it2;
-            for (it2 = scope1->usingList.begin(); it2 != scope1->usingList.end(); ++it2) {
+          for (std::list<Scope::UsingInfo>::const_iterator it2 = scope1->usingList.begin(); it2 != scope1->usingList.end(); ++it2) {
                 if (it2->scope) {
                     Function * func = findFunctionInScope(tok1, it2->scope);
                     if (func) {
@@ -2727,10 +2716,8 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << "    classStart: " << tokenToString(scope->classStart, _tokenizer) << std::endl;
         std::cout << "    classEnd: " << tokenToString(scope->classEnd, _tokenizer) << std::endl;
 
-        std::list<Function>::const_iterator func;
-
-        // find the function body if not implemented inline
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+      // find the function body if not implemented inline
+        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             std::cout << "    Function: " << &*func << std::endl;
             std::cout << "        name: " << tokenToString(func->tokenDef, _tokenizer) << std::endl;
             std::cout << "        type: " << (func->type == Function::eConstructor? "Constructor" :
@@ -2805,17 +2792,13 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        nestedIn: " << scopeToString(func->nestedIn, _tokenizer) << std::endl;
             std::cout << "        functionScope: " << scopeToString(func->functionScope, _tokenizer) << std::endl;
 
-            std::list<Variable>::const_iterator var;
-
-            for (var = func->argumentList.begin(); var != func->argumentList.end(); ++var) {
+          for (std::list<Variable>::const_iterator var = func->argumentList.begin(); var != func->argumentList.end(); ++var) {
                 std::cout << "        Variable: " << &*var << std::endl;
                 printVariable(&*var, "            ");
             }
         }
 
-        std::list<Variable>::const_iterator var;
-
-        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+      for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
             std::cout << "    Variable: " << &*var << std::endl;
             printVariable(&*var, "        ");
         }
@@ -2861,10 +2844,8 @@ void SymbolDatabase::printOut(const char *title) const
 
         std::cout << "    nestedList[" << scope->nestedList.size() << "] = (";
 
-        std::list<Scope *>::const_iterator nsi;
-
-        std::size_t count = scope->nestedList.size();
-        for (nsi = scope->nestedList.begin(); nsi != scope->nestedList.end(); ++nsi) {
+      std::size_t count = scope->nestedList.size();
+        for (std::list<Scope *>::const_iterator nsi = scope->nestedList.begin(); nsi != scope->nestedList.end(); ++nsi) {
             std::cout << " " << (*nsi) << " " << (*nsi)->type << " " << (*nsi)->className;
             if (count-- > 1)
                 std::cout << ",";
@@ -2872,9 +2853,7 @@ void SymbolDatabase::printOut(const char *title) const
 
         std::cout << " )" << std::endl;
 
-        std::list<Scope::UsingInfo>::const_iterator use;
-
-        for (use = scope->usingList.begin(); use != scope->usingList.end(); ++use) {
+      for (std::list<Scope::UsingInfo>::const_iterator use = scope->usingList.begin(); use != scope->usingList.end(); ++use) {
             std::cout << "    using: " << use->scope << " " << use->start->strAt(2);
             const Token *tok1 = use->start->tokAt(3);
             while (tok1 && tok1->str() == "::") {
@@ -2928,10 +2907,8 @@ void SymbolDatabase::printOut(const char *title) const
 
         std::cout << "    friendList[" << type->friendList.size() << "] = (";
 
-        std::list<Type::FriendInfo>::const_iterator fii;
-
-        count = type->friendList.size();
-        for (fii = type->friendList.begin(); fii != type->friendList.end(); ++fii) {
+      count = type->friendList.size();
+        for (std::list<Type::FriendInfo>::const_iterator fii = type->friendList.begin(); fii != type->friendList.end(); ++fii) {
             if (fii->type)
                 std::cout << fii->type;
             else
@@ -3315,9 +3292,7 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
 bool Scope::hasDefaultConstructor() const
 {
     if (numConstructors) {
-        std::list<Function>::const_iterator func;
-
-        for (func = functionList.begin(); func != functionList.end(); ++func) {
+      for (std::list<Function>::const_iterator func = functionList.begin(); func != functionList.end(); ++func) {
             if (func->type == Function::eConstructor && func->argCount() == 0)
                 return true;
         }
@@ -3519,9 +3494,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
 
 const Variable *Scope::getVariable(const std::string &varname) const
 {
-    std::list<Variable>::const_iterator iter;
-
-    for (iter = varlist.begin(); iter != varlist.end(); ++iter) {
+  for (std::list<Variable>::const_iterator iter = varlist.begin(); iter != varlist.end(); ++iter) {
         if (iter->name() == varname)
             return &*iter;
     }
@@ -4377,9 +4350,7 @@ const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 
 Scope *Scope::findInNestedList(const std::string & name)
 {
-    std::list<Scope *>::iterator it;
-
-    for (it = nestedList.begin(); it != nestedList.end(); ++it) {
+  for (std::list<Scope *>::iterator it = nestedList.begin(); it != nestedList.end(); ++it) {
         if ((*it)->className == name)
             return (*it);
     }
@@ -4390,9 +4361,7 @@ Scope *Scope::findInNestedList(const std::string & name)
 
 const Scope *Scope::findRecordInNestedList(const std::string & name) const
 {
-    std::list<Scope *>::const_iterator it;
-
-    for (it = nestedList.begin(); it != nestedList.end(); ++it) {
+  for (std::list<Scope *>::const_iterator it = nestedList.begin(); it != nestedList.end(); ++it) {
         if ((*it)->className == name && (*it)->type != eFunction)
             return (*it);
     }
@@ -4435,8 +4404,7 @@ Scope *Scope::findInNestedListRecursive(const std::string & name)
 
 const Function *Scope::getDestructor() const
 {
-    std::list<Function>::const_iterator it;
-    for (it = functionList.begin(); it != functionList.end(); ++it) {
+  for (std::list<Function>::const_iterator it = functionList.begin(); it != functionList.end(); ++it) {
         if (it->type == Function::eDestructor)
             return &(*it);
     }
@@ -5107,9 +5075,8 @@ static const Function *getOperatorFunction(const Token * const tok)
 {
     const std::string functionName("operator" + tok->str());
     std::multimap<std::string, const Function *>::const_iterator it;
-    const Scope *classScope;
 
-    classScope = getClassScope(tok->astOperand1());
+  const Scope *classScope = getClassScope(tok->astOperand1());
     if (classScope) {
         it = classScope->functionMap.find(functionName);
         if (it != classScope->functionMap.end())

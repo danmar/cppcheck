@@ -406,8 +406,8 @@ private:
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings2, nullptr);
         std::list<const Token *> callstack;
         callstack.push_back(0);
-        CheckMemoryLeak::AllocType allocType, deallocType;
-        allocType = deallocType = CheckMemoryLeak::No;
+        CheckMemoryLeak::AllocType deallocType;
+        CheckMemoryLeak::AllocType allocType = deallocType = CheckMemoryLeak::No;
         Token *tokens = checkMemoryLeak.getcode(start, callstack, varId, allocType, deallocType, classfunc, 1);
 
         // stringify..
