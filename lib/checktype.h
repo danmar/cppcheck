@@ -70,7 +70,7 @@ public:
     void checkTooBigBitwiseShift();
 
     /** @brief %Check for integer overflow */
-    void checkIntegerOverflow();
+    void checkIntegerOverflow() const;
 
     /** @brief %Check for dangerous sign conversion */
     void checkSignConversion();
@@ -79,7 +79,7 @@ public:
     void checkLongCast();
 
     /** @brief %Check for float to integer overflow */
-    void checkFloatToIntegerOverflow();
+    void checkFloatToIntegerOverflow() const;
 private:
 
     // Error messages..

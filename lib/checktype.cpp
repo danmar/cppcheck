@@ -142,7 +142,7 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
 // Checking for integer overflow
 //---------------------------------------------------------------------------
 
-void CheckType::checkIntegerOverflow()
+void CheckType::checkIntegerOverflow() const
 {
     // unknown sizeof(int) => can't run this checker
     if (_settings->platformType == Settings::Unspecified || _settings->int_bit >= MathLib::bigint_bits)
@@ -348,7 +348,7 @@ void CheckType::longCastReturnError(const Token *tok)
 // Checking for float to integer overflow
 //---------------------------------------------------------------------------
 
-void CheckType::checkFloatToIntegerOverflow()
+void CheckType::checkFloatToIntegerOverflow() const
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         const ValueType *vtint, *vtfloat;

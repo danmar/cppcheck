@@ -340,7 +340,7 @@ class MemPoolT : public MemPool
 public:
     MemPoolT() : _blockPtrs(), _root(nullptr), _currentAllocs(0), _nAllocs(0), _maxAllocs(0), _nUntracked(0)	{}
     ~MemPoolT() {
-        Clear();
+      MemPoolT<ITEM_SIZE>::Clear();  // Calling a virtual function inside a destructor is resolved statically
     }
     
     void Clear() {

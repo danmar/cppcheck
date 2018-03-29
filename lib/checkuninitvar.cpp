@@ -321,7 +321,7 @@ static bool isVariableUsed(const Token *tok, const Variable& var)
 
 bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, Alloc* const alloc, const std::string &membervar, std::map<unsigned int, VariableValue> variableValue)
 {
-    const bool suppressErrors(possibleInit && *possibleInit);
+    const bool suppressErrors(possibleInit && *possibleInit);  // Assume that this is a variable delaratkon, rather than a fundef
     const bool printDebug = _settings->debugwarnings;
 
     if (possibleInit)
