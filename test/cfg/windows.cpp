@@ -159,6 +159,10 @@ void validCode()
     SecureZeroMemory(byteBuf, sizeof(byteBuf));
     RtlFillMemory(byteBuf, sizeof(byteBuf), 0xff);
 
+    // cppcheck-suppress LocalAllocCalled
+    HLOCAL pLocalAlloc = LocalAlloc(1, 2);
+    LocalFree(pLocalAlloc);
+
     // Intrinsics
     __noop();
     __noop(1, "test", NULL);
@@ -323,6 +327,18 @@ void memleak_HeapAlloc()
     HeapValidate(GetProcessHeap(), 0, pMem);
     // cppcheck-suppress unreadVariable
     SIZE_T memSize = HeapSize(GetProcessHeap(), 0, pMem);
+    // cppcheck-suppress memleak
+}
+
+void memleak_LocalAlloc()
+{
+    LPTSTR pszBuf;
+    // cppcheck-suppress LocalAllocCalled
+    pszBuf = (LPTSTR)LocalAlloc(LPTR, MAX_PATH*sizeof(TCHAR));
+    (void)LocalSize(pszBuf);
+    (void)LocalFlags(pszBuf);
+    LocalLock(pszBuf);
+    LocalUnlock(pszBuf);
     // cppcheck-suppress memleak
 }
 
