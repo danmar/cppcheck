@@ -1357,8 +1357,9 @@ void CheckBufferOverrun::checkStructVariable()
                     if (scope->nestedIn->isClassOrStruct())
                         continue;
 
-                    std::vector<const std::string*> varname(2, nullptr);
-                    varname[1] = &arrayInfo.varname();
+                    std::vector<const std::string*> varname;
+                    varname.push_back(NULL);
+                    varname.push_back(&arrayInfo.varname());
 
                     // search the function and it's parameters
                     for (const Token *tok3 = func_scope->classDef; tok3 && tok3 != func_scope->classEnd; tok3 = tok3->next()) {
