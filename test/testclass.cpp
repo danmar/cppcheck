@@ -2938,7 +2938,7 @@ private:
                       "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
     }
 
-    void checkConst(const char code[], Settings *s = 0, bool inconclusive = true) {
+    void checkConst(const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -5163,7 +5163,7 @@ private:
                    "  void set(const Key& key) {\n"
                    "      inherited::set(inherited::Key(key));\n"
                    "  }\n"
-                   "};\n", 0, false);
+                   "};\n", nullptr, false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -6297,7 +6297,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkPureVirtualFunctionCall(const char code[], Settings *s = 0, bool inconclusive = true) {
+    void checkPureVirtualFunctionCall(const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 

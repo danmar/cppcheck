@@ -1117,7 +1117,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
                 (tok->next()->str() == "." ||
                  (tok->next()->str() == "[" && tok->linkAt(1)->strAt(1) == "."))) {
                 const Token *tok1 = tok->next()->str() == "." ? tok->tokAt(2) : tok->linkAt(1)->tokAt(2);
-                if (tok1 && tok1->varId() && _variableList[tok1->varId()] == 0) {
+                if (tok1 && tok1->varId() && _variableList[tok1->varId()] == nullptr) {
                     const Variable *var = _variableList[tok->varId()];
                     if (var && var->typeScope()) {
                         // find the member variable of this variable

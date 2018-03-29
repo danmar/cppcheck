@@ -55,7 +55,8 @@ void VarInfo::print()
     std::cout << "size=" << alloctype.size() << std::endl;
     for (std::map<unsigned int, AllocInfo>::const_iterator it = alloctype.begin(); it != alloctype.end(); ++it) {
         std::string strusage;
-        std::map<unsigned int, std::string>::const_iterator use = possibleUsage.find(it->first);
+        const std::map<unsigned int, std::string>::const_iterator use =
+            possibleUsage.find(it->first);
         if (use != possibleUsage.end())
             strusage = use->second;
 

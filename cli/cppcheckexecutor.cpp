@@ -582,9 +582,9 @@ namespace {
         const HANDLE hThread    = GetCurrentThread();
         BOOL result = pSymInitialize(
                           hProcess,
-                          0,
+                          nullptr,
                           TRUE
-                      );
+                      );  // result is reassigned before being read.
         CONTEXT             context = *(ex->ContextRecord);
         STACKFRAME64        stack= {0};
 #ifdef _M_IX86
@@ -643,7 +643,7 @@ namespace {
         }
 
         FreeLibrary(hLibDbgHelp);
-        hLibDbgHelp=0;
+        hLibDbgHelp=nullptr;
     }
 
     void writeMemoryErrorDetails(FILE* outputFile, PEXCEPTION_POINTERS ex, const char* description)
@@ -965,7 +965,7 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
         // ansi code page characters to wide characters
         MultiByteToWideChar(CP_ACP, 0, msg.data(), msglength, wcContainer.data(), msglength);
         // wide characters to oem codepage characters
-        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, const_cast<char *>(result.data()), msglength, NULL, NULL);
+        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, const_cast<char *>(result.data()), msglength, nullptr, nullptr);
 
         return result; // hope for return value optimization
     }

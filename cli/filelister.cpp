@@ -103,7 +103,7 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
                 basedir = cleanedPath + '\\';
         }
     } else {
-        std::string::size_type pos = cleanedPath.find_last_of('\\');
+        const std::string::size_type pos = cleanedPath.find_last_of('\\');
         if (std::string::npos != pos) {
             basedir = cleanedPath.substr(0, pos + 1);
         }

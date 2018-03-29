@@ -3112,7 +3112,7 @@ private:
 
     void countSprintfLength() const {
         std::list<const Token*> unknownParameter;
-        unknownParameter.push_back(0);
+        unknownParameter.push_back(nullptr);
 
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("Hello", unknownParameter));
         ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("s", unknownParameter));
@@ -3133,7 +3133,7 @@ private:
         ASSERT_EQUALS(10, CheckBufferOverrun::countSprintfLength("\\\\\\\\Hello%d \\0Text\\\\\\\\", unknownParameter));
         ASSERT_EQUALS(4, CheckBufferOverrun::countSprintfLength("%%%%%d", unknownParameter));
 
-        Token strTok(0);
+        Token strTok(nullptr);
         std::list<const Token*> stringAsParameter;
         stringAsParameter.push_back(&strTok);
         strTok.str("\"\"");
@@ -3150,7 +3150,7 @@ private:
         ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("%6.6s", stringAsParameter));
 
         std::list<const Token*> intAsParameter;
-        Token numTok(0);
+        Token numTok(nullptr);
         numTok.str("12345");
         intAsParameter.push_back(&numTok);
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%02ld", intAsParameter));
@@ -3166,7 +3166,7 @@ private:
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%5.1x", intAsParameter));
 
         std::list<const Token*> floatAsParameter;
-        Token floatTok(0);
+        Token floatTok(nullptr);
         floatTok.str("1.12345f");
         floatAsParameter.push_back(&floatTok);
         TODO_ASSERT_EQUALS(5, 3, CheckBufferOverrun::countSprintfLength("%.2f", floatAsParameter));
@@ -3174,7 +3174,7 @@ private:
         TODO_ASSERT_EQUALS(5, 3, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter));
 
         std::list<const Token*> floatAsParameter2;
-        Token floatTok2(0);
+        Token floatTok2(nullptr);
         floatTok2.str("100.12345f");
         floatAsParameter2.push_back(&floatTok2);
         TODO_ASSERT_EQUALS(7, 3, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter2));
@@ -3183,7 +3183,7 @@ private:
 
         std::list<const Token*> multipleParams;
         multipleParams.push_back(&strTok);
-        multipleParams.push_back(0);
+        multipleParams.push_back(nullptr);
         multipleParams.push_back(&numTok);
         ASSERT_EQUALS(15, CheckBufferOverrun::countSprintfLength("str%s%d%d", multipleParams));
         ASSERT_EQUALS(26, CheckBufferOverrun::countSprintfLength("str%-6s%08ld%08ld", multipleParams));
@@ -3897,7 +3897,7 @@ private:
     void getErrorMessages() {
         // Ticket #2292: segmentation fault when using --errorlist
         CheckBufferOverrun c;
-        c.getErrorMessages(this, 0);
+        c.getErrorMessages(this, nullptr);
     }
 
     void arrayIndexThenCheck() {

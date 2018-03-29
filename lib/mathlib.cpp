@@ -61,7 +61,7 @@ MathLib::value::value(const std::string &s) :
     // read suffix
     if (s.size() >= 2U) {
         for (std::size_t i = s.size() - 1U; i > 0U; --i) {
-            char c = s[i];
+            const char c = s[i];
             if (c == 'u' || c == 'U')
                 isUnsigned = true;
             else if (c == 'l' || c == 'L') {
@@ -370,7 +370,7 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
 
     // '\123'
     if (str.size() == 4 && str[0] == '\\' && isoctal(str[1]) && isoctal(str[2]) && isoctal(str[3])) {
-        return (char)std::strtoul(str.substr(1).c_str(), NULL, 8);
+        return (char)std::strtoul(str.substr(1).c_str(), nullptr, 8);
     }
 
     // C99 6.4.4.4

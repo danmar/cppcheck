@@ -41,7 +41,7 @@ private:
         TEST_CASE(checkFloatToIntegerOverflow);
     }
 
-    void check(const char code[], Settings* settings = 0, const char filename[] = "test.cpp") {
+    void check(const char code[], Settings* settings = nullptr, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 

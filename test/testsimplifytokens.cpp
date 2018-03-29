@@ -240,7 +240,7 @@ private:
         if (simplify)
             tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(0, !simplify);
+        return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
     std::string tokWithWindows(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
@@ -255,7 +255,7 @@ private:
         if (simplify)
             tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(0, !simplify);
+        return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
     std::string tok(const char code[], const char filename[], bool simplify = true) {
@@ -268,7 +268,7 @@ private:
         if (simplify)
             tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(0, false);
+        return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
     std::string tokWithStdLib(const char code[]) {
@@ -280,7 +280,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(0, false);
+        return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
     std::string tokenizeDebugListing(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
@@ -497,7 +497,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
         ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(2)->isLong());
     }
 
@@ -510,7 +510,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
         ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(2)->isLong());
     }
 
@@ -856,7 +856,7 @@ private:
     unsigned int sizeofFromTokenizer(const char type[]) {
         Tokenizer tokenizer(&settings0, this);
         tokenizer.fillTypeSizes();
-        Token tok1(0);
+        Token tok1(nullptr);
         tok1.str(type);
         return tokenizer.sizeOfType(&tok1);
     }
@@ -1568,7 +1568,7 @@ private:
 
         tokenizer.simplifyIfAndWhileAssign();
 
-        return tokenizer.tokens()->stringifyList(0, false);
+        return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
     void ifassign1() {
@@ -1652,7 +1652,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
-        ASSERT_EQUALS("; m = q . push < Message > ( x ) ; while ( ! m ) { m = q . push < Message > ( x ) ; }", tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS("; m = q . push < Message > ( x ) ; while ( ! m ) { m = q . push < Message > ( x ) ; }", tokenizer.tokens()->stringifyList(nullptr, false));
         ASSERT(tokenizer.tokens()->tokAt(26) != nullptr);
         if (tokenizer.tokens()->tokAt(26)) {
             ASSERT(tokenizer.tokens()->linkAt(6) == tokenizer.tokens()->tokAt(8));

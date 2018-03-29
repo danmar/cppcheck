@@ -202,7 +202,7 @@ private:
         TEST_CASE(cpp11FunctionArgInit); // #7846 - "void foo(int declaration = {}) {"
     }
 
-    void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
+    void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -1786,7 +1786,7 @@ private:
               "    case 3:\n"
               "      strcpy(str, \"b'\");\n"
               "    }\n"
-              "}", 0, false, false, false);
+              "}", nullptr, false, false, false);
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (warning) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
 
         check("void foo(int a) {\n"
@@ -3220,7 +3220,7 @@ private:
 
         check("void f(char c) {\n"
               "    printf(\"%i\", 1 + 1 ? 1 : 2);\n" // "1+1" is simplified away
-              "}",0,false,false,false);
+              "}",nullptr,false,false,false);
         TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '+' and '?'.\n", "", errout.str()); // TODO: Is that really necessary, or is this pattern too unlikely?
 
         check("void f() {\n"
@@ -4949,19 +4949,19 @@ private:
         check("void f() {\n"  // Ticket #4356
               "    int x = 0;\n"  // <- ignore assignment with 0
               "    x = 3;\n"
-              "}", 0, false, false, false);
+              "}", nullptr, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    int i = 54;\n"
               "    i = 0;\n"
-              "}", 0, false, false, false);
+              "}", nullptr, false, false, false);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void f() {\n"
               "    int i = 54;\n"
               "    i = 1;\n"
-              "}", 0, false, false, false);
+              "}", nullptr, false, false, false);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("int foo() {\n" // #4420

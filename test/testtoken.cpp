@@ -102,7 +102,7 @@ private:
     }
 
     void nextprevious() const {
-        Token *token = new Token(0);
+        Token *token = new Token(nullptr);
         token->str("1");
         token->insertToken("2");
         token->next()->insertToken("3");
@@ -134,49 +134,49 @@ private:
 
     void multiCompare() const {
         // Test for found
-        Token one(0);
+        Token one(nullptr);
         one.str("one");
         ASSERT_EQUALS(1, Token::multiCompare(&one, "one|two", 0));
 
-        Token two(0);
+        Token two(nullptr);
         two.str("two");
         ASSERT_EQUALS(1, Token::multiCompare(&two, "one|two", 0));
         ASSERT_EQUALS(1, Token::multiCompare(&two, "verybig|two|", 0));
 
         // Test for empty string found
-        Token notfound(0);
+        Token notfound(nullptr);
         notfound.str("notfound");
         ASSERT_EQUALS(0, Token::multiCompare(&notfound, "one|two|", 0));
 
         // Test for not found
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&notfound, "one|two", 0)));
 
-        Token s(0);
+        Token s(nullptr);
         s.str("s");
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&s, "verybig|two", 0)));
 
-        Token ne(0);
+        Token ne(nullptr);
         ne.str("ne");
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&ne, "one|two", 0)));
 
-        Token a(0);
+        Token a(nullptr);
         a.str("a");
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&a, "abc|def", 0)));
 
-        Token abcd(0);
+        Token abcd(nullptr);
         abcd.str("abcd");
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&abcd, "abc|def", 0)));
 
-        Token def(0);
+        Token def(nullptr);
         def.str("default");
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&def, "abc|def", 0)));
 
         // %op%
-        Token plus(0);
+        Token plus(nullptr);
         plus.str("+");
         ASSERT_EQUALS(1, Token::multiCompare(&plus, "one|%op%", 0));
         ASSERT_EQUALS(1, Token::multiCompare(&plus, "%op%|two", 0));
-        Token x(0);
+        Token x(nullptr);
         x.str("x");
         ASSERT_EQUALS(-1, Token::multiCompare(&x, "one|%op%", 0));
         ASSERT_EQUALS(-1, Token::multiCompare(&x, "%op%|two", 0));
@@ -252,13 +252,13 @@ private:
     }
 
     void multiCompare5() const {
-        Token tok(0);
+        Token tok(nullptr);
         tok.str("||");
         ASSERT_EQUALS(true, Token::multiCompare(&tok, "+|%or%|%oror%", 0) >= 0);
     }
 
     void getStrLength() const {
-        Token tok(0);
+        Token tok(nullptr);
 
         tok.str("\"\"");
         ASSERT_EQUALS(0, (int)Token::getStrLength(&tok));
@@ -274,7 +274,7 @@ private:
     }
 
     void getStrSize() const {
-        Token tok(0);
+        Token tok(nullptr);
 
         tok.str("\"abc\"");
         ASSERT_EQUALS(sizeof("abc"), Token::getStrSize(&tok));
@@ -287,7 +287,7 @@ private:
     }
 
     void strValue() const {
-        Token tok(0);
+        Token tok(nullptr);
 
         tok.str("\"\"");
         ASSERT_EQUALS("", tok.strValue());
@@ -314,7 +314,7 @@ private:
 
 
     void deleteLast() const {
-        Token *tokensBack = 0;
+        Token *tokensBack = nullptr;
         Token tok(&tokensBack);
         tok.insertToken("aba");
         ASSERT_EQUALS(true, tokensBack == tok.next());
@@ -328,7 +328,7 @@ private:
         ASSERT_EQUALS(true, Token::simpleMatch(example1.tokens()->tokAt(4)->nextArgument(), "3 , 4"));
 
         givenACodeSampleToTokenize example2("foo();");
-        ASSERT_EQUALS(true, example2.tokens()->tokAt(2)->nextArgument() == 0);
+        ASSERT_EQUALS(true, example2.tokens()->tokAt(2)->nextArgument() == nullptr);
 
         givenACodeSampleToTokenize example3("foo(bar(a, b), 2, 3);");
         ASSERT_EQUALS(true, Token::simpleMatch(example3.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
@@ -340,7 +340,7 @@ private:
     void eraseTokens() const {
         givenACodeSampleToTokenize code("begin ; { this code will be removed } end", true);
         Token::eraseTokens(code.tokens()->next(), code.tokens()->tokAt(9));
-        ASSERT_EQUALS("begin ; end", code.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS("begin ; end", code.tokens()->stringifyList(nullptr, false));
     }
 
 
@@ -357,7 +357,7 @@ private:
         ASSERT_EQUALS(true, Token::Match(singleChar.tokens(), "[a|bc]"));
         ASSERT_EQUALS(false, Token::Match(singleChar.tokens(), "[d|ef]"));
 
-        Token multiChar(0);
+        Token multiChar(nullptr);
         multiChar.str("[ab");
         ASSERT_EQUALS(false, Token::Match(&multiChar, "[ab|def]"));
     }

@@ -2313,7 +2313,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                     if (it->isIntValue())
                         it->intvalue = (it->intvalue != 0);
                     if (it->isTokValue())
-                        it ->intvalue = (it->tokvalue != 0);
+                        it ->intvalue = (it->tokvalue != nullptr);
                 }
             }
 
