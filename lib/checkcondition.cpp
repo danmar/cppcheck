@@ -784,8 +784,9 @@ static inline T getvalue(const int test, const T value1, const T value2)
         return value2;
     case 5:
         return std::numeric_limits<T>::max();
+    default: 
+      return 0;
     };
-    return 0;
 }
 
 static bool parseComparison(const Token *comp, bool *not1, std::string *op, std::string *value, const Token **expr, bool* inconclusive)

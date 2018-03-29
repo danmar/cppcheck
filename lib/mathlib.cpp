@@ -414,6 +414,7 @@ std::string MathLib::normalizeCharacterLiteral(const std::string& iLiteral)
             if (idx + 1 == iLiteralLen)
                 throw InternalError(nullptr, "Internal Error. MathLib::characterLiteralToLongNumber: Unhandled char constant '" + iLiteral + "'.");
             continue;
+        default: ;
         }
         // Single digit octal number
         if (1 == iLiteralLen - idx) {

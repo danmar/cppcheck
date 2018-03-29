@@ -1201,6 +1201,7 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
             case '^':
                 tok->str((v1 ^ v2).str());
                 break;
+            default: ;
             };
         }
 

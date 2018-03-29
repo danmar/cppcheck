@@ -757,6 +757,7 @@ void simplecpp::TokenList::constFoldUnaryNotPosNeg(simplecpp::Token *tok)
                 tok->setstr(tok->op + tok->next->str);
                 deleteToken(tok->next);
                 break;
+            default: ;
             }
         }
     }

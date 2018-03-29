@@ -100,7 +100,7 @@ void ImportProject::FileSettings::setDefines(std::string defs)
 static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
     std::set<std::string, cppcheck::stricmp> expanded;
-    std::string::size_type start = 0;
+    std::string::size_type start = 0;  // reassigned in all paths, so no need to bother initializing.
     while ((start = s.find("$(")) != std::string::npos) {
         std::string::size_type end = s.find(')',start);
         if (end == std::string::npos)
