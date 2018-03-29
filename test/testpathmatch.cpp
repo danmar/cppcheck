@@ -96,7 +96,7 @@ private:
     }
 
     void onemasksamepathdifferentcase() const {
-        std::vector<std::string> masks(1, "sRc/");
+        const std::vector<std::string> masks(1, "sRc/");
         PathMatch match(masks, false);
         ASSERT(match.match("srC/"));
     }

@@ -181,7 +181,7 @@ private:
      * @param tokenlist token list to use (normal / simple)
      * @param tokenizer tokenizer
      */
-    void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer) const;
+    void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer);
 
     /**
      * @brief Errors and warnings are directed here.

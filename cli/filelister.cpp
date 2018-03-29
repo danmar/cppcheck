@@ -63,7 +63,7 @@ static BOOL MyFileExists(const std::string& path)
     if (fa != INVALID_FILE_ATTRIBUTES && !(fa & FILE_ATTRIBUTE_DIRECTORY))
         result = TRUE;
 #else
-    BOOL result = PathFileExistsA(path.c_str());
+    const BOOL result = PathFileExistsA(path.c_str());
 #endif
     return result;
 }
@@ -88,7 +88,7 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
     const bool checkAllFilesInDir = (MyIsDirectory(cleanedPath) != FALSE);
 
     if (checkAllFilesInDir) {
-        char c = cleanedPath.back();
+        const char c = cleanedPath.back();
         switch (c) {
         case '\\':
             searchPattern += '*';

@@ -553,7 +553,7 @@ void CppCheck::checkSimplifiedTokens(const Tokenizer &tokenizer)
         executeRules("simple", tokenizer);
 }
 
-void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer) const
+void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer)
 {
     (void)tokenlist;
     (void)tokenizer;

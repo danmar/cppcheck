@@ -72,7 +72,8 @@ private:
 #endif
                 "--enable=style,warning,performance,portability", "--inconclusive", "-rp", "-f", "-q", path
             };
-            std::string filename = i->first.substr(i->first.find_last_of("/\\")+1);
+            const std::string filename =
+                i->first.substr(i->first.find_last_of("/\\") + 1);
             if (filename == "good.cpp" || filename == "good.c") {
                 CppCheckExecutor exec;
                 exec.check(7, argv);
@@ -82,7 +83,9 @@ private:
                 exec.check(7, argv);
                 std::string expected_filename = Path::getPathFromFilename(i->first) + "out.txt";
                 std::ifstream ifs(expected_filename.c_str());
-                std::string expected((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+                const std::string expected(
+                    (std::istreambuf_iterator<char>(ifs)),
+                    std::istreambuf_iterator<char>());
                 std::string actual = GET_REDIRECT_ERROUT;
                 // We need some uniformization to make this work on Unix and Windows
                 std::replace(actual.begin(), actual.end(), '/', '\\'); // Uniformize slashes.

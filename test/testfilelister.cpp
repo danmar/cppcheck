@@ -57,8 +57,8 @@ private:
     void recursiveAddFiles() const {
         // Recursively add add files..
         std::map<std::string, std::size_t> files;
-        std::vector<std::string> masks;
-        PathMatch matcher(masks);
+        const std::vector<std::string> masks;
+        const PathMatch matcher(masks);
         FileLister::recursiveAddFiles(files, ".", matcher);
 
         // In case there are leading "./"..

@@ -45,14 +45,15 @@ distribution.
 	{
 		va_list va;
 		va_start( va, format );
-		int result = vsnprintf_s( buffer, size, _TRUNCATE, format, va );
-		va_end( va );
+                const int result =
+                    vsnprintf_s(buffer, size, _TRUNCATE, format, va);
+                va_end( va );
 		return result;
 	}
 
 	static inline int TIXML_VSNPRINTF( char* buffer, size_t size, const char* format, va_list va )
 	{
-		int result = vsnprintf_s( buffer, size, _TRUNCATE, format, va );
+	        const int result = vsnprintf_s( buffer, size, _TRUNCATE, format, va );
 		return result;
 	}
 
