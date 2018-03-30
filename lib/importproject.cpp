@@ -215,7 +215,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
                     pos++;
                     if (pos >= command.size())
                         break;
-                    char F = command[pos++];
+                    const char F = command[pos++];
                     std::string fval;
                     while (pos < command.size() && command[pos] != ' ' && command[pos] != '=') {
                         if (command[pos] != '\\')
@@ -421,7 +421,7 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
             if (!text)
                 continue;
             std::string path(text);
-            std::string::size_type pos = path.find("$(IncludePath)");
+            const std::string::size_type pos = path.find("$(IncludePath)");
             if (pos != std::string::npos)
                 path = path.substr(0,pos) + *includePath + path.substr(pos+14U);
             *includePath = path;
@@ -483,7 +483,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
     bool useOfMfc = false;
 
     tinyxml2::XMLDocument doc;
-    tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
+    const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
     if (error != tinyxml2::XML_SUCCESS)
         return;
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
@@ -495,7 +495,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             if (labelAttribute && std::strcmp(labelAttribute, "ProjectConfigurations") == 0) {
                 for (const tinyxml2::XMLElement *cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
                     if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0) {
-                        ProjectConfiguration p(cfg);
+                        const ProjectConfiguration p(cfg);
                         if (p.platform != ProjectConfiguration::Unknown)
                             projectConfigurationList.push_back(ProjectConfiguration(cfg));
                     }

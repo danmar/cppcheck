@@ -389,7 +389,7 @@ unsigned int ThreadExecutor::check()
         }
     }
 
-    DWORD waitResult = WaitForMultipleObjects(_settings.jobs, threadHandles, TRUE, INFINITE);
+    const DWORD waitResult = WaitForMultipleObjects(_settings.jobs, threadHandles, TRUE, INFINITE);
     if (waitResult != WAIT_OBJECT_0) {
         if (waitResult == WAIT_FAILED) {
             std::cerr << "#### .\nThreadExecutor::check wait failed, result: " << waitResult << " error: " << GetLastError() << std::endl;
@@ -454,7 +454,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
 
             LeaveCriticalSection(&threadExecutor->_fileSync);
 
-            std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->_fileContents.find(file);
+            const std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->_fileContents.find(file);
             if (fileContent != threadExecutor->_fileContents.end()) {
                 // File content was given as a string
                 result += fileChecker.check(file, fileContent->second);
@@ -514,7 +514,7 @@ void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
 
     // Alert only about unique errors
     bool reportError = false;
-    std::string errmsg = msg.toString(_settings.verbose);
+    const std::string errmsg = msg.toString(_settings.verbose);
 
     EnterCriticalSection(&_errorSync);
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end()) {

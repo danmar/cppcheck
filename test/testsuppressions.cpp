@@ -158,7 +158,7 @@ private:
         settings.addEnabled("information");
         settings.jointSuppressionReport = true;
         if (!suppression.empty()) {
-            std::string r = settings.nomsg.addSuppressionLine(suppression);
+            const std::string r = settings.nomsg.addSuppressionLine(suppression);
             ASSERT_EQUALS("", r);
         }
 
@@ -192,7 +192,7 @@ private:
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
             executor.addFileContent(i->first, code);
 
-        unsigned int exitCode = executor.check();
+        const unsigned int exitCode = executor.check();
 
         std::map<std::string, std::string> files_for_report;
         for (std::map<std::string, std::size_t>::const_iterator file = files.begin(); file != files.end(); ++file)

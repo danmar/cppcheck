@@ -228,9 +228,9 @@ void CheckFunctions::checkMathFunctions()
                 if (tok->strAt(-1) != "."
                     && Token::Match(tok, "log|logf|logl|log10|log10f|log10l ( %num% )")) {
                     const std::string& number = tok->strAt(2);
-                    bool isNegative = MathLib::isNegative(number);
-                    bool isInt = MathLib::isInt(number);
-                    bool isFloat = MathLib::isFloat(number);
+                    const bool isNegative = MathLib::isNegative(number);
+                    const bool isInt = MathLib::isInt(number);
+                    const bool isFloat = MathLib::isFloat(number);
                     if (isNegative && isInt && MathLib::toLongNumber(number) <= 0) {
                         mathfunctionCallWarning(tok); // case log(-2)
                     } else if (isNegative && isFloat && MathLib::toDoubleNumber(number) <= 0.) {

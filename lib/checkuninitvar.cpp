@@ -150,7 +150,7 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
                             checkStruct(tok, *arg);
                         else if (arg->typeStartToken()->isStandardType() || arg->typeStartToken()->isEnumType()) {
                             Alloc alloc = NO_ALLOC;
-                            std::map<unsigned int, VariableValue> variableValue;
+                            const std::map<unsigned int, VariableValue> variableValue;
                             checkScopeForVariable(tok->next(), *arg, nullptr, nullptr, &alloc, emptyString, variableValue);
                         }
                     }
@@ -192,7 +192,7 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
                     const Token *tok2 = tok;
                     if (tok->str() == "}")
                         tok2 = tok2->next();
-                    std::map<unsigned int, VariableValue> variableValue;
+                    const std::map<unsigned int, VariableValue> variableValue;
                     checkScopeForVariable(tok2, structvar, nullptr, nullptr, &alloc, var.name(), variableValue);
                 }
             }
@@ -379,7 +379,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 ;
             else if (Token::simpleMatch(tok, "if (") &&
                      astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
-                std::map<unsigned int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
+                const std::map<unsigned int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
                 if (it != variableValue.end() && it->second != 0)
                     return true;   // this scope is not fully analysed => return true
                 else {
@@ -395,7 +395,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 while (Token::simpleMatch(vartok, "."))
                     vartok = vartok->astOperand2();
                 if (vartok && vartok->varId() && numtok) {
-                    std::map<unsigned int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
+                    const std::map<unsigned int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
                     if (it != variableValue.end() && it->second != MathLib::toLongNumber(numtok->str()))
                         return true;   // this scope is not fully analysed => return true
                     else {
@@ -531,7 +531,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             const Token *tok2 = forwhile ? tok->next()->link()->next() : tok->next();
 
             if (tok2 && tok2->str() == "{") {
-                bool init = checkLoopBody(tok2, var, *alloc, membervar, (number_of_if > 0) || suppressErrors);
+                const bool init = checkLoopBody(tok2, var, *alloc, membervar, (number_of_if > 0) || suppressErrors);
 
                 // variable is initialized in the loop..
                 if (init)

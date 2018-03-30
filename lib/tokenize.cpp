@@ -191,7 +191,7 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
     if (type->tokType() == Token::eString)
         return Token::getStrLength(type) + 1U;
 
-    std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->str());
+    const std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->str());
     if (it == _typeSize.end()) {
         const Library::PodType* podtype = _settings->library.podtype(type->str());
         if (!podtype)
@@ -631,7 +631,7 @@ void Tokenizer::simplifyTypedef()
         Token *tokOffset = tok->next();
         bool function = false;
         bool functionPtr = false;
-        bool functionRef = false;
+        const bool functionRef = false;
         bool functionRetFuncPtr = false;
         bool functionPtrRetFuncPtr = false;
         bool ptrToArray = false;

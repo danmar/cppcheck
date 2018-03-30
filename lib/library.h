@@ -201,14 +201,14 @@ public:
         bool opLessAllowed;
 
         Action getAction(const std::string& function) const {
-            std::map<std::string, Function>::const_iterator i = functions.find(function);
+            const std::map<std::string, Function>::const_iterator i = functions.find(function);
             if (i != functions.end())
                 return i->second.action;
             return NO_ACTION;
         }
 
         Yield getYield(const std::string& function) const {
-            std::map<std::string, Function>::const_iterator i = functions.find(function);
+            const std::map<std::string, Function>::const_iterator i = functions.find(function);
             if (i != functions.end())
                 return i->second.yield;
             return NO_YIELD;

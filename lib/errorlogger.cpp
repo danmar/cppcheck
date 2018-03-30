@@ -240,7 +240,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         iss.get();
         std::string temp;
         for (unsigned int i = 0; i < len && iss.good(); ++i) {
-            char c = static_cast<char>(iss.get());
+            const char c = static_cast<char>(iss.get());
             temp.append(1, c);
         }
 
@@ -548,7 +548,7 @@ std::string ErrorLogger::toxml(const std::string &str)
     std::ostringstream xml;
     const bool isstring(str[0] == '\"');
     for (std::size_t i = 0U; i < str.length(); i++) {
-        char c = str[i];
+        const char c = str[i];
         switch (c) {
         case '<':
             xml << "&lt;";

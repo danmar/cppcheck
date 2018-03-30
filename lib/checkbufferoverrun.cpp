@@ -233,7 +233,7 @@ void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const Token *
     } else {
         errmsg = "Undefined behaviour, pointer arithmetic '" + expr + "' is out of bounds";
     }
-    std::string verbosemsg(errmsg + ". From chapter 6.5.6 in the C specification:\n"
+    const std::string verbosemsg(errmsg + ". From chapter 6.5.6 in the C specification:\n"
                            "\"When an expression that has integer type is added to or subtracted from a pointer, ..\" and then \"If both the pointer operand and the result point to elements of the same array object, or one past the last element of the array object, the evaluation shall not produce an overflow; otherwise, the behavior is undefined.\"");
     reportError(tok, Severity::portability, "pointerOutOfBounds", errmsg + ".\n" + verbosemsg, CWE398, false);
     /*
@@ -483,7 +483,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
                             std::list<const Token *> callstack2(callstack);
                             callstack2.push_back(ftok2);
 
-                            std::vector<MathLib::bigint> indexes(1, index);
+                            const std::vector<MathLib::bigint> indexes(1, index);
                             arrayIndexOutOfBoundsError(callstack2, arrayInfo, indexes);
                         }
                     }
@@ -917,7 +917,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, std::map<unsigned int, Arr
         if (!tok->variable() || tok->variable()->nameToken() == tok)
             continue;
 
-        std::map<unsigned int, ArrayInfo>::const_iterator arrayInfo = arrayInfos.find(tok->varId());
+        const std::map<unsigned int, ArrayInfo>::const_iterator arrayInfo = arrayInfos.find(tok->varId());
         if (arrayInfo == arrayInfos.cend())
             continue;
 

@@ -193,7 +193,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                 }
             }
 
-            bool ret1 = assignIfParseScope(assignTok, end->tokAt(2), varid, islocal, bitop, num);
+            const bool ret1 = assignIfParseScope(assignTok, end->tokAt(2), varid, islocal, bitop, num);
             bool ret2 = false;
             if (Token::simpleMatch(end->next()->link(), "} else {"))
                 ret2 = assignIfParseScope(assignTok, end->next()->link()->tokAt(3), varid, islocal, bitop, num);

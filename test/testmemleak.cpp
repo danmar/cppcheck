@@ -671,7 +671,7 @@ private:
         };
 
         for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i) {
-            bool ret = test_white_list(call_func_white_list[i]);
+            const bool ret = test_white_list(call_func_white_list[i]);
             ASSERT_EQUALS("", ret ? "" : call_func_white_list[i]);
         }
     }

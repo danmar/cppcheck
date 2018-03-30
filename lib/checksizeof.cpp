@@ -409,16 +409,16 @@ void CheckSizeof::sizeofVoid()
             // only warn for: 'void *' - 'integral'
             const ValueType *vt1  = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
             const ValueType *vt2  = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
-            bool op1IsvoidPointer = (vt1 && vt1->type == ValueType::Type::VOID && vt1->pointer == 1U);
-            bool op2IsIntegral    = (vt2 && vt2->isIntegral() && vt2->pointer == 0U);
+            const bool op1IsvoidPointer = (vt1 && vt1->type == ValueType::Type::VOID && vt1->pointer == 1U);
+            const bool op2IsIntegral    = (vt2 && vt2->isIntegral() && vt2->pointer == 0U);
             if (op1IsvoidPointer && op2IsIntegral)
                 arithOperationsOnVoidPointerError(tok, tok->astOperand1()->expressionString(), vt1->str());
         } else if (Token::Match(tok, "+|++|--|+=|-=")) { // Arithmetic operations on variable of type "void*"
             const ValueType *vt1 = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
             const ValueType *vt2 = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
 
-            bool voidpointer1 = (vt1 && vt1->type == ValueType::Type::VOID && vt1->pointer == 1U);
-            bool voidpointer2 = (vt2 && vt2->type == ValueType::Type::VOID && vt2->pointer == 1U);
+            const bool voidpointer1 = (vt1 && vt1->type == ValueType::Type::VOID && vt1->pointer == 1U);
+            const bool voidpointer2 = (vt2 && vt2->type == ValueType::Type::VOID && vt2->pointer == 1U);
 
             if (voidpointer1)
                 arithOperationsOnVoidPointerError(tok, tok->astOperand1()->expressionString(), vt1->str());

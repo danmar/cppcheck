@@ -424,7 +424,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                     loc.setfile(_tokenizer.list.getSourceFilePath());
                 }
                 locationList.push_back(loc);
-                ErrorMessage errmsg(locationList,
+                const ErrorMessage errmsg(locationList,
                                                  _tokenizer.list.getSourceFilePath(),
                                                  Severity::error,
                                                  e.errorMessage,
@@ -474,7 +474,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
         std::list<ErrorMessage::FileLocation> callstack;
         callstack.push_back(loc1);
 
-        ErrorMessage errmsg(callstack,
+        const ErrorMessage errmsg(callstack,
                                          emptyString,
                                          Severity::information,
                                          fullmsg,
@@ -674,7 +674,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
         msg << " For more details, use --enable=information.";
 
 
-    ErrorMessage errmsg(loclist,
+    const ErrorMessage errmsg(loclist,
                                      emptyString,
                                      Severity::information,
                                      msg.str(),
@@ -698,7 +698,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
         loclist.push_back(location);
     }
 
-    ErrorMessage errmsg(loclist,
+    const ErrorMessage errmsg(loclist,
                                      emptyString,
                                      Severity::information,
                                      "The configuration '" + configuration + "' was not checked because its code equals another one.",
@@ -839,7 +839,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
         //const std::string sourcefile = filesTxtLine.substr(lastColon+1);
 
         tinyxml2::XMLDocument doc;
-        tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
+        const tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
         if (error != tinyxml2::XML_SUCCESS)
             continue;
 

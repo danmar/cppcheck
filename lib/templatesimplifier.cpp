@@ -513,7 +513,7 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDecla
                 break;
             // Implementation => add to "templates"
             else if (tok2->str() == "{") {
-                int namepos = getTemplateNamePosition(parmEnd);
+                const int namepos = getTemplateNamePosition(parmEnd);
                 if (namepos > 0)
                     declarations.push_back(TokenAndName(tok, getScopeName(scopeInfo), getFullName(scopeInfo, parmEnd->strAt(namepos))));
                 break;
@@ -713,7 +713,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<TokenAndName> 
                 if (Token::Match(tok2, "(|{|["))
                     tok2 = tok2->link();
                 else if (Token::Match(tok2, "%type% <") && templateParameters(tok2->next())) {
-                    std::list<TokenAndName>::iterator ti = std::find_if(templateInstantiations->begin(),
+                    const std::list<TokenAndName>::iterator ti = std::find_if(templateInstantiations->begin(),
                                                            templateInstantiations->end(),
                                                            FindToken(tok2));
                     if (ti != templateInstantiations->end())
@@ -836,7 +836,7 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TokenAndName> *templa
             for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
                 if (!Token::Match(tok, "%name% <"))
                     continue;
-                std::list<TokenAndName>::iterator it = std::find_if(templateInstantiations->begin(),
+                const std::list<TokenAndName>::iterator it = std::find_if(templateInstantiations->begin(),
                                                        templateInstantiations->end(),
                                                        FindToken(tok));
                 if (it == templateInstantiations->end())

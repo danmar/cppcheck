@@ -370,13 +370,13 @@ void CheckStl::mismatchingContainers()
                     mismatchingContainersError(argTok);
                 }
             }
-            int ret = _settings->library.returnValueContainer(ftok);
+            const int ret = _settings->library.returnValueContainer(ftok);
             if (ret != -1 && Token::Match(ftok->next()->astParent(), "==|!=")) {
                 const Token *parent = ftok->next()->astParent();
                 const Token *other = (parent->astOperand1() == ftok->next()) ? parent->astOperand2() : parent->astOperand1();
                 const Variable *c = getContainer(other);
                 if (c) {
-                    std::map<const Variable *, unsigned int>::const_iterator it = containerNr.find(c);
+                    const std::map<const Variable *, unsigned int>::const_iterator it = containerNr.find(c);
                     if (it == containerNr.end() || it->second != ret)
                         mismatchingContainersError(other);
                 }
@@ -446,7 +446,7 @@ void CheckStl::stlOutOfBounds()
                 } else if (container->arrayLike_indexOp && Token::Match(tok3, "[ %varid% ]", numId))
                     stlOutOfBoundsError(tok3, tok3->strAt(1), var->name(), false);
                 else if (Token::Match(tok3, ". %name% ( %varid% )", numId)) {
-                    Library::Container::Yield yield = container->getYield(tok3->strAt(1));
+                    const Library::Container::Yield yield = container->getYield(tok3->strAt(1));
                     if (yield == Library::Container::AT_INDEX)
                         stlOutOfBoundsError(tok3, tok3->strAt(3), var->name(), true);
                 }

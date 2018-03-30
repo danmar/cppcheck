@@ -499,7 +499,7 @@ int Token::multiCompare(const Token *tok, const char *haystack, unsigned int var
     const char *needlePointer = needle;
     for (;;) {
         if (needlePointer == needle && haystack[0] == '%' && haystack[1] != '|' && haystack[1] != '\0' && haystack[1] != ' ') {
-            int ret = multiComparePercent(tok, haystack, varid);
+            const int ret = multiComparePercent(tok, haystack, varid);
             if (ret < 2)
                 return ret;
         } else if (*haystack == '|') {
@@ -553,7 +553,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
         next = pattern + std::strlen(pattern);
 
     while (*current) {
-        std::size_t length = next - current;
+        const std::size_t length = next - current;
 
         if (!tok || length != tok->_str.length() || std::strncmp(current, tok->_str.c_str(), length))
             return false;
@@ -663,7 +663,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
         else {
-            int res = multiCompare(tok, p, varid);
+            const int res = multiCompare(tok, p, varid);
             if (res == 0) {
                 // Empty alternative matches, use the same token on next round
                 while (*p && *p != ' ')
@@ -1316,13 +1316,15 @@ std::string Token::astStringVerbose(const unsigned int indent1, const unsigned i
     ret += '\n';
 
     if (_astOperand1) {
-        unsigned int i1 = indent1, i2 = indent2 + 2;
+      unsigned int i1 = indent1;
+      const unsigned int i2 = indent2 + 2;
         if (indent1==indent2 && !_astOperand2)
             i1 += 2;
         ret += indent(indent1,indent2) + (_astOperand2 ? "|-" : "`-") + _astOperand1->astStringVerbose(i1,i2);
     }
     if (_astOperand2) {
-        unsigned int i1 = indent1, i2 = indent2 + 2;
+      unsigned int i1 = indent1;
+      const unsigned int i2 = indent2 + 2;
         if (indent1==indent2)
             i1 += 2;
         ret += indent(indent1,indent2) + "`-" + _astOperand2->astStringVerbose(i1,i2);
