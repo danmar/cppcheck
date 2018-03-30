@@ -1696,7 +1696,7 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
         unsigned int numFormat,
         unsigned int numFunction)
 {
-    Severity::SeverityType severity = numFormat > numFunction ? Severity::error : Severity::warning;
+    const Severity::SeverityType severity = numFormat > numFunction ? Severity::error : Severity::warning;
     if (severity != Severity::error && !_settings->isEnabled(Settings::WARNING))
         return;
 

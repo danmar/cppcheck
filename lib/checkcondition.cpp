@@ -1335,7 +1335,7 @@ void CheckCondition::checkInvalidTestForOverflow()
 
 void CheckCondition::invalidTestForOverflow(const Token* tok, bool result)
 {
-  std::string errmsg = "Invalid test for overflow '" +
+  const std::string errmsg = "Invalid test for overflow '" +
     (tok ? tok->expressionString() : std::string("x + u < x")) +
     "'. Condition is always " +
     std::string(result ? "true" : "false") +

@@ -1535,10 +1535,10 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
         if (db && db->scopeList.size() == 1) {
-            std::list<Scope>::const_iterator it = db->scopeList.begin();
+            const std::list<Scope>::const_iterator it = db->scopeList.begin();
             ASSERT(it->varlist.size() == 1);
             if (it->varlist.size() == 1) {
-                std::list<Variable>::const_iterator var = it->varlist.begin();
+                const std::list<Variable>::const_iterator var = it->varlist.begin();
                 ASSERT(var->name() == "i");
                 ASSERT(var->typeStartToken()->str() == "int");
             }
@@ -1550,10 +1550,10 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
         if (db && db->scopeList.size() == 1) {
-            std::list<Scope>::const_iterator it = db->scopeList.begin();
+            const std::list<Scope>::const_iterator it = db->scopeList.begin();
             ASSERT(it->varlist.size() == 1);
             if (it->varlist.size() == 1) {
-                std::list<Variable>::const_iterator var = it->varlist.begin();
+                const std::list<Variable>::const_iterator var = it->varlist.begin();
                 ASSERT(var->name() == "array");
                 ASSERT(var->typeStartToken()->str() == "int");
             }
@@ -1565,10 +1565,10 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
         if (db && db->scopeList.size() == 1) {
-            std::list<Scope>::const_iterator it = db->scopeList.begin();
+            const std::list<Scope>::const_iterator it = db->scopeList.begin();
             ASSERT(it->varlist.size() == 1);
             if (it->varlist.size() == 1) {
-                std::list<Variable>::const_iterator var = it->varlist.begin();
+                const std::list<Variable>::const_iterator var = it->varlist.begin();
                 ASSERT(var->name() == "array");
                 ASSERT(var->typeStartToken()->str() == "int");
             }
@@ -5347,7 +5347,7 @@ private:
     }
 
     void using1() {
-        Standards::cppstd_t original_std = settings1.standards.cpp;
+        const Standards::cppstd_t original_std = settings1.standards.cpp;
         settings1.standards.cpp = Standards::CPP11;
         GET_SYMBOL_DB("using INT = int;\n"
                       "using PINT = INT *;\n"
@@ -5391,7 +5391,7 @@ private:
     }
 
     void using2() { // #8331 (segmentation fault)
-        Standards::cppstd_t original_std = settings1.standards.cpp;
+        const Standards::cppstd_t original_std = settings1.standards.cpp;
         settings1.standards.cpp = Standards::CPP11;
 
         {
@@ -5421,7 +5421,7 @@ private:
     }
 
     void using3() { // #8343 (segmentation fault)
-        Standards::cppstd_t original_std = settings1.standards.cpp;
+        const Standards::cppstd_t original_std = settings1.standards.cpp;
         settings1.standards.cpp = Standards::CPP11;
         GET_SYMBOL_DB("template <typename T>\n"
                       "using vector = typename MemoryModel::template vector<T>;\n"

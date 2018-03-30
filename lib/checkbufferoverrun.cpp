@@ -1304,7 +1304,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (totalSize == 0)
                 continue;
 
-            ArrayInfo temp(var->declarationId(), var->name(), totalSize / size, size);
+            const ArrayInfo temp(var->declarationId(), var->name(), totalSize / size, size);
             checkScope(nextTok, v, temp);
         }
     }
@@ -1417,7 +1417,7 @@ void CheckBufferOverrun::checkStructVariable()
                                                 continue;
 
                                             // calculate real array size based on allocated size
-                                            MathLib::bigint elements = (size - 100) / arrayInfo.element_size();
+                                            const MathLib::bigint elements = (size - 100) / arrayInfo.element_size();
                                             arrayInfo.num(0, arrayInfo.num(0) + elements);
                                         }
                                     }
@@ -1544,7 +1544,7 @@ void CheckBufferOverrun::bufferOverrun()
             //  char arr[10] = "123";
             //  arr[7] = 'x'; // warning: arr[7] is inside the array bounds, but past the string's end
 
-            ArrayInfo arrayInfo(tok->varId(), varname, 1U, Token::getStrSize(strtoken));
+            const ArrayInfo arrayInfo(tok->varId(), varname, 1U, Token::getStrSize(strtoken));
             valueFlowCheckArrayIndex(tok->next(), arrayInfo);
         } else {
             if (var->nameToken() == tok || !var->isArray())
@@ -1694,7 +1694,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart->next(); tok && tok != scope->classEnd; tok = tok->next()) {
-            unsigned int dstVarId = tok->varId();
+            const unsigned int dstVarId = tok->varId();
             if (!dstVarId || tok->strAt(1) != "=")
                 continue;
 
@@ -1999,7 +1999,7 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
                 const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
                 if (value && value->intvalue > 0) {
                     const MathLib::bigint arrayIndex = value->intvalue;
-                    std::map<std::string, struct MyFileInfo::ArrayUsage>::iterator it = fileInfo->arrayUsage.find(tok->str());
+                    const std::map<std::string, struct MyFileInfo::ArrayUsage>::iterator it = fileInfo->arrayUsage.find(tok->str());
                     if (it != fileInfo->arrayUsage.end() && it->second.index >= arrayIndex)
                         continue;
                     struct MyFileInfo::ArrayUsage arrayUsage;
@@ -2067,14 +2067,14 @@ bool CheckBufferOverrun::analyseWholeProgram(const std::list<FileInfo*> &fileInf
 
         // merge array usage
         for (std::map<std::string, struct MyFileInfo::ArrayUsage>::const_iterator it2 = fi->arrayUsage.begin(); it2 != fi->arrayUsage.end(); ++it2) {
-            std::map<std::string, struct MyFileInfo::ArrayUsage>::const_iterator allit = all.arrayUsage.find(it2->first);
+            const std::map<std::string, struct MyFileInfo::ArrayUsage>::const_iterator allit = all.arrayUsage.find(it2->first);
             if (allit == all.arrayUsage.end() || it2->second.index > allit->second.index)
                 all.arrayUsage[it2->first] = it2->second;
         }
 
         // merge array info
         for (std::map<std::string, MathLib::bigint>::const_iterator it2 = fi->arraySize.begin(); it2 != fi->arraySize.end(); ++it2) {
-            std::map<std::string, MathLib::bigint>::const_iterator allit = all.arraySize.find(it2->first);
+            const std::map<std::string, MathLib::bigint>::const_iterator allit = all.arraySize.find(it2->first);
             if (allit == all.arraySize.end())
                 all.arraySize[it2->first] = it2->second;
             else
@@ -2084,7 +2084,7 @@ bool CheckBufferOverrun::analyseWholeProgram(const std::list<FileInfo*> &fileInf
 
     // Check buffer usage
     for (std::map<std::string, struct MyFileInfo::ArrayUsage>::const_iterator it = all.arrayUsage.begin(); it != all.arrayUsage.end(); ++it) {
-        std::map<std::string, MathLib::bigint>::const_iterator sz = all.arraySize.find(it->first);
+        const std::map<std::string, MathLib::bigint>::const_iterator sz = all.arraySize.find(it->first);
         if (sz != all.arraySize.end() && sz->second > 0 && sz->second < it->second.index) {
             ErrorLogger::ErrorMessage::FileLocation fileLoc;
             fileLoc.setfile(it->second.fileName);

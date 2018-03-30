@@ -1166,7 +1166,7 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
 {
     if (Token::Match(tok->previous(), "[(,] %name% . %name% [,)]") &&
         tok->strAt(2) == membervar) {
-        int use = isFunctionParUsage(tok, isPointer, alloc);
+        const int use = isFunctionParUsage(tok, isPointer, alloc);
         if (use == 1)
             return true;
     }

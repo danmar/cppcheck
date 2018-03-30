@@ -1206,9 +1206,9 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 
         // Logical operations
         else if (Token::Match(op, "%oror%|&&")) {
-            bool op1 = !MathLib::isNullValue(tok->str());
-            bool op2 = !MathLib::isNullValue(tok->strAt(2));
-            bool result = (op->str() == "||") ? (op1 || op2) : (op1 && op2);
+            const bool op1 = !MathLib::isNullValue(tok->str());
+            const bool op2 = !MathLib::isNullValue(tok->strAt(2));
+            const bool result = (op->str() == "||") ? (op1 || op2) : (op1 && op2);
             tok->str(result ? "1" : "0");
         }
 
@@ -1278,7 +1278,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                 Token::Match(tok->previous(), "[(=,] 1 %oror%")) {
                 unsigned int par = 0;
                 const Token *tok2 = tok;
-                bool andAnd = (tok->next()->str() == "&&");
+                const bool andAnd = (tok->next()->str() == "&&");
                 for (; tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "(" || tok2->str() == "[")
                         ++par;
@@ -1509,7 +1509,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     if (namepos == -1) {
         // debug message that we bail out..
         if (printDebug && errorlogger) {
-            std::list<const Token *> callstack(1, tok);
+            const std::list<const Token *> callstack(1, tok);
             errorlogger->reportErr(ErrorLogger::ErrorMessage(callstack, &tokenlist, Severity::debug, "debug", "simplifyTemplates: bailing out", false));
         }
         return false;
@@ -1605,7 +1605,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
         if (typeForNewName.empty() || typeParametersInDeclaration.size() != typesUsedInTemplateInstantiation.size()) {
             if (printDebug && errorlogger) {
-                std::list<const Token *> callstack(1, tok2);
+                const std::list<const Token *> callstack(1, tok2);
                 errorlogger->reportErr(ErrorLogger::ErrorMessage(callstack, &tokenlist, Severity::debug, "debug",
                                        "Failed to instantiate template \"" + iter2->name + "\". The checking continues anyway.", false));
             }
@@ -1782,13 +1782,13 @@ void TemplateSimplifier::simplifyTemplates(
             for (std::list<TokenAndName>::const_iterator iter2 = templateDeclarations.begin(); iter2 != templateDeclarations.end(); ++iter2) {
                 if (iter1->name == iter2->name) {
                     const Token *tok = iter2->token->next()->findClosingBracket();
-                    int namepos = getTemplateNamePosition(tok);
+                    const int namepos = getTemplateNamePosition(tok);
                     if (namepos > 0)
                         specializations.push_back(tok->tokAt(namepos));
                 }
             }
 
-            bool instantiated = simplifyTemplateInstantiations(tokenlist,
+            const bool instantiated = simplifyTemplateInstantiations(tokenlist,
                                 errorlogger,
                                 _settings,
                                 *iter1,

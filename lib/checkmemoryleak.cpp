@@ -2014,7 +2014,7 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
 // Check for memory leaks for a function variable.
 void CheckMemoryLeakInFunction::checkScope(const Token *startTok, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz)
 {
-    std::list<const Token *> callstack;
+    const std::list<const Token *> callstack;
 
     AllocType alloctype = No;
     AllocType dealloctype = No;

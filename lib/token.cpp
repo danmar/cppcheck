@@ -1497,7 +1497,7 @@ const Token *Token::getValueTokenMinStrSize() const
     std::size_t minsize = ~0U;
   for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == eString) {
-            std::size_t size = getStrSize(it->tokvalue);
+            const std::size_t size = getStrSize(it->tokvalue);
             if (!ret || size < minsize) {
                 minsize = size;
                 ret = it->tokvalue;
@@ -1515,7 +1515,7 @@ const Token *Token::getValueTokenMaxStrLength() const
     std::size_t maxlength = 0U;
   for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == eString) {
-            std::size_t length = getStrLength(it->tokvalue);
+            const std::size_t length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
                 maxlength = length;
                 ret = it->tokvalue;
