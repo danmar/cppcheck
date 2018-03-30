@@ -171,7 +171,7 @@ private:
     }
 
     void filemaskdifferentcase() const {
-        std::vector<std::string> masks(1, "foo.cPp");
+        const std::vector<std::string> masks(1, "foo.cPp");
         PathMatch match(masks, false);
         ASSERT(match.match("fOo.cpp"));
     }

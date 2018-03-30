@@ -37,7 +37,7 @@ cppcheck::Platform::Platform()
 }
 
 
-bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
+bool cppcheck::Platform::platform(PlatformType type)
 {
     switch (type) {
     case Unspecified: // unknown type sizes (sizes etc are set but are not known)

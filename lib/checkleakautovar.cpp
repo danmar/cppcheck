@@ -105,7 +105,7 @@ void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname, i
 void CheckLeakAutoVar::mismatchError(const Token *tok, const std::string &varname) const
 {
     const CheckMemoryLeak c(_tokenizer, _errorLogger, _settings);
-    std::list<const Token *> callstack(1, tok);
+    const std::list<const Token *> callstack(1, tok);
     c.mismatchAllocDealloc(callstack, varname);
 }
 

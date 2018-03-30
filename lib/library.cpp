@@ -216,7 +216,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const std::vector<std::string> names(getnames(name));
             for (unsigned int i = 0U; i < names.size(); ++i) {
                 const Error &err = loadFunction(node, names[i], unknown_elements);
-                if (err.errorcode != ErrorCode::OK)
+                if (err.errorcode != OK)
                     return err;
             }
         }
@@ -837,14 +837,14 @@ const Library::AllocFunc* Library::dealloc(const Token *tok) const
 /** get allocation id for function */
 int Library::alloc(const Token *tok, int arg) const
 {
-    const Library::AllocFunc* af = alloc(tok);
+    const AllocFunc* af = alloc(tok);
     return (af && af->arg == arg) ? af->groupId : 0;
 }
 
 /** get deallocation id for function */
 int Library::dealloc(const Token *tok, int arg) const
 {
-    const Library::AllocFunc* af = dealloc(tok);
+    const AllocFunc* af = dealloc(tok);
     return (af && af->arg == arg) ? af->groupId : 0;
 }
 
@@ -920,7 +920,7 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
     return nullptr;
 }
 
-bool Library::isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback)
+bool Library::isContainerYield(const Token * const cond, Container::Yield y, const std::string& fallback)
 {
     if (!cond)
         return false;
@@ -928,7 +928,7 @@ bool Library::isContainerYield(const Token * const cond, Library::Container::Yie
         const Token* tok = cond->astOperand1();
         if (tok && tok->str() == ".") {
             if (tok->astOperand1() && tok->astOperand1()->valueType()) {
-                if (const Library::Container *container = tok->astOperand1()->valueType()->container) {
+                if (const Container *container = tok->astOperand1()->valueType()->container) {
                     return tok->astOperand2() && y == container->getYield(tok->astOperand2()->str());
                 }
             } else if (!fallback.empty()) {
@@ -995,8 +995,8 @@ bool Library::formatstr_function(const Token* ftok) const
 
 int Library::formatstr_argno(const Token* ftok) const
 {
-    const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = functions.at(getFunctionName(ftok)).argumentChecks;
-    for (std::map<int, Library::ArgumentChecks>::const_iterator i = argumentChecksFunc.cbegin(); i != argumentChecksFunc.cend(); ++i) {
+    const std::map<int, ArgumentChecks>& argumentChecksFunc = functions.at(getFunctionName(ftok)).argumentChecks;
+    for (std::map<int, ArgumentChecks>::const_iterator i = argumentChecksFunc.cbegin(); i != argumentChecksFunc.cend(); ++i) {
         if (i->second.formatstr) {
             return i->first - 1;
         }

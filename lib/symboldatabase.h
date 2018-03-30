@@ -1072,11 +1072,11 @@ public:
     static Type typeFromString(const std::string &typestr, bool longType);
 
     bool isIntegral() const {
-        return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
+        return (type >= BOOL && type <= UNKNOWN_INT);
     }
 
     bool isFloat() const {
-        return (type >= ValueType::Type::FLOAT && type <= ValueType::Type::LONGDOUBLE);
+        return (type >= FLOAT && type <= LONGDOUBLE);
     }
 
     bool fromLibraryType(const std::string &typestr, const Settings *settings);

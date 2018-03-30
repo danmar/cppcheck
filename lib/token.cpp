@@ -782,9 +782,9 @@ Token* Token::nextArgument() const
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
             return tok->next();
-        else if (tok->link() && Token::Match(tok, "(|{|[|<"))
+        else if (tok->link() && Match(tok, "(|{|[|<"))
             tok = tok->link();
-        else if (Token::Match(tok, ")|;"))
+        else if (Match(tok, ")|;"))
             return nullptr;
     }
     return nullptr;
@@ -795,13 +795,13 @@ Token* Token::nextArgumentBeforeCreateLinks2() const
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
             return tok->next();
-        else if (tok->link() && Token::Match(tok, "(|{|["))
+        else if (tok->link() && Match(tok, "(|{|["))
             tok = tok->link();
         else if (tok->str() == "<") {
             const Token* temp = tok->findClosingBracket();
             if (temp)
                 tok = temp;
-        } else if (Token::Match(tok, ")|;"))
+        } else if (Match(tok, ")|;"))
             return nullptr;
     }
     return nullptr;
@@ -812,9 +812,9 @@ Token* Token::nextTemplateArgument() const
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
             return tok->next();
-        else if (tok->link() && Token::Match(tok, "(|{|[|<"))
+        else if (tok->link() && Match(tok, "(|{|[|<"))
             tok = tok->link();
-        else if (Token::Match(tok, ">|;"))
+        else if (Match(tok, ">|;"))
             return nullptr;
     }
     return nullptr;
@@ -829,11 +829,11 @@ const Token * Token::findClosingBracket() const
 
     unsigned int depth = 0;
     for (closing = this; closing != nullptr; closing = closing->next()) {
-        if (Token::Match(closing, "{|[|(")) {
+        if (Match(closing, "{|[|(")) {
             closing = closing->link();
             if (!closing)
                 return nullptr; // #6803
-        } else if (Token::Match(closing, "}|]|)|;"))
+        } else if (Match(closing, "}|]|)|;"))
             return nullptr;
         else if (closing->str() == "<")
             ++depth;
@@ -861,7 +861,7 @@ Token * Token::findClosingBracket()
 const Token *Token::findsimplematch(const Token * const startTok, const char pattern[])
 {
     for (const Token* tok = startTok; tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, pattern))
+        if (simpleMatch(tok, pattern))
             return tok;
     }
     return nullptr;
@@ -870,7 +870,7 @@ const Token *Token::findsimplematch(const Token * const startTok, const char pat
 const Token *Token::findsimplematch(const Token * const startTok, const char pattern[], const Token * const end)
 {
     for (const Token* tok = startTok; tok && tok != end; tok = tok->next()) {
-        if (Token::simpleMatch(tok, pattern))
+        if (simpleMatch(tok, pattern))
             return tok;
     }
     return nullptr;
@@ -879,7 +879,7 @@ const Token *Token::findsimplematch(const Token * const startTok, const char pat
 const Token *Token::findmatch(const Token * const startTok, const char pattern[], const unsigned int varId)
 {
     for (const Token* tok = startTok; tok; tok = tok->next()) {
-        if (Token::Match(tok, pattern, varId))
+        if (Match(tok, pattern, varId))
             return tok;
     }
     return nullptr;
@@ -888,7 +888,7 @@ const Token *Token::findmatch(const Token * const startTok, const char pattern[]
 const Token *Token::findmatch(const Token * const startTok, const char pattern[], const Token * const end, const unsigned int varId)
 {
     for (const Token* tok = startTok; tok && tok != end; tok = tok->next()) {
-        if (Token::Match(tok, pattern, varId))
+        if (Match(tok, pattern, varId))
             return tok;
     }
     return nullptr;
@@ -1113,10 +1113,10 @@ void Token::astOperand2(Token *tok)
 
 bool Token::isCalculation() const
 {
-    if (!Token::Match(this, "%cop%|++|--"))
+    if (!Match(this, "%cop%|++|--"))
         return false;
 
-    if (Token::Match(this, "*|&")) {
+    if (Match(this, "*|&")) {
         // dereference or address-of?
         if (!this->astOperand2())
             return false;
@@ -1136,7 +1136,7 @@ bool Token::isCalculation() const
                 operands.push(op->astOperand1());
             if (op->astOperand2())
                 operands.push(op->astOperand2());
-            else if (Token::Match(op, "*|&"))
+            else if (Match(op, "*|&"))
                 return false;
         }
 
@@ -1151,7 +1151,7 @@ bool Token::isUnaryPreOp() const
 {
     if (!astOperand1() || astOperand2())
         return false;
-    if (!Token::Match(this, "++|--"))
+    if (!Match(this, "++|--"))
         return true;
     const Token *tokbefore = _previous;
     const Token *tokafter = _next;
@@ -1225,12 +1225,12 @@ std::string Token::expressionString() const
     const Token * const top = this;
     const Token *start = top;
     while (start->astOperand1() &&
-           (start->astOperand2() || !start->isUnaryPreOp() || Token::simpleMatch(start, "( )")))
+           (start->astOperand2() || !start->isUnaryPreOp() || simpleMatch(start, "( )")))
         start = start->astOperand1();
     const Token *end = top;
     while (end->astOperand1() && (end->astOperand2() || end->isUnaryPreOp())) {
-        if (Token::Match(end,"(|[") &&
-            !(Token::Match(end, "( %type%") && !end->astOperand2())) {
+        if (Match(end,"(|[") &&
+            !(Match(end, "( %type%") && !end->astOperand2())) {
             end = end->link();
             break;
         }
@@ -1494,7 +1494,7 @@ const Token *Token::getValueTokenMinStrSize() const
     const Token *ret = nullptr;
     std::size_t minsize = ~0U;
   for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
-        if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
+        if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == eString) {
             std::size_t size = getStrSize(it->tokvalue);
             if (!ret || size < minsize) {
                 minsize = size;
@@ -1512,7 +1512,7 @@ const Token *Token::getValueTokenMaxStrLength() const
     const Token *ret = nullptr;
     std::size_t maxlength = 0U;
   for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
-        if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
+        if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == eString) {
             std::size_t length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
                 maxlength = length;

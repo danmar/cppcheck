@@ -199,7 +199,7 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
     var2->_aliases.insert(varid1);
     var1->_aliases.insert(varid2);
 
-    if (var2->_type == Variables::pointer) {
+    if (var2->_type == pointer) {
         _varReadInScope.back().insert(varid2);
         var2->_read = true;
     }
@@ -834,7 +834,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             // does the name contain "for_each" or "foreach"?
             std::string nameTok;
             nameTok.resize(tok->str().size());
-            std::transform(tok->str().begin(), tok->str().end(), nameTok.begin(), ::tolower);
+            std::transform(tok->str().begin(), tok->str().end(), nameTok.begin(), tolower);
             if (nameTok.find("foreach") != std::string::npos || nameTok.find("for_each") != std::string::npos) {
                 // bailout all variables in the body that are used more than once.
                 // TODO: there is no need to bailout if variable is only read or only written

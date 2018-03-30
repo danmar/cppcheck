@@ -153,7 +153,7 @@ private:
 
             std::ostringstream ostr;
           for (std::list<ValueFlow::Value>::const_iterator it = tok->values().begin(); it != tok->values().end(); ++it) {
-                for (ValueFlow::Value::ErrorPath::const_iterator ep = it->errorPath.begin(); ep != it->errorPath.end(); ++ep) {
+                for (ErrorPath::const_iterator ep = it->errorPath.begin(); ep != it->errorPath.end(); ++ep) {
                     const Token *eptok = ep->first;
                     const std::string &msg = ep->second;
                     ostr << eptok->linenr() << ',' << msg << '\n';
@@ -230,7 +230,7 @@ private:
 
         simplecpp::TokenList tokens2(files);
         std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

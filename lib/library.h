@@ -434,7 +434,7 @@ public:
      */
     std::string getFunctionName(const Token *ftok) const;
 
-    static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback="");
+    static bool isContainerYield(const Token * const cond, Container::Yield y, const std::string& fallback="");
 
 private:
     // load a <function> xml node

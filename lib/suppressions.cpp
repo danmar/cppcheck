@@ -160,7 +160,7 @@ std::string Suppressions::FileMatcher::addFile(const std::string &name, unsigned
     if (name.find_first_of("*?") != std::string::npos) {
         for (std::string::const_iterator i = name.begin(); i != name.end(); ++i) {
             if (*i == '*') {
-                std::string::const_iterator j = i + 1;
+                const std::string::const_iterator j = i + 1;
                 if (j != name.end() && (*j == '*' || *j == '?')) {
                     return "Failed to add suppression. Syntax error in glob.";
                 }

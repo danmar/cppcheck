@@ -82,7 +82,7 @@ static void skipEnumBody(T **tok)
 
 const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith) const
 {
-    return Tokenizer::isFunctionHead(tok, endsWith, isCPP());
+    return isFunctionHead(tok, endsWith, isCPP());
 }
 
 const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp)

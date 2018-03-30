@@ -2323,7 +2323,7 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
             if (!tok2 || !tok2->next())
                 return nullptr;
 
-            Type::BaseInfo base;
+            BaseInfo base;
 
             if (tok2->str() == "virtual") {
                 base.isVirtual = true;
@@ -3256,35 +3256,35 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
 {
     const Token *nameTok = classDef;
     if (!classDef) {
-        type = Scope::eGlobal;
+        type = eGlobal;
     } else if (classDef->str() == "class" && check && check->isCPP()) {
-        type = Scope::eClass;
+        type = eClass;
         nameTok = nameTok->next();
     } else if (classDef->str() == "struct") {
-        type = Scope::eStruct;
+        type = eStruct;
         nameTok = nameTok->next();
     } else if (classDef->str() == "union") {
-        type = Scope::eUnion;
+        type = eUnion;
         nameTok = nameTok->next();
     } else if (classDef->str() == "namespace") {
-        type = Scope::eNamespace;
+        type = eNamespace;
         nameTok = nameTok->next();
     } else if (classDef->str() == "enum") {
-        type = Scope::eEnum;
+        type = eEnum;
         nameTok = nameTok->next();
         if (nameTok->str() == "class") {
             enumClass = true;
             nameTok = nameTok->next();
         }
     } else {
-        type = Scope::eFunction;
+        type = eFunction;
     }
     // skip over qualification if present
     if (nameTok && nameTok->str() == "::")
         nameTok = nameTok->next();
     while (Token::Match(nameTok, "%type% ::"))
         nameTok = nameTok->tokAt(2);
-    if (nameTok && ((type == Scope::eEnum && Token::Match(nameTok, ":|{")) || nameTok->str() != "{")) // anonymous and unnamed structs/unions don't have a name
+    if (nameTok && ((type == eEnum && Token::Match(nameTok, ":|{")) || nameTok->str() != "{")) // anonymous and unnamed structs/unions don't have a name
 
         className = nameTok->str();
 }
@@ -3896,10 +3896,10 @@ bool Scope::hasInlineOrLambdaFunction() const
     for (std::list<Scope*>::const_iterator it = nestedList.begin(); it != nestedList.end(); ++it) {
         const Scope *s = *it;
         // Inline function
-        if (s->type == Scope::eUnconditional && Token::simpleMatch(s->classStart->previous(), ") {"))
+        if (s->type == eUnconditional && Token::simpleMatch(s->classStart->previous(), ") {"))
             return true;
         // Lambda function
-        if (s->type == Scope::eLambda)
+        if (s->type == eLambda)
             return true;
     }
     return false;
@@ -5285,29 +5285,29 @@ void SymbolDatabase::setValueTypeInTokenList()
 ValueType ValueType::parseDecl(const Token *type, const Settings *settings)
 {
     ValueType vt;
-    parsedecl(type, &vt, settings->defaultSign == 'u' ? Sign::UNSIGNED : Sign::SIGNED, settings);
+    parsedecl(type, &vt, settings->defaultSign == 'u' ? UNSIGNED : SIGNED, settings);
     return vt;
 }
 
 ValueType::Type ValueType::typeFromString(const std::string &typestr, bool longType)
 {
     if (typestr == "void")
-        return ValueType::Type::VOID;
+        return VOID;
     if (typestr == "bool" || typestr == "_Bool")
-        return ValueType::Type::BOOL;
+        return BOOL;
     if (typestr== "char")
-        return ValueType::Type::CHAR;
+        return CHAR;
     if (typestr == "short")
-        return ValueType::Type::SHORT;
+        return SHORT;
     if (typestr == "int")
-        return ValueType::Type::INT;
+        return INT;
     if (typestr == "long")
-        return longType ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
+        return longType ? LONGLONG : LONG;
     if (typestr == "float")
-        return ValueType::Type::FLOAT;
+        return FLOAT;
     if (typestr == "double")
-        return longType ? ValueType::Type::LONGDOUBLE : ValueType::Type::DOUBLE;
-    return ValueType::Type::UNKNOWN_TYPE;
+        return longType ? LONGDOUBLE : DOUBLE;
+    return UNKNOWN_TYPE;
 }
 
 bool ValueType::fromLibraryType(const std::string &typestr, const Settings *settings)
@@ -5315,35 +5315,35 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
     const Library::PodType* podtype = settings->library.podtype(typestr);
     if (podtype && (podtype->sign == 's' || podtype->sign == 'u')) {
         if (podtype->size == 1)
-            type = ValueType::Type::CHAR;
+            type = CHAR;
         else if (podtype->size == settings->sizeof_int)
-            type = ValueType::Type::INT;
+            type = INT;
         else if (podtype->size == settings->sizeof_short)
-            type = ValueType::Type::SHORT;
+            type = SHORT;
         else if (podtype->size == settings->sizeof_long)
-            type = ValueType::Type::LONG;
+            type = LONG;
         else if (podtype->size == settings->sizeof_long_long)
-            type = ValueType::Type::LONGLONG;
+            type = LONGLONG;
         else
-            type = ValueType::Type::UNKNOWN_INT;
-        sign = (podtype->sign == 'u') ? ValueType::UNSIGNED : ValueType::SIGNED;
+            type = UNKNOWN_INT;
+        sign = (podtype->sign == 'u') ? UNSIGNED : SIGNED;
         return true;
     }
 
     const Library::PlatformType *platformType = settings->library.platform_type(typestr, settings->platformString());
     if (platformType) {
         if (platformType->_type == "char")
-            type = ValueType::Type::CHAR;
+            type = CHAR;
         else if (platformType->_type == "short")
-            type = ValueType::Type::SHORT;
+            type = SHORT;
         else if (platformType->_type == "int")
-            type = platformType->_long ? ValueType::Type::LONG : ValueType::Type::INT;
+            type = platformType->_long ? LONG : INT;
         else if (platformType->_type == "long")
-            type = platformType->_long ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
+            type = platformType->_long ? LONGLONG : LONG;
         if (platformType->_signed)
-            sign = ValueType::SIGNED;
+            sign = SIGNED;
         else if (platformType->_unsigned)
-            sign = ValueType::UNSIGNED;
+            sign = UNSIGNED;
         if (platformType->_pointer)
             pointer = 1;
         if (platformType->_ptr_ptr)
@@ -5353,15 +5353,15 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
         return true;
     } else if (!podtype && (typestr == "size_t" || typestr == "std::size_t")) {
         originalTypeName = "size_t";
-        sign = ValueType::UNSIGNED;
+        sign = UNSIGNED;
         if (settings->sizeof_size_t == settings->sizeof_long)
-            type = ValueType::Type::LONG;
+            type = LONG;
         else if (settings->sizeof_size_t == settings->sizeof_long_long)
-            type = ValueType::Type::LONGLONG;
+            type = LONGLONG;
         else if (settings->sizeof_size_t == settings->sizeof_int)
-            type = ValueType::Type::INT;
+            type = INT;
         else
-            type = ValueType::Type::UNKNOWN_INT;
+            type = UNKNOWN_INT;
         return true;
     }
 
@@ -5422,12 +5422,12 @@ std::string ValueType::dump() const
     };
 
     switch (sign) {
-    case Sign::UNKNOWN_SIGN:
+    case UNKNOWN_SIGN:
         break;
-    case Sign::SIGNED:
+    case SIGNED:
         ret << " valueType-sign=\"signed\"";
         break;
-    case Sign::UNSIGNED:
+    case UNSIGNED:
         ret << " valueType-sign=\"unsigned\"";
         break;
     };
@@ -5479,7 +5479,7 @@ std::string ValueType::str() const
         ret += " double";
     else if (type == LONGDOUBLE)
         ret += " long double";
-    else if ((type == ValueType::Type::NONSTD || type == ValueType::Type::RECORD) && typeScope) {
+    else if ((type == NONSTD || type == RECORD) && typeScope) {
         std::string className(typeScope->className);
         const Scope *scope = typeScope->nestedIn;
         while (scope && scope->type != Scope::eGlobal) {
@@ -5488,9 +5488,9 @@ std::string ValueType::str() const
             scope = scope->nestedIn;
         }
         ret += ' ' + className;
-    } else if (type == ValueType::Type::CONTAINER && container) {
+    } else if (type == CONTAINER && container) {
         ret += " container(" + container->startPattern + ')';
-    } else if (type == ValueType::Type::ITERATOR && container) {
+    } else if (type == ITERATOR && container) {
         ret += " iterator(" + container->startPattern + ')';
     }
     for (unsigned int p = 0; p < pointer; p++) {

@@ -566,7 +566,7 @@ void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
 {
     const simplecpp::DUI dui = createDUI(_settings, emptyString, files[0]);
 
-    tokenlists = simplecpp::load(rawtokens, files, dui, nullptr);
+    tokenlists = load(rawtokens, files, dui, nullptr);
 }
 
 void Preprocessor::removeComments()
@@ -640,7 +640,7 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
             line++;
         }
         if (!tok->macro.empty())
-            ret << Preprocessor::macroChar;
+            ret << macroChar;
         ret << tok->str;
     }
 
@@ -885,9 +885,9 @@ unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1
 
 void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList)
 {
-    Preprocessor::simplifyPragmaAsmPrivate(tokenList);
+    simplifyPragmaAsmPrivate(tokenList);
     for (std::map<std::string, simplecpp::TokenList *>::iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
-        Preprocessor::simplifyPragmaAsmPrivate(it->second);
+        simplifyPragmaAsmPrivate(it->second);
     }
 }
 

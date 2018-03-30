@@ -116,12 +116,12 @@ public:
 
     /** @brief Request termination of checking */
     static void terminate(bool t = true) {
-        Settings::_terminated = t;
+        _terminated = t;
     }
 
     /** @brief termination requested? */
     static bool terminated() {
-        return Settings::_terminated;
+        return _terminated;
     }
 
     /** @brief Force checking the files with "too many" configurations (--force). */

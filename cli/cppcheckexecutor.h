@@ -72,14 +72,14 @@ public:
     virtual void reportOut(const std::string &outmsg);
 
     /** xml output of errors */
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportErr(const ErrorMessage &msg);
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value);
 
     /**
      * Output information messages.
      */
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportInfo(const ErrorMessage &msg);
 
     /**
      * Information about how many files have been checked

@@ -132,7 +132,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
     }
 
     if (plistFile.is_open()) {
-        plistFile << ErrorLogger::plistFooter();
+        plistFile << plistFooter();
         plistFile.close();
     }
 
@@ -165,16 +165,13 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             };
 
             if (err) {
-                const ErrorLogger::ErrorMessage::FileLocation loc1(it->location.file(), it->location.line);
-                std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+                const ErrorMessage::FileLocation loc1(it->location.file(), it->location.line);
+                std::list<ErrorMessage::FileLocation> callstack;
                 callstack.push_back(loc1);
 
-                ErrorLogger::ErrorMessage errmsg(callstack,
-                                                 "",
-                                                 Severity::error,
-                                                 it->msg,
-                                                 "syntaxError",
-                                                 false);
+                const ErrorMessage errmsg(callstack, "",
+                                                       Severity::error, it->msg,
+                                                       "syntaxError", false);
                 _errorLogger.reportErr(errmsg);
                 return 1;
             }
@@ -190,7 +187,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 filename2 = filename;
             filename2 = _settings.plistOutput + filename2.substr(0, filename2.find('.')) + ".plist";
             plistFile.open(filename2);
-            plistFile << ErrorLogger::plistHeader(version(), files);
+            plistFile << plistHeader(version(), files);
         }
 
         // write dump file xml prolog
@@ -212,12 +209,12 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                       << "/>\n";
                 fdump << "  <rawtokens>" << std::endl;
                 for (unsigned int i = 0; i < files.size(); ++i)
-                    fdump << "    <file index=\"" << i << "\" name=\"" << ErrorLogger::toxml(files[i]) << "\"/>" << std::endl;
+                    fdump << "    <file index=\"" << i << "\" name=\"" << toxml(files[i]) << "\"/>" << std::endl;
                 for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
                     fdump << "    <tok "
                           << "fileIndex=\"" << tok->location.fileIndex << "\" "
                           << "linenr=\"" << tok->location.line << "\" "
-                          << "str=\"" << ErrorLogger::toxml(tok->str) << "\""
+                          << "str=\"" << toxml(tok->str) << "\""
                           << "/>" << std::endl;
                 }
                 fdump << "  </rawtokens>" << std::endl;
@@ -242,7 +239,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
             // Calculate checksum so it can be compared with old checksum / future checksums
             const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo);
-            std::list<ErrorLogger::ErrorMessage> errors;
+            std::list<ErrorMessage> errors;
             if (!analyzerInformation.analyzeFile(_settings.buildDir, filename, cfgname, checksum, &errors)) {
                 while (!errors.empty()) {
                     reportErr(errors.front());
@@ -375,7 +372,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
                 // dump xml if --dump
                 if (_settings.dump && fdump.is_open()) {
-                    fdump << "<dump cfg=\"" << ErrorLogger::toxml(cfg) << "\">" << std::endl;
+                    fdump << "<dump cfg=\"" << toxml(cfg) << "\">" << std::endl;
                     preprocessor.dump(fdump);
                     _tokenizer.dump(fdump);
                     fdump << "</dump>" << std::endl;
@@ -414,20 +411,20 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
             } catch (const InternalError &e) {
                 internalErrorFound=true;
-                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                ErrorLogger::ErrorMessage::FileLocation loc;
+                std::list<ErrorMessage::FileLocation> locationList;
+                ErrorMessage::FileLocation loc;
                 if (e.token) {
                     loc.line = e.token->linenr();
                     const std::string fixedpath = Path::toNativeSeparators(_tokenizer.list.file(e.token));
                     loc.setfile(fixedpath);
                 } else {
-                    ErrorLogger::ErrorMessage::FileLocation loc2;
+                    ErrorMessage::FileLocation loc2;
                     loc2.setfile(Path::toNativeSeparators(filename));
                     locationList.push_back(loc2);
                     loc.setfile(_tokenizer.list.getSourceFilePath());
                 }
                 locationList.push_back(loc);
-                ErrorLogger::ErrorMessage errmsg(locationList,
+                ErrorMessage errmsg(locationList,
                                                  _tokenizer.list.getSourceFilePath(),
                                                  Severity::error,
                                                  e.errorMessage,
@@ -473,11 +470,11 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
     const std::string fullmsg("Bailing out from checking " + fixedpath + " since there was an internal error: " + msg);
 
     if (_settings.isEnabled(Settings::INFORMATION)) {
-        const ErrorLogger::ErrorMessage::FileLocation loc1(filename, 0);
-        std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+        const ErrorMessage::FileLocation loc1(filename, 0);
+        std::list<ErrorMessage::FileLocation> callstack;
         callstack.push_back(loc1);
 
-        ErrorLogger::ErrorMessage errmsg(callstack,
+        ErrorMessage errmsg(callstack,
                                          emptyString,
                                          Severity::information,
                                          fullmsg,
@@ -656,9 +653,9 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
     if (_settings.isEnabled(Settings::INFORMATION) && file.empty())
         return;
 
-    std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
+    std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        ErrorLogger::ErrorMessage::FileLocation location;
+        ErrorMessage::FileLocation location;
         location.setfile(file);
         loclist.push_back(location);
     }
@@ -677,7 +674,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
         msg << " For more details, use --enable=information.";
 
 
-    ErrorLogger::ErrorMessage errmsg(loclist,
+    ErrorMessage errmsg(loclist,
                                      emptyString,
                                      Severity::information,
                                      msg.str(),
@@ -694,14 +691,14 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
     if (_settings.isEnabled(Settings::INFORMATION) && file.empty())
         return;
 
-    std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
+    std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        ErrorLogger::ErrorMessage::FileLocation location;
+        ErrorMessage::FileLocation location;
         location.setfile(file);
         loclist.push_back(location);
     }
 
-    ErrorLogger::ErrorMessage errmsg(loclist,
+    ErrorMessage errmsg(loclist,
                                      emptyString,
                                      Severity::information,
                                      "The configuration '" + configuration + "' was not checked because its code equals another one.",
@@ -713,7 +710,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 //---------------------------------------------------------------------------
 
-void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
+void CppCheck::reportErr(const ErrorMessage &msg)
 {
     if (!_settings.library.reportErrors(msg.file0))
         return;
@@ -749,7 +746,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     _errorLogger.reportErr(msg);
     analyzerInformation.reportErr(msg, _settings.verbose);
     if (!_settings.plistOutput.empty() && plistFile.is_open()) {
-        plistFile << ErrorLogger::plistData(msg);
+        plistFile << plistData(msg);
     }
 }
 
@@ -763,7 +760,7 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
     _errorLogger.reportProgress(filename, stage, value);
 }
 
-void CppCheck::reportInfo(const ErrorLogger::ErrorMessage &msg)
+void CppCheck::reportInfo(const ErrorMessage &msg)
 {
     // Suppressing info message?
     std::string file;

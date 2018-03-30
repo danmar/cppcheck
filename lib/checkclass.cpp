@@ -2378,18 +2378,18 @@ void CheckClass::checkCopyCtorAndEqOperator()
         if (!hasNonStaticVars)
             continue;
 
-        CtorType copyCtors = CtorType::NO;
+        CtorType copyCtors = NO;
         bool moveCtor = false;
-        CtorType assignmentOperators = CtorType::NO;
+        CtorType assignmentOperators = NO;
 
       for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (copyCtors == CtorType::NO && func->type == Function::eCopyConstructor) {
-                copyCtors = func->hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
+            if (copyCtors == NO && func->type == Function::eCopyConstructor) {
+                copyCtors = func->hasBody() ? WITH_BODY : WITHOUT_BODY;
             }
-            if (assignmentOperators == CtorType::NO && func->type == Function::eOperatorEqual) {
+            if (assignmentOperators == NO && func->type == Function::eOperatorEqual) {
                 const Variable * variable = func->getArgumentVar(0);
                 if (variable && variable->type() && variable->type()->classScope == scope) {
-                    assignmentOperators = func->hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
+                    assignmentOperators = func->hasBody() ? WITH_BODY : WITHOUT_BODY;
                 }
             }
             if (func->type == Function::eMoveConstructor) {
@@ -2401,9 +2401,9 @@ void CheckClass::checkCopyCtorAndEqOperator()
         if (moveCtor)
             continue;
 
-        if ((copyCtors == CtorType::WITH_BODY && assignmentOperators == CtorType::NO) ||
-            (copyCtors == CtorType::NO && assignmentOperators == CtorType::WITH_BODY))
-            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, copyCtors == CtorType::WITH_BODY);
+        if ((copyCtors == WITH_BODY && assignmentOperators == NO) ||
+            (copyCtors == NO && assignmentOperators == WITH_BODY))
+            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, copyCtors == WITH_BODY);
     }
 }
 
@@ -2431,7 +2431,7 @@ void CheckClass::checkUnsafeClassDivZero(bool test)
         if (!test && classScope->classDef->fileIndex() != 1)
             continue;
       for (std::list<Function>::const_iterator func = classScope->functionList.begin(); func != classScope->functionList.end(); ++func) {
-            if (func->access != AccessControl::Public)
+            if (func->access != Public)
                 continue;
             if (!func->hasBody())
                 continue;

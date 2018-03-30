@@ -541,10 +541,10 @@ void CheckCondition::multiCondition2() const
         const Token *tok;
         if (Token::Match(scope->classStart, "{ return|throw|continue|break")) {
             tok = scope->classEnd->next();
-            type = MULTICONDITIONTYPE::AFTER;
+            type = AFTER;
         } else {
             tok = scope->classStart;
-            type = MULTICONDITIONTYPE::INNER;
+            type = INNER;
         }
         const Token * const endToken = tok->scope()->classEnd;
 
@@ -571,7 +571,7 @@ void CheckCondition::multiCondition2() const
                 // Condition..
                 const Token *cond2 = tok->next()->astOperand2();
 
-                if (type == MULTICONDITIONTYPE::INNER) {
+                if (type == INNER) {
                     std::stack<const Token *> tokens1;
                     tokens1.push(cond1);
                     while (!tokens1.empty()) {

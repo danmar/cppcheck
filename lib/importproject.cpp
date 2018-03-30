@@ -71,8 +71,8 @@ void ImportProject::ignoreOtherPlatforms(cppcheck::Platform::PlatformType platfo
 void ImportProject::FileSettings::setDefines(std::string defs)
 {
     while (defs.find(";%(") != std::string::npos) {
-        std::string::size_type pos1 = defs.find(";%(");
-        std::string::size_type pos2 = defs.find(';', pos1+1);
+        const std::string::size_type pos1 = defs.find(";%(");
+        const std::string::size_type pos2 = defs.find(';', pos1+1);
         defs.erase(pos1, pos2 == std::string::npos ? pos2 : (pos2-pos1));
     }
     while (defs.find(";;") != std::string::npos)
@@ -102,7 +102,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
     std::set<std::string, cppcheck::stricmp> expanded;
     std::string::size_type start;
     while ((start = s.find("$(")) != std::string::npos) {
-        std::string::size_type end = s.find(')',start);
+        const std::string::size_type end = s.find(')',start);
         if (end == std::string::npos)
             break;
         const std::string var = s.substr(start+2,end-start-2);

@@ -95,7 +95,7 @@ static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, cons
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
     callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(tok, tokenlist));
-    ErrorLogger::ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug,
+    const ErrorLogger::ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug,
                                      Path::stripDirectoryPart(file) + ":" + MathLib::toString(line) + ":" + function + " bailout: " + what, "valueFlowBailout", false);
     errorLogger->reportErr(errmsg);
 }
@@ -3286,7 +3286,7 @@ ValueFlow::Value::Value(const Token *c, long long val)
       varId(0U),
       conditional(false),
       defaultArg(false),
-      valueKind(ValueKind::Possible)
+      valueKind(Possible)
 {
     errorPath.push_back(ErrorPathItem(c, "Assuming that condition '" + c->expressionString() + "' is not redundant"));
 }

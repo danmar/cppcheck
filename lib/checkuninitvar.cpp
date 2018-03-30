@@ -125,13 +125,13 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
 
         if (i->isArray()) {
             Alloc alloc = ARRAY;
-            std::map<unsigned int, VariableValue> variableValue;
+            const std::map<unsigned int, VariableValue> variableValue;
             checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString, variableValue);
             continue;
         }
         if (stdtype || i->isPointer()) {
             Alloc alloc = NO_ALLOC;
-            std::map<unsigned int, VariableValue> variableValue;
+            const std::map<unsigned int, VariableValue> variableValue;
             checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString, variableValue);
         }
         if (i->type())

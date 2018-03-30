@@ -71,7 +71,7 @@ protected:
     void processOptions(const options& args);
 public:
     virtual void reportOut(const std::string &outmsg);
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportErr(const ErrorMessage &msg);
     void run(const std::string &str);
 
     explicit TestFixture(const char * const _name);

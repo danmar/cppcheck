@@ -125,7 +125,7 @@ public:
      * \param[in] str character literal
      * @return Number of internal representation of the character literal
      * */
-    static MathLib::bigint characterLiteralToLongNumber(const std::string& str);
+    static bigint characterLiteralToLongNumber(const std::string& str);
 
     /**
      * \param[in] iCode Code being considered

@@ -190,7 +190,7 @@ private:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportErr(const ErrorMessage &msg);
 
     /**
      * @brief Information about progress is directed here.
@@ -207,7 +207,7 @@ private:
     /**
      * Output information messages.
      */
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportInfo(const ErrorMessage &msg);
 
     ErrorLogger &_errorLogger;
 

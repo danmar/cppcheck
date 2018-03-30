@@ -221,7 +221,7 @@ public:
     void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index) const;
 
     /* data for multifile checking */
-    class MyFileInfo : public Check::FileInfo {
+    class MyFileInfo : public FileInfo {
     public:
         std::string toString() const;
 
@@ -239,12 +239,12 @@ public:
     };
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
+    FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
 
-    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const;
+    FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
+    bool analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
 
     /**
      * Calculates sizeof value for given type.

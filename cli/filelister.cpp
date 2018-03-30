@@ -141,7 +141,7 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
             // Directory
             if (recursive) {
                 if (!ignored.match(fname))
-                    FileLister::recursiveAddFiles(files, fname, extra, ignored);
+                    recursiveAddFiles(files, fname, extra, ignored);
             }
         }
     } while (FindNextFileA(hFind, &ffd) != FALSE);

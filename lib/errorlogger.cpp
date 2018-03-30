@@ -89,7 +89,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
         if (!(*it))
             continue;
 
-        _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(*it, list));
+        _callStack.push_back(FileLocation(*it, list));
     }
 
     if (list && !list->getFiles().empty())
@@ -108,7 +108,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
         if (!(*it))
             continue;
 
-        _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(*it, list));
+        _callStack.push_back(FileLocation(*it, list));
     }
 
     if (list && !list->getFiles().empty())
@@ -127,7 +127,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenL
 
         // --errorlist can provide null values here
         if (tok)
-            _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(tok, info, tokenList));
+            _callStack.push_back(FileLocation(tok, info, tokenList));
     }
 
     if (tokenList && !tokenList->getFiles().empty())
@@ -170,7 +170,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errms
             const char *file = strfile ? strfile : unknown;
             const char *info = strinfo ? strinfo : "";
             const int line = strline ? std::atoi(strline) : 0;
-            _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(file, info, line));
+            _callStack.push_back(FileLocation(file, info, line));
         }
     }
 }
@@ -216,7 +216,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     oss << saneVerboseMessage.length() << " " << saneVerboseMessage;
     oss << _callStack.size() << " ";
 
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator loc = _callStack.begin(); loc != _callStack.end(); ++loc) {
+    for (std::list<FileLocation>::const_iterator loc = _callStack.begin(); loc != _callStack.end(); ++loc) {
         std::ostringstream smallStream;
         smallStream << (*loc).line << ':' << (*loc).getfile() << '\t' << loc->getinfo();
         oss << smallStream.str().length() << " " << smallStream.str();
@@ -292,7 +292,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         const std::string tempfile = temp.substr(colonPos + 1);
         temp.erase(colonPos);
         const std::string templine = temp;
-        ErrorLogger::ErrorMessage::FileLocation loc;
+        FileLocation loc;
         loc.setfile(tempfile);
         loc.setinfo(tempinfo);
         std::istringstream fiss(templine);
@@ -416,7 +416,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         if (_callStack.empty()) {
             text << "nofile:0:0: ";
         } else {
-            const ErrorLogger::ErrorMessage::FileLocation &loc = _callStack.back();
+            const FileLocation &loc = _callStack.back();
             text << loc.getfile() << ':' << loc.line << ':' << loc.col << ": ";
         }
 
@@ -493,16 +493,16 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
         if (suppressed)
             continue;
 
-        const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack = make_container< std::list<ErrorLogger::ErrorMessage::FileLocation> > ()
-                << ErrorLogger::ErrorMessage::FileLocation(i->file, i->line);
-        reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression", false));
+        const std::list<ErrorMessage::FileLocation> callStack = make_container< std::list<ErrorMessage::FileLocation> > ()
+                << ErrorMessage::FileLocation(i->file, i->line);
+        reportErr(ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression", false));
     }
 }
 
-std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack)
+std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack)
 {
     std::ostringstream ostr;
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok) {
+    for (std::list<ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok) {
         ostr << (tok == callStack.begin() ? "" : " -> ") << tok->stringify();
     }
     return ostr.str();
@@ -588,7 +588,7 @@ std::string ErrorLogger::plistHeader(const std::string &version, const std::vect
          << " <key>files</key>\r\n"
          << " <array>\r\n";
     for (unsigned int i = 0; i < files.size(); ++i)
-        ostr << "  <string>" << ErrorLogger::toxml(files[i]) << "</string>\r\n";
+        ostr << "  <string>" << toxml(files[i]) << "</string>\r\n";
     ostr       << " </array>\r\n"
                << " <key>diagnostics</key>\r\n"
                << " <array>\r\n";
@@ -606,16 +606,16 @@ static std::string plistLoc(const char indent[], const ErrorLogger::ErrorMessage
     return ostr.str();
 }
 
-std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
+std::string ErrorLogger::plistData(const ErrorMessage &msg)
 {
     std::ostringstream plist;
     plist << "  <dict>\r\n"
           << "   <key>path</key>\r\n"
           << "   <array>\r\n";
 
-    std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator prev = msg._callStack.begin();
+    std::list<ErrorMessage::FileLocation>::const_iterator prev = msg._callStack.begin();
 
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator it = msg._callStack.begin(); it != msg._callStack.end(); ++it) {
+    for (std::list<ErrorMessage::FileLocation>::const_iterator it = msg._callStack.begin(); it != msg._callStack.end(); ++it) {
         if (prev != it) {
             plist << "    <dict>\r\n"
                   << "     <key>kind</key><string>control</string>\r\n"
@@ -638,7 +638,7 @@ std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
             prev = it;
         }
 
-        std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator next = it;
+        std::list<ErrorMessage::FileLocation>::const_iterator next = it;
         ++next;
         const std::string message = (it->getinfo().empty() && next == msg._callStack.end() ? msg.shortMessage() : it->getinfo());
 
@@ -655,16 +655,16 @@ std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
               << "     </array>\r\n"
               << "     <key>depth</key><integer>0</integer>\r\n"
               << "     <key>extended_message</key>\r\n"
-              << "     <string>" << ErrorLogger::toxml(message) << "</string>\r\n"
+              << "     <string>" << toxml(message) << "</string>\r\n"
               << "     <key>message</key>\r"
-              << "     <string>" << ErrorLogger::toxml(message) << "</string>\r\n"
+              << "     <string>" << toxml(message) << "</string>\r\n"
               << "    </dict>\r\n";
     }
 
     plist << "   </array>\r\n"
-          << "   <key>description</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
+          << "   <key>description</key><string>" << toxml(msg.shortMessage()) << "</string>\r\n"
           << "   <key>category</key><string>" << Severity::toString(msg._severity) << "</string>\r\n"
-          << "   <key>type</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
+          << "   <key>type</key><string>" << toxml(msg.shortMessage()) << "</string>\r\n"
           << "   <key>check_name</key><string>" << msg._id << "</string>\r\n"
           << "   <!-- This hash is experimental and going to change! -->\r\n"
           << "   <key>issue_hash_content_of_line_in_context</key><string>" << 0 << "</string>\r\n"

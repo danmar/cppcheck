@@ -53,7 +53,7 @@ public:
     virtual void reportOut(const std::string &outmsg) {
         _next->reportOut(outmsg);
     }
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) {
+    virtual void reportErr(const ErrorMessage &msg) {
         if (!msg._callStack.empty() && !_settings.nomsg.isSuppressed(msg._id, msg._callStack.begin()->getfile(), msg._callStack.begin()->line))
             _next->reportErr(msg);
     }

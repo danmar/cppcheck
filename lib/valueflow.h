@@ -39,7 +39,7 @@ namespace ValueFlow {
         typedef std::pair<const Token *, std::string> ErrorPathItem;
         typedef std::list<ErrorPathItem> ErrorPath;
 
-        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(nullptr), varId(0U), conditional(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(nullptr), varId(0U), conditional(false), defaultArg(false), valueKind(Possible) {}
         Value(const Token *c, long long val);
 
         bool operator==(const Value &rhs) const {
@@ -146,33 +146,33 @@ namespace ValueFlow {
         } valueKind;
 
         void setKnown() {
-            valueKind = ValueKind::Known;
+            valueKind = Known;
         }
 
         bool isKnown() const {
-            return valueKind == ValueKind::Known;
+            return valueKind == Known;
         }
 
         void setPossible() {
-            valueKind = ValueKind::Possible;
+            valueKind = Possible;
         }
 
         bool isPossible() const {
-            return valueKind == ValueKind::Possible;
+            return valueKind == Possible;
         }
 
         void setInconclusive(bool inconclusive = true) {
             if (inconclusive)
-                valueKind = ValueKind::Inconclusive;
+                valueKind = Inconclusive;
         }
 
         bool isInconclusive() const {
-            return valueKind == ValueKind::Inconclusive;
+            return valueKind == Inconclusive;
         }
 
         void changeKnownToPossible() {
             if (isKnown())
-                valueKind = ValueKind::Possible;
+                valueKind = Possible;
         }
 
         bool errorSeverity() const {
@@ -181,7 +181,7 @@ namespace ValueFlow {
     };
 
     /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).
-    const ValueFlow::Value * valueFlowConstantFoldAST(const Token *expr, const Settings *settings);
+    const Value * valueFlowConstantFoldAST(const Token *expr, const Settings *settings);
 
     /// Perform valueflow analysis.
     void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);

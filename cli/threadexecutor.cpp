@@ -490,17 +490,17 @@ void ThreadExecutor::reportOut(const std::string &outmsg)
 
     LeaveCriticalSection(&_reportSync);
 }
-void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportErr(const ErrorMessage &msg)
 {
     report(msg, REPORT_ERROR);
 }
 
-void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportInfo(const ErrorMessage &msg)
 {
     report(msg, REPORT_INFO);
 }
 
-void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType msgType)
+void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
 {
     std::string file;
     unsigned int line(0);

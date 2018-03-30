@@ -1963,7 +1963,7 @@ void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::s
 std::string CheckBufferOverrun::MyFileInfo::toString() const
 {
     std::ostringstream ret;
-    for (std::map<std::string, struct CheckBufferOverrun::MyFileInfo::ArrayUsage>::const_iterator it = arrayUsage.begin(); it != arrayUsage.end(); ++it) {
+    for (std::map<std::string, struct ArrayUsage>::const_iterator it = arrayUsage.begin(); it != arrayUsage.end(); ++it) {
         ret << "    <ArrayUsage"
             << " array=\"" << ErrorLogger::toxml(it->first) << '\"'
             << " index=\"" << it->second.index << '\"'
@@ -2055,12 +2055,12 @@ Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLEle
 }
 
 
-bool CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings&, ErrorLogger &errorLogger)
+bool CheckBufferOverrun::analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings&, ErrorLogger &errorLogger)
 {
     bool errors = false;
     // Merge all fileInfo
     MyFileInfo all;
-    for (std::list<Check::FileInfo*>::const_iterator it = fileInfo.begin(); it != fileInfo.end(); ++it) {
+    for (std::list<FileInfo*>::const_iterator it = fileInfo.begin(); it != fileInfo.end(); ++it) {
         const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(*it);
         if (!fi)
             continue;

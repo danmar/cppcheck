@@ -117,7 +117,7 @@ private:
 //      msgs.push_back("Русский");
 //      msgs.push_back("中文");
 
-        Settings set1;
+        const Settings set1;
         Settings setXML;
         setXML.xml = true;
         setXML.xml_version = 2;
@@ -132,7 +132,7 @@ private:
 
             exec.reportOut(*i);
 
-            ErrorLogger::ErrorMessage errMessage;
+            ErrorMessage errMessage;
             errMessage.setmsg(*i);
 
             // no xml option
