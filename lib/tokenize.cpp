@@ -2709,7 +2709,7 @@ void Tokenizer::setVarIdPass1()
             if (!isC() && Token::simpleMatch(tok2, "const new"))
                 continue;
 
-            bool decl;
+            bool decl = false;
             try { /* Ticket #8151 */
                 decl = setVarIdParseDeclaration(&tok2, variableId, scopeStack.top().isExecutable, isCPP(), isC());
             } catch (const Token * errTok) {

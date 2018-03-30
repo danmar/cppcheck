@@ -97,12 +97,12 @@ namespace simplecpp {
     class SIMPLECPP_LIB Token {
     public:
         Token(const TokenString &s, const Location &loc) :
-            str(string), location(loc), previous(nullptr), next(nullptr), string(s) {
+            str(string), location(loc), previous(NULL), next(NULL), string(s) {
             flags();
         }
 
         Token(const Token &tok) :
-            str(string), macro(tok.macro), location(tok.location), previous(nullptr), next(nullptr), string(tok.str) {
+            str(string), macro(tok.macro), location(tok.location), previous(NULL), next(NULL), string(tok.str) {
             flags();
         }
 
@@ -177,7 +177,7 @@ namespace simplecpp {
     class SIMPLECPP_LIB TokenList {
     public:
         explicit TokenList(std::vector<std::string> &filenames);
-        TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = nullptr);
+        TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = 0);
         TokenList(const TokenList &other);
         ~TokenList();
         TokenList &operator=(const TokenList &other);
@@ -191,13 +191,12 @@ namespace simplecpp {
         void dump() const;
         std::string stringify() const;
 
-        void readfile(std::istream &istr, const std::string &filename=std::string(), OutputList *outputList = nullptr);
+        void readfile(std::istream &istr, const std::string &filename=std::string(), OutputList *outputList = 0);
         void constFold();
 
         void removeComments();
 
-        Token *front() const
-        {
+        Token *front() {
             return frontToken;
         }
 
@@ -205,8 +204,7 @@ namespace simplecpp {
             return frontToken;
         }
 
-        Token *back() const
-        {
+        Token *back() {
             return backToken;
         }
 
@@ -240,7 +238,7 @@ namespace simplecpp {
                 other.frontToken->previous = backToken;
             }
             backToken = other.backToken;
-            other.frontToken = other.backToken = nullptr;
+            other.frontToken = other.backToken = NULL;
         }
 
         /** sizeof(T) */
@@ -262,7 +260,7 @@ namespace simplecpp {
 
         std::string lastLine(int maxsize=10) const;
 
-        unsigned int fileIndex(const std::string &filename) const;
+        unsigned int fileIndex(const std::string &filename);
 
         Token *frontToken;
         Token *backToken;
@@ -289,7 +287,7 @@ namespace simplecpp {
         std::list<std::string> includes;
     };
 
-    SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = nullptr);
+    SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = 0);
 
     /**
      * Preprocess
@@ -302,7 +300,7 @@ namespace simplecpp {
      * @param outputList output: list that will receive output messages
      * @param macroUsage output: macro usage
      */
-    SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, std::map<std::string, TokenList*> &filedata, const DUI &dui, OutputList *outputList = nullptr, std::list<MacroUsage> *macroUsage = nullptr);
+    SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, std::map<std::string, TokenList*> &filedata, const DUI &dui, OutputList *outputList = 0, std::list<MacroUsage> *macroUsage = 0);
 
     /**
      * Deallocate data
