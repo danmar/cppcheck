@@ -631,7 +631,7 @@ void Tokenizer::simplifyTypedef()
         Token *tokOffset = tok->next();
         bool function = false;
         bool functionPtr = false;
-        const bool functionRef = false;
+        const bool functionRef = false; // Seems never to be used
         bool functionRetFuncPtr = false;
         bool functionPtrRetFuncPtr = false;
         bool ptrToArray = false;
@@ -1325,7 +1325,7 @@ void Tokenizer::simplifyTypedef()
                         }
                     }
 
-                    else if (functionPtr || functionRef || function) {
+                    else if (functionPtr || functionRef || function) {  // Remove functionRef?  Seems always to be false
                         // don't add parentheses around function names because it
                         // confuses other simplifications
                         bool needParen = true;
@@ -1350,7 +1350,7 @@ void Tokenizer::simplifyTypedef()
                         if (functionPtr) {
                             tok2->insertToken("*");
                             tok2 = tok2->next();
-                        } else if (functionRef) {
+                        } else if (functionRef) { // Always false?
                             tok2->insertToken("&");
                             tok2 = tok2->next();
                         }

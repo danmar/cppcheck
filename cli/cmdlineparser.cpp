@@ -125,7 +125,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 return true;
             }
 
-            else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
+            if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
                 _settings->buildDir = Path::fromNativeSeparators(argv[i] + 21);
                 if (endsWith(_settings->buildDir, '/'))
                     _settings->buildDir.erase(_settings->buildDir.size() - 1U);
@@ -261,10 +261,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                         if (pos == std::string::npos) {
                             _settings->basePaths.push_back(Path::fromNativeSeparators(paths));
                             break;
-                        } else {
-                            _settings->basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
-                            paths.erase(0, pos + 1);
                         }
+                        _settings->basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
+                        paths.erase(0, pos + 1);
                     }
                 } else {
                     PrintMessage("cppcheck: No paths specified for the '" + std::string(argv[i]) + "' option.");
