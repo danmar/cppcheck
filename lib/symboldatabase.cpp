@@ -5137,7 +5137,7 @@ void SymbolDatabase::setValueTypeInTokenList()
         if (tok->isNumber()) {
             if (MathLib::isFloat(tok->str())) {
                 ValueType::Type type = ValueType::Type::DOUBLE;
-                const char suffix = tok->str().back();
+                const char suffix = tok->str()[tok->str().size() - 1];
                 if (suffix == 'f' || suffix == 'F')
                     type = ValueType::Type::FLOAT;
                 else if (suffix == 'L' || suffix == 'l')

@@ -346,9 +346,9 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 
 static unsigned int encodeMultiChar(const std::string& str)
 {
-    unsigned int retval(str.front());
-    for (std::string::const_iterator it=str.begin()+1; it!=str.end(); ++it) {
-        retval = retval<<8 | *it;
+    unsigned int retval = 0;
+    for (std::string::const_iterator it=str.begin(); it!=str.end(); ++it) {
+        retval = (retval << 8) | *it;
     }
     return retval;
 }
