@@ -804,7 +804,7 @@ private:
             TokenList list(nullptr);
             list.createTokens(code, "test.cpp");
             list.front()->tokAt(3)->link(list.front()->tokAt(5));
-            bool result = si.isVariableDeclaration(list.front(), vartok, typetok);
+            const bool result = si.isVariableDeclaration(list.front(), vartok, typetok);
             ASSERT_EQUALS(true, result);
             Variable v(vartok, list.front(), list.back(), 0, Public, nullptr, nullptr, &settings1.library);
             static const std::set<std::string> types = make_container< std::set<std::string> >() <<
@@ -821,7 +821,7 @@ private:
             std::istringstream code("SomeClass s;");
             TokenList list(nullptr);
             list.createTokens(code, "test.cpp");
-            bool result = si.isVariableDeclaration(list.front(), vartok, typetok);
+            const bool result = si.isVariableDeclaration(list.front(), vartok, typetok);
             ASSERT_EQUALS(true, result);
             Variable v(vartok, list.front(), list.back(), 0, Public, nullptr, nullptr, &settings1.library);
             static const std::set<std::string> types = make_container< std::set<std::string> >() <<

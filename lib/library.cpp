@@ -1103,7 +1103,7 @@ bool Library::isnoreturn(const Token *ftok) const
         return true;
     if (isNotLibraryFunction(ftok))
         return false;
-    std::map<std::string, bool>::const_iterator it = _noreturn.find(getFunctionName(ftok));
+    const std::map<std::string, bool>::const_iterator it = _noreturn.find(getFunctionName(ftok));
     return (it != _noreturn.end() && it->second);
 }
 
