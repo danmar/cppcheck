@@ -1199,9 +1199,8 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
                 tok->str((v1 | v2).str());
                 break;
             case '^':
-                tok->str((v1 ^ v2).str());
-                break;
-            default: ;
+                tok->str((v1 ^ v2).str());                
+              break;
             };
         }
 

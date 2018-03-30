@@ -1626,7 +1626,6 @@ MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input
 
                 handleNextParameter = true;
                 break;
-            default: ;
             }
         }
 
