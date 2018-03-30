@@ -546,7 +546,6 @@ std::string ErrorLogger::ErrorMessage::FileLocation::stringify() const
 std::string ErrorLogger::toxml(const std::string &str)
 {
     std::ostringstream xml;
-    const bool isstring(str[0] == '\"');
     for (std::size_t i = 0U; i < str.length(); i++) {
         char c = str[i];
         switch (c) {
@@ -566,7 +565,7 @@ std::string ErrorLogger::toxml(const std::string &str)
             xml << "\\0";
             break;
         default:
-            if (!isstring || (c >= ' ' && c <= 'z'))
+            if (c >= ' ' && c <= 'z')
                 xml << c;
             else
                 xml << 'x';
