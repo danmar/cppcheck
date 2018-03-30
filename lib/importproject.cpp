@@ -180,6 +180,8 @@ void ImportProject::import(const std::string &filename)
     } else if (filename.find(".vcxproj") != std::string::npos) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         importVcxproj(filename, variables, emptyString);
+    } else if (filename.find(".bpr") != std::string::npos) {
+        importBcb6Prj(filename);
     }
 }
 
@@ -567,5 +569,66 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
             fileSettings.push_back(fs);
         }
+    }
+}
+
+void ImportProject::importBcb6Prj(const std::string &projectFilename)
+{
+    tinyxml2::XMLDocument doc;
+    tinyxml2::XMLError error = doc.LoadFile(projectFilename.c_str());
+    if (error != tinyxml2::XML_SUCCESS)
+        return;
+    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
+    if (rootnode == nullptr)
+        return;
+
+    const std::string& projectDir = Path::simplifyPath(Path::getPathFromFilename(projectFilename));
+
+    std::list<std::string> compileList;
+    std::string defines;
+    std::string includePath;
+
+    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+        if (std::strcmp(node->Name(), "FILELIST") == 0) {
+            for (const tinyxml2::XMLElement *f = node->FirstChildElement(); f; f = f->NextSiblingElement()) {
+                if (std::strcmp(f->Name(), "FILE") == 0) {
+                    const char *filename = f->Attribute("FILENAME");
+                    if (filename && Path::acceptFile(filename))
+                        compileList.push_back(filename);
+                }
+            }
+        } else if (std::strcmp(node->Name(), "MACROS") == 0) {
+            for (const tinyxml2::XMLElement *m = node->FirstChildElement(); m; m = m->NextSiblingElement()) {
+                if (std::strcmp(m->Name(), "INCLUDEPATH") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        includePath = v;
+                } else if (std::strcmp(m->Name(), "USERDEFINES") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        defines = v;
+                }
+            }
+        }
+    }
+
+    // Include paths may contain variables like "$(BCB)\include" or "$(BCB)\include\vcl".
+    // Those get resolved by ImportProject::FileSettings::setIncludePaths by
+    // 1. checking the provided variables map ("BCB" => "C:\\Program Files (x86)\\Borland\\CBuilder6")
+    // 2. checking env variables as a fallback
+    // Setting env is always possible. Configuring the variables via cli might be an addition.
+    // Reading the BCB6 install location from registry in windows environments would also be possible,
+    // but I didn't see any such functionality around the source. Not in favor of adding it only
+    // for the BCB6 project loading.
+    // Also, considering this seems to be mostly about sys includes, which would slow down the check a lot,
+    // it's probably not needed right now anyways.
+    std::map<std::string, std::string, cppcheck::stricmp> variables;
+
+    for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
+        FileSettings fs;
+        fs.setIncludePaths(projectDir, toStringList(includePath), variables);
+        fs.setDefines(defines);
+        fs.filename = Path::simplifyPath(Path::isAbsolute(*c) ? *c : projectDir + *c);
+        fileSettings.push_back(fs);
     }
 }
