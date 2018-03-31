@@ -201,6 +201,7 @@ TESTOBJ =     test/options.o \
               test/testerrorlogger.o \
               test/testexceptionsafety.o \
               test/testfilelister.o \
+              test/testforeach.o \
               test/testfunctions.o \
               test/testgarbage.o \
               test/testimportproject.o \
@@ -521,6 +522,9 @@ test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/cxx11emu.h lib/chec
 
 test/testfilelister.o: test/testfilelister.cpp lib/cxx11emu.h lib/pathmatch.h lib/config.h test/testsuite.h lib/errorlogger.h lib/suppressions.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testfilelister.o test/testfilelister.cpp
+
+test/testforeach.o: test/testforeach.cpp lib/cxx11emu.h lib/foreach.h test/testsuite.h lib/config.h lib/errorlogger.h lib/suppressions.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testforeach.o test/testforeach.cpp
 
 test/testfunctions.o: test/testfunctions.cpp lib/cxx11emu.h lib/checkfunctions.h lib/check.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testfunctions.o test/testfunctions.cpp
