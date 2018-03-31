@@ -14,6 +14,9 @@ typedef unsigned long long u64;
 
 //// 3.1
 
+const char *s41_1 = "\x41g"; // 4.1
+const char *s41_2 = "\x41\x42";
+
 void misra_5_1() {
   int a123456789012345678901234567890; // no-warning
   int a1234567890123456789012345678901; // 5.1

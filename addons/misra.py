@@ -302,12 +302,51 @@ def findInclude(directives, header):
             return directive
     return None
 
+def isHexDigit(c):
+    return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f') or (c >= 'A' and c >= 'F')
+
+def isOctalDigit(c):
+    return (c >= '0' and c <= '7')
 
 def misra_3_1(rawTokens):
     for token in rawTokens:
         if token.str.startswith('/*') or token.str.startswith('//'):
             if '//' in token.str[2:] or '/*' in token.str[2:]:
                 reportError(token, 3, 1)
+
+def misra_4_1(rawTokens):
+    for token in rawTokens:
+        if token.str[0] != '"':
+            continue
+        pos = 1
+        while pos < len(token.str) - 2:
+            pos1 = pos
+            pos = pos + 1
+            if token.str[pos1] != '\\':
+                continue
+            if token.str[pos1+1] == '\\':
+                pos = pos1 + 2
+                continue
+            if token.str[pos1+1] == 'x':
+                if not isHexDigit(token.str[pos1+2]):
+                    reportError(token, 4, 1)
+                    continue
+                if not isHexDigit(token.str[pos1+3]):
+                    reportError(token, 4, 1)
+                    continue
+            elif isOctalDigit(token.str[pos1+1]):
+                if not isOctalDigit(token.str[pos1+2]):
+                    reportError(token, 4, 1)
+                    continue
+                if not isOctalDigit(token.str[pos1+2]):
+                    reportError(token, 4, 1)
+                    continue
+            else:
+                continue
+
+            c = token.str[pos1 + 4]
+            if c != '"' and c != '\\':
+                reportError(token, 4, 1)
 
 
 def misra_5_1(data):
@@ -1185,10 +1224,13 @@ for arg in sys.argv[1:]:
 
         if cfgNumber == 1:
             misra_3_1(data.rawTokens)
+            misra_4_1(data.rawTokens)
         misra_5_1(cfg)
         misra_5_3(cfg)
         misra_5_4(cfg)
         misra_5_5(cfg)
+        # 6.1 require updates in Cppcheck (type info for bitfields are lost)
+        # 6.2 require updates in Cppcheck (type info for bitfields are lost)
         if cfgNumber == 1:
             misra_7_1(data.rawTokens)
             misra_7_3(data.rawTokens)
