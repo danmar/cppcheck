@@ -548,7 +548,7 @@ std::string ErrorLogger::toxml(const std::string &str)
     std::ostringstream xml;
     const bool isstring(str[0] == '\"');
     for (std::size_t i = 0U; i < str.length(); i++) {
-        const unsigned char c = str[i];
+        unsigned char c = str[i];
         switch (c) {
         case '<':
             xml << "&lt;";
