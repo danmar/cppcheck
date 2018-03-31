@@ -72,9 +72,9 @@ The following texts in parameters are replaced with appropriate values when appl
 Example opening a file with Kate and make Kate scroll to the correct line:
 Executable: kate
 Parameters: -l(line) (file)</source>
-        <translation>Vous pouvez ajouter une application capable d'ouvrir les fichiers d'erreurs. Spécifiez le nom de l'application, la commande à exécuter, ainsi que les paramètres de la commande
+        <translation>Vous pouvez ajouter une application capable d&apos;ouvrir les fichiers d&apos;erreurs. Spécifiez le nom de l&apos;application, la commande à exécuter, ainsi que les paramètres de la commande
 
-Les textes en paramètres sont remplacés par les valeurs appropriées lorsque l'application est exécutée :
+Les textes en paramètres sont remplacés par les valeurs appropriées lorsque l&apos;application est exécutée :
 (fichier) - Fichier contenant l&apos;erreur
 (ligne) - Numéro de ligne contenant l&apos;erreur
 (message) - Message d&apos;erreur
@@ -120,7 +120,7 @@ Paramètres : -l(ligne) (fichier)</translation>
     </message>
     <message>
         <source>Number of arguments</source>
-        <translation>Nombre d'arguments</translation>
+        <translation>Nombre d&apos;arguments</translation>
     </message>
 </context>
 <context>
@@ -1031,7 +1031,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Project</source>
-        <translation>Projet</translation>
+        <translation type="vanished">Projet</translation>
     </message>
     <message>
         <source>Add...</source>
@@ -1067,7 +1067,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Exclude</source>
-        <translation>Exclure</translation>
+        <translation type="vanished">Exclure</translation>
     </message>
     <message>
         <source>Libraries:</source>
@@ -1079,7 +1079,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Suppression list:</source>
-        <translation>Liste de suppressions</translation>
+        <translation type="vanished">Liste de suppressions</translation>
     </message>
     <message>
         <source>Add</source>
@@ -1087,10 +1087,6 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Defines must be separated by a semicolon &apos;;&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1154,19 +1150,55 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Extra Tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>It is common best practice to use several tools.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Clang analyzer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Clang-tidy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Platform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warning options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exclude paths</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Addons and tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MISRA C 2012</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misra rule texts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>External tools</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1210,6 +1242,18 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Clang-tidy (not found)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(no rule texts file)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select MISRA rule texts file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misra rule texts file (%1)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1340,7 +1384,7 @@ Merci de vérifier que le chemin de l&apos;application et que les paramètres so
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation>Fichier introuvable:
+        <translation type="vanished">Fichier introuvable:
 %1
 Veuillez sélectionner le répertoire où est situé le fichier.</translation>
     </message>
@@ -1426,6 +1470,26 @@ Please select the default editor application in preferences/Applications.</sourc
     </message>
     <message>
         <source>Since date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy line nr</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not find file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please select the folder &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Directory &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1526,6 +1590,14 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Check</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy or write some C/C++ code here:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1655,6 +1727,18 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Paths to Visual Studio headers, separated by semicolon &apos;;&apos;.&lt;/p&gt;&lt;p&gt;You can open a Visual Studio command prompt, write &amp;quot;SET INCLUDE&amp;quot;. Then copy/paste the paths.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Misra addon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misra rule texts file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsDialog</name>
@@ -1688,6 +1772,10 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Select clang path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select MISRA File</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

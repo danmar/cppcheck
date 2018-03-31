@@ -1116,7 +1116,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Project</source>
-        <translation>프로젝트</translation>
+        <translation type="vanished">프로젝트</translation>
     </message>
     <message>
         <source>Defines:</source>
@@ -1160,14 +1160,10 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Exclude</source>
-        <translation>Exclude</translation>
+        <translation type="vanished">Exclude</translation>
     </message>
     <message>
         <source>Suppressions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Suppression list:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1176,10 +1172,6 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Defines must be separated by a semicolon &apos;;&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1243,19 +1235,55 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Extra Tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>It is common best practice to use several tools.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Clang analyzer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Clang-tidy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Checking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Platform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warning options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exclude paths</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Addons and tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MISRA C 2012</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misra rule texts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>External tools</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1299,6 +1327,18 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Clang-tidy (not found)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(no rule texts file)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select MISRA rule texts file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misra rule texts file (%1)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1469,7 +1509,7 @@ Please check the application path and parameters are correct.</source>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation>파일 찾기 실패:
+        <translation type="vanished">파일 찾기 실패:
 %1
 파일이 위치한 디렉토리를 선택하세요.</translation>
     </message>
@@ -1519,6 +1559,26 @@ Please select the directory where file is located.</source>
     </message>
     <message>
         <source>Since date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy line nr</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not find file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please select the folder &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Directory &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1620,6 +1680,14 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <source>Check</source>
         <translation type="unfinished">검사</translation>
+    </message>
+    <message>
+        <source>Copy or write some C/C++ code here:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1760,6 +1828,18 @@ To toggle what kind of errors are shown, open view menu.</source>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Paths to Visual Studio headers, separated by semicolon &apos;;&apos;.&lt;/p&gt;&lt;p&gt;You can open a Visual Studio command prompt, write &amp;quot;SET INCLUDE&amp;quot;. Then copy/paste the paths.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Misra addon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Misra rule texts file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsDialog</name>
@@ -1793,6 +1873,10 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Select clang path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select MISRA File</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
