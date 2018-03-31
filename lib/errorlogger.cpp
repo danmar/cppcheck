@@ -547,7 +547,7 @@ std::string ErrorLogger::toxml(const std::string &str)
 {
     std::ostringstream xml;
     for (std::size_t i = 0U; i < str.length(); i++) {
-        char c = str[i];
+        unsigned char c = str[i];
         switch (c) {
         case '<':
             xml << "&lt;";
@@ -565,7 +565,7 @@ std::string ErrorLogger::toxml(const std::string &str)
             xml << "\\0";
             break;
         default:
-            if (c >= ' ' && c <= 'z')
+            if (c >= ' ' && c <= 0x7f)
                 xml << c;
             else
                 xml << 'x';
