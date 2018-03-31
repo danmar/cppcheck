@@ -93,12 +93,15 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             else if (_tokenizer->isCPP() && tok->strAt(1) == "class")
                 tok2 = tok2->next();
 
-            while (tok2 && tok2->str() == "::")
+            while (Token::Match(tok2, ":: %name%"))
                 tok2 = tok2->tokAt(2);
 
             // skip over template args
             if (tok2 && tok2->str() == "<" && tok2->link())
                 tok2 = tok2->link()->next();
+
+            if (Token::Match(tok2, "%name% ["))
+                continue;
 
             // make sure we have valid code
             if (!Token::Match(tok2, "{|:")) {
