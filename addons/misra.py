@@ -1176,6 +1176,57 @@ OPTIONS:
 """)
     sys.exit(1)
 
+def generateTable():
+    numberOfRules = {}
+    numberOfRules[1] = 3
+    numberOfRules[2] = 7
+    numberOfRules[3] = 2
+    numberOfRules[4] = 2
+    numberOfRules[5] = 9
+    numberOfRules[6] = 2
+    numberOfRules[7] = 4
+    numberOfRules[8] = 14
+    numberOfRules[9] = 5
+    numberOfRules[10] = 8
+    numberOfRules[11] = 9
+    numberOfRules[12] = 4
+    numberOfRules[13] = 6
+    numberOfRules[14] = 4
+    numberOfRules[15] = 7
+    numberOfRules[16] = 7
+    numberOfRules[17] = 8
+    numberOfRules[18] = 8
+    numberOfRules[19] = 2
+    numberOfRules[20] = 14
+    numberOfRules[21] = 12
+    numberOfRules[22] = 6
+
+    # what rules are handled by this addon?
+    addon = []
+    for line in open('misra.py'):
+        res = re.match(r'[ ]+misra_([0-9]+)_([0-9]+)[(].*', line)
+        if res is None:
+            continue
+        addon.append(res.group(1) + '.' + res.group(2))
+
+    # rules handled by cppcheck
+    cppcheck = ['1.3', '2.1', '2.2', '2.4', '2.6', '8.3', '12.2', '13.2', '13.6', '17.5', '18.1', '18.6', '22.1', '22.2', '22.4', '22.6']
+
+    # rules that can be checked with compilers
+    compiler = ['1.1', '1.2']
+
+    # print table
+    for i1 in range(1,23):
+        for i2 in range(1,numberOfRules[i1]+1):
+            num = str(i1) + '.' + str(i2)
+            if num in addon:
+                print(num + ' X (Addon)')
+            elif num in cppcheck:
+                print(num + ' X (Cppcheck)')
+            else:
+                print(num)
+    sys.exit(1)
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -1187,6 +1238,8 @@ for arg in sys.argv[1:]:
         loadRuleTexts(filename)
     elif ".dump" in arg:
         continue
+    elif arg == "-generate-table":
+        generateTable()
     else:
         print('Fatal error: unhandled argument ' + arg)
         sys.exit(1)
