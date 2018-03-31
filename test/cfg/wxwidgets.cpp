@@ -18,6 +18,8 @@
 #include <wx/bitmap.h>
 #include <wx/dataview.h>
 #include <wx/memory.h>
+#include <wx/frame.h>
+#include <wx/menu.h>
 
 void validCode()
 {
@@ -42,7 +44,7 @@ void validGuiCode()
 }
 #endif
 
-void nullPointer()
+void nullPointer(void)
 {
     // cppcheck-suppress nullPointer
     wxLogGeneric(wxLOG_Message, (char*)NULL);
@@ -50,13 +52,13 @@ void nullPointer()
     wxLogMessage((char*)NULL);
 }
 
-void ignoredReturnValue()
+void ignoredReturnValue(void)
 {
     // cppcheck-suppress ignoredReturnValue
     wxGetCwd();
 }
 
-void invalidFunctionArg()
+void invalidFunctionArg(void)
 {
 #if wxUSE_SPINCTRL==1
     extern wxSpinCtrl spinCtrlInstance;
@@ -67,7 +69,7 @@ void invalidFunctionArg()
 #endif
 }
 
-void uninitvar()
+void uninitvar(void)
 {
     wxLogLevel logLevelUninit;
     char cBufUninit[10];
@@ -79,6 +81,14 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     wxLogMessage(pcUninit);
 }
+
+void uninitvar_SetMenuBar(wxFrame * const framePtr, wxMenuBar *menuBarPtr)
+{
+	wxMenuBar *menuBar;
+	// cppcheck-suppress uninitvar
+    framePtr->SetMenuBar(menuBar); 
+    framePtr->SetMenuBar(menuBarPtr);
+} 
 
 void deprecatedFunctions_wxDataViewCustomRenderer(wxDataViewCustomRenderer &dataViewCustomRenderer, wxPoint cursor, wxRect cell, wxDataViewModel *model, const wxDataViewItem &item, unsigned int col)
 {
