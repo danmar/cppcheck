@@ -82,12 +82,20 @@ void uninitvar(void)
     wxLogMessage(pcUninit);
 }
 
-void uninitvar_SetMenuBar(wxFrame * const framePtr, wxMenuBar *menuBarPtr)
+void uninitvar_SetMenuBar(wxFrame * const framePtr, wxMenuBar * const menuBarPtr)
 {
 	wxMenuBar *menuBar;
 	// cppcheck-suppress uninitvar
     framePtr->SetMenuBar(menuBar); 
     framePtr->SetMenuBar(menuBarPtr);
+}
+
+void uninitvar_wxMenuBarAppend(wxMenuBar * const menuBarPtr, wxMenu * const menuPtr, const wxString &title)
+{
+	wxMenu *menu;
+	// cppcheck-suppress uninitvar
+    menuBarPtr->Append(menu, title); 
+    menuBarPtr->Append(menuPtr, title);
 } 
 
 void deprecatedFunctions_wxDataViewCustomRenderer(wxDataViewCustomRenderer &dataViewCustomRenderer, wxPoint cursor, wxRect cell, wxDataViewModel *model, const wxDataViewItem &item, unsigned int col)
