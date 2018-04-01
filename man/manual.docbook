@@ -756,15 +756,10 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
     <para>Cppcheck has an addon that checks for <literal>MISRA</literal> C
     2012 compliance.</para>
 
-    <para>It is not allowed to publish the <literal>MISRA</literal> rule
-    texts. Therefore the <literal>MISRA</literal> rule texts are not available
-    directly in the addon. Instead, the addon can read the rule texts either
-    from the <literal>Misra</literal> PDF file or from a text file.</para>
-
     <section>
       <title>Requirements</title>
 
-      <para>The Cppcheck MISRA addon requires:</para>
+      <para>You need:</para>
 
       <itemizedlist>
         <listitem>
@@ -772,31 +767,30 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         </listitem>
 
         <listitem>
-          <para><literal>For rule texts; MISRA</literal> PDF/Text file</para>
+          <para><literal>The MISRA C 2012</literal> PDF. You can buy this from
+          <uri>http://www.misra.org.uk</uri> (costs 15-20 pounds)</para>
         </listitem>
       </itemizedlist>
     </section>
 
     <section>
-      <title>MISRA PDF</title>
-
-      <para>If you want your code to be <literal>MISRA</literal> compliant
-      then you probably have the <literal>MISRA</literal> PDF.</para>
-
-      <para>However the MISRA PDF can only be used directly by the addon if
-      the <literal>xpdf</literal> package is installed, it is a cross platform
-      open source package.</para>
-    </section>
-
-    <section>
       <title>MISRA Text file</title>
 
-      <para>If you have installed <literal>xpdf</literal>, this text file can
-      be easily generated on the command line (using
-      <literal>pdftotext</literal> that is included in
-      <literal>xpdf</literal>):</para>
+      <para>It is not allowed to publish the <literal>MISRA</literal> rule
+      texts. Therefore the <literal>MISRA</literal> rule texts are not
+      available directly in the addon. Instead, the addon can read the rule
+      texts from a text file. If you copy/paste all text in "Appendix A
+      Summary of guidelines" from the MISRA pdf, then you have all the rule
+      texts.</para>
+
+      <para>If you have installed <literal>xpdf</literal>, such text file can
+      be generated on the command line (using <literal>pdftotext</literal>
+      that is included in <literal>xpdf</literal>):</para>
 
       <programlisting>pdftotext misra-c-2012.pdf output.txt</programlisting>
+
+      <para>The output might not be 100% perfect so you might need to make
+      minor tweaks manually.</para>
 
       <para>Other pdf-to-text utilities might work also.</para>
 
@@ -809,6 +803,9 @@ Rule text
 Rule 1.2
 Rule text
 ...</programlisting>
+
+      <para>Rules that you want to disable does not need to have a rule text.
+      Rules that don't have rule text will be suppressed by the addon.</para>
     </section>
   </chapter>
 
