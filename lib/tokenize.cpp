@@ -1832,7 +1832,7 @@ void Tokenizer::combineOperators()
             const char c2 = tok->next()->str()[0];
 
             // combine +-*/ and =
-            if (c2 == '=' && (std::strchr("+-*/%&|^=!<>", c1))) {
+            if (c2 == '=' && (std::strchr("+-*/%|^=!<>", c1))) {
                 tok->str(tok->str() + c2);
                 tok->deleteNext();
                 continue;

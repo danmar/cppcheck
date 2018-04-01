@@ -911,6 +911,7 @@ private:
         ASSERT_EQUALS("; public: ;", tokenizeAndStringify(";public:;", false));
         ASSERT_EQUALS("; __published: ;", tokenizeAndStringify(";__published:;", false));
         ASSERT_EQUALS("a . public : ;", tokenizeAndStringify("a.public:;", false));
+        ASSERT_EQUALS("void f ( x & = 2 ) ;", tokenizeAndStringify("void f(x &= 2);", false));
     }
 
     void concatenateNegativeNumber() {
