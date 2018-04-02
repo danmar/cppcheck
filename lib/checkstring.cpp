@@ -290,7 +290,7 @@ void CheckString::checkIncorrectStringCompare()
                 tok = tok->next()->link();
 
             if (Token::simpleMatch(tok, ". substr (") && Token::Match(tok->tokAt(3)->nextArgument(), "%num% )")) {
-                MathLib::biguint clen = MathLib::toULongNumber(tok->linkAt(2)->strAt(-1));
+                const MathLib::biguint clen = MathLib::toULongNumber(tok->linkAt(2)->strAt(-1));
                 const Token* begin = tok->previous();
                 for (;;) { // Find start of statement
                     while (begin->link() && Token::Match(begin, "]|)|>"))
@@ -303,12 +303,12 @@ void CheckString::checkIncorrectStringCompare()
                 begin = begin->previous();
                 const Token* end = tok->linkAt(2)->next();
                 if (Token::Match(begin->previous(), "%str% ==|!=") && begin->strAt(-2) != "+") {
-                    std::size_t slen = Token::getStrLength(begin->previous());
+                    const std::size_t slen = Token::getStrLength(begin->previous());
                     if (clen != slen) {
                         incorrectStringCompareError(tok->next(), "substr", begin->strAt(-1));
                     }
                 } else if (Token::Match(end, "==|!= %str% !!+")) {
-                    std::size_t slen = Token::getStrLength(end->next());
+                    const std::size_t slen = Token::getStrLength(end->next());
                     if (clen != slen) {
                         incorrectStringCompareError(tok->next(), "substr", end->strAt(1));
                     }
@@ -436,7 +436,7 @@ void CheckString::sprintfOverlappingData()
 
             const int formatString = Token::simpleMatch(tok, "sprintf") ? 1 : 2;
             for (unsigned int argnr = formatString + 1; argnr < args.size(); ++argnr) {
-                bool same = isSameExpression(_tokenizer->isCPP(),
+                const bool same = isSameExpression(_tokenizer->isCPP(),
                                              false,
                                              args[0],
                                              args[argnr],

@@ -109,9 +109,7 @@ void CheckClass::constructors()
 
         // There are no constructors.
         if (scope->numConstructors == 0 && printStyle && !usedInUnion) {
-            // If there is a private variable, there should be a constructor..
-            std::list<Variable>::const_iterator var;
-            for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+          for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
                 if (var->isPrivate() && !var->isStatic() && !Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId()) &&
                     (!var->isClass() || (var->type() && var->type()->needInitialization == Type::True))) {
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
@@ -139,10 +137,9 @@ void CheckClass::constructors()
         }
 
 
-        std::list<Function>::const_iterator func;
-        std::vector<Usage> usage(scope->varlist.size());
+      std::vector<Usage> usage(scope->varlist.size());
 
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (!func->hasBody() || !(func->isConstructor() ||
                                       func->type == Function::eOperatorEqual))
                 continue;
@@ -153,10 +150,8 @@ void CheckClass::constructors()
             std::list<const Function *> callstack;
             initializeVarList(*func, callstack, scope, usage);
 
-            // Check if any variables are uninitialized
-            std::list<Variable>::const_iterator var;
-            unsigned int count = 0;
-            for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
+          unsigned int count = 0;
+            for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
                 // check for C++11 initializer
                 if (var->hasDefault()) {
                     usage[count].init = true;
@@ -394,12 +389,11 @@ void CheckClass::noCopyConstructorError(const Token *tok, const std::string &cla
 
 bool CheckClass::canNotCopy(const Scope *scope)
 {
-    std::list<Function>::const_iterator func;
-    bool constructor = false;
+  bool constructor = false;
     bool publicAssign = false;
     bool publicCopy = false;
 
-    for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+    for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         if (func->isConstructor())
             constructor = true;
         if (func->access != Public)
@@ -418,13 +412,12 @@ bool CheckClass::canNotCopy(const Scope *scope)
 
 bool CheckClass::canNotMove(const Scope *scope)
 {
-    std::list<Function>::const_iterator func;
-    bool constructor = false;
+  bool constructor = false;
     bool publicAssign = false;
     bool publicCopy = false;
     bool publicMove = false;
 
-    for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+    for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         if (func->isConstructor())
             constructor = true;
         if (func->access != Public)
@@ -446,10 +439,9 @@ bool CheckClass::canNotMove(const Scope *scope)
 
 void CheckClass::assignVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage)
 {
-    std::list<Variable>::const_iterator var;
-    unsigned int count = 0;
+  unsigned int count = 0;
 
-    for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
+    for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
         if (var->declarationId() == varid) {
             usage[count].assign = true;
             return;
@@ -459,10 +451,9 @@ void CheckClass::assignVar(unsigned int varid, const Scope *scope, std::vector<U
 
 void CheckClass::initVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage)
 {
-    std::list<Variable>::const_iterator var;
-    unsigned int count = 0;
+  unsigned int count = 0;
 
-    for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
+    for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
         if (var->declarationId() == varid) {
             usage[count].init = true;
             return;
@@ -493,9 +484,8 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
         // Check if base class exists in database
         if (derivedFrom && derivedFrom->classScope) {
             const std::list<Function>& functionList = derivedFrom->classScope->functionList;
-            std::list<Function>::const_iterator func;
 
-            for (func = functionList.begin(); func != functionList.end(); ++func) {
+          for (std::list<Function>::const_iterator func = functionList.begin(); func != functionList.end(); ++func) {
                 if (func->tokenDef->str() == tok->str())
                     return true;
             }
@@ -509,7 +499,7 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
     return false;
 }
 
-void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage)
+void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage) const
 {
     if (!func.functionScope)
         throw InternalError(nullptr, "Internal Error: Invalid syntax"); // #5702
@@ -594,8 +584,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
         // Calling member variable function?
         if (Token::Match(ftok->next(), "%var% . %name% (")) {
-            std::list<Variable>::const_iterator var;
-            for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+          for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
                 if (var->declarationId() == ftok->next()->varId()) {
                     /** @todo false negative: we assume function changes variable state */
                     assignVar(ftok->next()->varId(), scope, usage);
@@ -1097,11 +1086,11 @@ void CheckClass::checkMemset()
                     type = typeTok->type()->classScope;
 
                 if (type) {
-                    std::set<const Scope *> parsedTypes;
+                    const std::set<const Scope *> parsedTypes;
                     checkMemsetType(scope, tok, type, false, parsedTypes);
                 }
             } else if (tok->variable() && tok->variable()->typeScope() && Token::Match(tok, "%var% = calloc|malloc|realloc|g_malloc|g_try_malloc|g_realloc|g_try_realloc (")) {
-                std::set<const Scope *> parsedTypes;
+                const std::set<const Scope *> parsedTypes;
                 checkMemsetType(scope, tok->tokAt(2), tok->variable()->typeScope(), true, parsedTypes);
 
                 if (printWarnings && tok->variable()->typeScope()->numConstructors > 0)
@@ -1127,10 +1116,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
             checkMemsetType(start, tok, derivedFrom->classScope, allocation, parsedTypes);
     }
 
-    // Warn if type is a class that contains any virtual functions
-    std::list<Function>::const_iterator func;
-
-    for (func = type->functionList.begin(); func != type->functionList.end(); ++func) {
+  for (std::list<Function>::const_iterator func = type->functionList.begin(); func != type->functionList.end(); ++func) {
         if (func->isVirtual()) {
             if (allocation)
                 mallocOnClassError(tok, tok->str(), type->classDef, "virtual method");
@@ -1139,10 +1125,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
         }
     }
 
-    // Warn if type is a class or struct that contains any std::* variables
-    std::list<Variable>::const_iterator var;
-
-    for (var = type->varlist.begin(); var != type->varlist.end(); ++var) {
+  for (std::list<Variable>::const_iterator var = type->varlist.begin(); var != type->varlist.end(); ++var) {
         if (var->isReference() && !var->isStatic()) {
             memsetErrorReference(tok, tok->str(), type->classDef->str());
             continue;
@@ -1228,9 +1211,8 @@ void CheckClass::operatorEq()
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
-        std::list<Function>::const_iterator func;
 
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+      for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->access == Public) {
                 // skip "deleted" functions - cannot be called anyway
                 if (func->isDelete())
@@ -1283,9 +1265,8 @@ void CheckClass::operatorEqRetRefThis()
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
-        std::list<Function>::const_iterator func;
 
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+      for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody()) {
                 // make sure return signature is correct
                 if (Token::Match(func->retDef, "%type% &") && func->retDef->str() == scope->className) {
@@ -1321,10 +1302,8 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         // check if a function is called
         if (tok->strAt(2) == "(" &&
             tok->linkAt(2)->next()->str() == ";") {
-            std::list<Function>::const_iterator it;
-
-            // check if it is a member function
-            for (it = scope->functionList.begin(); it != scope->functionList.end(); ++it) {
+          // check if it is a member function
+            for (std::list<Function>::const_iterator it = scope->functionList.begin(); it != scope->functionList.end(); ++it) {
                 // check for a regular function with the same name and a body
                 if (it->type == Function::eFunction && it->hasBody() &&
                     it->token->str() == tok->next()->str()) {
@@ -1424,8 +1403,7 @@ void CheckClass::operatorEqToSelf()
         if (scope->definedType->derivedFrom.size() > 1)
             continue;
 
-        std::list<Function>::const_iterator func;
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+      for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody()) {
                 // make sure that the operator takes an object of the same type as *this, otherwise we can't detect self-assignment checks
                 if (func->argumentList.empty())
@@ -1553,8 +1531,7 @@ void CheckClass::virtualDestructor()
             if (printInconclusive) {
                 const Function *destructor = scope->getDestructor();
                 if (destructor && !destructor->isVirtual()) {
-                    std::list<Function>::const_iterator func;
-                    for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+                  for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
                         if (func->isVirtual()) {
                             inconclusiveErrors.push_back(destructor);
                             break;
@@ -1653,7 +1630,7 @@ void CheckClass::virtualDestructor()
                         if (baseDestructor->access == Public) {
                             virtualDestructorError(baseDestructor->token, derivedFrom->name(), derivedClass->str(), false);
                             // check for duplicate error and remove it if found
-                            std::list<const Function *>::iterator found = find(inconclusiveErrors.begin(), inconclusiveErrors.end(), baseDestructor);
+                            const std::list<const Function *>::iterator found = find(inconclusiveErrors.begin(), inconclusiveErrors.end(), baseDestructor);
                             if (found != inconclusiveErrors.end())
                                 inconclusiveErrors.erase(found);
                         }
@@ -1724,9 +1701,8 @@ void CheckClass::checkConst()
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
-        std::list<Function>::const_iterator func;
 
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+      for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             // does the function have a body?
             if (func->type != Function::eFunction || !func->hasBody())
                 continue;
@@ -1824,8 +1800,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
         }
     } while (again);
 
-    std::list<Variable>::const_iterator var;
-    for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+  for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
         if (var->name() == tok->str()) {
             if (tok->varId() == 0)
                 symbolDatabase->debugMessage(tok, "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
@@ -2110,10 +2085,9 @@ void CheckClass::initializerListOrder()
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
-        std::list<Function>::const_iterator func;
 
-        // iterate through all member functions looking for constructors
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+      // iterate through all member functions looking for constructors
+        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->isConstructor() && func->hasBody()) {
                 // check for initializer list
                 const Token *tok = func->arg->link()->next();
@@ -2231,7 +2205,7 @@ void CheckClass::checkPureVirtualFunctionCall()
 }
 
 const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Function & function,
-        std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap)
+        std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap) const
 {
     std::pair<std::map<const Function *, std::list<const Token *> >::iterator, bool > found =
         callsPureVirtualFunctionMap.insert(std::pair<const Function *, std::list< const Token *> >(&function, std::list<const Token *>()));
@@ -2293,13 +2267,13 @@ const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Func
 void CheckClass::getFirstPureVirtualFunctionCallStack(
     std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap,
     const Token & pureCall,
-    std::list<const Token *> & pureFuncStack)
+    std::list<const Token *> & pureFuncStack) const
 {
     if (isPureWithoutBody(*pureCall.function())) {
         pureFuncStack.push_back(pureCall.function()->token);
         return;
     }
-    std::map<const Function *, std::list<const Token *> >::const_iterator found = callsPureVirtualFunctionMap.find(pureCall.function());
+    const std::map<const Function *, std::list<const Token *> >::const_iterator found = callsPureVirtualFunctionMap.find(pureCall.function());
     if (found == callsPureVirtualFunctionMap.end() ||
         found->second.empty()) {
         pureFuncStack.clear();
@@ -2404,19 +2378,18 @@ void CheckClass::checkCopyCtorAndEqOperator()
         if (!hasNonStaticVars)
             continue;
 
-        CtorType copyCtors = CtorType::NO;
+        CtorType copyCtors = NO;
         bool moveCtor = false;
-        CtorType assignmentOperators = CtorType::NO;
+        CtorType assignmentOperators = NO;
 
-        std::list<Function>::const_iterator func;
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (copyCtors == CtorType::NO && func->type == Function::eCopyConstructor) {
-                copyCtors = func->hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
+      for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            if (copyCtors == NO && func->type == Function::eCopyConstructor) {
+                copyCtors = func->hasBody() ? WITH_BODY : WITHOUT_BODY;
             }
-            if (assignmentOperators == CtorType::NO && func->type == Function::eOperatorEqual) {
+            if (assignmentOperators == NO && func->type == Function::eOperatorEqual) {
                 const Variable * variable = func->getArgumentVar(0);
                 if (variable && variable->type() && variable->type()->classScope == scope) {
-                    assignmentOperators = func->hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
+                    assignmentOperators = func->hasBody() ? WITH_BODY : WITHOUT_BODY;
                 }
             }
             if (func->type == Function::eMoveConstructor) {
@@ -2428,9 +2401,9 @@ void CheckClass::checkCopyCtorAndEqOperator()
         if (moveCtor)
             continue;
 
-        if ((copyCtors == CtorType::WITH_BODY && assignmentOperators == CtorType::NO) ||
-            (copyCtors == CtorType::NO && assignmentOperators == CtorType::WITH_BODY))
-            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, copyCtors == CtorType::WITH_BODY);
+        if ((copyCtors == WITH_BODY && assignmentOperators == NO) ||
+            (copyCtors == NO && assignmentOperators == WITH_BODY))
+            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, copyCtors == WITH_BODY);
     }
 }
 
@@ -2457,9 +2430,8 @@ void CheckClass::checkUnsafeClassDivZero(bool test)
         const Scope * classScope = symbolDatabase->classAndStructScopes[i];
         if (!test && classScope->classDef->fileIndex() != 1)
             continue;
-        std::list<Function>::const_iterator func;
-        for (func = classScope->functionList.begin(); func != classScope->functionList.end(); ++func) {
-            if (func->access != AccessControl::Public)
+      for (std::list<Function>::const_iterator func = classScope->functionList.begin(); func != classScope->functionList.end(); ++func) {
+            if (func->access != Public)
                 continue;
             if (!func->hasBody())
                 continue;

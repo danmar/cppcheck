@@ -72,7 +72,7 @@ public:
       *  settings()).
       */
     unsigned int check(const std::string &path);
-    unsigned int check(const ImportProject::FileSettings &fs);
+    unsigned int check(const ImportProject::FileSettings &fs) const;
 
     /**
       * @brief Check the file.
@@ -112,7 +112,8 @@ public:
     /**
      * @brief Terminate checking. The checking will be terminated as soon as possible.
      */
-    void terminate() {
+    void terminate() const
+    {
         _settings.terminate();
     }
 
@@ -146,7 +147,7 @@ public:
 private:
 
     /** @brief There has been an internal error => Report information message */
-    void internalError(const std::string &filename, const std::string &msg);
+    void internalError(const std::string &filename, const std::string &msg) const;
 
     /**
      * @brief Process one file.
@@ -189,7 +190,7 @@ private:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportErr(const ErrorMessage &msg);
 
     /**
      * @brief Information about progress is directed here.
@@ -206,7 +207,7 @@ private:
     /**
      * Output information messages.
      */
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportInfo(const ErrorMessage &msg);
 
     ErrorLogger &_errorLogger;
 

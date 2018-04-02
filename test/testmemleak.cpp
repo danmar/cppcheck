@@ -110,7 +110,7 @@ private:
 
         // there is no allocation
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "ret =");
-        CheckMemoryLeak check(&tokenizer, 0, &settings);
+        CheckMemoryLeak check(&tokenizer, nullptr, &settings);
         ASSERT_EQUALS(CheckMemoryLeak::No, check.getAllocationType(tok->tokAt(2), 1));
     }
 };
@@ -405,9 +405,9 @@ private:
         // getcode..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings2, nullptr);
         std::list<const Token *> callstack;
-        callstack.push_back(0);
-        CheckMemoryLeak::AllocType allocType, deallocType;
-        allocType = deallocType = CheckMemoryLeak::No;
+        callstack.push_back(nullptr);
+        CheckMemoryLeak::AllocType deallocType;
+        CheckMemoryLeak::AllocType allocType = deallocType = CheckMemoryLeak::No;
         Token *tokens = checkMemoryLeak.getcode(start, callstack, varId, allocType, deallocType, classfunc, 1);
 
         // stringify..
@@ -671,7 +671,7 @@ private:
         };
 
         for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i) {
-            bool ret = test_white_list(call_func_white_list[i]);
+            const bool ret = test_white_list(call_func_white_list[i]);
             ASSERT_EQUALS("", ret ? "" : call_func_white_list[i]);
         }
     }
@@ -702,7 +702,7 @@ private:
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings0, this);
         checkMemoryLeak.simplifycode(tokenizer.list.front());
 
-        return tokenizer.tokens()->stringifyList(0, false);
+        return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
 

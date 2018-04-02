@@ -82,7 +82,7 @@ static void skipEnumBody(T **tok)
 
 const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith) const
 {
-    return Tokenizer::isFunctionHead(tok, endsWith, isCPP());
+    return isFunctionHead(tok, endsWith, isCPP());
 }
 
 const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp)
@@ -191,7 +191,7 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
     if (type->tokType() == Token::eString)
         return Token::getStrLength(type) + 1U;
 
-    std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->str());
+    const std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->str());
     if (it == _typeSize.end()) {
         const Library::PodType* podtype = _settings->library.podtype(type->str());
         if (!podtype)
@@ -631,7 +631,7 @@ void Tokenizer::simplifyTypedef()
         Token *tokOffset = tok->next();
         bool function = false;
         bool functionPtr = false;
-        bool functionRef = false;
+        const bool functionRef = false; // Seems never to be used
         bool functionRetFuncPtr = false;
         bool functionPtrRetFuncPtr = false;
         bool ptrToArray = false;
@@ -1325,7 +1325,7 @@ void Tokenizer::simplifyTypedef()
                         }
                     }
 
-                    else if (functionPtr || functionRef || function) {
+                    else if (functionPtr || functionRef || function) {  // Remove functionRef?  Seems always to be false
                         // don't add parentheses around function names because it
                         // confuses other simplifications
                         bool needParen = true;
@@ -1350,7 +1350,7 @@ void Tokenizer::simplifyTypedef()
                         if (functionPtr) {
                             tok2->insertToken("*");
                             tok2 = tok2->next();
-                        } else if (functionRef) {
+                        } else if (functionRef) { // Always false?
                             tok2->insertToken("&");
                             tok2 = tok2->next();
                         }
@@ -2090,7 +2090,7 @@ void Tokenizer::arraySize()
 
         if (addlength || Token::Match(tok, "%var% [ ] = %str% ;")) {
             tok = tok->next();
-            std::size_t sz = Token::getStrSize(tok->tokAt(3));
+            const std::size_t sz = Token::getStrSize(tok->tokAt(3));
             tok->insertToken(MathLib::toString(sz));
             tok = tok->tokAt(5);
         }
@@ -2240,7 +2240,7 @@ void Tokenizer::simplifyCaseRange()
 {
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "case %num% . . . %num% :")) {
-            MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
+            const MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
             MathLib::bigint end = MathLib::toLongNumber(tok->strAt(5));
             end = std::min(start + 50, end); // Simplify it 50 times at maximum
             if (start < end) {
@@ -2255,8 +2255,8 @@ void Tokenizer::simplifyCaseRange()
                 }
             }
         } else if (Token::Match(tok, "case %char% . . . %char% :")) {
-            char start = tok->strAt(1)[1];
-            char end = tok->strAt(5)[1];
+            const char start = tok->strAt(1)[1];
+            const char end = tok->strAt(5)[1];
             if (start < end) {
                 tok = tok->tokAt(2);
                 tok->str(":");
@@ -2981,7 +2981,7 @@ void Tokenizer::setVarIdPass2()
             }
 
             if (tok->str() == "}") {
-                std::map<const Token *, std::string>::iterator it = endOfScope.find(tok);
+                const std::map<const Token *, std::string>::iterator it = endOfScope.find(tok);
                 if (it != endOfScope.end())
                     scope.remove(it->second);
             }
@@ -3127,7 +3127,7 @@ void Tokenizer::setVarIdPass2()
                     break;
 
                 // set varid
-                std::map<std::string, unsigned int>::const_iterator varpos = thisClassVars.find(tok3->str());
+                const std::map<std::string, unsigned int>::const_iterator varpos = thisClassVars.find(tok3->str());
                 if (varpos != thisClassVars.end())
                     tok3->varId(varpos->second);
 
@@ -3432,7 +3432,7 @@ bool Tokenizer::simplifySizeof()
 
         // sizeof( a )
         else if (Token::Match(tok->next(), "( %var% )")) {
-            std::map<unsigned int, unsigned int>::const_iterator sizeOfVarPos = sizeOfVar.find(tok->tokAt(2)->varId());
+            const std::map<unsigned int, unsigned int>::const_iterator sizeOfVarPos = sizeOfVar.find(tok->tokAt(2)->varId());
             if (sizeOfVarPos != sizeOfVar.end()) {
                 tok->deleteNext();
                 tok->deleteThis();
@@ -4492,7 +4492,7 @@ bool Tokenizer::removeRedundantConditions()
         // Find matching else
         Token *elseTag = tok->linkAt(4)->next();
 
-        bool boolValue = (tok->strAt(2) == "true");
+        const bool boolValue = (tok->strAt(2) == "true");
 
         // Handle if with else
         if (Token::simpleMatch(elseTag, "else {")) {
@@ -4553,7 +4553,7 @@ void Tokenizer::removeRedundantFor()
             Token::Match(tok, "[;{}] for ( %type% %name% = %num% ; %name% < %num% ; ++| %name% ++| ) {")) {
             // Same variable name..
             const Token* varTok = tok->tokAt(3);
-            bool type = varTok->next()->isName();
+            const bool type = varTok->next()->isName();
             if (type)
                 varTok = varTok->next();
             const std::string varname(varTok->str());
@@ -5386,8 +5386,7 @@ void Tokenizer::simplifyFunctionParameters()
             if (argumentNames.size() != argumentNames2.size()) {
                 //move back 'tok1' to the last ';'
                 tok1 = tok1->previous();
-                std::map<std::string, Token *>::iterator it;
-                for (it = argumentNames.begin(); it != argumentNames.end(); ++it) {
+              for (std::map<std::string, Token *>::iterator it = argumentNames.begin(); it != argumentNames.end(); ++it) {
                     if (argumentNames2.find(it->first) == argumentNames2.end()) {
                         //add the missing parameter argument declaration
                         tok1->insertToken(";");
@@ -5572,7 +5571,7 @@ void Tokenizer::simplifyVarDecl(const bool only_k_r_fpar)
     simplifyVarDecl(list.front(), nullptr, only_k_r_fpar);
 }
 
-void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar)
+void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar) const
 {
     const bool isCPP11  = _settings->standards.cpp >= Standards::CPP11;
 
@@ -6268,7 +6267,7 @@ void Tokenizer::simplifyInitVar()
     }
 }
 
-Token * Tokenizer::initVar(Token * tok)
+Token * Tokenizer::initVar(Token * tok) const
 {
     // call constructor of class => no simplification
     if (Token::Match(tok, "class|struct|union")) {
@@ -8794,7 +8793,7 @@ void Tokenizer::simplifyStructDecl()
 
 void Tokenizer::simplifyCallingConvention()
 {
-    bool windows = _settings->isWindowsPlatform();
+    const bool windows = _settings->isWindowsPlatform();
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (Token::Match(tok, "__cdecl|__stdcall|__fastcall|__thiscall|__clrcall|__syscall|__pascal|__fortran|__far|__near") || (windows && Token::Match(tok, "WINAPI|APIENTRY|CALLBACK"))) {
@@ -9533,7 +9532,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
         if (tok->strAt(1) != "(")
             continue;
 
-        std::map<std::string, triplet>::const_iterator match = apis.find(tok->str());
+        const std::map<std::string, triplet>::const_iterator match = apis.find(tok->str());
         if (match!=apis.end()) {
             tok->str(ansi ? match->second.mbcs : match->second.unicode);
             tok->originalName(match->first);
@@ -9946,11 +9945,10 @@ void Tokenizer::printUnknownTypes() const
     }
 
     if (!unknowns.empty()) {
-        std::multimap<std::string, const Token *>::const_iterator it;
-        std::string last;
+      std::string last;
         size_t count = 0;
 
-        for (it = unknowns.begin(); it != unknowns.end(); ++it) {
+        for (std::multimap<std::string, const Token *>::const_iterator it = unknowns.begin(); it != unknowns.end(); ++it) {
             // skip types is std namespace because they are not interesting
             if (it->first.find("std::") != 0) {
                 if (it->first != last) {

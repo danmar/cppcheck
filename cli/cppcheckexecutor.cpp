@@ -106,9 +106,9 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         if (parser.GetShowErrorMessages()) {
             errorlist = true;
-            std::cout << ErrorLogger::ErrorMessage::getXMLHeader();
+            std::cout << ErrorMessage::getXMLHeader();
             cppcheck->getErrorMessages();
-            std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
+            std::cout << ErrorMessage::getXMLFooter() << std::endl;
         }
 
         if (parser.ExitAfterPrinting()) {
@@ -121,8 +121,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     // Check that all include paths exist
     {
-        std::list<std::string>::iterator iter;
-        for (iter = settings.includePaths.begin();
+      for (std::list<std::string>::iterator iter = settings.includePaths.begin();
              iter != settings.includePaths.end();
             ) {
             const std::string path(Path::toNativeSeparators(*iter));
@@ -161,7 +160,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #endif
     if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
-        PathMatch matcher(ignored, caseSensitive);
+        const PathMatch matcher(ignored, caseSensitive);
         for (std::vector<std::string>::const_iterator iter = pathnames.begin(); iter != pathnames.end(); ++iter)
             FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter), _settings->library.markupExtensions(), matcher);
     }
@@ -195,9 +194,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     }
     if (cppCheck.settings().exceptionHandling) {
         return check_wrapper(cppCheck, argc, argv);
-    } else {
-        return check_internal(cppCheck, argc, argv);
     }
+    return check_internal(cppCheck, argc, argv);
 }
 
 void CppCheckExecutor::setSettings(const Settings &settings)
@@ -561,16 +559,16 @@ namespace {
 // avoid explicit dependency on Dbghelp.dll
     bool loadDbgHelp()
     {
-        hLibDbgHelp = ::LoadLibraryW(L"Dbghelp.dll");
+        hLibDbgHelp = LoadLibraryW(L"Dbghelp.dll");
         if (!hLibDbgHelp)
             return false;
-        pStackWalk64 = (fpStackWalk64) ::GetProcAddress(hLibDbgHelp, "StackWalk64");
-        pSymGetModuleBase64 = (fpSymGetModuleBase64) ::GetProcAddress(hLibDbgHelp, "SymGetModuleBase64");
-        pSymGetSymFromAddr64 = (fpSymGetSymFromAddr64) ::GetProcAddress(hLibDbgHelp, "SymGetSymFromAddr64");
-        pSymGetLineFromAddr64 = (fpSymGetLineFromAddr64)::GetProcAddress(hLibDbgHelp, "SymGetLineFromAddr64");
-        pSymFunctionTableAccess64 = (fpSymFunctionTableAccess64)::GetProcAddress(hLibDbgHelp, "SymFunctionTableAccess64");
-        pSymInitialize = (fpSymInitialize) ::GetProcAddress(hLibDbgHelp, "SymInitialize");
-        pUnDecorateSymbolName = (fpUnDecorateSymbolName)::GetProcAddress(hLibDbgHelp, "UnDecorateSymbolName");
+        pStackWalk64 = (fpStackWalk64) GetProcAddress(hLibDbgHelp, "StackWalk64");
+        pSymGetModuleBase64 = (fpSymGetModuleBase64) GetProcAddress(hLibDbgHelp, "SymGetModuleBase64");
+        pSymGetSymFromAddr64 = (fpSymGetSymFromAddr64) GetProcAddress(hLibDbgHelp, "SymGetSymFromAddr64");
+        pSymGetLineFromAddr64 = (fpSymGetLineFromAddr64)GetProcAddress(hLibDbgHelp, "SymGetLineFromAddr64");
+        pSymFunctionTableAccess64 = (fpSymFunctionTableAccess64)GetProcAddress(hLibDbgHelp, "SymFunctionTableAccess64");
+        pSymInitialize = (fpSymInitialize) GetProcAddress(hLibDbgHelp, "SymInitialize");
+        pUnDecorateSymbolName = (fpUnDecorateSymbolName)GetProcAddress(hLibDbgHelp, "UnDecorateSymbolName");
         return true;
     }
 
@@ -583,9 +581,9 @@ namespace {
         const HANDLE hThread    = GetCurrentThread();
         BOOL result = pSymInitialize(
                           hProcess,
-                          0,
+                          nullptr,
                           TRUE
-                      );
+                      );  // result is reassigned before being read.
         CONTEXT             context = *(ex->ContextRecord);
         STACKFRAME64        stack= {0};
 #ifdef _M_IX86
@@ -644,7 +642,7 @@ namespace {
         }
 
         FreeLibrary(hLibDbgHelp);
-        hLibDbgHelp=0;
+        hLibDbgHelp=nullptr;
     }
 
     void writeMemoryErrorDetails(FILE* outputFile, PEXCEPTION_POINTERS ex, const char* description)
@@ -820,7 +818,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         windows = tryLoadLibrary(settings.library, argv[0], "windows.cfg");
 
     if (!std || !posix || !windows) {
-        const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+        const std::list<ErrorMessage::FileLocation> callstack;
         const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg") + ". Your Cppcheck installation is broken, please re-install.");
 #ifdef CFGDIR
         const std::string details("The Cppcheck binary was compiled with CFGDIR set to \"" +
@@ -832,7 +830,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                                   "std.cfg should be available in " + cfgfolder + " or the CFGDIR "
                                   "should be configured.");
 #endif
-        ErrorLogger::ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", false);
+        const ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", false);
         reportErr(errmsg);
         return EXIT_FAILURE;
     }
@@ -845,7 +843,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (settings.xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLHeader());
+        reportErr(ErrorMessage::getXMLHeader());
     }
 
     if (!settings.buildDir.empty()) {
@@ -926,8 +924,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         cppcheck.tooManyConfigsError("",0U);
 
         if (settings.isEnabled(Settings::MISSING_INCLUDE) && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {
-            const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
-            ErrorLogger::ErrorMessage msg(callStack,
+            const std::list<ErrorMessage::FileLocation> callStack;
+            const ErrorMessage msg(callStack,
                                           emptyString,
                                           Severity::information,
                                           "Cppcheck cannot find all the include files (use --check-config for details)\n"
@@ -943,14 +941,13 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (settings.xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
+        reportErr(ErrorMessage::getXMLFooter());
     }
 
     _settings = nullptr;
     if (returnValue)
         return settings.exitCode;
-    else
-        return 0;
+    return 0;
 }
 
 #ifdef _WIN32
@@ -966,7 +963,7 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
         // ansi code page characters to wide characters
         MultiByteToWideChar(CP_ACP, 0, msg.data(), msglength, wcContainer.data(), msglength);
         // wide characters to oem codepage characters
-        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, const_cast<char *>(result.data()), msglength, NULL, NULL);
+        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, const_cast<char *>(result.data()), msglength, nullptr, nullptr);
 
         return result; // hope for return value optimization
     }
@@ -1019,7 +1016,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     }
 }
 
-void CppCheckExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
+void CppCheckExecutor::reportInfo(const ErrorMessage &msg)
 {
     reportErr(msg);
 }
@@ -1036,7 +1033,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
     }
 }
 
-void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
+void CppCheckExecutor::reportErr(const ErrorMessage &msg)
 {
     if (errorlist) {
         reportOut(msg.toXML());

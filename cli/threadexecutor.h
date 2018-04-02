@@ -50,8 +50,8 @@ public:
     unsigned int check();
 
     virtual void reportOut(const std::string &outmsg);
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportErr(const ErrorMessage &msg);
+    virtual void reportInfo(const ErrorMessage &msg);
 
     /**
      * @brief Add content to a file, to be used in unit testing.
@@ -124,7 +124,7 @@ private:
 
     CRITICAL_SECTION _reportSync;
 
-    void report(const ErrorLogger::ErrorMessage &msg, MessageType msgType);
+    void report(const ErrorMessage &msg, MessageType msgType);
 
     static unsigned __stdcall threadProc(void*);
 

@@ -40,7 +40,7 @@ private:
         void reportOut(const std::string & /*outmsg*/) {
         }
 
-        void reportErr(const ErrorLogger::ErrorMessage &msg) {
+        void reportErr(const ErrorMessage &msg) {
             id.push_back(msg._id);
         }
     };

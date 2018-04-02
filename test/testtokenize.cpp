@@ -500,7 +500,7 @@ private:
         }
 
         if (tokenizer.tokens())
-            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
+            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
         else
             return "";
     }
@@ -530,7 +530,7 @@ private:
         }
 
         if (tokenizer.tokens())
-            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
+            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
         else
             return "";
     }
@@ -1421,7 +1421,7 @@ private:
 
         tokenizer.simplifyKnownVariables();
 
-        return tokenizer.tokens()->stringifyList(0, false);
+        return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
     void simplifyKnownVariables1() {
@@ -4426,8 +4426,8 @@ private:
             ASSERT_EQUALS(true, tok->tokAt(14) == tok->linkAt(16));
 
             // a<b && b>f
-            ASSERT_EQUALS(true, 0 == tok->linkAt(28));
-            ASSERT_EQUALS(true, 0 == tok->linkAt(32));
+            ASSERT_EQUALS(true, nullptr == tok->linkAt(28));
+            ASSERT_EQUALS(true, nullptr == tok->linkAt(32));
 
             ASSERT_EQUALS("", errout.str());
         }
@@ -4919,7 +4919,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
-        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
         const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
         const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
@@ -4950,7 +4950,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
-        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
         const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
         const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
@@ -6246,7 +6246,7 @@ private:
                                 "const wchar_t * lpcwstr ;";
 
         // These types should be defined the same on all Windows platforms
-        std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
+        const std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
         ASSERT_EQUALS(expected, win32A);
         ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win32W));
         ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win64));
@@ -6320,7 +6320,7 @@ private:
                                 "int int_ptr ;";
 
         // These types should be defined the same on all Win32 platforms
-        std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
+        const std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
         ASSERT_EQUALS(expected, win32A);
         ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win32W));
     }
@@ -8016,7 +8016,8 @@ private:
         ASSERT_EQUALS("a ? ( std :: map < int , int > ( ) ) : 0 ;", tokenizeAndStringify("typedef std::map<int,int> mymap; a ? mymap() : 0;"));
     }
 
-    std::string testAst(const char code[],bool verbose=false) {
+    std::string testAst(const char code[],bool verbose=false) const
+    {
         // tokenize given code..
         Tokenizer tokenList(&settings0, nullptr);
         std::istringstream istr(code);
@@ -8056,7 +8057,8 @@ private:
         return ret;
     }
 
-    void astexpr() { // simple expressions with arithmetical ops
+    void astexpr() const
+    { // simple expressions with arithmetical ops
         ASSERT_EQUALS("12+3+", testAst("1+2+3"));
         ASSERT_EQUALS("12*3+", testAst("1*2+3"));
         ASSERT_EQUALS("123*+", testAst("1+2*3"));
@@ -8218,7 +8220,8 @@ private:
         ASSERT_THROW(tokenizeAndStringify(code,true), InternalError); // when parentheses are simplified the AST will be wrong
     }
 
-    void astnewdelete() {
+    void astnewdelete() const
+    {
         ASSERT_EQUALS("aintnew=", testAst("a = new int;"));
         ASSERT_EQUALS("aint4[new=", testAst("a = new int[4];"));
         ASSERT_EQUALS("aFoobar(new=", testAst("a = new Foo(bar);"));
@@ -8256,7 +8259,8 @@ private:
         ASSERT_EQUALS("char10[new(", testAst("(void)new(char*)[10];"));
     }
 
-    void astpar() { // parentheses
+    void astpar() const
+    { // parentheses
         ASSERT_EQUALS("12+3*", testAst("(1+2)*3"));
         ASSERT_EQUALS("123+*", testAst("1*(2+3)"));
         ASSERT_EQUALS("123+*4*", testAst("1*(2+3)*4"));
@@ -8349,7 +8353,8 @@ private:
         ASSERT_EQUALS("a{b{,{return", testAst("return{{a},{b}};"));
     }
 
-    void astbrackets() { // []
+    void astbrackets() const
+    { // []
         ASSERT_EQUALS("a23+[4+", testAst("a[2+3]+4"));
         ASSERT_EQUALS("a1[0[", testAst("a[1][0]"));
         ASSERT_EQUALS("ab0[=", testAst("a=(b)[0];"));
@@ -8357,7 +8362,8 @@ private:
         ASSERT_EQUALS("ab0[1[=", testAst("a=b[0][1];"));
     }
 
-    void astunaryop() { // unary operators
+    void astunaryop() const
+    { // unary operators
         ASSERT_EQUALS("1a--+", testAst("1 + --a"));
         ASSERT_EQUALS("1a--+", testAst("1 + a--"));
         ASSERT_EQUALS("ab+!", testAst("!(a+b)"));
@@ -8378,7 +8384,8 @@ private:
         ASSERT_EQUALS("ai[i= i--", testAst("a[i]=i; --i;"));
     }
 
-    void astfunction() { // function calls
+    void astfunction() const
+    { // function calls
         ASSERT_EQUALS("1f(+2+", testAst("1+f()+2"));
         ASSERT_EQUALS("1f2(+3+", testAst("1+f(2)+3"));
         ASSERT_EQUALS("1f23,(+4+", testAst("1+f(2,3)+4"));
@@ -8391,7 +8398,8 @@ private:
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
     }
 
-    void asttemplate() { // uninstantiated templates will have <,>,etc..
+    void asttemplate() const
+    { // uninstantiated templates will have <,>,etc..
         ASSERT_EQUALS("a(3==", testAst("a<int>()==3"));
         ASSERT_EQUALS("ab(== f(", testAst("a == b<c>(); f();"));
         ASSERT_EQUALS("static_casta(i[", testAst("; static_cast<char*>(a)[i];")); // #6203
@@ -8404,7 +8412,8 @@ private:
         ASSERT_EQUALS("AB: f( abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
     }
 
-    void astcast() {
+    void astcast() const
+    {
         ASSERT_EQUALS("ac&(=", testAst("a = (long)&c;"));
         ASSERT_EQUALS("ac*(=", testAst("a = (Foo*)*c;"));
         ASSERT_EQUALS("ac-(=", testAst("a = (long)-c;"));
@@ -8424,7 +8433,8 @@ private:
         ASSERT_EQUALS("abc[1&=", testAst("a = (b[c]) & 1;"));
     }
 
-    void astlambda() {
+    void astlambda() const
+    {
         // a lambda expression '[x](y){}' is compiled as:
         // [
         // `-(
@@ -8442,7 +8452,8 @@ private:
         ASSERT_EQUALS("ab{[(= cd=", testAst("a = b([&]{c=d;});"));
     }
 
-    void astcase() {
+    void astcase() const
+    {
         ASSERT_EQUALS("0case", testAst("case 0:"));
         ASSERT_EQUALS("12+case", testAst("case 1+2:"));
         ASSERT_EQUALS("xyz:?case", testAst("case (x?y:z):"));

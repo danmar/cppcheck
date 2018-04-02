@@ -199,7 +199,7 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
     var2->_aliases.insert(varid1);
     var1->_aliases.insert(varid2);
 
-    if (var2->_type == Variables::pointer) {
+    if (var2->_type == pointer) {
         _varReadInScope.back().insert(varid2);
         var2->_read = true;
     }
@@ -210,10 +210,7 @@ void Variables::clearAliases(unsigned int varid)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        // remove usage from all aliases
-        std::set<unsigned int>::const_iterator i;
-
-        for (i = usage->_aliases.begin(); i != usage->_aliases.end(); ++i) {
+      for (std::set<unsigned int>::const_iterator i = usage->_aliases.begin(); i != usage->_aliases.end(); ++i) {
             VariableUsage *temp = find(*i);
 
             if (temp)
@@ -230,9 +227,7 @@ void Variables::eraseAliases(unsigned int varid)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        std::set<unsigned int>::const_iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+      for (std::set<unsigned int>::const_iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
             erase(*aliases);
     }
 }
@@ -280,9 +275,7 @@ void Variables::readAliases(unsigned int varid, const Token* tok)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        std::set<unsigned int>::iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
+      for (std::set<unsigned int>::iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
@@ -317,9 +310,7 @@ void Variables::writeAliases(unsigned int varid, const Token* tok)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        std::set<unsigned int>::const_iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
+      for (std::set<unsigned int>::const_iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
@@ -344,9 +335,7 @@ void Variables::use(unsigned int varid, const Token* tok)
         usage->use(_varReadInScope);
         usage->_lastAccess = tok;
 
-        std::set<unsigned int>::const_iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
+      for (std::set<unsigned int>::const_iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
@@ -367,9 +356,7 @@ void Variables::modified(unsigned int varid, const Token* tok)
         usage->_modified = true;
         usage->_lastAccess = tok;
 
-        std::set<unsigned int>::const_iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
+      for (std::set<unsigned int>::const_iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
@@ -529,7 +516,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
             }
 
             // check if variable is local
-            unsigned int varid2 = tok->varId();
+            const unsigned int varid2 = tok->varId();
             const Variables::VariableUsage* var2 = variables.find(varid2);
 
             if (var2) { // local variable (alias or read it)
@@ -847,7 +834,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             // does the name contain "for_each" or "foreach"?
             std::string nameTok;
             nameTok.resize(tok->str().size());
-            std::transform(tok->str().begin(), tok->str().end(), nameTok.begin(), ::tolower);
+            std::transform(tok->str().begin(), tok->str().end(), nameTok.begin(), tolower);
             if (nameTok.find("foreach") != std::string::npos || nameTok.find("for_each") != std::string::npos) {
                 // bailout all variables in the body that are used more than once.
                 // TODO: there is no need to bailout if variable is only read or only written

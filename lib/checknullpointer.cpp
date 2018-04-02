@@ -87,7 +87,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf|wprintf|swprintf|fwprintf|wscanf|swscanf|fwscanf")) {
         const Token* argListTok = nullptr; // Points to first va_list argument
         std::string formatString;
-        bool scan = Token::Match(&tok, "scanf|sscanf|fscanf|wscanf|swscanf|fwscanf");
+        const bool scan = Token::Match(&tok, "scanf|sscanf|fscanf|wscanf|swscanf|fwscanf");
 
         if (Token::Match(&tok, "printf|scanf|wprintf|wscanf ( %str%")) {
             formatString = firstParam->strValue();
@@ -503,8 +503,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     } else if (value->defaultArg) {
         reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE476, inconclusive || value->isInconclusive());
     } else {
-        std::string errmsg;
-        errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
+      std::string errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
         if (!varname.empty())
             errmsg += ": " + varname;
 

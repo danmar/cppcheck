@@ -81,7 +81,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
     reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str(), CWE788, false);
 }
 
-void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index)
+void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index) const
 {
     bool inconclusive = false;
     const Token *condition = nullptr;
@@ -233,7 +233,7 @@ void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const Token *
     } else {
         errmsg = "Undefined behaviour, pointer arithmetic '" + expr + "' is out of bounds";
     }
-    std::string verbosemsg(errmsg + ". From chapter 6.5.6 in the C specification:\n"
+    const std::string verbosemsg(errmsg + ". From chapter 6.5.6 in the C specification:\n"
                            "\"When an expression that has integer type is added to or subtracted from a pointer, ..\" and then \"If both the pointer operand and the result point to elements of the same array object, or one past the last element of the array object, the evaluation shall not produce an overflow; otherwise, the behavior is undefined.\"");
     reportError(tok, Severity::portability, "pointerOutOfBounds", errmsg + ".\n" + verbosemsg, CWE398, false);
     /*
@@ -483,7 +483,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
                             std::list<const Token *> callstack2(callstack);
                             callstack2.push_back(ftok2);
 
-                            std::vector<MathLib::bigint> indexes(1, index);
+                            const std::vector<MathLib::bigint> indexes(1, index);
                             arrayIndexOutOfBoundsError(callstack2, arrayInfo, indexes);
                         }
                     }
@@ -809,7 +809,7 @@ static std::vector<ValueFlow::Value> valueFlowGetArrayIndexes(const Token * cons
 }
 
 
-void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo)
+void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo) const
 {
     // Declaration in global scope or namespace?
     if (tok->scope()->type == Scope::eGlobal || tok->scope()->type == Scope::eNamespace)
@@ -917,7 +917,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, std::map<unsigned int, Arr
         if (!tok->variable() || tok->variable()->nameToken() == tok)
             continue;
 
-        std::map<unsigned int, ArrayInfo>::const_iterator arrayInfo = arrayInfos.find(tok->varId());
+        const std::map<unsigned int, ArrayInfo>::const_iterator arrayInfo = arrayInfos.find(tok->varId());
         if (arrayInfo == arrayInfos.cend())
             continue;
 
@@ -1304,7 +1304,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (totalSize == 0)
                 continue;
 
-            ArrayInfo temp(var->declarationId(), var->name(), totalSize / size, size);
+            const ArrayInfo temp(var->declarationId(), var->name(), totalSize / size, size);
             checkScope(nextTok, v, temp);
         }
     }
@@ -1323,9 +1323,7 @@ void CheckBufferOverrun::checkStructVariable()
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
-        // check all variables to see if they are arrays
-        std::list<Variable>::const_iterator var;
-        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+      for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
             if (var->isArray()) {
                 // create ArrayInfo from the array variable
                 ArrayInfo arrayInfo(&*var, symbolDatabase);
@@ -1420,7 +1418,7 @@ void CheckBufferOverrun::checkStructVariable()
                                                 continue;
 
                                             // calculate real array size based on allocated size
-                                            MathLib::bigint elements = (size - 100) / arrayInfo.element_size();
+                                            const MathLib::bigint elements = (size - 100) / arrayInfo.element_size();
                                             arrayInfo.num(0, arrayInfo.num(0) + elements);
                                         }
                                     }
@@ -1547,7 +1545,7 @@ void CheckBufferOverrun::bufferOverrun()
             //  char arr[10] = "123";
             //  arr[7] = 'x'; // warning: arr[7] is inside the array bounds, but past the string's end
 
-            ArrayInfo arrayInfo(tok->varId(), varname, 1U, Token::getStrSize(strtoken));
+            const ArrayInfo arrayInfo(tok->varId(), varname, 1U, Token::getStrSize(strtoken));
             valueFlowCheckArrayIndex(tok->next(), arrayInfo);
         } else {
             if (var->nameToken() == tok || !var->isArray())
@@ -1697,7 +1695,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart->next(); tok && tok != scope->classEnd; tok = tok->next()) {
-            unsigned int dstVarId = tok->varId();
+            const unsigned int dstVarId = tok->varId();
             if (!dstVarId || tok->strAt(1) != "=")
                 continue;
 
@@ -1830,7 +1828,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, MathLib::bigint in
     reportError(tok, Severity::error, "negativeIndex", ostr.str(), CWE786, false);
 }
 
-void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::Value &index)
+void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::Value &index) const
 {
     const ErrorPath errorPath = getErrorPath(tok, &index, "Negative array index");
     std::ostringstream errmsg;
@@ -1966,7 +1964,7 @@ void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::s
 std::string CheckBufferOverrun::MyFileInfo::toString() const
 {
     std::ostringstream ret;
-    for (std::map<std::string, struct CheckBufferOverrun::MyFileInfo::ArrayUsage>::const_iterator it = arrayUsage.begin(); it != arrayUsage.end(); ++it) {
+    for (std::map<std::string, struct ArrayUsage>::const_iterator it = arrayUsage.begin(); it != arrayUsage.end(); ++it) {
         ret << "    <ArrayUsage"
             << " array=\"" << ErrorLogger::toxml(it->first) << '\"'
             << " index=\"" << it->second.index << '\"'
@@ -2002,7 +2000,7 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
                 const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
                 if (value && value->intvalue > 0) {
                     const MathLib::bigint arrayIndex = value->intvalue;
-                    std::map<std::string, struct MyFileInfo::ArrayUsage>::iterator it = fileInfo->arrayUsage.find(tok->str());
+                    const std::map<std::string, struct MyFileInfo::ArrayUsage>::iterator it = fileInfo->arrayUsage.find(tok->str());
                     if (it != fileInfo->arrayUsage.end() && it->second.index >= arrayIndex)
                         continue;
                     struct MyFileInfo::ArrayUsage arrayUsage;
@@ -2058,26 +2056,26 @@ Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLEle
 }
 
 
-bool CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings&, ErrorLogger &errorLogger)
+bool CheckBufferOverrun::analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings&, ErrorLogger &errorLogger)
 {
     bool errors = false;
     // Merge all fileInfo
     MyFileInfo all;
-    for (std::list<Check::FileInfo*>::const_iterator it = fileInfo.begin(); it != fileInfo.end(); ++it) {
+    for (std::list<FileInfo*>::const_iterator it = fileInfo.begin(); it != fileInfo.end(); ++it) {
         const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(*it);
         if (!fi)
             continue;
 
         // merge array usage
         for (std::map<std::string, struct MyFileInfo::ArrayUsage>::const_iterator it2 = fi->arrayUsage.begin(); it2 != fi->arrayUsage.end(); ++it2) {
-            std::map<std::string, struct MyFileInfo::ArrayUsage>::const_iterator allit = all.arrayUsage.find(it2->first);
+            const std::map<std::string, struct MyFileInfo::ArrayUsage>::const_iterator allit = all.arrayUsage.find(it2->first);
             if (allit == all.arrayUsage.end() || it2->second.index > allit->second.index)
                 all.arrayUsage[it2->first] = it2->second;
         }
 
         // merge array info
         for (std::map<std::string, MathLib::bigint>::const_iterator it2 = fi->arraySize.begin(); it2 != fi->arraySize.end(); ++it2) {
-            std::map<std::string, MathLib::bigint>::const_iterator allit = all.arraySize.find(it2->first);
+            const std::map<std::string, MathLib::bigint>::const_iterator allit = all.arraySize.find(it2->first);
             if (allit == all.arraySize.end())
                 all.arraySize[it2->first] = it2->second;
             else
@@ -2087,7 +2085,7 @@ bool CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &
 
     // Check buffer usage
     for (std::map<std::string, struct MyFileInfo::ArrayUsage>::const_iterator it = all.arrayUsage.begin(); it != all.arrayUsage.end(); ++it) {
-        std::map<std::string, MathLib::bigint>::const_iterator sz = all.arraySize.find(it->first);
+        const std::map<std::string, MathLib::bigint>::const_iterator sz = all.arraySize.find(it->first);
         if (sz != all.arraySize.end() && sz->second > 0 && sz->second < it->second.index) {
             ErrorLogger::ErrorMessage::FileLocation fileLoc;
             fileLoc.setfile(it->second.fileName);

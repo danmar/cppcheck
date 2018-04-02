@@ -1072,11 +1072,11 @@ public:
     static Type typeFromString(const std::string &typestr, bool longType);
 
     bool isIntegral() const {
-        return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
+        return (type >= BOOL && type <= UNKNOWN_INT);
     }
 
     bool isFloat() const {
-        return (type >= ValueType::Type::FLOAT && type <= ValueType::Type::LONGDOUBLE);
+        return (type >= FLOAT && type <= LONGDOUBLE);
     }
 
     bool fromLibraryType(const std::string &typestr, const Settings *settings);
@@ -1187,18 +1187,18 @@ private:
     void createSymbolDatabaseSetScopePointers();
     void createSymbolDatabaseSetFunctionPointers(bool firstPass);
     void createSymbolDatabaseSetVariablePointers();
-    void createSymbolDatabaseSetTypePointers();
+    void createSymbolDatabaseSetTypePointers() const;
     void createSymbolDatabaseEnums();
     void createSymbolDatabaseUnknownArrayDimensions();
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
-    Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
+    Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart) const;
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
     void addNewFunction(Scope **scope, const Token **tok);
     bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
     const Type *findTypeInNested(const Token *startTok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
-    Function *findFunctionInScope(const Token *func, const Scope *ns);
+    Function *findFunctionInScope(const Token *func, const Scope *ns) const;
     const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
 
     typedef std::map<unsigned int, unsigned int> MemberIdMap;

@@ -160,7 +160,7 @@ std::string Suppressions::FileMatcher::addFile(const std::string &name, unsigned
     if (name.find_first_of("*?") != std::string::npos) {
         for (std::string::const_iterator i = name.begin(); i != name.end(); ++i) {
             if (*i == '*') {
-                std::string::const_iterator j = i + 1;
+                const std::string::const_iterator j = i + 1;
                 if (j != name.end() && (*j == '*' || *j == '?')) {
                     return "Failed to add suppression. Syntax error in glob.";
                 }
@@ -270,7 +270,7 @@ std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppres
         if (!unusedFunctionChecking && i->first == "unusedFunction")
             continue;
 
-        std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(Path::fromNativeSeparators(file));
+        const std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(Path::fromNativeSeparators(file));
         if (f != i->second._files.end()) {
             for (std::map<unsigned int, bool>::const_iterator l = f->second.begin(); l != f->second.end(); ++l) {
                 if (!l->second) {

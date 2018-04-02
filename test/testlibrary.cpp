@@ -578,7 +578,7 @@ private:
             // s8
             {
                 const struct Library::PodType * const type = library.podtype("s8");
-                ASSERT_EQUALS(true, type != 0);
+                ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(1U, type->size);
                     ASSERT_EQUALS('s', type->sign);
@@ -587,7 +587,7 @@ private:
             // u8
             {
                 const struct Library::PodType * const type = library.podtype("u8");
-                ASSERT_EQUALS(true, type != 0);
+                ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(1U, type->size);
                     ASSERT_EQUALS('u', type->sign);
@@ -596,7 +596,7 @@ private:
             // u16
             {
                 const struct Library::PodType * const type = library.podtype("u16");
-                ASSERT_EQUALS(true, type != 0);
+                ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(2U, type->size);
                     ASSERT_EQUALS('u', type->sign);
@@ -605,7 +605,7 @@ private:
             // s16
             {
                 const struct Library::PodType * const type = library.podtype("s16");
-                ASSERT_EQUALS(true, type != 0);
+                ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(2U, type->size);
                     ASSERT_EQUALS('s', type->sign);
@@ -614,7 +614,7 @@ private:
             // robustness test: provide cfg without PodType
             {
                 const struct Library::PodType * const type = library.podtype("nonExistingPodType");
-                ASSERT_EQUALS(true, type == 0);
+                ASSERT_EQUALS(true, type == nullptr);
             }
         }
     }

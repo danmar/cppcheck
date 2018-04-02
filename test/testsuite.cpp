@@ -75,7 +75,7 @@ TestFixture::TestFixture(const char * const _name)
 }
 
 
-bool TestFixture::prepareTest(const char testname[])
+bool TestFixture::prepareTest(const char testname[]) const
 {
     // Check if tests should be executed
     if (testToRun.empty() || testToRun == testname) {
@@ -322,7 +322,7 @@ void TestFixture::reportOut(const std::string & outmsg)
     output << outmsg << std::endl;
 }
 
-void TestFixture::reportErr(const ErrorLogger::ErrorMessage &msg)
+void TestFixture::reportErr(const ErrorMessage &msg)
 {
     const std::string errormessage(msg.toString(false));
     if (errout.str().find(errormessage) == std::string::npos)

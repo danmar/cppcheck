@@ -312,7 +312,7 @@ private:
      * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
-    void initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage);
+    void initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage) const;
 
     /**
      * @brief gives a list of tokens where pure virtual functions are called directly or indirectly
@@ -322,7 +322,7 @@ private:
      */
     const std::list<const Token *> & callsPureVirtualFunction(
         const Function & function,
-        std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap);
+        std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap) const;
 
     /**
      * @brief looks for the first pure virtual function call stack
@@ -333,7 +333,7 @@ private:
     void getFirstPureVirtualFunctionCallStack(
         std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap,
         const Token & pureCall,
-        std::list<const Token *> & pureFuncStack);
+        std::list<const Token *> & pureFuncStack) const;
 
     static bool canNotCopy(const Scope *scope);
 

@@ -129,7 +129,7 @@ bool Settings::isEnabled(Severity::SeverityType severity) const
 
 bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) const
 {
-    if (!isEnabled(Settings::WARNING) && (value->condition || value->defaultArg))
+    if (!isEnabled(WARNING) && (value->condition || value->defaultArg))
         return false;
     if (!inconclusive && (inconclusiveCheck || value->isInconclusive()))
         return false;

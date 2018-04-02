@@ -144,7 +144,7 @@ private:
         if (simplify)
             tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(0, !simplify);
+        return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
     std::string tok(const char code[], const char filename[]) {
@@ -157,7 +157,7 @@ private:
         tokenizer.tokenize(istr, filename);
         tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(0, false);
+        return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
     void template1() {

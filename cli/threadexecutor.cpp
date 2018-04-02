@@ -389,7 +389,7 @@ unsigned int ThreadExecutor::check()
         }
     }
 
-    DWORD waitResult = WaitForMultipleObjects(_settings.jobs, threadHandles, TRUE, INFINITE);
+    const DWORD waitResult = WaitForMultipleObjects(_settings.jobs, threadHandles, TRUE, INFINITE);
     if (waitResult != WAIT_OBJECT_0) {
         if (waitResult == WAIT_FAILED) {
             std::cerr << "#### .\nThreadExecutor::check wait failed, result: " << waitResult << " error: " << GetLastError() << std::endl;
@@ -454,7 +454,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
 
             LeaveCriticalSection(&threadExecutor->_fileSync);
 
-            std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->_fileContents.find(file);
+            const std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->_fileContents.find(file);
             if (fileContent != threadExecutor->_fileContents.end()) {
                 // File content was given as a string
                 result += fileChecker.check(file, fileContent->second);
@@ -490,17 +490,17 @@ void ThreadExecutor::reportOut(const std::string &outmsg)
 
     LeaveCriticalSection(&_reportSync);
 }
-void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportErr(const ErrorMessage &msg)
 {
     report(msg, REPORT_ERROR);
 }
 
-void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
+void ThreadExecutor::reportInfo(const ErrorMessage &msg)
 {
     report(msg, REPORT_INFO);
 }
 
-void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType msgType)
+void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
 {
     std::string file;
     unsigned int line(0);
@@ -514,7 +514,7 @@ void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType ms
 
     // Alert only about unique errors
     bool reportError = false;
-    std::string errmsg = msg.toString(_settings.verbose);
+    const std::string errmsg = msg.toString(_settings.verbose);
 
     EnterCriticalSection(&_errorSync);
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end()) {

@@ -57,16 +57,15 @@ static const struct CWE CWE825(825U);
 void CheckUninitVar::check()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::list<Scope>::const_iterator scope;
 
-    std::set<std::string> arrayTypeDefs;
+  std::set<std::string> arrayTypeDefs;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%name% [") && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "%type% %var% ;"))
             arrayTypeDefs.insert(tok->variable()->typeStartToken()->str());
     }
 
     // check every executable scope
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         if (scope->isExecutable()) {
             checkScope(&*scope, arrayTypeDefs);
         }
@@ -126,13 +125,13 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
 
         if (i->isArray()) {
             Alloc alloc = ARRAY;
-            std::map<unsigned int, VariableValue> variableValue;
+            const std::map<unsigned int, VariableValue> variableValue;
             checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString, variableValue);
             continue;
         }
         if (stdtype || i->isPointer()) {
             Alloc alloc = NO_ALLOC;
-            std::map<unsigned int, VariableValue> variableValue;
+            const std::map<unsigned int, VariableValue> variableValue;
             checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString, variableValue);
         }
         if (i->type())
@@ -151,7 +150,7 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
                             checkStruct(tok, *arg);
                         else if (arg->typeStartToken()->isStandardType() || arg->typeStartToken()->isEnumType()) {
                             Alloc alloc = NO_ALLOC;
-                            std::map<unsigned int, VariableValue> variableValue;
+                            const std::map<unsigned int, VariableValue> variableValue;
                             checkScopeForVariable(tok->next(), *arg, nullptr, nullptr, &alloc, emptyString, variableValue);
                         }
                     }
@@ -193,7 +192,7 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
                     const Token *tok2 = tok;
                     if (tok->str() == "}")
                         tok2 = tok2->next();
-                    std::map<unsigned int, VariableValue> variableValue;
+                    const std::map<unsigned int, VariableValue> variableValue;
                     checkScopeForVariable(tok2, structvar, nullptr, nullptr, &alloc, var.name(), variableValue);
                 }
             }
@@ -322,7 +321,7 @@ static bool isVariableUsed(const Token *tok, const Variable& var)
 
 bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, Alloc* const alloc, const std::string &membervar, std::map<unsigned int, VariableValue> variableValue)
 {
-    const bool suppressErrors(possibleInit && *possibleInit);
+    const bool suppressErrors(possibleInit && *possibleInit);  // Assume that this is a variable delaratkon, rather than a fundef
     const bool printDebug = _settings->debugwarnings;
 
     if (possibleInit)
@@ -380,7 +379,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 ;
             else if (Token::simpleMatch(tok, "if (") &&
                      astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
-                std::map<unsigned int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
+                const std::map<unsigned int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
                 if (it != variableValue.end() && it->second != 0)
                     return true;   // this scope is not fully analysed => return true
                 else {
@@ -396,7 +395,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 while (Token::simpleMatch(vartok, "."))
                     vartok = vartok->astOperand2();
                 if (vartok && vartok->varId() && numtok) {
-                    std::map<unsigned int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
+                    const std::map<unsigned int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
                     if (it != variableValue.end() && it->second != MathLib::toLongNumber(numtok->str()))
                         return true;   // this scope is not fully analysed => return true
                     else {
@@ -532,7 +531,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             const Token *tok2 = forwhile ? tok->next()->link()->next() : tok->next();
 
             if (tok2 && tok2->str() == "{") {
-                bool init = checkLoopBody(tok2, var, *alloc, membervar, (number_of_if > 0) || suppressErrors);
+                const bool init = checkLoopBody(tok2, var, *alloc, membervar, (number_of_if > 0) || suppressErrors);
 
                 // variable is initialized in the loop..
                 if (init)
@@ -1167,7 +1166,7 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
 {
     if (Token::Match(tok->previous(), "[(,] %name% . %name% [,)]") &&
         tok->strAt(2) == membervar) {
-        int use = isFunctionParUsage(tok, isPointer, alloc);
+        const int use = isFunctionParUsage(tok, isPointer, alloc);
         if (use == 1)
             return true;
     }
@@ -1226,10 +1225,9 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
 void CheckUninitVar::valueFlowUninit()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::list<Scope>::const_iterator scope;
 
-    // check every executable scope
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+  // check every executable scope
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         if (!scope->isExecutable())
             continue;
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
@@ -1252,10 +1250,9 @@ void CheckUninitVar::valueFlowUninit()
 void CheckUninitVar::deadPointer()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::list<Scope>::const_iterator scope;
 
-    // check every executable scope
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+  // check every executable scope
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         if (!scope->isExecutable())
             continue;
         // Dead pointers..

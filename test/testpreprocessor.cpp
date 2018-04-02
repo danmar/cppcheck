@@ -45,7 +45,7 @@ public:
     class OurPreprocessor : public Preprocessor {
     public:
 
-        static std::string expandMacros(const char code[], ErrorLogger *errorLogger = 0) {
+        static std::string expandMacros(const char code[], ErrorLogger *errorLogger = nullptr) {
             std::istringstream istr(code);
             simplecpp::OutputList outputList;
             std::vector<std::string> files;
@@ -267,7 +267,7 @@ private:
         }
     }
 
-    std::string getConfigsStr(const char filedata[], const char *arg=NULL) {
+    std::string getConfigsStr(const char filedata[], const char *arg= nullptr) {
         Settings settings;
         if (arg && std::strncmp(arg,"-D",2)==0)
             settings.userDefines = arg + 2;
@@ -1258,7 +1258,7 @@ private:
                                 "DBG(\"[0x%lx-0x%lx)\", pstart, pend);\n";
 
         // Preprocess..
-        std::string actual = OurPreprocessor::expandMacros(filedata);
+        const std::string actual = OurPreprocessor::expandMacros(filedata);
 
         ASSERT_EQUALS("\nprintf ( \"[0x%lx-0x%lx)\" , pstart , pend ) ;", actual);
     }
@@ -1320,7 +1320,7 @@ private:
                                 "STRINGIFY(abc)\n";
 
         // expand macros..
-        std::string actual = OurPreprocessor::expandMacros(filedata);
+        const std::string actual = OurPreprocessor::expandMacros(filedata);
 
         ASSERT_EQUALS("\n\"abc\"", actual);
     }
@@ -1330,7 +1330,7 @@ private:
                                 "A(abc);\n";
 
         // expand macros..
-        std::string actual = OurPreprocessor::expandMacros(filedata);
+        const std::string actual = OurPreprocessor::expandMacros(filedata);
 
         ASSERT_EQUALS("\ng ( \"abc\" ) ;", actual);
     }
@@ -1340,7 +1340,7 @@ private:
                                 "A( abc);\n";
 
         // expand macros..
-        std::string actual = OurPreprocessor::expandMacros(filedata);
+        const std::string actual = OurPreprocessor::expandMacros(filedata);
 
         ASSERT_EQUALS("\ng ( \"abc\" ) ;", actual);
     }
@@ -1352,7 +1352,7 @@ private:
                                 ") 2\n";
 
         // expand macros..
-        std::string actual = OurPreprocessor::expandMacros(filedata);
+        const std::string actual = OurPreprocessor::expandMacros(filedata);
 
         ASSERT_EQUALS("\n1 \"abc\"\n\n2", actual);
     }
@@ -1932,7 +1932,7 @@ private:
                                "int x;");
         std::string processedFile;
         std::list<std::string> cfg;
-        std::list<std::string> paths;
+        const std::list<std::string> paths;
 
         // Don't report that the include is missing
         errout.str("");
@@ -1945,7 +1945,7 @@ private:
         const std::string src("#if defined X || Y\n"
                               "Fred & Wilma\n"
                               "#endif\n");
-        std::string actual = preprocessor0.getcode(src, "X=1", "test.c");
+        const std::string actual = preprocessor0.getcode(src, "X=1", "test.c");
 
         ASSERT_EQUALS("\nFred & Wilma", actual);
     }
@@ -1955,12 +1955,12 @@ private:
                               "Fred & Wilma\n"
                               "#endif\n");
         {
-            std::string actual = preprocessor0.getcode(src, "X=1", "test.c");
+            const std::string actual = preprocessor0.getcode(src, "X=1", "test.c");
             ASSERT_EQUALS("", actual);
         }
 
         {
-            std::string actual = preprocessor0.getcode(src, "X=1;Y=2", "test.c");
+            const std::string actual = preprocessor0.getcode(src, "X=1;Y=2", "test.c");
             ASSERT_EQUALS("\nFred & Wilma", actual);
         }
     }
@@ -2211,7 +2211,7 @@ private:
         Preprocessor preprocessor(settings0, this);
 
         std::list<simplecpp::MacroUsage> macroUsageList;
-        std::vector<std::string> files(1, "test.c");
+        const std::vector<std::string> files(1, "test.c");
         simplecpp::MacroUsage macroUsage(files);
         macroUsage.useLocation.fileIndex = 0;
         macroUsage.useLocation.line = 1;

@@ -70,7 +70,7 @@ public:
     void checkTooBigBitwiseShift();
 
     /** @brief %Check for integer overflow */
-    void checkIntegerOverflow();
+    void checkIntegerOverflow() const;
 
     /** @brief %Check for dangerous sign conversion */
     void checkSignConversion();
@@ -79,17 +79,17 @@ public:
     void checkLongCast();
 
     /** @brief %Check for float to integer overflow */
-    void checkFloatToIntegerOverflow();
+    void checkFloatToIntegerOverflow() const;
 private:
 
     // Error messages..
     void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
     void tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
-    void integerOverflowError(const Token *tok, const ValueFlow::Value &value);
+    void integerOverflowError(const Token *tok, const ValueFlow::Value &value) const;
     void signConversionError(const Token *tok, const bool constvalue);
     void longCastAssignError(const Token *tok);
     void longCastReturnError(const Token *tok);
-    void floatToIntegerOverflowError(const Token *tok, const ValueFlow::Value &value);
+    void floatToIntegerOverflowError(const Token *tok, const ValueFlow::Value &value) const;
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckType c(nullptr, settings, errorLogger);

@@ -64,10 +64,10 @@ public:
     bool check(ErrorLogger * const errorLogger, const Settings& settings);
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
+    FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
+    bool analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
 
     static CheckUnusedFunctions instance;
 

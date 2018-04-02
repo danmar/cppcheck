@@ -143,7 +143,7 @@ private:
         // Preprocess..
         simplecpp::TokenList tokens2(files);
         std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+        preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenizer..
         Tokenizer tokenizer(&settings, this);
@@ -2333,7 +2333,7 @@ private:
         // nothing bad..
         {
             Library library;
-            Library::ArgumentChecks arg;
+            const Library::ArgumentChecks arg;
             library.functions["x"].argumentChecks[1] = arg;
             library.functions["x"].argumentChecks[2] = arg;
             library.functions["x"].argumentChecks[3] = arg;
@@ -2346,7 +2346,7 @@ private:
         // for 1st parameter null pointer is not ok..
         {
             Library library;
-            Library::ArgumentChecks arg;
+            const Library::ArgumentChecks arg;
             library.functions["x"].argumentChecks[1] = arg;
             library.functions["x"].argumentChecks[2] = arg;
             library.functions["x"].argumentChecks[3] = arg;

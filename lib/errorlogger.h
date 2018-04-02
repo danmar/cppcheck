@@ -310,7 +310,7 @@ public:
     ErrorLogger() { }
     virtual ~ErrorLogger() {
         if (plistFile.is_open()) {
-            plistFile << ErrorLogger::plistFooter();
+            plistFile << plistFooter();
             plistFile.close();
         }
     }
@@ -329,7 +329,7 @@ public:
      *
      * @param msg Location and other information about the found error.
      */
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) = 0;
+    virtual void reportErr(const ErrorMessage &msg) = 0;
 
     /**
      * Report progress to client
@@ -347,7 +347,7 @@ public:
      * Output information messages.
      * @param msg Location and other information about the found error.
      */
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) {
+    virtual void reportInfo(const ErrorMessage &msg) {
         reportErr(msg);
     }
 
@@ -357,7 +357,7 @@ public:
      */
     void reportUnmatchedSuppressions(const std::list<Suppressions::SuppressionEntry> &unmatched);
 
-    static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
+    static std::string callStackToString(const std::list<ErrorMessage::FileLocation> &callStack);
 
     /**
      * Convert XML-sensitive characters into XML entities
@@ -367,7 +367,7 @@ public:
     static std::string toxml(const std::string &str);
 
     static std::string plistHeader(const std::string &version, const std::vector<std::string> &files);
-    static std::string plistData(const ErrorLogger::ErrorMessage &msg);
+    static std::string plistData(const ErrorMessage &msg);
     static const char *plistFooter() {
         return " </array>\r\n"
                "</dict>\r\n"

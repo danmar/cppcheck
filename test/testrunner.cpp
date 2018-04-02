@@ -35,9 +35,9 @@ int main(int argc, char *argv[])
 #endif
         Preprocessor::macroChar = '$'; // While macroChar is char(1) per default outside test suite, we require it to be a human-readable character here.
 
-        options args(argc, const_cast<const char**>(argv));
+        const options args(argc, const_cast<const char**>(argv));
 
-        std::size_t failedTestsCount = TestFixture::runTests(args);
+        const std::size_t failedTestsCount = TestFixture::runTests(args);
         return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 #ifdef NDEBUG
     } catch (const InternalError& e) {

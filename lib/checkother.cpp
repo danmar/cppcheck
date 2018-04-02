@@ -562,7 +562,7 @@ void CheckOther::checkRedundantAssignment()
                         membervars[startToken->varId()].insert(startToken->tokAt(2)->varId());
                 }
 
-                std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
+                const std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
                 if (eq && Token::Match(startToken, "[;{}]")) { // Assignment
                     if (it != varAssignments.end()) {
                         const Token *oldeq = nullptr;
@@ -810,8 +810,8 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             else if (Token::Match(tok2->previous(), ";|{|}|: %var% %assign% %num% ;") &&
                      (tok2->strAt(1) == "|=" || tok2->strAt(1) == "&=") &&
                      Token::Match(tok2->next()->astOperand2(), "%num%")) {
-                std::string bitOp = tok2->strAt(1)[0] + tok2->strAt(2);
-                std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
+                const std::string bitOp = tok2->strAt(1)[0] + tok2->strAt(2);
+                const std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
@@ -835,8 +835,8 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             //    case 4: b = b | 1;
             else if (Token::Match(tok2->previous(), ";|{|}|: %var% = %name% %or%|& %num% ;") &&
                      tok2->varId() == tok2->tokAt(2)->varId()) {
-                std::string bitOp = tok2->strAt(3) + tok2->strAt(4);
-                std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
+                const std::string bitOp = tok2->strAt(3) + tok2->strAt(4);
+                const std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
@@ -1661,7 +1661,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
 
     std::ostringstream errmsg;
     if (value->condition) {
-        unsigned int line = tok ? tok->linenr() : 0;
+        const unsigned int line = tok ? tok->linenr() : 0;
         errmsg << ValueFlow::eitherTheConditionIsRedundant(value->condition)
                << " or there is division by zero at line " << line << ".";
     } else
@@ -1752,9 +1752,7 @@ void CheckOther::checkDuplicateBranch()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+  for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         if (scope->type != Scope::eIf)
             continue;
 
@@ -1779,7 +1777,7 @@ void CheckOther::checkDuplicateBranch()
                 continue;
 
             // save else branch code
-            std::string branch2 = scope->classEnd->tokAt(3)->stringifyList(scope->classEnd->linkAt(2));
+            const std::string branch2 = scope->classEnd->tokAt(3)->stringifyList(scope->classEnd->linkAt(2));
 
             // check for duplicates
             if (branch1 == branch2)
@@ -1891,19 +1889,17 @@ namespace {
 
     void getConstFunctions(const SymbolDatabase *symbolDatabase, std::list<const Function*> &constFunctions)
     {
-        std::list<Scope>::const_iterator scope;
-        for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-            std::list<Function>::const_iterator func;
-            // only add const functions that do not have a non-const overloaded version
+      for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        // only add const functions that do not have a non-const overloaded version
             // since it is pretty much impossible to tell which is being called.
             typedef std::map<std::string, std::list<const Function*> > StringFunctionMap;
             StringFunctionMap functionsByName;
-            for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
                 functionsByName[func->tokenDef->str()].push_back(&*func);
             }
             for (StringFunctionMap::iterator it = functionsByName.begin();
                  it != functionsByName.end(); ++it) {
-                std::list<const Function*>::const_iterator nc = std::find_if(it->second.begin(), it->second.end(), notconst);
+                const std::list<const Function*>::const_iterator nc = std::find_if(it->second.begin(), it->second.end(), notconst);
                 if (nc == it->second.end()) {
                     // ok to add all of them
                     constFunctions.splice(constFunctions.end(), it->second);
@@ -1923,11 +1919,10 @@ void CheckOther::checkDuplicateExpression()
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope>::const_iterator scope;
-    std::list<const Function*> constFunctions;
+  std::list<const Function*> constFunctions;
     getConstFunctions(symbolDatabase, constFunctions);
 
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;
@@ -2647,7 +2642,7 @@ void CheckOther::checkAccessOfMovedVariable()
                 else
                     inconclusive = true;
             } else {
-                bool isVariableChanged = isVariableChangedByFunctionCall(tok, _settings, &inconclusive);
+                const bool isVariableChanged = isVariableChangedByFunctionCall(tok, _settings, &inconclusive);
                 accessOfMoved = !isVariableChanged;
                 if (inconclusive) {
                     accessOfMoved = !isMovedParameterAllowedForInconclusiveFunction(tok);

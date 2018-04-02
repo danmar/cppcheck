@@ -133,7 +133,7 @@ std::string Path::getCurrentPath()
 #ifndef _WIN32
     if (getcwd(currentPath, 4096) != nullptr)
 #else
-    if (_getcwd(currentPath, 4096) != 0)
+    if (_getcwd(currentPath, 4096) != nullptr)
 #endif
         return std::string(currentPath);
 
@@ -165,7 +165,7 @@ std::string Path::getRelativePath(const std::string& absolutePath, const std::ve
         if (absolutePath == *i || i->empty()) // Seems to be a file, or path is empty
             continue;
 
-        bool endsWithSep = endsWith(*i,'/');
+        const bool endsWithSep = endsWith(*i,'/');
         if (absolutePath.compare(0, i->length(), *i) == 0 && absolutePath[i->length() - (endsWithSep?1:0)] == '/') {
             std::string rest = absolutePath.substr(i->length() + (endsWithSep?0:1));
             return rest;
@@ -199,7 +199,7 @@ bool Path::isCPP(const std::string &path)
 
 bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra)
 {
-    return !Path::isHeader(path) && (Path::isCPP(path) || Path::isC(path) || extra.find(getFilenameExtension(path)) != extra.end());
+    return !isHeader(path) && (isCPP(path) || isC(path) || extra.find(getFilenameExtension(path)) != extra.end());
 }
 
 bool Path::isHeader(const std::string &path)

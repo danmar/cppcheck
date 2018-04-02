@@ -270,7 +270,7 @@ static bool isUndefined(const std::string &cfg, const std::set<std::string> &und
         const std::string::size_type pos2 = cfg.find(';',pos1);
         const std::string def = (pos2 == std::string::npos) ? cfg.substr(pos1) : cfg.substr(pos1, pos2 - pos1);
 
-        std::string::size_type eq = def.find('=');
+        const std::string::size_type eq = def.find('=');
         if (eq == std::string::npos && undefined.find(def) != undefined.end())
             return true;
         if (eq != std::string::npos && undefined.find(def.substr(0,eq)) != undefined.end() && def.substr(eq) != "=0")
@@ -521,7 +521,7 @@ static simplecpp::DUI createDUI(const Settings &_settings, const std::string &cf
         if (it->compare(0,8,"#define ")!=0)
             continue;
         std::string s = it->substr(8);
-        std::string::size_type pos = s.find_first_of(" (");
+        const std::string::size_type pos = s.find_first_of(" (");
         if (pos == std::string::npos) {
             dui.defines.push_back(s);
             continue;
@@ -566,7 +566,7 @@ void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
 {
     const simplecpp::DUI dui = createDUI(_settings, emptyString, files[0]);
 
-    tokenlists = simplecpp::load(rawtokens, files, dui, nullptr);
+    tokenlists = load(rawtokens, files, dui, nullptr);
 }
 
 void Preprocessor::removeComments()
@@ -606,7 +606,7 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     simplecpp::TokenList tokens2(files);
     simplecpp::preprocess(tokens2, tokens1, files, tokenlists, dui, &outputList, &macroUsage);
 
-    bool showerror = (!_settings.userDefines.empty() && !_settings.force);
+    const bool showerror = (!_settings.userDefines.empty() && !_settings.force);
     reportOutput(outputList, showerror);
     if (hasErrors(outputList))
         return simplecpp::TokenList(files);
@@ -640,7 +640,7 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
             line++;
         }
         if (!tok->macro.empty())
-            ret << Preprocessor::macroChar;
+            ret << macroChar;
         ret << tok->str;
     }
 
@@ -694,11 +694,11 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
     }
 }
 
-void Preprocessor::error(const std::string &filename, unsigned int linenr, const std::string &msg)
+void Preprocessor::error(const std::string &filename, unsigned int linenr, const std::string &msg) const
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        ErrorLogger::ErrorMessage::FileLocation loc(filename, linenr);
+        const ErrorLogger::ErrorMessage::FileLocation loc(filename, linenr);
         locationList.push_back(loc);
     }
     _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
@@ -710,7 +710,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 }
 
 // Report that include is missing
-void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
+void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType) const
 {
     const std::string fname = Path::fromNativeSeparators(filename);
     if (_settings.nomsg.isSuppressed("missingInclude", fname, linenr))
@@ -731,7 +731,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
             loc.setfile(Path::toNativeSeparators(filename));
             locationList.push_back(loc);
         }
-        ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information,
+        const ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information,
                                          (headerType==SystemHeader) ?
                                          "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
                                          "Include file: \"" + header + "\" not found.",
@@ -772,13 +772,13 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
     return ret;
 }
 
-void Preprocessor::validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro)
+void Preprocessor::validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro) const
 {
     const std::string id = "ConfigurationNotChecked";
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    ErrorLogger::ErrorMessage::FileLocation loc(file, line);
+    const ErrorLogger::ErrorMessage::FileLocation loc(file, line);
     locationList.push_back(loc);
-    ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
+    const ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
     _errorLogger->reportInfo(errmsg);
 }
 
@@ -885,9 +885,9 @@ unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1
 
 void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList)
 {
-    Preprocessor::simplifyPragmaAsmPrivate(tokenList);
+    simplifyPragmaAsmPrivate(tokenList);
     for (std::map<std::string, simplecpp::TokenList *>::iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
-        Preprocessor::simplifyPragmaAsmPrivate(it->second);
+        simplifyPragmaAsmPrivate(it->second);
     }
 }
 

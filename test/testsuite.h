@@ -45,7 +45,7 @@ protected:
 
     virtual void run() = 0;
 
-    bool prepareTest(const char testname[]);
+    bool prepareTest(const char testname[]) const;
 
     void assert_(const char * const filename, const unsigned int linenr, const bool condition) const;
 
@@ -71,7 +71,7 @@ protected:
     void processOptions(const options& args);
 public:
     virtual void reportOut(const std::string &outmsg);
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportErr(const ErrorMessage &msg);
     void run(const std::string &str);
 
     explicit TestFixture(const char * const _name);

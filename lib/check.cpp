@@ -41,7 +41,7 @@ void Check::reportError(const ErrorLogger::ErrorMessage &errmsg)
     std::cout << errmsg.toXML() << std::endl;
 }
 
-bool Check::wrongData(const Token *tok, bool condition, const char *str)
+bool Check::wrongData(const Token *tok, bool condition, const char *str) const
 {
 #if defined(DACA2) || defined(UNSTABLE)
     if (condition) {

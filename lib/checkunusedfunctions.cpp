@@ -343,7 +343,7 @@ Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, c
     return nullptr;
 }
 
-bool CheckUnusedFunctions::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+bool CheckUnusedFunctions::analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
 {
     (void)fileInfo;
     return check(&errorLogger, settings);
@@ -396,7 +396,7 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
         const std::string sourcefile = filesTxtLine.substr(lastColon+1);
 
         tinyxml2::XMLDocument doc;
-        tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
+        const tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
         if (error != tinyxml2::XML_SUCCESS)
             continue;
 

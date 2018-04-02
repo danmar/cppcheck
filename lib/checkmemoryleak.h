@@ -210,7 +210,7 @@ public:
     /**
      * Checking for a memory leak caused by improper realloc usage.
      */
-    void checkReallocUsage();
+    void checkReallocUsage() const;
 
     /**
      * Inspect a function call. the call_func and getcode are recursive
@@ -297,7 +297,7 @@ private:
         c.deallocDeallocError(nullptr, "varname");
         c.deallocuseError(nullptr, "varname");
         c.mismatchSizeError(nullptr, "sz");
-        std::list<const Token *> callstack;
+        const std::list<const Token *> callstack;
         c.mismatchAllocDealloc(callstack, "varname");
         c.memleakUponReallocFailureError(nullptr, "varname");
     }
@@ -388,14 +388,14 @@ public:
         checkMemoryLeak.check();
     }
 
-    void check();
+    void check() const;
 
 private:
 
     /** Is local variable allocated with malloc? */
     static bool isMalloc(const Variable *variable);
 
-    void checkStructVariable(const Variable * const variable);
+    void checkStructVariable(const Variable * const variable) const;
 
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const {
     }

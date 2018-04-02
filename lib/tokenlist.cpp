@@ -116,7 +116,7 @@ void TokenList::addtoken(std::string str, const unsigned int lineno, const unsig
     // If token contains # characters, split it up
     if (split) {
         size_t begin = 0;
-        size_t end = 0;
+        size_t end;
         while ((end = str.find("##", begin)) != std::string::npos) {
             addtoken(str.substr(begin, end - begin), lineno, fileno, false);
             addtoken("##", lineno, fileno, false);
@@ -1162,7 +1162,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     return tok;
 }
 
-void TokenList::createAst()
+void TokenList::createAst() const
 {
     for (Token *tok = _front; tok; tok = tok ? tok->next() : nullptr) {
         tok = createAstAtToken(tok, isCPP());

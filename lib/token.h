@@ -228,24 +228,28 @@ public:
 
     const ValueType *argumentType() const {
         const Token *top = this;
-        while (top && !Token::Match(top->astParent(), ",|("))
+        while (top && !Match(top->astParent(), ",|("))
             top = top->astParent();
         return top ? top->valuetype : nullptr;
     }
 
-    Token::Type tokType() const {
+    Type tokType() const {
         return _tokType;
     }
-    void tokType(Token::Type t) {
+    void tokType(Type t) {
         _tokType = t;
 
-        bool memoizedIsName = (_tokType == eName || _tokType == eType || _tokType == eVariable ||
-                               _tokType == eFunction || _tokType == eKeyword || _tokType == eBoolean ||
-                               _tokType == eEnumerator); // TODO: "true"/"false" aren't really a name...
+        const bool memoizedIsName =
+            (_tokType == eName || _tokType == eType || _tokType == eVariable ||
+             _tokType == eFunction || _tokType == eKeyword ||
+             _tokType == eBoolean ||
+             _tokType == eEnumerator); // TODO: "true"/"false" aren't really a name...
         setFlag(fIsName, memoizedIsName);
 
-        bool memoizedIsLiteral = (_tokType == eNumber || _tokType == eString || _tokType == eChar ||
-                                  _tokType == eBoolean || _tokType == eLiteral || _tokType == eEnumerator);
+        const bool memoizedIsLiteral =
+            (_tokType == eNumber || _tokType == eString || _tokType == eChar ||
+             _tokType == eBoolean || _tokType == eLiteral ||
+             _tokType == eEnumerator);
         setFlag(fIsLiteral, memoizedIsLiteral);
     }
     void isKeyword(bool kwd) {
@@ -901,7 +905,7 @@ private:
      */
     unsigned int _progressValue;
 
-    Token::Type _tokType;
+    Type _tokType;
 
     enum {
         fIsUnsigned             = (1 << 0),

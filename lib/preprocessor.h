@@ -161,7 +161,7 @@ public:
      * @return true => configuration is valid
      */
     bool validateCfg(const std::string &cfg, const std::list<simplecpp::MacroUsage> &macroUsageList);
-    void validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro);
+    void validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro) const;
 
     /**
      * Calculate CRC32 checksum. Using toolinfo, tokens1, filedata.
@@ -203,8 +203,8 @@ public:
     void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
 
 private:
-    void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
-    void error(const std::string &filename, unsigned int linenr, const std::string &msg);
+    void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType) const;
+    void error(const std::string &filename, unsigned int linenr, const std::string &msg) const;
 
     Settings& _settings;
     ErrorLogger *_errorLogger;

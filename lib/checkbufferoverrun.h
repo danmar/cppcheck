@@ -218,10 +218,10 @@ public:
     void checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo, std::list<const Token *> callstack);
 
     void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
-    void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index);
+    void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index) const;
 
     /* data for multifile checking */
-    class MyFileInfo : public Check::FileInfo {
+    class MyFileInfo : public FileInfo {
     public:
         std::string toString() const;
 
@@ -239,12 +239,12 @@ public:
     };
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
+    FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
 
-    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const;
+    FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
+    bool analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
 
     /**
      * Calculates sizeof value for given type.
@@ -268,14 +268,14 @@ private:
     void terminateStrncpyError(const Token *tok, const std::string &varname);
     void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
     void negativeIndexError(const Token *tok, MathLib::bigint index);
-    void negativeIndexError(const Token *tok, const ValueFlow::Value &index);
+    void negativeIndexError(const Token *tok, const ValueFlow::Value &index) const;
     void cmdLineArgsError(const Token *tok);
     void pointerOutOfBoundsError(const Token *tok, const Token *index=nullptr, const MathLib::bigint indexvalue=0);
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
     void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
     void argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname);
 
-    void valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo);
+    void valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo) const;
 
 public:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {

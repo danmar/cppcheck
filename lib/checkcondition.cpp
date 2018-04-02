@@ -193,7 +193,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                 }
             }
 
-            bool ret1 = assignIfParseScope(assignTok, end->tokAt(2), varid, islocal, bitop, num);
+            const bool ret1 = assignIfParseScope(assignTok, end->tokAt(2), varid, islocal, bitop, num);
             bool ret2 = false;
             if (Token::simpleMatch(end->next()->link(), "} else {"))
                 ret2 = assignIfParseScope(assignTok, end->next()->link()->tokAt(3), varid, islocal, bitop, num);
@@ -470,7 +470,7 @@ static bool isNonConstFunctionCall(const Token *ftok, const Library &library)
     return true;
 }
 
-void CheckCondition::multiCondition2()
+void CheckCondition::multiCondition2() const
 {
     if (!_settings->isEnabled(Settings::WARNING))
         return;
@@ -541,10 +541,10 @@ void CheckCondition::multiCondition2()
         const Token *tok;
         if (Token::Match(scope->classStart, "{ return|throw|continue|break")) {
             tok = scope->classEnd->next();
-            type = MULTICONDITIONTYPE::AFTER;
+            type = AFTER;
         } else {
             tok = scope->classStart;
-            type = MULTICONDITIONTYPE::INNER;
+            type = INNER;
         }
         const Token * const endToken = tok->scope()->classEnd;
 
@@ -571,7 +571,7 @@ void CheckCondition::multiCondition2()
                 // Condition..
                 const Token *cond2 = tok->next()->astOperand2();
 
-                if (type == MULTICONDITIONTYPE::INNER) {
+                if (type == INNER) {
                     std::stack<const Token *> tokens1;
                     tokens1.push(cond1);
                     while (!tokens1.empty()) {
@@ -681,7 +681,7 @@ void CheckCondition::multiCondition2()
     }
 }
 
-void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2)
+void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2) const
 {
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
@@ -693,7 +693,7 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
     reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, false);
 }
 
-void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2)
+void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2) const
 {
     const std::string cond(cond1 ? cond1->expressionString() : "x");
     ErrorPath errorPath;
@@ -1169,7 +1169,7 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
 }
 
 
-void CheckCondition::alwaysTrueFalse()
+void CheckCondition::alwaysTrueFalse() const
 {
     if (!_settings->isEnabled(Settings::STYLE))
         return;
@@ -1267,7 +1267,7 @@ void CheckCondition::alwaysTrueFalse()
     }
 }
 
-void CheckCondition::alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value)
+void CheckCondition::alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value) const
 {
     const bool condvalue = value && (value->intvalue != 0);
     const std::string expr = tok ? tok->expressionString() : std::string("x");
@@ -1335,12 +1335,11 @@ void CheckCondition::checkInvalidTestForOverflow()
 
 void CheckCondition::invalidTestForOverflow(const Token* tok, bool result)
 {
-    std::string errmsg;
-    errmsg = "Invalid test for overflow '" +
-             (tok ? tok->expressionString() : std::string("x + u < x")) +
-             "'. Condition is always " +
-             std::string(result ? "true" : "false") +
-             " unless there is overflow, and overflow is undefined behaviour.";
+  const std::string errmsg = "Invalid test for overflow '" +
+    (tok ? tok->expressionString() : std::string("x + u < x")) +
+    "'. Condition is always " +
+    std::string(result ? "true" : "false") +
+    " unless there is overflow, and overflow is undefined behaviour.";
     reportError(tok, Severity::warning, "invalidTestForOverflow", errmsg, (result ? CWE571 : CWE570), false);
 }
 
