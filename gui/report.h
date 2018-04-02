@@ -32,7 +32,6 @@
 */
 class Report : public QObject {
 public:
-
     enum Type {
         TXT,
         XMLV2,
@@ -57,7 +56,7 @@ public:
     /**
     * @brief Close the report (file).
     */
-    virtual void close();
+    void close();
 
     /**
     * @brief Write report header.
