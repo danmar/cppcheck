@@ -359,10 +359,6 @@ Parameter: -l(line) (file)
         <translation>Argumentwert</translation>
     </message>
     <message>
-        <source>constant</source>
-        <translation type="vanished">Konstant</translation>
-    </message>
-    <message>
         <location filename="libraryeditargdialog.ui" line="119"/>
         <location filename="libraryeditargdialog.ui" line="224"/>
         <source>mul</source>
@@ -1227,10 +1223,6 @@ Options:
         <translation>Projektdatei</translation>
     </message>
     <message>
-        <source>Project</source>
-        <translation type="vanished">Projekt</translation>
-    </message>
-    <message>
         <location filename="projectfiledialog.ui" line="24"/>
         <source>Paths and Defines</source>
         <translation>Pfade und Definitionen</translation>
@@ -1243,8 +1235,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="163"/>
         <source>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</source>
-        <oldsource>Defines must be separated by a semicolon &apos;;&apos;</oldsource>
-        <translation type="unfinished">Definitionen müssen mit einem Semikolon getrennt werden.</translation>
+        <translation>Definitionen müssen mit einem Semikolon getrennt werden. Beispiel: DEF1;DEF2=5;DEF3=int</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="319"/>
@@ -1254,27 +1245,27 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="376"/>
         <source>Exclude paths</source>
-        <translation type="unfinished"></translation>
+        <translation>Ausschlusspfade</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="483"/>
         <source>Addons and tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Addons und Werkzeuge</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="523"/>
         <source>MISRA C 2012</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRA C 2012</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="532"/>
         <source>Misra rule texts</source>
-        <translation type="unfinished"></translation>
+        <translation>Misra-Regeltexte</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="539"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Text aus Anhang A &amp;quot;Summary of guidelines&amp;quot; aus der MISRA-C-2012-PDF in eine Textdatei einfügen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="546"/>
@@ -1290,7 +1281,7 @@ Options:
         <location filename="projectfiledialog.ui" line="60"/>
         <location filename="projectfiledialog.ui" line="288"/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation>Durchsuchen...</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="72"/>
@@ -1342,17 +1333,17 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="273"/>
         <source>Checking</source>
-        <translation type="unfinished"></translation>
+        <translation>Prüfung</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="298"/>
         <source>Platform</source>
-        <translation type="unfinished"></translation>
+        <translation>Plattform</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="346"/>
         <source>Warning options</source>
-        <translation type="unfinished"></translation>
+        <translation>Warnoptionen</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="352"/>
@@ -1367,7 +1358,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="558"/>
         <source>External tools</source>
-        <translation type="unfinished"></translation>
+        <translation>Externe Werkzeuge</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="279"/>
@@ -1380,17 +1371,9 @@ Options:
         <translation>Bibliotheken</translation>
     </message>
     <message>
-        <source>Exclude</source>
-        <translation type="vanished">Ausschließen</translation>
-    </message>
-    <message>
         <location filename="projectfiledialog.ui" line="426"/>
         <source>Suppressions</source>
         <translation>Fehlerunterdrückungen</translation>
-    </message>
-    <message>
-        <source>Suppression list:</source>
-        <translation type="vanished">Fehlerunterdrückungsliste:</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="437"/>
@@ -1421,14 +1404,6 @@ Options:
         <location filename="projectfiledialog.ui" line="516"/>
         <source>Cert</source>
         <translation>Cert</translation>
-    </message>
-    <message>
-        <source>Extra Tools</source>
-        <translation type="vanished">Zusatzwerkzeuge</translation>
-    </message>
-    <message>
-        <source>It is common best practice to use several tools.</source>
-        <translation type="vanished">Es wird empfohlen, mehrere Werkzeuge einzusetzen.</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="571"/>
@@ -1476,7 +1451,7 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="243"/>
         <source>(no rule texts file)</source>
-        <translation type="unfinished"></translation>
+        <translation>(keine Regeltexte)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="249"/>
@@ -1506,12 +1481,12 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="676"/>
         <source>Select MISRA rule texts file</source>
-        <translation type="unfinished"></translation>
+        <translation>Wähle MISRA-Regeltext-Datei</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="676"/>
         <source>Misra rule texts file (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRA-Regeltext-Datei</translation>
     </message>
 </context>
 <context>
@@ -1618,22 +1593,22 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="815"/>
         <source>Could not find file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Kann Datei nicht finden:</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="819"/>
         <source>Please select the folder &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Bitte wählen Sie den Ordner &apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="820"/>
         <source>Select Directory &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Wähle Verzeichnis &apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="822"/>
         <source>Please select the directory where file is located.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bitte wählen Sie das Verzeichnis, wo sich die Datei befindet</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="884"/>
@@ -1678,7 +1653,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="619"/>
         <source>Copy line nr</source>
-        <translation type="unfinished"></translation>
+        <translation>Zeilennnummer kopieren</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="620"/>
@@ -1748,14 +1723,6 @@ Please check the application path and parameters are correct.</source>
         <translation>%1 konnte nicht gestartet werden.
 
 Bitte überprüfen Sie ob der Pfad und die Parameter der Anwendung richtig eingestellt sind.</translation>
-    </message>
-    <message>
-        <source>Could not find file:
-%1
-Please select the directory where file is located.</source>
-        <translation type="vanished">Datei konnte nicht gefunden werden:
-%1
-Bitte wählen Sie das Verzeichnis, in dem sich die Datei befindet.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="823"/>
@@ -1926,12 +1893,12 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="scratchpad.ui" line="20"/>
         <source>Copy or write some C/C++ code here:</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopieren oder schreiben Sie C/C++-Code hierher</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="37"/>
         <source>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</source>
-        <translation type="unfinished"></translation>
+        <translation>Optional einen Dateinamen (hauptsächlich für automatische Spracherkennung) eingeben und auf &quot;Check&quot; klicken:</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="71"/>
@@ -2031,17 +1998,17 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="settings.ui" line="312"/>
         <source>Misra addon</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRA-Addon</translation>
     </message>
     <message>
         <location filename="settings.ui" line="320"/>
         <source>Misra rule texts file</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRA-Regeltext-Datei</translation>
     </message>
     <message>
         <location filename="settings.ui" line="327"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Text aus Anhang A &amp;quot;Summary of guidelines&amp;quot; aus der MISRA-C-2012-PDF in eine Textdatei einfügen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="settings.ui" line="360"/>
@@ -2139,7 +2106,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="settingsdialog.cpp" line="314"/>
         <source>Select MISRA File</source>
-        <translation type="unfinished"></translation>
+        <translation>Wähle MISRA-Datei</translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="322"/>
