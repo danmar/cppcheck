@@ -606,7 +606,7 @@ private:
     }
 
     void garbageCode43() { // #6703
-        checkCode("int { }; struct A<void> a = { }");
+        ASSERT_THROW(checkCode("int { }; struct A<void> a = { }"), InternalError);
     }
 
     void garbageCode44() { // #6704
@@ -1238,7 +1238,7 @@ private:
     void garbageSymbolDatabase() {
         checkCode("void f( { u = 1 ; } ) { }");
 
-        checkCode("{ }; void namespace A::f; { g() { int } }");
+        ASSERT_THROW(checkCode("{ }; void namespace A::f; { g() { int } }"), InternalError);
 
         ASSERT_THROW(checkCode("class Foo {}; class Bar : public Foo"), InternalError);
 

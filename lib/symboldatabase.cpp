@@ -118,8 +118,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     // skip variable declaration
                     else if (Token::Match(tok2, "*|&|>"))
                         continue;
+                    else if (Token::Match(tok2, "%name% (") && _tokenizer->isFunctionHead(tok2->next(), "{;"))
+                        continue;
                     else
-                        break; // bail
+                        throw InternalError(tok2, "SymbolDatabase bailout; unhandled code", InternalError::SYNTAX);
                     continue;
                 }
                 break; // bail
