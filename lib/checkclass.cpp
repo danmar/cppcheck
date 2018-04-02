@@ -64,11 +64,6 @@ static const char * getFunctionTypeName(Function::Type type)
     return "";
 }
 
-static bool isPureWithoutBody(Function const & func)
-{
-    return func.isPure() && !func.hasBody();
-}
-
 //---------------------------------------------------------------------------
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -2200,15 +2195,15 @@ void CheckClass::selfInitializationError(const Token* tok, const std::string& va
 
 
 //---------------------------------------------------------------------------
-// Check for pure virtual function calls
+// Check for virtual function calls in constructor/destructor
 //---------------------------------------------------------------------------
 
-void CheckClass::checkPureVirtualFunctionCall()
+void CheckClass::checkVirtualFunctionCallInConstructor()
 {
     if (! _settings->isEnabled(Settings::WARNING))
         return;
     const std::size_t functions = symbolDatabase->functionScopes.size();
-    std::map<const Function *, std::list<const Token *> > callsPureVirtualFunctionMap;
+    std::map<const Function *, std::list<const Token *> > virtualFunctionCallsMap;
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         if (scope->function == nullptr || !scope->function->hasBody() ||
@@ -2216,106 +2211,127 @@ void CheckClass::checkPureVirtualFunctionCall()
               scope->function->isDestructor()))
             continue;
 
-        const std::list<const Token *> & pureVirtualFunctionCalls=callsPureVirtualFunction(*scope->function,callsPureVirtualFunctionMap);
-        for (std::list<const Token *>::const_iterator pureCallIter=pureVirtualFunctionCalls.begin();
-             pureCallIter!=pureVirtualFunctionCalls.end();
-             ++pureCallIter) {
-            const Token & pureCall=**pureCallIter;
-            std::list<const Token *> pureFuncStack;
-            pureFuncStack.push_back(&pureCall);
-            getFirstPureVirtualFunctionCallStack(callsPureVirtualFunctionMap, pureCall, pureFuncStack);
-            if (!pureFuncStack.empty())
-                callsPureVirtualFunctionError(*scope->function, pureFuncStack, pureFuncStack.back()->str());
+        const std::list<const Token *> & virtualFunctionCalls = getVirtualFunctionCalls(*scope->function, virtualFunctionCallsMap);
+        for (std::list<const Token *>::const_iterator it = virtualFunctionCalls.begin(); it != virtualFunctionCalls.end(); ++it) {
+            const Token * callToken = *it;
+            std::list<const Token *> callstack;
+            callstack.push_back(callToken);
+            getFirstVirtualFunctionCallStack(virtualFunctionCallsMap, callToken, callstack);
+            if (callstack.empty())
+                continue;
+            if (callstack.back()->function()->isPure())
+                pureVirtualFunctionCallInConstructorError(scope->function, callstack, callstack.back()->str());
+            else
+                virtualFunctionCallInConstructorError(scope->function, callstack, callstack.back()->str());
         }
     }
 }
 
-const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Function & function,
-        std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap)
+const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Function & function,
+        std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap)
 {
-    std::pair<std::map<const Function *, std::list<const Token *> >::iterator, bool > found =
-        callsPureVirtualFunctionMap.insert(std::pair<const Function *, std::list< const Token *> >(&function, std::list<const Token *>()));
-    std::list<const Token *> & pureFunctionCalls = found.first->second;
-    if (found.second) {
-        if (function.hasBody()) {
-            for (const Token *tok = function.arg->link();
-                 tok && tok != function.functionScope->classEnd;
-                 tok = tok->next()) {
-                if (function.type != Function::eConstructor &&
-                    function.type != Function::eCopyConstructor &&
-                    function.type != Function::eMoveConstructor &&
-                    function.type != Function::eDestructor) {
-                    if ((Token::simpleMatch(tok, ") {") &&
-                         tok->link() &&
-                         Token::Match(tok->link()->previous(), "if|switch")) ||
-                        Token::simpleMatch(tok, "else {")
-                       ) {
-                        // Assume pure virtual function call is prevented by "if|else|switch" condition
-                        tok = tok->linkAt(1);
-                        continue;
-                    }
-                }
-                if (tok->scope()->type == Scope::eLambda)
-                    tok = tok->scope()->classEnd->next();
+    const std::map<const Function *, std::list<const Token *> >::const_iterator found = virtualFunctionCallsMap.find(&function);
+    if (found != virtualFunctionCallsMap.end())
+        return found->second;
 
-                const Function * callFunction = tok->function();
-                if (!callFunction ||
-                    function.nestedIn != callFunction->nestedIn ||
-                    (tok->previous() && tok->previous()->str() == "."))
-                    continue;
+    virtualFunctionCallsMap[&function] = std::list<const Token *>();
+    std::list<const Token *> & virtualFunctionCalls = virtualFunctionCallsMap.find(&function)->second;
 
-                if (tok->previous() &&
-                    tok->previous()->str() == "(") {
-                    const Token * prev = tok->previous();
-                    if (prev->previous() &&
-                        (_settings->library.ignorefunction(tok->str())
-                         || _settings->library.ignorefunction(prev->previous()->str())))
-                        continue;
-                }
+    if (!function.hasBody())
+        return virtualFunctionCalls;
 
-                if (isPureWithoutBody(*callFunction)) {
-                    pureFunctionCalls.push_back(tok);
-                    continue;
-                }
-
-                const std::list<const Token *> & pureFunctionCallsOfTok = callsPureVirtualFunction(*callFunction,
-                        callsPureVirtualFunctionMap);
-                if (!pureFunctionCallsOfTok.empty()) {
-                    pureFunctionCalls.push_back(tok);
-                    continue;
-                }
+    for (const Token *tok = function.arg->link(); tok != function.functionScope->classEnd; tok = tok->next()) {
+        if (function.type != Function::eConstructor &&
+            function.type != Function::eCopyConstructor &&
+            function.type != Function::eMoveConstructor &&
+            function.type != Function::eDestructor) {
+            if ((Token::simpleMatch(tok, ") {") && tok->link() && Token::Match(tok->link()->previous(), "if|switch")) ||
+                Token::simpleMatch(tok, "else {")) {
+                // Assume pure virtual function call is prevented by "if|else|switch" condition
+                tok = tok->linkAt(1);
+                continue;
             }
         }
+        if (tok->scope()->type == Scope::eLambda)
+            tok = tok->scope()->classEnd->next();
+
+        const Function * callFunction = tok->function();
+        if (!callFunction ||
+            function.nestedIn != callFunction->nestedIn ||
+            (tok->previous() && tok->previous()->str() == "."))
+            continue;
+
+        if (tok->previous() &&
+            tok->previous()->str() == "(") {
+            const Token * prev = tok->previous();
+            if (prev->previous() &&
+                (_settings->library.ignorefunction(tok->str())
+                 || _settings->library.ignorefunction(prev->previous()->str())))
+                continue;
+        }
+
+        if (callFunction->isVirtual()) {
+            virtualFunctionCalls.push_back(tok);
+            continue;
+        }
+
+        const std::list<const Token *> & virtualFunctionCallsOfTok = getVirtualFunctionCalls(*callFunction, virtualFunctionCallsMap);
+        if (!virtualFunctionCallsOfTok.empty())
+            virtualFunctionCalls.push_back(tok);
     }
-    return pureFunctionCalls;
+    return virtualFunctionCalls;
 }
 
-void CheckClass::getFirstPureVirtualFunctionCallStack(
-    std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap,
-    const Token & pureCall,
-    std::list<const Token *> & pureFuncStack)
+void CheckClass::getFirstVirtualFunctionCallStack(
+    std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap,
+    const Token * callToken,
+    std::list<const Token *> & callstack)
 {
-    if (isPureWithoutBody(*pureCall.function())) {
-        pureFuncStack.push_back(pureCall.function()->token);
+    const Function *callFunction = callToken->function();
+    if (callFunction->isVirtual() && (!callFunction->isPure() || !callFunction->hasBody())) {
+        callstack.push_back(callFunction->token);
         return;
     }
-    std::map<const Function *, std::list<const Token *> >::const_iterator found = callsPureVirtualFunctionMap.find(pureCall.function());
-    if (found == callsPureVirtualFunctionMap.end() ||
-        found->second.empty()) {
-        pureFuncStack.clear();
+    std::map<const Function *, std::list<const Token *> >::const_iterator found = virtualFunctionCallsMap.find(callFunction);
+    if (found == virtualFunctionCallsMap.end() || found->second.empty()) {
+        callstack.clear();
         return;
     }
-    const Token & firstPureCall = **found->second.begin();
-    pureFuncStack.push_back(&firstPureCall);
-    getFirstPureVirtualFunctionCallStack(callsPureVirtualFunctionMap, firstPureCall, pureFuncStack);
+    const Token * firstCall = *found->second.begin();
+    callstack.push_back(firstCall);
+    getFirstVirtualFunctionCallStack(virtualFunctionCallsMap, firstCall, callstack);
 }
 
-void CheckClass::callsPureVirtualFunctionError(
-    const Function & scopeFunction,
+void CheckClass::virtualFunctionCallInConstructorError(
+    const Function * scopeFunction,
+    const std::list<const Token *> & tokStack,
+    const std::string &funcname)
+{
+    const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
+
+    ErrorPath errorPath;
+    for (std::list<const Token *>::const_iterator it = tokStack.begin(); it != tokStack.end(); ++it)
+        errorPath.push_back(ErrorPathItem(*it, "Calling " + (*it)->str()));
+    if (!errorPath.empty())
+        errorPath.back().second = funcname + " is a virtual method";
+
+    reportError(errorPath, Severity::warning, "virtualCallInConstructor", "Call of virtual function '" + funcname + "' in " + scopeFunctionTypeName + ".\n"
+                "Call of pure virtual function '" + funcname + "' in " + scopeFunctionTypeName + ". Dynamic binding is not used.", CWE(0U), false);
+}
+
+void CheckClass::pureVirtualFunctionCallInConstructorError(
+    const Function * scopeFunction,
     const std::list<const Token *> & tokStack,
     const std::string &purefuncname)
 {
-    const char * scopeFunctionTypeName = getFunctionTypeName(scopeFunction.type);
+    const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
+
+    ErrorPath errorPath;
+    for (std::list<const Token *>::const_iterator it = tokStack.begin(); it != tokStack.end(); ++it)
+        errorPath.push_back(ErrorPathItem(*it, "Calling " + (*it)->str()));
+    if (!errorPath.empty())
+        errorPath.back().second = purefuncname + " is a pure virtual method without body";
+
     reportError(tokStack, Severity::warning, "pureVirtualCall", "Call of pure virtual function '" + purefuncname + "' in " + scopeFunctionTypeName + ".\n"
                 "Call of pure virtual function '" + purefuncname + "' in " + scopeFunctionTypeName + ". The call will fail during runtime.", CWE(0U), false);
 }

@@ -85,7 +85,7 @@ public:
         checkClass.virtualDestructor();
         checkClass.checkConst();
         checkClass.copyconstructors();
-        checkClass.checkPureVirtualFunctionCall();
+        checkClass.checkVirtualFunctionCallInConstructor();
 
         checkClass.checkDuplInheritedMembers();
         checkClass.checkExplicitConstructors();
@@ -143,8 +143,8 @@ public:
 
     void copyconstructors();
 
-    /** @brief call of pure virtual function */
-    void checkPureVirtualFunctionCall();
+    /** @brief call of virtual function in constructor/destructor */
+    void checkVirtualFunctionCallInConstructor();
 
     /** @brief Check duplicated inherited members */
     void checkDuplInheritedMembers();
@@ -184,7 +184,8 @@ private:
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
     void suggestInitializationList(const Token *tok, const std::string& varname);
     void selfInitializationError(const Token* tok, const std::string& varname);
-    void callsPureVirtualFunctionError(const Function & scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
+    void pureVirtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
+    void virtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &funcname);
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
     void unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName);
@@ -219,6 +220,8 @@ private:
         c.duplInheritedMembersError(nullptr, nullptr, "class", "class", "variable", false, false);
         c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
         c.unsafeClassDivZeroError(nullptr, "Class", "dostuff", "x");
+        c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
+        c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
     }
 
     static std::string myName() {
@@ -317,22 +320,22 @@ private:
     /**
      * @brief gives a list of tokens where pure virtual functions are called directly or indirectly
      * @param function function to be checked
-     * @param callsPureVirtualFunctionMap map of results for already checked functions
+     * @param virtualFunctionCallsMap map of results for already checked functions
      * @return list of tokens where pure virtual functions are called
      */
-    const std::list<const Token *> & callsPureVirtualFunction(
+    const std::list<const Token *> & getVirtualFunctionCalls(
         const Function & function,
-        std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap);
+        std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap);
 
     /**
      * @brief looks for the first pure virtual function call stack
-     * @param callsPureVirtualFunctionMap map of results obtained from callsPureVirtualFunction
-     * @param pureCall token where pure virtual function is called directly or indirectly
+     * @param virtualFunctionCallsMap map of results obtained from getVirtualFunctionCalls
+     * @param callToken token where pure virtual function is called directly or indirectly
      * @param[in,out] pureFuncStack list to append the stack
      */
-    void getFirstPureVirtualFunctionCallStack(
-        std::map<const Function *, std::list<const Token *> > & callsPureVirtualFunctionMap,
-        const Token & pureCall,
+    void getFirstVirtualFunctionCallStack(
+        std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap,
+        const Token *callToken,
         std::list<const Token *> & pureFuncStack);
 
     static bool canNotCopy(const Scope *scope);
