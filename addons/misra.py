@@ -1219,12 +1219,13 @@ def generateTable():
     for i1 in range(1,23):
         for i2 in range(1,numberOfRules[i1]+1):
             num = str(i1) + '.' + str(i2)
+            s = ''
             if num in addon:
-                print(num + ' X (Addon)')
+                s = 'X (Addon)'
             elif num in cppcheck:
-                print(num + ' X (Cppcheck)')
-            else:
-                print(num)
+                s = 'X (Cppcheck)'
+            num = num + '       '
+            print(num[:8] + s)
     sys.exit(1)
 
 for arg in sys.argv[1:]:
