@@ -220,7 +220,7 @@ void CheckClass::constructors()
 
                     if (classNameUsed)
                         operatorEqVarError(func->token, scope->className, var->name(), inconclusive);
-                } else if (func->access != Private) {
+                } else if (func->access != Private || _settings->standards.cpp >= Standards::CPP11) {
                     const Scope *varType = var->typeScope();
                     if (!varType || varType->type != Scope::eUnion) {
                         if (func->type == Function::eConstructor &&
@@ -230,9 +230,9 @@ void CheckClass::constructors()
                             func->functionScope->classStart->link() == func->functionScope->classStart->next()) {
                             // don't warn about user defined default constructor when there are other constructors
                             if (printInconclusive)
-                                uninitVarError(func->token, scope->className, var->name(), true);
+                                uninitVarError(func->token, func->access == Private, scope->className, var->name(), true);
                         } else
-                            uninitVarError(func->token, scope->className, var->name(), inconclusive);
+                            uninitVarError(func->token, func->access == Private, scope->className, var->name(), inconclusive);
                     }
                 }
             }
@@ -829,9 +829,9 @@ void CheckClass::noExplicitConstructorError(const Token *tok, const std::string 
     reportError(tok, Severity::style, "noExplicitConstructor", message + "\n" + verbose, CWE398, false);
 }
 
-void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
+void CheckClass::uninitVarError(const Token *tok, bool isprivate, const std::string &classname, const std::string &varname, bool inconclusive)
 {
-    reportError(tok, Severity::warning, "uninitMemberVar", "Member variable '" + classname + "::" + varname + "' is not initialized in the constructor.", CWE398, inconclusive);
+    reportError(tok, Severity::warning, isprivate ? "uninitMemberVarPrivate" : "uninitMemberVar", "Member variable '" + classname + "::" + varname + "' is not initialized in the constructor.", CWE398, inconclusive);
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)

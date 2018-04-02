@@ -1092,6 +1092,18 @@ private:
 
 
     void initvar_private_constructor() {
+        settings.standards.cpp = Standards::CPP11;
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    int var;\n"
+              "    Fred();\n"
+              "};\n"
+              "Fred::Fred()\n"
+              "{ }");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::var' is not initialized in the constructor.\n", errout.str());
+
+        settings.standards.cpp = Standards::CPP03;
         check("class Fred\n"
               "{\n"
               "private:\n"
@@ -2897,15 +2909,22 @@ private:
               "  char data[42];\n"
               "};");
         ASSERT_EQUALS("", errout.str());
-
     }
 
     void privateCtor1() {
+        settings.standards.cpp = Standards::CPP03;
         check("class Foo {\n"
               "    int foo;\n"
               "    Foo() { }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        settings.standards.cpp = Standards::CPP11;
+        check("class Foo {\n"
+              "    int foo;\n"
+              "    Foo() { }\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Foo::foo' is not initialized in the constructor.\n", errout.str());
     }
 
     void privateCtor2() {
