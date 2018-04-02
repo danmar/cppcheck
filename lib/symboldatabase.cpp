@@ -1210,7 +1210,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         for (std::list<Function>::const_iterator func = it->functionList.begin(); func != it->functionList.end(); ++func) {
             // look for initializer list
-            if (func->type == Function::eConstructor && func->functionScope && func->functionScope->functionOf && func->arg) {
+            if (func->isConstructor() && func->functionScope && func->functionScope->functionOf && func->arg) {
                 const Token * tok = func->arg->link()->next();
                 if (tok->str() == "noexcept") {
                     const Token * closingParenTok = tok->linkAt(1);

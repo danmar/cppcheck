@@ -6199,6 +6199,15 @@ private:
                                      "    }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Bar {\n" // #8466
+                                     "public:\n"
+                                     "    explicit Bar(const Bar &bar) : Bar{bar.s} {}\n"
+                                     "    explicit Bar(const char s) : s{s} {}\n"
+                                     "private:\n"
+                                     "    char s;\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
