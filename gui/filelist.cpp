@@ -17,7 +17,6 @@
  */
 
 #include <QString>
-#include <QStringList>
 #include <QDir>
 #include <QFileInfo>
 #include "filelist.h"
