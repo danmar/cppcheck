@@ -6338,6 +6338,13 @@ private:
                                  "A::A()\n"
                                  "{f();}\n");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of virtual function 'f' in constructor.\n", errout.str());
+
+        checkVirtualFunctionCall("class A\n"
+                                 "{\n"
+                                 "    A() { A::f(); }\n"
+                                 "    virtual void f() {}\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCall() {

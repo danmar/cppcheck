@@ -2271,6 +2271,8 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
         }
 
         if (callFunction->isVirtual()) {
+            if (!callFunction->isPure() && Token::simpleMatch(tok->previous(), "::"))
+                continue;
             virtualFunctionCalls.push_back(tok);
             continue;
         }
