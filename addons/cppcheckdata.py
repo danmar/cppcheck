@@ -324,7 +324,7 @@ class Function:
         self.argument = {}
         self.argumentId = {}
         for arg in element:
-            self.argumentId[arg.get('nr')] = arg.get('id')
+            self.argumentId[int(arg.get('nr'))] = arg.get('variable')
 
     def setId(self, IdMap):
         for argnr, argid in self.argumentId.items():
