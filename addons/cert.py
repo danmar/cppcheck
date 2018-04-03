@@ -70,6 +70,51 @@ def isCast(expr):
         return False
     return True
 
+# Get function arguments
+def getArgumentsRecursive(tok, arguments):
+    if tok is None:
+        return
+    if tok.str == ',':
+        getArgumentsRecursive(tok.astOperand1, arguments)
+        getArgumentsRecursive(tok.astOperand2, arguments)
+    else:
+        arguments.append(tok);
+
+def getArguments(ftok):
+    arguments = []
+    getArgumentsRecursive(ftok.astOperand2, arguments)
+    return arguments
+
+# EXP05-C
+# do not attempt to cast away const
+def exp05(data):
+    for token in data.tokenlist:
+        if isCast(token):
+            # C-style cast
+            if not token.valueType:
+                continue
+            if not token.astOperand1.valueType:
+	            continue
+            const1 = token.valueType.constness
+            const2 = token.astOperand1.valueType.constness
+            if (const1 % 2) < (const2 % 2):
+                reportError(token, 'style', "Attempt to cast away const", 'cert-EXP05-C')
+
+        elif token.str == '(' and token.astOperand1 and token.astOperand2 and token.astOperand1.function:
+            function = token.astOperand1.function
+            arguments = getArguments(token)
+            for argnr, argvar in function.argument.items():
+                if argnr < 1 or argnr > len(arguments):
+                    continue
+                argtok = arguments[argnr - 1]
+                if not argtok.valueType:
+                    continue
+                const1 = argvar.isConst
+                const2 = arguments[argnr - 1].valueType.constness
+                if (const1 % 2) < (const2 % 2):
+                    reportError(token, 'style', "Attempt to cast away const", 'cert-EXP05-C')
+
+
 # EXP42-C
 # do not compare padding data
 def exp42(data):
@@ -178,6 +223,7 @@ for arg in sys.argv[1:]:
     for cfg in data.configurations:
         if len(data.configurations) > 1:
             print('Checking ' + arg + ', config "' + cfg.name + '"...')
+        exp05(cfg)
         exp42(cfg)
         exp46(cfg)
         int31(cfg, data.platform)

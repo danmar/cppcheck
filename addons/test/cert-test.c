@@ -12,6 +12,18 @@ struct PackedStruct {
     short b;
 };
 
+void dostuff(int *data);
+
+void exp05()
+{
+    const int x = 42;
+    int *p;
+    p = (int *)&x; // cert-EXP05-C
+
+    const int data[] = {1,2,3,4};
+    dostuff(data); // cert-EXP05-C
+}
+
 void exp42()
 {
     struct S s1 = {1,2};
