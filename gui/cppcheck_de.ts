@@ -678,7 +678,7 @@ Parameter: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="295"/>
         <source>Reanal&amp;yze all files</source>
-        <translation>Alle Dateien erneut anal&amp;yseieren</translation>
+        <translation>Alle Dateien erneut anal&amp;ysieren</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="360"/>
