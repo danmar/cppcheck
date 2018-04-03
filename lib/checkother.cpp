@@ -1973,7 +1973,9 @@ void CheckOther::checkDuplicateExpression()
                     }
                 }
             } else if (styleEnabled && tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
-                if (isSameExpression(_tokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), _settings->library, false))
+                if (!tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()))
+                    duplicateValueTernaryError(tok);
+                else if (isSameExpression(_tokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), _settings->library, false))
                     duplicateExpressionTernaryError(tok);
             }
         }
@@ -1994,6 +1996,13 @@ void CheckOther::duplicateExpressionTernaryError(const Token *tok)
 {
     reportError(tok, Severity::style, "duplicateExpressionTernary", "Same expression in both branches of ternary operator.\n"
                 "Finding the same expression in both branches of ternary operator is suspicious as "
+                "the same code is executed regardless of the condition.", CWE398, false);
+}
+
+void CheckOther::duplicateValueTernaryError(const Token *tok)
+{
+    reportError(tok, Severity::style, "duplicateValueTernary", "Same value in both branches of ternary operator.\n"
+                "Finding the same value in both branches of ternary operator is suspicious as "
                 "the same code is executed regardless of the condition.", CWE398, false);
 }
 
