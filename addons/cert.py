@@ -88,13 +88,18 @@ def getArguments(ftok):
 # EXP05-C
 # do not attempt to cast away const
 def exp05(data):
+    # TODO Reuse code in misra rule 11.8
     for token in data.tokenlist:
         if isCast(token):
             # C-style cast
             if not token.valueType:
                 continue
             if not token.astOperand1.valueType:
-	            continue
+                continue
+            if token.valueType.pointer == 0:
+                continue
+            if token.astOperand1.valueType.pointer == 0:
+                continue
             const1 = token.valueType.constness
             const2 = token.astOperand1.valueType.constness
             if (const1 % 2) < (const2 % 2):
@@ -106,8 +111,12 @@ def exp05(data):
             for argnr, argvar in function.argument.items():
                 if argnr < 1 or argnr > len(arguments):
                     continue
+                if not argvar.isPointer:
+                    continue
                 argtok = arguments[argnr - 1]
                 if not argtok.valueType:
+                    continue
+                if argtok.valueType.pointer == 0:
                     continue
                 const1 = argvar.isConst
                 const2 = arguments[argnr - 1].valueType.constness

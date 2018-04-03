@@ -17,6 +17,8 @@ void dostuff(int *data);
 void exp05()
 {
     const int x = 42;
+    int y = (int)x;
+
     int *p;
     p = (int *)&x; // cert-EXP05-C
 
