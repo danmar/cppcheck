@@ -6208,6 +6208,15 @@ private:
                                      "    char s;\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("unsigned bar(std::string);\n" // #8291
+                                     "class Foo {\n"
+                                     "public:\n"
+                                     "    int a_, b_;\n"
+                                     "    Foo(int a, int b) : a_(a), b_(b) {}\n"
+                                     "    Foo(int a, const std::string& b) : Foo(a, bar(b)) {}\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
