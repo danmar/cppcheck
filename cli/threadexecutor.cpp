@@ -373,8 +373,9 @@ unsigned int ThreadExecutor::check()
     _processedSize = 0;
     _totalFiles = _files.size() + _settings.project.fileSettings.size();
     _totalFileSize = 0;
-    for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
-        _totalFileSize += i->second;
+    for (const auto& _file : _files)
+    {
+        _totalFileSize += _file.second;
     }
 
     InitializeCriticalSection(&_fileSync);
@@ -382,14 +383,14 @@ unsigned int ThreadExecutor::check()
     InitializeCriticalSection(&_reportSync);
 
     for (unsigned int i = 0; i < _settings.jobs; ++i) {
-        threadHandles[i] = (HANDLE)_beginthreadex(nullptr, 0, threadProc, this, 0, nullptr);
+        threadHandles[i] = reinterpret_cast<HANDLE>(_beginthreadex(nullptr, 0, threadProc, this, 0, nullptr));
         if (!threadHandles[i]) {
             std::cerr << "#### .\nThreadExecutor::check error, errno :" << errno << std::endl;
             exit(EXIT_FAILURE);
         }
     }
 
-    DWORD waitResult = WaitForMultipleObjects(_settings.jobs, threadHandles, TRUE, INFINITE);
+  const DWORD waitResult = WaitForMultipleObjects(_settings.jobs, threadHandles, TRUE, INFINITE);
     if (waitResult != WAIT_OBJECT_0) {
         if (waitResult == WAIT_FAILED) {
             std::cerr << "#### .\nThreadExecutor::check wait failed, result: " << waitResult << " error: " << GetLastError() << std::endl;
@@ -454,7 +455,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
 
             LeaveCriticalSection(&threadExecutor->_fileSync);
 
-            std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->_fileContents.find(file);
+            const std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->_fileContents.find(file);
             if (fileContent != threadExecutor->_fileContents.end()) {
                 // File content was given as a string
                 result += fileChecker.check(file, fileContent->second);
@@ -514,7 +515,7 @@ void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType ms
 
     // Alert only about unique errors
     bool reportError = false;
-    std::string errmsg = msg.toString(_settings.verbose);
+    const std::string errmsg = msg.toString(_settings.verbose);
 
     EnterCriticalSection(&_errorSync);
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end()) {

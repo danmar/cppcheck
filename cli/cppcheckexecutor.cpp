@@ -96,7 +96,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     if (success) {
         if (parser.GetShowVersion() && !parser.GetShowErrorMessages()) {
-            const char * const extraVersion = cppcheck->extraVersion();
+            const char * const extraVersion = CppCheck::extraVersion();
             if (*extraVersion != 0)
                 std::cout << "Cppcheck " << cppcheck->version() << " ("
                           << extraVersion << ')' << std::endl;
@@ -121,8 +121,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     // Check that all include paths exist
     {
-        std::list<std::string>::iterator iter;
-        for (iter = settings.includePaths.begin();
+      for (std::list<std::string>::iterator iter = settings.includePaths.begin();
              iter != settings.includePaths.end();
             ) {
             const std::string path(Path::toNativeSeparators(*iter));
@@ -140,8 +139,9 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     // Output a warning for the user if he tries to exclude headers
     bool warn = false;
     const std::vector<std::string>& ignored = parser.GetIgnoredPaths();
-    for (std::vector<std::string>::const_iterator i = ignored.cbegin(); i != ignored.cend(); ++i) {
-        if (Path::isHeader(*i)) {
+    for (const auto& i : ignored)
+    {
+        if (Path::isHeader(i)) {
             warn = true;
             break;
         }
@@ -162,8 +162,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
         PathMatch matcher(ignored, caseSensitive);
-        for (std::vector<std::string>::const_iterator iter = pathnames.begin(); iter != pathnames.end(); ++iter)
-            FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter), _settings->library.markupExtensions(), matcher);
+        for (const auto& pathname : pathnames)
+          FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(pathname), _settings->library.markupExtensions(), matcher);
     }
 
     if (_files.empty() && settings.project.fileSettings.empty()) {
@@ -587,7 +587,7 @@ namespace {
                           TRUE
                       );
         CONTEXT             context = *(ex->ContextRecord);
-        STACKFRAME64        stack= {0};
+        STACKFRAME64        stack= {{0}};
 #ifdef _M_IX86
         stack.AddrPC.Offset    = context.Eip;
         stack.AddrPC.Mode      = AddrModeFlat;
@@ -832,7 +832,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                                   "std.cfg should be available in " + cfgfolder + " or the CFGDIR "
                                   "should be configured.");
 #endif
-        ErrorLogger::ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", false);
+        const ErrorLogger::ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", false);
         reportErr(errmsg);
         return EXIT_FAILURE;
     }
@@ -926,8 +926,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         cppcheck.tooManyConfigsError("",0U);
 
         if (settings.isEnabled(Settings::MISSING_INCLUDE) && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {
-            const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
-            ErrorLogger::ErrorMessage msg(callStack,
+            const std::list<ErrorMessage::FileLocation> callStack;
+            const ErrorMessage msg(callStack,
                                           emptyString,
                                           Severity::information,
                                           "Cppcheck cannot find all the include files (use --check-config for details)\n"

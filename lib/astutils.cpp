@@ -561,7 +561,7 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
                 return true;
         }
 
-        const Token *parent = tok->astParent();
+        const Token *parent = tok ? tok->astParent() : nullptr;
         while (Token::Match(parent, ".|::"))
             parent = parent->astParent();
         if (parent && parent->tokType() == Token::eIncDecOp)
