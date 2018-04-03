@@ -523,13 +523,27 @@ void CheckNullPointer::arithmetic()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!tok->astOperand2() || tok->str() != "-")
+            if (!Token::Match(tok, "-|+|+=|-=|++|--"))
                 continue;
-            // pointer subtraction
-            if (!tok->valueType() || !tok->valueType()->pointer)
+            const Token *pointerOperand;
+            if (tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer != 0)
+                pointerOperand = tok->astOperand1();
+            else if (tok->astOperand2() && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer != 0)
+                pointerOperand = tok->astOperand2();
+            else
                 continue;
-            // Can LHS be NULL?
-            const ValueFlow::Value *value = tok->astOperand1()->getValue(0);
+            MathLib::bigint checkValue = 0;
+            // When using an assign op, the value read from
+            // valueflow has already been updated, so instead of
+            // checking for zero we check that the value is equal
+            // to RHS
+            if (tok->astOperand2() && tok->astOperand2()->hasKnownIntValue()) {
+                if (tok->str() == "-=") 
+                    checkValue -= tok->astOperand2()->values().front().intvalue;
+                else if (tok->str() == "+=") 
+                    checkValue = tok->astOperand2()->values().front().intvalue;
+            }
+            const ValueFlow::Value *value = pointerOperand->getValue(checkValue);
             if (!value)
                 continue;
             if (!_settings->inconclusive && value->isInconclusive())
@@ -544,10 +558,17 @@ void CheckNullPointer::arithmetic()
 void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value *value)
 {
     std::string errmsg;
-    if (value && value->condition)
-        errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is overflow in pointer subtraction.";
-    else
-        errmsg = "Overflow in pointer arithmetic, NULL pointer is subtracted.";
+    if (tok && tok->str().front() == '-') {
+        if (value && value->condition)
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is overflow in pointer subtraction.";
+        else
+            errmsg = "Overflow in pointer arithmetic, NULL pointer is subtracted.";
+    } else {
+        if (value && value->condition)
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is pointer arithmetic with NULL pointer.";
+        else
+            errmsg = "Pointer arithmetic with NULL pointer.";
+    }
 
     std::list<const Token*> callstack;
     callstack.push_back(tok);
