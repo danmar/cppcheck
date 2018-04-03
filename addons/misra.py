@@ -302,6 +302,23 @@ def findInclude(directives, header):
             return directive
     return None
 
+
+# Get function arguments
+def getArgumentsRecursive(tok, arguments):
+    if tok is None:
+        return
+    if tok.str == ',':
+        getArgumentsRecursive(tok.astOperand1, arguments)
+        getArgumentsRecursive(tok.astOperand2, arguments)
+    else:
+        arguments.append(tok);
+
+def getArguments(ftok):
+    arguments = []
+    getArgumentsRecursive(ftok.astOperand2, arguments)
+    return arguments
+
+
 def isHexDigit(c):
     return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f') or (c >= 'A' and c >= 'F')
 
@@ -582,15 +599,41 @@ def misra_11_7(data):
 
 
 def misra_11_8(data):
+    # TODO: reuse code in CERT-EXP05
     for token in data.tokenlist:
-        if not isCast(token):
-            continue
-        if not token.valueType or not token.astOperand1.valueType:
-            continue
-        if token.valueType.pointer == 0 or token.valueType.pointer == 0:
-            continue
-        if token.valueType.constness == 0 and token.astOperand1.valueType.constness > 0:
-            reportError(token, 11, 8)
+        if isCast(token):
+            # C-style cast
+            if not token.valueType:
+                continue
+            if not token.astOperand1.valueType:
+                continue
+            if token.valueType.pointer == 0:
+                continue
+            if token.astOperand1.valueType.pointer == 0:
+                continue
+            const1 = token.valueType.constness
+            const2 = token.astOperand1.valueType.constness
+            if (const1 % 2) < (const2 % 2):
+                reportError(token, 11, 8)
+
+        elif token.str == '(' and token.astOperand1 and token.astOperand2 and token.astOperand1.function:
+            # Function call
+            function = token.astOperand1.function
+            arguments = getArguments(token)
+            for argnr, argvar in function.argument.items():
+                if argnr < 1 or argnr > len(arguments):
+                    continue
+                if not argvar.isPointer:
+                    continue
+                argtok = arguments[argnr - 1]
+                if not argtok.valueType:
+                    continue
+                if argtok.valueType.pointer == 0:
+                    continue
+                const1 = argvar.isConst
+                const2 = arguments[argnr - 1].valueType.constness
+                if (const1 % 2) < (const2 % 2):
+                    reportError(token, 11, 8)
 
 
 def misra_11_9(data):
