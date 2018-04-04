@@ -318,7 +318,7 @@ private:
         c.accessMovedError(nullptr, "v", nullptr, false);
         c.funcArgNamesDifferent("function", 1, nullptr, nullptr);
 
-        std::vector<const Token *> nullvec;
+        const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
     }
 

@@ -61,7 +61,7 @@ MathLib::value::value(const std::string &s) :
     // read suffix
     if (s.size() >= 2U) {
         for (std::size_t i = s.size() - 1U; i > 0U; --i) {
-            char c = s[i];
+            const char c = s[i];
             if (c == 'u' || c == 'U')
                 isUnsigned = true;
             else if (c == 'l' || c == 'L') {

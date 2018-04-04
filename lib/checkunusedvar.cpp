@@ -529,7 +529,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
             }
 
             // check if variable is local
-            unsigned int varid2 = tok->varId();
+            const unsigned int varid2 = tok->varId();
             const Variables::VariableUsage* var2 = variables.find(varid2);
 
             if (var2) { // local variable (alias or read it)

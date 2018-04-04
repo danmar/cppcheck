@@ -1729,9 +1729,9 @@ static bool valueFlowForward(Token * const               startToken,
 
             Token * const start = tok2->linkAt(1)->next();
             Token * const end   = start->link();
-            bool varusage = (indentlevel >= 0 && constValue && number_of_if == 0U) ?
-                            isVariableChanged(start,end,varid,var->isGlobal(),settings) :
-                            (nullptr != Token::findmatch(start, "%varid%", end, varid));
+            const bool varusage = (indentlevel >= 0 && constValue && number_of_if == 0U) ?
+                                  isVariableChanged(start,end,varid,var->isGlobal(),settings) :
+                                  (nullptr != Token::findmatch(start, "%varid%", end, varid));
             if (!read) {
                 read = bool(nullptr != Token::findmatch(tok2, "%varid% !!=", end, varid));
             }
@@ -3131,7 +3131,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
 
             // Error path..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
-                std::string nr = MathLib::toString(argnr + 1) + getOrdinalText(argnr + 1);
+                const std::string nr = MathLib::toString(argnr + 1) + getOrdinalText(argnr + 1);
 
                 it->errorPath.push_back(ErrorPathItem(argtok,
                                                       "Calling function '" +

@@ -62,7 +62,7 @@ void CheckIO::checkCoutCerrMisusage()
         return;
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::size_t functions = symbolDatabase->functionScopes.size();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
@@ -127,7 +127,7 @@ void CheckIO::checkFileUsage()
     std::map<unsigned int, Filepointer> filepointers;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::size_t varListSize = symbolDatabase->getVariableListSize();
+    const std::size_t varListSize = symbolDatabase->getVariableListSize();
     for (std::size_t i = 1; i < varListSize; ++i) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
         if (!var || !var->declarationId() || var->isArray() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
@@ -144,7 +144,7 @@ void CheckIO::checkFileUsage()
         }
     }
 
-    std::size_t functions = symbolDatabase->functionScopes.size();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t j = 0; j < functions; ++j) {
         const Scope * scope = symbolDatabase->functionScopes[j];
         unsigned int indent = 0;
@@ -387,7 +387,7 @@ void CheckIO::invalidScanf()
         return;
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::size_t functions = symbolDatabase->functionScopes.size();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t j = 0; j < functions; ++j) {
         const Scope * scope = symbolDatabase->functionScopes[j];
         for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
@@ -430,7 +430,7 @@ void CheckIO::invalidScanf()
 
 void CheckIO::invalidScanfError(const Token *tok)
 {
-    std::string fname = (tok ? tok->str() : std::string("scanf"));
+    const std::string fname = (tok ? tok->str() : std::string("scanf"));
     reportError(tok, Severity::warning,
                 "invalidscanf", fname + "() without field width limits can crash with huge input data.\n" +
                 fname + "() without field width limits can crash with huge input data. Add a field width "
@@ -502,7 +502,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const bool isWindows = _settings->isWindowsPlatform();
 
-    std::size_t functions = symbolDatabase->functionScopes.size();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t j = 0; j < functions; ++j) {
         const Scope * scope = symbolDatabase->functionScopes[j];
         for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
@@ -682,7 +682,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 specifier += *i;
                                 if (argInfo.variableInfo && argInfo.isKnownType() && argInfo.variableInfo->isArray() && (argInfo.variableInfo->dimensions().size() == 1) && argInfo.variableInfo->dimensions()[0].known) {
                                     if (!width.empty()) {
-                                        int numWidth = std::atoi(width.c_str());
+                                        const int numWidth = std::atoi(width.c_str());
                                         if (numWidth != (argInfo.variableInfo->dimension(0) - 1))
                                             invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, 's');
                                     }
@@ -705,7 +705,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 'c':
                                 if (argInfo.variableInfo && argInfo.isKnownType() && argInfo.variableInfo->isArray() && (argInfo.variableInfo->dimensions().size() == 1) && argInfo.variableInfo->dimensions()[0].known) {
                                     if (!width.empty()) {
-                                        int numWidth = std::atoi(width.c_str());
+                                        const int numWidth = std::atoi(width.c_str());
                                         if (numWidth > argInfo.variableInfo->dimension(0))
                                             invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, 'c');
                                     }

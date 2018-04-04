@@ -513,7 +513,7 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDecla
                 break;
             // Implementation => add to "templates"
             else if (tok2->str() == "{") {
-                int namepos = getTemplateNamePosition(parmEnd);
+                const int namepos = getTemplateNamePosition(parmEnd);
                 if (namepos > 0)
                     declarations.push_back(TokenAndName(tok, getScopeName(scopeInfo), getFullName(scopeInfo, parmEnd->strAt(namepos))));
                 break;
@@ -1207,9 +1207,9 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 
         // Logical operations
         else if (Token::Match(op, "%oror%|&&")) {
-            bool op1 = !MathLib::isNullValue(tok->str());
-            bool op2 = !MathLib::isNullValue(tok->strAt(2));
-            bool result = (op->str() == "||") ? (op1 || op2) : (op1 && op2);
+            const bool op1 = !MathLib::isNullValue(tok->str());
+            const bool op2 = !MathLib::isNullValue(tok->strAt(2));
+            const bool result = (op->str() == "||") ? (op1 || op2) : (op1 && op2);
             tok->str(result ? "1" : "0");
         }
 
@@ -1279,7 +1279,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                 Token::Match(tok->previous(), "[(=,] 1 %oror%")) {
                 unsigned int par = 0;
                 const Token *tok2 = tok;
-                bool andAnd = (tok->next()->str() == "&&");
+                const bool andAnd = (tok->next()->str() == "&&");
                 for (; tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "(" || tok2->str() == "[")
                         ++par;
@@ -1510,7 +1510,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     if (namepos == -1) {
         // debug message that we bail out..
         if (printDebug && errorlogger) {
-            std::list<const Token *> callstack(1, tok);
+            const std::list<const Token *> callstack(1, tok);
             errorlogger->reportErr(ErrorLogger::ErrorMessage(callstack, &tokenlist, Severity::debug, "debug", "simplifyTemplates: bailing out", false));
         }
         return false;

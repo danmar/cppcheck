@@ -94,7 +94,7 @@ void Timer::Stop()
         const std::clock_t diff = end - _start;
 
         if (_showtimeMode == SHOWTIME_FILE) {
-            double sec = (double)diff / CLOCKS_PER_SEC;
+            const double sec = (double)diff / CLOCKS_PER_SEC;
             std::cout << _str << ": " << sec << "s" << std::endl;
         } else {
             if (_timerResults)

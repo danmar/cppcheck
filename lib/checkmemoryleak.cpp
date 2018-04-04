@@ -148,7 +148,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp|socket (")) {
                 // simple sanity check of function parameters..
                 // TODO: Make such check for all these functions
-                unsigned int num = countParameters(tok2);
+                const unsigned int num = countParameters(tok2);
                 if (tok2->str() == "open" && num != 2 && num != 3)
                     return No;
 
@@ -353,7 +353,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
     unsigned int varid = 0;
     for (const Token *tok2 = func->functionScope->classStart; tok2 != func->functionScope->classEnd; tok2 = tok2->next()) {
         if (tok2->str() == "return") {
-            AllocType allocType = getAllocationType(tok2->next(), 0, callstack);
+            const AllocType allocType = getAllocationType(tok2->next(), 0, callstack);
             if (allocType != No)
                 return allocType;
 
@@ -2014,7 +2014,7 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
 // Check for memory leaks for a function variable.
 void CheckMemoryLeakInFunction::checkScope(const Token *startTok, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz)
 {
-    std::list<const Token *> callstack;
+    const std::list<const Token *> callstack;
 
     AllocType alloctype = No;
     AllocType dealloctype = No;
