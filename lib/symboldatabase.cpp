@@ -4224,7 +4224,33 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 while (argtok->astParent() && argtok->astParent() != tok->next() && argtok->astParent()->str() != ",") {
                     argtok = argtok->astParent();
                 }
-                if (argtok && argtok->valueType() && !funcarg->isArrayOrPointer()) { // TODO: Pointers
+                if (argtok && argtok->valueType() && argtok->previous()->function() && argtok->previous()->function()->retDef) {
+                    const ValueType* valuetype = argtok->valueType();
+                    const Function* argfunc = argtok->previous()->function();
+                    const bool isArrayOrPointer = valuetype->pointer;
+                    const bool ptrequals = isArrayOrPointer == funcarg->isArrayOrPointer();
+                    const bool constEquals = !isArrayOrPointer || ((argfunc->retDef->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
+                    if (ptrequals && constEquals &&
+                        argfunc->retDef->str() == funcarg->typeStartToken()->str() &&
+                        argfunc->retDef->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
+                        argfunc->retDef->isLong() == funcarg->typeStartToken()->isLong()) {
+                        same++;
+                    } else if (isArrayOrPointer) {
+                        if (ptrequals && constEquals && funcarg->typeStartToken()->str() == "void")
+                            fallback1++;
+                        else if (constEquals && funcarg->isStlStringType() && Token::Match(argfunc->retDef, "char|wchar_t"))
+                            fallback2++;
+                    } else if (ptrequals) {
+                        const bool takesInt = Token::Match(funcarg->typeStartToken(), "char|short|int|long");
+                        const bool takesFloat = Token::Match(funcarg->typeStartToken(), "float|double");
+                        const bool passesInt = Token::Match(argfunc->retDef, "char|short|int|long");
+                        const bool passesFloat = Token::Match(argfunc->retDef, "float|double");
+                        if ((takesInt && passesInt) || (takesFloat && passesFloat))
+                            fallback1++;
+                        else if ((takesInt && passesFloat) || (takesFloat && passesInt))
+                            fallback2++;
+                    }
+                } else if (argtok && argtok->valueType() && !funcarg->isArrayOrPointer()) { // TODO: Pointers
                     if (argtok->valueType()->type == ValueType::BOOL) {
                         if (funcarg->typeStartToken()->str() == "bool")
                             same++;
