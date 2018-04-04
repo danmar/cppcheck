@@ -121,8 +121,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     // Check that all include paths exist
     {
-        std::list<std::string>::iterator iter;
-        for (iter = settings.includePaths.begin();
+        for (std::list<std::string>::iterator iter = settings.includePaths.begin();
              iter != settings.includePaths.end();
             ) {
             const std::string path(Path::toNativeSeparators(*iter));
@@ -161,7 +160,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #endif
     if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
-        PathMatch matcher(ignored, caseSensitive);
+        const PathMatch matcher(ignored, caseSensitive);
         for (std::vector<std::string>::const_iterator iter = pathnames.begin(); iter != pathnames.end(); ++iter)
             FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter), _settings->library.markupExtensions(), matcher);
     }
@@ -195,9 +194,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     }
     if (cppCheck.settings().exceptionHandling) {
         return check_wrapper(cppCheck, argc, argv);
-    } else {
-        return check_internal(cppCheck, argc, argv);
     }
+    return check_internal(cppCheck, argc, argv);
 }
 
 void CppCheckExecutor::setSettings(const Settings &settings)
@@ -949,8 +947,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     _settings = nullptr;
     if (returnValue)
         return settings.exitCode;
-    else
-        return 0;
+    return 0;
 }
 
 #ifdef _WIN32

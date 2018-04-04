@@ -229,7 +229,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
-                std::string suppression = argv[i]+11;
+                const std::string suppression = argv[i]+11;
                 const std::string errmsg(_settings->nomsg.addSuppressionLine(suppression));
                 if (!errmsg.empty()) {
                     PrintMessage(errmsg);
@@ -257,14 +257,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 if (argv[i][argv[i][3]=='='?4:17] != 0) {
                     std::string paths = argv[i]+(argv[i][3]=='='?4:17);
                     for (;;) {
-                        std::string::size_type pos = paths.find(';');
+                        const std::string::size_type pos = paths.find(';');
                         if (pos == std::string::npos) {
                             _settings->basePaths.push_back(Path::fromNativeSeparators(paths));
                             break;
-                        } else {
-                            _settings->basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
-                            paths.erase(0, pos + 1);
                         }
+                        _settings->basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
+                        paths.erase(0, pos + 1);
                     }
                 } else {
                     PrintMessage("cppcheck: No paths specified for the '" + std::string(argv[i]) + "' option.");
@@ -291,7 +290,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
             // Define the XML file version (and enable XML output)
             else if (std::strncmp(argv[i], "--xml-version=", 14) == 0) {
-                std::string numberString(argv[i]+14);
+                const std::string numberString(argv[i]+14);
 
                 std::istringstream iss(numberString);
                 if (!(iss >> _settings->xml_version)) {
@@ -339,7 +338,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
             // --error-exitcode=1
             else if (std::strncmp(argv[i], "--error-exitcode=", 17) == 0) {
-                std::string temp = argv[i]+17;
+                const std::string temp = argv[i]+17;
                 std::istringstream iss(temp);
                 if (!(iss >> _settings->exitCode)) {
                     _settings->exitCode = 0;
@@ -698,7 +697,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
             // Specify platform
             else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
-                std::string platform(11+argv[i]);
+                const std::string platform(11+argv[i]);
 
                 if (platform == "win32A")
                     _settings->platform(Settings::Win32A);
