@@ -3870,6 +3870,12 @@ private:
               "    return ((x > y) ? (y + x) : (x + y));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6426
+        check("void foo(bool flag) {\n"
+              "  bar( (flag) ? ~0u : ~0ul);\n"
+              "}");
+        ASSERT_EQUALS("",  errout.str());
     }
 
     void duplicateValueTernary() {
