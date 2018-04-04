@@ -6346,7 +6346,7 @@ private:
                                  "};\n"
                                  "A::A()\n"
                                  "{f();}\n");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of virtual function 'f' in constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Virtual function 'f' is called from constructor 'A()' at line 7.\n", errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  "{\n"

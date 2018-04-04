@@ -2312,12 +2312,30 @@ void CheckClass::virtualFunctionCallInConstructorError(
     const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
 
     ErrorPath errorPath;
+    int lineNumber = 1;
     for (std::list<const Token *>::const_iterator it = tokStack.begin(); it != tokStack.end(); ++it)
         errorPath.push_back(ErrorPathItem(*it, "Calling " + (*it)->str()));
-    if (!errorPath.empty())
+    if (!errorPath.empty()) {
+        lineNumber = errorPath.front().first->linenr();
         errorPath.back().second = funcname + " is a virtual method";
+    }
 
-    reportError(errorPath, Severity::warning, "virtualCallInConstructor", "Call of virtual function '" + funcname + "' in " + scopeFunctionTypeName + ".\n"
+    std::string constructorName;
+    if (scopeFunction) {
+        const Token *endToken = scopeFunction->argDef->link()->next();
+        if (scopeFunction->type == Function::Type::eDestructor)
+            constructorName = "~";
+        for (const Token *tok = scopeFunction->tokenDef; tok != endToken; tok = tok->next()) {
+            if (!constructorName.empty() && Token::Match(tok->previous(), "%name%|%num% %name%|%num%"))
+                constructorName += ' ';
+            constructorName += tok->str();
+            if (tok->str() == ")")
+                break;
+        }
+    }
+
+    reportError(errorPath, Severity::warning, "virtualCallInConstructor",
+                "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + MathLib::toString(lineNumber) + ".\n"
                 "Call of pure virtual function '" + funcname + "' in " + scopeFunctionTypeName + ". Dynamic binding is not used.", CWE(0U), false);
 }
 
