@@ -2025,8 +2025,8 @@ void CheckOther::duplicateAssignExpressionError(const Token *tok1, const Token *
 
     reportError(toks, Severity::style, "duplicateAssignExpression", 
         "Both variables '" + tok1->str() + "' and '" + tok2->str() + "' are assigned the same expression.\n"
-        "Finding two variables that are assigned the same expression is suspicious and might "
-        "indicate a cut and paste or logic error. Please examine this code carefully to "
+        "Finding variables '" + tok1->str() + "' and '" + tok2->str() + "' that are assigned the same expression "
+        "is suspicious and might indicate a cut and paste or logic error. Please examine this code carefully to "
         "determine if it is correct.", CWE398, false);
 }
 
