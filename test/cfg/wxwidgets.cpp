@@ -52,10 +52,16 @@ void nullPointer(void)
     wxLogMessage((char*)NULL);
 }
 
-void ignoredReturnValue(void)
+void ignoredReturnValue(const wxString &s)
 {
     // cppcheck-suppress ignoredReturnValue
     wxGetCwd();
+    // cppcheck-suppress ignoredReturnValue
+    wxAtoi(s);
+    // cppcheck-suppress ignoredReturnValue
+    wxAtol(s);
+    // cppcheck-suppress ignoredReturnValue
+    wxAtof(s);
 }
 
 void invalidFunctionArg(void)
@@ -74,12 +80,19 @@ void uninitvar(void)
     wxLogLevel logLevelUninit;
     char cBufUninit[10];
     char *pcUninit;
+    wxString emptyString;
     // cppcheck-suppress uninitvar
     wxLogGeneric(logLevelUninit, "test");
     // cppcheck-suppress uninitvar
     wxLogMessage(cBufUninit);
     // cppcheck-suppress uninitvar
     wxLogMessage(pcUninit);
+    // cppcheck-suppress uninitvar
+    (void)wxAtoi(emptyString);
+    // cppcheck-suppress uninitvar
+    (void)wxAtol(emptyString);
+    // cppcheck-suppress uninitvar
+    (void)wxAtof(emptyString);
 }
 
 void uninitvar_SetMenuBar(wxFrame * const framePtr, wxMenuBar * const menuBarPtr)
