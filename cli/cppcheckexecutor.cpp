@@ -161,7 +161,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #endif
     if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
-        PathMatch matcher(ignored, caseSensitive);
+        const PathMatch matcher(ignored, caseSensitive);
         for (std::vector<std::string>::const_iterator iter = pathnames.begin(); iter != pathnames.end(); ++iter)
             FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter), _settings->library.markupExtensions(), matcher);
     }
