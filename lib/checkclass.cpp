@@ -2291,7 +2291,7 @@ void CheckClass::getFirstVirtualFunctionCallStack(
 {
     const Function *callFunction = callToken->function();
     if (callFunction->isVirtual() && (!callFunction->isPure() || !callFunction->hasBody())) {
-        callstack.push_back(callFunction->token);
+        callstack.push_back(callFunction->tokenDef);
         return;
     }
     std::map<const Function *, std::list<const Token *> >::const_iterator found = virtualFunctionCallsMap.find(callFunction);
