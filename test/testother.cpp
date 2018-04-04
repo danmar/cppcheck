@@ -3875,7 +3875,7 @@ private:
         check("void foo(bool flag) {\n"
               "  bar( (flag) ? ~0u : ~0ul);\n"
               "}");
-        ASSERT_EQUALS("",  errout.str());
+        ASSERT_EQUALS((_settings.sizeof_int==_settings.sizeof_long)?"[test.cpp:2]: (style) Same value in both branches of ternary operator.\n":"",  errout.str());
     }
 
     void duplicateValueTernary() {
