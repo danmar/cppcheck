@@ -2354,10 +2354,10 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
         const Scope * scope = symboldatabase->functionScopes[i];
         std::set<unsigned> aliased;
         for (Token* tok = const_cast<Token*>(scope->classStart); tok != scope->classEnd; tok = tok->next()) {
-            const Token * vartok = NULL;
-            const Token * numtok = NULL;
-            const Token * lowertok = NULL;
-            const Token * uppertok = NULL;
+            const Token * vartok = nullptr;
+            const Token * numtok = nullptr;
+            const Token * lowertok = nullptr;
+            const Token * uppertok = nullptr;
 
             if (Token::Match(tok, "= & %var% ;"))
                 aliased.insert(tok->tokAt(2)->varId());
