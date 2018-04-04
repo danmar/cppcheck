@@ -4224,7 +4224,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 while (argtok->astParent() && argtok->astParent() != tok->next() && argtok->astParent()->str() != ",") {
                     argtok = argtok->astParent();
                 }
-                if (argtok && argtok->valueType() && argtok->previous()->function()) {
+                if (argtok && argtok->valueType() && argtok->previous()->function() && argtok->previous()->function()->retDef) {
                     const ValueType* valuetype = argtok->valueType();
                     const Function* argfunc = argtok->previous()->function();
                     const bool isArrayOrPointer = valuetype->pointer;
