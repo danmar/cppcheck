@@ -370,13 +370,13 @@ void CheckStl::mismatchingContainers()
                     mismatchingContainersError(argTok);
                 }
             }
-            int ret = _settings->library.returnValueContainer(ftok);
+            const int ret = _settings->library.returnValueContainer(ftok);
             if (ret != -1 && Token::Match(ftok->next()->astParent(), "==|!=")) {
                 const Token *parent = ftok->next()->astParent();
                 const Token *other = (parent->astOperand1() == ftok->next()) ? parent->astOperand2() : parent->astOperand1();
                 const Variable *c = getContainer(other);
                 if (c) {
-                    std::map<const Variable *, unsigned int>::const_iterator it = containerNr.find(c);
+                    const std::map<const Variable *, unsigned int>::const_iterator it = containerNr.find(c);
                     if (it == containerNr.end() || it->second != ret)
                         mismatchingContainersError(other);
                 }
@@ -446,7 +446,7 @@ void CheckStl::stlOutOfBounds()
                 } else if (container->arrayLike_indexOp && Token::Match(tok3, "[ %varid% ]", numId))
                     stlOutOfBoundsError(tok3, tok3->strAt(1), var->name(), false);
                 else if (Token::Match(tok3, ". %name% ( %varid% )", numId)) {
-                    Library::Container::Yield yield = container->getYield(tok3->strAt(1));
+                    const Library::Container::Yield yield = container->getYield(tok3->strAt(1));
                     if (yield == Library::Container::AT_INDEX)
                         stlOutOfBoundsError(tok3, tok3->strAt(3), var->name(), true);
                 }
@@ -1103,7 +1103,7 @@ void CheckStl::string_c_str()
                     string_c_strError(tok);
             } else if (printPerformance && Token::Match(tok, "%name% ( !!)") && c_strFuncParam.find(tok->str()) != c_strFuncParam.end() &&
                        !Token::Match(tok->previous(), "::|.") && tok->varId() == 0 && tok->str() != scope->className) { // calling function. TODO: Add support for member functions
-                std::pair<std::multimap<std::string, unsigned int>::const_iterator, std::multimap<std::string, unsigned int>::const_iterator> range = c_strFuncParam.equal_range(tok->str());
+                const std::pair<std::multimap<std::string, unsigned int>::const_iterator, std::multimap<std::string, unsigned int>::const_iterator> range = c_strFuncParam.equal_range(tok->str());
                 for (std::multimap<std::string, unsigned int>::const_iterator i = range.first; i != range.second; ++i) {
                     if (i->second == 0)
                         continue;
@@ -1283,7 +1283,7 @@ void CheckStl::checkAutoPointer()
                         autoPointerMallocError(tok2->next(), tok3->next()->str());
                     }
                     if (Token::Match(tok3, "( %var%")) {
-                        std::map<unsigned int, const std::string>::const_iterator it = mallocVarId.find(tok3->next()->varId());
+                        const std::map<unsigned int, const std::string>::const_iterator it = mallocVarId.find(tok3->next()->varId());
                         if (it != mallocVarId.cend()) {
                             // pointer on the memory allocated by malloc used in the auto pointer constructor -> error
                             autoPointerMallocError(tok2->next(), it->second);
@@ -1311,20 +1311,20 @@ void CheckStl::checkAutoPointer()
         } else {
             if (Token::Match(tok, "%name% = %var% ;")) {
                 if (printStyle) {
-                    std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->tokAt(2)->varId());
+                    const std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->tokAt(2)->varId());
                     if (iter != autoPtrVarId.end()) {
                         autoPointerError(tok->tokAt(2));
                     }
                 }
             } else if ((Token::Match(tok, "%var% = new %type%") && hasArrayEnd(tok)) ||
                        (Token::Match(tok, "%var% . reset ( new %type%") && hasArrayEndParen(tok))) {
-                std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
+                const std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
                 if (iter != autoPtrVarId.end()) {
                     autoPointerArrayError(tok);
                 }
             } else if (Token::Match(tok, "%var% = %name% (") && malloc && _settings->library.alloc(tok->tokAt(2), -1) == malloc) {
                 // C library function like 'malloc' used together with auto pointer -> error
-                std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
+                const std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
                 if (iter != autoPtrVarId.end()) {
                     autoPointerMallocError(tok, tok->strAt(2));
                 } else if (tok->varId()) {
@@ -1333,7 +1333,7 @@ void CheckStl::checkAutoPointer()
                 }
             } else if (Token::Match(tok, "%var% . reset ( %name% (") && malloc && _settings->library.alloc(tok->tokAt(4), -1) == malloc) {
                 // C library function like 'malloc' used when resetting auto pointer -> error
-                std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
+                const std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
                 if (iter != autoPtrVarId.end()) {
                     autoPointerMallocError(tok, tok->strAt(4));
                 }
@@ -1565,7 +1565,7 @@ void CheckStl::readingEmptyStlContainer_parseUsage(const Token* tok, const Libra
 
         const Token* parent = tok->tokAt(3)->astParent();
         const Library::Container::Yield yield = container->getYield(tok->strAt(2));
-        bool yieldsIterator = (yield == Library::Container::ITERATOR || yield == Library::Container::START_ITERATOR || yield == Library::Container::END_ITERATOR);
+        const bool yieldsIterator = (yield == Library::Container::ITERATOR || yield == Library::Container::START_ITERATOR || yield == Library::Container::END_ITERATOR);
         if (yield != Library::Container::NO_YIELD &&
             (!parent || Token::Match(parent, "%cop%|*") || parent->isAssignmentOp() || !yieldsIterator)) { // These functions read from the container
             if (!noerror && (!yieldsIterator || !parent || !parent->isAssignmentOp()))

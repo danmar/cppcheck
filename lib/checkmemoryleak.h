@@ -297,7 +297,7 @@ private:
         c.deallocDeallocError(nullptr, "varname");
         c.deallocuseError(nullptr, "varname");
         c.mismatchSizeError(nullptr, "sz");
-        std::list<const Token *> callstack;
+        const std::list<const Token *> callstack;
         c.mismatchAllocDealloc(callstack, "varname");
         c.memleakUponReallocFailureError(nullptr, "varname");
     }

@@ -562,7 +562,7 @@ void CheckOther::checkRedundantAssignment()
                         membervars[startToken->varId()].insert(startToken->tokAt(2)->varId());
                 }
 
-                std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
+                const std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
                 if (eq && Token::Match(startToken, "[;{}]")) { // Assignment
                     if (it != varAssignments.end()) {
                         const Token *oldeq = nullptr;
@@ -810,8 +810,8 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             else if (Token::Match(tok2->previous(), ";|{|}|: %var% %assign% %num% ;") &&
                      (tok2->strAt(1) == "|=" || tok2->strAt(1) == "&=") &&
                      Token::Match(tok2->next()->astOperand2(), "%num%")) {
-                std::string bitOp = tok2->strAt(1)[0] + tok2->strAt(2);
-                std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
+                const std::string bitOp = tok2->strAt(1)[0] + tok2->strAt(2);
+                const std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
@@ -835,8 +835,8 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             //    case 4: b = b | 1;
             else if (Token::Match(tok2->previous(), ";|{|}|: %var% = %name% %or%|& %num% ;") &&
                      tok2->varId() == tok2->tokAt(2)->varId()) {
-                std::string bitOp = tok2->strAt(3) + tok2->strAt(4);
-                std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
+                const std::string bitOp = tok2->strAt(3) + tok2->strAt(4);
+                const std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
@@ -1661,7 +1661,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
 
     std::ostringstream errmsg;
     if (value->condition) {
-        unsigned int line = tok ? tok->linenr() : 0;
+        const unsigned int line = tok ? tok->linenr() : 0;
         errmsg << ValueFlow::eitherTheConditionIsRedundant(value->condition)
                << " or there is division by zero at line " << line << ".";
     } else
@@ -1779,7 +1779,7 @@ void CheckOther::checkDuplicateBranch()
                 continue;
 
             // save else branch code
-            std::string branch2 = scope->classEnd->tokAt(3)->stringifyList(scope->classEnd->linkAt(2));
+            const std::string branch2 = scope->classEnd->tokAt(3)->stringifyList(scope->classEnd->linkAt(2));
 
             // check for duplicates
             if (branch1 == branch2)
@@ -2656,7 +2656,7 @@ void CheckOther::checkAccessOfMovedVariable()
                 else
                     inconclusive = true;
             } else {
-                bool isVariableChanged = isVariableChangedByFunctionCall(tok, _settings, &inconclusive);
+                const bool isVariableChanged = isVariableChangedByFunctionCall(tok, _settings, &inconclusive);
                 accessOfMoved = !isVariableChanged;
                 if (inconclusive) {
                     accessOfMoved = !isMovedParameterAllowedForInconclusiveFunction(tok);

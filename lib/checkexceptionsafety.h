@@ -128,7 +128,7 @@ private:
 
     /** Missing exception specification */
     void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname) {
-        std::string str1(tok1 ? tok1->str() : "foo");
+        const std::string str1(tok1 ? tok1->str() : "foo");
         const std::list<const Token*> locationList = make_container< std::list<const Token*> > () << tok1 << tok2;
         reportError(locationList, Severity::style, "unhandledExceptionSpecification",
                     "Unhandled exception specification when calling function " + str1 + "().\n"

@@ -76,7 +76,7 @@ void AnalyzerInformation::close()
 static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned long long checksum, std::list<ErrorLogger::ErrorMessage> *errors)
 {
     tinyxml2::XMLDocument doc;
-    tinyxml2::XMLError error = doc.LoadFile(analyzerInfoFile.c_str());
+    const tinyxml2::XMLError error = doc.LoadFile(analyzerInfoFile.c_str());
     if (error != tinyxml2::XML_SUCCESS)
         return false;
 

@@ -270,7 +270,7 @@ static bool isUndefined(const std::string &cfg, const std::set<std::string> &und
         const std::string::size_type pos2 = cfg.find(';',pos1);
         const std::string def = (pos2 == std::string::npos) ? cfg.substr(pos1) : cfg.substr(pos1, pos2 - pos1);
 
-        std::string::size_type eq = def.find('=');
+        const std::string::size_type eq = def.find('=');
         if (eq == std::string::npos && undefined.find(def) != undefined.end())
             return true;
         if (eq != std::string::npos && undefined.find(def.substr(0,eq)) != undefined.end() && def.substr(eq) != "=0")
@@ -521,7 +521,7 @@ static simplecpp::DUI createDUI(const Settings &_settings, const std::string &cf
         if (it->compare(0,8,"#define ")!=0)
             continue;
         std::string s = it->substr(8);
-        std::string::size_type pos = s.find_first_of(" (");
+        const std::string::size_type pos = s.find_first_of(" (");
         if (pos == std::string::npos) {
             dui.defines.push_back(s);
             continue;
@@ -606,7 +606,7 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     simplecpp::TokenList tokens2(files);
     simplecpp::preprocess(tokens2, tokens1, files, tokenlists, dui, &outputList, &macroUsage);
 
-    bool showerror = (!_settings.userDefines.empty() && !_settings.force);
+    const bool showerror = (!_settings.userDefines.empty() && !_settings.force);
     reportOutput(outputList, showerror);
     if (hasErrors(outputList))
         return simplecpp::TokenList(files);
@@ -698,7 +698,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        ErrorLogger::ErrorMessage::FileLocation loc(filename, linenr);
+        const ErrorLogger::ErrorMessage::FileLocation loc(filename, linenr);
         locationList.push_back(loc);
     }
     _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
@@ -776,9 +776,9 @@ void Preprocessor::validateCfgError(const std::string &file, const unsigned int 
 {
     const std::string id = "ConfigurationNotChecked";
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    ErrorLogger::ErrorMessage::FileLocation loc(file, line);
+    const ErrorLogger::ErrorMessage::FileLocation loc(file, line);
     locationList.push_back(loc);
-    ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
+    const ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
     _errorLogger->reportInfo(errmsg);
 }
 

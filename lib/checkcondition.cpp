@@ -1335,12 +1335,11 @@ void CheckCondition::checkInvalidTestForOverflow()
 
 void CheckCondition::invalidTestForOverflow(const Token* tok, bool result)
 {
-    std::string errmsg;
-    errmsg = "Invalid test for overflow '" +
-             (tok ? tok->expressionString() : std::string("x + u < x")) +
-             "'. Condition is always " +
-             std::string(result ? "true" : "false") +
-             " unless there is overflow, and overflow is undefined behaviour.";
+    const std::string errmsg = "Invalid test for overflow '" +
+                               (tok ? tok->expressionString() : std::string("x + u < x")) +
+                               "'. Condition is always " +
+                               std::string(result ? "true" : "false") +
+                               " unless there is overflow, and overflow is undefined behaviour.";
     reportError(tok, Severity::warning, "invalidTestForOverflow", errmsg, (result ? CWE571 : CWE570), false);
 }
 
