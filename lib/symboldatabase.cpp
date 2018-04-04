@@ -851,42 +851,43 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
 void SymbolDatabase::createSymbolDatabaseClassInfo()
 {
-    if (!_tokenizer->isC()) {
-        // fill in using info
-        for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-            for (std::list<Scope::UsingInfo>::iterator i = it->usingList.begin(); i != it->usingList.end(); ++i) {
-                // only find if not already found
-                if (i->scope == nullptr) {
-                    // check scope for match
-                    Scope *scope = findScope(i->start->tokAt(2), &(*it));
-                    if (scope) {
-                        // set found scope
-                        i->scope = scope;
-                        break;
-                    }
+    if (_tokenizer->isC())
+        return;
+
+    // fill in using info
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+        for (std::list<Scope::UsingInfo>::iterator i = it->usingList.begin(); i != it->usingList.end(); ++i) {
+            // only find if not already found
+            if (i->scope == nullptr) {
+                // check scope for match
+                Scope *scope = findScope(i->start->tokAt(2), &(*it));
+                if (scope) {
+                    // set found scope
+                    i->scope = scope;
+                    break;
                 }
             }
         }
+    }
 
-        // fill in base class info
-        for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
-            // finish filling in base class info
-            for (unsigned int i = 0; i < it->derivedFrom.size(); ++i) {
-                const Type* found = findType(it->derivedFrom[i].nameTok, it->enclosingScope);
-                if (found && found->findDependency(&(*it))) {
-                    // circular dependency
-                    //_tokenizer->syntaxError(nullptr);
-                } else {
-                    it->derivedFrom[i].type = found;
-                }
+    // fill in base class info
+    for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
+        // finish filling in base class info
+        for (unsigned int i = 0; i < it->derivedFrom.size(); ++i) {
+            const Type* found = findType(it->derivedFrom[i].nameTok, it->enclosingScope);
+            if (found && found->findDependency(&(*it))) {
+                // circular dependency
+                //_tokenizer->syntaxError(nullptr);
+            } else {
+                it->derivedFrom[i].type = found;
             }
         }
+    }
 
-        // fill in friend info
-        for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
-            for (std::list<Type::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
-                i->type = findType(i->nameStart, it->enclosingScope);
-            }
+    // fill in friend info
+    for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
+        for (std::list<Type::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
+            i->type = findType(i->nameStart, it->enclosingScope);
         }
     }
 }
