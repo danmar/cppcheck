@@ -261,10 +261,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                         if (pos == std::string::npos) {
                             _settings->basePaths.push_back(Path::fromNativeSeparators(paths));
                             break;
-                        } else {
-                            _settings->basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
-                            paths.erase(0, pos + 1);
                         }
+                        _settings->basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
+                        paths.erase(0, pos + 1);
                     }
                 } else {
                     PrintMessage("cppcheck: No paths specified for the '" + std::string(argv[i]) + "' option.");
