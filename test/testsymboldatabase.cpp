@@ -305,6 +305,7 @@ private:
         TEST_CASE(findFunction16);
         TEST_CASE(findFunction17);
         TEST_CASE(findFunction18);
+        TEST_CASE(findFunction19);
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -3936,6 +3937,82 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "f ( 1.f ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
+    }
+
+    void findFunction19() {
+        GET_SYMBOL_DB("class Fred {\n"
+                      "    enum E1 { e1 };\n"
+                      "    enum class E2 : unsigned short { e2 };\n"
+                      "    bool               get(bool x) { return x; }\n"
+                      "    char               get(char x) { return x; }\n"
+                      "    short              get(short x) { return x; }\n"
+                      "    int                get(int x) { return x; }\n"
+                      "    long               get(long x) { return x; }\n"
+                      "    long long          get(long long x) { return x; }\n"
+                      "    unsigned char      get(unsigned char x) { return x; }\n"
+                      "    unsigned short     get(unsigned short x) { return x; }\n"
+                      "    unsigned int       get(unsigned int x) { return x; }\n"
+                      "    unsigned long      get(unsigned long x) { return x; }\n"
+                      "    unsigned long long get(unsigned long long x) { return x; }\n"
+                      "    E1                 get(E1 x) { return x; }\n"
+                      "    E2                 get(E2 x) { return x; }\n"
+                      "    void foo() {\n"
+                      "        bool               v1  = true;   v1  = get(get(v1));\n"
+                      "        char               v2  = '1';    v2  = get(get(v2));\n"
+                      "        short              v3  = 1;      v3  = get(get(v3));\n"
+                      "        int                v4  = 1;      v4  = get(get(v4));\n"
+                      "        long               v5  = 1;      v5  = get(get(v5));\n"
+                      "        long long          v6  = 1;      v6  = get(get(v6));\n"
+                      "        unsigned char      v7  = '1';    v7  = get(get(v7));\n"
+                      "        unsigned short     v8  = 1;      v8  = get(get(v8));\n"
+                      "        unsigned int       v9  = 1;      v9  = get(get(v9));\n"
+                      "        unsigned long      v10 = 1;      v10 = get(get(v10));\n"
+                      "        unsigned long long v11 = 1;      v11 = get(get(v11));\n"
+                      "        E1                 v12 = e1;     v12 = get(get(v12));\n"
+                      "        E2                 v13 = E2::e2; v13 = get(get(v13));\n"
+                      "    }\n"
+                      "};");
+
+        ASSERT_EQUALS("", errout.str());
+
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v1 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v2 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v3 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 6);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v4 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v5 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v6 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 9);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v7 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 10);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v8 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 11);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v9 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 12);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v10 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 13);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v11 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 14);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v12 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 15);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v13 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 16);
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
