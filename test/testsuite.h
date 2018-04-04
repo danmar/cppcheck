@@ -39,7 +39,6 @@ private:
     static std::set<std::string> missingLibs;
 
 protected:
-    std::string classname;
     std::string testToRun;
     bool quiet_tests;
 
@@ -73,6 +72,7 @@ public:
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
     void run(const std::string &str);
+    const std::string classname;
 
     explicit TestFixture(const char * const _name);
     virtual ~TestFixture() { }

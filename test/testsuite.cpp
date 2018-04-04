@@ -23,7 +23,6 @@
 
 #include <cstdio>
 #include <iostream>
-#include <list>
 #include <string>
 
 std::ostringstream errout;
@@ -33,21 +32,27 @@ std::ostringstream output;
  * TestRegistry
  **/
 
-class TestRegistry {
-private:
-    std::list<TestFixture *> _tests;
+struct CompareFixtures {
+    bool operator()(const TestFixture* lhs, const TestFixture* rhs) {
+        return lhs->classname < rhs->classname;
+    }
+};
 
+typedef std::set<TestFixture*, CompareFixtures> TestSet;
+class TestRegistry {
+    TestSet _tests;
 public:
+
     static TestRegistry &theInstance() {
         static TestRegistry testreg;
         return testreg;
     }
 
     void addTest(TestFixture *t) {
-        _tests.push_back(t);
+        _tests.insert(t);
     }
 
-    const std::list<TestFixture *> &tests() const {
+    const TestSet &tests() const {
         return _tests;
     }
 };
@@ -68,8 +73,8 @@ std::size_t TestFixture::succeeded_todos_counter = 0;
 std::set<std::string> TestFixture::missingLibs;
 
 TestFixture::TestFixture(const char * const _name)
-    :classname(_name)
-    ,quiet_tests(false)
+    :quiet_tests(false),
+     classname(_name)
 {
     TestRegistry::theInstance().addTest(this);
 }
@@ -287,9 +292,9 @@ std::size_t TestFixture::runTests(const options& args)
     countTests = 0;
     errmsg.str("");
 
-    const std::list<TestFixture *> &tests = TestRegistry::theInstance().tests();
+    const TestSet &tests = TestRegistry::theInstance().tests();
 
-    for (std::list<TestFixture *>::const_iterator it = tests.begin(); it != tests.end(); ++it) {
+    for (TestSet::const_iterator it = tests.begin(); it != tests.end(); ++it) {
         if (classname.empty() || (*it)->classname == classname) {
             (*it)->processOptions(args);
             (*it)->run(testname);
