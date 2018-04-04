@@ -1653,7 +1653,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="619"/>
         <source>Copy line nr</source>
-        <translation>Zeilennnummer kopieren</translation>
+        <translation>Zeilennummer kopieren</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="620"/>
@@ -1893,7 +1893,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="scratchpad.ui" line="20"/>
         <source>Copy or write some C/C++ code here:</source>
-        <translation>Kopieren oder schreiben Sie C/C++-Code hierher</translation>
+        <translation>Kopieren oder schreiben Sie C/C++-Code hierher:</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="37"/>
@@ -1971,7 +1971,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="settings.ui" line="156"/>
         <source>Show statistics on check completion</source>
-        <translation>Zeige Statistiken nach Prüfungsabschluss.</translation>
+        <translation>Zeige Statistiken nach Prüfungsabschluss</translation>
     </message>
     <message>
         <location filename="settings.ui" line="176"/>
