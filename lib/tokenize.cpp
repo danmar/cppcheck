@@ -631,7 +631,6 @@ void Tokenizer::simplifyTypedef()
         Token *tokOffset = tok->next();
         bool function = false;
         bool functionPtr = false;
-        bool functionRef = false;
         bool functionRetFuncPtr = false;
         bool functionPtrRetFuncPtr = false;
         bool ptrToArray = false;
@@ -1325,7 +1324,7 @@ void Tokenizer::simplifyTypedef()
                         }
                     }
 
-                    else if (functionPtr || functionRef || function) {
+                    else if (functionPtr || function) {
                         // don't add parentheses around function names because it
                         // confuses other simplifications
                         bool needParen = true;
@@ -1349,9 +1348,6 @@ void Tokenizer::simplifyTypedef()
                         }
                         if (functionPtr) {
                             tok2->insertToken("*");
-                            tok2 = tok2->next();
-                        } else if (functionRef) {
-                            tok2->insertToken("&");
                             tok2 = tok2->next();
                         }
 
@@ -2240,7 +2236,7 @@ void Tokenizer::simplifyCaseRange()
 {
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "case %num% . . . %num% :")) {
-            MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
+            const MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
             MathLib::bigint end = MathLib::toLongNumber(tok->strAt(5));
             end = std::min(start + 50, end); // Simplify it 50 times at maximum
             if (start < end) {
@@ -5386,8 +5382,7 @@ void Tokenizer::simplifyFunctionParameters()
             if (argumentNames.size() != argumentNames2.size()) {
                 //move back 'tok1' to the last ';'
                 tok1 = tok1->previous();
-                std::map<std::string, Token *>::iterator it;
-                for (it = argumentNames.begin(); it != argumentNames.end(); ++it) {
+                for (std::map<std::string, Token *>::iterator it = argumentNames.begin(); it != argumentNames.end(); ++it) {
                     if (argumentNames2.find(it->first) == argumentNames2.end()) {
                         //add the missing parameter argument declaration
                         tok1->insertToken(";");
@@ -9946,11 +9941,10 @@ void Tokenizer::printUnknownTypes() const
     }
 
     if (!unknowns.empty()) {
-        std::multimap<std::string, const Token *>::const_iterator it;
         std::string last;
         size_t count = 0;
 
-        for (it = unknowns.begin(); it != unknowns.end(); ++it) {
+        for (std::multimap<std::string, const Token *>::const_iterator it = unknowns.begin(); it != unknowns.end(); ++it) {
             // skip types is std namespace because they are not interesting
             if (it->first.find("std::") != 0) {
                 if (it->first != last) {
