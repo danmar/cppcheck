@@ -2024,7 +2024,7 @@ void CheckOther::duplicateAssignExpressionError(const Token *tok1, const Token *
     const std::list<const Token *> toks = make_container< std::list<const Token *> >() << tok2 << tok1;
 
     reportError(toks, Severity::style, "duplicateAssignExpression", 
-        "Both variables '" + tok1->str() + "' and '" + tok2->str() + "' are assigned the same expression.\n"
+        "Same expression used in consecutive assignments of '" + tok1->str() + "' and '" + tok2->str() + "'.\n"
         "Finding variables '" + tok1->str() + "' and '" + tok2->str() + "' that are assigned the same expression "
         "is suspicious and might indicate a cut and paste or logic error. Please examine this code carefully to "
         "determine if it is correct.", CWE398, false);

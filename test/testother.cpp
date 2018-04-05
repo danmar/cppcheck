@@ -3892,7 +3892,7 @@ private:
               "    int i = f();\n"
               "    int j = f();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("struct Foo { int f() const; };\n"
               "void test() {\n"
@@ -3900,41 +3900,41 @@ private:
               "    int i = f.f();\n"
               "    int j = f.f();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("int f() __attribute__((pure));\n"
               "void test() {\n"
               "    int i = 1 + f();\n"
               "    int j = 1 + f();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("int f() __attribute__((pure));\n"
               "void test() {\n"
               "    int i = f() + f();\n"
               "    int j = f() + f();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("int f(int) __attribute__((pure));\n"
               "void test() {\n"
               "    int i = f(0);\n"
               "    int j = f(0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("void test(int * p) {\n"
               "    int i = *p;\n"
               "    int j = *p;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("struct A { int x; };"
               "void test(A a) {\n"
               "    int i = a.x;\n"
               "    int j = a.x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Both variables 'i' and 'j' are assigned the same expression.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("void test() {\n"
               "    int i = 0;\n"
