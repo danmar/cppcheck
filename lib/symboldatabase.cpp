@@ -3991,6 +3991,21 @@ static void checkVariableCallMatch(const Variable* callarg, const Variable* func
     }
 }
 
+static bool valueTypeMatch(const ValueType * valuetype, const Token * type)
+{
+    return ((((type->str() == "bool" && valuetype->type == ValueType::BOOL) ||
+              (type->str() == "char" && valuetype->type == ValueType::CHAR) ||
+              (type->str() == "short" && valuetype->type == ValueType::SHORT) ||
+              (type->str() == "int" && valuetype->type == ValueType::INT) ||
+              ((type->str() == "long" && type->isLong()) && valuetype->type == ValueType::LONGLONG) ||
+              (type->str() == "long" && valuetype->type == ValueType::LONG) ||
+              (type->str() == "float" && valuetype->type == ValueType::FLOAT) ||
+              ((type->str() == "double" && type->isLong()) && valuetype->type == ValueType::LONGDOUBLE) ||
+              (type->str() == "double" && valuetype->type == ValueType::DOUBLE)) &&
+             (type->isUnsigned() == (valuetype->sign == ValueType::UNSIGNED))) ||
+            (valuetype->isEnum() && type->isEnumType() && valuetype->typeScope->className == type->str()));
+}
+
 const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 {
     // make sure this is a function call
@@ -4224,48 +4239,29 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 while (argtok->astParent() && argtok->astParent() != tok->next() && argtok->astParent()->str() != ",") {
                     argtok = argtok->astParent();
                 }
-                if (argtok && argtok->valueType() && argtok->previous()->function() && argtok->previous()->function()->retDef) {
+                if (argtok && argtok->valueType()) {
                     const ValueType* valuetype = argtok->valueType();
-                    const Function* argfunc = argtok->previous()->function();
                     const bool isArrayOrPointer = valuetype->pointer;
                     const bool ptrequals = isArrayOrPointer == funcarg->isArrayOrPointer();
-                    const bool constEquals = !isArrayOrPointer || ((argfunc->retDef->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
-                    if (ptrequals && constEquals &&
-                        argfunc->retDef->str() == funcarg->typeStartToken()->str() &&
-                        argfunc->retDef->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
-                        argfunc->retDef->isLong() == funcarg->typeStartToken()->isLong()) {
+                    const bool constEquals = !isArrayOrPointer ||
+                                             ((valuetype->constness > 0) == (funcarg->typeStartToken()->strAt(-1) == "const"));
+                    if (ptrequals && constEquals && valueTypeMatch(valuetype, funcarg->typeStartToken())) {
                         same++;
                     } else if (isArrayOrPointer) {
-                        if (ptrequals && constEquals && funcarg->typeStartToken()->str() == "void")
+                        if (ptrequals && constEquals && valuetype->type == ValueType::VOID)
                             fallback1++;
-                        else if (constEquals && funcarg->isStlStringType() && Token::Match(argfunc->retDef, "char|wchar_t"))
+                        else if (constEquals && funcarg->isStlStringType() && valuetype->type == ValueType::CHAR)
                             fallback2++;
                     } else if (ptrequals) {
-                        const bool takesInt = Token::Match(funcarg->typeStartToken(), "char|short|int|long");
+                        const bool takesInt = Token::Match(funcarg->typeStartToken(), "bool|char|short|int|long") ||
+                                              funcarg->typeStartToken()->isEnumType();
                         const bool takesFloat = Token::Match(funcarg->typeStartToken(), "float|double");
-                        const bool passesInt = Token::Match(argfunc->retDef, "char|short|int|long");
-                        const bool passesFloat = Token::Match(argfunc->retDef, "float|double");
+                        const bool passesInt = valuetype->isIntegral() || valuetype->isEnum();
+                        const bool passesFloat = valuetype->isFloat();
                         if ((takesInt && passesInt) || (takesFloat && passesFloat))
                             fallback1++;
                         else if ((takesInt && passesFloat) || (takesFloat && passesInt))
                             fallback2++;
-                    }
-                } else if (argtok && argtok->valueType() && !funcarg->isArrayOrPointer()) { // TODO: Pointers
-                    if (argtok->valueType()->type == ValueType::BOOL) {
-                        if (funcarg->typeStartToken()->str() == "bool")
-                            same++;
-                        else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
-                            fallback1++;
-                    } else if (argtok->valueType()->isIntegral()) {
-                        if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
-                            same++;
-                        else if (Token::Match(funcarg->typeStartToken(), "float|double"))
-                            fallback1++;
-                    } else if (argtok->valueType()->isFloat()) {
-                        if (Token::Match(funcarg->typeStartToken(), "float|double"))
-                            same++;
-                        else if (Token::Match(funcarg->typeStartToken(), "wchar_t|char|short|int|long"))
-                            fallback1++;
                     }
                 } else {
                     while (Token::Match(argtok, ".|::"))
