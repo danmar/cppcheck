@@ -490,7 +490,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     if (tok->variable() && tok->variable()->nameToken() == tok) {
         // Find constructor..
         const unsigned int argCount = numberOfArguments(tok);
-        const ::Scope *typeScope = tok->variable()->typeScope();
+        const Scope *typeScope = tok->variable()->typeScope();
         if (typeScope) {
             for (std::list<Function>::const_iterator it = typeScope->functionList.begin(); it != typeScope->functionList.end(); ++it) {
                 if (!it->isConstructor() || it->argCount() < argCount)
