@@ -2251,8 +2251,7 @@ void CheckMemoryLeakInClass::check()
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
-        std::list<Variable>::const_iterator var;
-        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+        for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
             if (!var->isStatic() && var->isPointer()) {
                 // allocation but no deallocation of private variables in public function..
                 const Token *tok = var->typeStartToken();
