@@ -1081,6 +1081,10 @@ public:
 
     bool fromLibraryType(const std::string &typestr, const Settings *settings);
 
+    bool isEnum() const {
+        return typeScope && typeScope->type == Scope::eEnum;
+    }
+
     std::string str() const;
     std::string dump() const;
 };
