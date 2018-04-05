@@ -5747,6 +5747,7 @@ private:
 
         // pass allocated memory to function using a smart pointer
         TEST_CASE(smartPointerFunctionParam);
+        TEST_CASE(resourceLeak);
     }
 
     void functionParameter() {
@@ -5952,6 +5953,72 @@ private:
               "void x() {\n"
               "    f(g(124), shared_ptr<char>(new char));\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+    void resourceLeak() {
+        check("void foo() {\n"
+              "  fopen(\"file.txt\", \"r\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'fopen' is not stored.\n", errout.str());
+
+        check("struct Holder {\n"
+              "  Holder(FILE* f) : file(f) {}\n"
+              "  ~Holder() { fclose(file); }\n"
+              "  FILE* file;\n"
+              "};\n"
+              "void foo() {\n"
+              "  Holder h ( fopen(\"file.txt\", \"r\"));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Holder {\n"
+              "  Holder(FILE* f) : file(f) {}\n"
+              "  ~Holder() { fclose(file); }\n"
+              "  FILE* file;\n"
+              "};\n"
+              "void foo() {\n"
+              "  Holder ( fopen(\"file.txt\", \"r\"));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Holder {\n"
+              "  Holder(FILE* f) : file(f) {}\n"
+              "  ~Holder() { fclose(file); }\n"
+              "  FILE* file;\n"
+              "};\n"
+              "void foo() {\n"
+              "  Holder h { fopen(\"file.txt\", \"r\")};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Holder {\n"
+              "  Holder(FILE* f) : file(f) {}\n"
+              "  ~Holder() { fclose(file); }\n"
+              "  FILE* file;\n"
+              "};\n"
+              "void foo() {\n"
+              "  Holder h = fopen(\"file.txt\", \"r\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Holder {\n"
+              "  Holder(FILE* f) : file(f) {}\n"
+              "  ~Holder() { fclose(file); }\n"
+              "  FILE* file;\n"
+              "};\n"
+              "void foo() {\n"
+              "  Holder { fopen(\"file.txt\", \"r\")};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Holder {\n"
+              "  Holder(int i, FILE* f) : file(f) {}\n"
+              "  ~Holder() { fclose(file); }\n"
+              "  FILE* file;\n"
+              "};\n"
+              "void foo() {\n"
+              "  Holder { 0, fopen(\"file.txt\", \"r\")};\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
