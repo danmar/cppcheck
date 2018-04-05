@@ -273,11 +273,15 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             if (isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure))
                 return isDifferentKnownValues(cond1->astOperand1(), cond2->astOperand1());
         }
-        if (Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size")) {
+        if (Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") && 
+            Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size") && 
+            cond1->astOperand1()->astOperand1()->varId() == cond2->astOperand1()->astOperand1()->astOperand1()->varId()) {
             return !(cond2->str() == "==" && cond2->astOperand2()->getValue(0));
         }
 
-        if (Library::isContainerYield(cond2, Library::Container::EMPTY, "empty") && Library::isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size")) {
+        if (Library::isContainerYield(cond2, Library::Container::EMPTY, "empty") && 
+            Library::isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size") &&
+            cond2->astOperand1()->astOperand1()->varId() == cond1->astOperand1()->astOperand1()->astOperand1()->varId()) {
             return !(cond1->str() == "==" && cond1->astOperand2()->getValue(0));
         }
     }
