@@ -199,7 +199,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
             values[key.substr(1, key.size() - 2U)] = value.substr(1, value.size() - 2U);
         }
 
-        else if (Token::Match(tok, "%str : [ %str%") && tok->str() == "\"arguments\"") {
+        else if (Token::Match(tok, "%str% : [ %str%") && tok->str() == "\"arguments\"") {
             std::string cmd;
             tok = tok->tokAt(2);
             while (Token::Match(tok, ",|[ %str%")) {
