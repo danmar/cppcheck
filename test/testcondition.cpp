@@ -1866,6 +1866,15 @@ private:
 
         check("void f1(const std::string &s, bool b) { if(s.empty() || ((s.size() == 1) && b)) {}} ");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f1(const std::string &x, const std::string &y) { if(x.size() > 42) if(y.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(const std::string &x, const std::string &y) { if(y.empty()) if(x.size() > 42) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(const std::string v[10]) { if(v[0].size() > 42) if(v[1].empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void identicalConditionAfterEarlyExit() {

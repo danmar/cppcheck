@@ -1732,6 +1732,40 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 123));
 
+        code = "void f(int x) {\n"
+               "    if (x > 123) {\n"
+               "        a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 124));
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x < 123) {\n"
+               "        a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 122));
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 123));
+
+        // ----
+
+        code = "void f(int x) {\n"
+               "    if (123 < x) {\n"
+               "        a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 124));
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (123 > x) {\n"
+               "        a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 122));
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 123));
+
         // in else
         code = "void f(int x) {\n"
                "    if (x == 123) {}\n"
