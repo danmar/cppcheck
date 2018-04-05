@@ -199,6 +199,17 @@ void ImportProject::importCompileCommands(std::istream &istr)
             values[key.substr(1, key.size() - 2U)] = value.substr(1, value.size() - 2U);
         }
 
+        else if (Token::Match(tok, "%str : [ %str%") && tok->str() == "\"arguments\"") {
+            std::string cmd;
+            tok = tok->tokAt(2);
+            while (Token::Match(tok, ",|[ %str%")) {
+                const std::string &s = tok->next()->str();
+                cmd += ' ' + s.substr(1, s.size() - 2);
+                tok = tok->tokAt(2);
+            }
+            values["command"] = cmd.substr(1);
+        }
+
         else if (tok->str() == "}") {
             if (!values["file"].empty() && !values["command"].empty()) {
                 struct FileSettings fs;
@@ -216,6 +227,10 @@ void ImportProject::importCompileCommands(std::istream &istr)
                     if (pos >= command.size())
                         break;
                     const char F = command[pos++];
+                    if (std::strchr("DUI", F)) {
+                        while (pos < command.size() && command[pos] == ' ')
+                            ++pos;
+                    }
                     std::string fval;
                     while (pos < command.size() && command[pos] != ' ' && command[pos] != '=') {
                         if (command[pos] != '\\')
