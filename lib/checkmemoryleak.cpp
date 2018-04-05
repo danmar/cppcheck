@@ -2701,8 +2701,8 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
         if (!parent) {
             // Check if we are in a C++11 constructor
             const Token * closingBrace = Token::findmatch(tok, "}|;");
-            if(closingBrace->str() == "}" && Token::Match(closingBrace->link()->tokAt(-1), "%name%"))
-                continue; 
+            if (closingBrace->str() == "}" && Token::Match(closingBrace->link()->tokAt(-1), "%name%"))
+                continue;
             returnValueNotUsedError(tok, tok->str());
         } else if (Token::Match(parent, "%comp%|!")) {
             returnValueNotUsedError(tok, tok->str());

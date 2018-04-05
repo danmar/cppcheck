@@ -1324,150 +1324,150 @@ void CheckBufferOverrun::checkStructVariable()
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
         for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-            if (var->isArray()) {
-                // create ArrayInfo from the array variable
-                ArrayInfo arrayInfo(&*var, symbolDatabase);
+            if (!var->isArray())
+                continue;
+            // create ArrayInfo from the array variable
+            ArrayInfo arrayInfo(&*var, symbolDatabase);
 
-                // find every function
-                const std::size_t functions = symbolDatabase->functionScopes.size();
-                for (std::size_t j = 0; j < functions; ++j) {
-                    const Scope * func_scope = symbolDatabase->functionScopes[j];
+            // find every function
+            const std::size_t functions = symbolDatabase->functionScopes.size();
+            for (std::size_t j = 0; j < functions; ++j) {
+                const Scope * func_scope = symbolDatabase->functionScopes[j];
 
-                    // If struct is declared in a function then check
-                    // if scope_func matches
-                    if (scope->nestedIn->type == Scope::eFunction &&
-                        scope->nestedIn != func_scope) {
-                        continue;
+                // If struct is declared in a function then check
+                // if scope_func matches
+                if (scope->nestedIn->type == Scope::eFunction &&
+                    scope->nestedIn != func_scope) {
+                    continue;
+                }
+
+                // check for member variables
+                if (func_scope->functionOf == scope) {
+                    // only check non-empty function
+                    if (func_scope->classStart->next() != func_scope->classEnd) {
+                        // start checking after the {
+                        const Token *tok = func_scope->classStart->next();
+                        checkScope(tok, arrayInfo);
                     }
+                }
 
-                    // check for member variables
-                    if (func_scope->functionOf == scope) {
-                        // only check non-empty function
-                        if (func_scope->classStart->next() != func_scope->classEnd) {
-                            // start checking after the {
-                            const Token *tok = func_scope->classStart->next();
-                            checkScope(tok, arrayInfo);
-                        }
-                    }
+                // skip inner scopes..
+                /** @todo false negatives: handle inner scopes someday */
+                if (scope->nestedIn->isClassOrStruct())
+                    continue;
 
-                    // skip inner scopes..
-                    /** @todo false negatives: handle inner scopes someday */
-                    if (scope->nestedIn->isClassOrStruct())
+                std::vector<const std::string*> varname;
+                varname.push_back(NULL);
+                varname.push_back(&arrayInfo.varname());
+
+                // search the function and it's parameters
+                for (const Token *tok3 = func_scope->classDef; tok3 && tok3 != func_scope->classEnd; tok3 = tok3->next()) {
+                    // search for the class/struct name
+                    if (tok3->str() != scope->className)
                         continue;
 
-                    std::vector<const std::string*> varname;
-                    varname.push_back(NULL);
-                    varname.push_back(&arrayInfo.varname());
+                    // find all array variables
+                    int posOfSemicolon = -1;
 
-                    // search the function and it's parameters
-                    for (const Token *tok3 = func_scope->classDef; tok3 && tok3 != func_scope->classEnd; tok3 = tok3->next()) {
-                        // search for the class/struct name
-                        if (tok3->str() != scope->className)
-                            continue;
+                    // Declare variable: Fred fred1;
+                    if (Token::Match(tok3->next(), "%var% ;"))
+                        varname[0] = &tok3->strAt(1);
 
-                        // find all array variables
-                        int posOfSemicolon = -1;
+                    else if (isArrayOfStruct(tok3,posOfSemicolon))
+                        varname[0] = &tok3->strAt(1);
 
-                        // Declare variable: Fred fred1;
-                        if (Token::Match(tok3->next(), "%var% ;"))
-                            varname[0] = &tok3->strAt(1);
+                    // Declare pointer or reference: Fred *fred1
+                    else if (Token::Match(tok3->next(), "*|& %var% [,);=]"))
+                        varname[0] = &tok3->strAt(2);
 
-                        else if (isArrayOfStruct(tok3,posOfSemicolon))
-                            varname[0] = &tok3->strAt(1);
+                    else
+                        continue;
 
-                        // Declare pointer or reference: Fred *fred1
-                        else if (Token::Match(tok3->next(), "*|& %var% [,);=]"))
-                            varname[0] = &tok3->strAt(2);
+                    // check for variable sized structure
+                    if (scope->type == Scope::eStruct && var->isPublic()) {
+                        // last member of a struct with array size of 0 or 1 could be a variable sized structure
+                        if (var->dimensions().size() == 1 && var->dimension(0) < 2 &&
+                            var->index() == (scope->varlist.size() - 1)) {
+                            // dynamically allocated so could be variable sized structure
+                            if (tok3->next()->str() == "*") {
+                                // check for allocation
+                                if ((Token::Match(tok3->tokAt(3), "; %name% = malloc ( %num% ) ;") ||
+                                     (Token::Match(tok3->tokAt(3), "; %name% = (") &&
+                                      Token::Match(tok3->linkAt(6), ") malloc ( %num% ) ;"))) &&
+                                    (tok3->strAt(4) == tok3->strAt(2))) {
+                                    MathLib::bigint size;
 
-                        else
-                            continue;
-
-                        // check for variable sized structure
-                        if (scope->type == Scope::eStruct && var->isPublic()) {
-                            // last member of a struct with array size of 0 or 1 could be a variable sized structure
-                            if (var->dimensions().size() == 1 && var->dimension(0) < 2 &&
-                                var->index() == (scope->varlist.size() - 1)) {
-                                // dynamically allocated so could be variable sized structure
-                                if (tok3->next()->str() == "*") {
-                                    // check for allocation
-                                    if ((Token::Match(tok3->tokAt(3), "; %name% = malloc ( %num% ) ;") ||
-                                         (Token::Match(tok3->tokAt(3), "; %name% = (") &&
-                                          Token::Match(tok3->linkAt(6), ") malloc ( %num% ) ;"))) &&
-                                        (tok3->strAt(4) == tok3->strAt(2))) {
-                                        MathLib::bigint size;
-
-                                        // find size of allocation
-                                        if (tok3->strAt(3) == "(") // has cast
-                                            size = MathLib::toLongNumber(tok3->linkAt(6)->strAt(3));
-                                        else
-                                            size = MathLib::toLongNumber(tok3->strAt(8));
-
-                                        // We don't calculate the size of a structure even when we know
-                                        // the size of the members.  We just assign a length of 100 for
-                                        // any struct.  If the size is less than 100, we assume the
-                                        // programmer knew the size and specified it rather than using
-                                        // sizeof(struct). If the size is greater than 100, we assume
-                                        // the programmer specified the size as sizeof(struct) + number.
-                                        // Either way, this is just a guess and could be wrong.  The
-                                        // information to make the right decision has been simplified
-                                        // away by the time we get here.
-                                        if (size != 100) { // magic number for size of struct
-                                            // check if a real size was specified and give up
-                                            // malloc(10) rather than malloc(sizeof(struct))
-                                            if (size < 100 || arrayInfo.element_size() == 0)
-                                                continue;
-
-                                            // calculate real array size based on allocated size
-                                            const MathLib::bigint elements = (size - 100) / arrayInfo.element_size();
-                                            arrayInfo.num(0, arrayInfo.num(0) + elements);
-                                        }
-                                    }
-
-                                    // size unknown so assume it is a variable sized structure
+                                    // find size of allocation
+                                    if (tok3->strAt(3) == "(") // has cast
+                                        size = MathLib::toLongNumber(tok3->linkAt(6)->strAt(3));
                                     else
-                                        continue;
+                                        size = MathLib::toLongNumber(tok3->strAt(8));
+
+                                    // We don't calculate the size of a structure even when we know
+                                    // the size of the members.  We just assign a length of 100 for
+                                    // any struct.  If the size is less than 100, we assume the
+                                    // programmer knew the size and specified it rather than using
+                                    // sizeof(struct). If the size is greater than 100, we assume
+                                    // the programmer specified the size as sizeof(struct) + number.
+                                    // Either way, this is just a guess and could be wrong.  The
+                                    // information to make the right decision has been simplified
+                                    // away by the time we get here.
+                                    if (size != 100) { // magic number for size of struct
+                                        // check if a real size was specified and give up
+                                        // malloc(10) rather than malloc(sizeof(struct))
+                                        if (size < 100 || arrayInfo.element_size() == 0)
+                                            continue;
+
+                                        // calculate real array size based on allocated size
+                                        const MathLib::bigint elements = (size - 100) / arrayInfo.element_size();
+                                        arrayInfo.num(0, arrayInfo.num(0) + elements);
+                                    }
                                 }
+
+                                // size unknown so assume it is a variable sized structure
+                                else
+                                    continue;
                             }
                         }
+                    }
 
-                        // Goto end of statement.
-                        const Token *checkTok = nullptr;
-                        while (tok3 && tok3 != func_scope->classEnd) {
-                            // End of statement.
-                            if (tok3->str() == ";") {
-                                checkTok = tok3;
-                                break;
-                            }
-
-                            // End of function declaration..
-                            if (Token::simpleMatch(tok3, ") ;"))
-                                break;
-
-                            // Function implementation..
-                            if (Token::simpleMatch(tok3, ") {")) {
-                                checkTok = tok3->tokAt(2);
-                                break;
-                            }
-
-                            tok3 = tok3->next();
+                    // Goto end of statement.
+                    const Token *checkTok = nullptr;
+                    while (tok3 && tok3 != func_scope->classEnd) {
+                        // End of statement.
+                        if (tok3->str() == ";") {
+                            checkTok = tok3;
+                            break;
                         }
 
-                        if (!tok3)
+                        // End of function declaration..
+                        if (Token::simpleMatch(tok3, ") ;"))
                             break;
 
-                        if (!checkTok)
-                            continue;
+                        // Function implementation..
+                        if (Token::simpleMatch(tok3, ") {")) {
+                            checkTok = tok3->tokAt(2);
+                            break;
+                        }
 
-                        // Check variable usage..
-                        ArrayInfo temp = arrayInfo;
-                        temp.declarationId(0); // do variable lookup by variable and member names rather than varid
-                        std::string varnames; // use class and member name for messages
-                        for (std::size_t k = 0; k < varname.size(); ++k)
-                            varnames += (k == 0 ? "" : ".") + *varname[k];
-
-                        temp.varname(varnames);
-                        checkScope(checkTok, varname, temp);
+                        tok3 = tok3->next();
                     }
+
+                    if (!tok3)
+                        break;
+
+                    if (!checkTok)
+                        continue;
+
+                    // Check variable usage..
+                    ArrayInfo temp = arrayInfo;
+                    temp.declarationId(0); // do variable lookup by variable and member names rather than varid
+                    std::string varnames; // use class and member name for messages
+                    for (std::size_t k = 0; k < varname.size(); ++k)
+                        varnames += (k == 0 ? "" : ".") + *varname[k];
+
+                    temp.varname(varnames);
+                    checkScope(checkTok, varname, temp);
                 }
             }
         }

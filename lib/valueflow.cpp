@@ -2421,11 +2421,11 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 continue;
             }
 
-            if(numtok && !numtok->hasKnownIntValue())
+            if (numtok && !numtok->hasKnownIntValue())
                 continue;
-            if(lowertok && !lowertok->hasKnownIntValue())
+            if (lowertok && !lowertok->hasKnownIntValue())
                 continue;
-            if(uppertok && !uppertok->hasKnownIntValue())
+            if (uppertok && !uppertok->hasKnownIntValue())
                 continue;
 
             const unsigned int varid = vartok->varId();
@@ -2441,13 +2441,13 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
             }
             std::list<ValueFlow::Value> values;
             // TODO: We should add all known values
-            if(numtok) {
+            if (numtok) {
                 values.push_back(ValueFlow::Value(tok, numtok->values().front().intvalue));
-            } else if(lowertok) {
+            } else if (lowertok) {
                 long long v = lowertok->values().front().intvalue;
                 values.push_back(ValueFlow::Value(tok, v+1));
 
-            } else if(uppertok) {
+            } else if (uppertok) {
                 long long v = uppertok->values().front().intvalue;
                 values.push_back(ValueFlow::Value(tok, v-1));
 
