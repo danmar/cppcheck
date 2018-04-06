@@ -4963,6 +4963,14 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         }
     }
 
+    if (vt1 && vt1->containerTypeToken && parent->str() == "[") {
+        ValueType vtParent;
+        if (parsedecl(vt1->containerTypeToken, &vtParent, defaultSignedness, _settings)) {
+            setValueType(parent, vtParent);
+            return;
+        }
+    }
+
     if (!vt1)
         return;
     if (parent->astOperand2() && !vt2)
@@ -5090,8 +5098,15 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = ValueType::Type::CONTAINER;
             valuetype->container = container;
             while (Token::Match(type, "%name%|::|<")) {
-                if (type->str() == "<" && type->link())
+                if (type->str() == "<" && type->link()) {
+                    if (container->type_templateArgNo >= 0) {
+                        const Token *templateType = type->next();
+                        for (int j = 0; templateType && j < container->type_templateArgNo; j++)
+                            templateType = templateType->nextTemplateArgument();
+                        valuetype->containerTypeToken = templateType;
+                    }
                     type = type->link();
+                }
                 type = type->next();
             }
             continue;

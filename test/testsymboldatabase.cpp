@@ -4734,6 +4734,16 @@ private:
             ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new","test.cpp",&sC));
             ASSERT_EQUALS("container(C) *", typeOf("x=(C*)c;","(","test.cpp",&sC));
         }
+        {
+            // Container (vector)
+            Settings set;
+            Library::Container vector;
+            vector.startPattern = "Vector";
+            vector.type_templateArgNo = 0;
+            vector.arrayLike_indexOp = true;
+            set.library.containers["Vector"] = vector;
+            ASSERT_EQUALS("signed int", typeOf("Vector<int> v; v[0]=3;", "[", "test.cpp", &set));
+        }
 
         // new
         ASSERT_EQUALS("C *", typeOf("class C {}; x = new C();", "new"));
