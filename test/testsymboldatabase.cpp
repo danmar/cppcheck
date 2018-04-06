@@ -306,6 +306,7 @@ private:
         TEST_CASE(findFunction17);
         TEST_CASE(findFunction18);
         TEST_CASE(findFunction19);
+        TEST_CASE(findFunction20); // #8280
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -4013,6 +4014,35 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v13 ) ) ;");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 16);
+    }
+
+    void findFunction20() { // # 8280
+        GET_SYMBOL_DB("class Foo {\n"
+                      "public:\n"
+                      "    Foo() : _x(0), _y(0) {}\n"
+                      "    Foo(const Foo& f) {\n"
+                      "        copy(&f);\n"
+                      "    }\n"
+                      "    void copy(const Foo* f) {\n"
+                      "        _x=f->_x;\n"
+                      "        copy(*f);\n"
+                      "    }\n"
+                      "private:\n"
+                      "    void copy(const Foo& f) {\n"
+                      "        _y=f._y;\n"
+                      "    }\n"
+                      "    int _x;\n"
+                      "    int _y;\n"
+                      "};");
+
+        ASSERT_EQUALS("", errout.str());
+
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "copy ( & f ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "copy ( * f ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 12);
+
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
