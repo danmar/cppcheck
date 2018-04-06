@@ -272,6 +272,7 @@ private:
         TEST_CASE(symboldatabase58); // #6985 (using namespace type lookup)
         TEST_CASE(symboldatabase59);
         TEST_CASE(symboldatabase60);
+        TEST_CASE(symboldatabase61);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -2894,6 +2895,21 @@ private:
         GET_SYMBOL_DB("struct A::someType A::bar() { return 0; }");
         ASSERT(db != nullptr);
         ASSERT(db && db->scopeList.size() == 2);
+    }
+
+    void symboldatabase61() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    struct Info { };\n"
+                      "};\n"
+                      "void foo() {\n"
+                      "    struct Fred::Info* info;\n"
+                      "    info = new (nothrow) struct Fred::Info();\n"
+                      "    info = new struct Fred::Info();\n"
+                      "    memset(info, 0, sizeof(struct Fred::Info));\n"
+                      "}");
+
+        ASSERT(db != nullptr);
+        ASSERT(db && db->scopeList.size() == 4);
     }
 
     void enum1() {
