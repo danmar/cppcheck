@@ -95,13 +95,12 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             while (Token::Match(tok2, ":: %name%"))
                 tok2 = tok2->tokAt(2);
+            while (Token::Match(tok2, "%name% :: %name%"))
+                tok2 = tok2->tokAt(2);
 
             // skip over template args
             if (tok2 && tok2->str() == "<" && tok2->link())
                 tok2 = tok2->link()->next();
-
-            if (Token::Match(tok2, "%name% ["))
-                continue;
 
             // make sure we have valid code
             if (!Token::Match(tok2, "{|:")) {
@@ -119,6 +118,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     else if (Token::Match(tok2, "*|&|>"))
                         continue;
                     else if (Token::Match(tok2, "%name% (") && _tokenizer->isFunctionHead(tok2->next(), "{;"))
+                        continue;
+                    else if (Token::Match(tok2, "%name% ["))
                         continue;
                     else
                         throw InternalError(tok2, "SymbolDatabase bailout; unhandled code", InternalError::SYNTAX);
