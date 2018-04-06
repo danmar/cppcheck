@@ -1,4 +1,3 @@
-#line 2
 /*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2018 Cppcheck team.
