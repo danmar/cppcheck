@@ -1752,9 +1752,7 @@ void CheckOther::checkDuplicateBranch()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope>::const_iterator scope;
-
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         if (scope->type != Scope::eIf)
             continue;
 
@@ -1891,19 +1889,17 @@ namespace {
 
     void getConstFunctions(const SymbolDatabase *symbolDatabase, std::list<const Function*> &constFunctions)
     {
-        std::list<Scope>::const_iterator scope;
-        for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-            std::list<Function>::const_iterator func;
+        for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
             // only add const functions that do not have a non-const overloaded version
             // since it is pretty much impossible to tell which is being called.
             typedef std::map<std::string, std::list<const Function*> > StringFunctionMap;
             StringFunctionMap functionsByName;
-            for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
                 functionsByName[func->tokenDef->str()].push_back(&*func);
             }
             for (StringFunctionMap::iterator it = functionsByName.begin();
                  it != functionsByName.end(); ++it) {
-                std::list<const Function*>::const_iterator nc = std::find_if(it->second.begin(), it->second.end(), notconst);
+                const std::list<const Function*>::const_iterator nc = std::find_if(it->second.begin(), it->second.end(), notconst);
                 if (nc == it->second.end()) {
                     // ok to add all of them
                     constFunctions.splice(constFunctions.end(), it->second);
@@ -1923,11 +1919,10 @@ void CheckOther::checkDuplicateExpression()
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::list<Scope>::const_iterator scope;
     std::list<const Function*> constFunctions;
     getConstFunctions(symbolDatabase, constFunctions);
 
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         // only check functions
         if (scope->type != Scope::eFunction)
             continue;

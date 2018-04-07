@@ -271,6 +271,9 @@ private:
         TEST_CASE(symboldatabase57);
         TEST_CASE(symboldatabase58); // #6985 (using namespace type lookup)
         TEST_CASE(symboldatabase59);
+        TEST_CASE(symboldatabase60);
+        TEST_CASE(symboldatabase61);
+        TEST_CASE(symboldatabase62);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -306,6 +309,7 @@ private:
         TEST_CASE(findFunction17);
         TEST_CASE(findFunction18);
         TEST_CASE(findFunction19);
+        TEST_CASE(findFunction20); // #8280
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -2888,6 +2892,42 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
     }
 
+    void symboldatabase60() { // #8470
+        GET_SYMBOL_DB("struct A::someType A::bar() { return 0; }");
+        ASSERT(db != nullptr);
+        ASSERT(db && db->scopeList.size() == 2);
+    }
+
+    void symboldatabase61() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    struct Info { };\n"
+                      "};\n"
+                      "void foo() {\n"
+                      "    struct Fred::Info* info;\n"
+                      "    info = new (nothrow) struct Fred::Info();\n"
+                      "    info = new struct Fred::Info();\n"
+                      "    memset(info, 0, sizeof(struct Fred::Info));\n"
+                      "}");
+
+        ASSERT(db != nullptr);
+        ASSERT(db && db->scopeList.size() == 4);
+    }
+
+    void symboldatabase62() {
+        GET_SYMBOL_DB("struct A {\n"
+                      "public:\n"
+                      "    struct X { int a; };\n"
+                      "    void Foo(const std::vector<struct X> &includes);\n"
+                      "};\n"
+                      "void A::Foo(const std::vector<struct A::X> &includes) {\n"
+                      "    for (std::vector<struct A::X>::const_iterator it = includes.begin(); it != includes.end(); ++it) {\n"
+                      "        const struct A::X currentIncList = *it;\n"
+                      "    }\n"
+                      "}");
+        ASSERT(db != nullptr);
+        ASSERT(db && db->scopeList.size() == 5);
+    }
+
     void enum1() {
         GET_SYMBOL_DB("enum BOOL { FALSE, TRUE }; enum BOOL b;");
 
@@ -4015,6 +4055,35 @@ private:
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 16);
     }
 
+    void findFunction20() { // # 8280
+        GET_SYMBOL_DB("class Foo {\n"
+                      "public:\n"
+                      "    Foo() : _x(0), _y(0) {}\n"
+                      "    Foo(const Foo& f) {\n"
+                      "        copy(&f);\n"
+                      "    }\n"
+                      "    void copy(const Foo* f) {\n"
+                      "        _x=f->_x;\n"
+                      "        copy(*f);\n"
+                      "    }\n"
+                      "private:\n"
+                      "    void copy(const Foo& f) {\n"
+                      "        _y=f._y;\n"
+                      "    }\n"
+                      "    int _x;\n"
+                      "    int _y;\n"
+                      "};");
+
+        ASSERT_EQUALS("", errout.str());
+
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "copy ( & f ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "copy ( * f ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 12);
+
+    }
+
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
                 ASSERT_EQUALS(true, x != nullptr);                                  \
                 if (x) ASSERT_EQUALS(true, x->isNoExcept());
@@ -4680,6 +4749,16 @@ private:
             sC.library.containers["C"] = c;
             ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new","test.cpp",&sC));
             ASSERT_EQUALS("container(C) *", typeOf("x=(C*)c;","(","test.cpp",&sC));
+        }
+        {
+            // Container (vector)
+            Settings set;
+            Library::Container vector;
+            vector.startPattern = "Vector";
+            vector.type_templateArgNo = 0;
+            vector.arrayLike_indexOp = true;
+            set.library.containers["Vector"] = vector;
+            ASSERT_EQUALS("signed int", typeOf("Vector<int> v; v[0]=3;", "[", "test.cpp", &set));
         }
 
         // new

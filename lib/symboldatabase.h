@@ -1059,13 +1059,14 @@ public:
     unsigned int constness;  // bit 0=data, bit 1=*, bit 2=**
     const Scope *typeScope;
     const Library::Container *container;
+    const Token *containerTypeToken;
     std::string originalTypeName;
 
-    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), pointer(0U), constness(0U), typeScope(nullptr), container(nullptr) {}
-    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), container(vt.container), originalTypeName(vt.originalTypeName) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), pointer(p), constness(0U), typeScope(nullptr), container(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), container(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), container(nullptr), originalTypeName(otn) {}
+    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), pointer(0U), constness(0U), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), pointer(p), constness(0U), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr), originalTypeName(otn) {}
 
     static ValueType parseDecl(const Token *type, const Settings *settings);
 

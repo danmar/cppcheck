@@ -516,7 +516,7 @@ QString CheckThread::getAddonFilePath(const QString &dataDir, const QString &add
 
     const QString appPath = QApplication::applicationDirPath();
     foreach (const QString p, paths) {
-        if (QFileInfo(dataDir + p + addonFile).exists())
+        if (QFileInfo(appPath + p + addonFile).exists())
             return appPath + p + addonFile;
     }
 

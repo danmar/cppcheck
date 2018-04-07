@@ -83,8 +83,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                                          "SymbolDatabase",
                                          tok->progressValue());
         // Locate next class
-        if ((_tokenizer->isCPP() && ((Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") && tok->strAt(-1) != "friend") ||
-                                     (Token::Match(tok, "enum class| %name% {") || Token::Match(tok, "enum class| %name% : %name% {"))))
+        if ((_tokenizer->isCPP() && ((Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") &&
+                                      !Token::Match(tok->previous(), "new|friend|const|)|(|<")) ||
+                                     (Token::Match(tok, "enum class| %name% {") ||
+                                      Token::Match(tok, "enum class| %name% : %name% {"))))
             || (_tokenizer->isC() && Token::Match(tok, "struct|union|enum %name% {"))) {
             const Token *tok2 = tok->tokAt(2);
 
@@ -95,13 +97,12 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             while (Token::Match(tok2, ":: %name%"))
                 tok2 = tok2->tokAt(2);
+            while (Token::Match(tok2, "%name% :: %name%"))
+                tok2 = tok2->tokAt(2);
 
             // skip over template args
             if (tok2 && tok2->str() == "<" && tok2->link())
                 tok2 = tok2->link()->next();
-
-            if (Token::Match(tok2, "%name% ["))
-                continue;
 
             // make sure we have valid code
             if (!Token::Match(tok2, "{|:")) {
@@ -119,6 +120,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     else if (Token::Match(tok2, "*|&|>"))
                         continue;
                     else if (Token::Match(tok2, "%name% (") && _tokenizer->isFunctionHead(tok2->next(), "{;"))
+                        continue;
+                    else if (Token::Match(tok2, "%name% ["))
                         continue;
                     else
                         throw InternalError(tok2, "SymbolDatabase bailout; unhandled code", InternalError::SYNTAX);
@@ -4078,6 +4081,25 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
             }
 
+            // check for a match with refrence of a variable
+            else if (Token::Match(arguments[j], "* %var% ,|)")) {
+                const Variable * callarg = check->getVariableFromVarId(arguments[j]->next()->varId());
+                if (callarg) {
+                    const bool funcargref = (funcarg->typeEndToken()->str() == "&");
+                    if (funcargref &&
+                        (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
+                         callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
+                         callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong())) {
+                        same++;
+                    } else {
+                        // can't match so remove this function from possible matches
+                        matches.erase(matches.begin() + i);
+                        erased = true;
+                        break;
+                    }
+                }
+            }
+
             // check for a match with address of a variable
             else if (Token::Match(arguments[j], "& %var% ,|)")) {
                 const Variable * callarg = check->getVariableFromVarId(arguments[j]->next()->varId());
@@ -4941,6 +4963,14 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         }
     }
 
+    if (vt1 && vt1->containerTypeToken && parent->str() == "[") {
+        ValueType vtParent;
+        if (parsedecl(vt1->containerTypeToken, &vtParent, defaultSignedness, _settings)) {
+            setValueType(parent, vtParent);
+            return;
+        }
+    }
+
     if (!vt1)
         return;
     if (parent->astOperand2() && !vt2)
@@ -5068,8 +5098,15 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = ValueType::Type::CONTAINER;
             valuetype->container = container;
             while (Token::Match(type, "%name%|::|<")) {
-                if (type->str() == "<" && type->link())
+                if (type->str() == "<" && type->link()) {
+                    if (container->type_templateArgNo >= 0) {
+                        const Token *templateType = type->next();
+                        for (int j = 0; templateType && j < container->type_templateArgNo; j++)
+                            templateType = templateType->nextTemplateArgument();
+                        valuetype->containerTypeToken = templateType;
+                    }
                     type = type->link();
+                }
                 type = type->next();
             }
             continue;
