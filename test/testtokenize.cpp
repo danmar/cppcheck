@@ -4761,6 +4761,9 @@ private:
         //ticket #8345
         ASSERT_EQUALS("void foo ( ) { switch ( 0 ) { case 0 : ; default : ; } }",
                       tokenizeAndStringify("void foo () { switch(0) case 0 : default : ; }"));
+        //ticket #8477
+        ASSERT_EQUALS("void foo ( ) { enum Anonymous0 : int { Six = 6 } ; return Six ; }",
+                      tokenizeAndStringify("void foo () { enum : int { Six = 6 } ; return Six ; }"));
     }
 
     void simplifyPointerToStandardType() {
