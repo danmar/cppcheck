@@ -2439,20 +2439,25 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                     bailout(tokenlist, errorLogger, vartok, "variable is aliased so we just skip all valueflow after condition");
                 continue;
             }
-            std::list<ValueFlow::Value> values;
+            std::list<ValueFlow::Value> true_values;
+            std::list<ValueFlow::Value> false_values;
             // TODO: We should add all known values
             if (numtok) {
-                values.push_back(ValueFlow::Value(tok, numtok->values().front().intvalue));
+                false_values.push_back(ValueFlow::Value(tok, numtok->values().front().intvalue));
+                true_values.push_back(ValueFlow::Value(tok, numtok->values().front().intvalue));
             } else if (lowertok) {
                 long long v = lowertok->values().front().intvalue;
-                values.push_back(ValueFlow::Value(tok, v+1));
+                true_values.push_back(ValueFlow::Value(tok, v+1));
+                false_values.push_back(ValueFlow::Value(tok, v));
 
             } else if (uppertok) {
                 long long v = uppertok->values().front().intvalue;
-                values.push_back(ValueFlow::Value(tok, v-1));
+                true_values.push_back(ValueFlow::Value(tok, v-1));
+                false_values.push_back(ValueFlow::Value(tok, v));
 
             } else {
-                values.push_back(ValueFlow::Value(tok, 0LL));
+                true_values.push_back(ValueFlow::Value(tok, 0LL));
+                false_values.push_back(ValueFlow::Value(tok, 0LL));
 
             }
 
@@ -2475,7 +2480,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                             tokens.push(const_cast<Token*>(rhstok->astOperand1()));
                             tokens.push(const_cast<Token*>(rhstok->astOperand2()));
                             if (rhstok->varId() == varid)
-                                setTokenValue(rhstok, values.front(), settings);
+                                setTokenValue(rhstok, true_values.front(), settings);
                             else if (Token::Match(rhstok, "++|--|=") && Token::Match(rhstok->astOperand1(), "%varid%", varid)) {
                                 assign = true;
                                 break;
@@ -2501,49 +2506,63 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 }
 
                 // start token of conditional code
-                Token *startToken = nullptr;
+                Token *startTokens[]  { nullptr, nullptr };
 
                 // based on the comparison, should we check the if or while?
-                int codeblock = 0;
+                bool check_if = false;
+                bool check_else = false;
                 if (Token::Match(tok, "==|>=|<=|!|>|<"))
-                    codeblock = 1;
-                else if (Token::Match(tok, "%name%|!="))
-                    codeblock = 2;
+                    check_if = true;
+                if (Token::Match(tok, "%name%|!=|>|<"))
+                    check_else = true;
 
                 // determine startToken based on codeblock
-                if (codeblock > 0) {
+                if (check_if || check_else) {
                     // if astParent is "!" we need to invert codeblock
                     const Token *parent = tok->astParent();
                     while (parent && parent->str() == "&&")
                         parent = parent->astParent();
-                    if (parent && parent->str() == "!")
-                        codeblock = (codeblock == 1) ? 2 : 1;
+                    if (parent && parent->str() == "!") {
+                        check_if = !check_if;
+                        check_else = !check_else;
+                    }
 
                     // convert codeblock to a startToken
-                    if (codeblock == 1 && Token::simpleMatch(top->link(), ") {"))
-                        startToken = top->link()->next();
-                    else if (Token::simpleMatch(top->link()->linkAt(1), "} else {"))
-                        startToken = top->link()->linkAt(1)->tokAt(2);
+                    if (check_if && Token::simpleMatch(top->link(), ") {"))
+                        startTokens[0] = top->link()->next();
+                    if (check_else && Token::simpleMatch(top->link()->linkAt(1), "} else {"))
+                        startTokens[1] = top->link()->linkAt(1)->tokAt(2);
                 }
 
-                if (startToken) {
-                    if (values.size() == 1U && Token::Match(tok, "==|!")) {
-                        const Token *parent = tok->astParent();
-                        while (parent && parent->str() == "&&")
-                            parent = parent->astParent();
-                        if (parent && parent->str() == "(")
-                            values.front().setKnown();
+                int bail = 0;
+                if(check_if && check_else)
+                    bail = 1;
+
+                for(int i=0;i<2;i++) {
+                    Token * startToken = startTokens[i];
+                    if(startToken) {
+                        std::list<ValueFlow::Value> & values = (i==0 ? true_values : false_values);
+                        if (values.size() == 1U && Token::Match(tok, "==|!")) {
+                            const Token *parent = tok->astParent();
+                            while (parent && parent->str() == "&&")
+                                parent = parent->astParent();
+                            if (parent && parent->str() == "(")
+                                values.front().setKnown();
+                        }
+                        if (!valueFlowForward(startTokens[i]->next(), startTokens[i]->link(), var, varid, values, true, false, tokenlist, errorLogger, settings))
+                            continue;
+                        values.front().setPossible();
+                        if (isVariableChanged(startTokens[i], startTokens[i]->link(), varid, var->isGlobal(), settings)) {
+                            // TODO: The endToken should not be startTokens[i]->link() in the valueFlowForward call
+                            if (settings->debugwarnings)
+                                bailout(tokenlist, errorLogger, startTokens[i]->link(), "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
+                            continue;
+                        }
                     }
-                    if (!valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, false, tokenlist, errorLogger, settings))
-                        continue;
-                    values.front().setPossible();
-                    if (isVariableChanged(startToken, startToken->link(), varid, var->isGlobal(), settings)) {
-                        // TODO: The endToken should not be startToken->link() in the valueFlowForward call
-                        if (settings->debugwarnings)
-                            bailout(tokenlist, errorLogger, startToken->link(), "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
-                        continue;
-                    }
+                    bail++;
                 }
+                if(bail < 2)
+                    continue;
 
                 // After conditional code..
                 if (Token::simpleMatch(top->link(), ") {")) {
@@ -2555,7 +2574,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         continue;
                     }
 
-                    bool isreturn = (codeblock == 1 && isReturnScope(after));
+                    bool isreturn = (!check_else && isReturnScope(after));
 
                     if (Token::simpleMatch(after, "} else {")) {
                         after = after->linkAt(2);
@@ -2564,14 +2583,17 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                                 bailout(tokenlist, errorLogger, after, "possible noreturn scope");
                             continue;
                         }
-                        isreturn |= (codeblock == 2 && isReturnScope(after));
+                        isreturn |= (!check_if && isReturnScope(after));
                     }
 
                     if (!isreturn) {
                         // TODO: constValue could be true if there are no assignments in the conditional blocks and
                         //       perhaps if there are no && and no || in the condition
                         bool constValue = false;
-                        valueFlowForward(after->next(), top->scope()->classEnd, var, varid, values, constValue, false, tokenlist, errorLogger, settings);
+                        if(check_if)
+                            valueFlowForward(after->next(), top->scope()->classEnd, var, varid, true_values, constValue, false, tokenlist, errorLogger, settings);
+                        if(check_else)
+                            valueFlowForward(after->next(), top->scope()->classEnd, var, varid, false_values, constValue, false, tokenlist, errorLogger, settings);
                     }
                 }
             }
