@@ -133,6 +133,8 @@ private:
 
     void oppositeInnerConditionError(const Token *tok1, const Token* tok2);
 
+    void identicalInnerConditionError(const Token *tok1, const Token* tok2);
+
     void identicalConditionAfterEarlyExitError(const Token *cond1, const Token *cond2);
 
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive);
@@ -156,6 +158,7 @@ private:
         c.multiConditionError(nullptr,1);
         c.mismatchingBitAndError(nullptr, 0xf0, nullptr, 1);
         c.oppositeInnerConditionError(nullptr, nullptr);
+        c.identicalInnerConditionError(nullptr, nullptr);
         c.identicalConditionAfterEarlyExitError(nullptr, nullptr);
         c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false);
         c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);

@@ -585,6 +585,8 @@ void CheckCondition::multiCondition2()
                         } else if (isOppositeCond(false, _tokenizer->isCPP(), firstCondition, cond2, _settings->library, true)) {
                             if (!isAliased(vars))
                                 oppositeInnerConditionError(firstCondition, cond2);
+                        } else if(isSameExpression(_tokenizer->isCPP(), true, firstCondition, cond2, _settings->library, true)) {
+                            identicalInnerConditionError(firstCondition, cond2);
                         }
                     }
                 } else {
@@ -691,6 +693,18 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
     const std::string msg("Opposite inner 'if' condition leads to a dead code block.\n"
                           "Opposite inner 'if' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
     reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, false);
+}
+
+void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token* tok2)
+{
+    const std::string s1(tok1 ? tok1->expressionString() : "x");
+    const std::string s2(tok2 ? tok2->expressionString() : "x");
+    ErrorPath errorPath;
+    errorPath.push_back(ErrorPathItem(tok1, "outer condition: " + s1));
+    errorPath.push_back(ErrorPathItem(tok2, "identical inner condition: " + s2));
+    const std::string msg("Identical inner 'if' condition is always true.\n"
+                          "Identical inner 'if' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
+    reportError(errorPath, Severity::warning, "identicalInnerCondition", msg, CWE398, false);
 }
 
 void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2)
