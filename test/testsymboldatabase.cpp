@@ -273,6 +273,7 @@ private:
         TEST_CASE(symboldatabase59);
         TEST_CASE(symboldatabase60);
         TEST_CASE(symboldatabase61);
+        TEST_CASE(symboldatabase62);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -2910,6 +2911,21 @@ private:
 
         ASSERT(db != nullptr);
         ASSERT(db && db->scopeList.size() == 4);
+    }
+
+    void symboldatabase62() {
+        GET_SYMBOL_DB("struct A {\n"
+                      "public:\n"
+                      "    struct X { int a; };\n"
+                      "    void Foo(const std::vector<struct X> &includes);\n"
+                      "};\n"
+                      "void A::Foo(const std::vector<struct A::X> &includes) {\n"
+                      "    for (std::vector<struct A::X>::const_iterator it = includes.begin(); it != includes.end(); ++it) {\n"
+                      "        const struct A::X currentIncList = *it;\n"
+                      "    }\n"
+                      "}");
+        ASSERT(db != nullptr);
+        ASSERT(db && db->scopeList.size() == 5);
     }
 
     void enum1() {
