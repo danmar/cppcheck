@@ -2575,7 +2575,9 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         continue;
                     }
 
-                    bool isreturn = (!check_else && isReturnScope(after));
+                    std::list<ValueFlow::Value> * values = nullptr;
+                    if (check_else || !isReturnScope(after))
+                        values = &false_values;
 
                     if (Token::simpleMatch(after, "} else {")) {
                         after = after->linkAt(2);
@@ -2584,14 +2586,15 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                                 bailout(tokenlist, errorLogger, after, "possible noreturn scope");
                             continue;
                         }
-                        isreturn |= (!check_if && isReturnScope(after));
+                        if (check_if || !isReturnScope(after))
+                            values = &true_values;
                     }
 
-                    if (!isreturn) {
+                    if (values) {
                         // TODO: constValue could be true if there are no assignments in the conditional blocks and
                         //       perhaps if there are no && and no || in the condition
                         bool constValue = false;
-                        valueFlowForward(after->next(), top->scope()->classEnd, var, varid, check_else ? false_values : true_values, constValue, false, tokenlist, errorLogger, settings);
+                        valueFlowForward(after->next(), top->scope()->classEnd, var, varid, *values, constValue, false, tokenlist, errorLogger, settings);
                     }
                 }
             }
