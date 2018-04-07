@@ -2556,7 +2556,8 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                             // TODO: The endToken should not be startTokens[i]->link() in the valueFlowForward call
                             if (settings->debugwarnings)
                                 bailout(tokenlist, errorLogger, startTokens[i]->link(), "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
-                            continue;
+                            bail = -1;
+                            break;
                         }
                     }
                     bail++;
@@ -2590,10 +2591,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         // TODO: constValue could be true if there are no assignments in the conditional blocks and
                         //       perhaps if there are no && and no || in the condition
                         bool constValue = false;
-                        if(check_if)
-                            valueFlowForward(after->next(), top->scope()->classEnd, var, varid, true_values, constValue, false, tokenlist, errorLogger, settings);
-                        if(check_else)
-                            valueFlowForward(after->next(), top->scope()->classEnd, var, varid, false_values, constValue, false, tokenlist, errorLogger, settings);
+                        valueFlowForward(after->next(), top->scope()->classEnd, var, varid, check_else ? false_values : true_values, constValue, false, tokenlist, errorLogger, settings);
                     }
                 }
             }
