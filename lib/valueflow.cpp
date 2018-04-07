@@ -2506,7 +2506,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 }
 
                 // start token of conditional code
-                Token *startTokens[]  { nullptr, nullptr };
+                Token *startTokens[] = { nullptr, nullptr };
 
                 // based on the comparison, should we check the if or while?
                 bool check_if = false;
