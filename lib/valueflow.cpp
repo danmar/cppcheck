@@ -2534,9 +2534,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         startTokens[1] = top->link()->linkAt(1)->tokAt(2);
                 }
 
-                int bail = 0;
-                if(check_if && check_else)
-                    bail = 1;
+                bool bail = false;
 
                 for(int i=0;i<2;i++) {
                     Token * startToken = startTokens[i];
@@ -2549,20 +2547,19 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                             if (parent && parent->str() == "(")
                                 values.front().setKnown();
                         }
-                        if (!valueFlowForward(startTokens[i]->next(), startTokens[i]->link(), var, varid, values, true, false, tokenlist, errorLogger, settings))
-                            continue;
+
+                        valueFlowForward(startTokens[i]->next(), startTokens[i]->link(), var, varid, values, true, false, tokenlist, errorLogger, settings);
                         values.front().setPossible();
                         if (isVariableChanged(startTokens[i], startTokens[i]->link(), varid, var->isGlobal(), settings)) {
                             // TODO: The endToken should not be startTokens[i]->link() in the valueFlowForward call
                             if (settings->debugwarnings)
                                 bailout(tokenlist, errorLogger, startTokens[i]->link(), "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
-                            bail = -1;
+                            bail = true;
                             break;
                         }
                     }
-                    bail++;
                 }
-                if(bail < 2)
+                if(bail)
                     continue;
 
                 // After conditional code..
