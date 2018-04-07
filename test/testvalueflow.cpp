@@ -1821,7 +1821,7 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
 
         code = "void f(int x) {\n"
-               "    if (x < 123) { throw ""; }\n"
+               "    if (x < 123) { throw \"\"; }\n"
                "    a = x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
