@@ -123,7 +123,12 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                         continue;
                     else if (Token::Match(tok2, "%name% ["))
                         continue;
-                    else
+                    // skip template
+                    else if (Token::simpleMatch(tok->previous(), "template class") &&
+                             Token::simpleMatch(tok2->previous(), "> ;")) {
+                        tok = tok2;
+                        continue;
+                    } else
                         throw InternalError(tok2, "SymbolDatabase bailout; unhandled code", InternalError::SYNTAX);
                     continue;
                 }
