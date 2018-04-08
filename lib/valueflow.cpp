@@ -2349,8 +2349,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
 static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     const std::size_t functions = symboldatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symboldatabase->functionScopes[i];
+    for (std::size_t func = 0; func < functions; ++func) {
+        const Scope * scope = symboldatabase->functionScopes[func];
         std::set<unsigned> aliased;
         for (Token* tok = const_cast<Token*>(scope->classStart); tok != scope->classEnd; tok = tok->next()) {
             const Token * vartok = nullptr;
@@ -2515,9 +2515,11 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 if (Token::Match(tok, "%name%|!=|>|<"))
                     check_else = true;
 
-                // determine startToken based on codeblock
-                if (check_if || check_else) {
-                    // if astParent is "!" we need to invert codeblock
+                if (!check_if && !check_else)
+                    continue;
+
+                // if astParent is "!" we need to invert codeblock
+                {
                     const Token *parent = tok->astParent();
                     while (parent && parent->str() == "&&")
                         parent = parent->astParent();
@@ -2525,37 +2527,37 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         check_if = !check_if;
                         check_else = !check_else;
                     }
-
-                    // convert codeblock to a startToken
-                    if (check_if && Token::simpleMatch(top->link(), ") {"))
-                        startTokens[0] = top->link()->next();
-                    if (check_else && Token::simpleMatch(top->link()->linkAt(1), "} else {"))
-                        startTokens[1] = top->link()->linkAt(1)->tokAt(2);
                 }
+
+                // determine startToken(s)
+                if (check_if && Token::simpleMatch(top->link(), ") {"))
+                    startTokens[0] = top->link()->next();
+                if (check_else && Token::simpleMatch(top->link()->linkAt(1), "} else {"))
+                    startTokens[1] = top->link()->linkAt(1)->tokAt(2);
 
                 bool bail = false;
 
                 for (int i=0; i<2; i++) {
                     Token * startToken = startTokens[i];
-                    if (startToken) {
-                        std::list<ValueFlow::Value> & values = (i==0 ? true_values : false_values);
-                        if (values.size() == 1U && Token::Match(tok, "==|!")) {
-                            const Token *parent = tok->astParent();
-                            while (parent && parent->str() == "&&")
-                                parent = parent->astParent();
-                            if (parent && parent->str() == "(")
-                                values.front().setKnown();
-                        }
+                    if (!startToken)
+                        continue;
+                    std::list<ValueFlow::Value> & values = (i==0 ? true_values : false_values);
+                    if (values.size() == 1U && Token::Match(tok, "==|!")) {
+                        const Token *parent = tok->astParent();
+                        while (parent && parent->str() == "&&")
+                            parent = parent->astParent();
+                        if (parent && parent->str() == "(")
+                            values.front().setKnown();
+                    }
 
-                        valueFlowForward(startTokens[i]->next(), startTokens[i]->link(), var, varid, values, true, false, tokenlist, errorLogger, settings);
-                        values.front().setPossible();
-                        if (isVariableChanged(startTokens[i], startTokens[i]->link(), varid, var->isGlobal(), settings)) {
-                            // TODO: The endToken should not be startTokens[i]->link() in the valueFlowForward call
-                            if (settings->debugwarnings)
-                                bailout(tokenlist, errorLogger, startTokens[i]->link(), "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
-                            bail = true;
-                            break;
-                        }
+                    valueFlowForward(startTokens[i]->next(), startTokens[i]->link(), var, varid, values, true, false, tokenlist, errorLogger, settings);
+                    values.front().setPossible();
+                    if (isVariableChanged(startTokens[i], startTokens[i]->link(), varid, var->isGlobal(), settings)) {
+                        // TODO: The endToken should not be startTokens[i]->link() in the valueFlowForward call
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, startTokens[i]->link(), "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
+                        bail = true;
+                        break;
                     }
                 }
                 if (bail)
