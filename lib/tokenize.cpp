@@ -2223,7 +2223,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
                 syntaxError(tok);
             }
         } else if (Token::Match(tok, "[;{}] %name% : !!;")) {
-            if (!cpp || !Token::Match(tok->next(), "class|struct")) {
+            if (!cpp || !Token::Match(tok->next(), "class|struct|enum")) {
                 tok = tok->tokAt(2);
                 tok->insertToken(";");
             }
