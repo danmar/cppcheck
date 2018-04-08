@@ -5869,14 +5869,28 @@ void Tokenizer::simplifyPlatformTypes()
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
 
-    if (_settings->sizeof_size_t == _settings->sizeof_long)
-        type = isLong;
-    else if (_settings->sizeof_size_t == _settings->sizeof_long_long)
-        type = isLongLong;
-    else if (_settings->sizeof_size_t == _settings->sizeof_int)
-        type = isInt;
+    if (_settings->platformType == Settings::Win32A || _settings->platformType == Settings::Win32W)
+    {
+        if (_settings->sizeof_size_t == _settings->sizeof_int)
+            type = isInt;
+        else if (_settings->sizeof_size_t == _settings->sizeof_long)
+            type = isLong;
+        else if (_settings->sizeof_size_t == _settings->sizeof_long_long)
+            type = isLongLong;
+        else
+            return;
+    }
     else
-        return;
+    {
+        if (_settings->sizeof_size_t == _settings->sizeof_long)
+            type = isLong;
+        else if (_settings->sizeof_size_t == _settings->sizeof_long_long)
+            type = isLongLong;
+        else if (_settings->sizeof_size_t == _settings->sizeof_int)
+            type = isInt;
+        else
+           return;
+    }
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // pre-check to reduce unneeded match calls

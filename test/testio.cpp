@@ -786,61 +786,61 @@ private:
 
     void testScanfNoWarn(const char *filename, unsigned int linenr, const char* code) {
         check(code, true, false, Settings::Unix32);
-        assertEquals(filename, linenr, "", errout.str());
+        assertEquals(filename, linenr, "", errout.str(), "Platform: Unix32");
         check(code, true, false, Settings::Unix64);
-        assertEquals(filename, linenr, "", errout.str());
+        assertEquals(filename, linenr, "", errout.str(), "Platform: Unix64");
         check(code, true, false, Settings::Win32A);
-        assertEquals(filename, linenr, "", errout.str());
+        assertEquals(filename, linenr, "", errout.str(), "Platform: Win32A");
         check(code, true, false, Settings::Win64);
-        assertEquals(filename, linenr, "", errout.str());
+        assertEquals(filename, linenr, "", errout.str(), "Platform: Win64");
     }
 
     void testScanfWarn(const char *filename, unsigned int linenr,
                        const char* code, const char* testScanfErrString) {
         check(code, true, false, Settings::Unix32);
-        assertEquals(filename, linenr, testScanfErrString, errout.str());
+        assertEquals(filename, linenr, testScanfErrString, errout.str(), "Platform: Unix32");
         check(code, true, false, Settings::Unix64);
-        assertEquals(filename, linenr, testScanfErrString, errout.str());
+        assertEquals(filename, linenr, testScanfErrString, errout.str(), "Platform: Unix64");
         check(code, true, false, Settings::Win32A);
-        assertEquals(filename, linenr, testScanfErrString, errout.str());
+        assertEquals(filename, linenr, testScanfErrString, errout.str(), "Platform: Win32A");
         check(code, true, false, Settings::Win64);
-        assertEquals(filename, linenr, testScanfErrString, errout.str());
+        assertEquals(filename, linenr, testScanfErrString, errout.str(), "Platform: Win64");
     }
 
     void testScanfWarnAka(const char *filename, unsigned int linenr,
                           const char* code, const char* testScanfErrAkaString, const char* testScanfErrAkaWin64String) {
         check(code, true, true, Settings::Unix32);
-        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str(), "Platform: Unix32");
         check(code, true, true, Settings::Unix64);
-        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str(), "Platform: Unix64");
         check(code, true, true, Settings::Win32A);
-        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str(), "Platform: Win32A");
         check(code, true, true, Settings::Win64);
-        assertEquals(filename, linenr, testScanfErrAkaWin64String, errout.str());
+        assertEquals(filename, linenr, testScanfErrAkaWin64String, errout.str(), "Platform: Win64");
     }
 
     void testScanfWarnAkaWin64(const char *filename, unsigned int linenr,
                                const char* code, const char* testScanfErrAkaWin64String) {
         check(code, true, true, Settings::Unix32);
-        assertEquals(filename, linenr, "", errout.str());
+        assertEquals(filename, linenr, "", errout.str(), "Platform: Unix32");
         check(code, true, true, Settings::Unix64);
-        assertEquals(filename, linenr, "", errout.str());
+        assertEquals(filename, linenr, "", errout.str(), "Platform: Unix64");
         check(code, true, true, Settings::Win32A);
-        assertEquals(filename, linenr, "", errout.str());
+        assertEquals(filename, linenr, "", errout.str(), "Platform: Win32A");
         check(code, true, true, Settings::Win64);
-        assertEquals(filename, linenr, testScanfErrAkaWin64String, errout.str());
+        assertEquals(filename, linenr, testScanfErrAkaWin64String, errout.str(), "Platform: Win64");
     }
 
     void testScanfWarnAkaWin32(const char *filename, unsigned int linenr,
                                const char* code, const char* testScanfErrAkaString) {
         check(code, true, true, Settings::Unix32);
-        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str(), "Platform: Unix32");
         check(code, true, true, Settings::Unix64);
-        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str(), "Platform: Unix64");
         check(code, true, true, Settings::Win32A);
-        assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
+        assertEquals(filename, linenr, testScanfErrAkaString, errout.str(), "Platform: Win32A");
         check(code, true, true, Settings::Win64);
-        assertEquals(filename, linenr, "", errout.str());
+        assertEquals(filename, linenr, "", errout.str(), "Platform: Win64");
     }
 
 #define TEST_SCANF_NOWARN(FORMAT, FORMATSTR, TYPE) \
