@@ -1230,19 +1230,15 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
                                 const bool isSecondCharAvailable = ((i + 1) != formatString.end());
                                 if (i != formatString.end() && isSecondCharAvailable && *(i + 1) == *i) {
-                                    if (isSecondCharAvailable) {
-                                        if (!isalpha(*(i + 2))) {
-                                            std::string modifier;
-                                            modifier += *i;
-                                            modifier += *(i + 1);
-                                            invalidLengthModifierError(tok, numFormat, modifier);
-                                            done = true;
-                                        } else {
-                                            specifier = *i++;
-                                            specifier += *i++;
-                                        }
-                                    } else {
+                                    if (!isalpha(*(i + 2))) {
+                                        std::string modifier;
+                                        modifier += *i;
+                                        modifier += *(i + 1);
+                                        invalidLengthModifierError(tok, numFormat, modifier);
                                         done = true;
+                                    } else {
+                                        specifier = *i++;
+                                        specifier += *i++;
                                     }
                                 } else {
                                     if (i != formatString.end()) {
