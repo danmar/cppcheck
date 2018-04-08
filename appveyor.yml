@@ -4,36 +4,36 @@ clone_depth: 10
 
 environment:
   matrix:
-    - VisualStudioVersion: 10.0
+    - VisualStudioVersion: 12.0
       platform: "Win32"
       configuration: "Debug"
       vcvarsall_platform: "x86"
-      PlatformToolset: "v100"
-    - VisualStudioVersion: 10.0
+      PlatformToolset: "v120"
+    - VisualStudioVersion: 12.0
       platform: "Win32"
       configuration: "Release"
       vcvarsall_platform: "x86"
-      PlatformToolset: "v100"
-    - VisualStudioVersion: 10.0
+      PlatformToolset: "v120"
+    - VisualStudioVersion: 12.0
       platform: "x64"
       configuration: "Debug"
       vcvarsall_platform: "x64"
-      PlatformToolset: "v100"
-    - VisualStudioVersion: 10.0
+      PlatformToolset: "v120"
+    - VisualStudioVersion: 12.0
       platform: "x64"
       configuration: "Release"
       vcvarsall_platform: "x64"
-      PlatformToolset: "v100"
-    - VisualStudioVersion: 14.0
+      PlatformToolset: "v120"
+    - VisualStudioVersion: 15.0
       platform: "Win32"
       configuration: "Debug"
       vcvarsall_platform: "x86"
-      PlatformToolset: "v140"
-    - VisualStudioVersion: 14.0
+      PlatformToolset: "v141"
+    - VisualStudioVersion: 15.0
       platform: "x64"
       configuration: "Debug"
       vcvarsall_platform: "x64"
-      PlatformToolset: "v140"
+      PlatformToolset: "v141"
 
 build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset

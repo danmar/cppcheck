@@ -150,14 +150,14 @@ int main(int argc, char* argv[])
 // Warn about deprecated compilers
 #ifdef __clang__
 #   if ( __clang_major__ < 2 || ( __clang_major__  == 2 && __clang_minor__ < 9))
-#       warning "Using Clang 2.8 or earlier. Support for this version will be removed soon."
+#       warning "Using Clang 2.8 or earlier. Support for this version has been removed."
 #   endif
 #elif defined(__GNUC__)
-#   if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 4))
-#       warning "Using GCC 4.3 or earlier. Support for this version will be removed soon."
+#   if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
+#       warning "Using GCC 4.5 or earlier. Support for this version has been removed."
 #   endif
 #elif defined(_MSC_VER)
-#   if (_MSC_VER < 1600)
-#       pragma message("WARNING: Using Visual Studio 2008 or earlier. Support for this version will be removed soon.")
+#   if (_MSC_VER < 1800)
+#       pragma message("WARNING: Using Visual Studio 2012 or earlier. Support for this version has been removed.")
 #   endif
 #endif
