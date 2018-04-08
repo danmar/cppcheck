@@ -162,10 +162,10 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return false;
     if (tok1->isSigned() != tok2->isSigned())
         return false;
-    if (tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof") {
-        if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && pure && !library.isFunctionConst(tok1->str(), true) && !tok1->isAttributeConst() && !tok1->isAttributePure())
+    if (pure && tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof") {
+        if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && !library.isFunctionConst(tok1->str(), true) && !tok1->isAttributeConst() && !tok1->isAttributePure())
             return false;
-        else if (tok1->function() && !tok1->function()->isConst() && !tok1->function()->isAttributeConst() && !tok1->function()->isAttributePure() && pure)
+        else if (tok1->function() && !tok1->function()->isConst() && !tok1->function()->isAttributeConst() && !tok1->function()->isAttributePure())
             return false;
     }
     // templates/casts
