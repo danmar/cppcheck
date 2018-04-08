@@ -2535,9 +2535,9 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
 
                 bool bail = false;
 
-                for(int i=0;i<2;i++) {
+                for (int i=0; i<2; i++) {
                     Token * startToken = startTokens[i];
-                    if(startToken) {
+                    if (startToken) {
                         std::list<ValueFlow::Value> & values = (i==0 ? true_values : false_values);
                         if (values.size() == 1U && Token::Match(tok, "==|!")) {
                             const Token *parent = tok->astParent();
@@ -2558,7 +2558,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         }
                     }
                 }
-                if(bail)
+                if (bail)
                     continue;
 
                 // After conditional code..

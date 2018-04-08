@@ -585,7 +585,7 @@ void CheckCondition::multiCondition2()
                         } else if (isOppositeCond(false, _tokenizer->isCPP(), firstCondition, cond2, _settings->library, true)) {
                             if (!isAliased(vars))
                                 oppositeInnerConditionError(firstCondition, cond2);
-                        } else if(isSameExpression(_tokenizer->isCPP(), true, firstCondition, cond2, _settings->library, true)) {
+                        } else if (isSameExpression(_tokenizer->isCPP(), true, firstCondition, cond2, _settings->library, true)) {
                             identicalInnerConditionError(firstCondition, cond2);
                         }
                     }

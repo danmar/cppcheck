@@ -1878,7 +1878,7 @@ private:
         check("void f1(const std::string v[10]) { if(v[0].size() > 42) if(v[1].empty()) {}} ");
         ASSERT_EQUALS("", errout.str());
     }
-    
+
     void identicalInnerCondition() {
         check("void f1(int a, int b) { if(a==b) if(a==b) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
