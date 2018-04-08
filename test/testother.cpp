@@ -131,6 +131,7 @@ private:
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
         TEST_CASE(duplicateExpressionTemplate); // #6930
+        TEST_CASE(duplicateVarExpression);
 
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
@@ -3915,6 +3916,127 @@ private:
               "}\n"
               "\n"
               "static auto a = f<0>();");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateVarExpression() {
+        check("int f() __attribute__((pure));\n"
+              "void test() {\n"
+              "    int i = f();\n"
+              "    int j = f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+
+        check("struct Foo { int f() const; };\n"
+              "void test() {\n"
+              "    Foo f = Foo{};\n"
+              "    int i = f.f();\n"
+              "    int j = f.f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+
+        check("int f() __attribute__((pure));\n"
+              "void test() {\n"
+              "    int i = 1 + f();\n"
+              "    int j = 1 + f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+
+        check("int f() __attribute__((pure));\n"
+              "void test() {\n"
+              "    int i = f() + f();\n"
+              "    int j = f() + f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+
+        check("int f(int) __attribute__((pure));\n"
+              "void test() {\n"
+              "    int i = f(0);\n"
+              "    int j = f(0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+
+        check("void test(int * p) {\n"
+              "    int i = *p;\n"
+              "    int j = *p;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+
+        check("struct A { int x; };"
+              "void test(A a) {\n"
+              "    int i = a.x;\n"
+              "    int j = a.x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+
+        check("void test() {\n"
+              "    int i = 0;\n"
+              "    int j = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test() {\n"
+              "    int i = -1;\n"
+              "    int j = -1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int);\n"
+              "void test() {\n"
+              "    int i = f(0);\n"
+              "    int j = f(1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f();\n"
+              "void test() {\n"
+              "    int i = f() || f();\n"
+              "    int j = f() && f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo {};\n"
+              "void test() {\n"
+              "    Foo i = Foo();\n"
+              "    Foo j = Foo();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo {};\n"
+              "void test() {\n"
+              "    Foo i = Foo{};\n"
+              "    Foo j = Foo{};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test() {\n"
+              "    int i = f();\n"
+              "    int j = f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test(int x) {\n"
+              "    int i = ++x;\n"
+              "    int j = ++x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test(int x) {\n"
+              "    int i = x++;\n"
+              "    int j = x++;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test(int x) {\n"
+              "    int i = --x;\n"
+              "    int j = --x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test(int x) {\n"
+              "    int i = x--;\n"
+              "    int j = x--;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
