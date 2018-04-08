@@ -274,6 +274,7 @@ private:
         TEST_CASE(symboldatabase60);
         TEST_CASE(symboldatabase61);
         TEST_CASE(symboldatabase62);
+        TEST_CASE(symboldatabase63);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -2926,6 +2927,12 @@ private:
                       "}");
         ASSERT(db != nullptr);
         ASSERT(db && db->scopeList.size() == 5);
+    }
+
+    void symboldatabase63() {
+        GET_SYMBOL_DB("template class T<int> ; void foo() { }");
+        ASSERT(db != nullptr);
+        ASSERT(db && db->scopeList.size() == 2);
     }
 
     void enum1() {
