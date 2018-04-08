@@ -319,21 +319,21 @@ static bool IsAddressOnStack(const void* ptr)
  * For now we only want to detect abnormal behaviour for a few selected signals:
  */
 
-#define DECLARE_SIGNAL(x) << std::make_pair(x, #x)
+#define DECLARE_SIGNAL(x) std::make_pair(x, #x)
 typedef std::map<int, std::string> Signalmap_t;
-static const Signalmap_t listofsignals = make_container< Signalmap_t > ()
-        DECLARE_SIGNAL(SIGABRT)
-        DECLARE_SIGNAL(SIGBUS)
-        DECLARE_SIGNAL(SIGFPE)
-        DECLARE_SIGNAL(SIGILL)
-        DECLARE_SIGNAL(SIGINT)
-        DECLARE_SIGNAL(SIGQUIT)
-        DECLARE_SIGNAL(SIGSEGV)
-        DECLARE_SIGNAL(SIGSYS)
-        // don't care: SIGTERM
-        DECLARE_SIGNAL(SIGUSR1)
-        //DECLARE_SIGNAL(SIGUSR2) no usage currently
-        ;
+static const Signalmap_t listofsignals = {
+    DECLARE_SIGNAL(SIGABRT),
+    DECLARE_SIGNAL(SIGBUS),
+    DECLARE_SIGNAL(SIGFPE),
+    DECLARE_SIGNAL(SIGILL),
+    DECLARE_SIGNAL(SIGINT),
+    DECLARE_SIGNAL(SIGQUIT),
+    DECLARE_SIGNAL(SIGSEGV),
+    DECLARE_SIGNAL(SIGSYS),
+    // don't care: SIGTERM
+    DECLARE_SIGNAL(SIGUSR1),
+    //DECLARE_SIGNAL(SIGUSR2) no usage currently
+};
 #undef DECLARE_SIGNAL
 /*
  * Entry pointer for signal handlers

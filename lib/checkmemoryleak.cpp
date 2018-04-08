@@ -75,21 +75,22 @@ static unsigned int countParameters(const Token *tok)
  * This list contains function names with const parameters e.g.: atof(const char *)
  * TODO: This list should be replaced by <leak-ignore/> in .cfg files.
  */
-static const std::set<std::string> call_func_white_list = make_container < std::set<std::string> > ()
-        << "_open" << "_wopen" << "access" << "adjtime" << "asctime_r" << "asprintf" << "chdir" << "chmod" << "chown"
-        << "creat" << "ctime_r" << "execl" << "execle" << "execlp" << "execv" << "execve" << "fchmod" << "fcntl"
-        << "fdatasync" << "fclose" << "flock" << "fmemopen" << "fnmatch" << "fopen" << "fopencookie" << "for" << "free"
-        << "freopen"<< "fseeko" << "fstat" << "fsync" << "ftello" << "ftruncate" << "getgrnam" << "gethostbyaddr" << "gethostbyname"
-        << "getnetbyname" << "getopt" << "getopt_long" << "getprotobyname" << "getpwnam" << "getservbyname" << "getservbyport"
-        << "glob" << "gmtime" << "gmtime_r" << "if" << "index" << "inet_addr" << "inet_aton" << "inet_network" << "initgroups"
-        << "ioctl" << "link" << "localtime_r" << "lockf" << "lseek" << "lstat" << "mkdir" << "mkfifo" << "mknod" << "mkstemp"
-        << "obstack_printf" << "obstack_vprintf" << "open" << "opendir" << "parse_printf_format" << "pathconf"
-        << "perror" << "popen" << "posix_fadvise" << "posix_fallocate" << "pread" << "psignal" << "pwrite" << "read" << "readahead"
-        << "readdir" << "readdir_r" << "readlink" << "readv" << "realloc" << "regcomp" << "return" << "rewinddir" << "rindex"
-        << "rmdir" << "scandir" << "seekdir" << "setbuffer" << "sethostname" << "setlinebuf" << "sizeof" << "strdup"
-        << "stat" << "stpcpy" << "strcasecmp" << "stricmp" << "strncasecmp" << "switch"
-        << "symlink" << "sync_file_range" << "telldir" << "tempnam" << "time" << "typeid" << "unlink"
-        << "utime" << "utimes" << "vasprintf" << "while" << "wordexp" << "write" << "writev";
+static const std::set<std::string> call_func_white_list = {
+    "_open", "_wopen", "access", "adjtime", "asctime_r", "asprintf", "chdir", "chmod", "chown"
+    , "creat", "ctime_r", "execl", "execle", "execlp", "execv", "execve", "fchmod", "fcntl"
+    , "fdatasync", "fclose", "flock", "fmemopen", "fnmatch", "fopen", "fopencookie", "for", "free"
+    , "freopen", "fseeko", "fstat", "fsync", "ftello", "ftruncate", "getgrnam", "gethostbyaddr", "gethostbyname"
+    , "getnetbyname", "getopt", "getopt_long", "getprotobyname", "getpwnam", "getservbyname", "getservbyport"
+    , "glob", "gmtime", "gmtime_r", "if", "index", "inet_addr", "inet_aton", "inet_network", "initgroups"
+    , "ioctl", "link", "localtime_r", "lockf", "lseek", "lstat", "mkdir", "mkfifo", "mknod", "mkstemp"
+    , "obstack_printf", "obstack_vprintf", "open", "opendir", "parse_printf_format", "pathconf"
+    , "perror", "popen", "posix_fadvise", "posix_fallocate", "pread", "psignal", "pwrite", "read", "readahead"
+    , "readdir", "readdir_r", "readlink", "readv", "realloc", "regcomp", "return", "rewinddir", "rindex"
+    , "rmdir", "scandir", "seekdir", "setbuffer", "sethostname", "setlinebuf", "sizeof", "strdup"
+    , "stat", "stpcpy", "strcasecmp", "stricmp", "strncasecmp", "switch"
+    , "symlink", "sync_file_range", "telldir", "tempnam", "time", "typeid", "unlink"
+    , "utime", "utimes", "vasprintf", "while", "wordexp", "write", "writev"
+};
 
 //---------------------------------------------------------------------------
 
@@ -506,18 +507,19 @@ bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, con
 }
 
 namespace {
-    const std::set<std::string> call_func_keywords = make_container < std::set<std::string> > ()
-            << "asprintf"
-            << "delete"
-            << "fclose"
-            << "for"
-            << "free"
-            << "if"
-            << "realloc"
-            << "return"
-            << "switch"
-            << "while"
-            << "sizeof";
+    const std::set<std::string> call_func_keywords = {
+        "asprintf"
+        , "delete"
+        , "fclose"
+        , "for"
+        , "free"
+        , "if"
+        , "realloc"
+        , "return"
+        , "switch"
+        , "while"
+        , "sizeof"
+    };
 }
 
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &allocpar, unsigned int sz)

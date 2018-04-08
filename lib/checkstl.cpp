@@ -301,20 +301,23 @@ void CheckStl::mismatchingContainersError(const Token *tok)
     reportError(tok, Severity::error, "mismatchingContainers", "Iterators of different containers are used together.", CWE664, false);
 }
 
-static const std::set<std::string> algorithm2 = make_container< std::set<std::string> >() // func(begin1, end1
-        << "binary_search" << "copy" << "copy_if" << "equal_range"
-        << "generate" << "is_heap" << "is_heap_until" << "is_partitioned"
-        << "is_permutation" << "is_sorted" << "is_sorted_until" << "lower_bound" << "make_heap" << "max_element" << "minmax_element"
-        << "min_element" << "mismatch" << "move" << "move_backward" << "next_permutation" << "partition" << "partition_copy"
-        << "partition_point" << "pop_heap" << "prev_permutation" << "push_heap" << "random_shuffle" << "remove" << "remove_copy"
-        << "remove_copy_if" << "remove_if" << "replace" << "replace_copy" << "replace_copy_if" << "replace_if" << "reverse" << "reverse_copy"
-        << "shuffle" << "sort" << "sort_heap" << "stable_partition" << "stable_sort" << "swap_ranges" << "transform" << "unique"
-        << "unique_copy" << "upper_bound" << "string" << "wstring" << "u16string" << "u32string";
-static const std::set<std::string> algorithm22 = make_container< std::set<std::string> >() // func(begin1 << end1 << begin2 << end2
-        << "includes" << "lexicographical_compare" << "merge" << "partial_sort_copy"
-        << "set_difference" << "set_intersection" << "set_symmetric_difference" << "set_union";
-static const std::set<std::string> algorithm1x1 = make_container< std::set<std::string> >()  // func(begin1 << x << end1
-        << "nth_element" << "partial_sort" << "rotate" << "rotate_copy";
+static const std::set<std::string> algorithm2 = { // func(begin1, end1
+    "binary_search", "copy", "copy_if", "equal_range"
+    , "generate", "is_heap", "is_heap_until", "is_partitioned"
+    , "is_permutation", "is_sorted", "is_sorted_until", "lower_bound", "make_heap", "max_element", "minmax_element"
+    , "min_element", "mismatch", "move", "move_backward", "next_permutation", "partition", "partition_copy"
+    , "partition_point", "pop_heap", "prev_permutation", "push_heap", "random_shuffle", "remove", "remove_copy"
+    , "remove_copy_if", "remove_if", "replace", "replace_copy", "replace_copy_if", "replace_if", "reverse", "reverse_copy"
+    , "shuffle", "sort", "sort_heap", "stable_partition", "stable_sort", "swap_ranges", "transform", "unique"
+    , "unique_copy", "upper_bound", "string", "wstring", "u16string", "u32string"
+};
+static const std::set<std::string> algorithm22 = { // func(begin1, end1, begin2, end2
+    "includes", "lexicographical_compare", "merge", "partial_sort_copy"
+    , "set_difference", "set_intersection", "set_symmetric_difference", "set_union"
+};
+static const std::set<std::string> algorithm1x1 = {  // func(begin1, x, end1
+    "nth_element", "partial_sort", "rotate", "rotate_copy"
+};
 
 static const std::string iteratorBeginFuncPattern = "begin|cbegin|rbegin|crbegin";
 static const std::string iteratorEndFuncPattern = "end|cend|rend|crend";
@@ -1040,8 +1043,9 @@ static bool isLocal(const Token *tok)
 }
 
 namespace {
-    const std::set<std::string> stl_string_stream = make_container< std::set<std::string> >() <<
-            "istringstream" <<  "ostringstream" <<  "stringstream" <<  "wstringstream" ;
+    const std::set<std::string> stl_string_stream = {
+        "istringstream", "ostringstream", "stringstream", "wstringstream"
+    };
 }
 
 void CheckStl::string_c_str()
@@ -1375,11 +1379,12 @@ void CheckStl::autoPointerMallocError(const Token *tok, const std::string& alloc
 }
 
 namespace {
-    const std::set<std::string> stl_containers_with_empty_and_clear = make_container< std::set<std::string> >() <<
-            "deque" <<  "forward_list" <<  "list" <<
-            "map" <<  "multimap" <<  "multiset" <<  "set" <<  "string" <<
-            "unordered_map" <<  "unordered_multimap" <<  "unordered_multiset" <<
-            "unordered_set" <<  "vector" <<  "wstring";
+    const std::set<std::string> stl_containers_with_empty_and_clear = {
+        "deque",  "forward_list",  "list",
+        "map",  "multimap",  "multiset",  "set",  "string",
+        "unordered_map",  "unordered_multimap",  "unordered_multiset",
+        "unordered_set",  "vector",  "wstring"
+    };
 
 }
 

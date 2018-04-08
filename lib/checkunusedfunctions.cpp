@@ -271,11 +271,9 @@ static bool isOperatorFunction(const std::string & funcName)
         return true;
     }
 
-    const std::vector<std::string> additionalOperators = make_container< std::vector<std::string> >()
-            << "new"
-            << "new[]"
-            << "delete"
-            << "delete[]";
+    const std::vector<std::string> additionalOperators = {
+        "new", "new[]", "delete", "delete[]"
+    };
 
 
     return std::find(additionalOperators.begin(), additionalOperators.end(), funcName.substr(operatorPrefix.length())) != additionalOperators.end();;

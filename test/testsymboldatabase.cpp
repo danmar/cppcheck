@@ -798,10 +798,8 @@ private:
             bool result = si.isVariableDeclaration(list.front(), vartok, typetok);
             ASSERT_EQUALS(true, result);
             Variable v(vartok, list.front(), list.back(), 0, Public, 0, 0, &settings1.library);
-            static const std::set<std::string> types = make_container< std::set<std::string> >() <<
-                    "string" << "wstring" ;
-            static const std::set<std::string> no_types = make_container< std::set<std::string> >() <<
-                    "set" ;
+            static const std::set<std::string> types = { "string", "wstring" };
+            static const std::set<std::string> no_types = { "set" };
             ASSERT_EQUALS(true, v.isStlType());
             ASSERT_EQUALS(true, v.isStlType(types));
             ASSERT_EQUALS(false, v.isStlType(no_types));
@@ -816,10 +814,8 @@ private:
             bool result = si.isVariableDeclaration(list.front(), vartok, typetok);
             ASSERT_EQUALS(true, result);
             Variable v(vartok, list.front(), list.back(), 0, Public, 0, 0, &settings1.library);
-            static const std::set<std::string> types = make_container< std::set<std::string> >() <<
-                    "bitset" << "set" << "vector" << "wstring" ;
-            static const std::set<std::string> no_types = make_container< std::set<std::string> >() <<
-                    "bitset" << "map" << "set" ;
+            static const std::set<std::string> types = { "bitset", "set", "vector", "wstring" };
+            static const std::set<std::string> no_types = { "bitset", "map", "set" };
             ASSERT_EQUALS(true, v.isStlType());
             ASSERT_EQUALS(true, v.isStlType(types));
             ASSERT_EQUALS(false, v.isStlType(no_types));
@@ -833,8 +829,7 @@ private:
             bool result = si.isVariableDeclaration(list.front(), vartok, typetok);
             ASSERT_EQUALS(true, result);
             Variable v(vartok, list.front(), list.back(), 0, Public, 0, 0, &settings1.library);
-            static const std::set<std::string> types = make_container< std::set<std::string> >() <<
-                    "bitset" << "set" << "vector" ;
+            static const std::set<std::string> types = { "bitset", "set", "vector" };
             ASSERT_EQUALS(false, v.isStlType());
             ASSERT_EQUALS(false, v.isStlType(types));
             ASSERT_EQUALS(false, v.isStlStringType());

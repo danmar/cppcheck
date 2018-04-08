@@ -493,8 +493,7 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
         if (suppressed)
             continue;
 
-        const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack = make_container< std::list<ErrorLogger::ErrorMessage::FileLocation> > ()
-                << ErrorLogger::ErrorMessage::FileLocation(i->file, i->line);
+        const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack = { ErrorLogger::ErrorMessage::FileLocation(i->file, i->line) };
         reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression", false));
     }
 }

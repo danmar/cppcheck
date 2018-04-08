@@ -65,18 +65,19 @@ Token::~Token()
     delete _values;
 }
 
-static const std::set<std::string> controlFlowKeywords = make_container< std::set<std::string> > () <<
-        "goto" <<
-        "do" <<
-        "if" <<
-        "else" <<
-        "for" <<
-        "while" <<
-        "switch" <<
-        "case" <<
-        "break" <<
-        "continue" <<
-        "return";
+static const std::set<std::string> controlFlowKeywords = {
+    "goto",
+    "do",
+    "if",
+    "else",
+    "for",
+    "while",
+    "switch",
+    "case",
+    "break",
+    "continue",
+    "return"
+};
 
 void Token::update_property_info()
 {
@@ -133,18 +134,18 @@ void Token::update_property_info()
     update_property_isStandardType();
 }
 
-static const std::set<std::string> stdTypes =
-    make_container<std::set<std::string> >() << "bool"
-    << "_Bool"
-    << "char"
-    << "double"
-    << "float"
-    << "int"
-    << "long"
-    << "short"
-    << "size_t"
-    << "void"
-    << "wchar_t";
+static const std::set<std::string> stdTypes = { "bool"
+                                                , "_Bool"
+                                                , "char"
+                                                , "double"
+                                                , "float"
+                                                , "int"
+                                                , "long"
+                                                , "short"
+                                                , "size_t"
+                                                , "void"
+                                                , "wchar_t"
+                                              };
 
 void Token::update_property_isStandardType()
 {

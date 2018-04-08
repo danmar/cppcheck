@@ -2568,11 +2568,11 @@ void Tokenizer::setVarId()
 
 
 // Variable declarations can't start with "return" etc.
-static const std::set<std::string> notstart_c = make_container< std::set<std::string> > ()
-        << "goto" << "NOT" << "return" << "sizeof"<< "typedef";
-static const std::set<std::string> notstart_cpp = make_container< std::set<std::string> > ()
-        << notstart_c
-        << "delete" << "friend" << "new" << "throw" << "using" << "virtual" << "explicit" << "const_cast" << "dynamic_cast" << "reinterpret_cast" << "static_cast" << "template";
+#define NOTSTART_C "goto", "NOT", "return", "sizeof", "typedef"
+static const std::set<std::string> notstart_c = { NOTSTART_C };
+static const std::set<std::string> notstart_cpp = { NOTSTART_C,
+                                                    "delete", "friend", "new", "throw", "using", "virtual", "explicit", "const_cast", "dynamic_cast", "reinterpret_cast", "static_cast", "template"
+                                                  };
 
 void Tokenizer::setVarIdPass1()
 {
@@ -6164,16 +6164,17 @@ void Tokenizer::simplifyVariableMultipleAssign()
 }
 
 // Binary operators simplification map
-static const std::map<std::string, std::string> cAlternativeTokens = make_container< std::map<std::string, std::string> >()
-        << std::make_pair("and", "&&")
-        << std::make_pair("and_eq", "&=")
-        << std::make_pair("bitand", "&")
-        << std::make_pair("bitor", "|")
-        << std::make_pair("not_eq", "!=")
-        << std::make_pair("or", "||")
-        << std::make_pair("or_eq", "|=")
-        << std::make_pair("xor", "^")
-        << std::make_pair("xor_eq", "^=") ;
+static const std::map<std::string, std::string> cAlternativeTokens = {
+    std::make_pair("and", "&&")
+    , std::make_pair("and_eq", "&=")
+    , std::make_pair("bitand", "&")
+    , std::make_pair("bitor", "|")
+    , std::make_pair("not_eq", "!=")
+    , std::make_pair("or", "||")
+    , std::make_pair("or_eq", "|=")
+    , std::make_pair("xor", "^")
+    , std::make_pair("xor_eq", "^=")
+};
 
 // Simplify the C alternative tokens:
 //  and      =>     &&
@@ -7486,14 +7487,15 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr)
     return false;
 }
 
-static const std::set<std::string> stdFunctionsPresentInC = make_container< std::set<std::string> > () <<
-        "strcat" <<
-        "strcpy" <<
-        "strncat" <<
-        "strncpy" <<
-        "free" <<
-        "malloc" <<
-        "strdup";
+static const std::set<std::string> stdFunctionsPresentInC = {
+    "strcat",
+    "strcpy",
+    "strncat",
+    "strncpy",
+    "free",
+    "malloc",
+    "strdup"
+};
 
 void Tokenizer::simplifyStd()
 {
@@ -8942,15 +8944,16 @@ void Tokenizer::simplifyCPPAttribute()
     }
 }
 
-static const std::set<std::string> keywords = make_container< std::set<std::string> >()
-        << "volatile"
-        << "inline"
-        << "_inline"
-        << "__inline"
-        << "__forceinline"
-        << "register"
-        << "__restrict"
-        << "__restrict__" ;
+static const std::set<std::string> keywords = {
+    "volatile"
+    , "inline"
+    , "_inline"
+    , "__inline"
+    , "__forceinline"
+    , "register"
+    , "__restrict"
+    , "__restrict__"
+};
 // Remove "volatile", "inline", "register", "restrict", "override", "final", "static" and "constexpr"
 // "restrict" keyword
 //   - New to 1999 ANSI/ISO C standard
@@ -9335,49 +9338,52 @@ void Tokenizer::simplifyBitfields()
 
 
 // Types and objects in std namespace that are neither functions nor templates
-static const std::set<std::string> stdTypes = make_container<std::set<std::string> >() <<
-        "string"<< "wstring"<< "u16string"<< "u32string" <<
-        "iostream"<< "ostream"<< "ofstream"<< "ostringstream" <<
-        "istream"<< "ifstream"<< "istringstream"<< "fstream"<< "stringstream" <<
-        "wstringstream"<< "wistringstream"<< "wostringstream"<< "wstringbuf" <<
-        "stringbuf"<< "streambuf"<< "ios"<< "filebuf"<< "ios_base" <<
-        "exception"<< "bad_exception"<< "bad_alloc" <<
-        "logic_error"<< "domain_error"<< "invalid_argument_"<< "length_error" <<
-        "out_of_range"<< "runtime_error"<< "range_error"<< "overflow_error"<< "underflow_error" <<
-        "locale" <<
-        "cout"<< "cerr"<< "clog"<< "cin" <<
-        "wcerr"<< "wcin"<< "wclog"<< "wcout" <<
-        "endl"<< "ends"<< "flush" <<
-        "boolalpha"<< "noboolalpha"<< "showbase"<< "noshowbase" <<
-        "showpoint"<< "noshowpoint"<< "showpos"<< "noshowpos" <<
-        "skipws"<< "noskipws"<< "unitbuf"<< "nounitbuf"<< "uppercase"<< "nouppercase" <<
-        "dec"<< "hex"<< "oct" <<
-        "fixed"<< "scientific" <<
-        "internal"<< "left"<< "right" <<
-        "fpos"<< "streamoff"<< "streampos"<< "streamsize";
+static const std::set<std::string> stdTypes = {
+    "string", "wstring", "u16string", "u32string",
+    "iostream", "ostream", "ofstream", "ostringstream",
+    "istream", "ifstream", "istringstream", "fstream", "stringstream",
+    "wstringstream", "wistringstream", "wostringstream", "wstringbuf",
+    "stringbuf", "streambuf", "ios", "filebuf", "ios_base",
+    "exception", "bad_exception", "bad_alloc",
+    "logic_error", "domain_error", "invalid_argument_", "length_error",
+    "out_of_range", "runtime_error", "range_error", "overflow_error", "underflow_error",
+    "locale",
+    "cout", "cerr", "clog", "cin",
+    "wcerr", "wcin", "wclog", "wcout",
+    "endl", "ends", "flush",
+    "boolalpha", "noboolalpha", "showbase", "noshowbase",
+    "showpoint", "noshowpoint", "showpos", "noshowpos",
+    "skipws", "noskipws", "unitbuf", "nounitbuf", "uppercase", "nouppercase",
+    "dec", "hex", "oct",
+    "fixed", "scientific",
+    "internal", "left", "right",
+    "fpos", "streamoff", "streampos", "streamsize"
+};
 
-static const std::set<std::string> stdTemplates = make_container<std::set<std::string> >() <<
-        "array"<< "basic_string"<< "bitset"<< "deque"<< "list"<< "map"<< "multimap" <<
-        "priority_queue"<< "queue"<< "set"<< "multiset"<< "stack"<< "vector"<< "pair" <<
-        "iterator"<< "iterator_traits" <<
-        "unordered_map"<< "unordered_multimap"<< "unordered_set"<< "unordered_multiset" <<
-        "tuple"<< "function";
-static const std::set<std::string> stdFunctions = make_container<std::set<std::string> >() <<
-        "getline" <<
-        "for_each"<< "find"<< "find_if"<< "find_end"<< "find_first_of" <<
-        "adjacent_find"<< "count"<< "count_if"<< "mismatch"<< "equal"<< "search"<< "search_n" <<
-        "copy"<< "copy_backward"<< "swap"<< "swap_ranges"<< "iter_swap"<< "transform"<< "replace" <<
-        "replace_if"<< "replace_copy"<< "replace_copy_if"<< "fill"<< "fill_n"<< "generate"<< "generate_n"<< "remove" <<
-        "remove_if"<< "remove_copy"<< "remove_copy_if" <<
-        "unique"<< "unique_copy"<< "reverse"<< "reverse_copy" <<
-        "rotate"<< "rotate_copy"<< "random_shuffle"<< "partition"<< "stable_partition" <<
-        "sort"<< "stable_sort"<< "partial_sort"<< "partial_sort_copy"<< "nth_element" <<
-        "lower_bound"<< "upper_bound"<< "equal_range"<< "binary_search"<< "merge"<< "inplace_merge"<< "includes" <<
-        "set_union"<< "set_intersection"<< "set_difference" <<
-        "set_symmetric_difference"<< "push_heap"<< "pop_heap"<< "make_heap"<< "sort_heap" <<
-        "min"<< "max"<< "min_element"<< "max_element"<< "lexicographical_compare"<< "next_permutation"<< "prev_permutation" <<
-        "advance"<< "back_inserter"<< "distance"<< "front_inserter"<< "inserter" <<
-        "make_pair"<< "make_shared"<< "make_tuple";
+static const std::set<std::string> stdTemplates = {
+    "array", "basic_string", "bitset", "deque", "list", "map", "multimap",
+    "priority_queue", "queue", "set", "multiset", "stack", "vector", "pair",
+    "iterator", "iterator_traits",
+    "unordered_map", "unordered_multimap", "unordered_set", "unordered_multiset",
+    "tuple", "function"
+};
+static const std::set<std::string> stdFunctions = {
+    "getline",
+    "for_each", "find", "find_if", "find_end", "find_first_of",
+    "adjacent_find", "count", "count_if", "mismatch", "equal", "search", "search_n",
+    "copy", "copy_backward", "swap", "swap_ranges", "iter_swap", "transform", "replace",
+    "replace_if", "replace_copy", "replace_copy_if", "fill", "fill_n", "generate", "generate_n", "remove",
+    "remove_if", "remove_copy", "remove_copy_if",
+    "unique", "unique_copy", "reverse", "reverse_copy",
+    "rotate", "rotate_copy", "random_shuffle", "partition", "stable_partition",
+    "sort", "stable_sort", "partial_sort", "partial_sort_copy", "nth_element",
+    "lower_bound", "upper_bound", "equal_range", "binary_search", "merge", "inplace_merge", "includes",
+    "set_union", "set_intersection", "set_difference",
+    "set_symmetric_difference", "push_heap", "pop_heap", "make_heap", "sort_heap",
+    "min", "max", "min_element", "max_element", "lexicographical_compare", "next_permutation", "prev_permutation",
+    "advance", "back_inserter", "distance", "front_inserter", "inserter",
+    "make_pair", "make_shared", "make_tuple"
+};
 
 
 // Add std:: in front of std classes, when using namespace std; was given
@@ -9482,39 +9488,40 @@ namespace {
         std::string mbcs, unicode;
     };
 
-    const std::map<std::string, triplet> apis = make_container< std::map<std::string, triplet> >() <<
-            std::make_pair("_topen", triplet("open", "_wopen")) <<
-            std::make_pair("_tsopen_s", triplet("_sopen_s", "_wsopen_s")) <<
-            std::make_pair("_tfopen", triplet("fopen", "_wfopen")) <<
-            std::make_pair("_tfopen_s", triplet("fopen_s", "_wfopen_s")) <<
-            std::make_pair("_tfreopen", triplet("freopen", "_wfreopen")) <<
-            std::make_pair("_tfreopen_s", triplet("freopen_s", "_wfreopen_s")) <<
-            std::make_pair("_tcscat", triplet("strcat", "wcscat")) <<
-            std::make_pair("_tcschr", triplet("strchr", "wcschr")) <<
-            std::make_pair("_tcscmp", triplet("strcmp", "wcscmp")) <<
-            std::make_pair("_tcsdup", triplet("strdup", "wcsdup")) <<
-            std::make_pair("_tcscpy", triplet("strcpy", "wcscpy")) <<
-            std::make_pair("_tcslen", triplet("strlen", "wcslen")) <<
-            std::make_pair("_tcsncat", triplet("strncat", "wcsncat")) <<
-            std::make_pair("_tcsncpy", triplet("strncpy", "wcsncpy")) <<
-            std::make_pair("_tcsnlen", triplet("strnlen", "wcsnlen")) <<
-            std::make_pair("_tcsrchr", triplet("strrchr", "wcsrchr")) <<
-            std::make_pair("_tcsstr", triplet("strstr", "wcsstr")) <<
-            std::make_pair("_tcstok", triplet("strtok", "wcstok")) <<
-            std::make_pair("_ftprintf", triplet("fprintf", "fwprintf")) <<
-            std::make_pair("_tprintf", triplet("printf", "wprintf")) <<
-            std::make_pair("_stprintf", triplet("sprintf", "swprintf")) <<
-            std::make_pair("_sntprintf", triplet("_snprintf", "_snwprintf")) <<
-            std::make_pair("_ftscanf", triplet("fscanf", "fwscanf")) <<
-            std::make_pair("_tscanf", triplet("scanf", "wscanf")) <<
-            std::make_pair("_stscanf", triplet("sscanf", "swscanf")) <<
-            std::make_pair("_ftprintf_s", triplet("fprintf_s", "fwprintf_s")) <<
-            std::make_pair("_tprintf_s", triplet("printf_s", "wprintf_s")) <<
-            std::make_pair("_stprintf_s", triplet("sprintf_s", "swprintf_s")) <<
-            std::make_pair("_sntprintf_s", triplet("_snprintf_s", "_snwprintf_s")) <<
-            std::make_pair("_ftscanf_s", triplet("fscanf_s", "fwscanf_s")) <<
-            std::make_pair("_tscanf_s", triplet("scanf_s", "wscanf_s")) <<
-            std::make_pair("_stscanf_s", triplet("sscanf_s", "swscanf_s"));
+    const std::map<std::string, triplet> apis = {
+        std::make_pair("_topen", triplet("open", "_wopen")),
+        std::make_pair("_tsopen_s", triplet("_sopen_s", "_wsopen_s")),
+        std::make_pair("_tfopen", triplet("fopen", "_wfopen")),
+        std::make_pair("_tfopen_s", triplet("fopen_s", "_wfopen_s")),
+        std::make_pair("_tfreopen", triplet("freopen", "_wfreopen")),
+        std::make_pair("_tfreopen_s", triplet("freopen_s", "_wfreopen_s")),
+        std::make_pair("_tcscat", triplet("strcat", "wcscat")),
+        std::make_pair("_tcschr", triplet("strchr", "wcschr")),
+        std::make_pair("_tcscmp", triplet("strcmp", "wcscmp")),
+        std::make_pair("_tcsdup", triplet("strdup", "wcsdup")),
+        std::make_pair("_tcscpy", triplet("strcpy", "wcscpy")),
+        std::make_pair("_tcslen", triplet("strlen", "wcslen")),
+        std::make_pair("_tcsncat", triplet("strncat", "wcsncat")),
+        std::make_pair("_tcsncpy", triplet("strncpy", "wcsncpy")),
+        std::make_pair("_tcsnlen", triplet("strnlen", "wcsnlen")),
+        std::make_pair("_tcsrchr", triplet("strrchr", "wcsrchr")),
+        std::make_pair("_tcsstr", triplet("strstr", "wcsstr")),
+        std::make_pair("_tcstok", triplet("strtok", "wcstok")),
+        std::make_pair("_ftprintf", triplet("fprintf", "fwprintf")),
+        std::make_pair("_tprintf", triplet("printf", "wprintf")),
+        std::make_pair("_stprintf", triplet("sprintf", "swprintf")),
+        std::make_pair("_sntprintf", triplet("_snprintf", "_snwprintf")),
+        std::make_pair("_ftscanf", triplet("fscanf", "fwscanf")),
+        std::make_pair("_tscanf", triplet("scanf", "wscanf")),
+        std::make_pair("_stscanf", triplet("sscanf", "swscanf")),
+        std::make_pair("_ftprintf_s", triplet("fprintf_s", "fwprintf_s")),
+        std::make_pair("_tprintf_s", triplet("printf_s", "wprintf_s")),
+        std::make_pair("_stprintf_s", triplet("sprintf_s", "swprintf_s")),
+        std::make_pair("_sntprintf_s", triplet("_snprintf_s", "_snwprintf_s")),
+        std::make_pair("_ftscanf_s", triplet("fscanf_s", "fwscanf_s")),
+        std::make_pair("_tscanf_s", triplet("scanf_s", "wscanf_s")),
+        std::make_pair("_stscanf_s", triplet("sscanf_s", "swscanf_s"))
+    };
 }
 
 void Tokenizer::simplifyMicrosoftStringFunctions()

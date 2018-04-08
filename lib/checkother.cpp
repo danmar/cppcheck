@@ -709,21 +709,21 @@ void CheckOther::checkRedundantAssignment()
 
 void CheckOther::redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var)
 {
-    const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
+    const std::list<const Token *> callstack = { tok1, tok2 };
     reportError(callstack, Severity::performance, "redundantCopy",
                 "Buffer '" + var + "' is being written before its old content has been used.", CWE563, false);
 }
 
 void CheckOther::redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
-    const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
+    const std::list<const Token *> callstack = { tok1, tok2 };
     reportError(callstack, Severity::warning, "redundantCopyInSwitch",
                 "Buffer '" + var + "' is being written before its old content has been used. 'break;' missing?", CWE563, false);
 }
 
 void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
 {
-    const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
+    const std::list<const Token *> callstack = { tok1, tok2 };
     if (inconclusive)
         reportError(callstack, Severity::style, "redundantAssignment",
                     "Variable '" + var + "' is reassigned a value before the old one has been used if variable is no semaphore variable.\n"
@@ -735,7 +735,7 @@ void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, 
 
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
-    const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
+    const std::list<const Token *> callstack = { tok1, tok2 };
     reportError(callstack, Severity::warning, "redundantAssignInSwitch",
                 "Variable '" + var + "' is reassigned a value before the old one has been used. 'break;' missing?", CWE563, false);
 }
@@ -1788,7 +1788,7 @@ void CheckOther::checkDuplicateBranch()
 
 void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
 {
-    const std::list<const Token *> toks = make_container< std::list<const Token *> >() << tok2 << tok1;
+    const std::list<const Token *> toks = { tok2, tok1 };
 
     reportError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for 'if' and 'else'.\n"
                 "Finding the same code in an 'if' and related 'else' branch is suspicious and "
@@ -2008,7 +2008,7 @@ void CheckOther::checkDuplicateExpression()
 
 void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op)
 {
-    const std::list<const Token *> toks = make_container< std::list<const Token *> >() << tok2 << tok1;
+    const std::list<const Token *> toks = { tok2, tok1 };
 
     reportError(toks, Severity::style, "duplicateExpression", "Same expression on both sides of \'" + op + "\'.\n"
                 "Finding the same expression on both sides of an operator is suspicious and might "
@@ -2018,7 +2018,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
 
 void CheckOther::duplicateAssignExpressionError(const Token *tok1, const Token *tok2)
 {
-    const std::list<const Token *> toks = make_container< std::list<const Token *> >() << tok2 << tok1;
+    const std::list<const Token *> toks = { tok2, tok1 };
 
     reportError(toks, Severity::style, "duplicateAssignExpression",
                 "Same expression used in consecutive assignments of '" + tok1->str() + "' and '" + tok2->str() + "'.\n"
