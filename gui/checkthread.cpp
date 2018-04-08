@@ -509,15 +509,19 @@ QString CheckThread::getAddonFilePath(const QString &dataDir, const QString &add
 
     if (!dataDir.isEmpty()) {
         foreach (const QString p, paths) {
-            if (QFileInfo(dataDir + p + addonFile).exists())
-                return dataDir + p + addonFile;
+            QString file(dataDir);
+
+            if (QFileInfo(file.append(p).append(addonFile)).exists())
+                return file;
         }
     }
 
     const QString appPath = QApplication::applicationDirPath();
     foreach (const QString p, paths) {
-        if (QFileInfo(appPath + p + addonFile).exists())
-            return appPath + p + addonFile;
+        QString file(appPath);
+
+        if (QFileInfo(file.append(p).append(addonFile)).exists())
+            return file;
     }
 
     return QString();
