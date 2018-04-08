@@ -1928,19 +1928,19 @@ void CheckOther::checkDuplicateExpression()
             continue;
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            if(tok->str() == "=" && Token::Match(tok->astOperand1(), "%var%")) {
+            if (tok->str() == "=" && Token::Match(tok->astOperand1(), "%var%")) {
                 const Token * endStatement = Token::findsimplematch(tok, ";");
-                if(Token::Match(endStatement, "; %type% %var% ;")) {
+                if (Token::Match(endStatement, "; %type% %var% ;")) {
                     endStatement = endStatement->tokAt(4);
                 }
-                if(Token::Match(endStatement, "%var% %assign%")) {
+                if (Token::Match(endStatement, "%var% %assign%")) {
                     const Token * nextAssign = endStatement->tokAt(1);
                     const Token * var1 = tok->astOperand1();
                     const Token * var2 = nextAssign->astOperand1();
-                    if(var1 && var2 &&
+                    if (var1 && var2 &&
                         Token::Match(var1->previous(), ";|{|} %var%") &&
                         Token::Match(var2->previous(), ";|{|} %var%") &&
-                        var2->valueType() && var1->valueType() && 
+                        var2->valueType() && var1->valueType() &&
                         var2->valueType()->originalTypeName == var1->valueType()->originalTypeName &&
                         var2->valueType()->pointer == var1->valueType()->pointer &&
                         var2->valueType()->constness == var1->valueType()->constness &&
@@ -2020,11 +2020,11 @@ void CheckOther::duplicateAssignExpressionError(const Token *tok1, const Token *
 {
     const std::list<const Token *> toks = make_container< std::list<const Token *> >() << tok2 << tok1;
 
-    reportError(toks, Severity::style, "duplicateAssignExpression", 
-        "Same expression used in consecutive assignments of '" + tok1->str() + "' and '" + tok2->str() + "'.\n"
-        "Finding variables '" + tok1->str() + "' and '" + tok2->str() + "' that are assigned the same expression "
-        "is suspicious and might indicate a cut and paste or logic error. Please examine this code carefully to "
-        "determine if it is correct.", CWE398, false);
+    reportError(toks, Severity::style, "duplicateAssignExpression",
+                "Same expression used in consecutive assignments of '" + tok1->str() + "' and '" + tok2->str() + "'.\n"
+                "Finding variables '" + tok1->str() + "' and '" + tok2->str() + "' that are assigned the same expression "
+                "is suspicious and might indicate a cut and paste or logic error. Please examine this code carefully to "
+                "determine if it is correct.", CWE398, false);
 }
 
 void CheckOther::duplicateExpressionTernaryError(const Token *tok)
