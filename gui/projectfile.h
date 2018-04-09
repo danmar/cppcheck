@@ -24,6 +24,8 @@
 #include <QStringList>
 #include <QXmlStreamReader>
 
+#include "suppressions.h"
+
 /// @addtogroup GUI
 /// @{
 
@@ -118,7 +120,7 @@ public:
     * @brief Get list suppressions.
     * @return list of suppressions.
     */
-    QStringList getSuppressions() const {
+    QList<Suppressions::Suppression> getSuppressions() const {
         return mSuppressions;
     }
 
@@ -224,7 +226,7 @@ public:
      * @brief Set list of suppressions.
      * @param suppressions List of suppressions.
      */
-    void setSuppressions(const QStringList &suppressions);
+    void setSuppressions(const QList<Suppressions::Suppression> &suppressions);
 
     /**
      * @brief Set list of addons.
@@ -301,6 +303,12 @@ protected:
      * @param reader XML stream reader.
      */
     void readPlatform(QXmlStreamReader &reader);
+
+    /**
+     * @brief Read suppressions.
+     * @param reader XML stream reader.
+     */
+    void readSuppressions(QXmlStreamReader &reader);
 
     /**
       * @brief Read string list
@@ -387,7 +395,7 @@ private:
     /**
      * @brief List of suppressions.
      */
-    QStringList mSuppressions;
+    QList<Suppressions::Suppression> mSuppressions;
 
     /**
      * @brief List of addons.

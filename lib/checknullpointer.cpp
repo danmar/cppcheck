@@ -480,8 +480,8 @@ void CheckNullPointer::nullConstantDereference()
 
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive)
 {
-    const std::string errmsgcond(ValueFlow::eitherTheConditionIsRedundant(value ? value->condition : nullptr) + " or there is possible null pointer dereference: " + varname + ".");
-    const std::string errmsgdefarg("Possible null pointer dereference if the default parameter value is used: " + varname);
+    const std::string errmsgcond("$symbol:" + varname + '\n' + ValueFlow::eitherTheConditionIsRedundant(value ? value->condition : nullptr) + " or there is possible null pointer dereference: $symbol.");
+    const std::string errmsgdefarg("$symbol:" + varname + "\nPossible null pointer dereference if the default parameter value is used: $symbol");
 
     if (!tok) {
         reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE476, false);
@@ -508,7 +508,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
         std::string errmsg;
         errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
         if (!varname.empty())
-            errmsg += ": " + varname;
+            errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
         reportError(errorPath,
                     value->isKnown() ? Severity::error : Severity::warning,

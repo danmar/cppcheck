@@ -375,15 +375,15 @@ void CheckClass::copyConstructorMallocError(const Token *cctor, const Token *all
 void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::style, "copyCtorPointerCopying",
-                "Value of pointer '" + varname + "', which points to allocated memory, is copied in copy constructor instead of allocating new memory.", CWE398, false);
+                "$symbol:" + varname + "\nValue of pointer '$symbol', which points to allocated memory, is copied in copy constructor instead of allocating new memory.", CWE398, false);
 }
 
 void CheckClass::noCopyConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
     // The constructor might be intentionally missing. Therefore this is not a "warning"
     reportError(tok, Severity::style, "noCopyConstructor",
-                std::string(isStruct ? "struct" : "class") + " '" + classname +
-                "' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.", CWE398, false);
+                "$symbol:" + classname + "\n" +
+                std::string(isStruct ? "struct" : "class") + " '$symbol' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.", CWE398, false);
 }
 
 bool CheckClass::canNotCopy(const Scope *scope)
@@ -802,29 +802,28 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
 {
     // For performance reasons the constructor might be intentionally missing. Therefore this is not a "warning"
     reportError(tok, Severity::style, "noConstructor",
-                "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
-                "' does not have a constructor.\n"
-                "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
-                "' does not have a constructor although it has private member variables. "
-                "Member variables of builtin types are left uninitialized when the class is "
-                "instantiated. That may cause bugs or undefined behavior.", CWE398, false);
+                "$symbol:" + classname + "\n" +
+                "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not have a constructor.\n"
+                "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not have a constructor "
+                "although it has private member variables. Member variables of builtin types are left "
+                "uninitialized when the class is instantiated. That may cause bugs or undefined behavior.", CWE398, false);
 }
 
 void CheckClass::noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
-    const std::string message(std::string(isStruct ? "Struct" : "Class") + " '" + classname + "' has a constructor with 1 argument that is not explicit.");
+    const std::string message(std::string(isStruct ? "Struct" : "Class") + " '$symbol' has a constructor with 1 argument that is not explicit.");
     const std::string verbose(message + " Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided.");
-    reportError(tok, Severity::style, "noExplicitConstructor", message + "\n" + verbose, CWE398, false);
+    reportError(tok, Severity::style, "noExplicitConstructor", "$symbol:" + classname + '\n' + message + '\n' + verbose, CWE398, false);
 }
 
 void CheckClass::uninitVarError(const Token *tok, bool isprivate, const std::string &classname, const std::string &varname, bool inconclusive)
 {
-    reportError(tok, Severity::warning, isprivate ? "uninitMemberVarPrivate" : "uninitMemberVar", "Member variable '" + classname + "::" + varname + "' is not initialized in the constructor.", CWE398, inconclusive);
+    reportError(tok, Severity::warning, isprivate ? "uninitMemberVarPrivate" : "uninitMemberVar", "$symbol:" + classname + "::" + varname + "\nMember variable '$symbol' is not initialized in the constructor.", CWE398, inconclusive);
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
 {
-    reportError(tok, Severity::warning, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator='.", CWE398, inconclusive);
+    reportError(tok, Severity::warning, "operatorEqVarError", "$symbol:" + classname + "::" + varname + "\nMember variable '$symbol' is not assigned a value in '" + classname + "::operator='.", CWE398, inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -887,10 +886,10 @@ void CheckClass::initializationListUsage()
 
 void CheckClass::suggestInitializationList(const Token* tok, const std::string& varname)
 {
-    reportError(tok, Severity::performance, "useInitializationList", "Variable '" + varname + "' is assigned in constructor body. Consider performing initialization in initialization list.\n"
+    reportError(tok, Severity::performance, "useInitializationList", "$symbol:" + varname + "\nVariable '$symbol' is assigned in constructor body. Consider performing initialization in initialization list.\n"
                 "When an object of a class is created, the constructors of all member variables are called consecutively "
                 "in the order the variables are declared, even if you don't explicitly write them to the initialization list. You "
-                "could avoid assigning '" + varname + "' a value by passing the value to the constructor in the initialization list.", CWE398, false);
+                "could avoid assigning '$symbol' a value by passing the value to the constructor in the initialization list.", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1000,7 +999,7 @@ void CheckClass::privateFunctions()
 
 void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
-    reportError(tok, Severity::style, "unusedPrivateFunction", "Unused private function: '" + classname + "::" + funcname + "'", CWE398, false);
+    reportError(tok, Severity::style, "unusedPrivateFunction", "$symbol:" + classname + "::" + funcname + "\nUnused private function: '$symbol'", CWE398, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1164,8 +1163,9 @@ void CheckClass::mallocOnClassWarning(const Token* tok, const std::string &memfu
     toks.push_back(tok);
     toks.push_back(classTok);
     reportError(toks, Severity::warning, "mallocOnClassWarning",
-                "Memory for class instance allocated with " + memfunc + "(), but class provides constructors.\n"
-                "Memory for class instance allocated with " + memfunc + "(), but class provides constructors. This is unsafe, "
+                "$symbol:" + memfunc +"\n"
+                "Memory for class instance allocated with $symbol(), but class provides constructors.\n"
+                "Memory for class instance allocated with $symbol(), but class provides constructors. This is unsafe, "
                 "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.", CWE762, false);
 }
 
@@ -1175,6 +1175,8 @@ void CheckClass::mallocOnClassError(const Token* tok, const std::string &memfunc
     toks.push_back(tok);
     toks.push_back(classTok);
     reportError(toks, Severity::error, "mallocOnClassError",
+                "$symbol:" + memfunc +"\n"
+                "$symbol:" + classname +"\n"
                 "Memory for class instance allocated with " + memfunc + "(), but class contains a " + classname + ".\n"
                 "Memory for class instance allocated with " + memfunc + "(), but class a " + classname + ". This is unsafe, "
                 "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.", CWE665, false);
@@ -1183,6 +1185,8 @@ void CheckClass::mallocOnClassError(const Token* tok, const std::string &memfunc
 void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
 {
     reportError(tok, Severity::error, "memsetClass",
+                "$symbol:" + memfunc +"\n"
+                "$symbol:" + classname +"\n"
                 "Using '" + memfunc + "' on " + type + " that contains a " + classname + ".\n"
                 "Using '" + memfunc + "' on " + type + " that contains a " + classname + " is unsafe, because constructor, destructor "
                 "and copy operator calls are omitted. These are necessary for this non-POD type to ensure that a valid object "
@@ -1191,7 +1195,9 @@ void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const
 
 void CheckClass::memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type)
 {
-    reportError(tok, Severity::error, "memsetClassReference", "Using '" + memfunc + "' on " + type + " that contains a reference.", CWE665, false);
+    reportError(tok, Severity::error, "memsetClassReference",
+                "$symbol:" + memfunc +"\n"
+                "Using '" + memfunc + "' on " + type + " that contains a reference.", CWE665, false);
 }
 
 void CheckClass::memsetErrorFloat(const Token *tok, const std::string &type)
@@ -1252,8 +1258,10 @@ void CheckClass::operatorEq()
 
 void CheckClass::operatorEqReturnError(const Token *tok, const std::string &className)
 {
-    reportError(tok, Severity::style, "operatorEq", "'" + className + "::operator=' should return '" + className + " &'.\n"
-                "The "+className+"::operator= does not conform to standard C/C++ behaviour. To conform to standard C/C++ behaviour, return a reference to self (such as: '"+className+" &"+className+"::operator=(..) { .. return *this; }'. For safety reasons it might be better to not fix this message. If you think that safety is always more important than conformance then please ignore/suppress this message. For more details about this topic, see the book \"Effective C++\" by Scott Meyers."
+    reportError(tok, Severity::style, "operatorEq",
+                "$symbol:" + className +"\n"
+                "'$symbol::operator=' should return '$symbol &'.\n"
+                "The $symbol::operator= does not conform to standard C/C++ behaviour. To conform to standard C/C++ behaviour, return a reference to self (such as: '$symbol &$symbol::operator=(..) { .. return *this; }'. For safety reasons it might be better to not fix this message. If you think that safety is always more important than conformance then please ignore/suppress this message. For more details about this topic, see the book \"Effective C++\" by Scott Meyers."
                 , CWE398, false);
 }
 
@@ -1653,9 +1661,12 @@ void CheckClass::virtualDestructorError(const Token *tok, const std::string &Bas
 {
     if (inconclusive) {
         if (_settings->isEnabled(Settings::WARNING))
-            reportError(tok, Severity::warning, "virtualDestructor", "Class '" + Base + "' which has virtual members does not have a virtual destructor.", CWE404, true);
+            reportError(tok, Severity::warning, "virtualDestructor", "$symbol:" + Base + "\nClass '$symbol' which has virtual members does not have a virtual destructor.", CWE404, true);
     } else {
-        reportError(tok, Severity::error, "virtualDestructor", "Class '" + Base + "' which is inherited by class '" + Derived + "' does not have a virtual destructor.\n"
+        reportError(tok, Severity::error, "virtualDestructor",
+                    "$symbol:" + Base +"\n"
+                    "$symbol:" + Derived +"\n"
+                    "Class '" + Base + "' which is inherited by class '" + Derived + "' does not have a virtual destructor.\n"
                     "Class '" + Base + "' which is inherited by class '" + Derived + "' does not have a virtual destructor. "
                     "If you destroy instances of the derived class by deleting a pointer that points to the base class, only "
                     "the destructor of the base class is executed. Thus, dynamic memory that is managed by the derived class "
@@ -2045,16 +2056,18 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
         toks.push_back(tok2);
     if (!suggestStatic)
         reportError(toks, Severity::style, "functionConst",
-                    "Technically the member function '" + classname + "::" + funcname + "' can be const.\n"
-                    "The member function '" + classname + "::" + funcname + "' can be made a const "
+                    "$symbol:" + classname + "::" + funcname +"\n"
+                    "Technically the member function '$symbol' can be const.\n"
+                    "The member function '$symbol' can be made a const "
                     "function. Making this function 'const' should not cause compiler errors. "
                     "Even though the function can be made const function technically it may not make "
                     "sense conceptually. Think about your design and the task of the function first - is "
                     "it a function that must not change object internal state?", CWE398, true);
     else
         reportError(toks, Severity::performance, "functionStatic",
-                    "Technically the member function '" + classname + "::" + funcname + "' can be static.\n"
-                    "The member function '" + classname + "::" + funcname + "' can be made a static "
+                    "$symbol:" + classname + "::" + funcname +"\n"
+                    "Technically the member function '$symbol' can be static.\n"
+                    "The member function '$symbol' can be made a static "
                     "function. Making a function static can bring a performance benefit since no 'this' instance is "
                     "passed to the function. This change should not cause compiler errors but it does not "
                     "necessarily make sense conceptually. Think about your design and the task of the function first - "
@@ -2137,10 +2150,9 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
     toks.push_back(tok1);
     toks.push_back(tok2);
     reportError(toks, Severity::style, "initializerList",
-                "Member variable '" + classname + "::" +
-                varname + "' is in the wrong place in the initializer list.\n"
-                "Member variable '" + classname + "::" +
-                varname + "' is in the wrong place in the initializer list. "
+                "$symbol:" + classname + "::" + varname +"\n"
+                "Member variable '$symbol' is in the wrong place in the initializer list.\n"
+                "Member variable '$symbol' is in the wrong place in the initializer list. "
                 "Members are initialized in the order they are declared, not in the "
                 "order they are in the initializer list.  Keeping the initializer list "
                 "in the same order that the members were declared prevents order dependent "
@@ -2174,7 +2186,7 @@ void CheckClass::checkSelfInitialization()
 
 void CheckClass::selfInitializationError(const Token* tok, const std::string& varname)
 {
-    reportError(tok, Severity::error, "selfInitialization", "Member variable '" + varname + "' is initialized by itself.", CWE665, false);
+    reportError(tok, Severity::error, "selfInitialization", "$symbol:" + varname + "\nMember variable '$symbol' is initialized by itself.", CWE665, false);
 }
 
 
@@ -2336,8 +2348,10 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
     if (!errorPath.empty())
         errorPath.back().second = purefuncname + " is a pure virtual method without body";
 
-    reportError(tokStack, Severity::warning, "pureVirtualCall", "Call of pure virtual function '" + purefuncname + "' in " + scopeFunctionTypeName + ".\n"
-                "Call of pure virtual function '" + purefuncname + "' in " + scopeFunctionTypeName + ". The call will fail during runtime.", CWE(0U), false);
+    reportError(tokStack, Severity::warning, "pureVirtualCall",
+                "$symbol:" + purefuncname +"\n"
+                "Call of pure virtual function '$symbol' in " + scopeFunctionTypeName + ".\n"
+                "Call of pure virtual function '$symbol' in " + scopeFunctionTypeName + ". The call will fail during runtime.", CWE(0U), false);
 }
 
 
@@ -2388,10 +2402,12 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
     toks.push_back(tok1);
     toks.push_back(tok2);
 
+    const std::string symbols = "$symbol:" + derivedname + "\n$symbol:" + variablename + "\n$symbol:" + basename;
+
     const std::string message = "The " + std::string(derivedIsStruct ? "struct" : "class") + " '" + derivedname +
                                 "' defines member variable with name '" + variablename + "' also defined in its parent " +
                                 std::string(baseIsStruct ? "struct" : "class") + " '" + basename + "'.";
-    reportError(toks, Severity::warning, "duplInheritedMember", message, CWE398, false);
+    reportError(toks, Severity::warning, "duplInheritedMember", symbols + '\n' + message, CWE398, false);
 }
 
 
@@ -2456,11 +2472,11 @@ void CheckClass::checkCopyCtorAndEqOperator()
 
 void CheckClass::copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor)
 {
-    const std::string message = "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
-                                "' has '" + getFunctionTypeName(hasCopyCtor ? Function::eCopyConstructor : Function::eOperatorEqual) +
+    const std::string message = "$symbol:" + classname + "\n"
+                                "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' has '" +
+                                getFunctionTypeName(hasCopyCtor ? Function::eCopyConstructor : Function::eOperatorEqual) +
                                 "' but lack of '" + getFunctionTypeName(hasCopyCtor ? Function::eOperatorEqual : Function::eCopyConstructor) +
                                 "'.";
-
     reportError(tok, Severity::warning, "copyCtorAndEqOperator", message);
 }
 
@@ -2506,6 +2522,7 @@ void CheckClass::checkUnsafeClassDivZero(bool test)
 
 void CheckClass::unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName)
 {
+    const std::string symbols = "$symbol:" + className + "\n$symbol:" + methodName + "\n$symbol:" + varName + '\n';
     const std::string s = className + "::" + methodName + "()";
-    reportError(tok, Severity::style, "unsafeClassDivZero", "Public interface of " + className + " is not safe. When calling " + s + ", if parameter " + varName + " is 0 that leads to division by zero.");
+    reportError(tok, Severity::style, "unsafeClassDivZero", symbols + "Public interface of " + className + " is not safe. When calling " + s + ", if parameter " + varName + " is 0 that leads to division by zero.");
 }

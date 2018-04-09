@@ -62,6 +62,7 @@ static const CWE CWE788(788U);  // Access of Memory Location After End of Buffer
 
 static void makeArrayIndexOutOfBoundsError(std::ostream& oss, const CheckBufferOverrun::ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
 {
+    oss << "$symbol:" << arrayInfo.varname() << '\n';
     oss << "Array '" << arrayInfo.varname();
     for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
         oss << "[" << arrayInfo.num(i) << "]";
@@ -117,7 +118,8 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
             return;
 
         std::ostringstream errmsg;
-        errmsg << ValueFlow::eitherTheConditionIsRedundant(condition) << " or the array '" << arrayInfo.varname();
+        errmsg << "$symbol:" << arrayInfo.varname() << '\n';
+        errmsg << ValueFlow::eitherTheConditionIsRedundant(condition) << " or the array '$symbol";
         for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
             errmsg << "[" << arrayInfo.num(i) << "]";
         if (index.size() == 1)
@@ -132,7 +134,8 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
         reportError(errorPath, Severity::warning, "arrayIndexOutOfBoundsCond", errmsg.str(), CWE119, inconclusive);
     } else {
         std::ostringstream errmsg;
-        errmsg << "Array '" << arrayInfo.varname();
+        errmsg << "$symbol:" << arrayInfo.varname() << '\n';
+        errmsg << "Array '$symbol";
         for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
             errmsg << "[" << arrayInfo.num(i) << "]";
         if (index.size() == 1)
@@ -161,7 +164,7 @@ static std::string bufferOverrunMessage(std::string varnames)
 
     std::string errmsg("Buffer is accessed out of bounds");
     if (!varnames.empty())
-        errmsg += ": " + varnames;
+        errmsg = "$symbol:" + varnames + '\n' + errmsg + ": " + varnames;
     else
         errmsg += ".";
 
@@ -254,8 +257,11 @@ void CheckBufferOverrun::sizeArgumentAsCharError(const Token *tok)
 
 void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::string &varname)
 {
+    const std::string shortMessage = "The buffer '$symbol' may not be null-terminated after the call to strncpy().";
     reportError(tok, Severity::warning, "terminateStrncpy",
-                "The buffer '" + varname + "' may not be null-terminated after the call to strncpy().\n"
+                "$symbol:" + varname + '\n' +
+                shortMessage + '\n' +
+                shortMessage + ' ' +
                 "If the source string's size fits or exceeds the given size, strncpy() does not add a "
                 "zero at the end of the buffer. This causes bugs later in the code if the code "
                 "assumes buffer is null-terminated.", CWE170, true);
@@ -268,7 +274,9 @@ void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
 
 void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function)
 {
-    const std::string errmsg = "The buffer '" + varname + "' is not null-terminated after the call to " + function + "().\n"
+    const std::string errmsg = "$symbol:" + varname + '\n' +
+                               "$symbol:" + function + '\n' +
+                               "The buffer '" + varname + "' is not null-terminated after the call to " + function + "().\n"
                                "The buffer '" + varname + "' is not null-terminated after the call to " + function + "(). "
                                "This will cause bugs later in the code if the code assumes the buffer is null-terminated.";
 
@@ -277,7 +285,10 @@ void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const st
 
 void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname)
 {
-    reportError(tok, Severity::warning, "argumentSize", "The array '" + varname + "' is too small, the function '" + functionName + "' expects a bigger one.", CWE398, false);
+    reportError(tok, Severity::warning, "argumentSize",
+                "$symbol:" + functionName + '\n' +
+                "$symbol:" + varname + '\n' +
+                "The array '" + varname + "' is too small, the function '" + functionName + "' expects a bigger one.", CWE398, false);
 }
 
 void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
@@ -1112,8 +1123,11 @@ void CheckBufferOverrun::negativeArraySize()
 
 void CheckBufferOverrun::negativeArraySizeError(const Token *tok)
 {
+    const std::string arrayName = tok ? tok->expressionString() : std::string();
+    const std::string line1 = arrayName.empty() ? std::string() : ("$symbol:" + arrayName + '\n');
     reportError(tok, Severity::error, "negativeArraySize",
-                "Declaration of array '" + (tok ? tok->str() : std::string()) + "' with negative size is undefined behaviour", CWE758, false);
+                line1 +
+                "Declaration of array '" + arrayName + "' with negative size is undefined behaviour", CWE758, false);
 }
 
 //---------------------------------------------------------------------------
@@ -1954,8 +1968,9 @@ void CheckBufferOverrun::arrayIndexThenCheck()
 void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::string &indexName)
 {
     reportError(tok, Severity::style, "arrayIndexThenCheck",
-                "Array index '" + indexName + "' is used before limits check.\n"
-                "Defensive programming: The variable '" + indexName + "' is used as an array index before it "
+                "$symbol:" + indexName + "\n"
+                "Array index '$symbol' is used before limits check.\n"
+                "Defensive programming: The variable '$symbol' is used as an array index before it "
                 "is checked that is within limits. This can mean that the array might be accessed out of bounds. "
                 "Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the array will "
                 "not be accessed if the index is out of limits.", CWE398, false);

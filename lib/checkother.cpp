@@ -134,10 +134,11 @@ void CheckOther::checkCastIntToCharAndBackError(const Token *tok, const std::str
         tok,
         Severity::warning,
         "checkCastIntToCharAndBack",
-        "Storing "+ strFunctionName +"() return value in char variable and then comparing with EOF.\n"
-        "When saving "+ strFunctionName +"() return value in char variable there is loss of precision. "
-        " When "+ strFunctionName +"() returns EOF this value is truncated. Comparing the char "
-        "variable with EOF can have unexpected results. For instance a loop \"while (EOF != (c = "+ strFunctionName +"());\" "
+        "$symbol:" + strFunctionName + "\n"
+        "Storing $symbol() return value in char variable and then comparing with EOF.\n"
+        "When saving $symbol() return value in char variable there is loss of precision. "
+        " When $symnol() returns EOF this value is truncated. Comparing the char "
+        "variable with EOF can have unexpected results. For instance a loop \"while (EOF != (c = $symbol());\" "
         "loops forever on some compilers/platforms and on other compilers/platforms it will stop "
         "when the file contains a matching character.", CWE197, false
     );
@@ -411,9 +412,11 @@ void CheckOther::checkPipeParameterSize()
 void CheckOther::checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim)
 {
     reportError(tok, Severity::error,
-                "wrongPipeParameterSize", "Buffer '" + strVarName + "' must have size of 2 integers if used as parameter of pipe().\n"
+                "wrongPipeParameterSize",
+                "$symbol:" + strVarName + "\n"
+                "Buffer '$symbol' must have size of 2 integers if used as parameter of pipe().\n"
                 "The pipe()/pipe2() system command takes an argument, which is an array of exactly two integers.\n"
-                "The variable '" + strVarName + "' is an array of size " + strDim + ", which does not match.", CWE686, false);
+                "The variable '$symbol' is an array of size " + strDim + ", which does not match.", CWE686, false);
 }
 
 //---------------------------------------------------------------------------
@@ -711,14 +714,16 @@ void CheckOther::redundantCopyError(const Token *tok1, const Token* tok2, const 
 {
     const std::list<const Token *> callstack = { tok1, tok2 };
     reportError(callstack, Severity::performance, "redundantCopy",
-                "Buffer '" + var + "' is being written before its old content has been used.", CWE563, false);
+                "$symbol:" + var + "\n"
+                "Buffer '$symbol' is being written before its old content has been used.", CWE563, false);
 }
 
 void CheckOther::redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
     const std::list<const Token *> callstack = { tok1, tok2 };
     reportError(callstack, Severity::warning, "redundantCopyInSwitch",
-                "Buffer '" + var + "' is being written before its old content has been used. 'break;' missing?", CWE563, false);
+                "$symbol:" + var + "\n"
+                "Buffer '$symbol' is being written before its old content has been used. 'break;' missing?", CWE563, false);
 }
 
 void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
@@ -726,18 +731,21 @@ void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, 
     const std::list<const Token *> callstack = { tok1, tok2 };
     if (inconclusive)
         reportError(callstack, Severity::style, "redundantAssignment",
-                    "Variable '" + var + "' is reassigned a value before the old one has been used if variable is no semaphore variable.\n"
-                    "Variable '" + var + "' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", CWE563, true);
+                    "$symbol:" + var + "\n"
+                    "Variable '$symbol' is reassigned a value before the old one has been used if variable is no semaphore variable.\n"
+                    "Variable '$symbol' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", CWE563, true);
     else
         reportError(callstack, Severity::style, "redundantAssignment",
-                    "Variable '" + var + "' is reassigned a value before the old one has been used.", CWE563, false);
+                    "$symbol:" + var + "\n"
+                    "Variable '$symbol' is reassigned a value before the old one has been used.", CWE563, false);
 }
 
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
     const std::list<const Token *> callstack = { tok1, tok2 };
     reportError(callstack, Severity::warning, "redundantAssignInSwitch",
-                "Variable '" + var + "' is reassigned a value before the old one has been used. 'break;' missing?", CWE563, false);
+                "$symbol:" + var + "\n"
+                "Variable '$symbol' is reassigned a value before the old one has been used. 'break;' missing?", CWE563, false);
 }
 
 
@@ -876,7 +884,9 @@ void CheckOther::checkRedundantAssignmentInSwitch()
 void CheckOther::redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::warning,
-                "redundantBitwiseOperationInSwitch", "Redundant bitwise operation on '" + varname + "' in 'switch' statement. 'break;' missing?");
+                "redundantBitwiseOperationInSwitch",
+                "$symbol:" + varname + "\n"
+                "Redundant bitwise operation on '$symbol' in 'switch' statement. 'break;' missing?");
 }
 
 
@@ -1258,8 +1268,9 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
     reportError(tok,
                 Severity::style,
                 "variableScope",
-                "The scope of the variable '" + varname + "' can be reduced.\n"
-                "The scope of the variable '" + varname + "' can be reduced. Warning: Be careful "
+                "$symbol:" + varname + "\n"
+                "The scope of the variable '$symbol' can be reduced.\n"
+                "The scope of the variable '$symbol' can be reduced. Warning: Be careful "
                 "when fixing this message, especially when there are inner loops. Here is an "
                 "example where cppcheck will write that the scope for 'i' can be reduced:\n"
                 "void f(int x)\n"
@@ -1462,8 +1473,9 @@ void CheckOther::checkPassByReference()
 void CheckOther::passedByValueError(const Token *tok, const std::string &parname, bool inconclusive)
 {
     reportError(tok, Severity::performance, "passedByValue",
-                "Function parameter '" + parname + "' should be passed by reference.\n"
-                "Parameter '" +  parname + "' is passed by value. It could be passed "
+                "$symbol:" + parname + "\n"
+                "Function parameter '$symbol' should be passed by reference.\n"
+                "Parameter '$symbol' is passed by value. It could be passed "
                 "as a (const) reference which is usually faster and recommended in C++.", CWE398, inconclusive);
 }
 
@@ -1730,7 +1742,9 @@ void CheckOther::checkMisusedScopedObject()
 void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::style,
-                "unusedScopedObject", "Instance of '" + varname + "' object is destroyed immediately.", CWE563, false);
+                "unusedScopedObject",
+                "$symbol:" + varname + "\n"
+                "Instance of '$symbol' object is destroyed immediately.", CWE563, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -2044,7 +2058,9 @@ void CheckOther::duplicateValueTernaryError(const Token *tok)
 void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::warning,
-                "selfAssignment", "Redundant assignment of '" + varname + "' to itself.", CWE398, false);
+                "selfAssignment",
+                "$symbol:" + varname + "\n"
+                "Redundant assignment of '$symbol' to itself.", CWE398, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -2092,8 +2108,9 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* to
     const struct CWE cweResult = result ? CWE571 : CWE570;
 
     reportError(tok, Severity::warning, "comparisonFunctionIsAlwaysTrueOrFalse",
-                "Comparison of two identical variables with " + functionName + "(" + varName + "," + varName + ") always evaluates to " + strResult + ".\n"
-                "The function " + functionName + " is designed to compare two variables. Calling this function with one variable (" + varName + ") "
+                "$symbol:" + functionName + "\n"
+                "Comparison of two identical variables with $symbol(" + varName + "," + varName + ") always evaluates to " + strResult + ".\n"
+                "The function $symbol is designed to compare two variables. Calling this function with one variable (" + varName + ") "
                 "for both parameters leads to a statement which is always " + strResult + ".", cweResult, false);
 }
 
@@ -2152,15 +2169,17 @@ void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &
 {
     if (inconclusive) {
         reportError(tok, Severity::style, "unsignedLessThanZero",
-                    "Checking if unsigned variable '" + varname + "' is less than zero. This might be a false warning.\n"
-                    "Checking if unsigned variable '" + varname + "' is less than zero. An unsigned "
+                    "$symbol:" + varname + "\n"
+                    "Checking if unsigned variable '$symbol' is less than zero. This might be a false warning.\n"
+                    "Checking if unsigned variable '$symbol' is less than zero. An unsigned "
                     "variable will never be negative so it is either pointless or an error to check if it is. "
                     "It's not known if the used constant is a template parameter or not and therefore "
                     "this message might be a false warning.", CWE570, true);
     } else {
         reportError(tok, Severity::style, "unsignedLessThanZero",
-                    "Checking if unsigned variable '" + varname + "' is less than zero.\n"
-                    "The unsigned variable '" + varname + "' will never be negative so it "
+                    "$symbol:" + varname + "\n"
+                    "Checking if unsigned variable '$symbol' is less than zero.\n"
+                    "The unsigned variable '$symbol' will never be negative so it "
                     "is either pointless or an error to check if it is.", CWE570, false);
     }
 }
@@ -2175,13 +2194,15 @@ void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varn
 {
     if (inconclusive) {
         reportError(tok, Severity::style, "unsignedPositive",
-                    "Unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it.\n"
-                    "The unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it. "
+                    "$symbol:" + varname + "\n"
+                    "Unsigned variable '$symbol' can't be negative so it is unnecessary to test it.\n"
+                    "The unsigned variable '$symbol' can't be negative so it is unnecessary to test it. "
                     "It's not known if the used constant is a "
                     "template parameter or not and therefore this message might be a false warning", CWE570, true);
     } else {
         reportError(tok, Severity::style, "unsignedPositive",
-                    "Unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it.", CWE570, false);
+                    "$symbol:" + varname + "\n"
+                    "Unsigned variable '$symbol' can't be negative so it is unnecessary to test it.", CWE570, false);
     }
 }
 
@@ -2252,9 +2273,10 @@ void CheckOther::checkRedundantCopy()
 void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
 {
     reportError(tok, Severity::performance, "redundantCopyLocalConst",
-                "Use const reference for '" + varname + "' to avoid unnecessary data copying.\n"
-                "The const variable '"+varname+"' is assigned a copy of the data. You can avoid "
-                "the unnecessary data copying by converting '" + varname + "' to const reference.",
+                "$symbol:" + varname + "\n"
+                "Use const reference for '$symbol' to avoid unnecessary data copying.\n"
+                "The const variable '$symbol' is assigned a copy of the data. You can avoid "
+                "the unnecessary data copying by converting '$symbol' to const reference.",
                 CWE398,
                 true); // since #5618 that check became inconclusive
 }
@@ -2359,10 +2381,14 @@ void CheckOther::incompleteArrayFillError(const Token* tok, const std::string& b
 {
     if (boolean)
         reportError(tok, Severity::portability, "incompleteArrayFill",
+                    "$symbol:" + buffer + "\n"
+                    "$symbol:" + function + "\n"
                     "Array '" + buffer + "' might be filled incompletely. Did you forget to multiply the size given to '" + function + "()' with 'sizeof(*" + buffer + ")'?\n"
                     "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but the type 'bool' is larger than 1 on some platforms. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", CWE131, true);
     else
         reportError(tok, Severity::warning, "incompleteArrayFill",
+                    "$symbol:" + buffer + "\n"
+                    "$symbol:" + function + "\n"
                     "Array '" + buffer + "' is filled incompletely. Did you forget to multiply the size given to '" + function + "()' with 'sizeof(*" + buffer + ")'?\n"
                     "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but an element of the given array is larger than one byte. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", CWE131, true);
 }
@@ -2490,7 +2516,8 @@ void CheckOther::checkRedundantPointerOp()
 void CheckOther::redundantPointerOpError(const Token* tok, const std::string &varname, bool inconclusive)
 {
     reportError(tok, Severity::style, "redundantPointerOp",
-                "Redundant pointer operation on '" + varname + "' - it's already a pointer.", CWE398, inconclusive);
+                "$symbol:" + varname + "\n"
+                "Redundant pointer operation on '$symbol' - it's already a pointer.", CWE398, inconclusive);
 }
 
 void CheckOther::checkInterlockedDecrement()
@@ -2564,11 +2591,13 @@ void CheckOther::unusedLabelError(const Token* tok, bool inSwitch)
     if (inSwitch) {
         if (!tok || _settings->isEnabled(Settings::WARNING))
             reportError(tok, Severity::warning, "unusedLabelSwitch",
-                        "Label '" + (tok ? tok->str() : emptyString) + "' is not used. Should this be a 'case' of the enclosing switch()?", CWE398, false);
+                        "$symbol:" + (tok ? tok->str() : emptyString) + "\n"
+                        "Label '$symbol' is not used. Should this be a 'case' of the enclosing switch()?", CWE398, false);
     } else {
         if (!tok || _settings->isEnabled(Settings::STYLE))
             reportError(tok, Severity::style, "unusedLabel",
-                        "Label '" + (tok ? tok->str() : emptyString) + "' is not used.", CWE398, false);
+                        "$symbol:" + (tok ? tok->str() : emptyString) + "\n"
+                        "Label '$symbol' is not used.", CWE398, false);
     }
 }
 
@@ -2740,7 +2769,7 @@ void CheckOther::accessMovedError(const Token *tok, const std::string &varname, 
     default:
         return;
     }
-    const std::string errmsg("Access of " + kindString + " variable '" + varname + "'.");
+    const std::string errmsg("$symbol:" + varname + "\nAccess of " + kindString + " variable '$symbol'.");
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath, Severity::warning, errorId, errmsg, CWE672, inconclusive);
 }
@@ -2835,7 +2864,8 @@ void CheckOther::funcArgNamesDifferent(const std::string & functionName, size_t 
     tokens.push_back(declaration);
     tokens.push_back(definition);
     reportError(tokens, Severity::style, "funcArgNamesDifferent",
-                "Function '" + functionName + "' argument " + MathLib::toString(index + 1) + " names different: declaration '" +
+                "$symbol:" + functionName + "\n"
+                "Function '$symbol' argument " + MathLib::toString(index + 1) + " names different: declaration '" +
                 (declaration ? declaration->str() : std::string("A")) + "' definition '" +
                 (definition ? definition->str() : std::string("B")) + "'.", CWE628, true);
 }
@@ -2848,7 +2878,7 @@ void CheckOther::funcArgOrderDifferent(const std::string & functionName,
     std::list<const Token *> tokens;
     tokens.push_back(declarations.size() ? declarations[0] ? declarations[0] : declaration : nullptr);
     tokens.push_back(definitions.size() ? definitions[0] ? definitions[0] : definition : nullptr);
-    std::string msg = "Function '" + functionName + "' argument order different: declaration '";
+    std::string msg = "$symbol:" + functionName + "\nFunction '$symbol' argument order different: declaration '";
     for (std::size_t i = 0; i < declarations.size(); ++i) {
         if (i != 0)
             msg += ", ";

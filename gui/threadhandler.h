@@ -26,6 +26,7 @@
 #include <set>
 #include "threadresult.h"
 #include "importproject.h"
+#include "suppressions.h"
 
 class ResultsView;
 class CheckThread;
@@ -76,7 +77,7 @@ public:
         mMisraFile = misraFile;
     }
 
-    void setSuppressions(const QStringList &s) {
+    void setSuppressions(const QList<Suppressions::Suppression> &s) {
         mSuppressions = s;
     }
 
@@ -255,7 +256,7 @@ protected:
     bool mAnalyseWholeProgram;
 
     QStringList mAddonsAndTools;
-    QStringList mSuppressions;
+    QList<Suppressions::Suppression> mSuppressions;
     QStringList mClangIncludePaths;
 
     QString mDataDir;

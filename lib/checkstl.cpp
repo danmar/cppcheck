@@ -52,12 +52,15 @@ static const struct CWE CWE834(834U);   // Excessive Iteration
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)
 {
-    reportError(tok, Severity::error, "invalidIterator1", "Invalid iterator: " + iteratorName, CWE664, false);
+    reportError(tok, Severity::error, "invalidIterator1", "$symbol:"+iteratorName+"\nInvalid iterator: $symbol", CWE664, false);
 }
 
 void CheckStl::iteratorsError(const Token *tok, const std::string &container1, const std::string &container2)
 {
-    reportError(tok, Severity::error, "iterators", "Same iterator is used with different containers '" + container1 + "' and '" + container2 + "'.", CWE664, false);
+    reportError(tok, Severity::error, "iterators",
+                "$symbol:" + container1 + "\n"
+                "$symbol:" + container2 + "\n"
+                "Same iterator is used with different containers '" + container1 + "' and '" + container2 + "'.", CWE664, false);
 }
 
 // Error message used when dereferencing an iterator that has been erased..
@@ -68,13 +71,15 @@ void CheckStl::dereferenceErasedError(const Token *erased, const Token* deref, c
         callstack.push_back(deref);
         callstack.push_back(erased);
         reportError(callstack, Severity::error, "eraseDereference",
-                    "Iterator '" + itername + "' used after element has been erased.\n"
-                    "The iterator '" + itername + "' is invalid after the element it pointed to has been erased. "
+                    "$symbol:" + itername + "\n"
+                    "Iterator '$symbol' used after element has been erased.\n"
+                    "The iterator '$symbol' is invalid after the element it pointed to has been erased. "
                     "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, inconclusive);
     } else {
         reportError(deref, Severity::error, "eraseDereference",
-                    "Invalid iterator '" + itername + "' used.\n"
-                    "The iterator '" + itername + "' is invalid before being assigned. "
+                    "$symbol:" + itername + "\n"
+                    "Invalid iterator '$symbol' used.\n"
+                    "The iterator '$symbol' is invalid before being assigned. "
                     "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, inconclusive);
     }
 }
@@ -461,9 +466,9 @@ void CheckStl::stlOutOfBounds()
 void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var, bool at)
 {
     if (at)
-        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + ".at(" + num + ") is out of bounds.", CWE788, false);
+        reportError(tok, Severity::error, "stlOutOfBounds", "$symbol:" + var + "\nWhen " + num + "==$symbol.size(), $symbol.at(" + num + ") is out of bounds.", CWE788, false);
     else
-        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + "[" + num + "] is out of bounds.", CWE788, false);
+        reportError(tok, Severity::error, "stlOutOfBounds", "$symbol:" + var + "\nWhen " + num + "==$symbol.size(), $symbol[" + num + "] is out of bounds.", CWE788, false);
 }
 
 void CheckStl::negativeIndex()
@@ -703,14 +708,20 @@ void CheckStl::pushback()
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name)
 {
-    reportError(tok, Severity::error, "invalidIterator2", "After " + func + "(), the iterator '" + iterator_name + "' may be invalid.", CWE664, false);
+    reportError(tok, Severity::error, "invalidIterator2",
+                "$symbol:" + func + "\n"
+                "$symbol:" + iterator_name + "\n"
+                "After " + func + "(), the iterator '" + iterator_name + "' may be invalid.", CWE664, false);
 }
 
 
 // Error message for bad iterator usage..
 void CheckStl::invalidPointerError(const Token *tok, const std::string &func, const std::string &pointer_name)
 {
-    reportError(tok, Severity::error, "invalidPointer", "Invalid pointer '" + pointer_name + "' after " + func + "().", CWE664, false);
+    reportError(tok, Severity::error, "invalidPointer",
+                "$symbol:" + func + "\n"
+                "$symbol:" + pointer_name + "\n"
+                "Invalid pointer '" + pointer_name + "' after " + func + "().", CWE664, false);
 }
 
 
@@ -909,10 +920,11 @@ void CheckStl::sizeError(const Token *tok)
 {
     const std::string varname = tok ? tok->str() : std::string("list");
     reportError(tok, Severity::performance, "stlSize",
-                "Possible inefficient checking for '" + varname + "' emptiness.\n"
-                "Checking for '" + varname + "' emptiness might be inefficient. "
-                "Using " + varname + ".empty() instead of " + varname + ".size() can be faster. " +
-                varname + ".size() can take linear time but " + varname + ".empty() is "
+                "$symbol:" + varname + "\n"
+                "Possible inefficient checking for '$symbol' emptiness.\n"
+                "Checking for '$symbol' emptiness might be inefficient. "
+                "Using $symbol.empty() instead of $symbol.size() can be faster. "
+                "$symbol.size() can take linear time but $symbol.empty() is "
                 "guaranteed to take constant time.", CWE398, false);
 }
 
@@ -1373,9 +1385,9 @@ void CheckStl::autoPointerArrayError(const Token *tok)
 
 void CheckStl::autoPointerMallocError(const Token *tok, const std::string& allocFunction)
 {
-    const std::string summary = "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function '" + allocFunction + "'.";
-    const std::string verbose = summary + " This means that you should only use 'auto_ptr' for pointers obtained with operator 'new'. This excludes use C library allocation functions (for example '" + allocFunction + "'), which must be deallocated by the appropriate C library function.";
-    reportError(tok, Severity::error, "useAutoPointerMalloc", summary + "\n" + verbose, CWE762, false);
+    const std::string summary = "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function '$symbol'.";
+    const std::string verbose = summary + " This means that you should only use 'auto_ptr' for pointers obtained with operator 'new'. This excludes use C library allocation functions (for example '$symbol'), which must be deallocated by the appropriate C library function.";
+    reportError(tok, Severity::error, "useAutoPointerMalloc", "$symbol:" + allocFunction + '\n' + summary + '\n' + verbose, CWE762, false);
 }
 
 namespace {
@@ -1435,6 +1447,8 @@ void CheckStl::uselessCalls()
 void CheckStl::uselessCallsReturnValueError(const Token *tok, const std::string &varname, const std::string &function)
 {
     std::ostringstream errmsg;
+    errmsg << "$symbol:" << varname << '\n';
+    errmsg << "$symbol:" << function << '\n';
     errmsg << "It is inefficient to call '" << varname << "." << function << "(" << varname << ")' as it always returns 0.\n"
            << "'std::string::" << function << "()' returns zero when given itself as parameter "
            << "(" << varname << "." << function << "(" << varname << ")). As it is currently the "
@@ -1445,12 +1459,12 @@ void CheckStl::uselessCallsReturnValueError(const Token *tok, const std::string 
 
 void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varname)
 {
-    std::ostringstream errmsg;
-    errmsg << "It is inefficient to swap a object with itself by calling '" << varname << ".swap(" << varname << ")'\n"
-           << "The 'swap()' function has no logical effect when given itself as parameter "
-           << "(" << varname << ".swap(" << varname << ")). As it is currently the "
-           << "code is inefficient. Is the object or the parameter wrong here?";
-    reportError(tok, Severity::performance, "uselessCallsSwap", errmsg.str(), CWE628, false);
+    reportError(tok, Severity::performance, "uselessCallsSwap",
+                "$symbol:" + varname + "\n"
+                "It is inefficient to swap a object with itself by calling '$symbol.swap($symbol)'\n"
+                "The 'swap()' function has no logical effect when given itself as parameter "
+                "($symbol.swap($symbol)). As it is currently the "
+                "code is inefficient. Is the object or the parameter wrong here?", CWE628, false);
 }
 
 void CheckStl::uselessCallsSubstrError(const Token *tok, bool empty)
@@ -1468,8 +1482,10 @@ void CheckStl::uselessCallsEmptyError(const Token *tok)
 
 void CheckStl::uselessCallsRemoveError(const Token *tok, const std::string& function)
 {
-    reportError(tok, Severity::warning, "uselessCallsRemove", "Return value of std::" + function + "() ignored. Elements remain in container.\n"
-                "The return value of std::" + function + "() is ignored. This function returns an iterator to the end of the range containing those elements that should be kept. "
+    reportError(tok, Severity::warning, "uselessCallsRemove",
+                "$symbol:" + function + "\n"
+                "Return value of std::$symbol() ignored. Elements remain in container.\n"
+                "The return value of std::$symbol() is ignored. This function returns an iterator to the end of the range containing those elements that should be kept. "
                 "Elements past new end remain valid but with unspecified values. Use the erase method of the container to delete them.", CWE762, false);
 }
 
@@ -1540,8 +1556,10 @@ void CheckStl::checkDereferenceInvalidIterator()
 void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::string &iterName)
 {
     reportError(deref, Severity::warning,
-                "derefInvalidIterator", "Possible dereference of an invalid iterator: " + iterName + "\n" +
-                "Make sure to check that the iterator is valid before dereferencing it - not after.", CWE825, false);
+                "derefInvalidIterator",
+                "$symbol:" + iterName + "\n"
+                "Possible dereference of an invalid iterator: $symbol\n"
+                "Possible dereference of an invalid iterator: $symbol. Make sure to check that the iterator is valid before dereferencing it - not after.", CWE825, false);
 }
 
 
@@ -1668,5 +1686,6 @@ void CheckStl::readingEmptyStlContainer()
 
 void CheckStl::readingEmptyStlContainerError(const Token *tok)
 {
-    reportError(tok, Severity::style, "reademptycontainer", "Reading from empty STL container '" + (tok ? tok->str() : std::string("var")) + "'", CWE398, true);
+    const std::string varname = tok ? tok->str() : std::string("var");
+    reportError(tok, Severity::style, "reademptycontainer", "$symbol:" + varname +"\nReading from empty STL container '$symbol'", CWE398, true);
 }

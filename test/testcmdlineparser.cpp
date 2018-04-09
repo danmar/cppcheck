@@ -757,12 +757,20 @@ private:
         }
     }
 
+    static Suppressions::ErrorMessage errorMessage(const std::string &errorId, const std::string &fileName, int lineNumber) {
+        Suppressions::ErrorMessage e;
+        e.errorId = errorId;
+        e.setFileName(fileName);
+        e.lineNumber = lineNumber;
+        return e;
+    }
+
     void suppressionSingle() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--suppress=uninitvar", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings.nomsg.isSuppressed("uninitvar", "file.cpp", 1U));
+        ASSERT_EQUALS(true, settings.nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1)));
     }
 
     void suppressionSingleFile() {
@@ -770,7 +778,7 @@ private:
         const char *argv[] = {"cppcheck", "--suppress=uninitvar:file.cpp", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings.nomsg.isSuppressed("uninitvar", "file.cpp", 1U));
+        ASSERT_EQUALS(true, settings.nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
     }
 
     void suppressionTwo() {
@@ -778,8 +786,8 @@ private:
         const char *argv[] = {"cppcheck", "--suppress=uninitvar,noConstructor", "file.cpp"};
         settings = Settings();
         TODO_ASSERT_EQUALS(true, false, defParser.ParseFromArgs(3, argv));
-        TODO_ASSERT_EQUALS(true, false, settings.nomsg.isSuppressed("uninitvar", "file.cpp", 1U));
-        TODO_ASSERT_EQUALS(true, false, settings.nomsg.isSuppressed("noConstructor", "file.cpp", 1U));
+        TODO_ASSERT_EQUALS(true, false, settings.nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
+        TODO_ASSERT_EQUALS(true, false, settings.nomsg.isSuppressed(errorMessage("noConstructor", "file.cpp", 1U)));
     }
 
     void suppressionTwoSeparate() {
@@ -787,8 +795,8 @@ private:
         const char *argv[] = {"cppcheck", "--suppress=uninitvar", "--suppress=noConstructor", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(4, argv));
-        ASSERT_EQUALS(true, settings.nomsg.isSuppressed("uninitvar", "file.cpp", 1U));
-        ASSERT_EQUALS(true, settings.nomsg.isSuppressed("noConstructor", "file.cpp", 1U));
+        ASSERT_EQUALS(true, settings.nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
+        ASSERT_EQUALS(true, settings.nomsg.isSuppressed(errorMessage("noConstructor", "file.cpp", 1U)));
     }
 
     void templates() {

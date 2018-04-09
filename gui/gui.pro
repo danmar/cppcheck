@@ -59,7 +59,8 @@ FORMS = about.ui \
         stats.ui \
         librarydialog.ui \
         libraryaddfunctiondialog.ui \
-        libraryeditargdialog.ui
+        libraryeditargdialog.ui \
+        newsuppressiondialog.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_es.ts \
@@ -113,10 +114,11 @@ HEADERS += aboutdialog.h \
            txtreport.h \
            xmlreport.h \
            xmlreportv2.h \
-    librarydialog.h \
-    cppchecklibrarydata.h \
-    libraryaddfunctiondialog.h \
-    libraryeditargdialog.h
+           librarydialog.h \
+           cppchecklibrarydata.h \
+           libraryaddfunctiondialog.h \
+           libraryeditargdialog.h \
+           newsuppressiondialog.h
 
 SOURCES += aboutdialog.cpp \
            application.cpp \
@@ -149,10 +151,11 @@ SOURCES += aboutdialog.cpp \
            txtreport.cpp \
            xmlreport.cpp \
            xmlreportv2.cpp \
-    librarydialog.cpp \
-    cppchecklibrarydata.cpp \
-    libraryaddfunctiondialog.cpp \
-    libraryeditargdialog.cpp
+           librarydialog.cpp \
+           cppchecklibrarydata.cpp \
+           libraryaddfunctiondialog.cpp \
+           libraryeditargdialog.cpp \
+           newsuppressiondialog.cpp
 
 win32 {
     RC_FILE = cppcheck-gui.rc

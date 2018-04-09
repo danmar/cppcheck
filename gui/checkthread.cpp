@@ -419,7 +419,20 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     foreach (const ErrorItem &e, errorItems) {
         if (e.errorPath.isEmpty())
             continue;
-        if (mSuppressions.contains(e.errorId))
+        Suppressions::ErrorMessage errorMessage;
+        errorMessage.setFileName(e.errorPath.back().file.toStdString());
+        errorMessage.lineNumber = e.errorPath.back().line;
+        errorMessage.errorId = e.errorId.toStdString();
+        errorMessage.symbolNames = e.symbolNames.toStdString();
+
+        bool isSuppressed = false;
+        foreach (const Suppressions::Suppression &suppression, mSuppressions) {
+            if (suppression.isSuppressed(errorMessage)) {
+                isSuppressed = true;
+                break;
+            }
+        }
+        if (isSuppressed)
             continue;
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
         foreach (const QErrorPathItem &path, e.errorPath) {

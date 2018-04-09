@@ -23,6 +23,7 @@
 #include <QThread>
 #include "cppcheck.h"
 #include "threadresult.h"
+#include "suppressions.h"
 
 class Settings;
 
@@ -68,7 +69,7 @@ public:
         mClangIncludePaths = s;
     }
 
-    void setSuppressions(const QStringList s) {
+    void setSuppressions(const QList<Suppressions::Suppression> &s) {
         mSuppressions = s;
     }
 
@@ -151,7 +152,7 @@ private:
     QStringList mAddonsAndTools;
     QString mDataDir;
     QStringList mClangIncludePaths;
-    QStringList mSuppressions;
+    QList<Suppressions::Suppression> mSuppressions;
     QString mMisraFile;
 };
 /// @}

@@ -228,6 +228,15 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+            else if (std::strncmp(argv[i], "--suppress-xml=", 15) == 0) {
+                const char * filename = argv[i] + 15;
+                const std::string errmsg(_settings->nomsg.parseXmlFile(filename));
+                if (!errmsg.empty()) {
+                    PrintMessage(errmsg);
+                    return false;
+                }
+            }
+
             else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
                 const std::string suppression = argv[i]+11;
                 const std::string errmsg(_settings->nomsg.addSuppressionLine(suppression));

@@ -228,13 +228,13 @@ void CheckString::checkSuspiciousStringCompare()
 void CheckString::suspiciousStringCompareError(const Token* tok, const std::string& var)
 {
     reportError(tok, Severity::warning, "literalWithCharPtrCompare",
-                "String literal compared with variable '" + var + "'. Did you intend to use strcmp() instead?", CWE595, false);
+                "$symbol:" + var + "\nString literal compared with variable '$symbol'. Did you intend to use strcmp() instead?", CWE595, false);
 }
 
 void CheckString::suspiciousStringCompareError_char(const Token* tok, const std::string& var)
 {
     reportError(tok, Severity::warning, "charLiteralWithCharPtrCompare",
-                "Char literal compared with pointer '" + var + "'. Did you intend to dereference it?", CWE595, false);
+                "$symbol:" + var + "\nChar literal compared with pointer '$symbol'. Did you intend to dereference it?", CWE595, false);
 }
 
 
@@ -324,7 +324,7 @@ void CheckString::checkIncorrectStringCompare()
 
 void CheckString::incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string)
 {
-    reportError(tok, Severity::warning, "incorrectStringCompare", "String literal " + string + " doesn't match length argument for " + func + "().", CWE570, false);
+    reportError(tok, Severity::warning, "incorrectStringCompare", "$symbol:" + func + "\nString literal " + string + " doesn't match length argument for $symbol().", CWE570, false);
 }
 
 void CheckString::incorrectStringBooleanError(const Token *tok, const std::string& string)
@@ -453,8 +453,9 @@ void CheckString::sprintfOverlappingData()
 void CheckString::sprintfOverlappingDataError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error, "sprintfOverlappingData",
-                "Undefined behavior: Variable '" + varname + "' is used as parameter and destination in s[n]printf().\n"
-                "The variable '" + varname + "' is used both as a parameter and as destination in "
+                "$symbol:" + varname + "\n"
+                "Undefined behavior: Variable '$symbol' is used as parameter and destination in s[n]printf().\n"
+                "The variable '$symbol' is used both as a parameter and as destination in "
                 "s[n]printf(). The origin and destination buffers overlap. Quote from glibc (C-library) "
                 "documentation (http://www.gnu.org/software/libc/manual/html_mono/libc.html#Formatted-Output-Functions): "
                 "\"If copying takes place between objects that overlap as a result of a call "

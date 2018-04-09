@@ -156,7 +156,7 @@ bool ProjectFile::read(const QString &filename)
 
             // Find suppressions list from inside project element
             if (insideProject && xmlReader.name() == SuppressionsElementName)
-                readStringList(mSuppressions, xmlReader,SuppressionElementName);
+                readSuppressions(xmlReader);
 
             // Addons
             if (insideProject && xmlReader.name() == AddonsElementName)
@@ -464,6 +464,51 @@ void ProjectFile::readPlatform(QXmlStreamReader &reader)
 }
 
 
+void ProjectFile::readSuppressions(QXmlStreamReader &reader)
+{
+    QXmlStreamReader::TokenType type;
+    do {
+        type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::StartElement:
+            // Read library-elements
+            if (reader.name().toString() == SuppressionElementName) {
+                Suppressions::Suppression suppression;
+                if (reader.attributes().hasAttribute(QString(),"fileName"))
+                    suppression.fileName = reader.attributes().value(QString(),"fileName").toString().toStdString();
+                if (reader.attributes().hasAttribute(QString(),"lineNumber"))
+                    suppression.lineNumber = reader.attributes().value(QString(),"lineNumber").toInt();
+                if (reader.attributes().hasAttribute(QString(),"symbolName"))
+                    suppression.symbolName = reader.attributes().value(QString(),"symbolName").toString().toStdString();
+                type = reader.readNext();
+                if (type == QXmlStreamReader::Characters) {
+                    suppression.errorId = reader.text().toString().toStdString();
+                }
+                mSuppressions << suppression;
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() != SuppressionElementName)
+                return;
+            break;
+
+        // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (true);
+}
+
+
 void ProjectFile::readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[])
 {
     QXmlStreamReader::TokenType type;
@@ -532,7 +577,7 @@ void ProjectFile::setPlatform(const QString &platform)
     mPlatform = platform;
 }
 
-void ProjectFile::setSuppressions(const QStringList &suppressions)
+void ProjectFile::setSuppressions(const QList<Suppressions::Suppression> &suppressions)
 {
     mSuppressions = suppressions;
 }
@@ -630,10 +675,22 @@ bool ProjectFile::write(const QString &filename)
                     LibrariesElementName,
                     LibraryElementName);
 
-    writeStringList(xmlWriter,
-                    mSuppressions,
-                    SuppressionsElementName,
-                    SuppressionElementName);
+    if (!mSuppressions.isEmpty()) {
+        xmlWriter.writeStartElement(SuppressionsElementName);
+        foreach (const Suppressions::Suppression &suppression, mSuppressions) {
+            xmlWriter.writeStartElement(SuppressionElementName);
+            if (!suppression.fileName.empty())
+                xmlWriter.writeAttribute("fileName", QString::fromStdString(suppression.fileName));
+            if (suppression.lineNumber > 0)
+                xmlWriter.writeAttribute("lineNumber", QString::number(suppression.lineNumber));
+            if (!suppression.symbolName.empty())
+                xmlWriter.writeAttribute("symbolName", QString::fromStdString(suppression.symbolName));
+            if (!suppression.errorId.empty())
+                xmlWriter.writeCharacters(QString::fromStdString(suppression.errorId));
+            xmlWriter.writeEndElement();
+        }
+        xmlWriter.writeEndElement();
+    }
 
     writeStringList(xmlWriter,
                     mAddons,

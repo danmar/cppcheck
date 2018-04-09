@@ -10,10 +10,10 @@ knownConditionTrueFalse:build/*
 nullPointer:lib/checkother.cpp
 nullPointer:build/checkother.cpp
 
-*:gui/test*
+*:gui/test/*
 *:test/test.cxx
-*:test/cfg*
+*:test/cfg/*
 
-*:externals*
-*:htmlreport*
-*:samples*
+*:externals/*/*
+*:htmlreport/*
+*:samples/*/bad.c*

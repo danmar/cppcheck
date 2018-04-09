@@ -288,6 +288,13 @@ public:
             return _verboseMessage;
         }
 
+        /** Symbol names */
+        const std::string &symbolNames() const {
+            return _symbolNames;
+        }
+
+        Suppressions::ErrorMessage toSuppressionsErrorMessage() const;
+
     private:
         /**
          * Replace all occurrences of searchFor with replaceWith in the
@@ -305,6 +312,9 @@ public:
 
         /** Verbose message */
         std::string _verboseMessage;
+
+        /** symbol names */
+        std::string _symbolNames;
     };
 
     ErrorLogger() { }
@@ -355,7 +365,7 @@ public:
      * Report list of unmatched suppressions
      * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
      */
-    void reportUnmatchedSuppressions(const std::list<Suppressions::SuppressionEntry> &unmatched);
+    void reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched);
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 

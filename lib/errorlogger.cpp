@@ -175,6 +175,16 @@ ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errms
     }
 }
 
+static std::string replaceStr(std::string s, const std::string &from, const std::string &to)
+{
+    std::string::size_type pos = 0;
+    while (std::string::npos != (pos = s.find(from,pos))) {
+        s = s.substr(0, pos) + to + s.substr(pos + from.size());
+        pos += to.size();
+    }
+    return s;
+}
+
 void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
 {
     // If a message ends to a '\n' and contains only a one '\n'
@@ -188,14 +198,32 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
     // If there is no newline then both the summary and verbose messages
     // are the given message
     const std::string::size_type pos = msg.find('\n');
+    const std::string symbolName = _symbolNames.empty() ? std::string() : _symbolNames.substr(0, _symbolNames.find('\n'));
     if (pos == std::string::npos) {
-        _shortMessage = msg;
-        _verboseMessage = msg;
+        _shortMessage = replaceStr(msg, "$symbol", symbolName);
+        _verboseMessage = replaceStr(msg, "$symbol", symbolName);
+    } else if (msg.compare(0,8,"$symbol:") == 0) {
+        _symbolNames += msg.substr(8, pos-7);
+        setmsg(msg.substr(pos + 1));
     } else {
-        _shortMessage = msg.substr(0, pos);
-        _verboseMessage = msg.substr(pos + 1);
+        _shortMessage = replaceStr(msg.substr(0, pos), "$symbol", symbolName);
+        _verboseMessage = replaceStr(msg.substr(pos + 1), "$symbol", symbolName);
     }
 }
+
+Suppressions::ErrorMessage ErrorLogger::ErrorMessage::toSuppressionsErrorMessage() const
+{
+    Suppressions::ErrorMessage ret;
+    ret.errorId = _id;
+    if (!_callStack.empty()) {
+        ret.setFileName(_callStack.back().getfile(false));
+        ret.lineNumber = _callStack.back().line;
+    }
+    ret.inconclusive = _inconclusive;
+    ret.symbolNames = _symbolNames;
+    return ret;
+}
+
 
 std::string ErrorLogger::ErrorMessage::serialize() const
 {
@@ -378,6 +406,20 @@ std::string ErrorLogger::ErrorMessage::toXML() const
             printer.PushAttribute("info", it->getinfo().c_str());
         printer.CloseElement(false);
     }
+    for (std::string::size_type pos = 0; pos < _symbolNames.size();) {
+        const std::string::size_type pos2 = _symbolNames.find('\n', pos);
+        std::string symbolName;
+        if (pos2 == std::string::npos) {
+            symbolName = _symbolNames.substr(pos);
+            pos = pos2;
+        } else {
+            symbolName = _symbolNames.substr(pos, pos2-pos);
+            pos = pos2 + 1;
+        }
+        printer.OpenElement("symbol", false);
+        printer.PushText(symbolName.c_str());
+        printer.CloseElement(false);
+    }
     printer.CloseElement(false);
     return printer.CStr();
 }
@@ -470,20 +512,20 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     }
 }
 
-void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::SuppressionEntry> &unmatched)
+void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched)
 {
     // Report unmatched suppressions
-    for (std::list<Suppressions::SuppressionEntry>::const_iterator i = unmatched.begin(); i != unmatched.end(); ++i) {
+    for (std::list<Suppressions::Suppression>::const_iterator i = unmatched.begin(); i != unmatched.end(); ++i) {
         // don't report "unmatchedSuppression" as unmatched
-        if (i->id == "unmatchedSuppression")
+        if (i->errorId == "unmatchedSuppression")
             continue;
 
         // check if this unmatched suppression is suppressed
         bool suppressed = false;
-        for (std::list<Suppressions::SuppressionEntry>::const_iterator i2 = unmatched.begin(); i2 != unmatched.end(); ++i2) {
-            if (i2->id == "unmatchedSuppression") {
-                if ((i2->file == "*" || i2->file == i->file) &&
-                    (i2->line == 0 || i2->line == i->line)) {
+        for (std::list<Suppressions::Suppression>::const_iterator i2 = unmatched.begin(); i2 != unmatched.end(); ++i2) {
+            if (i2->errorId == "unmatchedSuppression") {
+                if ((i2->fileName == "*" || i2->fileName == i->fileName) &&
+                    (i2->lineNumber == Suppressions::Suppression::NO_LINE || i2->lineNumber == i->lineNumber)) {
                     suppressed = true;
                     break;
                 }
@@ -493,8 +535,10 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
         if (suppressed)
             continue;
 
-        const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack = { ErrorLogger::ErrorMessage::FileLocation(i->file, i->line) };
-        reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + i->id, "unmatchedSuppression", false));
+        std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
+        if (!i->fileName.empty())
+            callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(i->fileName, i->lineNumber));
+        reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + i->errorId, "unmatchedSuppression", false));
     }
 }
 

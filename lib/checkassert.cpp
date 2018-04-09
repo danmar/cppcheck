@@ -96,8 +96,10 @@ void CheckAssert::assertWithSideEffects()
 void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& functionName)
 {
     reportError(tok, Severity::warning,
-                "assertWithSideEffect", "Assert statement calls a function which may have desired side effects: '" + functionName + "'.\n"
-                "Non-pure function: '" + functionName + "' is called inside assert statement. "
+                "assertWithSideEffect",
+                "$symbol:" + functionName + "\n"
+                "Assert statement calls a function which may have desired side effects: '$symbol'.\n"
+                "Non-pure function: '$symbol' is called inside assert statement. "
                 "Assert statements are removed from release builds so the code inside "
                 "assert statement is not executed. If the code is needed also in release "
                 "builds, this is a bug.", CWE398, false);
@@ -106,8 +108,10 @@ void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& f
 void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::warning,
-                "assignmentInAssert", "Assert statement modifies '" + varname + "'.\n"
-                "Variable '" + varname + "' is modified insert assert statement. "
+                "assignmentInAssert",
+                "$symbol:" + varname + "\n"
+                "Assert statement modifies '$symbol'.\n"
+                "Variable '$symbol' is modified insert assert statement. "
                 "Assert statements are removed from release builds so the code inside "
                 "assert statement is not executed. If the code is needed also in release "
                 "builds, this is a bug.", CWE398, false);

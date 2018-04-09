@@ -297,7 +297,7 @@ private:
     }
 
     void suppressUnmatchedSuppressions() {
-        std::list<Suppressions::SuppressionEntry> suppressions;
+        std::list<Suppressions::Suppression> suppressions;
 
         // No unmatched suppression
         errout.str("");
@@ -308,40 +308,40 @@ private:
         // suppress all unmatchedSuppression
         errout.str("");
         suppressions.clear();
-        suppressions.push_back(Suppressions::SuppressionEntry("abc", "a.c", 10U));
-        suppressions.push_back(Suppressions::SuppressionEntry("unmatchedSuppression", "*", 0U));
+        suppressions.push_back(Suppressions::Suppression("abc", "a.c", 10U));
+        suppressions.push_back(Suppressions::Suppression("unmatchedSuppression", "*", 0U));
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("", errout.str());
 
         // suppress all unmatchedSuppression in a.c
         errout.str("");
         suppressions.clear();
-        suppressions.push_back(Suppressions::SuppressionEntry("abc", "a.c", 10U));
-        suppressions.push_back(Suppressions::SuppressionEntry("unmatchedSuppression", "a.c", 0U));
+        suppressions.push_back(Suppressions::Suppression("abc", "a.c", 10U));
+        suppressions.push_back(Suppressions::Suppression("unmatchedSuppression", "a.c", 0U));
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("", errout.str());
 
         // suppress unmatchedSuppression in a.c at line 10
         errout.str("");
         suppressions.clear();
-        suppressions.push_back(Suppressions::SuppressionEntry("abc", "a.c", 10U));
-        suppressions.push_back(Suppressions::SuppressionEntry("unmatchedSuppression", "a.c", 10U));
+        suppressions.push_back(Suppressions::Suppression("abc", "a.c", 10U));
+        suppressions.push_back(Suppressions::Suppression("unmatchedSuppression", "a.c", 10U));
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("", errout.str());
 
         // don't suppress unmatchedSuppression when file is mismatching
         errout.str("");
         suppressions.clear();
-        suppressions.push_back(Suppressions::SuppressionEntry("abc", "a.c", 10U));
-        suppressions.push_back(Suppressions::SuppressionEntry("unmatchedSuppression", "b.c", 0U));
+        suppressions.push_back(Suppressions::Suppression("abc", "a.c", 10U));
+        suppressions.push_back(Suppressions::Suppression("unmatchedSuppression", "b.c", 0U));
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
 
         // don't suppress unmatchedSuppression when line is mismatching
         errout.str("");
         suppressions.clear();
-        suppressions.push_back(Suppressions::SuppressionEntry("abc", "a.c", 10U));
-        suppressions.push_back(Suppressions::SuppressionEntry("unmatchedSuppression", "a.c", 1U));
+        suppressions.push_back(Suppressions::Suppression("abc", "a.c", 10U));
+        suppressions.push_back(Suppressions::Suppression("unmatchedSuppression", "a.c", 1U));
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
     }

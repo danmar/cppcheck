@@ -392,7 +392,7 @@ void CheckAutoVariables::errorAssignAddressOfLocalArrayToGlobalPointer(const Tok
     const std::string pointerName = pointer ? pointer->str() : std::string("pointer");
     const std::string arrayName   = array ? array->str() : std::string("array");
     reportError(pointer, Severity::warning, "autoVariablesAssignGlobalPointer",
-                "Address of local array " + arrayName + " is assigned to global pointer " + pointerName +" and not reassigned before " + arrayName + " goes out of scope.", CWE562, false);
+                "$symbol:" + arrayName + "\nAddress of local array $symbol is assigned to global pointer " + pointerName +" and not reassigned before $symbol goes out of scope.", CWE562, false);
 }
 
 void CheckAutoVariables::errorAssignAddressOfLocalVariableToGlobalPointer(const Token *pointer, const Token *variable)
@@ -400,14 +400,15 @@ void CheckAutoVariables::errorAssignAddressOfLocalVariableToGlobalPointer(const 
     const std::string pointerName = pointer ? pointer->str() : std::string("pointer");
     const std::string variableName = variable ? variable->str() : std::string("variable");
     reportError(pointer, Severity::warning, "autoVariablesAssignGlobalPointer",
-                "Address of local variable " + variableName + " is assigned to global pointer " + pointerName +" and not reassigned before " + variableName + " goes out of scope.", CWE562, false);
+                "$symbol:" + variableName + "\nAddress of local variable $symbol is assigned to global pointer " + pointerName +" and not reassigned before $symbol goes out of scope.", CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error, "returnAddressOfFunctionParameter",
-                "Address of function parameter '" + varname + "' returned.\n"
-                "Address of the function parameter '" + varname + "' becomes invalid after the function exits because "
+                "$symbol:" + varname + "\n"
+                "Address of function parameter '$symbol' returned.\n"
+                "Address of the function parameter '$symbol' becomes invalid after the function exits because "
                 "function parameters are stored on the stack which is freed when the function exits. Thus the returned "
                 "value is invalid.", CWE562, false);
 }

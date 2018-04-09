@@ -832,9 +832,9 @@ Settings MainWindow::getCppcheckSettings()
             tryLoadLibrary(&result.library, filename);
         }
 
-        const QStringList suppressions = mProjectFile->getSuppressions();
-        foreach (QString suppression, suppressions) {
-            result.nomsg.addSuppressionLine(suppression.toStdString());
+        const QList<Suppressions::Suppression> &suppressions = mProjectFile->getSuppressions();
+        foreach (const Suppressions::Suppression &suppression, suppressions) {
+            result.nomsg.addSuppression(suppression);
         }
 
         // Only check the given -D configuration
@@ -1729,13 +1729,26 @@ void MainWindow::tagged()
 
 void MainWindow::suppressIds(QStringList ids)
 {
-    if (mProjectFile) {
-        QStringList suppressions = mProjectFile->getSuppressions();
-        foreach (QString s, ids) {
-            if (!suppressions.contains(s))
-                suppressions << s;
+    if (!mProjectFile)
+        return;
+    ids.removeDuplicates();
+
+    QList<Suppressions::Suppression> suppressions = mProjectFile->getSuppressions();
+    foreach (QString id, ids) {
+        // Remove all matching suppressions
+        std::string id2 = id.toStdString();
+        for (int i = 0; i < suppressions.size();) {
+            if (suppressions[i].errorId == id2)
+                suppressions.removeAt(i);
+            else
+                ++i;
         }
-        mProjectFile->setSuppressions(suppressions);
-        mProjectFile->write();
+
+        Suppressions::Suppression newSuppression;
+        newSuppression.errorId = id2;
+        suppressions << newSuppression;
     }
+
+    mProjectFile->setSuppressions(suppressions);
+    mProjectFile->write();
 }

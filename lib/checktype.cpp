@@ -249,8 +249,8 @@ void CheckType::signConversionError(const Token *tok, const bool constvalue)
                 Severity::warning,
                 "signConversion",
                 (constvalue) ?
-                "Suspicious code: sign conversion of " + varname + " in calculation because '" + varname + "' has a negative value" :
-                "Suspicious code: sign conversion of " + varname + " in calculation, even though " + varname + " can have a negative value", CWE195, false);
+                "$symbol:" + varname + "\nSuspicious code: sign conversion of $symbol in calculation because '$symbol' has a negative value" :
+                "$symbol:" + varname + "\nSuspicious code: sign conversion of $symbol in calculation, even though $symbol can have a negative value", CWE195, false);
 }
 
 
