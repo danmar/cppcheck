@@ -100,8 +100,8 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_se
         }
 
         // Add the suppressions.
-        for (std::list<std::string>::const_iterator it = suppressionIDs.begin(); it != suppressionIDs.end(); ++it) {
-            _settings.nomsg.addSuppression(Suppressions::Suppression(*it, relativeFilename, tok->location.line));
+        for (const std::string &errorId : suppressionIDs) {
+            _settings.nomsg.addSuppression(Suppressions::Suppression(errorId, relativeFilename, tok->location.line));
         }
         suppressionIDs.clear();
     }
@@ -130,8 +130,8 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
         list.push_back(it->second);
     }
 
-    for (std::vector<const simplecpp::TokenList *>::const_iterator it = list.begin(); it != list.end(); ++it) {
-        for (const simplecpp::Token *tok = (*it)->cfront(); tok; tok = tok->next) {
+    for (const simplecpp::TokenList *tokenList : list) {
+        for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
             if ((tok->op != '#') || (tok->previous && tok->previous->location.line == tok->location.line))
                 continue;
             if (tok->next && tok->next->str == "endfile")
@@ -219,10 +219,10 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
             configset.insert(dtok->str);
     }
     std::string cfg;
-    for (std::set<std::string>::const_iterator it = configset.begin(); it != configset.end(); ++it) {
+    for (const std::string &s : configset) {
         if (!cfg.empty())
             cfg += ';';
-        cfg += *it;
+        cfg += s;
     }
     return cfg;
 }
@@ -250,16 +250,16 @@ static std::string cfg(const std::vector<std::string> &configs, const std::strin
 {
     std::set<std::string> configs2(configs.begin(), configs.end());
     std::string ret;
-    for (std::set<std::string>::const_iterator it = configs2.begin(); it != configs2.end(); ++it) {
-        if (it->empty())
+    for (const std::string &cfg : configs2) {
+        if (cfg.empty())
             continue;
-        if (*it == "0")
+        if (cfg == "0")
             return "";
-        if (hasDefine(userDefines, *it))
+        if (hasDefine(userDefines, cfg))
             continue;
         if (!ret.empty())
             ret += ';';
-        ret += *it;
+        ret += cfg;
     }
     return ret;
 }
