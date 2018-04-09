@@ -82,6 +82,7 @@ private:
         TEST_CASE(syntax_case_default);
 
         TEST_CASE(foreach);     // #3690
+        TEST_CASE(ifconstexpr);
 
         TEST_CASE(combineOperators);
 
@@ -903,6 +904,10 @@ private:
         // #3690,#5154
         const char code[] ="void f() { for each ( char c in MyString ) { Console::Write(c); } }";
         ASSERT_EQUALS("void f ( ) { asm ( \"char c in MyString\" ) { Console :: Write ( c ) ; } }", tokenizeAndStringify(code));
+    }
+
+    void ifconstexpr() {
+        ASSERT_EQUALS("void f ( ) { if ( FOO ) { bar ( c ) ; } }", tokenizeAndStringify("void f() { if constexpr ( FOO ) { bar(c); } }"));
     }
 
     void combineOperators() {

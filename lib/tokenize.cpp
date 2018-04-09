@@ -3532,6 +3532,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
                 // 'for each ( )' -> 'asm ( )'
                 tok->str("asm");
                 tok->deleteNext();
+            } else if (tok->strAt(1) == "constexpr") {
+                tok->deleteNext();
             } else {
                 syntaxError(tok);
             }
